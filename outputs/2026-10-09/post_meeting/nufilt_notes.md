@@ -65,3 +65,31 @@ python experiments/plot_results.py --nufilt-alignment \
 ```
 
 完整输入二阶矩与论文 PDF 仅在服务器保存；本地和 GitHub 保留代码、配置、轻量统计与图表。
+
+## 补充：输入能量与任务响应的差别
+
+后续复用同一批缓存二阶矩和相同 checkpoint，新增 192 条**线性任务增量响应**统计，没有再采图、改模型或测准确率。使用 `T = Wft − W0`，比较 `E‖TQx‖² / E‖Tx‖²`；不包含偏置变化、后续非线性或标签。[全部记录](../../2026-10-10/nufilt_response/results.json)、[缓存来源和直接矩阵核对](../../2026-10-10/nufilt_response/validation.json)。
+
+| 第一层 V，128 维代理 | 补空间输入能量 | 补空间中的线性任务响应能量 |
+|---|---:|---:|
+| MNIST | 38.12% | 0.0111% |
+| SVHN | 48.28% | 0.1064% |
+
+24 个部件的响应能量占比分别为 MNIST 0.0111%–0.6051%、SVHN 0.1064%–0.7188%。这补足了上一轮的证据边界：较大的输入补空间能量并不代表较大的任务响应，不能仅凭输入统计否定任务向量代理。
+
+若 `T = UΣVᵀ`，则完整响应能量为 `Σi σi² viᵀMvi`，删除前 r 个方向之外的任务增量时，其响应能量由 `i > r` 的项给出。对两种任务、两个秩的第一层 V，用直接矩阵乘法核对了谱表达式；比例误差小于 `1e-8`。这一计算可检查对任务增量本身的过滤，但不能把它当作任意随机编辑 `DQ` 的效用保证，因为 D 与 T 是不同映射。
+
+![线性任务响应](../../2026-10-10/nufilt_response/figures/task_response_energy.png)
+
+当前可以确认：代理补空间仍有输入活动，而原任务增量在那里产生的线性响应很小。尚未确认：多层编辑后的完整任务效用、直接融合或自适应恢复。没有因此产生新防御，也没有复现完整 NUFILT。
+
+```bash
+python experiments/nufilt_alignment.py \
+  --config configs/nufilt_alignment.json \
+  --moments-from outputs/2026-10-10/nufilt_alignment \
+  --output outputs/2026-10-10/nufilt_response \
+  --author-repo external/secure-merge-attack --nufilt-repo external/NUFILT \
+  --checkpoints checkpoints/ViT-B-32 --data data
+python experiments/plot_results.py --nufilt-response \
+  --output outputs/2026-10-10/nufilt_response
+```

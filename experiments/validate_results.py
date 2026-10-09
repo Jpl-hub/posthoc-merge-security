@@ -916,6 +916,135 @@ def validate_operator_diagnostics(path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_reconstruction_budget(path, write_report=True):
+    config = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    indices = json.loads((path / "training_indices.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    fitting = json.loads((path / "fitting.json").read_bytes())
+    parent = Path(config["parent"])
+    fit_parent = Path(config["fitting_source"])
+    previous = json.loads((parent / "training_indices.json").read_bytes())
+    frozen = json.loads((fit_parent / "training_indices.json").read_bytes())
+
+    def digest(p):
+        return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+
+    assert meta["completed"] and not meta["new_defense"]
+    assert meta["test_usage"] == config["test_usage"] == "none"
+    assert not meta["fitting_labels_used"] and meta["optimizer_steps"] == 0
+    assert meta["seed_count"] == 1 and meta["reused_measurements"] == 0
+    assert meta["config_sha256"] == digest(path / "protocol.json")
+    assert meta["indices_sha256"] == digest(path / "training_indices.json")
+    assert meta["parent_indices_sha256"] == digest(parent / "training_indices.json")
+    assert meta["fitting_parent_indices_sha256"] == digest(fit_parent / "training_indices.json")
+    assert indices["confirmation"] == previous["confirmation"]
+    assert indices["development"]["MNIST"] == previous["development"]["MNIST"]
+    assert indices["local_check"]["SVHN"] == frozen["SVHN"]["calibration"][:32]
+    for budget in config["budgets"]:
+        fit = indices["fitting"][str(budget)]
+        assert fit == frozen["SVHN"]["attack"][:budget] and len(set(fit)) == budget
+        assert not set(fit).intersection(indices["confirmation"]["SVHN"])
+        assert not set(fit).intersection(indices["local_check"]["SVHN"])
+    groups = {
+        ("confirmation", "standalone", "SVHN"),
+        ("confirmation", "direct", "SVHN"),
+        ("development", "direct", "MNIST"),
+    }
+    presets = {"unprotected", *[f"fit_{n}" for n in config["budgets"]]}
+    expected = {(preset, *key) for preset in presets for key in groups}
+    assert len(rows) == meta["new_evaluations"] == 12
+    assert {(r["preset"], r["split"], r["group"], r["dataset"]) for r in rows} == expected
+    controls = {
+        (r["split"], r["group"], r["dataset"]): r for r in rows if r["preset"] == "unprotected"
+    }
+    for row in rows:
+        key = (row["split"], row["group"], row["dataset"])
+        control = controls[key]
+        n = len(indices[row["split"]][row["dataset"]])
+        assert row["n"] == n and 0 <= row["correct"] <= n
+        assert row["top1"] == row["correct"] / n
+        assert row["coefficient"] == (
+            None if row["group"] == "standalone" else config["coefficient"]
+        )
+        pair = row["paired"]
+        assert all(
+            isinstance(pair[k], int) and pair[k] >= 0
+            for k in ["both_correct", "lost", "gained", "both_wrong"]
+        )
+        assert sum(pair[k] for k in ["both_correct", "lost", "gained", "both_wrong"]) == n
+        assert pair["both_correct"] + pair["gained"] == row["correct"]
+        assert pair["both_correct"] + pair["lost"] == control["correct"]
+        assert pair["loss_pp"] == 100 * (pair["lost"] - pair["gained"]) / n
+        if row["preset"] != "unprotected":
+            assert pair["exact_mcnemar_p"] <= pair["holm_p"] <= 1
+            assert pair["family_size"] == 3
+        if row["preset"] in {"unprotected", "fit_32"}:
+            assert row["previous_prediction_exact_match"] is True
+    assert len(fitting) == 12
+    assert {(f["budget"], f["layer"]) for f in fitting} == {
+        (n, layer) for n in config["budgets"] for layer in config["layers"]
+    }
+    for fit in fitting:
+        assert fit["fit"]["calibration_tokens"] == 50 * fit["budget"]
+        assert fit["fit"]["design_features"] == 3073
+        assert fit["fit"]["solver"] == ("dual" if fit["budget"] == 32 else "primal")
+        assert 0 <= fit["fit"]["normal_equation_relative_residual"] < 1e-8
+        assert fit["check"]["check_tokens"] == 1600
+    raw_checked = (path / "artifacts/predictions.pt").exists()
+    if raw_checked:
+        import torch
+        from operator_diagnostics import signed_margin
+
+        for name, expected_sha in meta["artifact_sha256"].items():
+            assert digest(path / "artifacts" / name) == expected_sha
+        evidence = torch.load(
+            path / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+        )
+        assert set(evidence) == expected
+        old_path = parent / "artifacts/predictions.pt"
+        assert digest(old_path) == meta["parent_predictions_sha256"]
+        old_evidence = torch.load(old_path, map_location="cpu", weights_only=True)
+        for row in rows:
+            key = (row["preset"], row["split"], row["group"], row["dataset"])
+            raw, control = evidence[key], evidence[("unprotected", *key[1:])]
+            assert torch.equal(raw["labels"], control["labels"])
+            assert torch.equal(raw["prediction"], raw["logits"].argmax(1))
+            current = raw["prediction"] == raw["labels"]
+            baseline = control["prediction"] == control["labels"]
+            assert int(current.sum()) == row["correct"]
+            assert int((baseline & ~current).sum()) == row["paired"]["lost"]
+            assert int((~baseline & current).sum()) == row["paired"]["gained"]
+            margin = signed_margin(raw["logits"], raw["labels"])
+            assert float(margin.median()) == row["margins"]["median"]
+            if row["preset"] in {"unprotected", "fit_32"}:
+                old_name = "unprotected" if row["preset"] == "unprotected" else "reconstruct_joint"
+                assert torch.equal(
+                    raw["prediction"], old_evidence[(old_name, *key[1:])]["prediction"]
+                )
+    report = dict(
+        status="passed",
+        new_evaluations=len(rows),
+        new_defense=False,
+        raw_artifacts_checked=raw_checked,
+        results_sha256=digest(path / "results.json"),
+        checks=[
+            "frozen nested fitting budgets and data fingerprints",
+            "fitting/evaluation/check disjointness",
+            "complete declared grid",
+            "paired counts and comparison families",
+            "ridge normal equations and unchanged objective",
+            "exact previous control predictions",
+            "server artifacts, labels, predictions and margins"
+            if raw_checked
+            else "raw artifacts retained on server",
+        ],
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -931,13 +1060,20 @@ if __name__ == "__main__":
     )
     mode.add_argument("--scope-audit", action="store_true", help="Validate visual scan correction.")
     mode.add_argument(
+        "--reconstruction-budget",
+        action="store_true",
+        help="Validate fixed reconstruction budgets.",
+    )
+    mode.add_argument(
         "--operator-diagnostics",
         action="store_true",
         help="Validate component and reconstruction controls.",
     )
     args = parser.parse_args()
     runner = (
-        validate_operator_diagnostics
+        validate_reconstruction_budget
+        if args.reconstruction_budget
+        else validate_operator_diagnostics
         if args.operator_diagnostics
         else validate_scope_audit
         if args.scope_audit

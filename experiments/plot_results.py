@@ -871,15 +871,29 @@ def plot_nufilt_alignment(root: Path):
                 selected = {
                     int(row["site"].split(":")[1]): row
                     for row in rows
-                    if row["task"] == task and row["moment"] == "uncentered"
-                    and row["task_vector_rank"] == rank and row["site"].startswith(target + ":")
+                    if row["task"] == task
+                    and row["moment"] == "uncentered"
+                    and row["task_vector_rank"] == rank
+                    and row["site"].startswith(target + ":")
                 }
                 layers = list(range(config["layers"]))
-                values = [100 * selected[layer]["activation_energy_outside_proxy_fraction"] for layer in layers]
-                ax.plot(layers, values, marker="o", markersize=3, color=COLORS[k], label=f"Task-vector rank {rank}")
+                values = [
+                    100 * selected[layer]["activation_energy_outside_proxy_fraction"]
+                    for layer in layers
+                ]
+                ax.plot(
+                    layers,
+                    values,
+                    marker="o",
+                    markersize=3,
+                    color=COLORS[k],
+                    label=f"Task-vector rank {rank}",
+                )
             ax.set(
-                xlabel="Transformer block (0-based)", ylabel="Input energy outside proxy (%)",
-                ylim=(0, 100), xticks=[0, 3, 6, 9, 11],
+                xlabel="Transformer block (0-based)",
+                ylabel="Input energy outside proxy (%)",
+                ylim=(0, 100),
+                xticks=[0, 3, 6, 9, 11],
                 title=f"{task}: {'attention V' if target == 'V' else 'MLP FC'} input",
             )
             ax.grid(alpha=0.2)
@@ -887,6 +901,105 @@ def plot_nufilt_alignment(root: Path):
     fig.suptitle("Uncentered moments; 256 frozen training images per task, all tokens", fontsize=10)
     save(fig, out, "task_vector_coverage")
     print("NUFILT_FIGURE_WRITTEN", out)
+
+
+def plot_reconstruction_budget(root: Path):
+    rows = json.loads((root / "results.json").read_bytes())
+    fitting = json.loads((root / "fitting.json").read_bytes())
+    config = json.loads((root / "protocol.json").read_bytes())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    presets = ["unprotected", *[f"fit_{n}" for n in config["budgets"]]]
+    groups = [("standalone", "SVHN"), ("direct", "SVHN"), ("direct", "MNIST")]
+    fig, axes = plt.subplots(1, 3, figsize=(9.0, 2.9), layout="constrained")
+    for ax, (group, task) in zip(axes, groups, strict=True):
+        lookup = {r["preset"]: r for r in rows if r["group"] == group and r["dataset"] == task}
+        values = [100 * lookup[preset]["top1"] for preset in presets]
+        ax.bar(range(4), values, color=COLORS)
+        for index, value in enumerate(values):
+            ax.text(index, value + 0.7, f"{value:.3f}", ha="center", fontsize=8)
+        ax.set(
+            xticks=range(4),
+            xticklabels=["Original", "32", "128", "256"],
+            ylim=(0, 105),
+            ylabel="Top-1 accuracy (%)",
+            xlabel="Fitting images",
+            title=f"{task} {'standalone' if group == 'standalone' else 'merged'} (n={lookup[presets[0]]['n']:,})",
+        )
+        ax.grid(axis="y", alpha=0.2)
+    fig.suptitle("Unprotected reconstruction control; reused training subsets", fontsize=10)
+    save(fig, out, "budget_accuracy")
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0), layout="constrained")
+    lookup = {(r["budget"], r["layer"]): r for r in fitting}
+    for ax, metric, title in zip(
+        axes,
+        ["relative_full_output_error", "relative_task_update_error"],
+        ["Full MLP output", "Task-increment output"],
+        strict=True,
+    ):
+        for index, layer in enumerate(config["layers"]):
+            values = [100 * lookup[n, layer]["check"][metric] for n in config["budgets"]]
+            ax.plot(
+                config["budgets"], values, marker="o", color=COLORS[index], label=f"Block {layer}"
+            )
+        ax.set(
+            xscale="log", xlabel="Fitting images", ylabel="Relative check error (%)", title=title
+        )
+        ax.set_xticks(config["budgets"], labels=config["budgets"])
+        ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+        ax.set_ylim(bottom=0)
+        ax.grid(alpha=0.2)
+    fig.legend(*axes[0].get_legend_handles_labels(), loc="outside lower center", ncol=4)
+    fig.suptitle("32 disjoint training check images; frozen released-expert inputs", fontsize=10)
+    save(fig, out, "budget_local_error")
+    print("BUDGET_FIGURES_WRITTEN", out)
+
+
+def plot_nufilt_response(root: Path):
+    result = json.loads((root / "results.json").read_bytes())
+    rows, config = result["rows"], result["protocol"]
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 4.8), layout="constrained")
+    for i, task in enumerate(config["tasks"]):
+        for j, target in enumerate(config["targets"]):
+            ax = axes[i, j]
+            for k, rank in enumerate(config["task_vector_ranks"]):
+                selected = {
+                    int(r["site"].split(":")[1]): r
+                    for r in rows
+                    if r["task"] == task
+                    and r["moment"] == "uncentered"
+                    and r["task_vector_rank"] == rank
+                    and r["site"].startswith(target + ":")
+                }
+                layers = list(range(config["layers"]))
+                values = [
+                    100 * selected[layer]["task_response_removed_fraction"] for layer in layers
+                ]
+                ax.plot(
+                    layers,
+                    values,
+                    marker="o",
+                    markersize=3,
+                    color=COLORS[k],
+                    label=f"Task-vector rank {rank}",
+                )
+            ax.set(
+                xlabel="Transformer block (0-based)",
+                ylabel="Response energy (%)",
+                ylim=(0, 1.0),
+                xticks=[0, 3, 6, 9, 11],
+                title=f"{task}: {'attention V' if target == 'V' else 'MLP FC'} increment",
+            )
+            ax.grid(alpha=0.2)
+    fig.legend(*axes[0, 0].get_legend_handles_labels(), loc="outside lower center", ncol=2)
+    fig.suptitle(
+        "Linear task-response energy outside proxy\nCached expert inputs; bias/downstream effects excluded",
+        fontsize=9,
+    )
+    save(fig, out, "task_response_energy")
+    print("RESPONSE_FIGURE_WRITTEN", out)
 
 
 if __name__ == "__main__":
@@ -897,7 +1010,15 @@ if __name__ == "__main__":
     mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
     mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
-    mode.add_argument("--nufilt-alignment", action="store_true", help="Plot task-vector proxy coverage.")
+    mode.add_argument(
+        "--nufilt-alignment", action="store_true", help="Plot task-vector proxy coverage."
+    )
+    mode.add_argument(
+        "--nufilt-response", action="store_true", help="Plot task-increment responses."
+    )
+    mode.add_argument(
+        "--reconstruction-budget", action="store_true", help="Plot fixed reconstruction budgets."
+    )
     mode.add_argument(
         "--operator-diagnostics",
         action="store_true",
@@ -905,10 +1026,13 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_nufilt_alignment
+        plot_reconstruction_budget
+        if args.reconstruction_budget
+        else plot_nufilt_response
+        if args.nufilt_response
+        else plot_nufilt_alignment
         if args.nufilt_alignment
-        else
-        plot_operator_diagnostics
+        else plot_operator_diagnostics
         if args.operator_diagnostics
         else plot_distribution_shift
         if args.distribution_shift
