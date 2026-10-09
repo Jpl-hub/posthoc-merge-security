@@ -111,6 +111,7 @@ def run(root: Path):
         xticks=range(3),
         xticklabels=["Protected\nstandalone", "Author AGA", "Head matching\n+ AGA"],
         title="Head permutation + orthogonal bases (toy, 3 seeds)",
+        xlabel="Bars: mean; error bars: min-max across seeds",
     )
     ax.grid(axis="y", alpha=0.2)
     save(fig, out, "head_permutation")
@@ -181,6 +182,8 @@ def run(root: Path):
                     title=f"({'ab'[i]}) {dataset}",
                 )
                 axes[i].grid(axis="y", alpha=0.2)
+            for ax in axes:
+                ax.tick_params(axis="x", labelsize=7.5)
             fig.suptitle("Defense-agnostic AGA control: two tasks, TA coefficient 0.5", fontsize=10)
             save(fig, out, "defense_agnostic")
     if (root / "layernorm/layernorm_metadata.json").exists():
@@ -312,6 +315,51 @@ def run(root: Path):
                 "Post-hoc screening: full MNIST test, one seed; TA coefficient 0.5", fontsize=10
             )
             save(fig, out, "posthoc_screening")
+    if (root / "params/clip_metadata.json").exists():
+        params = json.loads((root / "params/clip_results.json").read_text())
+        basis = json.loads((root / "clip_results.json").read_text())
+        fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.8), layout="constrained")
+        for ax, dataset in zip(axes, ["MNIST", "SVHN"], strict=True):
+            groups = [
+                ("D_unprotected_merge", "E_protected_merge", "E_protected_merge"),
+                (None, "F_AGA_merge", "F_AGA_merge"),
+                (
+                    "G_AGA_all_unprotected_merge",
+                    "H_AGA_all_protected_merge",
+                    "H_AGA_all_protected_merge",
+                ),
+            ]
+            for j, (labels, name) in enumerate(
+                zip(groups, ["No attack", "AGA protected model", "AGA all models"], strict=True)
+            ):
+                xs, ys = [], []
+                for i, (group, data) in enumerate(zip(labels, [basis, basis, params], strict=True)):
+                    if group is not None:
+                        xs.append(i + (j - 1) * 0.24)
+                        ys.append(
+                            100
+                            * next(
+                                r["top1"]
+                                for r in data
+                                if r["group"] == group
+                                and r["dataset"] == dataset
+                                and r["coefficient"] == 0.5
+                            )
+                        )
+                ax.bar(xs, ys, width=0.23, color=COLORS[j], label=name)
+            ax.set(
+                xticks=range(3),
+                xticklabels=["No defense", "Basis + MLP\npermutation", "PaRaMS\n(basic)"],
+                ylim=(0, 105),
+                ylabel="Top-1 accuracy (%)",
+                title=dataset,
+            )
+            ax.grid(axis="y", alpha=0.2)
+        fig.legend(*axes[0].get_legend_handles_labels(), loc="outside lower center", ncol=3)
+        fig.suptitle(
+            "Official PaRaMS baseline: full tests, one seed; TA coefficient 0.5", fontsize=10
+        )
+        save(fig, out, "params_comparison")
     print("FIGURES_WRITTEN", out)
 
 

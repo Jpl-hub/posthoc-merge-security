@@ -12,6 +12,7 @@
 | 驱动 | 595.71.05；nvidia-smi 支持上限 CUDA 13.2 |
 | NumPy / SciPy | 1.26.4 / 1.13.1 |
 | OpenCLIP | 2.0.2 |
+| PaRaMS 可选依赖 | JAX / jaxlib 0.4.35；ml-dtypes 0.5.4；CPU 后端 |
 | torchvision | 0.18.0+cu121 |
 | 主机内存 | 总计约 375.8 GiB；检查时可用约 322.9 GiB；是主机视图 |
 | 数据盘 | 50 GiB；checkpoint/数据仅保存在此盘 |

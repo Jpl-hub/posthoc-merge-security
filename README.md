@@ -54,6 +54,16 @@ JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 pyth
 
 ## 研究记录
 
+配对对齐基线复用 [RotationSymmetry](https://github.com/zhengzaiyi/RotationSymmetry) 的原始 SVD 与 FFN matching。先运行默认正交保护实验，保留其服务器上的 protected state，再执行：
+
+```bash
+git clone https://github.com/zhengzaiyi/RotationSymmetry.git external/RotationSymmetry
+git -C external/RotationSymmetry checkout b89d081429d6e6351f3449d60df5562dfa146664
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
+```
+
+源码路径与指纹见 `configs/sources.json`。本次覆盖正交变换及既定 head 对应关系；不包含一般 GL 白化或跨 head 匹配。
+
 - [源码审计](outputs/2026-10-09/code_audit.md)
 - [理论与适用条件](outputs/2026-10-09/theory_notes.md)
 - [环境](outputs/2026-10-09/environment.md)
@@ -61,6 +71,8 @@ JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 pyth
 - [中文组会报告](outputs/2026-10-09/group_meeting.md)
 - [结果表](outputs/2026-10-09/results.csv)
 - [八任务资源与缺项](outputs/2026-10-09/eight_task/status.md)
+- [文献核对](outputs/2026-10-09/literature_triage.md)
+- [研究方向审查](outputs/2026-10-09/research_direction_review.md)
 
 本仓库不将论文报告数字记作我们的结果。head permutation 被自适应 matching 恢复时应作为负面结果保留。当前未宣称得到可抵抗自适应攻击的强防御。
 

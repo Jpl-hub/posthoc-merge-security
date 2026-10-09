@@ -85,6 +85,60 @@ def validate(path: Path):
             "low_activity_budget_record",
             "synthetic_calibration_provenance",
         ]
+    if (path / "params/clip_metadata.json").exists():
+        meta = json.loads((path / "params/clip_metadata.json").read_text())
+        params = json.loads((path / "params/clip_results.json").read_text())
+        source = json.loads(Path("configs/sources.json").read_text())["PaRaMS"]
+        assert meta["protection_source_sha256"] == source["sha256"]
+        assert meta["training"] == "none" and meta["calibration"] == "none"
+        assert meta["protected_output_error"] < 1e-4
+        assert len(params) == 34
+        expected_n = {"MNIST": 10000, "SVHN": 26032}
+        assert all(r["n"] == expected_n[r["dataset"]] for r in params)
+        assert all(r["top1"] == r["correct"] / r["n"] for r in params)
+        for dataset in expected_n:
+            standalone = {
+                r["group"]: r["correct"]
+                for r in params
+                if r["coefficient"] is None and r["dataset"] == dataset
+            }
+            assert standalone["A_unprotected"] == standalone["B_protected"]
+        for group in ["G_AGA_all_unprotected_merge", "H_AGA_all_protected_merge"]:
+            subset = [r for r in params if r["group"] == group]
+            assert len(subset) == 4
+            assert {r["dataset"] for r in subset} == set(expected_n)
+            assert {r["coefficient"] for r in subset} == set(meta["coefficients"])
+        checks += [
+            "PaRaMS_source_and_provenance",
+            "PaRaMS_counts_and_utility",
+            "PaRaMS_blind_control",
+        ]
+    if (path / "coupled/coupled_metadata.json").exists():
+        meta = json.loads((path / "coupled/coupled_metadata.json").read_text())
+        paired = json.loads((path / "coupled/coupled_results.json").read_text())
+        assert len(paired) == 12
+        assert max(meta["feature_errors"].values()) < 1e-4
+        source = json.loads(Path("configs/sources.json").read_text())["RotationSymmetry"]
+        assert meta["source_sha256"] == source["sha256"]
+        assert all(r["training"] == "none" and r["calibration"] == "none" for r in paired)
+        assert all(r["n"] == {"MNIST": 10000, "SVHN": 26032}[r["dataset"]] for r in paired)
+        assert all(r["top1"] == r["correct"] / r["n"] for r in paired)
+        for dataset in ["MNIST", "SVHN"]:
+            a = next(
+                r
+                for r in paired
+                if r["group"] == "paired_unprotected_standalone" and r["dataset"] == dataset
+            )
+            b = next(
+                r
+                for r in paired
+                if r["group"] == "paired_protected_standalone" and r["dataset"] == dataset
+            )
+            baseline = next(
+                r for r in real if r["group"] == "A_unprotected" and r["dataset"] == dataset
+            )
+            assert a["correct"] == b["correct"] == baseline["correct"]
+        checks += ["paired_source", "paired_function_preservation", "paired_counts_and_utility"]
     report = {"status": "passed", "checks": checks}
     (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report))

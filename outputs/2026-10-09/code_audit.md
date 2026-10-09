@@ -53,7 +53,13 @@ MNIST 数据封装调用 torchvision 自动下载 train/test；Cars 等数据仍
 
 Task Arithmetic 上游 README 提供 [Google Drive checkpoint 入口](https://drive.google.com/drive/folders/1u_Tva6x0p6oxu5Eo0ZZsf-520Cc_3MKw)。若不可访问，可使用同源 CLIP 的已公开下游模型做独立实验，但必须标明不是论文指定的原始 checkpoint，也不是论文表格复现。
 
-## 其他防御源码
+## 补充对齐与功能拟合源码
+
+[RotationSymmetry](https://github.com/zhengzaiyi/RotationSymmetry) 固定 commit b89d081429d6e6351f3449d60df5562dfa146664。ViT 文件 vit-fusion/otfusion/pi_utils.py 的原始 Chunk_SVD_QK、Chunk_SVD_VO 同时对齐配对矩阵和 bias；Permute_IO 使用第一层、bias、第二层共同构造 assignment。通过 AST 加载三个原函数，避免导入无关的模型/OT 依赖；未修改原文件。B/32 适配显式指定 12 heads × 64，关闭附加 scaling，用 float64 求解、float32 原模型；对应关系仍按相同 head，未加入 head matching。
+
+[PLeaS-Merging](https://github.com/SewoongLab/PLeaS-Merging) 固定 commit 55b35eeda860e82dea47613cd2e248345a37a06f。pleas/methods/pleas_merging.py 的 step 在各层组合激活上算 MSE，然后 backward/optimizer.step；train 构造 Adam 与学习率调度器。论文的逐层 LS 目标可有解析求解，但不能称当前作者代码不含梯度训练。当前只审计源码，未运行 PLeaS，也未发现本项目可直接使用的 CLIP runner。所有指纹见 configs/sources.json。
+
+## 官方保护实现
 
 PaRaMS 官方仓库：[ISCT-W/PaRaMS](https://github.com/ISCT-W/PaRaMS)，固定 commit `4159a9a8bf253088694154d944f4583db8eca60e`。原 `src/PaRaMS/PaRaMS_algorithm.py` 的 SHA256 为 `40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60`，用原模块的 `params` 接口，不重写核心算法。
 

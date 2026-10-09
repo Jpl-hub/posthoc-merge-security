@@ -4,9 +4,11 @@
 |---|---|---|
 | 环境 | 完成 | 3090；现有 torch 2.3.0+cu121；GPU 算子可用 |
 | 论文 | 完成 | 阅读本地 28 页 PDF；视觉核对第 7、13、19 页相关公式 |
-| 源码 | 完成 | 两个官方仓库固定 commit；原文件未修改 |
+| 源码 | 完成 | AGA、Task Arithmetic、PaRaMS、RotationSymmetry 固定 commit；原文件未修改 |
 | P0/P1/P3 | 完成 | 56 行；3 seeds；2.153 s |
 | P2 | 完成 | 34 行；full MNIST/SVHN；636.982 s |
+| 官方 PaRaMS | 完成 | 34 行；1341.369 s |
+| 配对保函数对齐 | 完成 | 12 行；272.956 s |
 | LayerNorm 候选 | 完成 | 16 行；205.034 s |
 | 低活跃方向候选 | 完成 | 7 行；76.216 s |
 | 八任务资源 | 部分完成 | 全部 head；6 个专家权重受下载配额限制 |
@@ -22,12 +24,16 @@ python experiments/mechanisms.py
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --datasets MNIST SVHN --coefficients 0.2 0.5 --attack-all
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/layernorm_posthoc.py --strengths 1 10
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/low_activity_posthoc.py
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --protection params --attack-all --output outputs/2026-10-09/params
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
 python experiments/validate_results.py
 python experiments/plot_results.py
 python experiments/build_report.py
 ```
 
 解释器实际为 `/root/miniconda3/bin/python`。网络代理只用于下载，无模型传入本地磁盘。
+
+PaRaMS 使用 CPU JAX、4 核 affinity 和 DataLoader workers=0；其他真实基准使用 workers=2。首次 JAX 编译计入运行耗时，故这些 wall time 不作为跨方法的严格速度比较。
 
 已处理问题：非交互 shell 未初始化 Python PATH；本地 GitHub 直连失败后使用现有代理；服务器 Drive/HF 直连受限后使用 SSH 代理转发；MNIST 原源返回 404 后由 torchvision 切换 S3；旧 checkpoint 缺少 `src.modeling` 模块路径，用新入口兼容注册解决。初次机制入口因 SciPy 尚未安装退出，安装完成后成功重跑。
 

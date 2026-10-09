@@ -28,14 +28,25 @@ def mean(rows, field):
 def run(root: Path):
     mechanism = read(root, "mechanism_results.json", [])
     real = read(root, "clip_results.json", [])
+    params = read(root, "params/clip_results.json", [])
+    paired = read(root, "coupled/coupled_results.json", [])
     ln = read(root, "layernorm/layernorm_results.json", [])
     low = read(root, "low_activity/low_activity_results.json", [])
     mm = read(root, "mechanism_metadata.json", {})
     cm = read(root, "clip_metadata.json", {})
+    pm = read(root, "params/clip_metadata.json", {})
+    pairedm = read(root, "coupled/coupled_metadata.json", {})
     env = read(root, "environment.json", {})
     lm = read(root, "layernorm/layernorm_metadata.json", {})
     lowm = read(root, "low_activity/low_activity_metadata.json", {})
-    all_rows = mechanism + real + ln + low
+    all_rows = (
+        mechanism
+        + [dict(r, protection="basis") for r in real]
+        + [dict(r, protection="params") for r in params]
+        + ln
+        + low
+        + paired
+    )
     with (root / "results.csv").open("w", newline="", encoding="utf-8") as stream:
         fields = sorted(set().union(*(row.keys() for row in all_rows)))
         writer = csv.DictWriter(stream, fieldnames=fields)
@@ -183,6 +194,72 @@ def run(root: Path):
         adaptive = next(r for r in low if r["group"] == "low_activity_projection_AGA_merge")
         low_text += f"\n\n预设 standalone 损失预算 0.5 pp，本次损失 {(0.9969 - standalone['top1']) * 100:.2f} pp，通过预算。特征误差为 {standalone['feature_error']:.3f}，因此属于近似保效用后处理，不是函数等价变换。AGA 后融合 {100 * attacked['top1']:.2f}%，自适应攻击后 {100 * adaptive['top1']:.2f}%，未得到明显保护。单任务、单种子结果不足以支持泛化或统计显著性。"
         low_speech = f"随后我用 32 张程序生成的笔画图像，提取最后四层的低活跃输入方向，构造不含梯度更新的解析扰动。预先规定独立准确率损失不超过 0.5 个百分点。实际只损失 {(0.9969 - standalone['top1']) * 100:.2f} 个百分点，但 AGA 后融合仍达到 {100 * attacked['top1']:.2f}%，加低活跃方向投影攻击后是 {100 * adaptive['top1']:.2f}%。所以它保留效用，却没有解决恢复攻击。"
+    params_text = "尚无完整结果，不计入结论。"
+    params_speech = ""
+    if params and pm:
+        values = []
+        for coef in pm["coefficients"]:
+            direct = statistics.mean(
+                r["top1"]
+                for r in params
+                if r["group"] == "E_protected_merge" and r["coefficient"] == coef
+            )
+            for group, label in [
+                ("D_unprotected_merge", "未保护；无攻击"),
+                ("E_protected_merge", "PaRaMS；直接融合"),
+                ("F_AGA_merge", "PaRaMS；仅保护模型 AGA"),
+                ("G_AGA_all_unprotected_merge", "未保护；全部 AGA"),
+                ("H_AGA_all_protected_merge", "PaRaMS；全部 AGA"),
+            ]:
+                hits = [
+                    next(
+                        r
+                        for r in params
+                        if r["group"] == group and r["dataset"] == name and r["coefficient"] == coef
+                    )
+                    for name in ["MNIST", "SVHN"]
+                ]
+                avg = statistics.mean(r["top1"] for r in hits)
+                values.append(
+                    [
+                        label,
+                        coef,
+                        *[f"{r['top1'] * 100:.2f}" for r in hits],
+                        f"{100 * avg:.2f}",
+                        f"+{100 * (avg - direct):.2f}" if group.startswith(("F_", "H_")) else "—",
+                    ]
+                )
+        params_text = table(
+            ["设置", "TA 系数", "MNIST (%)", "SVHN (%)", "Avg (%)", "↑Δ (pp)"], values
+        )
+        params_text += f"\n\n基础 PaRaMS 直接调用官方固定版本；不含原文 §6 的 dropout 加固。12 层 MLP 取最远 assignment，Attention 对角缩放 U(0.05,20)；独立 MLP 组使用一轮 assignment，未伪称与 Table 6 配置完全一致。源码实际共用 Q/V 缩放，与论文独立采样描述有差别。保护特征误差 {pm['protected_output_error']:.2e}；保护前后两个完整测试集的正确计数相同。全部 AGA 后保护/未保护对照的两个任务正确计数相同，未形成有效保护。"
+        params_text += "\n\n![官方 PaRaMS 基线](figures/params_comparison.png)\n\n图：真实双任务、单种子；系数 0.5。分别展示原始融合、保护后直接融合与 AGA 后融合，纵轴从零开始。图中 PaRaMS 指本次运行的基础配置。"
+        params_speech = "我还接入了官方基础 PaRaMS，完整测试保持独立准确率，但 AGA 后两个任务的融合准确率恢复到未保护对照水平。这里没有运行论文的 dropout 加固，也不是八任务 Table 6 复现。"
+    paired_text = "配对保函数对齐尚未完成，不计入结论。"
+    paired_speech = ""
+    if paired and pairedm:
+        values = []
+        for group, label in [
+            ("paired_protected_standalone", "保护模型配对对齐 standalone"),
+            ("paired_unprotected_standalone", "未保护模型配对对齐 standalone"),
+            ("paired_protected_only_merge", "仅保护模型配对对齐后融合"),
+            ("paired_unprotected_only_merge", "仅未保护模型配对对齐后融合"),
+            ("paired_all_protected_merge", "全部配对对齐；含保护"),
+            ("paired_all_unprotected_merge", "全部配对对齐；未保护"),
+        ]:
+            values.append(
+                [
+                    label,
+                    *[
+                        f"{100 * next(r['top1'] for r in paired if r['group'] == group and r['dataset'] == name):.2f}"
+                        for name in ["MNIST", "SVHN"]
+                    ],
+                ]
+            )
+        paired_text = table(["配置；融合系数 0.5", "MNIST (%)", "SVHN (%)"], values)
+        paired_text += "\n\n保护与未保护对照在配对对齐后取得相同正确计数，并恢复到原始未保护融合水平。该正交基线上的独立 AGA 不是能取得最高融合效用的攻击，后续防御需同时覆盖保函数的配对对齐。"
+        paired_speech = "补读文献后，我复用了作者的配对 SVD 对齐与联合 MLP 匹配。它保持独立模型功能，并把正交保护后的两任务融合恢复到原始未保护水平，说明只测独立 AGA 还不够。"
+        paired_text += f"\n\n复用 RotationSymmetry 的原始 Chunk_SVD_QK、Chunk_SVD_VO、Permute_IO；配对 Kabsch 保持 QK/VO 函数，联合 FFN 权重与 bias 匹配。求解用 float64，模型保持 float32；无数据、无训练。对齐前后最大特征误差 {max(pairedm['feature_errors'].values()):.2e}。本次仅测试正交保护与既定 head 对应关系，不含一般 GL 白化或跨 head matching；不能称全面强攻击。"
     meeting = rf"""# 2026-10-09 组会：无微调的模型融合保护
 
 ## 研究问题
@@ -191,7 +268,7 @@ def run(root: Path):
 
 目标不仅是隐藏对应关系，而是让攻击者完成重新匹配后，仍难恢复有用的可融合表示。参数误差只能解释机制；安全结论必须落到攻击后的融合效用，并注明攻击所需信息与计算量。
 
-今天没有执行模型训练。完成 {len(mechanism)} 条机制验证、{len(real)} 条双任务评估、{len(ln)} 条 LayerNorm 候选评估、{len(low)} 条低活跃方向候选评估。这些是评估配置数，不是独立重复实验数。尚未得到可抵抗自适应攻击的强防御。
+今天没有执行模型训练。完成 {len(mechanism)} 条机制验证、{len(real)} 条正交基线双任务评估、{len(params)} 条官方 PaRaMS 评估、{len(paired)} 条配对对齐评估、{len(ln)} 条 LayerNorm 候选评估、{len(low)} 条低活跃方向候选评估。这些是评估配置数，不是独立重复实验数。尚未得到可抵抗自适应攻击的强防御。
 
 ## 论文与实现
 
@@ -234,6 +311,14 @@ MNIST test：10,000；SVHN test：26,032。保护对象是 MNIST 微调模型，
 ![保护与独立效用](figures/posthoc_screening.png)
 
 图 3：参考论文 Fig. 3，分别展示 standalone utility 与受保护任务的融合效用。左图纵轴放大并标明范围，右图从零开始。模型均为 ViT-B/32，融合系数 0.5；候选只在 MNIST 上筛选。攻击后融合准确率越低，才表示防御越有效。
+
+## 已完成：官方基础 PaRaMS
+
+{params_text}
+
+## 超出 AGA：配对保函数对齐
+
+{paired_text}
 
 ## 已完成：后处理边界
 
@@ -282,7 +367,13 @@ $$
 
 {low_text}
 
-这两种机制是本次筛选候选；尚未完成全面相关工作核查，不宣称已证明方法新颖性。
+这两种机制是本次筛选候选，均未形成有效保护。已定向审读七篇核心论文并补读相关工作，尚不构成全面查新，不宣称方法新颖性。
+
+## 文献与方向审查
+
+PaRaMS 原文已讨论恢复、剪枝和蒸馏；MergeLock 已涵盖一般可逆 Attention 变换；PLeaS-free 仍使用公开无标签数据，且当前公开代码用 Adam 拟合 LS 目标。MergeBarrier 的 FFN Taylor 重表示需要激活校准并改变部署；TaylorMLP 也已有系数比值提取攻击，不能仅因参数格式改变就宣称安全。
+
+后续优先检验：相同 standalone 效用预算下的不可逆编辑，是否降低加强攻击后的两任务能力；FFN 重表示先做小层系数泄漏和成本审查。扩大可逆变换幅度、叠加 head 置换不是当前有证据的创新路线。文献原文位置、威胁模型和三天安排见 [文献核对](literature_triage.md) 与 [方向审查](research_direction_review.md)。
 
 ## 八任务推进
 
@@ -318,6 +409,7 @@ MLP 附录的原始欧氏 margin 条件不能直接保证代码中的 cosine mat
 | 驱动 | 595.71.05；nvidia-smi 支持上限 CUDA 13.2 |
 | NumPy / SciPy | 1.26.4 / 1.13.1 |
 | OpenCLIP | 2.0.2 |
+| PaRaMS 可选依赖 | JAX / jaxlib 0.4.35；ml-dtypes 0.5.4；CPU 后端 |
 | torchvision | 0.18.0+cu121 |
 | 主机内存 | 总计约 375.8 GiB；检查时可用约 322.9 GiB；是主机视图 |
 | 数据盘 | 50 GiB；checkpoint/数据仅保存在此盘 |
@@ -342,9 +434,11 @@ MLP 附录的原始欧氏 margin 条件不能直接保证代码中的 cosine mat
 |---|---|---|
 | 环境 | 完成 | 3090；现有 torch 2.3.0+cu121；GPU 算子可用 |
 | 论文 | 完成 | 阅读本地 28 页 PDF；视觉核对第 7、13、19 页相关公式 |
-| 源码 | 完成 | 两个官方仓库固定 commit；原文件未修改 |
+| 源码 | 完成 | AGA、Task Arithmetic、PaRaMS、RotationSymmetry 固定 commit；原文件未修改 |
 | P0/P1/P3 | 完成 | {len(mechanism)} 行；3 seeds；{mm.get("elapsed_seconds", 0):.3f} s |
 | P2 | {"完成" if cm else "运行中"} | {len(real)} 行；full MNIST/SVHN；{cm.get("total_seconds", 0):.3f} s |
+| 官方 PaRaMS | {"完成" if pm else "未完成"} | {len(params)} 行；{pm.get("total_seconds", 0):.3f} s |
+| 配对保函数对齐 | {"完成" if pairedm else "未完成"} | {len(paired)} 行；{pairedm.get("total_seconds", 0):.3f} s |
 | LayerNorm 候选 | {"完成" if lm else "运行中"} | {len(ln)} 行；{lm.get("total_seconds", 0):.3f} s |
 | 低活跃方向候选 | {"完成" if lowm else "运行中"} | {len(low)} 行；{lowm.get("total_seconds", 0):.3f} s |
 | 八任务资源 | 部分完成 | 全部 head；6 个专家权重受下载配额限制 |
@@ -360,6 +454,8 @@ python experiments/mechanisms.py
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --datasets MNIST SVHN --coefficients 0.2 0.5 --attack-all
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/layernorm_posthoc.py --strengths 1 10
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/low_activity_posthoc.py
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --protection params --attack-all --output outputs/2026-10-09/params
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
 python experiments/validate_results.py
 python experiments/plot_results.py
 python experiments/build_report.py
@@ -367,12 +463,14 @@ python experiments/build_report.py
 
 解释器实际为 `/root/miniconda3/bin/python`。网络代理只用于下载，无模型传入本地磁盘。
 
+PaRaMS 使用 CPU JAX、4 核 affinity 和 DataLoader workers=0；其他真实基准使用 workers=2。首次 JAX 编译计入运行耗时，故这些 wall time 不作为跨方法的严格速度比较。
+
 已处理问题：非交互 shell 未初始化 Python PATH；本地 GitHub 直连失败后使用现有代理；服务器 Drive/HF 直连受限后使用 SSH 代理转发；MNIST 原源返回 404 后由 torchvision 切换 S3；旧 checkpoint 缺少 `src.modeling` 模块路径，用新入口兼容注册解决。初次机制入口因 SciPy 尚未安装退出，安装完成后成功重跑。
 
 保护耗时：{cm.get("protection_seconds", 0):.3f} s；作者恢复耗时：{cm.get("recovery_seconds", 0):.3f} s。参数、feature error 与 accuracy 计量对象不同，报告分别列出。
 """
     (root / "experiment_log.md").write_text(log, encoding="utf-8")
-    speech = f"""# 组会讲稿（约 4 分钟）
+    speech = f"""# 组会讲稿（约 4–5 分钟）
 
 老师，今天我把问题明确为：对已经训练好的模型，完全不再微调，通过后处理保护它的任务能力，避免未经授权的模型融合，同时保持模型单独使用的性能。
 
@@ -382,15 +480,21 @@ python experiments/build_report.py
 
 真实实验使用 Task Arithmetic 官方 ViT-B/32 的 MNIST、SVHN checkpoint，测试了全部一万张 MNIST 和两万六千多张 SVHN 图像。MNIST 模型原始和保护后都是 {accuracy("A_unprotected", "MNIST")}，AGA 后是 {accuracy("C_AGA", "MNIST")}。在两任务融合系数 0.5 下，未保护融合为 {accuracy("D_unprotected_merge", "MNIST", 0.5)}，保护后直接融合为 {accuracy("E_protected_merge", "MNIST", 0.5)}，AGA 恢复后融合为 {accuracy("F_AGA_merge", "MNIST", 0.5)}。因此这类可逆保护能破坏直接融合，但对 AGA 没有稳健保护。
 
-在老师提出的后处理方向上，我做了两个进一步检查。跨 head 置换能让原代码失效，但加上一个子空间 matching 就能全部找回，所以它只是实现缺口。
+{params_speech}
 
-另一个候选利用 LayerNorm 的输入约束：它的输出落在一个已知仿射超平面上。我向后续 Linear 添加在这个超平面上恒为零的参数分量，并补偿 bias。这样无需训练、也无需训练数据，理论上保持函数，却可以改变 AGA 所用的参数列空间。这是今天实际实现的新切入口，不只是重复原有旋转。
+{paired_speech}
+
+在老师提出的后处理方向上，我做了两个进一步检查。合成小模型上的跨 head 置换能让原代码失效，但加上一个子空间 matching 就能全部找回，所以它只是实现缺口。
+
+另一个候选利用 LayerNorm 的输入约束：它的输出落在一个已知仿射超平面上。我向后续 Linear 添加在这个超平面上恒为零的参数分量，并补偿 bias。这样无需训练或数据，理论上保持函数，却可以改变 AGA 所用的参数列空间。这是今天筛选的一种机制，尚不宣称首创。
 
 不过这个空方向由公开 LayerNorm 参数决定，攻击者也能投影去掉它。实际保护前后准确率保持一致，但原 AGA 以及投影消除加 AGA 都恢复到接近未保护融合的准确率。因此它是一个明确的负结果。
 
 {low_speech}
 
-目前没有得到强防御，但已经排除两条具体路径，并建立可复用的筛选和自适应攻击流程。八任务扩展已开始准备，官方分类 head 齐备，缺失权重遇到下载配额限制，不能用不同训练配置的模型冒充。接下来双任务用于开发，八任务用于严格验证；方法有效后再扩展种子和融合方法。
+文献审查还表明，MergeLock 已使用一般可逆混合，MergeBarrier 的多项式重表示需要激活校准和结构修改，TaylorMLP 也已有参数提取攻击。所以不能只把参数变得更远或换一种格式。下一步优先在相同效用预算下研究不可逆的信息损失，并补公开无标签的功能拟合攻击。
+
+目前没有得到强防御，但已排除两条具体路径并建立可复用评估。八任务的分类 head 齐备，六个专家权重遇到下载配额限制，不能用不同来源模型冒充。希望老师确认：是否允许公开无标签校准和极小效用损失，以及保护需要覆盖多大攻击预算。双任务继续开发，有效候选再做八任务验证。
 """
     (root / "speech.md").write_text(speech, encoding="utf-8")
     print("REPORTS_WRITTEN", root, "rows", len(all_rows))
