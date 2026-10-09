@@ -416,11 +416,7 @@ MLP 附录的原始欧氏 margin 条件不能直接保证代码中的 cosine mat
         real_count=len(all_rows) - len(mechanism),
         mechanism_count=len(mechanism),
     )
-    latest = (
-        "post_meeting/followup.md"
-        if (root / "post_meeting/followup.md").exists()
-        else "post_meeting/report.md"
-    )
+    latest = "post_meeting/report.md"
     if (root / latest).exists():
         title, body = meeting_text.split("\n", 1)
         meeting_text = (

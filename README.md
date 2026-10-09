@@ -2,6 +2,8 @@
 
 研究问题：不再微调已训练模型，通过后处理抑制未经授权的模型融合，同时保持 standalone utility，并评估自适应恢复攻击。
 
+[当前研究简报](outputs/2026-10-09/post_meeting/report.md)：尚无有效防御；所有失败配置和真实恢复结果保留。
+
 ## 实验原则
 
 - 不执行模型训练或额外微调。
@@ -70,14 +72,15 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
 - [执行记录](outputs/2026-10-09/experiment_log.md)
 - [中文组会报告](outputs/2026-10-09/group_meeting.md)
 - [实验详细记录与完整对照](outputs/2026-10-09/experiment_details.md)
-- [结果表](outputs/2026-10-09/results.csv)
+- [组会前结果表](outputs/2026-10-09/results.csv)
 - [八任务资源与缺项](outputs/2026-10-09/eight_task/status.md)
 - [文献核对](outputs/2026-10-09/literature_triage.md)
 - [研究方向审查](outputs/2026-10-09/research_direction_review.md)
 - [秩编辑与完整 FFN 重表示：数学依据、攻击与全部失败结果](outputs/2026-10-09/candidate_direction.md)
 - [组会后调整：真实任务补空间扰动](outputs/2026-10-09/post_meeting/review.md)
-- [组会后实测：直接融合失效，AGA 仍可恢复](outputs/2026-10-09/post_meeting/report.md)
-- [最新实测：成分分解、MLP 扰动与无数据恢复](outputs/2026-10-09/post_meeting/followup.md)
+- [首次补空间实验：完整测试](outputs/2026-10-09/post_meeting/subspace_initial.md)
+- [成分分解、MLP 扰动与无数据恢复](outputs/2026-10-09/post_meeting/followup.md)
+- [有界补空间编辑：双角色开发筛选](outputs/2026-10-09/post_meeting/bounded_notes.md)
 
 本轮新增入口（服务器运行；重新执行应指定新的输出目录以保留旧结果）：
 
@@ -115,6 +118,22 @@ python experiments/plot_results.py --subspace-diagnostics --output outputs/2026-
 ```
 
 RESISC45 图片与原划分已核验；`prepare_eight_task_data.py --tasks RESISC45 --resisc-images` 在服务器准备图片，`eight_task_benchmark.py --pretrained-checks RESISC45` 检查完整测试入口。六个官方专家仍未取得，资源检查不计作八任务融合结果。
+
+多层投影删除与范数保持反射使用同一入口，先检验开发集效用与无数据角度清理；只有通过门槛才运行官方测试。两角色本轮均未通过，未进行最终测试。输入诊断不计作准确率实验。JSON 保留原始字节，便于跨平台核对记录的指纹。
+
+```bash
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/bounded_complement.py
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/bounded_complement.py --config configs/bounded_svhn.json --output outputs/2026-10-09/post_meeting/bounded_svhn
+python experiments/validate_results.py --bounded-complement --output outputs/2026-10-09/post_meeting/bounded_complement
+python experiments/validate_results.py --bounded-complement --output outputs/2026-10-09/post_meeting/bounded_svhn
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/bounded_complement.py --distribution-shift --output outputs/2026-10-09/post_meeting/distribution_shift
+python experiments/validate_results.py --distribution-shift --output outputs/2026-10-09/post_meeting/distribution_shift
+python experiments/plot_results.py --bounded-complement --output outputs/2026-10-09/post_meeting/bounded_complement
+python experiments/plot_results.py --bounded-complement --output outputs/2026-10-09/post_meeting/bounded_svhn
+python experiments/plot_results.py --distribution-shift --output outputs/2026-10-09/post_meeting/distribution_shift
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/bounded_complement.py --scope-audit --output outputs/2026-10-09/post_meeting/scope_audit
+python experiments/validate_results.py --scope-audit --output outputs/2026-10-09/post_meeting/scope_audit
+```
 
 ## 工程检查
 

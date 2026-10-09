@@ -659,15 +659,147 @@ def plot_subspace_diagnostics(root: Path):
     print("SUBSPACE_DIAGNOSTIC_FIGURES_WRITTEN", out)
 
 
+def plot_bounded_complement(root: Path):
+    config = json.loads((root / "protocol.json").read_text())
+    protected = config.get("protected_task", "MNIST")
+    profile = json.loads((root / "replacement_profile.json").read_text())
+    screen = json.loads((root / "development_screen.json").read_text())
+    rows = json.loads((root / "results.json").read_text())
+    selection = json.loads((root / "selection.json").read_text())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, ax = plt.subplots(figsize=(7.2, 2.7), layout="constrained")
+    for i, (kind, label) in enumerate(
+        [("V", "V matrix"), ("FC", "FC matrix"), ("block", "Entire block")]
+    ):
+        values = {
+            int(item["site"].split(":")[1]): item["standalone_loss_pp"]
+            for item in profile
+            if item["site"].startswith(kind + ":")
+        }
+        ax.plot(
+            range(12),
+            [values[layer] for layer in range(12)],
+            marker=["o", "s", "^"][i],
+            markersize=3,
+            color=COLORS[i],
+            label=label,
+        )
+    ax.axhline(config["utility_budget_pp"], ls=":", color="black", lw=0.8, label="Utility budget")
+    ax.set(
+        xticks=range(12),
+        xlabel="Transformer block",
+        ylabel="Standalone loss (pp)",
+        title=f"Public pretrained replacement; protected {protected}; development data",
+    )
+    ax.grid(axis="y", alpha=0.2)
+    fig.legend(*ax.get_legend_handles_labels(), loc="outside lower center", ncol=4, fontsize=7)
+    save(fig, out, "replacement_profile")
+    fig, axes = plt.subplots(1, 2, figsize=(9.0, 5.3), layout="constrained", sharey=True)
+    labels = [
+        f"{100 * p['energy']:g}% / {p['site_group'].replace('V_FC_all', 'V+FC all').replace('FC_early', 'FC 0-3').replace('FC_all', 'FC all')} / {'remove' if p['scale'] == 1 else 'reflect'}"
+        + (" *" if not p["utility_feasible"] else "")
+        for p in screen
+    ]
+    lookup = {
+        (r["preset"], r["group"], r["dataset"]): 100 * r["top1"]
+        for r in rows
+        if r["split"] == "development"
+    }
+    for ax, task in zip(axes, [protected, "mean"], strict=True):
+        for i, group in enumerate(["direct", "angular"]):
+            values = [
+                100 * p[f"mean_{group}"] if task == "mean" else lookup[p["name"], group, task]
+                for p in screen
+            ]
+            positions = np.arange(len(screen)) + (i - 0.5) * 0.34
+            ax.barh(
+                positions,
+                values,
+                height=0.32,
+                color=COLORS[i],
+                label=["Direct", "Angular cleanup"][i],
+            )
+        baseline = (
+            sum(lookup["unprotected", "direct", t] for t in ["MNIST", "SVHN"]) / 2
+            if task == "mean"
+            else lookup["unprotected", "direct", task]
+        )
+        ax.axvline(baseline, ls=":", lw=0.8, color="black")
+        ax.set(
+            xlim=(0, 103),
+            yticks=range(len(screen)),
+            yticklabels=labels,
+            xlabel="Merged accuracy (%)",
+            title=f"Protected {protected}" if task != "mean" else "MNIST / SVHN mean",
+        )
+        ax.tick_params(axis="y", labelsize=7)
+        ax.grid(axis="x", alpha=0.2)
+    axes[0].invert_yaxis()
+    fig.legend(*axes[0].get_legend_handles_labels(), loc="outside lower center", ncol=2, fontsize=8)
+    fig.suptitle(
+        f"Development screening: {selection['recovery_gate_passed_count']}/12 passed; * utility over budget",
+        fontsize=10,
+    )
+    save(fig, out, "bounded_screen")
+    print("BOUNDED_FIGURES_WRITTEN", out)
+
+
+def plot_distribution_shift(root: Path):
+    rows = json.loads((root / "results.json").read_text())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.9), layout="constrained")
+    for ax, target in zip(axes, ["V", "FC"], strict=True):
+        for i, task in enumerate(["MNIST", "SVHN"]):
+            subset = {
+                int(r["site"].split(":")[1]): r
+                for r in rows
+                if r["protected_task"] == task
+                and r["retained_energy"] == 0.9999
+                and r["site"].startswith(target + ":")
+            }
+            for group, style, label in [
+                ("unprotected_merge", "-", "Merged"),
+                ("expert", "--", "Expert"),
+            ]:
+                ax.plot(
+                    range(12),
+                    [100 * subset[layer][group]["fraction"] for layer in range(12)],
+                    color=COLORS[i],
+                    ls=style,
+                    label=f"{label} / {task}",
+                )
+        ax.set(
+            xticks=range(12),
+            yscale="log",
+            ylim=(0.002, 100),
+            xlabel="Transformer block",
+            ylabel="Energy outside own-task PCA (%)",
+            title="Attention V input" if target == "V" else "MLP FC input",
+        )
+        ax.grid(axis="y", alpha=0.2)
+    fig.legend(*axes[0].get_legend_handles_labels(), loc="outside lower center", ncol=4, fontsize=7)
+    fig.suptitle("Frozen PCA at 99.99%; training images; merge coefficient 0.5", fontsize=10)
+    save(fig, out, "distribution_shift")
+    print("SHIFT_FIGURE_WRITTEN", out)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--subspace", action="store_true", help="Plot the standalone subspace probe.")
     mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
+    mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
+    mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
     args = parser.parse_args()
     runner = (
-        plot_subspace_diagnostics
+        plot_distribution_shift
+        if args.distribution_shift
+        else plot_bounded_complement
+        if args.bounded_complement
+        else plot_subspace_diagnostics
         if args.subspace_diagnostics
         else plot_subspace
         if args.subspace

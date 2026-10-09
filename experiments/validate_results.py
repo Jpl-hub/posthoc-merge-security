@@ -470,6 +470,241 @@ def validate_subspace_diagnostics(path: Path):
     print(json.dumps(report))
 
 
+def validate_bounded_complement(path: Path):
+    protocol_bytes = (path / "protocol.json").read_bytes()
+    protocol = json.loads(protocol_bytes)
+    protected_task = protocol.get("protected_task", "MNIST")
+    meta = json.loads((path / "metadata.json").read_text())
+    parent = Path(protocol["parent"])
+    parent_bytes = (parent / "results.json").read_bytes()
+    indices_bytes = (parent / "training_indices.json").read_bytes()
+    indices = json.loads(indices_bytes)
+    rows = json.loads((path / "results.json").read_text())
+    screen = json.loads((path / "development_screen.json").read_text())
+    selection = json.loads((path / "selection.json").read_text())
+    scans = json.loads((path / "angular_scans.json").read_text())
+    profile = json.loads((path / "replacement_profile.json").read_text())
+    assert meta["completed"] and meta["training"] == "none"
+    assert meta["config_sha256"] == hashlib.sha256(protocol_bytes).hexdigest()
+    assert meta["parent_results_sha256"] == hashlib.sha256(parent_bytes).hexdigest()
+    assert meta["parent_indices_sha256"] == hashlib.sha256(indices_bytes).hexdigest()
+    reused = [r for r in rows if r["origin"] == "parent_measurement"]
+    new = [r for r in rows if r["origin"] == "new_evaluation"]
+    assert len(reused) == meta["reused_measurements"] == (3 if protected_task == "MNIST" else 2)
+    assert len(new) == meta["new_evaluations"]
+    parent_lookup = {
+        (r["preset"], r["group"], r["dataset"]): r
+        for r in json.loads(parent_bytes)
+        if r["split"] == "development"
+    }
+    for row in reused:
+        source = parent_lookup[row["preset"], row["group"], row["dataset"]]
+        assert all(row[key] == value for key, value in source.items())
+    assert len({(r["split"], r["preset"], r["group"], r["dataset"]) for r in rows}) == len(rows)
+    for row in rows:
+        expected_n = (
+            len(indices[row["dataset"]]["development"])
+            if row["split"] == "development"
+            else {"MNIST": 10000, "SVHN": 26032}[row["dataset"]]
+        )
+        assert row["n"] == expected_n
+        assert 0 <= row["correct"] <= row["n"]
+        assert row["top1"] == row["correct"] / row["n"] and math.isfinite(row["top1"])
+    assert len(profile) == 36 and len({p["site"] for p in profile}) == 36
+    assert sum(p["kind"] == "single_projection_matrix" for p in profile) == 24
+    assert sum(p["kind"] == "entire_block" for p in profile) == 12
+    assert len(screen) == len(protocol["site_groups"]) * len(protocol["edit_scales"]) * len(
+        protocol["retained_energies"]
+    )
+    lookup = {
+        (r["preset"], r["group"], r["dataset"]): r["top1"]
+        for r in rows
+        if r["split"] == "development"
+    }
+    baseline = {task: lookup["unprotected", "direct", task] for task in ["MNIST", "SVHN"]}
+    original = lookup["unprotected", "standalone", protected_task]
+    for item in profile:
+        site = item["site"]
+        preset = (
+            f"replace_{site}"
+            if item["kind"] == "single_projection_matrix"
+            else f"replace_block_{site.split(':')[1]}"
+        )
+        loss = 100 * (original - lookup[preset, "standalone", protected_task])
+        assert abs(loss - item["standalone_loss_pp"]) < 1e-10
+        if item["kind"] == "single_projection_matrix":
+            for task in ["MNIST", "SVHN"]:
+                assert item[f"merged_{task}"] == lookup[preset, "direct", task]
+    for preset in screen:
+        name = preset["name"]
+        loss = 100 * (original - lookup[name, "standalone", protected_task])
+        assert abs(loss - preset["standalone_loss_pp"]) < 1e-10
+        assert preset["worst_case_mean"] == max(preset["mean_direct"], preset["mean_angular"])
+        assert preset["utility_feasible"] == (loss <= protocol["utility_budget_pp"] + 1e-9)
+        for group in ["direct", "angular"]:
+            acc = {task: lookup[name, group, task] for task in baseline}
+            assert abs(preset[f"mean_{group}"] - sum(acc.values()) / 2) < 1e-10
+            assert (
+                abs(
+                    preset["drops_pp"][group][protected_task]
+                    - 100 * (baseline[protected_task] - acc[protected_task])
+                )
+                < 1e-10
+            )
+            assert (
+                abs(
+                    preset["drops_pp"][group]["mean"]
+                    - 50 * (sum(baseline.values()) - sum(acc.values()))
+                )
+                < 1e-10
+            )
+        passed = preset["utility_feasible"] and all(
+            d[protected_task] >= protocol["minimum_protected_task_drop_pp"] - 1e-9
+            and d["mean"] >= protocol["minimum_mean_drop_pp"] - 1e-9
+            for d in preset["drops_pp"].values()
+        )
+        assert preset["recovery_gate_passed"] == passed
+        assert len(preset["checks"]) == len(protocol["site_groups"][preset["site_group"]])
+        for item in preset["checks"]:
+            assert item["main_space_leakage"] < 1e-5 and 0 < item["weight_norm_ratio"] <= 1 + 1e-6
+            if preset["scale"] == 2:
+                assert abs(item["weight_norm_ratio"] - 1) < 1e-6
+    assert set(scans) == {"unprotected", *(s["name"] for s in screen)}
+    for scan in scans.values():
+        assert len(scan["inspected"]) == 49
+        assert len({item["parameter"] for item in scan["inspected"]}) == 49
+        assert all(
+            math.isfinite(item["cosine"]) and -1 - 1e-8 <= item["cosine"] <= 1 + 1e-8
+            for item in scan["inspected"]
+        )
+        expected = {
+            item["parameter"]
+            for item in scan["inspected"]
+            if item["cosine"] < protocol["angular_cosine_threshold"]
+        }
+        assert {item["parameter"] for item in scan["replaced"]} == expected
+    assert not scans["unprotected"]["replaced"]
+    eligible = [s for s in screen if s["recovery_gate_passed"]]
+    expected = (
+        min(eligible, key=lambda s: (s["worst_case_mean"], s["standalone_loss_pp"]))
+        if eligible
+        else None
+    )
+    assert selection["selected"] == expected
+    assert selection["utility_feasible_count"] == sum(s["utility_feasible"] for s in screen)
+    assert selection["recovery_gate_passed_count"] == len(eligible)
+    official = [r for r in rows if r["split"] == "official_test"]
+    assert len(official) == meta["official_test_rows"] == (24 if expected else 0)
+    assert (
+        selection["test_run"] == bool(expected)
+        and selection["test_usage"] == "none_before_selection"
+    )
+    report = dict(
+        status="passed",
+        reused_measurements=len(reused),
+        new_evaluations=len(new),
+        official_test_rows=len(official),
+        checks=[
+            "protocol_and_parent_provenance",
+            "labelled_metric_reuse",
+            "complete_counts_and_accuracy_arithmetic",
+            "complete_local_replacement_profile",
+            "bounded_edit_and_reflection_norm_checks",
+            "blind_angular_scan_and_matched_control",
+            "development_only_utility_and_recovery_gate",
+            "official_test_only_after_gate",
+        ],
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
+def validate_distribution_shift(path: Path):
+    config_bytes = (path / "protocol.json").read_bytes()
+    config = json.loads(config_bytes)
+    meta = json.loads((path / "metadata.json").read_text())
+    rows = json.loads((path / "results.json").read_text())
+    index_bytes = (Path(config["parent"]) / "training_indices.json").read_bytes()
+    assert meta["completed"] and meta["training"] == meta["test_usage"] == "none"
+    assert meta["accuracy_evaluations"] == 0 and meta["samples_per_task"] == 256
+    assert meta["config_sha256"] == hashlib.sha256(config_bytes).hexdigest()
+    assert meta["parent_indices_sha256"] == hashlib.sha256(index_bytes).hexdigest()
+    assert len(rows) == 2 * 24 * len(config["retained_energies"])
+    assert len({(r["protected_task"], r["site"], r["retained_energy"]) for r in rows}) == len(rows)
+    stats = {}
+    for task, source in meta["sources"].items():
+        source_path = Path(source["directory"])
+        source_bytes = (source_path / "metadata.json").read_bytes()
+        assert source["source_metadata_sha256"] == hashlib.sha256(source_bytes).hexdigest()
+        assert source["source_config_sha256"] == json.loads(source_bytes)["config_sha256"]
+        assert len(source["basis_sha256"]) == 64
+        stats[task] = json.loads((source_path / "calibration_subspaces.json").read_text())
+    for row in rows:
+        assert row["tokens"] == 50 * meta["samples_per_task"]
+        stat = stats[row["protected_task"]][str(row["retained_energy"])][row["site"]]
+        assert row["rank"] == stat["rank"]
+        assert abs(row["expert"]["fraction"] - (1 - stat["retained_fraction"])) < 1e-8
+        for group in ["expert", "unprotected_merge"]:
+            power = row[group]
+            assert all(math.isfinite(value) for value in power.values())
+            assert power["total"] > 0 and 0 <= power["outside"] <= power["total"]
+            assert abs(power["fraction"] - power["outside"] / power["total"]) < 1e-12
+    report = dict(
+        status="passed",
+        diagnostic_rows=len(rows),
+        accuracy_evaluations=0,
+        checks=[
+            "protocol_and_frozen_indices",
+            "source_metadata_and_basis_provenance",
+            "complete_task_site_energy_grid",
+            "original_PCA_energy_consistency",
+            "token_counts_and_finite_energy_arithmetic",
+            "no_test_or_accuracy_measurements",
+        ],
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
+def validate_scope_audit(path: Path):
+    rows = json.loads((path / "results.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    controls = json.loads((path / "controls.json").read_bytes())
+    assert meta["completed"] and meta["accuracy_evaluations"] == 0
+    assert meta["training"] == meta["test_usage"] == "none"
+    assert len(rows) == meta["candidates"] == 24
+    assert len({(r["protected_task"], r["preset"]) for r in rows}) == len(rows)
+    assert all(
+        r["inspected"] == 49
+        and r["angular_replacement_set_equal"]
+        and r["angular_state_equal"]
+        and r["norm_replacement_set_equal"]
+        for r in rows
+    )
+    for scan in controls.values():
+        assert not scan["replaced"] and len(scan["inspected"]) == 49
+        names = {r["parameter"] for r in scan["inspected"]}
+        assert "model.visual.proj" in names and "model.token_embedding.weight" not in names
+    assert all(
+        r["final_projection"]["parameter"] == "model.visual.proj"
+        and r["final_projection"]["cosine"] >= 0.9
+        for r in rows
+    )
+    report = dict(
+        status="passed",
+        candidates=len(rows),
+        accuracy_evaluations=0,
+        checks=[
+            "complete_candidate_grid",
+            "corrected_visual_scope_and_controls",
+            "unchanged_angular_and_norm_replacement_sets",
+            "exact_endpoint_state_equality",
+        ],
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 def validate_norm_cleanup(path: Path):
     protocol_bytes = (path / "protocol.json").read_bytes()
     protocol = json.loads(protocol_bytes)
@@ -545,9 +780,20 @@ if __name__ == "__main__":
         "--subspace-diagnostics", action="store_true", help="Validate causal contrasts."
     )
     mode.add_argument("--norm-cleanup", action="store_true", help="Validate data-free cleanup.")
+    mode.add_argument("--bounded-complement", action="store_true", help="Validate bounded edits.")
+    mode.add_argument(
+        "--distribution-shift", action="store_true", help="Validate input diagnostics."
+    )
+    mode.add_argument("--scope-audit", action="store_true", help="Validate visual scan correction.")
     args = parser.parse_args()
     runner = (
-        validate_norm_cleanup
+        validate_scope_audit
+        if args.scope_audit
+        else validate_distribution_shift
+        if args.distribution_shift
+        else validate_bounded_complement
+        if args.bounded_complement
+        else validate_norm_cleanup
         if args.norm_cleanup
         else validate_subspace_diagnostics
         if args.subspace_diagnostics
