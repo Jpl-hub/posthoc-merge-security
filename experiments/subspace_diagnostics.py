@@ -272,6 +272,24 @@ def run(args):
     print("DIAGNOSTICS_COMPLETE", flush=True)
 
 
+def visual_linear_weights(model):
+    """Active visual Linear/MHA matrices, including CLIP's bare final projection."""
+    keys = set()
+    for name, module in model.named_modules():
+        if not name.startswith("model.visual."):
+            continue
+        if isinstance(module, torch.nn.Linear):
+            keys.add(name + ".weight")
+        if isinstance(module, torch.nn.MultiheadAttention):
+            assert module.in_proj_weight is not None
+            keys.add(name + ".in_proj_weight")
+    if model.model.visual.proj is not None:
+        keys.add("model.visual.proj")
+    state = model.state_dict()
+    assert all(key in state and state[key].ndim == 2 for key in keys)
+    return sorted(keys)
+
+
 @torch.no_grad()
 def replace_norm_outliers(model, anchor, threshold):
     """Data-free adaptive cleanup using public matrices, without target location."""
@@ -279,9 +297,8 @@ def replace_norm_outliers(model, anchor, threshold):
     state, base = result.state_dict(), anchor.state_dict()
     replaced = []
     inspected = 0
-    for key, value in state.items():
-        if value.ndim != 2 or not (key.endswith(".weight") or key.endswith("in_proj_weight")):
-            continue
+    for key in visual_linear_weights(result):
+        value = state[key]
         inspected += 1
         ratio = float(value.double().norm() / base[key].double().norm().clamp_min(1e-12))
         if ratio <= threshold:

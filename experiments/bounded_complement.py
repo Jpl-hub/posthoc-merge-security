@@ -17,7 +17,7 @@ from pathlib import Path
 import torch
 from clip_benchmark import checkpoint_loader, merge, recover
 from mechanisms import load_author
-from subspace_diagnostics import replace_norm_outliers
+from subspace_diagnostics import replace_norm_outliers, visual_linear_weights
 from subspace_probe import (
     clean_complement,
     collect_moments,
@@ -37,9 +37,8 @@ def angular_cleanup(model, anchor, threshold):
     result = copy.deepcopy(model).cpu().eval()
     state, base = result.state_dict(), anchor.state_dict()
     inspected, replaced = [], []
-    for key, value in state.items():
-        if value.ndim != 2 or not (key.endswith(".weight") or key.endswith("in_proj_weight")):
-            continue
+    for key in visual_linear_weights(result):
+        value = state[key]
         w, a = value.double(), base[key].double()
         cosine = float((w * a).sum() / (w.norm() * a.norm()).clamp_min(1e-12))
         inspected.append(dict(parameter=key, cosine=cosine))
@@ -336,6 +335,100 @@ def run(args):
     print("BOUNDED_COMPLETE", flush=True)
 
 
+def run_scope_audit(args):
+    """Compare corrected attack endpoints with recorded replacement decisions."""
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    root = Path(args.checkpoints)
+    load = checkpoint_loader(Path(args.author_repo))
+    anchor = load(str(root / "zeroshot.pt"))
+    config = json.loads(Path(args.config).read_bytes())
+    parent = Path(config["parent"]).parent
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    rows, controls = [], {}
+    start = time.perf_counter()
+    for task, directory in [("MNIST", "bounded_complement"), ("SVHN", "bounded_svhn")]:
+        source = parent / directory
+        protocol = json.loads((source / "protocol.json").read_bytes())
+        recorded = json.loads((source / "angular_scans.json").read_bytes())
+        screen = json.loads((source / "development_screen.json").read_bytes())
+        bases = torch.load(source / "artifacts/defender_bases.pt")
+        original = load(str(root / f"{task}/finetuned.pt"))
+        _, control_scan = angular_cleanup(original, anchor, protocol["angular_cosine_threshold"])
+        assert not control_scan["replaced"]
+        controls[task] = control_scan
+        for preset in screen:
+            model, _ = bounded_edit(
+                original,
+                protocol["site_groups"][preset["site_group"]],
+                bases[str(preset["energy"])],
+                preset["scale"],
+            )
+            expected = copy.deepcopy(model).cpu().eval()
+            state, reference = expected.state_dict(), anchor.state_dict()
+            for item in recorded[preset["name"]]["replaced"]:
+                key = item["parameter"]
+                state[key] = reference[key].clone()
+                bias = key.removesuffix("weight") + "bias"
+                if bias in state:
+                    state[bias] = reference[bias].clone()
+            expected.load_state_dict(state, strict=True)
+            corrected, scan = angular_cleanup(model, anchor, protocol["angular_cosine_threshold"])
+            same_set = {r["parameter"] for r in scan["replaced"]} == {
+                r["parameter"] for r in recorded[preset["name"]]["replaced"]
+            }
+            same_state = all(
+                torch.equal(value, corrected.state_dict()[key])
+                for key, value in expected.state_dict().items()
+            )
+            norm_corrected, norm_scan = replace_norm_outliers(
+                model, anchor, protocol["norm_ratio_threshold"]
+            )
+            same_norm = norm_scan["replaced"] == preset["norm_scan"]["replaced"]
+            assert same_set and same_state and same_norm
+            assert all(
+                torch.equal(value, norm_corrected.state_dict()[key])
+                for key, value in model.state_dict().items()
+            )
+            rows.append(
+                dict(
+                    protected_task=task,
+                    preset=preset["name"],
+                    inspected=len(scan["inspected"]),
+                    angular_replacement_set_equal=same_set,
+                    angular_state_equal=same_state,
+                    norm_replacement_set_equal=same_norm,
+                    final_projection=next(
+                        r for r in scan["inspected"] if r["parameter"] == "model.visual.proj"
+                    ),
+                )
+            )
+            save_json(out / "results.json", rows)
+            del model, expected, corrected, norm_corrected
+    save_json(out / "controls.json", controls)
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            total_seconds=time.perf_counter() - start,
+            accuracy_evaluations=0,
+            training="none",
+            test_usage="none",
+            candidates=len(rows),
+            old_scope="48 visual block matrices plus unused text embedding; final visual projection omitted",
+            corrected_scope="49 active visual matrices; text embedding excluded; final visual projection included",
+            result="Recorded candidate cleanup endpoints unchanged under corrected scope",
+            experiment_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            scanner_source_sha256=hashlib.sha256(
+                Path(__file__).with_name("subspace_diagnostics.py").read_bytes()
+            ).hexdigest(),
+        ),
+    )
+    print("SCOPE_AUDIT_COMPLETE", flush=True)
+
+
 def measure_distribution_shift(args):
     """Compare original/merged inputs in each task's own frozen PCA basis."""
     out = Path(args.output)
@@ -419,8 +512,16 @@ if __name__ == "__main__":
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--scope-audit", action="store_true", help="Audit corrected visual scan.")
+    mode.add_argument(
         "--distribution-shift", action="store_true", help="Diagnose both frozen task subspaces."
     )
     args = parser.parse_args()
-    (measure_distribution_shift if args.distribution_shift else run)(args)
+    (
+        run_scope_audit
+        if args.scope_audit
+        else measure_distribution_shift
+        if args.distribution_shift
+        else run
+    )(args)
