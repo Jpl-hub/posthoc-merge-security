@@ -1,0 +1,16 @@
+[project]
+name = "posthoc-merge-security"
+version = "0.1.0"
+description = "Reproducible post-training model merging defense and adaptive attack experiments"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["external", "tmp"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.format]
+quote-style = "double"

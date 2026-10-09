@@ -1,0 +1,39 @@
+# Large assets live exclusively on the rented server.
+checkpoints/
+task_vectors_checkpoints/
+data/
+external/
+.cache/
+*.pt
+*.pth
+*.safetensors
+*.bin
+*.zip
+*.tar
+*.tar.gz
+
+# Machine credentials, authentication and local tooling.
+.env
+.env.*
+*.pem
+*.key
+id_ed25519*
+id_rsa*
+scripts/remote_bridge.py
+experiments/resource_probe.py
+tmp/
+.playwright/
+.playwright-cli/
+output/playwright/
+__pycache__/
+*.pyc
+.ruff_cache/
+.venv/
+
+# Retain curated lightweight scientific evidence, exclude raw downloads/logs.
+outputs/**/artifacts/
+outputs/**/*.response
+outputs/**/*.log
+outputs/**/environment.json
+outputs/**/resource_probe.json
+outputs/**/pip_freeze.txt
