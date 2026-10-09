@@ -21,6 +21,7 @@ from subspace_diagnostics import replace_norm_outliers
 from subspace_probe import (
     clean_complement,
     collect_moments,
+    complement_power,
     evaluate,
     fit_basis,
     make_loader,
@@ -335,6 +336,82 @@ def run(args):
     print("BOUNDED_COMPLETE", flush=True)
 
 
+def measure_distribution_shift(args):
+    """Compare original/merged inputs in each task's own frozen PCA basis."""
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    config_bytes = Path(args.config).read_bytes()
+    config = json.loads(config_bytes)
+    (out / "protocol.json").write_bytes(config_bytes)
+    parent = Path(config["parent"])
+    index_bytes = (parent / "training_indices.json").read_bytes()
+    indices = json.loads(index_bytes)
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    load = checkpoint_loader(Path(args.author_repo))
+    checkpoints = Path(args.checkpoints)
+    anchor = load(str(checkpoints / "zeroshot.pt"))
+    experts = {task: load(str(checkpoints / f"{task}/finetuned.pt")) for task in ["MNIST", "SVHN"]}
+    combined = merge(anchor, experts["MNIST"], experts["SVHN"], config["coefficient"])
+    sites = [f"{target}:{layer}" for layer in range(12) for target in ["V", "FC"]]
+    sources, rows = {}, []
+    for task in ["MNIST", "SVHN"]:
+        source = parent.parent / ("bounded_complement" if task == "MNIST" else "bounded_svhn")
+        source_bytes = (source / "metadata.json").read_bytes()
+        source_meta = json.loads(source_bytes)
+        assert source_meta["completed"]
+        bases = torch.load(source / "artifacts/defender_bases.pt")
+        dataset = (
+            MNIST(args.data, train=True, transform=experts[task].val_preprocess)
+            if task == "MNIST"
+            else SVHN(args.data, split="train", transform=experts[task].val_preprocess)
+        )
+        loader = make_loader(dataset, indices[task]["calibration"], batch_size=32)
+        original_moments = collect_moments(experts[task], loader, sites)
+        merged_moments = collect_moments(combined, loader, sites)
+        for energy, by_site in bases.items():
+            for site, basis in by_site.items():
+                rows.append(
+                    dict(
+                        protected_task=task,
+                        site=site,
+                        retained_energy=float(energy),
+                        rank=basis["rank"],
+                        tokens=original_moments[site]["tokens"],
+                        expert=complement_power(original_moments[site], basis),
+                        unprotected_merge=complement_power(merged_moments[site], basis),
+                    )
+                )
+        sources[task] = dict(
+            directory=str(source),
+            source_metadata_sha256=hashlib.sha256(source_bytes).hexdigest(),
+            source_config_sha256=source_meta["config_sha256"],
+            basis_sha256=hashlib.sha256(
+                (source / "artifacts/defender_bases.pt").read_bytes()
+            ).hexdigest(),
+        )
+    save_json(out / "results.json", rows)
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            total_seconds=time.perf_counter() - start,
+            training="none",
+            test_usage="none",
+            accuracy_evaluations=0,
+            samples_per_task=256,
+            covariance_center="same frozen defender mean",
+            config_sha256=hashlib.sha256(config_bytes).hexdigest(),
+            parent_indices_sha256=hashlib.sha256(index_bytes).hexdigest(),
+            experiment_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            sources=sources,
+        ),
+    )
+    print("DISTRIBUTION_SHIFT_COMPLETE", flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/bounded_complement.json")
@@ -342,4 +419,8 @@ if __name__ == "__main__":
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
-    run(parser.parse_args())
+    parser.add_argument(
+        "--distribution-shift", action="store_true", help="Diagnose both frozen task subspaces."
+    )
+    args = parser.parse_args()
+    (measure_distribution_shift if args.distribution_shift else run)(args)
