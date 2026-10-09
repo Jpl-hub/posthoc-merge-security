@@ -183,7 +183,6 @@ def run(root: Path):
         ln_text += "\n\n![LayerNorm 后处理探索](figures/layernorm_exploration.png)"
         ln_text += "\n\n图 4：两档扰动强度；单种子、MNIST 完整测试集。纵轴放大至高准确率区域；点表示准确率，不画统计误差条。"
     low_text = "实验未完成。"
-    low_speech = ""
     if low and lowm:
         low_groups = [
             ("low_activity_standalone", "保护后 standalone"),
@@ -205,9 +204,7 @@ def run(root: Path):
         attacked = next(r for r in low if r["group"] == "low_activity_AGA_merge")
         adaptive = next(r for r in low if r["group"] == "low_activity_projection_AGA_merge")
         low_text += f"\n\n预设 standalone 损失预算 0.5 pp，本次损失 {(0.9969 - standalone['top1']) * 100:.2f} pp，通过预算。特征误差为 {standalone['feature_error']:.3f}，因此属于近似保效用后处理，不是函数等价变换。AGA 后融合 {100 * attacked['top1']:.2f}%，自适应攻击后 {100 * adaptive['top1']:.2f}%，未得到明显保护。单任务、单种子结果不足以支持泛化或统计显著性。"
-        low_speech = f"随后我用 32 张程序生成的笔画图像，提取最后四层的低活跃输入方向，构造不含梯度更新的解析扰动。预先规定独立准确率损失不超过 0.5 个百分点。实际只损失 {(0.9969 - standalone['top1']) * 100:.2f} 个百分点，但 AGA 后融合仍达到 {100 * attacked['top1']:.2f}%，加低活跃方向投影攻击后是 {100 * adaptive['top1']:.2f}%。所以它保留效用，却没有解决恢复攻击。"
     params_text = "尚无完整结果，不计入结论。"
-    params_speech = ""
     if params and pm:
         values = []
         for coef in pm["coefficients"]:
@@ -246,9 +243,7 @@ def run(root: Path):
         )
         params_text += f"\n\n基础 PaRaMS 直接调用官方固定版本；不含原文 §6 的 dropout 加固。12 层 MLP 取最远 assignment，Attention 对角缩放 U(0.05,20)；独立 MLP 组使用一轮 assignment，未伪称与 Table 6 配置完全一致。源码实际共用 Q/V 缩放，与论文独立采样描述有差别。保护特征误差 {pm['protected_output_error']:.2e}；保护前后两个完整测试集的正确计数相同。全部 AGA 后保护/未保护对照的两个任务正确计数相同，未形成有效保护。"
         params_text += "\n\n![官方 PaRaMS 基线](figures/params_comparison.png)\n\n图：真实双任务、单种子；系数 0.5。分别展示原始融合、保护后直接融合与 AGA 后融合，纵轴从零开始。图中 PaRaMS 指本次运行的基础配置。"
-        params_speech = "我还接入了官方基础 PaRaMS，完整测试保持独立准确率，但 AGA 后两个任务的融合准确率恢复到未保护对照水平。这里没有运行论文的 dropout 加固，也不是八任务 Table 6 复现。"
     paired_text = "配对保函数对齐尚未完成，不计入结论。"
-    paired_speech = ""
     if paired and pairedm:
         values = []
         for group, label in [
@@ -270,7 +265,6 @@ def run(root: Path):
             )
         paired_text = table(["配置；融合系数 0.5", "MNIST (%)", "SVHN (%)"], values)
         paired_text += "\n\n保护与未保护对照在配对对齐后取得相同正确计数，并恢复到原始未保护融合水平。该正交基线上的独立 AGA 不是能取得最高融合效用的攻击，后续防御需同时覆盖保函数的配对对齐。"
-        paired_speech = "补读文献后，我复用了作者的配对 SVD 对齐与联合 MLP 匹配。它保持独立模型功能，并把正交保护后的两任务融合恢复到原始未保护水平，说明只测独立 AGA 还不够。"
         paired_text += f"\n\n复用 RotationSymmetry 的原始 Chunk_SVD_QK、Chunk_SVD_VO、Permute_IO；配对 Kabsch 保持 QK/VO 函数，联合 FFN 权重与 bias 匹配。求解用 float64，模型保持 float32；无数据、无训练。对齐前后最大特征误差 {max(pairedm['feature_errors'].values()):.2e}。本次仅测试正交保护与既定 head 对应关系，不含一般 GL 白化或跨 head matching；不能称全面强攻击。"
     details = rf"""# 2026-10-09 实验详细记录
 
@@ -515,27 +509,34 @@ FFN 原型各次 wall time：{"; ".join(f"{name}: {meta['total_seconds']:.3f} s"
     (root / "experiment_log.md").write_text(log, encoding="utf-8")
     speech = f"""# 组会讲稿（约 4–5 分钟）
 
-老师，今天研究的是发布前的免微调后处理：保持专家的独立能力，并抵抗未经授权融合和自适应恢复。今天有真实运行的具体候选和负结果，还没有得到强防御。
+老师，今天我围绕您说的“不通过微调，加后处理能力”推进：对已经微调好的专家，在发布前增加保护，保住独立任务能力，同时抵抗未经授权融合和自适应恢复。本轮具体检验了两项候选，结果都是负面的，还没有得到有效的新防御。
 
-文献上，我核对了 PaRaMS、MergeLock、MergeBarrier、AGA，补读 MergeGuard、TSV 和 SVD-LLM。一般可逆变换、剪枝、低秩压缩、多项式表示和功能最小二乘都有前作。MergeGuard 的第一阶段包含微调，ARF 也修改训练目标，因此不能直接当成本课题答案。
+先说文献。我重点核对了 PaRaMS、MergeLock、MergeBarrier，以及您发的《On the Vulnerability of Parameter-Level Defenses to Model Merging》，也就是提出 AGA 恢复攻击的那篇。PaRaMS 和 MergeLock 已经覆盖置换、缩放与可逆混合；AGA 说明公开预训练模型可以作为恢复锚点。MergeBarrier 则转向 FFN 的 Taylor 表示，所以换参数格式和多项式表示也已有前作。
 
-先跑通官方 ViT-B/32 checkpoint、原 AGA、TaskVector 融合和完整测试。独立 MNIST 是 99.69%；系数 0.5 的未保护融合是 99.37% 和 92.50%。Attention 的理想 LS 会投影到微调权重列空间，这个结论原文已经证明，我只做核验。
+我还补读了 TSV 和 SVD-LLM，确认低秩压缩有成熟依据，甚至可能改善融合，不能把“不可逆”直接当作安全。PLeaS 提醒我必须检查功能最小二乘恢复，而不仅是参数匹配。MergeGuard 完整方法包含额外微调，其免训练第二阶段也已有消融。这些文献主要帮助排除重复思路，并明确应该测哪些攻击；还没有形成新颖性证明。
 
-全部真实测试使用一万张 MNIST、26,032 张 SVHN，没有用测试集选择参数。保护的是 MNIST 专家，第二专家是 SVHN；一个种子、两个任务，不能当成统计显著性或八任务复现。
+实验沿用官方 CLIP ViT-B/32 权重、作者的融合和 AGA 代码。保护 MNIST 专家，与 SVHN 专家融合，评价全部一万张 MNIST 和 26,032 张 SVHN 图像。独立 MNIST 基线是 {accuracy("A_unprotected", "MNIST")}；系数 0.5 的未保护融合是 {accuracy("D_unprotected_merge", "MNIST", 0.5)} 和 {accuracy("D_unprotected_merge", "SVHN", 0.5)}。只有一个种子，用于初筛，不能当作八任务复现或统计显著性。
 
-{params_speech}
-
-{paired_speech}
-
-此前的 LayerNorm 空方向可被公开投影消除。跨 head 置换也可被子空间 matching 找回，不能只利用原代码默认对应关系来声称安全。
-
-{low_speech}
+基础 PaRaMS、正交保护和此前的解析扰动都保留了完整对照，但未挡住相应恢复攻击。PaRaMS 的 dropout 加固还没有完整复现。本轮把重点转向不可逆编辑与完整 FFN 功能重表示，独立性能损失预算预先设为 0.5 个百分点。
 
 {probe_speech}
 
-本轮发现的关键问题是：攻击者不必恢复原参数，只需恢复另一种可融合的功能表示。新方向应证明并测量任务特异信息难以被公共 anchor 和功能拟合补回，而不是只展示权重距离。下一步先分析这一条件是否与小独立效用损失同时成立，再做单候选实验，避免无依据拼接方法。
+这轮实验说明，局部秩降低没有转化为融合保护；单层改写保住效用却可被恢复，四层改写则损伤了原有能力，直接融合下降不能计作成功。攻击者可以得到另一种可融合表示，无需找回原参数。这只是本次配置的结论，不证明所有后处理防御不可能，也不是对 MergeBarrier 原方法的攻击结论。
 
-八任务复现也在继续：全部 head 齐备，DTD 第一分割和 GTSRB 全测试入口已验证。六个原 checkpoint 仍遇到下载配额，公开镜像逐参数不一致，已拒绝替代。完整日志、失败配置留在服务器；轻量代码、真实结果、图表和报告已同步仓库。
+下一步停止扫描当前失败的配置族，先分析哪些任务特异信息能在小性能损失下删除，同时难以被公共预训练模型或功能拟合补回。有可检验构造后，再固定攻击样本和计算预算做真实实验；通过独立效用与恢复攻击两道检查后，才扩大任务和种子。
+
+八任务复现也继续补资源：全部分类 head 已取得，DTD 第一划分和 GTSRB 全测试入口已验证。六个官方专家权重仍受下载配额限制，公开镜像逐参数不一致，已拒绝替代，当前没有八任务准确率。完整结果和失败记录都已保留。
+
+## 论文出处备查
+
+以下用于提问时查阅，不计入朗读部分；原文位置及版本见 [文献核对](literature_triage.md)。
+
+- [AGA：On the Vulnerability of Parameter-Level Defenses to Model Merging](https://arxiv.org/abs/2606.30360v1)
+- [PaRaMS：Disrupting Model Merging](https://www.openaccess.thecvf.com/content/ICCV2025/papers/Junhao_Disrupting_Model_Merging_A_Parameter-Level_Defense_Without_Sacrificing_Accuracy_ICCV_2025_paper.pdf)
+- [MergeLock](https://arxiv.org/abs/2509.01548)、[MergeBarrier（本次审读 v1）](https://arxiv.org/abs/2511.10712v1)
+- [PLeaS](https://www.openaccess.thecvf.com/content/CVPR2025/papers/Nasery_PLeaS_-_Merging_Models_with_Permutations_and_Least_Squares_CVPR_2025_paper.pdf)
+- [Task Singular Vectors](https://www.openaccess.thecvf.com/content/CVPR2025/papers/Gargiulo_Task_Singular_Vectors_Reducing_Task_Interference_in_Model_Merging_CVPR_2025_paper.pdf)、[SVD-LLM（v5）](https://arxiv.org/abs/2403.07378v5)
+- [MergeGuard：Defending Unauthorized Model Merging via Dual-Stage Weight Protection](https://www.openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf)
 """
     (root / "speech.md").write_text(speech, encoding="utf-8")
     print("REPORTS_WRITTEN", root, "rows", len(all_rows))

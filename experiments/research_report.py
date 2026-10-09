@@ -65,7 +65,7 @@ def generate(root, rank, polynomial_runs):
             "standalone 仅以 MNIST 作为保护效用；原 MNIST 模型在 SVHN 的迁移结果保存在 JSON，未当作 SVHN 专家的独立效用。activation 两项使用 32 张无标签合成图像；weight-rank 与随机置零不使用校准。全部配置评估两个完整测试集，系数 0.5。"
         )
         speech.append(
-            "我把最后四层 V 输出压到 rank 16，删去每个 head 四分之三的维度。独立 MNIST 只损失 0.08 个百分点，但直接融合已经有效，公开 pretrained 补全后达到 99.37% 和 92.60%。数学上的秩损失不能直接推成分类或安全下界，这条简单压缩路线已停止扫描。"
+            "第一项候选是不可逆秩收缩：用 32 张合成笔画图像的激活确定投影，把最后四层 V 输出压到 rank 16，删去每个 head 四分之三的维度。独立 MNIST 从 99.69% 降到 99.61%，只损失 0.08 个百分点，但直接融合已经有效。攻击者从发布参数估计保留空间，用公开预训练模型补全其余方向，不需要数据或秘密投影，融合达到 99.37% 和 92.60%。"
         )
     labels = [
         ("unprotected_standalone", "原始 MNIST 专家独立"),
@@ -139,9 +139,14 @@ def generate(root, rank, polynomial_runs):
             detail.append(
                 f"保护模型重构耗时 {meta['reconstruction_seconds']['protected_reconstruction']:.3f} s，包括激活采集、闭式求解与模型拷贝；三模型转换共 {meta['conversion_seconds']:.3f} s。单次记录，非严格速度比较。"
             )
-        speech.append(
-            f"再把{len(layers)}个完整 FFN 改写为二次映射，删除原 W1、W2。32 张合成图像闭式拟合，无梯度或优化器，但存在新参数拟合。独立损失 {loss:.2f} 个百分点；用另外 32 张图像重构原架构后，融合仍为 {acc('reconstructed_protected_merge', 'MNIST'):.2f}% 和 {acc('reconstructed_protected_merge', 'SVHN'):.2f}%。隐藏原权重没有阻止攻击者得到另一种可融合表示。"
-        )
+        if len(layers) == 1:
+            speech.append(
+                f"第二项候选是完整 FFN 重表示：将最后一个 FFN 改写为二次映射，删除该块原 W1、W2。用 32 张无标签合成笔画图像闭式拟合，没有梯度或优化器，但存在新参数拟合，不能称无需数据。独立 MNIST 保持 {acc('protected_standalone', 'MNIST'):.2f}%；共同格式融合仍然有效。攻击者用另一批 32 张合成图像拟合回原架构后，融合为 {acc('reconstructed_protected_merge', 'MNIST'):.2f}% 和 {acc('reconstructed_protected_merge', 'SVHN'):.2f}%。"
+            )
+        else:
+            speech.append(
+                f"在单层失败后，我做了固定四层的覆盖消融，保持同一 rank、阶数和正则。独立 MNIST 降到 {acc('protected_standalone', 'MNIST'):.2f}%，损失 {loss:.2f} 个百分点，远超预算；功能重构后融合又达到 {acc('reconstructed_protected_merge', 'MNIST'):.2f}% 和 {acc('reconstructed_protected_merge', 'SVHN'):.2f}%。这项配置因独立效用不达标而淘汰。"
+            )
     if detail:
         direction = root / "candidate_direction.md"
         prefix = direction.read_text(encoding="utf-8").split("## 实测")[0]
