@@ -108,11 +108,12 @@ def convert(model, images, layer, basis, ridge_ratio):
 
 
 @torch.no_grad()
-def reconstruct(released, anchor, images, layer, ridge_ratio):
+def reconstruct(released, anchor, images, layer, ridge_ratio, solver="dual"):
     """Fix pretrained W1 and fit W2 to released outputs; no original weights.
 
-    Center the solution at the pretrained W2. Use the dual ridge system, including
-    a bias feature. The same attack is applied to the unprotected control.
+    Center the solution at pretrained W2, including a bias feature. The default
+    dual solver is preserved; auto uses the smaller equivalent ridge system.
+    The same attack is applied to the unprotected control.
     """
     x = capture(released, images, layer)
     teacher = (
@@ -125,12 +126,30 @@ def reconstruct(released, anchor, images, layer, ridge_ratio):
     hidden = student.gelu(student.c_fc(x))
     design = torch.cat([hidden, torch.ones_like(hidden[:, :1])], dim=1)
     initial = torch.cat([student.c_proj.weight.T, student.c_proj.bias[None, :]], dim=0)
-    gram = design @ design.T
-    ridge = ridge_ratio * gram.trace() / len(gram)
-    update = design.T @ torch.linalg.solve(
-        gram + ridge * torch.eye(len(gram), device="cuda", dtype=torch.float64),
-        target - design @ initial,
+    if solver == "auto":
+        solver = "dual" if len(design) <= design.shape[1] else "primal"
+    assert solver in {"dual", "primal"}
+    residual_target = target - design @ initial
+    if solver == "dual":
+        gram = design @ design.T
+        ridge = ridge_ratio * gram.trace() / len(gram)
+        update = design.T @ torch.linalg.solve(
+            gram + ridge * torch.eye(len(gram), device="cuda", dtype=torch.float64),
+            residual_target,
+        )
+    else:
+        gram = design.T @ design
+        # Preserve the original dual objective and its mean row-energy scaling.
+        ridge = ridge_ratio * design.square().sum() / len(design)
+        update = torch.linalg.solve(
+            gram + ridge * torch.eye(len(gram), device="cuda", dtype=torch.float64),
+            design.T @ residual_target,
+        )
+    normal_residual = design.T @ (design @ update - residual_target) + ridge * update
+    normal_error = float(
+        normal_residual.norm() / (design.T @ residual_target).norm().clamp_min(1e-30)
     )
+    assert normal_error < 1e-8, normal_error
     fitted = initial + update
     student.c_proj.weight.copy_(fitted[:-1].T)
     student.c_proj.bias.copy_(fitted[-1])
@@ -142,6 +161,9 @@ def reconstruct(released, anchor, images, layer, ridge_ratio):
         calibration_tokens=len(x),
         ridge=float(ridge),
         fit_feature_error=residual,
+        solver=solver,
+        design_features=design.shape[1],
+        normal_equation_relative_residual=normal_error,
         first_layer="pretrained_fixed",
         second_layer="closed_form_anchor_centered_ridge",
     )

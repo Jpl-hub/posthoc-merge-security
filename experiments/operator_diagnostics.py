@@ -90,6 +90,213 @@ def adjust_comparisons(rows):
             row["paired"]["family_size"] = len(family)
 
 
+def paired_counts(reference, correct):
+    lost = int((reference & ~correct).sum())
+    gained = int((~reference & correct).sum())
+    return dict(
+        both_correct=int((reference & correct).sum()),
+        lost=lost,
+        gained=gained,
+        both_wrong=int((~reference & ~correct).sum()),
+        loss_pp=100 * (lost - gained) / len(correct),
+        exact_mcnemar_p=float(binomtest(lost, lost + gained).pvalue) if lost + gained else 1.0,
+    )
+
+
+def signed_margin(logits, labels):
+    target = logits.gather(1, labels[:, None]).squeeze(1)
+    competing = logits.clone()
+    competing.scatter_(1, labels[:, None], -torch.inf)
+    return target - competing.max(1).values
+
+
+@torch.no_grad()
+def run_budget(args):
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    artifacts = out / "artifacts"
+    artifacts.mkdir()
+    config_bytes = Path(args.config).read_bytes()
+    config = json.loads(config_bytes)
+    assert config["task"] == "SVHN" and config["budgets"] == [32, 128, 256]
+    assert config["test_usage"] == "none"
+    (out / "protocol.json").write_bytes(config_bytes)
+    parent = Path(config["parent"])
+    previous = json.loads((parent / "training_indices.json").read_bytes())
+    fit_parent = Path(config["fitting_source"])
+    frozen = json.loads((fit_parent / "training_indices.json").read_bytes())
+    old_meta = json.loads((parent / "metadata.json").read_bytes())
+    old_predictions_path = parent / "artifacts/predictions.pt"
+    assert digest(old_predictions_path) == old_meta["predictions_sha256"]
+    old_predictions = torch.load(old_predictions_path, map_location="cpu", weights_only=True)
+    indices = dict(
+        development={"MNIST": previous["development"]["MNIST"]},
+        confirmation=previous["confirmation"],
+        fitting={str(n): frozen["SVHN"]["attack"][:n] for n in config["budgets"]},
+        local_check={"SVHN": frozen["SVHN"]["calibration"][: config["local_check_samples"]]},
+    )
+    fit_set = set(indices["fitting"]["256"])
+    assert len(fit_set) == 256
+    assert not fit_set.intersection(indices["confirmation"]["SVHN"])
+    assert not fit_set.intersection(indices["local_check"]["SVHN"])
+    assert indices["fitting"]["32"] == previous["fitting"]["SVHN"]
+    save_json(out / "training_indices.json", indices)
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    load = checkpoint_loader(Path(args.author_repo))
+    root = Path(args.checkpoints)
+    anchor = load(str(root / "zeroshot.pt"))
+    original = load(str(root / "SVHN/finetuned.pt"))
+    second = load(str(root / "MNIST/finetuned.pt"))
+    heads = {task: load(str(root / f"head_{task}.pt")) for task in ["MNIST", "SVHN"]}
+    training = dict(
+        MNIST=MNIST(args.data, train=True, transform=original.val_preprocess),
+        SVHN=SVHN(args.data, split="train", transform=original.val_preprocess),
+    )
+    loaders = {
+        (split, task): make_loader(training[task], subset)
+        for split in ["development", "confirmation"]
+        for task, subset in indices[split].items()
+    }
+    fit_images = torch.stack([training["SVHN"][i][0] for i in indices["fitting"]["256"]])
+    check_images = torch.stack([training["SVHN"][i][0] for i in indices["local_check"]["SVHN"]])
+    rows, controls, predictions, fitting = [], {}, {}, []
+
+    def record(preset, group, model, split, task):
+        predicted, labels, scores = [], [], []
+
+        def capture_predictions(prediction, label):
+            predicted.append(prediction.clone())
+            labels.append(label.clone())
+
+        metric = evaluate(
+            model, heads[task], loaders[split, task], "cuda", capture_predictions, scores.append
+        )
+        prediction, label, logits = torch.cat(predicted), torch.cat(labels), torch.cat(scores)
+        correct = prediction == label
+        assert int(correct.sum()) == metric["correct"]
+        assert torch.equal(prediction, logits.argmax(1))
+        key = (split, group, task)
+        if preset == "unprotected":
+            controls[key] = dict(correct=correct, labels=label, logits=logits)
+        control = controls[key]
+        assert torch.equal(label, control["labels"])
+        margin = signed_margin(logits, label)
+        original_margin = signed_margin(control["logits"], label)
+        lost = control["correct"] & ~correct
+        margins = dict(
+            median=float(margin.median()),
+            p10=float(torch.quantile(margin.double(), 0.1)),
+            relative_score_error=float(
+                (logits - control["logits"]).norm() / control["logits"].norm()
+            ),
+            lost_images_original_margin_median=float(original_margin[lost].median())
+            if lost.any()
+            else None,
+            score_scope="raw fixed-head logits; signed true-class margin, no label use during fitting",
+        )
+        prior_match = None
+        if preset in {"unprotected", "fit_32"}:
+            old_name = "unprotected" if preset == "unprotected" else "reconstruct_joint"
+            old = old_predictions[(old_name, *key)]
+            prior_match = torch.equal(label, old["labels"]) and torch.equal(
+                prediction, old["prediction"]
+            )
+            assert prior_match
+        row = dict(
+            preset=preset,
+            group=group,
+            split=split,
+            dataset=task,
+            coefficient=None if group == "standalone" else config["coefficient"],
+            paired=paired_counts(control["correct"], correct),
+            margins=margins,
+            previous_prediction_exact_match=prior_match,
+            **metric,
+        )
+        rows.append(row)
+        predictions[(preset, *key)] = dict(prediction=prediction, labels=label, logits=logits)
+        save_json(out / "results.json", rows)
+        print("BUDGET_RESULT", json.dumps(row), flush=True)
+
+    def evaluate_variant(preset, model):
+        record(preset, "standalone", model, "confirmation", "SVHN")
+        combined = merge(anchor, model, second, config["coefficient"])
+        record(preset, "direct", combined, "confirmation", "SVHN")
+        record(preset, "direct", combined, "development", "MNIST")
+
+    evaluate_variant("unprotected", original)
+    for budget in config["budgets"]:
+        joint = copy.deepcopy(original).cpu().eval()
+        for layer in config["layers"]:
+            fit_start = time.perf_counter()
+            fitted, details = reconstruct(
+                original, anchor, fit_images[:budget], layer, config["ridge_ratio"], solver="auto"
+            )
+            seconds = time.perf_counter() - fit_start
+            check = check_local_fit(original, fitted, anchor, check_images, layer)
+            joint.model.visual.transformer.resblocks[layer].mlp.load_state_dict(
+                fitted.model.visual.transformer.resblocks[layer].mlp.state_dict(),
+                strict=True,
+            )
+            fitting.append(
+                dict(budget=budget, layer=layer, fit=details, check=check, seconds=seconds)
+            )
+            save_json(out / "fitting.json", fitting)
+            del fitted
+        torch.save(
+            {
+                layer: joint.model.visual.transformer.resblocks[layer].mlp.state_dict()
+                for layer in config["layers"]
+            },
+            artifacts / f"fitted_mlp_{budget}.pt",
+        )
+        evaluate_variant(f"fit_{budget}", joint)
+        del joint
+    adjust_comparisons(rows)
+    save_json(out / "results.json", rows)
+    torch.save(predictions, artifacts / "predictions.pt")
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            new_defense=False,
+            test_usage="none",
+            seed_count=1,
+            new_evaluations=len(rows),
+            reused_measurements=0,
+            evaluation_scope="previously inspected disjoint training subsets, not a fresh holdout",
+            optimizer_steps=0,
+            fitting_labels_used=False,
+            seconds=time.perf_counter() - start,
+            config_sha256=hashlib.sha256(config_bytes).hexdigest(),
+            indices_sha256=digest(out / "training_indices.json"),
+            parent_indices_sha256=digest(parent / "training_indices.json"),
+            fitting_parent_indices_sha256=digest(fit_parent / "training_indices.json"),
+            parent_predictions_sha256=digest(old_predictions_path),
+            source_sha256=digest(__file__),
+            helper_sha256={
+                name: digest(Path(__file__).with_name(name))
+                for name in ["clip_benchmark.py", "polynomial_probe.py", "subspace_probe.py"]
+            },
+            checkpoint_sha256={
+                str(p.relative_to(root)): digest(p)
+                for p in [
+                    root / "zeroshot.pt",
+                    root / "SVHN/finetuned.pt",
+                    root / "MNIST/finetuned.pt",
+                    root / "head_SVHN.pt",
+                    root / "head_MNIST.pt",
+                ]
+            },
+            artifact_sha256={p.name: digest(p) for p in artifacts.glob("*.pt")},
+        ),
+    )
+    print("BUDGET_COMPLETE", flush=True)
+
+
 def run(args):
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=False)
@@ -262,4 +469,6 @@ if __name__ == "__main__":
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
-    run(parser.parse_args())
+    parser.add_argument("--reconstruction-budget", action="store_true")
+    args = parser.parse_args()
+    (run_budget if args.reconstruction_budget else run)(args)
