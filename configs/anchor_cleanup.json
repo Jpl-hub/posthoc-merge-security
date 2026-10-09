@@ -1,0 +1,11 @@
+{
+  "parent": "outputs/2026-10-09/post_meeting/subspace_probe",
+  "diagnostics": "outputs/2026-10-09/post_meeting/subspace_diagnostics",
+  "norm_ratio_threshold": 3.0,
+  "rule": "Scan every linear weight matrix. If its Frobenius norm exceeds three times the pretrained matrix norm, replace that matrix and its bias with pretrained. No task data, defender subspace, site or noise seed supplied to the attack.",
+  "coefficient": 0.5,
+  "design_timing": "Fixed after parameter-scale diagnostics, before evaluating this cleanup attack; no test threshold search.",
+  "training": "none",
+  "calibration": "none",
+  "control": "Unprotected model is scanned with the same rule. Prior accuracy counts are reused only if no control matrix is changed."
+}

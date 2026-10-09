@@ -612,39 +612,46 @@ def plot_subspace_diagnostics(root: Path):
             positions = np.arange(3) + (i - 0.5) * 0.34
             ax.bar(positions, values, width=0.32, color=COLORS[i], label=group)
             for x, y in zip(positions, values, strict=True):
-                ax.text(x, y + 1.5, f"{y:.2f}", ha="center", fontsize=7)
+                ax.text(x, y + (1.5 if i == 0 else 6), f"{y:.2f}", ha="center", fontsize=7)
         ax.axhline(accuracy("control", "direct", task), color="black", lw=0.8, ls=":")
         ax.set(
             xticks=range(3),
-            xticklabels=["Full noise", "LN component", "Other component"],
+            xticklabels=["Full noise", "LN\ncomponent", "Other\ncomponent"],
             ylim=(0, 112),
             ylabel="Merged accuracy (%)",
             title=task,
         )
         ax.grid(axis="y", alpha=0.2)
-    axes[0].legend(fontsize=7, loc="lower right")
+    fig.legend(*axes[0].get_legend_handles_labels(), fontsize=7, loc="outside lower center", ncol=2)
     fig.suptitle("Additive decomposition; no rescaling; full-noise counts reused", fontsize=10)
     save(fig, out, "components")
     fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.8), layout="constrained")
     groups = ["direct", "AGA", "projection", "completion"]
+    cleanup_root = root.parent / "anchor_cleanup"
+    if (cleanup_root / "metadata.json").exists():
+        cleanup_rows = json.loads((cleanup_root / "results.json").read_text())
+        rows.extend({**r, "group": "norm_cleanup"} for r in cleanup_rows if r["group"] == "direct")
+        groups.append("norm_cleanup")
     for ax, task in zip(axes, ["MNIST", "SVHN"], strict=True):
         for i, (contrast, label) in enumerate(
             [("control", "Unprotected, same attack"), ("FC_development_selected", "FC protected")]
         ):
             values = [accuracy(contrast, g, task) for g in groups]
-            positions = np.arange(4) + (i - 0.5) * 0.35
+            positions = np.arange(len(groups)) + (i - 0.5) * 0.35
             ax.bar(positions, values, width=0.33, color=COLORS[i], label=label)
             for x, y in zip(positions, values, strict=True):
-                ax.text(x, y + 1.5, f"{y:.2f}", ha="center", fontsize=6.7)
+                ax.text(x, y + (1.5 if i == 0 else 6), f"{y:.2f}", ha="center", fontsize=6.7)
         ax.set(
-            xticks=range(4),
-            xticklabels=["Direct", "AGA", "Projection", "Pretrained\ncompletion"],
+            xticks=range(len(groups)),
+            xticklabels=["Direct", "AGA", "PCA\nproject", "PCA\nfill", "Norm\nreplace"][
+                : len(groups)
+            ],
             ylim=(0, 112),
             ylabel="Merged accuracy (%)",
             title=task,
         )
         ax.grid(axis="y", alpha=0.2)
-    axes[0].legend(fontsize=7, loc="lower left")
+    fig.legend(*axes[0].get_legend_handles_labels(), fontsize=7, loc="outside lower center", ncol=2)
     fig.suptitle(
         "FC complement noise: selected from earlier development data; one seed", fontsize=10
     )

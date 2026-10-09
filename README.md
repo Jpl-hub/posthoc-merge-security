@@ -77,6 +77,7 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
 - [秩编辑与完整 FFN 重表示：数学依据、攻击与全部失败结果](outputs/2026-10-09/candidate_direction.md)
 - [组会后调整：真实任务补空间扰动](outputs/2026-10-09/post_meeting/review.md)
 - [组会后实测：直接融合失效，AGA 仍可恢复](outputs/2026-10-09/post_meeting/report.md)
+- [最新实测：成分分解、MLP 扰动与无数据恢复](outputs/2026-10-09/post_meeting/followup.md)
 
 本轮新增入口（服务器运行；重新执行应指定新的输出目录以保留旧结果）：
 
@@ -102,6 +103,18 @@ python experiments/plot_results.py --subspace --output outputs/2026-10-09/post_m
 ```
 
 配置固定单层、输入主子空间保留阈值及随机扰动强度，不叠加旋转、置换或压缩。最终测试仅评价开发集选出的一个配置；攻击者使用独立训练图片重新估计 PCA，包含原 AGA、投影消除和 pretrained 补全。训练集开发子集并非原专家训练时的 held-out validation，属于本次局限。
+
+后续对照复用上一轮服务器上的发布模型与冻结子空间。因果分解和 MLP 配置来自开发筛选；独立无数据攻击扫描所有线性矩阵，不能仅测试原 AGA 就认定有效保护。
+
+```bash
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/subspace_diagnostics.py
+python experiments/validate_results.py --subspace-diagnostics --output outputs/2026-10-09/post_meeting/subspace_diagnostics
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/subspace_diagnostics.py --norm-cleanup --config configs/anchor_cleanup.json --output outputs/2026-10-09/post_meeting/anchor_cleanup
+python experiments/validate_results.py --norm-cleanup --output outputs/2026-10-09/post_meeting/anchor_cleanup
+python experiments/plot_results.py --subspace-diagnostics --output outputs/2026-10-09/post_meeting/subspace_diagnostics
+```
+
+RESISC45 图片与原划分已核验；`prepare_eight_task_data.py --tasks RESISC45 --resisc-images` 在服务器准备图片，`eight_task_benchmark.py --pretrained-checks RESISC45` 检查完整测试入口。六个官方专家仍未取得，资源检查不计作八任务融合结果。
 
 ## 工程检查
 

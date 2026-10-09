@@ -272,6 +272,112 @@ def run(args):
     print("DIAGNOSTICS_COMPLETE", flush=True)
 
 
+@torch.no_grad()
+def replace_norm_outliers(model, anchor, threshold):
+    """Data-free adaptive cleanup using public matrices, without target location."""
+    result = copy.deepcopy(model).cpu().eval()
+    state, base = result.state_dict(), anchor.state_dict()
+    replaced = []
+    inspected = 0
+    for key, value in state.items():
+        if value.ndim != 2 or not (key.endswith(".weight") or key.endswith("in_proj_weight")):
+            continue
+        inspected += 1
+        ratio = float(value.double().norm() / base[key].double().norm().clamp_min(1e-12))
+        if ratio <= threshold:
+            continue
+        state[key] = base[key].clone()
+        bias_key = key.removesuffix("weight") + "bias"
+        if bias_key in state:
+            state[bias_key] = base[bias_key].clone()
+        replaced.append(dict(parameter=key, norm_ratio=ratio, bias_replaced=bias_key in state))
+    result.load_state_dict(state, strict=True)
+    return result, dict(inspected_matrices=inspected, replaced=replaced)
+
+
+def run_norm_cleanup(args):
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    protocol_bytes = Path(args.config).read_bytes()
+    protocol = json.loads(protocol_bytes)
+    (out / "protocol.json").write_bytes(protocol_bytes)
+    parent, diagnostic_root = Path(protocol["parent"]), Path(protocol["diagnostics"])
+    assert json.loads((diagnostic_root / "metadata.json").read_text())["completed"]
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    load = checkpoint_loader(Path(args.author_repo))
+    root = Path(args.checkpoints)
+    anchor = load(str(root / "zeroshot.pt"))
+    original = load(str(root / "MNIST/finetuned.pt"))
+    second = load(str(root / "SVHN/finetuned.pt"))
+    heads = {task: load(str(root / f"head_{task}.pt")) for task in ["MNIST", "SVHN"]}
+    loaders = {
+        "MNIST": make_loader(MNIST(args.data, train=False, transform=original.val_preprocess)),
+        "SVHN": make_loader(SVHN(args.data, split="test", transform=original.val_preprocess)),
+    }
+    control, control_scan = replace_norm_outliers(
+        original, anchor, protocol["norm_ratio_threshold"]
+    )
+    assert not control_scan["replaced"], "Control changed; must not reuse parent measurements"
+    assert all(torch.equal(v, control.state_dict()[k]) for k, v in original.state_dict().items())
+    source_bytes = (parent / "results.json").read_bytes()
+    rows = [
+        dict(**row, contrast="control", origin="parent_measurement")
+        for row in json.loads(source_bytes)
+        if row["split"] == "official_test"
+        and row["preset"] == "unprotected"
+        and row["group"] in {"standalone", "direct"}
+    ]
+    scans = dict(control=control_scan)
+    for name, path in [
+        ("V_full", parent / "artifacts/protected_state.pt"),
+        ("FC_development_selected", diagnostic_root / "artifacts/fc_protected_state.pt"),
+    ]:
+        released = copy.deepcopy(original).cpu().eval()
+        released.load_state_dict(torch.load(path), strict=True)
+        cleaned, scan = replace_norm_outliers(released, anchor, protocol["norm_ratio_threshold"])
+        scans[name] = scan
+        for group, model in [
+            ("standalone", cleaned),
+            ("direct", merge(anchor, cleaned, second, protocol["coefficient"])),
+        ]:
+            for task, loader in loaders.items():
+                if group == "standalone" and task != "MNIST":
+                    continue
+                row = dict(
+                    contrast=name,
+                    group=group,
+                    dataset=task,
+                    origin="new_evaluation",
+                    coefficient=None if group == "standalone" else protocol["coefficient"],
+                    **evaluate(model, heads[task], loader, "cuda"),
+                )
+                rows.append(row)
+                save_json(out / "results.json", rows)
+                print("NORM_CLEANUP_RESULT", json.dumps(row), flush=True)
+        del released, cleaned
+    save_json(out / "scans.json", scans)
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            total_seconds=time.perf_counter() - start,
+            config_sha256=hashlib.sha256(protocol_bytes).hexdigest(),
+            experiment_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            parent_results_sha256=hashlib.sha256(source_bytes).hexdigest(),
+            calibration="none",
+            training="none",
+            reused_measurements=3,
+            new_evaluations=6,
+            attack_visibility="released_model_and_pretrained_only; no target location or defender basis",
+            test_threshold_selection="none",
+        ),
+    )
+    print("NORM_CLEANUP_COMPLETE", flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/subspace_diagnostics.json")
@@ -279,4 +385,8 @@ if __name__ == "__main__":
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
-    run(parser.parse_args())
+    parser.add_argument(
+        "--norm-cleanup", action="store_true", help="Run the separate data-free scan."
+    )
+    args = parser.parse_args()
+    (run_norm_cleanup if args.norm_cleanup else run)(args)

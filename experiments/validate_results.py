@@ -272,6 +272,30 @@ def validate(path: Path):
         assert all(r["n"] == {"DTD": 1880, "GTSRB": 12630}[r["dataset"]] for r in rows)
         assert all(r["top1"] == r["correct"] / r["n"] and not r["eight_task_result"] for r in rows)
         checks.append("eight_task_preparatory_data_and_head_checks")
+    resisc_resource = path / "eight_task/pretrained_2117/pretrained_checks.json"
+    if resisc_resource.exists():
+        resource_rows = json.loads(resisc_resource.read_text())
+        assert len(resource_rows) == 1
+        row = resource_rows[0]
+        assert row["dataset"] == "RESISC45" and row["n"] == 6300
+        assert row["top1"] == row["correct"] / row["n"]
+        assert not row["eight_task_result"] and row["task_count"] == 1
+        assert row["data_provider"] == "author_dataset_registry"
+        manifest = json.loads((path / "eight_task/data_2104/data_manifest.json").read_text())
+        assert len(manifest) == 1 and manifest[0]["task"] == "RESISC45"
+        item = manifest[0]
+        assert item["status"] == "ready" and item["dataset_ready"]
+        assert item["image_count"] == 31500 and item["test_count"] == 6300
+        assert {s["split"]: s["count"] for s in item["splits"]} == {
+            "train": 18900,
+            "val": 6300,
+            "test": 6300,
+        }
+        assert all(s["upstream_md5_verified"] for s in item["splits"])
+        assert item["archive_sha256"] == (
+            "beeecd0b63656290ae6d65cf7763185b0c1c4c54a753ef8088d6fba3faaf1f53"
+        )
+        checks.append("RESISC45_verified_archive_splits_and_full_resource_check")
     report = {"status": "passed", "checks": checks}
     (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report))
@@ -446,6 +470,72 @@ def validate_subspace_diagnostics(path: Path):
     print(json.dumps(report))
 
 
+def validate_norm_cleanup(path: Path):
+    protocol_bytes = (path / "protocol.json").read_bytes()
+    protocol = json.loads(protocol_bytes)
+    meta = json.loads((path / "metadata.json").read_text())
+    parent_bytes = (Path(protocol["parent"]) / "results.json").read_bytes()
+    parent_rows = json.loads(parent_bytes)
+    rows = json.loads((path / "results.json").read_text())
+    scans = json.loads((path / "scans.json").read_text())
+    assert meta["completed"] and meta["training"] == meta["calibration"] == "none"
+    assert meta["test_threshold_selection"] == "none"
+    assert meta["config_sha256"] == hashlib.sha256(protocol_bytes).hexdigest()
+    assert meta["parent_results_sha256"] == hashlib.sha256(parent_bytes).hexdigest()
+    reused = [r for r in rows if r["origin"] == "parent_measurement"]
+    new = [r for r in rows if r["origin"] == "new_evaluation"]
+    assert len(reused) == meta["reused_measurements"] == 3
+    assert len(new) == meta["new_evaluations"] == 6
+    parent_lookup = {
+        (r["preset"], r["group"], r["dataset"]): r
+        for r in parent_rows
+        if r["split"] == "official_test"
+    }
+    for row in reused:
+        source = parent_lookup[row["preset"], row["group"], row["dataset"]]
+        assert all(row[key] == value for key, value in source.items())
+    assert set(scans) == {"control", "V_full", "FC_development_selected"}
+    assert not scans["control"]["replaced"]
+    assert all(scan["inspected_matrices"] == 49 for scan in scans.values())
+    assert math.isfinite(protocol["norm_ratio_threshold"]) and protocol["norm_ratio_threshold"] > 1
+    for contrast, scan in scans.items():
+        assert len({item["parameter"] for item in scan["replaced"]}) == len(scan["replaced"])
+        for item in scan["replaced"]:
+            assert math.isfinite(item["norm_ratio"]) and (
+                item["norm_ratio"] > protocol["norm_ratio_threshold"]
+            )
+            assert isinstance(item["bias_replaced"], bool)
+        subset = [r for r in rows if r["contrast"] == contrast]
+        assert {(r["group"], r["dataset"]) for r in subset} == {
+            ("standalone", "MNIST"),
+            ("direct", "MNIST"),
+            ("direct", "SVHN"),
+        }
+        assert len(subset) == 3
+    for row in rows:
+        assert row["n"] == {"MNIST": 10000, "SVHN": 26032}[row["dataset"]]
+        assert 0 <= row["correct"] <= row["n"]
+        assert row["top1"] == row["correct"] / row["n"] and math.isfinite(row["top1"])
+        assert row["coefficient"] == (
+            None if row["group"] == "standalone" else protocol["coefficient"]
+        )
+    report = dict(
+        status="passed",
+        reused_measurements=len(reused),
+        new_evaluations=len(new),
+        checks=[
+            "protocol_and_parent_provenance",
+            "data_free_attack_and_no_test_threshold_search",
+            "unchanged_control_and_explicit_metric_reuse",
+            "full_linear_scan_and_outlier_rule",
+            "complete_matched_contrasts",
+            "accuracy_counts_and_coefficient_arithmetic",
+        ],
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -454,9 +544,12 @@ if __name__ == "__main__":
     mode.add_argument(
         "--subspace-diagnostics", action="store_true", help="Validate causal contrasts."
     )
+    mode.add_argument("--norm-cleanup", action="store_true", help="Validate data-free cleanup.")
     args = parser.parse_args()
     runner = (
-        validate_subspace_diagnostics
+        validate_norm_cleanup
+        if args.norm_cleanup
+        else validate_subspace_diagnostics
         if args.subspace_diagnostics
         else validate_subspace
         if args.subspace

@@ -1,5 +1,7 @@
 # 组会讲稿（约 4–5 分钟）
 
+本文为 19:30 组会前讲稿。组会后的新增实验与结论见[后续实测](post_meeting/followup.md)，不改写当时汇报的结果。
+
 老师，今天我围绕您说的“不通过微调，加后处理能力”推进：对已经微调好的专家，在发布前增加保护，保住独立任务能力，同时抵抗未经授权融合和自适应恢复。本轮具体检验了两项候选，结果都是负面的，还没有得到有效的新防御。
 
 先说文献。我重点核对了 PaRaMS、MergeLock、MergeBarrier，以及您发的《On the Vulnerability of Parameter-Level Defenses to Model Merging》，也就是提出 AGA 恢复攻击的那篇。PaRaMS 和 MergeLock 已经覆盖置换、缩放与可逆混合；AGA 说明公开预训练模型可以作为恢复锚点。MergeBarrier 则转向 FFN 的 Taylor 表示，所以换参数格式和多项式表示也已有前作。

@@ -6,7 +6,7 @@ ViT-B/32；任务顺序、TA 系数 0.2 按论文设置。当前尚无八任务�
 |---|---|---|---|
 | SUN397 | Drive 配额限制 | 已取得 | 第 1 分割；19,850，图片待准备 |
 | Cars | Drive 配额限制 | 已取得 | 官方 test；8,041，待准备 |
-| RESISC45 | Drive 配额限制 | 已取得 | 6,300；原索引已核验，图片待准备 |
+| RESISC45 | Drive 配额限制 | 已取得 | 6,300；图片与原索引已核验，作者入口已全量推理 |
 | EuroSAT | Drive 配额限制 | 已取得 | 2,700；原随机索引待取得 |
 | SVHN | 已验证 SHA256 | 已验证 SHA256 | 官方 test；26,032，已评价 |
 | GTSRB | Drive 配额限制 | 已取得 | 官方 test；12,630，原作者入口已全量推理 |
@@ -47,6 +47,15 @@ RESISC45 三份索引已取得，train/val/test 为 18,900/6,300/6,300，覆盖 
 
 ```bash
 python experiments/prepare_eight_task_data.py --tasks RESISC45 --output outputs/2026-10-09/eight_task/splits_1927
+```
+
+21:04 开始的图片准备已完成：31,500 张图片全部覆盖原 18,900 / 6,300 / 6,300 索引，并建立原作者的划分和分类目录。使用 TorchGeo 官方代码引用的公开镜像，固定 Hugging Face 版本 `883edc0eee77b2c84225472f10f126e3ed83fa6e`；427,389,445 字节压缩包 SHA256 为 `beeecd0b63656290ae6d65cf7763185b0c1c4c54a753ef8088d6fba3faaf1f53`。图片与压缩包仅保存在服务器。[本次数据清单](data_2104/data_manifest.json)。
+
+21:17 作者 RESISC45 入口 pretrained + 官方 head 完整测试：3,794 / 6,300（60.22%）。这是资源与推理检查，不是官方 RESISC45 专家准确率或八任务融合结果。[原始计数](pretrained_2117/pretrained_checks.json)。
+
+```bash
+python experiments/prepare_eight_task_data.py --tasks RESISC45 --resisc-images --output outputs/2026-10-09/eight_task/data_2104
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark.py --pretrained-checks RESISC45 --output outputs/2026-10-09/eight_task/pretrained_2117
 ```
 
 后续顺序：补齐原专家权重与数据，先运行八任务未保护基线，再按论文配置运行保护与 AGA，对照 Table 6。新机制继续在双任务环境筛选，两条工作分别保留结果。

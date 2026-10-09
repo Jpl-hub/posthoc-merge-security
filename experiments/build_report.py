@@ -416,12 +416,17 @@ MLP 附录的原始欧氏 margin 条件不能直接保证代码中的 cosine mat
         real_count=len(all_rows) - len(mechanism),
         mechanism_count=len(mechanism),
     )
-    if (root / "post_meeting/report.md").exists():
+    latest = (
+        "post_meeting/followup.md"
+        if (root / "post_meeting/followup.md").exists()
+        else "post_meeting/report.md"
+    )
+    if (root / latest).exists():
         title, body = meeting_text.split("\n", 1)
         meeting_text = (
             title
-            + "\n\n> 组会后已独立验证真实任务补空间扰动：保住 MNIST、破坏直接融合，但仍被 AGA 恢复。"
-            + "最新结果见 [组会后简报](post_meeting/report.md)。以下保留组会前汇报版本。\n"
+            + "\n\n> 组会后已继续验证任务补空间扰动及自适应恢复；当前构造仍可被清理。"
+            + f"最新结果见 [后续实测]({latest})。以下保留组会前汇报版本。\n"
             + body
         )
     (root / "group_meeting.md").write_text(meeting_text, encoding="utf-8")

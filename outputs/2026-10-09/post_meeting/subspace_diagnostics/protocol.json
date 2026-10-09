@@ -1,0 +1,12 @@
+{
+  "parent": "outputs/2026-10-09/post_meeting/subspace_probe",
+  "coefficient": 0.5,
+  "contrasts": ["V_layernorm_component", "V_non_layernorm_component", "FC_development_selected"],
+  "fc_selection": "Use the utility-feasible FC preset with lowest mean merged development accuracy in the parent screen; no test-based choice.",
+  "decomposition": "Split the actual published V edit into the LayerNorm affine-null component and its orthogonal remainder; do not rescale either component.",
+  "attacks": ["author_AGA", "independent_data_projection_FC", "independent_data_pretrained_completion_FC"],
+  "test_usage": "Fixed causal contrasts and one FC configuration selected from earlier training development data; no test hyperparameter search.",
+  "design_timing": "Designed after the parent's V recovery result; not an independent pre-registration.",
+  "training": "none",
+  "parent_metric_reuse": "Original and full V standalone/direct/AGA counts are copied with provenance, not counted as new evaluations."
+}
