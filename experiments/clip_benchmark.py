@@ -162,7 +162,7 @@ def merge(anchor, left, right, coefficient: float):
 
 
 @torch.no_grad()
-def evaluate(model, head, loader, device: str):
+def evaluate(model, head, loader, device: str, prediction_sink=None):
     from modeling import ImageClassifier
     from utils import get_logits
 
@@ -174,6 +174,8 @@ def evaluate(model, head, loader, device: str):
     for images, labels in loader:
         logits = get_logits(images.to(device, non_blocking=True), classifier)
         prediction = logits.argmax(-1).cpu()
+        if prediction_sink is not None:
+            prediction_sink(prediction, labels)
         correct += int((prediction == labels).sum())
         count += labels.numel()
     torch.cuda.synchronize()
