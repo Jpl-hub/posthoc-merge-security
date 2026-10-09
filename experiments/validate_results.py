@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 
 
@@ -276,7 +277,108 @@ def validate(path: Path):
     print(json.dumps(report))
 
 
+def validate_subspace(path: Path):
+    protocol_bytes = (path / "protocol.json").read_bytes()
+    protocol = json.loads(protocol_bytes)
+    meta = json.loads((path / "metadata.json").read_text())
+    rows = json.loads((path / "results.json").read_text())
+    presets = json.loads((path / "development_screen.json").read_text())
+    selection = json.loads((path / "selection.json").read_text())
+    indices = json.loads((path / "training_indices.json").read_text())
+    subspaces = json.loads((path / "subspaces.json").read_text())
+    assert meta["completed"] and meta["training"] == "none"
+    assert meta["config_sha256"] == hashlib.sha256(protocol_bytes).hexdigest()
+    assert (
+        meta["data_indices_sha256"]
+        == hashlib.sha256((path / "training_indices.json").read_bytes()).hexdigest()
+    )
+    for task, splits in indices.items():
+        assert len(splits["calibration"]) == protocol["calibration_samples"]
+        assert len(splits["attack"]) == protocol["attack_samples"]
+        assert len(splits["development"]) == protocol["development_samples"][task]
+        flattened = [i for values in splits.values() for i in values]
+        assert len(flattened) == len(set(flattened))
+        assert min(flattened) >= 0 and max(flattened) < {"MNIST": 60000, "SVHN": 73257}[task]
+    assert len(subspaces) == 24
+    for item in subspaces:
+        for field in ["MNIST", "SVHN_on_MNIST_expert"]:
+            stats = item[field]
+            assert stats["rank"] + stats["complement_rank"] == 768
+            assert stats["retained_fraction"] >= protocol["retained_energy"]
+            assert stats["tokens"] == 50 * protocol["calibration_samples"]
+    assert len(presets) == len(protocol["layers"]) * len(protocol["targets"]) * len(
+        protocol["strengths"]
+    )
+    assert all(p["check"]["main_space_relative_leakage_float32"] < 1e-5 for p in presets)
+    for row in rows:
+        expected_n = (
+            {"MNIST": 10000, "SVHN": 26032}
+            if row["split"] == "official_test"
+            else protocol["development_samples"]
+        )
+        assert row["n"] == expected_n[row["dataset"]]
+        assert row["top1"] == row["correct"] / row["n"]
+        assert 0 <= row["correct"] <= row["n"] and math.isfinite(row["top1"])
+    development = [r for r in rows if r["split"] == "development"]
+    assert len(development) == 3 * (len(presets) + 1)
+    lookup = {(r["preset"], r["group"], r["dataset"]): r for r in development}
+    assert len(lookup) == len(development)
+    original_utility = lookup["unprotected", "standalone", "MNIST"]["top1"]
+    for preset in presets:
+        utility = lookup[preset["name"], "standalone", "MNIST"]["top1"]
+        mean_merged = (
+            sum(lookup[preset["name"], "direct", task]["top1"] for task in ["MNIST", "SVHN"]) / 2
+        )
+        assert abs(preset["utility_loss_pp"] - 100 * (original_utility - utility)) < 1e-10
+        assert abs(preset["mean_merged_accuracy"] - mean_merged) < 1e-10
+        assert preset["utility_feasible"] == (
+            preset["utility_loss_pp"] <= protocol["utility_budget_pp"] + 1e-9
+        )
+    feasible = [p for p in presets if p["utility_feasible"]]
+    expected = (
+        min(feasible, key=lambda p: (p["mean_merged_accuracy"], p["strength"]))
+        if feasible
+        else None
+    )
+    assert selection["selected"] == expected
+    assert selection["feasible_count"] == len(feasible)
+    test = [r for r in rows if r["split"] == "official_test"]
+    assert len(test) == (24 if expected else 0)
+    if expected:
+        for preset in ["unprotected", expected["name"]]:
+            subset = [r for r in test if r["preset"] == preset]
+            assert len(subset) == 12
+            assert {r["group"] for r in subset} == {
+                "standalone",
+                "direct",
+                "AGA_standalone",
+                "AGA",
+                "projection_standalone",
+                "projection",
+                "completion_standalone",
+                "completion",
+            }
+    report = dict(
+        status="passed",
+        checks=[
+            "protocol_and_index_hashes",
+            "disjoint_training_subsets",
+            "all_layer_token_counts_and_pca_energy",
+            "preset_count_and_projection_arithmetic",
+            "accuracy_counts_and_finiteness",
+            "development_only_selection",
+            "complete_tests_with_matched_attack_controls",
+        ],
+        development_rows=len(development),
+        official_test_rows=len(test),
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
-    validate(Path(parser.parse_args().output))
+    parser.add_argument("--subspace", action="store_true", help="Validate the subspace probe.")
+    args = parser.parse_args()
+    (validate_subspace if args.subspace else validate)(Path(args.output))

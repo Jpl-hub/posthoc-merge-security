@@ -465,7 +465,136 @@ def run(root: Path):
     print("FIGURES_WRITTEN", out)
 
 
+def plot_subspace(root: Path):
+    """Independent post-meeting probe; leave earlier report figures intact."""
+    metadata = json.loads((root / "metadata.json").read_text())
+    assert metadata["completed"]
+    subspaces = json.loads((root / "subspaces.json").read_text())
+    presets = json.loads((root / "development_screen.json").read_text())
+    selected = json.loads((root / "selection.json").read_text())["selected"]
+    rows = json.loads((root / "results.json").read_text())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.8), layout="constrained")
+    values = [r for r in subspaces if r["site"].startswith("V:")]
+    x = list(range(1, 13))
+    for i, (task, label) in enumerate(
+        [("MNIST", "MNIST"), ("SVHN_on_MNIST_expert", "SVHN on MNIST expert")]
+    ):
+        axes[0].plot(x, [r[task]["rank"] for r in values], "o-", color=COLORS[i], label=label)
+    axes[0].set(
+        xlabel="Transformer block (1-based)",
+        ylabel="PCA dimensions for 99.99% energy",
+        ylim=(0, 790),
+        title="Attention input dimensions",
+    )
+    axes[0].legend(fontsize=7)
+    for i, (key, label) in enumerate(
+        [
+            ("MNIST_expert_MNIST", "MNIST expert / MNIST"),
+            ("MNIST_expert_SVHN", "MNIST expert / SVHN"),
+            ("unprotected_merge_MNIST", "Merged model / MNIST"),
+            ("unprotected_merge_SVHN", "Merged model / SVHN"),
+        ]
+    ):
+        axes[1].semilogy(
+            x,
+            [max(r["input_complement"][key]["fraction"], 1e-12) for r in values],
+            "o-",
+            color=COLORS[i],
+            label=label,
+            markersize=3,
+        )
+    axes[1].set(
+        xlabel="Transformer block (1-based)",
+        ylabel="Input energy outside MNIST PCA span",
+        title="Calibration distribution shift",
+    )
+    axes[1].legend(fontsize=6.8)
+    fig.suptitle("256 training images per task; all tokens; one seed", fontsize=10)
+    save(fig, out, "subspaces")
+
+    fig, ax = plt.subplots(figsize=(5.4, 3.4), layout="constrained")
+    for i, (layer, target) in enumerate([(0, "V"), (0, "FC"), (11, "V"), (11, "FC")]):
+        group = [p for p in presets if p["site"] == f"{target}:{layer}"]
+        ax.plot(
+            [p["utility_loss_pp"] for p in group],
+            [100 * p["mean_merged_accuracy"] for p in group],
+            "o-",
+            color=COLORS[i],
+            label=f"{target}, block {layer + 1}",
+            markersize=4,
+        )
+    if selected:
+        ax.scatter(
+            [selected["utility_loss_pp"]],
+            [100 * selected["mean_merged_accuracy"]],
+            marker="*",
+            s=125,
+            color="black",
+            label="Selected using development data",
+            zorder=4,
+        )
+    ax.axvline(0.5, ls="--", lw=0.8, color="gray", label="0.5 pp utility budget")
+    ax.set_xscale("symlog", linthresh=0.5)
+    ax.set_xticks([0, 0.5, 5, 50], labels=["0", "0.5", "5", "50"])
+    ax.set(
+        xlabel="Standalone MNIST development loss (pp; symlog)",
+        ylabel="Mean merged development accuracy (%)",
+        title="Fixed strength grid: 0.1, 1, 10, 100",
+        ylim=(0, 105),
+    )
+    ax.legend(fontsize=7)
+    ax.grid(alpha=0.15)
+    save(fig, out, "development_screen")
+    if selected:
+        groups = ["direct", "AGA", "projection", "completion"]
+        fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.7), layout="constrained")
+        for ax, dataset in zip(axes, ["MNIST", "SVHN"], strict=True):
+            for i, (preset, label) in enumerate(
+                [("unprotected", "Unprotected, same attack"), (selected["name"], "Protected")]
+            ):
+                accuracy = [
+                    100
+                    * next(
+                        r["top1"]
+                        for r in rows
+                        if r["split"] == "official_test"
+                        and r["preset"] == preset
+                        and r["group"] == group
+                        and r["dataset"] == dataset
+                    )
+                    for group in groups
+                ]
+                ax.plot(range(4), accuracy, "o-", color=COLORS[i], label=label)
+                for j, value in enumerate(accuracy):
+                    ax.annotate(
+                        f"{value:.2f}",
+                        (j, value),
+                        xytext=(0, 7 if i == 0 or value < 20 else -12),
+                        textcoords="offset points",
+                        ha="center",
+                        fontsize=7,
+                    )
+            ax.set(
+                xticks=range(4),
+                xticklabels=["Direct", "AGA", "Projection", "Pretrained\ncompletion"],
+                ylim=(0, 108),
+                ylabel="Merged top-1 accuracy (%)",
+                title=dataset,
+            )
+            ax.grid(axis="y", alpha=0.2)
+        axes[0].legend(fontsize=7, loc="lower right")
+        fig.suptitle("Full official tests; selected on development data; one seed", fontsize=10)
+        save(fig, out, "attacks")
+    print("SUBSPACE_FIGURES_WRITTEN", out)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
-    run(Path(parser.parse_args().output))
+    parser.add_argument(
+        "--subspace", action="store_true", help="Plot the standalone subspace probe."
+    )
+    args = parser.parse_args()
+    (plot_subspace if args.subspace else run)(Path(args.output))

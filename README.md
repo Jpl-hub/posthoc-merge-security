@@ -7,7 +7,7 @@
 - 不执行模型训练或额外微调。
 - toy/matrix 机制验证与真实数据集准确率分开记录。
 - 使用作者真实 AGA 函数；源代码保持原样并固定 commit。
-- 保护后先检查函数等价性，再评价攻击及融合效果。
+- 严格等价保护检查函数等价性；近似后处理明确校准来源与独立效用损失，再评价攻击及融合效果。
 - 数据、checkpoint、完整日志和依赖缓存仅保存在服务器。
 - 不上传凭据、登录状态、模型权重或原始数据。
 
@@ -75,6 +75,8 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
 - [文献核对](outputs/2026-10-09/literature_triage.md)
 - [研究方向审查](outputs/2026-10-09/research_direction_review.md)
 - [秩编辑与完整 FFN 重表示：数学依据、攻击与全部失败结果](outputs/2026-10-09/candidate_direction.md)
+- [组会后调整：真实任务补空间扰动](outputs/2026-10-09/post_meeting/review.md)
+- [组会后实测：直接融合失效，AGA 仍可恢复](outputs/2026-10-09/post_meeting/report.md)
 
 本轮新增入口（服务器运行；重新执行应指定新的输出目录以保留旧结果）：
 
@@ -89,6 +91,17 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark
 秩编辑使用无数据对照与明确标注的合成校准；FFN 新映射和恢复攻击有闭式参数拟合，不能称完全不拟合参数。单层改写保住独立效用但可恢复，四层改写损失超预算，均不计作有效保护。分类 head 与数据入口检查不计作八任务融合复现。
 
 本仓库不将论文报告数字记作我们的结果。head permutation 被自适应 matching 恢复时应作为负面结果保留。当前未宣称得到可抵抗自适应攻击的强防御。
+
+组会后新增独立的真实校准实验，保留此前所有结果。先准备官方 SVHN train（图片仅留服务器），再运行；开发选择使用训练集内互斥子集，不使用官方 test 选配置。
+
+```bash
+python -c 'from torchvision.datasets import SVHN; SVHN("data", split="train", download=True)'
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 JAX_PLATFORMS=cpu python experiments/subspace_probe.py
+python experiments/validate_results.py --subspace --output outputs/2026-10-09/post_meeting/subspace_probe
+python experiments/plot_results.py --subspace --output outputs/2026-10-09/post_meeting/subspace_probe
+```
+
+配置固定单层、输入主子空间保留阈值及随机扰动强度，不叠加旋转、置换或压缩。最终测试仅评价开发集选出的一个配置；攻击者使用独立训练图片重新估计 PCA，包含原 AGA、投影消除和 pretrained 补全。训练集开发子集并非原专家训练时的 held-out validation，属于本次局限。
 
 ## 工程检查
 

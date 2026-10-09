@@ -409,16 +409,22 @@ MLP 附录的原始欧氏 margin 条件不能直接保证代码中的 cosine mat
 参考：[论文 v1](https://arxiv.org/abs/2606.30360v1)、[作者代码](https://github.com/krumpguo/secure-merge-attack)、[Task Arithmetic](https://github.com/mlfoundations/task_vectors)。数字均取自本次程序输出；论文数字未填入结果表。
 """
     (root / "experiment_details.md").write_text(details, encoding="utf-8")
-    (root / "group_meeting.md").write_text(
-        meeting_report(
-            real,
-            rank,
-            polynomial_runs,
-            real_count=len(all_rows) - len(mechanism),
-            mechanism_count=len(mechanism),
-        ),
-        encoding="utf-8",
+    meeting_text = meeting_report(
+        real,
+        rank,
+        polynomial_runs,
+        real_count=len(all_rows) - len(mechanism),
+        mechanism_count=len(mechanism),
     )
+    if (root / "post_meeting/report.md").exists():
+        title, body = meeting_text.split("\n", 1)
+        meeting_text = (
+            title
+            + "\n\n> 组会后已独立验证真实任务补空间扰动：保住 MNIST、破坏直接融合，但仍被 AGA 恢复。"
+            + "最新结果见 [组会后简报](post_meeting/report.md)。以下保留组会前汇报版本。\n"
+            + body
+        )
+    (root / "group_meeting.md").write_text(meeting_text, encoding="utf-8")
     environment = f"""# 实验环境
 
 日期：2026-10-09；运行位置：租用服务器；本地仅保存轻量文件。
