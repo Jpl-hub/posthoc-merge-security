@@ -161,6 +161,18 @@ L(\theta_0+\lambda D(\tau)+\lambda\tau_o)
 
 **最小实验。** 先测保护前 task vector 的层级敏感度与 scale 曲线，使用作者融合/评估代码；与 PaRaMS pruning 的 matched-utility 对照一起做。没有可复用的闭式构造前只记录假设，不直接开大规模“组合技巧”搜索。
 
+## 本轮补读：不可逆处理与结构重表示
+
+[Defending Unauthorized Model Merging via Dual-Stage Weight Protection](https://www.openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf)，CVPR 2026，称 MergeGuard。§5 式 (1)–(3) 的 Stage 1 是有标签任务损失加 L2 正则的微调，完整方法不符合本课题限制。Stage 2 式 (4) 是免训练的 masked task-vector negation，但选关键层需要测任务准确率，不能称严格 data-free；Table 4 已有只用 Stage 2 的消融。§7 / Table 5 只测权重减法和带数据的梯度投影，不是任意自适应恢复。式 (6) 的曲率解释依赖局部假设，不能当作对所有融合方法的安全证明。本文未运行 MergeGuard；也没有把它与早期同名的合并检测方法混用。
+
+[Task Singular Vectors: Reducing Task Interference in Model Merging](https://www.openaccess.thecvf.com/content/CVPR2025/papers/Gargiulo_Task_Singular_Vectors_Reducing_Task_Interference_in_Model_Merging_CVPR_2025_paper.pdf)，CVPR 2025。§4.1 式 (7) 的 TSV-C 对 task delta 作低秩压缩；§4.2 / Algorithm 1 将奇异向量去相关以改善融合。Table 3 的原文压缩结果不能转写成保护证据。低秩和信息损失甚至可以促进融合，因此“不可逆”不是安全的充分条件。[作者代码与资源](https://github.com/AntoAndGar/task_singular_vectors)。
+
+[SVD-LLM: Truncation-aware Singular Value Decomposition for Large Language Model Compression](https://arxiv.org/abs/2403.07378v5)，ICLR 2025 对应 arXiv v5。§3.1 式 (1)、Theorem 3.2 / Corollary 3.3 已给出校准激活上的低秩误差目标及谱截断损失。v5 §3.2 / Appendix A.1 的后续参数更新含 LoRA 微调；不能把完整流水线称为免微调。我们的谱投影只借用已知的低秩近似依据，没有执行该微调，也不是 SVD-LLM 复现。[官方实现](https://github.com/AIoT-MLSys-Lab/SVD-LLM)。
+
+**本次检索范围。** 在原始核心论文之外，定向检索 2024–2026 的 model unmerging、rank reduction、irreversible protection、weight protection、结构近似及公开 checkpoint 资源，并读取上述三篇原文的方法和有关实验。没有发现可直接认定为“低性能损失即保证不可融合”的定理；这只是有限检索结果，不是新颖性证明。AAAI 最终版 MergeBarrier PDF 本轮下载失败，仍明确使用已读的 arXiv v1，未伪称已核对最终稿。
+
+**当前具体研究问题。** 低秩截断在校准分布上控制功能误差，却改变 AGA 使用的子空间；是否仍会被 pretrained 补全恢复？另一条小规模结构实验将整个 FFN 拟合为低维二次映射，移除该块原 W1/W2，而非只逐神经元发布 W2 的 Taylor 系数。它与 MergeBarrier、TaylorMLP、低秩近似和功能蒸馏直接相关，不能只因系数格式不同就称新方法。安全目标是抵抗共享格式融合及回到原架构的 feature-LS，结果和数学边界另记在具体方向报告中。
+
 ## 组会向导师确认的三个问题
 
 1. “不微调”是否允许公开无标签校准、解析 LS/量化，以及独立效用损失上限 0.5 pp？还是同时要求严格 data-free 和函数等价？

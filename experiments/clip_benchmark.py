@@ -101,7 +101,7 @@ def protect_params(model, anchor, source: Path, seed: int, max_iter: int):
 
 
 @torch.no_grad()
-def recover(model, anchor, author, output: Path):
+def recover(model, anchor, author, output: Path, skip_mlp_layers=()):
     recovered = copy.deepcopy(model).cpu().eval()
     state = recovered.state_dict()
     reference = anchor.state_dict()
@@ -124,14 +124,17 @@ def recover(model, anchor, author, output: Path):
         assert set(new) == expected, (layer, expected, set(new))
         assert all(torch.isfinite(v).all() for v in new.values()), layer
         state.update({key: value.cpu() for key, value in new.items()})
-        mlp_prefix = f"model.visual.transformer.resblocks.{layer}.mlp."
-        permutation = author["solve_permutation"](
-            state[mlp_prefix + "c_fc.weight"], reference[mlp_prefix + "c_fc.weight"]
-        )
-        assert permutation is not None
-        for key in ["c_fc.weight", "c_fc.bias"]:
-            state[mlp_prefix + key] = state[mlp_prefix + key][permutation]
-        state[mlp_prefix + "c_proj.weight"] = state[mlp_prefix + "c_proj.weight"][:, permutation]
+        if layer not in skip_mlp_layers:
+            mlp_prefix = f"model.visual.transformer.resblocks.{layer}.mlp."
+            permutation = author["solve_permutation"](
+                state[mlp_prefix + "c_fc.weight"], reference[mlp_prefix + "c_fc.weight"]
+            )
+            assert permutation is not None
+            for key in ["c_fc.weight", "c_fc.bias"]:
+                state[mlp_prefix + key] = state[mlp_prefix + key][permutation]
+            state[mlp_prefix + "c_proj.weight"] = state[mlp_prefix + "c_proj.weight"][
+                :, permutation
+            ]
         records.append({"layer": layer, "seconds": time.perf_counter() - t0})
         print("RECOVERED_LAYER", layer, records[-1]["seconds"], flush=True)
     recovered.load_state_dict(state, strict=True)
