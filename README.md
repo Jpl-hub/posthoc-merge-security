@@ -23,7 +23,7 @@ git clone https://github.com/mlfoundations/task_vectors.git external/task_vector
 git -C external/task_vectors checkout 826a64c67082fab0f40628233287948f0f8d7fa3
 ```
 
-Checkpoint 来源是 [Task Arithmetic 官方 README](https://github.com/mlfoundations/task_vectors#checkpoints) 的 Google Drive。仅下载 B/32 的 pretrained、MNIST、SVHN 和对应 classification heads。`checkpoint_manifest.json` 保存文件来源、大小及 SHA256；下载文件不进入 Git。
+Checkpoint 来源是 [Task Arithmetic 官方 README](https://github.com/mlfoundations/task_vectors#checkpoints) 的 Google Drive。默认只下载双任务所需文件；`--all-tasks` 扩展到八任务。`configs/checkpoints.json` 固定已取得文件的 SHA256；未取得文件不填造指纹。下载文件不进入 Git。
 
 ## 运行
 
@@ -31,15 +31,26 @@ Checkpoint 来源是 [Task Arithmetic 官方 README](https://github.com/mlfounda
 python experiments/record_environment.py
 python experiments/download_checkpoints.py
 python experiments/mechanisms.py --seeds 20261009 20261010 20261011
-OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --datasets MNIST SVHN --coefficients 0.2 0.5
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --datasets MNIST SVHN --coefficients 0.2 0.5 --attack-all
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/layernorm_posthoc.py --strengths 1 10
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/low_activity_posthoc.py
 python experiments/validate_results.py
 python experiments/plot_results.py
+python experiments/build_report.py
 ```
 
 `clip_benchmark.py` 读取 `checkpoints/ViT-B-32/`，使用 MNIST/SVHN 官方 test splits；数据下载到 `data/`。保护只在 MNIST 模型上施加；第二模型是未保护的 SVHN。0.2 与 0.5 在评价前固定，不在 test set 上调参。这是两任务独立复现，不能直接与论文八任务表格相比。
 
 默认输出 `outputs/2026-10-09/`。脚本支持 `--output`；benchmark 也支持 `--data`、`--checkpoints`、`--author-repo`、`--batch-size` 等配置。所有重型操作在服务器执行，本地只保存轻量代码与交付文件。
+
+PaRaMS 基线直接调用 [官方实现](https://github.com/ISCT-W/PaRaMS)，源码指纹在 `configs/sources.json`。需另装 CPU JAX；独立 ViT MLP 置换组使用一轮精确 assignment。
+
+```bash
+git clone https://github.com/ISCT-W/PaRaMS.git external/PaRaMS
+git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
+python -m pip install -r requirements-params.txt
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --protection params --attack-all --output outputs/2026-10-09/params
+```
 
 ## 研究记录
 
@@ -49,6 +60,7 @@ python experiments/plot_results.py
 - [执行记录](outputs/2026-10-09/experiment_log.md)
 - [中文组会报告](outputs/2026-10-09/group_meeting.md)
 - [结果表](outputs/2026-10-09/results.csv)
+- [八任务资源与缺项](outputs/2026-10-09/eight_task/status.md)
 
 本仓库不将论文报告数字记作我们的结果。head permutation 被自适应 matching 恢复时应作为负面结果保留。当前未宣称得到可抵抗自适应攻击的强防御。
 

@@ -29,11 +29,13 @@ def run(root: Path):
     mechanism = read(root, "mechanism_results.json", [])
     real = read(root, "clip_results.json", [])
     ln = read(root, "layernorm/layernorm_results.json", [])
+    low = read(root, "low_activity/low_activity_results.json", [])
     mm = read(root, "mechanism_metadata.json", {})
     cm = read(root, "clip_metadata.json", {})
     env = read(root, "environment.json", {})
     lm = read(root, "layernorm/layernorm_metadata.json", {})
-    all_rows = mechanism + real + ln
+    lowm = read(root, "low_activity/low_activity_metadata.json", {})
+    all_rows = mechanism + real + ln + low
     with (root / "results.csv").open("w", newline="", encoding="utf-8") as stream:
         fields = sorted(set().union(*(row.keys() for row in all_rows)))
         writer = csv.DictWriter(stream, fieldnames=fields)
@@ -72,6 +74,46 @@ def run(root: Path):
         ]
         return f"{100 * hit[0]['top1']:.2f}%" if hit else "未完成"
 
+    def average_accuracy(group, coef):
+        values = [r["top1"] for r in real if r["group"] == group and r["coefficient"] == coef]
+        return 100 * statistics.mean(values) if len(values) == 2 else None
+
+    merge_labels = [
+        ("D_unprotected_merge", "未保护", "无"),
+        ("E_protected_merge", "正交基变换 + MLP 置换", "无"),
+        ("F_AGA_merge", "正交基变换 + MLP 置换", "仅保护模型 AGA"),
+    ]
+    if cm.get("attack_all"):
+        merge_labels += [
+            ("G_AGA_all_unprotected_merge", "未保护", "全部模型 AGA"),
+            ("H_AGA_all_protected_merge", "正交基变换 + MLP 置换", "全部模型 AGA"),
+        ]
+    merge_rows = []
+    for coef in cm.get("coefficients", [0.2, 0.5]):
+        direct_avg = average_accuracy("E_protected_merge", coef)
+        for group, protection, attack in merge_labels:
+            avg = average_accuracy(group, coef)
+            delta = avg - direct_avg if avg is not None and direct_avg is not None else None
+            merge_rows.append(
+                [
+                    protection,
+                    attack,
+                    str(coef),
+                    accuracy(group, "MNIST", coef),
+                    accuracy(group, "SVHN", coef),
+                    f"{avg:.2f}" if avg is not None else "未完成",
+                    f"+{delta:.2f}"
+                    if delta is not None
+                    and "AGA" in attack
+                    and group != "G_AGA_all_unprotected_merge"
+                    else "—",
+                ]
+            )
+    merge_table = table(
+        ["保护", "攻击", "TA 系数", "MNIST (%)", "SVHN (%)", "Avg (%)", "↑Δ (pp)"],
+        merge_rows,
+    )
+
     real_table = table(
         ["组别", "系数", "MNIST", "SVHN"],
         [
@@ -88,15 +130,6 @@ def run(root: Path):
                 accuracy("B_protected", "SVHN"),
             ],
             ["C：B 经 AGA 恢复", "—", accuracy("C_AGA", "MNIST"), accuracy("C_AGA", "SVHN")],
-            *[
-                [label, str(coef), accuracy(group, "MNIST", coef), accuracy(group, "SVHN", coef)]
-                for coef in [0.2, 0.5]
-                for group, label in [
-                    ("D_unprotected_merge", "D：未保护融合"),
-                    ("E_protected_merge", "E：保护后直接融合"),
-                    ("F_AGA_merge", "F：恢复后融合"),
-                ]
-            ],
         ],
     )
     ln_text = "候选实验尚未完成，不计入防御效果结论。"
@@ -123,21 +156,48 @@ def run(root: Path):
                 ]
             )
         ln_text = table(["MNIST 全测试集", *[f"扰动强度 {s:g}" for s in strengths]], values)
-        ln_text += "\n\n所有参数修改均为解析后处理，无训练、无校准数据。保护误差须通过脚本阈值 $10^{-4}$。canonicalization 使用公开 LayerNorm 参数，不需要秘密或原始训练数据。比较原 AGA 与自适应攻击时，同时保留 canonical 未保护融合对照。"
+        ln_text += "\n\n解析后处理，无训练、无校准数据。函数误差通过 $10^{-4}$ 阈值。攻击者只需公开 LayerNorm 参数即可消去空方向；canonical 未保护融合是相同参数表示下的对照。原 AGA 及自适应攻击后准确率均接近未保护融合，故该候选未形成有效保护。"
         ln_text += "\n\n![LayerNorm 后处理探索](figures/layernorm_exploration.png)"
+        ln_text += "\n\n图 4：两档扰动强度；单种子、MNIST 完整测试集。纵轴放大至高准确率区域；点表示准确率，不画统计误差条。"
+    low_text = "实验未完成。"
+    low_speech = ""
+    if low and lowm:
+        low_groups = [
+            ("low_activity_standalone", "保护后 standalone"),
+            ("low_activity_AGA", "AGA standalone"),
+            ("low_activity_projection_AGA", "低活跃投影 + AGA standalone"),
+            ("low_activity_direct_merge", "保护后直接融合"),
+            ("low_activity_AGA_merge", "AGA 后融合"),
+            ("low_activity_projection_AGA_merge", "低活跃投影 + AGA 后融合"),
+            ("low_activity_projected_baseline_merge", "投影后的未保护融合对照"),
+        ]
+        low_text = table(
+            ["设置", "MNIST (%)"],
+            [
+                [label, f"{100 * next(r['top1'] for r in low if r['group'] == group):.2f}"]
+                for group, label in low_groups
+            ],
+        )
+        standalone = next(r for r in low if r["group"] == "low_activity_standalone")
+        attacked = next(r for r in low if r["group"] == "low_activity_AGA_merge")
+        adaptive = next(r for r in low if r["group"] == "low_activity_projection_AGA_merge")
+        low_text += f"\n\n预设 standalone 损失预算 0.5 pp，本次损失 {(0.9969 - standalone['top1']) * 100:.2f} pp，通过预算。特征误差为 {standalone['feature_error']:.3f}，因此属于近似保效用后处理，不是函数等价变换。AGA 后融合 {100 * attacked['top1']:.2f}%，自适应攻击后 {100 * adaptive['top1']:.2f}%，未得到明显保护。单任务、单种子结果不足以支持泛化或统计显著性。"
+        low_speech = f"随后我用 32 张程序生成的笔画图像，提取最后四层的低活跃输入方向，构造不含梯度更新的解析扰动。预先规定独立准确率损失不超过 0.5 个百分点。实际只损失 {(0.9969 - standalone['top1']) * 100:.2f} 个百分点，但 AGA 后融合仍达到 {100 * attacked['top1']:.2f}%，加低活跃方向投影攻击后是 {100 * adaptive['top1']:.2f}%。所以它保留效用，却没有解决恢复攻击。"
     meeting = rf"""# 2026-10-09 组会：无微调的模型融合保护
 
 ## 研究问题
 
 对已经训练好的模型增加后处理保护：不再微调，尽量不使用原始训练数据，保持 standalone utility，阻止未经授权融合，并抵抗恢复攻击。
 
-今天没有执行模型训练。完成 {len(mechanism)} 条机制验证、{len(real)} 条真实模型评估{("、" + str(len(ln)) + " 条 LayerNorm 候选评估") if lm else ""}。尚未得到可抵抗自适应攻击的强防御。
+目标不仅是隐藏对应关系，而是让攻击者完成重新匹配后，仍难恢复有用的可融合表示。参数误差只能解释机制；安全结论必须落到攻击后的融合效用，并注明攻击所需信息与计算量。
+
+今天没有执行模型训练。完成 {len(mechanism)} 条机制验证、{len(real)} 条双任务评估、{len(ln)} 条 LayerNorm 候选评估、{len(low)} 条低活跃方向候选评估。这些是评估配置数，不是独立重复实验数。尚未得到可抵抗自适应攻击的强防御。
 
 ## 论文与实现
 
 AGA 用 pretrained 权重作 anchor：Attention 对 Q/K/V/O 分别逐 head 最小二乘对齐；MLP 用 cosine + Hungarian 恢复隐藏神经元顺序。ARF 在微调时扩大 Attention 与 anchor 的距离，因此不满足本课题的“仅后处理”。
 
-作者公开代码未包含完整保护、ARF 训练和 checkpoint。今天使用 Task Arithmetic 官方 B/32 checkpoint，自行实现函数等价保护，直接调用固定版本的作者 AGA 函数。属于独立复现，不是论文八任务表格的原样复现。
+作者公开代码未包含完整保护、ARF 训练和 checkpoint。今天使用 Task Arithmetic 官方 B/32 checkpoint，直接调用固定版本的 AGA、TaskVector 差分与求和、ImageClassifier 和 get_logits。新增部分是后处理候选、兼容入口及结果记录。当前正交 + 置换基线不直接标成 MergeLock、MergeBarrier 或 Table 6 的同配置方法。
 
 ## 已完成：机制验证
 
@@ -149,15 +209,31 @@ MLP 的 15 个测试配置均 100% 恢复真实置换；恢复后的参数误差
 
 ![机制验证](figures/mechanisms.png)
 
+图 1：P0 的 3 个种子；阴影为 min-max，非置信区间。MLP 恢复误差为零，单独注记，未用正数替代零值绘制对数曲线。
+
 ## 已完成：真实 CLIP 对照
 
 MNIST test：10,000；SVHN test：26,032。保护对象是 MNIST 微调模型，第二专家是 SVHN。两个融合系数预先固定，未使用测试集选择系数。测试仅评价，没有校准。
 
 {real_table}
 
+表 1：standalone 对照。MNIST 是受保护任务；SVHN 是第二任务，standalone 在 SVHN 上的数值表示迁移性能。
+
+{merge_table}
+
+表 2：参考论文表 1/4 的保护 × 攻击布局。Avg 为两个任务 Top-1 的等权算术平均，不是合并样本后的准确率。↑Δ 是攻击相对同系数“保护后直接融合”的恢复增量，单位为百分点。全部模型 AGA 是防御无关设置；未保护模型也做 AGA，衡量攻击自身带来的效用变化。双任务数值不能与论文八任务 Avg 横向比较。
+
+![防御无关攻击对照](figures/defense_agnostic.png)
+
 保护前后 16 张真实图像上的特征相对误差为 {cm.get("protected_output_error", float("nan")):.2e}。原模型与保护模型在两个完整测试集上的正确样本数相同。AGA 后全 checkpoint 参数相对误差为 {cm.get("recovered_weight_error", float("nan")):.2e}；该指标含未参与视觉推理的遗留参数，不能替代 feature error 或 accuracy。AGA 特征误差为 {cm.get("recovered_output_error", float("nan")):.4f}。
 
 ![真实模型融合](figures/clip_merging.png)
+
+图 2：全测试集、单种子，两档预设系数；纵轴从零开始。无重复实验时不画误差条。未在测试集选择融合系数。
+
+![保护与独立效用](figures/posthoc_screening.png)
+
+图 3：参考论文 Fig. 3，分别展示 standalone utility 与受保护任务的融合效用。左图纵轴放大并标明范围，右图从零开始。模型均为 ViT-B/32，融合系数 0.5；候选只在 MNIST 上筛选。攻击后融合准确率越低，才表示防御越有效。
 
 ## 已完成：后处理边界
 
@@ -198,12 +274,28 @@ $$
 
 {ln_text}
 
+## 后处理候选：合成校准低活跃方向
+
+使用 32 张无标签程序生成笔画图像，采集最后四层 LayerNorm 后激活的中心化协方差 $C$，取最低特征值的 64 维正交基 $N$。对 QKV 作 $\Delta W=UN^T$、$b'=b-\Delta W\mu$，扰动 Frobenius 范数为原权重的 1 倍，然后叠加正交与置换保护。参数、rank、层和强度在评价前固定；未使用 MNIST train/test 构造或调节扰动。
+
+对单层有 $\mathbb E\|\Delta W(x-\mu)\|^2=\operatorname{{tr}}(\Delta W C\Delta W^T)\le\lambda_{{64}}(C)\|\Delta W\|_F^2$。这是校准分布上的局部约束，不能保证整个网络或真实数据上的效用。攻击者从发布模型重算合成激活方向，并对权重与 bias 作投影消除；anchor 和其他专家使用相同投影对照。
+
+{low_text}
+
+这两种机制是本次筛选候选；尚未完成全面相关工作核查，不宣称已证明方法新颖性。
+
+## 八任务推进
+
+保持 ViT-B/32、TA 系数 0.2 和论文的一次仅保护一个专家设置。已检查官方八任务下载入口并取得全部分类 head；六个缺失专家权重均遭遇 Google Drive 配额限制。公开 HF 同架构模型的训练配置不同，不能直接当作原 checkpoint。数据还需确认 EuroSAT 原随机索引、RESISC45 split 和 SUN397 第 1 分割。
+
+当前没有八任务准确率，也没有将未复现的 MergeGuard/ARF 写入结果。资源缺项记录于 `eight_task/status.md`；待权重和划分齐备后先跑未保护八任务基线，再补官方防御。仅扩展任务数量还不足以称为 Table 6 严格复现。
+
 ## 结论与下一步
 
 1. 小任务变化下，置换和 head 内可逆变换可被 AGA 绕过；扩大变换幅度不改变理想投影结果。
 2. 精确函数等价后处理确有可用自由度，但已知对称性往往也给攻击者提供 canonicalization。
-3. 下一步优先分析“不属于易消去对称性”的小效用损失扰动：用少量公开、未标注校准输入的低活跃方向构造解析扰动，并预先固定 standalone 损失预算。该方向尚未验证，是否允许校准数据需与导师确认。
-4. 先保留 MNIST/SVHN 两任务对照，加入 head matching、LayerNorm 投影消除及直接 LS 攻击；候选通过后再扩展任务、种子和融合方法。
+3. 低活跃方向允许较大参数变化和很小准确率损失，但 AGA 仍恢复高融合效用；单靠“远离 anchor”或保持 standalone accuracy 均不足以构成保护。
+4. 双任务继续用于开发；八任务补齐后按同一协议验证。下一项机制必须同时改变对齐攻击可恢复的信息，且不依赖公开可消去的方向。有效候选才进入多种子、多任务及其他融合方法验证。
 
 ## 审读发现
 
@@ -254,6 +346,8 @@ MLP 附录的原始欧氏 margin 条件不能直接保证代码中的 cosine mat
 | P0/P1/P3 | 完成 | {len(mechanism)} 行；3 seeds；{mm.get("elapsed_seconds", 0):.3f} s |
 | P2 | {"完成" if cm else "运行中"} | {len(real)} 行；full MNIST/SVHN；{cm.get("total_seconds", 0):.3f} s |
 | LayerNorm 候选 | {"完成" if lm else "运行中"} | {len(ln)} 行；{lm.get("total_seconds", 0):.3f} s |
+| 低活跃方向候选 | {"完成" if lowm else "运行中"} | {len(low)} 行；{lowm.get("total_seconds", 0):.3f} s |
+| 八任务资源 | 部分完成 | 全部 head；6 个专家权重受下载配额限制 |
 | 结果验证 | 已通过基础检查 | 函数等价、投影恒等式、样本数及 accuracy 计数 |
 
 服务器工作目录：`/root/autodl-tmp/merge_security_20261009/`。完整日志位于其 `outputs/2026-10-09/`；本地未下载 checkpoint、数据或依赖缓存。
@@ -263,8 +357,9 @@ MLP 附录的原始欧氏 margin 条件不能直接保证代码中的 cosine mat
 ```bash
 python experiments/record_environment.py
 python experiments/mechanisms.py
-OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --datasets MNIST SVHN --coefficients 0.2 0.5
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --datasets MNIST SVHN --coefficients 0.2 0.5 --attack-all
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/layernorm_posthoc.py --strengths 1 10
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/low_activity_posthoc.py
 python experiments/validate_results.py
 python experiments/plot_results.py
 python experiments/build_report.py
@@ -291,9 +386,11 @@ python experiments/build_report.py
 
 另一个候选利用 LayerNorm 的输入约束：它的输出落在一个已知仿射超平面上。我向后续 Linear 添加在这个超平面上恒为零的参数分量，并补偿 bias。这样无需训练、也无需训练数据，理论上保持函数，却可以改变 AGA 所用的参数列空间。这是今天实际实现的新切入口，不只是重复原有旋转。
 
-不过这个空方向由公开 LayerNorm 参数决定，攻击者也能投影去掉它。所以我同时加入了 canonicalization 加 AGA 的攻击对照。这个实验无论结果是否支持候选，都能帮助我们区分“函数等价自由度”和“真正难恢复的保护”。具体结果在报告候选表中，没有完成的部分不会当作结论。
+不过这个空方向由公开 LayerNorm 参数决定，攻击者也能投影去掉它。实际保护前后准确率保持一致，但原 AGA 以及投影消除加 AGA 都恢复到接近未保护融合的准确率。因此它是一个明确的负结果。
 
-目前我不认为已经得到强防御。下一步建议先把这类易消去对称性的边界分析清楚，再研究允许极小 standalone 损失的解析扰动。如果允许少量公开未标注数据，可以利用低活跃方向设计扰动，但仍要避免回到完整微调，并把自适应攻击作为必要对照。我们先在两个任务上把证据做扎实，再扩展规模。
+{low_speech}
+
+目前没有得到强防御，但已经排除两条具体路径，并建立可复用的筛选和自适应攻击流程。八任务扩展已开始准备，官方分类 head 齐备，缺失权重遇到下载配额限制，不能用不同训练配置的模型冒充。接下来双任务用于开发，八任务用于严格验证；方法有效后再扩展种子和融合方法。
 """
     (root / "speech.md").write_text(speech, encoding="utf-8")
     print("REPORTS_WRITTEN", root, "rows", len(all_rows))

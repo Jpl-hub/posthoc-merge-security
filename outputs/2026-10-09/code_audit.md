@@ -37,6 +37,8 @@ P0/P1/P3 用 AST 从固定原文件提取三个函数并直接执行，函数体
 
 原 Task Arithmetic README 的双任务示例用 0.8，不是作者本仓库八任务攻击脚本的 0.2。新实验应显式记录 coefficient、任务数量与 checkpoint 来源，不能混用比较。
 
+本次入口直接复用攻击仓库的 `TaskVector.__init__` 与 `__add__`。两任务自适应攻击需要内存中的变换后 anchor，因此仅保留应用 task vector 的薄适配层；八任务入口直接用原 `apply_to`。分类推理复用 `ImageClassifier` 和 `get_logits`，新增循环只负责完整计数、计时和显存记录。重新执行全部对照后才更新结果。
+
 ## 数据与分类 head
 
 `eval.py` 用图像编码器、分类 head 构建 `ImageClassifier`，在 test loader 上计算 top-1。`heads.py` 查找 `head_{dataset}.pt`；不存在时使用预训练文字编码器、数据集 classnames 和 templates 创建 zero-shot head。
@@ -50,3 +52,13 @@ MNIST 数据封装调用 torchvision 自动下载 train/test；Cars 等数据仍
 固定 commit 包含攻击、Task Arithmetic、评估和数据包装代码，README 只有项目名称及一句介绍。未发现完整保护实现、ARF 训练脚本、保护 checkpoint、分类 head、模型权重或环境锁文件。函数注释提及 `protect_attention_with_general_invertible`，但仓库无该函数。
 
 Task Arithmetic 上游 README 提供 [Google Drive checkpoint 入口](https://drive.google.com/drive/folders/1u_Tva6x0p6oxu5Eo0ZZsf-520Cc_3MKw)。若不可访问，可使用同源 CLIP 的已公开下游模型做独立实验，但必须标明不是论文指定的原始 checkpoint，也不是论文表格复现。
+
+## 其他防御源码
+
+PaRaMS 官方仓库：[ISCT-W/PaRaMS](https://github.com/ISCT-W/PaRaMS)，固定 commit `4159a9a8bf253088694154d944f4583db8eca60e`。原 `src/PaRaMS/PaRaMS_algorithm.py` 的 SHA256 为 `40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60`，用原模块的 `params` 接口，不重写核心算法。
+
+- MLP 原代码用 JAX 构造成本、SciPy Hungarian 求与 anchor 最不相似的置换，而非随机置换。ViT 每层置换组互不依赖，一次完整 assignment pass 足以解决各组固定线性成本；本次显式设 `max_iter=1`，不同于上游默认 200。
+- 对角保护配置采用上游 `[0.05, 20]` uniform。实现让 Q 和 V 共享同一组因子，K 与 O 用其倒数；不能把它描述成独立 Q/V 缩放。
+- 通过原始模块加载保留 JAX 依赖，使用 CPU JAX；不修改作者文件。
+
+MergeLock 官方仓库：[hetailang/Merge-Lock](https://github.com/hetailang/Merge-Lock)，固定 commit `f01aea9d7dddf626b6b6536d2a73894feb833fb2` 仅含 README，暂无可复用保护实现。未把我们的正交基变换直接冠名为 MergeLock。源码指纹见 `configs/sources.json`。

@@ -89,7 +89,7 @@ def run(root: Path):
             title=f"({'ab'[idx]}) Author AGA recovery",
         )
         axes[idx].grid(alpha=0.2)
-    axes[0].legend(loc="upper left")
+    axes[0].legend(loc="lower right")
     fig.suptitle("Mechanism verification: 3 seeds, toy modules; shading = min-max", fontsize=10)
     save(fig, out, "mechanisms")
     p3 = [r for r in rows if r["experiment"] == "heads_plus_orthogonal"]
@@ -116,6 +116,7 @@ def run(root: Path):
     save(fig, out, "head_permutation")
     if (root / "clip_results.json").exists():
         real = json.loads((root / "clip_results.json").read_text())
+        clip_rows = real
         fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.7), layout="constrained")
         groups = ["D_unprotected_merge", "E_protected_merge", "F_AGA_merge"]
         for i, dataset in enumerate(["MNIST", "SVHN"]):
@@ -148,6 +149,40 @@ def run(root: Path):
         fig.legend(handles, labels, loc="outside lower center", ncol=2, fontsize=8)
         fig.suptitle("Official CLIP ViT-B/32 checkpoints, MNIST + SVHN two-task merge", fontsize=10)
         save(fig, out, "clip_merging")
+        if any(r["group"] == "H_AGA_all_protected_merge" for r in real):
+            fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.6), layout="constrained")
+            for i, dataset in enumerate(["MNIST", "SVHN"]):
+                groups = [
+                    "D_unprotected_merge",
+                    "F_AGA_merge",
+                    "G_AGA_all_unprotected_merge",
+                    "H_AGA_all_protected_merge",
+                ]
+                y = [
+                    100
+                    * next(
+                        r["top1"]
+                        for r in real
+                        if r["group"] == g and r["dataset"] == dataset and r["coefficient"] == 0.5
+                    )
+                    for g in groups
+                ]
+                axes[i].bar(range(4), y, color=COLORS)
+                axes[i].set(
+                    xticks=range(4),
+                    xticklabels=[
+                        "No defense",
+                        "AGA\nprotected",
+                        "All AGA\nunprotected",
+                        "All AGA\nprotected",
+                    ],
+                    ylim=(0, 105),
+                    ylabel="Test accuracy (%)",
+                    title=f"({'ab'[i]}) {dataset}",
+                )
+                axes[i].grid(axis="y", alpha=0.2)
+            fig.suptitle("Defense-agnostic AGA control: two tasks, TA coefficient 0.5", fontsize=10)
+            save(fig, out, "defense_agnostic")
     if (root / "layernorm/layernorm_metadata.json").exists():
         real = json.loads((root / "layernorm/layernorm_results.json").read_text())
         groups = [
@@ -169,23 +204,114 @@ def run(root: Path):
                 100 * next(r["top1"] for r in real if r["group"] == g and r["strength"] == strength)
                 for g in groups
             ]
-            ax.bar(
+            ax.plot(
                 np.arange(4) + (i - (len(strengths) - 1) / 2) * 0.35,
                 y,
-                width=0.35,
+                "o",
                 label=f"Null strength {strength:g}",
                 color=COLORS[i],
             )
         ax.set(
             xticks=range(4),
             xticklabels=labels,
-            ylim=(0, 105),
-            ylabel="MNIST test accuracy (%)",
+            ylim=(98.8, 100.0),
+            ylabel="MNIST accuracy (%; zoomed axis)",
             title="Post-hoc LayerNorm-null exploration (real model, full MNIST test)",
         )
         ax.grid(axis="y", alpha=0.2)
-        ax.legend(loc="upper left", fontsize=7)
+        fig.legend(*ax.get_legend_handles_labels(), loc="outside lower center", ncol=2, fontsize=8)
         save(fig, out, "layernorm_exploration")
+        low_path = root / "low_activity/low_activity_results.json"
+        if low_path.exists():
+            low = json.loads(low_path.read_text())
+
+            def get(rows, group, **filters):
+                return 100 * next(
+                    r["top1"]
+                    for r in rows
+                    if r["group"] == group and all(r.get(k) == v for k, v in filters.items())
+                )
+
+            names = [
+                "Unprotected",
+                "Basis +\npermutation",
+                "LN null +\nbasis",
+                "Low-activity\n+ basis",
+            ]
+            ln_rows = json.loads((root / "layernorm/layernorm_results.json").read_text())
+            standalone = [
+                get(clip_rows, "A_unprotected", dataset="MNIST"),
+                get(clip_rows, "B_protected", dataset="MNIST"),
+                get(ln_rows, "LN_null_plus_basis", strength=10),
+                get(low, "low_activity_standalone"),
+            ]
+            author_attack = [
+                get(clip_rows, "D_unprotected_merge", dataset="MNIST", coefficient=0.5),
+                get(clip_rows, "F_AGA_merge", dataset="MNIST", coefficient=0.5),
+                get(ln_rows, "LN_null_AGA_merge", strength=10),
+                get(low, "low_activity_AGA_merge"),
+            ]
+            adaptive_attack = [
+                author_attack[0],
+                author_attack[1],
+                get(ln_rows, "LN_null_canonical_AGA_merge", strength=10),
+                get(low, "low_activity_projection_AGA_merge"),
+            ]
+            fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.8), layout="constrained")
+            axes[0].plot(range(4), standalone, "o", color=COLORS[0])
+            axes[0].axhline(99.19, color=COLORS[3], linestyle="--", linewidth=1)
+            axes[0].text(
+                0.03,
+                0.52,
+                "Low-activity budget: 99.19%",
+                transform=axes[0].transAxes,
+                fontsize=7,
+                color=COLORS[3],
+            )
+            axes[0].set(
+                ylim=(98.8, 100.0),
+                ylabel="Accuracy (%; zoomed axis)",
+                title="(a) Standalone utility (higher is better)",
+            )
+            for x, value in enumerate(standalone):
+                axes[0].annotate(
+                    f"{value:.2f}",
+                    (x, value),
+                    xytext=(0, 5),
+                    textcoords="offset points",
+                    ha="center",
+                    fontsize=7,
+                )
+            x = np.arange(4)
+            axes[1].bar(
+                x - 0.17,
+                author_attack,
+                width=0.34,
+                color=COLORS[1],
+                label="Author AGA / no-defense reference",
+            )
+            axes[1].bar(
+                x[2:] + 0.17,
+                adaptive_attack[2:],
+                width=0.34,
+                color=COLORS[2],
+                label="Adaptive projection + AGA",
+            )
+            axes[1].set(
+                ylim=(0, 110),
+                ylabel="Accuracy (%)",
+                title="(b) Attacked merge (lower protects better)",
+            )
+            for ax in axes:
+                ax.set(xticks=range(4), xticklabels=names)
+                ax.grid(axis="y", alpha=0.2)
+            fig.legend(
+                *axes[1].get_legend_handles_labels(), loc="outside lower center", ncol=2, fontsize=7
+            )
+            fig.suptitle(
+                "Post-hoc screening: full MNIST test, one seed; TA coefficient 0.5", fontsize=10
+            )
+            save(fig, out, "posthoc_screening")
     print("FIGURES_WRITTEN", out)
 
 

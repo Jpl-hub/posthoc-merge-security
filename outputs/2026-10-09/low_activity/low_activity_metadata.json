@@ -1,0 +1,50 @@
+{
+  "total_seconds": 76.21582974400371,
+  "within_utility_budget": true,
+  "allowed_accuracy_drop_pp": 0.5,
+  "baseline_accuracy": 0.9969,
+  "construction_seconds": 1.6720346638467163,
+  "author_attack_seconds": 3.3599856060463935,
+  "adaptive_attack_seconds": 4.145902806892991,
+  "rank": 64,
+  "layers": [
+    8,
+    9,
+    10,
+    11
+  ],
+  "training": "none",
+  "calibration": "synthetic_only",
+  "attack_covariance": [
+    {
+      "layer": 8,
+      "samples": 1600,
+      "rank": 64,
+      "low_variance_fraction": 0.00020231214446047742,
+      "low_eigenvalue_max": 0.004323172703161685
+    },
+    {
+      "layer": 9,
+      "samples": 1600,
+      "rank": 64,
+      "low_variance_fraction": 0.00018395597557477228,
+      "low_eigenvalue_max": 0.0046702225714418
+    },
+    {
+      "layer": 10,
+      "samples": 1600,
+      "rank": 64,
+      "low_variance_fraction": 0.00013656423111435675,
+      "low_eigenvalue_max": 0.003524313490179202
+    },
+    {
+      "layer": 11,
+      "samples": 1600,
+      "rank": 64,
+      "low_variance_fraction": 0.0001045113756741815,
+      "low_eigenvalue_max": 0.0032376180612224306
+    }
+  ],
+  "merge_implementation": "author_TaskVector_difference_and_sum",
+  "classifier_implementation": "author_ImageClassifier_and_get_logits"
+}

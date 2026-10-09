@@ -9,7 +9,10 @@ from __future__ import annotations
 import argparse
 import copy
 import csv
+import hashlib
+import importlib.util
 import json
+import os
 import sys
 import time
 import types
@@ -68,6 +71,36 @@ def protect(model, seed: int):
 
 
 @torch.no_grad()
+def protect_params(model, anchor, source: Path, seed: int, max_iter: int):
+    """Call PaRaMS' original protection function; do not copy its algorithm."""
+    if hasattr(os, "sched_getaffinity"):
+        available = sorted(os.sched_getaffinity(0))
+        os.sched_setaffinity(0, available[:4])
+    spec = importlib.util.spec_from_file_location("params_upstream", source)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    protected = copy.deepcopy(model).cpu().eval()
+    state = module.params(
+        model.state_dict(),
+        anchor.state_dict(),
+        num_layers=12,
+        enable_permutation=True,
+        enable_scaling=True,
+        perm_config={"max_iter": max_iter, "obj": "mismatching", "tolerance": 1},
+        scaling_config={
+            "scaling_type": "diagonal",
+            "scale_min": 0.05,
+            "scale_max": 20.0,
+            "mode": "uniform",
+        },
+        rng_seed=seed,
+    )
+    protected.load_state_dict(state, strict=True)
+    return protected
+
+
+@torch.no_grad()
 def recover(model, anchor, author, output: Path):
     recovered = copy.deepcopy(model).cpu().eval()
     state = recovered.state_dict()
@@ -110,30 +143,33 @@ def recover(model, anchor, author, output: Path):
 
 @torch.no_grad()
 def merge(anchor, left, right, coefficient: float):
+    from task_vectors import TaskVector
+
     result = copy.deepcopy(anchor).cpu().eval()
     sa, sl, sr = anchor.state_dict(), left.state_dict(), right.state_dict()
-    merged = {}
-    for key, value in sa.items():
-        merged[key] = (
-            value + coefficient * (sl[key] - value + sr[key] - value)
-            if torch.is_floating_point(value)
-            else value.clone()
-        )
+    # Reuse the author's difference and addition operations unchanged. apply_to
+    # only accepts a file, whereas adaptive attacks need an in-memory anchor.
+    vector = TaskVector(sa, sl) + TaskVector(sa, sr)
+    merged = {
+        key: value + coefficient * vector.vector[key] if key in vector.vector else value.clone()
+        for key, value in sa.items()
+    }
     result.load_state_dict(merged, strict=True)
     return result
 
 
 @torch.no_grad()
 def evaluate(model, head, loader, device: str):
-    model.to(device).eval()
-    head.to(device).eval()
+    from modeling import ImageClassifier
+    from utils import get_logits
+
+    classifier = ImageClassifier(model, head).to(device).eval()
     torch.cuda.reset_peak_memory_stats()
     torch.cuda.synchronize()
     start = time.perf_counter()
     count, correct = 0, 0
     for images, labels in loader:
-        features = model(images.to(device, non_blocking=True))
-        logits = head(features)
+        logits = get_logits(images.to(device, non_blocking=True), classifier)
         prediction = logits.argmax(-1).cpu()
         correct += int((prediction == labels).sum())
         count += labels.numel()
@@ -145,8 +181,7 @@ def evaluate(model, head, loader, device: str):
         evaluation_seconds=time.perf_counter() - start,
         peak_gpu_bytes=torch.cuda.max_memory_allocated(),
     )
-    model.cpu()
-    head.cpu()
+    classifier.cpu()
     return result
 
 
@@ -183,7 +218,7 @@ def run(args):
             dataset,
             batch_size=args.batch_size,
             shuffle=False,
-            num_workers=2,
+            num_workers=0 if args.protection == "params" else 2,
             pin_memory=True,
         )
     x, _ = next(iter(loaders["MNIST"]))
@@ -192,7 +227,13 @@ def run(args):
         y = original.cuda().eval()(x).cpu()
     original.cpu()
     t0 = time.perf_counter()
-    protected = protect(original, args.seed)
+    protected = (
+        protect(original, args.seed)
+        if args.protection == "basis"
+        else protect_params(
+            original, anchor, Path(args.params_source), args.seed, args.params_max_iter
+        )
+    )
     protection_seconds = time.perf_counter() - t0
     with torch.no_grad():
         yp = protected.cuda().eval()(x).cpu()
@@ -200,8 +241,16 @@ def run(args):
     output_error = relative(yp, y)
     assert output_error < 1e-4, f"Protection is not function preserving: {output_error}"
     t0 = time.perf_counter()
-    recovered = recover(protected, anchor, author, output)
+    protected_attack = output / "protected_attack"
+    protected_attack.mkdir(exist_ok=True)
+    recovered = recover(protected, anchor, author, protected_attack)
     recovery_seconds = time.perf_counter() - t0
+    blind_models = []
+    if args.attack_all:
+        for name, model in [("MNIST", original), ("SVHN", second)]:
+            attack_dir = output / f"unprotected_{name}_attack"
+            attack_dir.mkdir(exist_ok=True)
+            blind_models.append(recover(model, anchor, author, attack_dir))
     with torch.no_grad():
         yr = recovered.cuda().eval()(x).cpu()
     recovered.cpu()
@@ -227,6 +276,11 @@ def run(args):
         ("C_AGA", recovered),
         ("second_task_unprotected", second),
     ]
+    if args.attack_all:
+        groups += [
+            ("U_AGA_unprotected", blind_models[0]),
+            ("V_AGA_second_task", blind_models[1]),
+        ]
     for group, model in groups:
         for dataset_name in args.datasets:
             metrics = evaluate(model, heads[dataset_name], loaders[dataset_name], args.device)
@@ -251,12 +305,18 @@ def run(args):
             save()
             print("BENCHMARK", json.dumps(row), flush=True)
     for coefficient in args.coefficients:
-        for group, left in [
-            ("D_unprotected_merge", original),
-            ("E_protected_merge", protected),
-            ("F_AGA_merge", recovered),
-        ]:
-            model = merge(anchor, left, second, coefficient)
+        merge_groups = [
+            ("D_unprotected_merge", original, second),
+            ("E_protected_merge", protected, second),
+            ("F_AGA_merge", recovered, second),
+        ]
+        if args.attack_all:
+            merge_groups += [
+                ("G_AGA_all_unprotected_merge", blind_models[0], blind_models[1]),
+                ("H_AGA_all_protected_merge", recovered, blind_models[1]),
+            ]
+        for group, left, right in merge_groups:
+            model = merge(anchor, left, right, coefficient)
             for dataset_name in args.datasets:
                 metrics = evaluate(model, heads[dataset_name], loaders[dataset_name], args.device)
                 row = dict(
@@ -291,8 +351,17 @@ def run(args):
         training="none",
         model="official_TaskArithmetic_ViT-B-32",
         feature_equivalence_samples=16,
+        attack_all=args.attack_all,
+        merge_implementation="author_TaskVector_difference_and_sum",
+        classifier_implementation="author_ImageClassifier_and_get_logits",
         test_usage="evaluation_only",
         tf32=False,
+        protection=args.protection,
+        protection_source_sha256=hashlib.sha256(Path(args.params_source).read_bytes()).hexdigest()
+        if args.protection == "params"
+        else None,
+        params_max_iter=args.params_max_iter if args.protection == "params" else None,
+        data_workers=0 if args.protection == "params" else 2,
     )
     (output / "clip_metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     print("CLIP_BENCHMARK_COMPLETE", json.dumps(metadata), flush=True)
@@ -311,4 +380,13 @@ if __name__ == "__main__":
     parser.add_argument("--coefficients", nargs="+", type=float, default=[0.2, 0.5])
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--seed", type=int, default=20261009)
+    parser.add_argument("--attack-all", action="store_true", help="Apply AGA to both task models.")
+    parser.add_argument("--protection", choices=["basis", "params"], default="basis")
+    parser.add_argument("--params-source", default="external/PaRaMS/src/PaRaMS/PaRaMS_algorithm.py")
+    parser.add_argument(
+        "--params-max-iter",
+        type=int,
+        default=1,
+        help="One exact assignment pass for independent ViT MLP groups.",
+    )
     run(parser.parse_args())

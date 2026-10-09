@@ -38,7 +38,8 @@ def validate(path: Path):
         real = json.loads((path / "clip_results.json").read_text())
         assert meta["protected_output_error"] < 1e-4
         expected_n = {"MNIST": 10000, "SVHN": 26032}
-        assert len(real) == 22, len(real)
+        expected_rows = 34 if meta.get("attack_all") else 22
+        assert len(real) == expected_rows, len(real)
         assert all(r["n"] == expected_n[r["dataset"]] for r in real)
         assert all(r["top1"] == r["correct"] / r["n"] for r in real)
         for dataset in meta["datasets"]:
@@ -50,6 +51,39 @@ def validate(path: Path):
             "CLIP_full_test_counts",
             "CLIP_accuracy_arithmetic",
             "CLIP_standalone_accuracy_preservation",
+        ]
+        if meta.get("attack_all"):
+            for group in ["G_AGA_all_unprotected_merge", "H_AGA_all_protected_merge"]:
+                subset = [r for r in real if r["group"] == group]
+                assert len(subset) == 4
+                assert {r["dataset"] for r in subset} == set(expected_n)
+                assert {r["coefficient"] for r in subset} == set(meta["coefficients"])
+            checks.append("CLIP_defense_agnostic_complete")
+    if (path / "layernorm/layernorm_metadata.json").exists():
+        meta = json.loads((path / "layernorm/layernorm_metadata.json").read_text())
+        ln = json.loads((path / "layernorm/layernorm_results.json").read_text())
+        assert len(ln) == 8 * len(meta["strengths"])
+        assert all(r["n"] == 10000 and r["top1"] == r["correct"] / r["n"] for r in ln)
+        assert max(r["protected_output_error"] for r in ln) < 1e-4
+        assert max(r["canonical_output_error"] for r in ln) < 1e-4
+        for row in ln:
+            if row["group"] in ["LN_null_only", "LN_null_plus_basis"]:
+                assert row["correct"] == 9969
+        checks += ["LN_function_preservation", "LN_full_test_counts", "LN_utility_preservation"]
+    if (path / "low_activity/low_activity_metadata.json").exists():
+        meta = json.loads((path / "low_activity/low_activity_metadata.json").read_text())
+        low = json.loads((path / "low_activity/low_activity_results.json").read_text())
+        assert len(low) == 7
+        assert all(r["n"] == 10000 and r["top1"] == r["correct"] / r["n"] for r in low)
+        assert all(r["training"] == "none" for r in low)
+        assert all(r["calibration_source"] == "procedural_unlabelled_strokes" for r in low)
+        standalone = next(r for r in low if r["group"] == "low_activity_standalone")
+        accepted = standalone["top1"] >= meta.get("baseline_accuracy", 0.9969) - 0.005
+        assert standalone["within_utility_budget"] == meta["within_utility_budget"] == accepted
+        checks += [
+            "low_activity_full_test_counts",
+            "low_activity_budget_record",
+            "synthetic_calibration_provenance",
         ]
     report = {"status": "passed", "checks": checks}
     (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

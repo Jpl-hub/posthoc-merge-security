@@ -99,15 +99,20 @@ def run(args):
         assert protected_error < 1e-4, (strength, protected_error)
         sub = output / f"strength_{strength:g}"
         sub.mkdir(exist_ok=True)
-        recovered = recover(candidate, anchor, author, sub)
+        author_dir = sub / "author_attack"
+        adaptive_dir = sub / "adaptive_attack"
+        author_dir.mkdir(exist_ok=True)
+        adaptive_dir.mkdir(exist_ok=True)
+        recovered = recover(candidate, anchor, author, author_dir)
         canonical_candidate = canonicalize(candidate)
         canonical_error = relative(features(canonical_candidate), y)
         assert canonical_error < 1e-4, (strength, canonical_error)
-        adaptive = recover(canonical_candidate, canonical_anchor, author, sub)
+        adaptive = recover(canonical_candidate, canonical_anchor, author, adaptive_dir)
         common = dict(
             stage="exploration",
             experiment="layernorm_affine_null",
             scope="real_MNIST_full_test",
+            dataset="MNIST",
             seed=args.seed,
             strength=strength,
             n=10000,
@@ -156,6 +161,8 @@ def run(args):
         strengths=args.strengths,
         training="none",
         calibration="none",
+        merge_implementation="author_TaskVector_difference_and_sum",
+        classifier_implementation="author_ImageClassifier_and_get_logits",
         note="Exploratory candidate with explicit adaptive canonicalization control",
     )
     (output / "layernorm_metadata.json").write_text(
