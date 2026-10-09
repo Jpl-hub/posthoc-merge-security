@@ -771,6 +771,151 @@ def validate_norm_cleanup(path: Path):
     print(json.dumps(report))
 
 
+def validate_operator_diagnostics(path, write_report=True):
+    meta = json.loads((path / "metadata.json").read_bytes())
+    config_bytes = (path / "protocol.json").read_bytes()
+    config = json.loads(config_bytes)
+    indices_bytes = (path / "training_indices.json").read_bytes()
+    indices = json.loads(indices_bytes)
+    parent_bytes = (Path(config["parent"]) / "training_indices.json").read_bytes()
+    parent = json.loads(parent_bytes)
+    rows = json.loads((path / "results.json").read_bytes())
+    profile = json.loads((path / "replacement_profile.json").read_bytes())
+    fitting = json.loads((path / "fitting.json").read_bytes())
+    assert meta["completed"] and not meta["new_defense"]
+    assert meta["test_usage"] == config["test_usage"] == "none"
+    assert meta["reused_measurements"] == 0 and meta["seed_count"] == 1
+    assert meta["config_sha256"] == hashlib.sha256(config_bytes).hexdigest()
+    assert meta["data_indices_sha256"] == hashlib.sha256(indices_bytes).hexdigest()
+    assert meta["parent_indices_sha256"] == hashlib.sha256(parent_bytes).hexdigest()
+    for task in ["MNIST", "SVHN"]:
+        assert indices["development"][task] == parent[task]["development"]
+    assert indices["fitting"]["SVHN"] == parent["SVHN"]["attack"][: config["attacker_samples"]]
+    assert (
+        indices["local_check"]["SVHN"]
+        == parent["SVHN"]["calibration"][: config["local_check_samples"]]
+    )
+    confirmation = indices["confirmation"]["SVHN"]
+    assert len(confirmation) == len(set(confirmation)) == config["confirmation_samples"]
+    assert not set(confirmation).intersection(
+        i for subset in parent["SVHN"].values() for i in subset
+    )
+    assert all(0 <= i < 73257 for i in confirmation)
+    expected = {"unprotected", "reconstruct_joint"}
+    expected.update(f"reconstruct_L{layer}" for layer in config["layers"])
+    expected.update(
+        f"replace_L{layer}_{component}"
+        for layer in config["layers"]
+        for component in config["components"]
+    )
+    expected.update(f"joint_{component}" for component in config["joint_components"])
+    assert len(expected) == 34
+    development_groups = {("standalone", "SVHN"), ("direct", "MNIST"), ("direct", "SVHN")}
+    expected_keys = {(p, "development", g, d) for p in expected for g, d in development_groups}
+    expected_keys.update(
+        (p, "confirmation", g, "SVHN")
+        for p in config["confirmation_presets"]
+        for g in ["standalone", "direct"]
+    )
+    assert len(rows) == meta["new_evaluations"] == len(expected_keys) == 110
+    assert {(r["preset"], r["split"], r["group"], r["dataset"]) for r in rows} == expected_keys
+    controls = {
+        (r["split"], r["group"], r["dataset"]): r for r in rows if r["preset"] == "unprotected"
+    }
+    for row in rows:
+        control = controls[row["split"], row["group"], row["dataset"]]
+        n = len(indices[row["split"]][row["dataset"]])
+        assert row["n"] == n and 0 <= row["correct"] <= n
+        assert row["top1"] == row["correct"] / n
+        assert row["coefficient"] == (
+            None if row["group"] == "standalone" else config["coefficient"]
+        )
+        pair = row["paired"]
+        assert all(
+            isinstance(pair[k], int) and pair[k] >= 0
+            for k in ["both_correct", "lost", "gained", "both_wrong"]
+        )
+        assert sum(pair[k] for k in ["both_correct", "lost", "gained", "both_wrong"]) == n
+        assert pair["both_correct"] + pair["gained"] == row["correct"]
+        assert pair["both_correct"] + pair["lost"] == control["correct"]
+        assert pair["loss_pp"] == 100 * (pair["lost"] - pair["gained"]) / n
+        assert 0 <= pair["exact_mcnemar_p"] <= 1
+        if row["preset"] != "unprotected":
+            assert pair["exact_mcnemar_p"] <= pair["holm_p"] <= 1
+            assert pair["family_size"] == (33 if row["split"] == "development" else 3)
+    assert len(profile) == 28 and len({p["preset"] for p in profile}) == 28
+    for item in profile:
+        assert item["replaced_keys"] and len(item["replaced_keys"]) == len(
+            set(item["replaced_keys"])
+        )
+        assert all(
+            any(
+                key.startswith(f"model.visual.transformer.resblocks.{layer}.")
+                for layer in item["layers"]
+            )
+            for key in item["replaced_keys"]
+        )
+    assert {f["layer"] for f in fitting} == set(config["layers"]) and len(fitting) == 4
+    for fit in fitting:
+        assert fit["fit"]["calibration_tokens"] == config["attacker_samples"] * 50
+        assert fit["check"]["check_tokens"] == config["local_check_samples"] * 50
+        assert fit["reconstruction_seconds"] > 0
+        check = fit["check"]
+        assert all(
+            math.isfinite(v) and v >= 0 for v in check.values() if isinstance(v, (float, int))
+        )
+        assert math.isclose(
+            check["relative_full_output_error"],
+            check["output_error_norm"] / check["target_output_norm"],
+            rel_tol=1e-9,
+        )
+        assert math.isclose(
+            check["relative_task_update_error"],
+            check["output_error_norm"] / check["task_update_output_norm"],
+            rel_tol=1e-9,
+        )
+    predictions_path = path / "artifacts/predictions.pt"
+    raw_predictions_checked = predictions_path.exists()
+    if raw_predictions_checked:
+        import torch
+
+        assert (
+            hashlib.sha256(predictions_path.read_bytes()).hexdigest() == meta["predictions_sha256"]
+        )
+        predictions = torch.load(predictions_path, map_location="cpu")
+        assert len(predictions) == len(rows)
+        for row in rows:
+            key = (row["preset"], row["split"], row["group"], row["dataset"])
+            evidence = predictions[key]
+            control = predictions[("unprotected", *key[1:])]
+            assert torch.equal(evidence["labels"], control["labels"])
+            current = evidence["prediction"] == evidence["labels"]
+            baseline = control["prediction"] == control["labels"]
+            assert int(current.sum()) == row["correct"]
+            assert int((baseline & ~current).sum()) == row["paired"]["lost"]
+            assert int((~baseline & current).sum()) == row["paired"]["gained"]
+    report = dict(
+        status="passed",
+        new_evaluations=len(rows),
+        new_defense=False,
+        raw_predictions_checked=raw_predictions_checked,
+        checks=[
+            "frozen_protocol_and_parent_provenance",
+            "fitting_check_development_confirmation_disjointness",
+            "complete_component_joint_and_reconstruction_contrasts",
+            "accuracy_and_paired_contingency_arithmetic",
+            "comparison_family_accounting",
+            "local_full_output_and_task_update_error",
+            "server_prediction_fingerprint_and_counts"
+            if raw_predictions_checked
+            else "raw_predictions_retained_on_server",
+        ],
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -785,9 +930,16 @@ if __name__ == "__main__":
         "--distribution-shift", action="store_true", help="Validate input diagnostics."
     )
     mode.add_argument("--scope-audit", action="store_true", help="Validate visual scan correction.")
+    mode.add_argument(
+        "--operator-diagnostics",
+        action="store_true",
+        help="Validate component and reconstruction controls.",
+    )
     args = parser.parse_args()
     runner = (
-        validate_scope_audit
+        validate_operator_diagnostics
+        if args.operator_diagnostics
+        else validate_scope_audit
         if args.scope_audit
         else validate_distribution_shift
         if args.distribution_shift

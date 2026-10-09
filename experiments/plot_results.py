@@ -785,6 +785,79 @@ def plot_distribution_shift(root: Path):
     print("SHIFT_FIGURE_WRITTEN", out)
 
 
+def plot_operator_diagnostics(root: Path):
+    rows = json.loads((root / "results.json").read_bytes())
+    config = json.loads((root / "protocol.json").read_bytes())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    lookup = {(r["preset"], r["split"], r["group"], r["dataset"]): r for r in rows}
+    components, layers = config["components"], config["layers"]
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.3), layout="constrained")
+    matrices = [
+        np.array(
+            [
+                [
+                    lookup[f"replace_L{layer}_{component}", "development", group, "SVHN"]["paired"][
+                        "loss_pp"
+                    ]
+                    for layer in layers
+                ]
+                for component in components
+            ]
+        )
+        for group in ["standalone", "direct"]
+    ]
+    bound = max(0.1, max(float(np.abs(m).max()) for m in matrices))
+    for ax, values, title in zip(axes, matrices, ["Standalone SVHN", "Merged SVHN"], strict=True):
+        picture = ax.imshow(values, cmap="RdBu_r", vmin=-bound, vmax=bound, aspect="auto")
+        ax.set(
+            xticks=range(len(layers)),
+            xticklabels=layers,
+            yticks=range(len(components)),
+            yticklabels=components,
+            xlabel="Transformer block",
+            title=title,
+        )
+        for i in range(len(components)):
+            for j in range(len(layers)):
+                ax.text(
+                    j,
+                    i,
+                    f"{values[i, j]:.2f}",
+                    ha="center",
+                    va="center",
+                    fontsize=8,
+                    color="white" if abs(values[i, j]) > 0.6 * bound else "black",
+                )
+    fig.colorbar(picture, ax=axes, label="Accuracy loss vs control (pp)", shrink=0.85)
+    fig.suptitle("Single-component pretrained replacement; development SVHN n=1,000", fontsize=10)
+    save(fig, out, "component_profile")
+    presets = config["confirmation_presets"]
+    labels = ["Original", "Replace blocks", "Replace MLPs", "Reconstruct MLPs"]
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0), layout="constrained")
+    for ax, group, title in zip(
+        axes, ["standalone", "direct"], ["Standalone SVHN", "Merged SVHN"], strict=True
+    ):
+        values = [100 * lookup[preset, "confirmation", group, "SVHN"]["top1"] for preset in presets]
+        ax.bar(range(len(presets)), values, color=COLORS)
+        for i, value in enumerate(values):
+            ax.text(i, value + 0.65, f"{value:.3f}", ha="center", fontsize=8)
+        ax.set(
+            xticks=range(len(presets)),
+            xticklabels=labels,
+            ylim=(0, 105),
+            ylabel="Top-1 accuracy (%)",
+            title=title,
+        )
+        ax.tick_params(axis="x", rotation=22, labelsize=7)
+        ax.grid(axis="y", alpha=0.2)
+    fig.suptitle(
+        "Fixed confirmation subset: 4,000 disjoint training images; no new defense", fontsize=10
+    )
+    save(fig, out, "operator_confirmation")
+    print("OPERATOR_FIGURES_WRITTEN", out)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -793,9 +866,16 @@ if __name__ == "__main__":
     mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
     mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
+    mode.add_argument(
+        "--operator-diagnostics",
+        action="store_true",
+        help="Plot component and reconstruction controls.",
+    )
     args = parser.parse_args()
     runner = (
-        plot_distribution_shift
+        plot_operator_diagnostics
+        if args.operator_diagnostics
+        else plot_distribution_shift
         if args.distribution_shift
         else plot_bounded_complement
         if args.bounded_complement

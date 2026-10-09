@@ -60,4 +60,6 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark
 
 21:46 再次请求六个官方专家，仍全部受 Drive 下载限制；已有 11 个文件完成指纹检查。[本次清单](retry_2146/checkpoint_manifest.json)。保留原始失败原因，不使用其他微调配置替代。
 
+22:50 重试仍缺同样六个官方专家，已有 11 个文件通过指纹检查。[本次清单](retry_2250/checkpoint_manifest.json)。本轮核对了[官方 README](https://github.com/mlfoundations/task_vectors#checkpoints) 的 Drive 入口；未找到可确认等价的官方替代来源，没有下载不同配置的专家填表。
+
 后续顺序：补齐原专家权重与数据，先运行八任务未保护基线，再按论文配置运行保护与 AGA，对照 Table 6。新机制继续在双任务环境筛选，两条工作分别保留结果。

@@ -81,6 +81,7 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
 - [首次补空间实验：完整测试](outputs/2026-10-09/post_meeting/subspace_initial.md)
 - [成分分解、MLP 扰动与无数据恢复](outputs/2026-10-09/post_meeting/followup.md)
 - [有界补空间编辑：双角色开发筛选](outputs/2026-10-09/post_meeting/bounded_notes.md)
+- [中层联合依赖与功能重建对照](outputs/2026-10-09/post_meeting/operator_notes.md)
 
 本轮新增入口（服务器运行；重新执行应指定新的输出目录以保留旧结果）：
 
@@ -133,6 +134,14 @@ python experiments/plot_results.py --bounded-complement --output outputs/2026-10
 python experiments/plot_results.py --distribution-shift --output outputs/2026-10-09/post_meeting/distribution_shift
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/bounded_complement.py --scope-audit --output outputs/2026-10-09/post_meeting/scope_audit
 python experiments/validate_results.py --scope-audit --output outputs/2026-10-09/post_meeting/scope_audit
+```
+
+中层定位使用同一作者评价与融合入口，并复用现有闭式重建；没有提出新保护。固定新增互斥训练子集复核联合替换和功能恢复，保留逐图配对计数。原始预测只在服务器保留；服务器验证会检查其指纹与计数。
+
+```bash
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/operator_diagnostics.py
+python experiments/validate_results.py --operator-diagnostics --output outputs/2026-10-09/post_meeting/operator_diagnostics
+python experiments/plot_results.py --operator-diagnostics --output outputs/2026-10-09/post_meeting/operator_diagnostics
 ```
 
 ## 工程检查
