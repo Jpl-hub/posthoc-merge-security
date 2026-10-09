@@ -69,6 +69,7 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
 - [环境](outputs/2026-10-09/environment.md)
 - [执行记录](outputs/2026-10-09/experiment_log.md)
 - [中文组会报告](outputs/2026-10-09/group_meeting.md)
+- [实验详细记录与完整对照](outputs/2026-10-09/experiment_details.md)
 - [结果表](outputs/2026-10-09/results.csv)
 - [八任务资源与缺项](outputs/2026-10-09/eight_task/status.md)
 - [文献核对](outputs/2026-10-09/literature_triage.md)

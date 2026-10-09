@@ -8,7 +8,7 @@ import json
 import statistics
 from pathlib import Path
 
-from research_report import generate
+from research_report import generate, meeting_report
 
 
 def read(root: Path, name: str, default=None):
@@ -272,7 +272,7 @@ def run(root: Path):
         paired_text += "\n\n保护与未保护对照在配对对齐后取得相同正确计数，并恢复到原始未保护融合水平。该正交基线上的独立 AGA 不是能取得最高融合效用的攻击，后续防御需同时覆盖保函数的配对对齐。"
         paired_speech = "补读文献后，我复用了作者的配对 SVD 对齐与联合 MLP 匹配。它保持独立模型功能，并把正交保护后的两任务融合恢复到原始未保护水平，说明只测独立 AGA 还不够。"
         paired_text += f"\n\n复用 RotationSymmetry 的原始 Chunk_SVD_QK、Chunk_SVD_VO、Permute_IO；配对 Kabsch 保持 QK/VO 函数，联合 FFN 权重与 bias 匹配。求解用 float64，模型保持 float32；无数据、无训练。对齐前后最大特征误差 {max(pairedm['feature_errors'].values()):.2e}。本次仅测试正交保护与既定 head 对应关系，不含一般 GL 白化或跨 head matching；不能称全面强攻击。"
-    meeting = rf"""# 2026-10-09 组会：无微调的模型融合保护
+    details = rf"""# 2026-10-09 实验详细记录
 
 ## 研究问题
 
@@ -414,7 +414,17 @@ MLP 附录的原始欧氏 margin 条件不能直接保证代码中的 cosine mat
 
 参考：[论文 v1](https://arxiv.org/abs/2606.30360v1)、[作者代码](https://github.com/krumpguo/secure-merge-attack)、[Task Arithmetic](https://github.com/mlfoundations/task_vectors)。数字均取自本次程序输出；论文数字未填入结果表。
 """
-    (root / "group_meeting.md").write_text(meeting, encoding="utf-8")
+    (root / "experiment_details.md").write_text(details, encoding="utf-8")
+    (root / "group_meeting.md").write_text(
+        meeting_report(
+            real,
+            rank,
+            polynomial_runs,
+            real_count=len(all_rows) - len(mechanism),
+            mechanism_count=len(mechanism),
+        ),
+        encoding="utf-8",
+    )
     environment = f"""# 实验环境
 
 日期：2026-10-09；运行位置：租用服务器；本地仅保存轻量文件。

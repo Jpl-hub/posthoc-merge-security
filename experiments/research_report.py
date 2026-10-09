@@ -150,3 +150,135 @@ def generate(root, rank, polynomial_runs):
             prefix + "## 实测\n\n" + "\n\n".join(detail) + ending, encoding="utf-8"
         )
     return "\n\n".join(sections), "\n\n".join(speech)
+
+
+def meeting_report(real, rank, polynomial_runs, *, real_count, mechanism_count):
+    """Meeting narrative; full controls remain in the experiment records."""
+    datasets = ["MNIST", "SVHN"]
+
+    def accuracy(rows, group, dataset="MNIST", **filters):
+        hits = [
+            r
+            for r in rows
+            if r["group"] == group
+            and r["dataset"] == dataset
+            and all(r.get(k) == v for k, v in filters.items())
+        ]
+        assert len(hits) == 1, (group, dataset, filters)
+        return 100 * hits[0]["top1"]
+
+    def pair(rows, group, **filters):
+        return " / ".join(f"{accuracy(rows, group, d, **filters):.2f}" for d in datasets)
+
+    baseline = accuracy(real, "A_unprotected")
+    results = [
+        [
+            "未保护对照",
+            f"{baseline:.2f}",
+            "0.00",
+            pair(real, "D_unprotected_merge", coefficient=0.5),
+            pair(real, "D_unprotected_merge", coefficient=0.5),
+            "参照",
+        ]
+    ]
+    if rank:
+        utility = accuracy(rank, "standalone", preset="activation_rank16")
+        results.append(
+            [
+                "V 秩收缩：rank 16",
+                f"{utility:.2f}",
+                f"{baseline - utility:.2f}",
+                pair(rank, "direct", preset="activation_rank16"),
+                pair(rank, "completion", preset="activation_rank16"),
+                "可融合",
+            ]
+        )
+    for _, rows, meta in polynomial_runs:
+        blocks = len(meta["aga_mlp_skipped_layers"])
+        utility = accuracy(rows, "protected_standalone")
+        loss = baseline - utility
+        verdict = "可被重构" if loss <= meta["protocol"]["utility_budget_pp"] else "效用超预算"
+        results.append(
+            [
+                f"完整 FFN 重表示：{blocks} 层",
+                f"{utility:.2f}",
+                f"{loss:.2f}",
+                pair(rows, "shared_format_merge"),
+                pair(rows, "reconstructed_protected_merge"),
+                verdict,
+            ]
+        )
+    result_table = table(
+        [
+            "设置",
+            "独立 MNIST (%)",
+            "损失 (pp)",
+            "直接融合 M / S (%)",
+            "自适应恢复融合 M / S (%)",
+            "判断",
+        ],
+        results,
+    )
+    return rf"""# 发布前免微调的模型融合保护
+
+2026-10-09 组会
+
+**本轮结论：已跑通真实评估，检验了不可逆秩编辑和完整 FFN 重表示；两个候选均未形成有效防御。攻击者能够获得另一种可融合表示，无需恢复原始权重。**
+
+## 1. 研究目标
+
+对已经微调好的专家，在发布前施加后处理保护，保持原有任务能力，同时抵抗未经授权的模型融合和自适应恢复。原专家不再微调；允许明确记录的公开无标签校准与极小性能损失。
+
+攻击者可以读取发布模型、使用公开 pretrained 模型及自己的其他专家。评价关注恢复后的融合效用，参数距离或格式变化只用于解释机制。
+
+## 2. 文献带来的判断
+
+| 工作 | 与本课题有关的结论 | 对研究设计的影响 |
+|---|---|---|
+| PaRaMS、MergeLock | 置换、缩放及可逆混合已有前作 | 扩大变换幅度不能直接当作创新 |
+| AGA、配对对齐、PLeaS | 参数对齐与功能拟合都是攻击路径 | 同时检查参数恢复和功能恢复 |
+| MergeBarrier、TaylorMLP | FFN 多项式表示已有前作；相关表示已有提取攻击 | 改结构后仍需检查共享格式融合与功能重构 |
+| TSV-C、SVD-LLM | 低秩压缩已有数学与实验基础，压缩甚至可能促进融合 | 不可逆信息损失不等于融合保护 |
+
+MergeGuard 完整方法包含额外微调，不直接满足本课题限制；其免训练第二阶段也已有消融。上述审读用于排除重复思路，尚不足以证明新颖性。[原文位置与适用条件](literature_triage.md)
+
+## 3. 本轮具体检验了什么
+
+**候选 A：删去 Attention 的部分输出子空间。** 对最后四层各 head 的 V 仿射算子作谱投影，发布 $\tilde B=P_rB$。它降低算子秩，超出可逆变换；局部近似误差有谱截断依据，但不保证整体任务能力或安全。
+
+攻击者从发布算子估计保留空间，用公开 pretrained 补全其余方向。该攻击不需要校准数据或秘密投影。
+
+**候选 B：用完整 FFN 的二次映射替代原参数。** 用 32 张程序生成的无标签笔画图像，将完整 FFN 闭式拟合为低维二次函数，发布汇总系数和公开基，移除替换块的原 W1/W2。该过程没有梯度或优化器，但有新参数拟合，不能称 data-free。
+
+攻击者可以把自己的模型转换到同一格式融合，也可以用另一批 32 张合成图像，固定 pretrained 的第一层、闭式拟合第二层，重构回原架构。数学依据和边界见 [候选论证](candidate_direction.md)。压缩、二次近似和最小二乘本身均不作为创新。
+
+## 4. 真实实验结果
+
+CLIP ViT-B/32；保护 MNIST 专家，与原始 SVHN 专家融合。完整测试集分别为 10,000 和 26,032 张图像。下表融合系数固定为 0.5，独立 MNIST 损失预算为 0.5 pp；一个种子，用于初筛。
+
+{result_table}
+
+M / S 分别表示融合模型在 MNIST / SVHN 上的准确率。FFN 的“直接融合”使用共同表示；结构不兼容不计作安全。自适应攻击分别为 pretrained 子空间补全和原架构闭式重构。未保护行的自适应列重复基线，仅作参照。
+
+原 AGA、兼容层 AGA、配对对齐及同攻击未保护对照均已记录。AGA 在新格式下明确跳过替换的 FFN，不能当作完整覆盖新架构的攻击。所有对照和原始计数见 [实验详细记录](experiment_details.md)、[候选完整结果](candidate_direction.md) 与 [机器结果表](results.csv)。
+
+![单层 FFN 重表示与恢复](figures/polynomial_probe.png)
+
+图：单层改写保持独立准确率，但共同格式融合及原架构重构后融合都接近原始基线。完整测试、单种子，不画统计误差条。
+
+## 5. 如何解释负结果
+
+**秩收缩没有阻止融合。** rank 16 删去每个 head 四分之三的输出维度，独立性能仅损失 0.08 pp，但直接融合仍然有效，pretrained 补全又恢复到基线附近。局部线性代数下界不能直接转化为分类或安全下界。
+
+**删除原参数没有阻止功能恢复。** 单层重表示保持独立准确率，却可被另一批合成图像的功能拟合绕过。四层覆盖后独立性能损失 10.91 pp，已经超预算；直接融合下降不能当作保护成功。它说明当前近似在扩大覆盖时损伤效用，尚未确定误差累积与校准分布各自的影响。
+
+此前的基础 PaRaMS、正交保护、LayerNorm 空方向和低活跃扰动也未挡住相应恢复攻击。它们用于建立对照，详细过程留在实验记录中。上述结果仅针对本次配置，不证明所有后处理防御不可能，也不是对 MergeBarrier 原方法的攻击结论。
+
+## 6. 下一步与复现状态
+
+1. 停止继续扫描当前秩投影和二次表示配置族。下一项先分析：哪些任务特异信息可以在小效用损失下删除，同时难以被公共 anchor 或功能拟合补回；有可检验构造后再追加实验。
+2. 固定攻击信息、校准样本和计算预算；候选先过独立效用门槛，再检查预算内攻击取得的融合效用。通过初筛后才扩多种子、任务及融合方法。
+3. 八任务复现并行补资源。全部分类 head 已取得，DTD 第一划分及 GTSRB 完整测试入口已验证；六个官方专家 checkpoint 仍受下载配额限制。公开镜像逐参数不一致，已拒绝替代，当前没有八任务准确率。[资源状态](eight_task/status.md)
+
+本轮保留 {real_count} 条真实完整测试评估与 {mechanism_count} 条机制验证记录；这些是配置数，不是独立重复数。重型资产及完整日志在服务器，仓库保存代码、轻量结果和报告。
+"""
