@@ -1,4 +1,4 @@
-"""Prepare verified DTD split 1 and original GTSRB wrappers on the server.
+"""Prepare verified data and upstream split resources on the server.
 
 Does not invent EuroSAT/RESISC45 indices or alter any checkpoint. DTD images are
 linked, not copied. Preparation manifests preserve failures and sample counts.
@@ -7,14 +7,17 @@ linked, not copied. Preparation manifests preserve failures and sample counts.
 from __future__ import annotations
 
 import argparse
+import ast
 import concurrent.futures
 import hashlib
 import importlib.util
 import json
 from pathlib import Path
+from urllib.error import HTTPError
 
 import torch
 from torchvision.datasets import DTD
+from torchvision.datasets.utils import download_url
 
 
 def prepare_dtd(root):
@@ -69,6 +72,66 @@ def prepare_gtsrb(root, author_repo):
     )
 
 
+def prepare_resisc_indices(root, author_repo):
+    source = author_repo / "datasets" / "resisc45.py"
+    tree = ast.parse(source.read_text())
+    cls = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "RESISC45Dataset")
+    constants = {
+        n.targets[0].id: ast.literal_eval(n.value)
+        for n in cls.body
+        if isinstance(n, ast.Assign)
+        and isinstance(n.targets[0], ast.Name)
+        and n.targets[0].id in {"split_urls", "split_md5s", "classes"}
+    }
+    records = []
+    index_sets = []
+    for split, url in constants["split_urls"].items():
+        folder = root / "RESISC45" / split
+        name = f"RESISC45-{split}.txt"
+        used_url = url
+        original_error = None
+        try:
+            download_url(url, str(folder), filename=name, md5=constants["split_md5s"][split])
+        except HTTPError as exc:
+            original_error = str(exc)
+            # Public mirror referenced by TorchGeo; retain the original MD5.
+            used_url = f"https://huggingface.co/datasets/isaaccorley/resisc45/resolve/883edc0eee77b2c84225472f10f126e3ed83fa6e/resisc45-{split}.txt"
+            download_url(used_url, str(folder), filename=name, md5=constants["split_md5s"][split])
+        payload = (folder / name).read_bytes()
+        names = payload.decode().splitlines()
+        assert len(names) == len(set(names))
+        assert all(Path(n).name == n and n.endswith(".jpg") for n in names)
+        classes = {n.rsplit("_", 1)[0] for n in names}
+        assert classes == set(constants["classes"])
+        if split == "test":
+            assert len(names) == 6300
+        records.append(
+            dict(
+                split=split,
+                count=len(names),
+                url=url,
+                download_url=used_url,
+                original_url_error=original_error,
+                md5=hashlib.md5(payload).hexdigest(),
+                sha256=hashlib.sha256(payload).hexdigest(),
+                upstream_md5_verified=True,
+            )
+        )
+        index_sets.append(set(names))
+    assert all(not a.intersection(b) for i, a in enumerate(index_sets) for b in index_sets[i + 1 :])
+    assert sum(map(len, index_sets)) == 31500
+    return dict(
+        task="RESISC45",
+        status="indices_ready_images_missing",
+        dataset_ready=False,
+        source="fixed_AGA_dataset_split_urls",
+        source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+        splits=records,
+        image_download="not_performed",
+        calibration_usage="none",
+    )
+
+
 def main(args):
     torch.set_num_threads(4)
     root, output = Path(args.data).resolve(), Path(args.output)
@@ -76,9 +139,12 @@ def main(args):
 
     def prepare(task):
         try:
-            row = (
-                prepare_dtd(root) if task == "DTD" else prepare_gtsrb(root, Path(args.author_repo))
-            )
+            if task == "DTD":
+                row = prepare_dtd(root)
+            elif task == "GTSRB":
+                row = prepare_gtsrb(root, Path(args.author_repo))
+            else:
+                row = prepare_resisc_indices(root, Path(args.author_repo))
         except Exception as exc:
             row = dict(task=task, status="failed", error=str(exc))
         print("DATA_PREPARATION", json.dumps(row), flush=True)
@@ -93,7 +159,9 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--tasks", nargs="+", choices=["DTD", "GTSRB"], default=["DTD", "GTSRB"])
+    parser.add_argument(
+        "--tasks", nargs="+", choices=["DTD", "GTSRB", "RESISC45"], default=["DTD", "GTSRB"]
+    )
     parser.add_argument("--data", default="data")
     parser.add_argument("--output", default="outputs/2026-10-09/eight_task/data_1810")
     parser.add_argument("--author-repo", default="external/secure-merge-attack")

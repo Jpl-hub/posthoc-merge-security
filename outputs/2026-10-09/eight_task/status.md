@@ -6,7 +6,7 @@ ViT-B/32；任务顺序、TA 系数 0.2 按论文设置。当前尚无八任务�
 |---|---|---|---|
 | SUN397 | Drive 配额限制 | 已取得 | 第 1 分割；19,850，图片待准备 |
 | Cars | Drive 配额限制 | 已取得 | 官方 test；8,041，待准备 |
-| RESISC45 | Drive 配额限制 | 已取得 | 6,300；原索引待核对 |
+| RESISC45 | Drive 配额限制 | 已取得 | 6,300；原索引已核验，图片待准备 |
 | EuroSAT | Drive 配额限制 | 已取得 | 2,700；原随机索引待取得 |
 | SVHN | 已验证 SHA256 | 已验证 SHA256 | 官方 test；26,032，已评价 |
 | GTSRB | Drive 配额限制 | 已取得 | 官方 test；12,630，原作者入口已全量推理 |
@@ -40,3 +40,13 @@ pretrained + 官方 head 的完整测试：DTD 835/1,880（44.41%），GTSRB 4,1
 python experiments/prepare_eight_task_data.py
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark.py --pretrained-checks DTD GTSRB --output outputs/2026-10-09/eight_task/pretrained_1828
 ```
+
+19:23 再次重试官方 checkpoint：已有 11 个文件通过检查，六个缺失专家仍受配额限制。[本次清单](retry_1923/checkpoint_manifest.json)。
+
+RESISC45 三份索引已取得，train/val/test 为 18,900/6,300/6,300，覆盖 45 类且互不重叠。原 Google 地址返回 403，保留了[失败记录](splits_1926/data_manifest.json)；随后使用 [TorchGeo 官方代码引用的公开镜像](https://github.com/torchgeo/torchgeo/blob/main/torchgeo/datasets/resisc45.py)，固定镜像版本并按 AGA 原源码的 MD5 校验，三份均一致。[核验清单](splits_1927/data_manifest.json)。这里只补齐划分索引，图片尚未准备，不能算数据集就绪。索引仅保存在服务器。
+
+```bash
+python experiments/prepare_eight_task_data.py --tasks RESISC45 --output outputs/2026-10-09/eight_task/splits_1927
+```
+
+后续顺序：补齐原专家权重与数据，先运行八任务未保护基线，再按论文配置运行保护与 AGA，对照 Table 6。新机制继续在双任务环境筛选，两条工作分别保留结果。
