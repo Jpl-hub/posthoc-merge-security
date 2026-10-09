@@ -8,6 +8,8 @@ import json
 import statistics
 from pathlib import Path
 
+from research_report import generate
+
 
 def read(root: Path, name: str, default=None):
     path = root / name
@@ -39,6 +41,14 @@ def run(root: Path):
     env = read(root, "environment.json", {})
     lm = read(root, "layernorm/layernorm_metadata.json", {})
     lowm = read(root, "low_activity/low_activity_metadata.json", {})
+    rankm = read(root, "rank_probe/metadata.json", {})
+    rank = read(root, "rank_probe/results.json", []) if rankm.get("completed") else []
+    polynomial_runs = []
+    for name in ["polynomial_probe", "polynomial_multilayer"]:
+        meta = read(root, f"{name}/metadata.json", {})
+        if meta.get("completed"):
+            polynomial_runs.append((name, read(root, f"{name}/results.json", []), meta))
+    probe_text, probe_speech = generate(root, rank, polynomial_runs)
     all_rows = (
         mechanism
         + [dict(r, protection="basis") for r in real]
@@ -46,6 +56,8 @@ def run(root: Path):
         + ln
         + low
         + paired
+        + rank
+        + [dict(r, run=name) for name, rows, _ in polynomial_runs for r in rows]
     )
     with (root / "results.csv").open("w", newline="", encoding="utf-8") as stream:
         fields = sorted(set().union(*(row.keys() for row in all_rows)))
@@ -268,7 +280,13 @@ def run(root: Path):
 
 目标不仅是隐藏对应关系，而是让攻击者完成重新匹配后，仍难恢复有用的可融合表示。参数误差只能解释机制；安全结论必须落到攻击后的融合效用，并注明攻击所需信息与计算量。
 
-今天没有执行模型训练。完成 {len(mechanism)} 条机制验证、{len(real)} 条正交基线双任务评估、{len(params)} 条官方 PaRaMS 评估、{len(paired)} 条配对对齐评估、{len(ln)} 条 LayerNorm 候选评估、{len(low)} 条低活跃方向候选评估。这些是评估配置数，不是独立重复实验数。尚未得到可抵抗自适应攻击的强防御。
+今天没有额外微调专家模型；结构候选及功能重构使用公开合成校准、闭式拟合新映射。完成 {len(mechanism)} 条机制验证与 {len(all_rows) - len(mechanism)} 条真实完整测试评估，含 {len(rank)} 条秩编辑、{sum(len(r) for _, r, _ in polynomial_runs)} 条 FFN 重表示配置。这些是评估配置数，不是独立重复实验数。尚未得到可抵抗自适应攻击的强防御。
+
+## 当前重点：不可逆编辑与完整 FFN 功能表示
+
+{probe_text}
+
+数学依据、全部对照与有限查新边界见 [具体方向](candidate_direction.md)。两个原型均得到真实负结果；局部近似定理、结构格式差异和未恢复原权重均不足以证明安全。
 
 ## 论文与实现
 
@@ -373,11 +391,13 @@ $$
 
 PaRaMS 原文已讨论恢复、剪枝和蒸馏；MergeLock 已涵盖一般可逆 Attention 变换；PLeaS-free 仍使用公开无标签数据，且当前公开代码用 Adam 拟合 LS 目标。MergeBarrier 的 FFN Taylor 重表示需要激活校准并改变部署；TaylorMLP 也已有系数比值提取攻击，不能仅因参数格式改变就宣称安全。
 
-后续优先检验：相同 standalone 效用预算下的不可逆编辑，是否降低加强攻击后的两任务能力；FFN 重表示先做小层系数泄漏和成本审查。扩大可逆变换幅度、叠加 head 置换不是当前有证据的创新路线。文献原文位置、威胁模型和三天安排见 [文献核对](literature_triage.md) 与 [方向审查](research_direction_review.md)。
+本轮已检验秩编辑和完整 FFN 重表示；高 standalone 效用并未阻止 pretrained 补全与功能重构。TSV-C、SVD-LLM 已有低秩压缩，MergeGuard 的第一阶段包含额外微调，第二阶段独立版本已在原文消融；均不能直接包装为本课题创新。下一项先检查任务特异信息删除的可识别性及功能恢复预算，避免继续扩大可逆变换或随意叠加机制。原文位置与边界见 [文献核对](literature_triage.md)、[方向审查](research_direction_review.md) 和 [本轮具体方向](candidate_direction.md)。
 
 ## 八任务推进
 
-保持 ViT-B/32、TA 系数 0.2 和论文的一次仅保护一个专家设置。已检查官方八任务下载入口并取得全部分类 head；六个缺失专家权重均遭遇 Google Drive 配额限制。公开 HF 同架构模型的训练配置不同，不能直接当作原 checkpoint。数据还需确认 EuroSAT 原随机索引、RESISC45 split 和 SUN397 第 1 分割。
+保持 ViT-B/32、TA 系数 0.2 和论文的一次仅保护一个专家设置。已取得全部分类 head；官方六个缺失专家再次遭遇 Drive 配额限制。沿 TSV 作者引用的 TALL 公开镜像取得一个 MNIST 候选，在仅统一 model. 前缀后，与原权重的 152 个视觉参数全部不一致，因此拒绝替代；没有继续下载其他大权重。
+
+DTD 第 1 分割的 1,880 张 test 图像和 GTSRB 原作者入口的 12,630 张 test 图像已准备，并通过官方 pretrained + head 全测试推理；准确率 44.41% / 32.56%，仅作资源与入口检查，不是八任务融合结果。EuroSAT 原随机索引、RESISC45 split、SUN397 第 1 分割和 Cars 图片仍需补齐。
 
 当前没有八任务准确率，也没有将未复现的 MergeGuard/ARF 写入结果。资源缺项记录于 `eight_task/status.md`；待权重和划分齐备后先跑未保护八任务基线，再补官方防御。仅扩展任务数量还不足以称为 Table 6 严格复现。
 
@@ -386,7 +406,7 @@ PaRaMS 原文已讨论恢复、剪枝和蒸馏；MergeLock 已涵盖一般可逆
 1. 小任务变化下，置换和 head 内可逆变换可被 AGA 绕过；扩大变换幅度不改变理想投影结果。
 2. 精确函数等价后处理确有可用自由度，但已知对称性往往也给攻击者提供 canonicalization。
 3. 低活跃方向允许较大参数变化和很小准确率损失，但 AGA 仍恢复高融合效用；单靠“远离 anchor”或保持 standalone accuracy 均不足以构成保护。
-4. 双任务继续用于开发；八任务补齐后按同一协议验证。下一项机制必须同时改变对齐攻击可恢复的信息，且不依赖公开可消去的方向。有效候选才进入多种子、多任务及其他融合方法验证。
+4. 本轮秩收缩与完整 FFN 重表示均未阻止融合；隐藏原参数、降低局部秩或改变结构格式，都不足以证明功能表示难恢复。双任务继续用于开发，八任务复现并行补资源；有效候选才进入多种子、多任务及其他融合方法验证。
 
 ## 审读发现
 
@@ -441,6 +461,10 @@ MLP 附录的原始欧氏 margin 条件不能直接保证代码中的 cosine mat
 | 配对保函数对齐 | {"完成" if pairedm else "未完成"} | {len(paired)} 行；{pairedm.get("total_seconds", 0):.3f} s |
 | LayerNorm 候选 | {"完成" if lm else "运行中"} | {len(ln)} 行；{lm.get("total_seconds", 0):.3f} s |
 | 低活跃方向候选 | {"完成" if lowm else "运行中"} | {len(low)} 行；{lowm.get("total_seconds", 0):.3f} s |
+| 不可逆 V 秩编辑 | {"完成" if rankm else "未完成"} | {len(rank)} 行；{rankm.get("total_seconds", 0):.3f} s；四配置均未保护 |
+| 完整 FFN 重表示 | 完成的运行才计入 | {sum(len(r) for _, r, _ in polynomial_runs)} 行；独立校准的功能重构与共同格式对照 |
+| DTD / GTSRB 资源检查 | 完成 | 1,880 / 12,630 张全测试；不是八任务结果 |
+| checkpoint 镜像 | 已排除 | MNIST 候选 LFS 指纹通过，但 152 个视觉参数与原权重均不相同 |
 | 八任务资源 | 部分完成 | 全部 head；6 个专家权重受下载配额限制 |
 | 结果验证 | 已通过基础检查 | 函数等价、投影恒等式、样本数及 accuracy 计数 |
 
@@ -456,6 +480,11 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/layernorm_posthoc.py
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/low_activity_posthoc.py
 JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/clip_benchmark.py --protection params --attack-all --output outputs/2026-10-09/params
 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/rank_probe.py
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/polynomial_probe.py
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/polynomial_probe.py --config configs/polynomial_multilayer.json --output outputs/2026-10-09/polynomial_multilayer
+python experiments/prepare_eight_task_data.py --output outputs/2026-10-09/eight_task/data_1810
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark.py --pretrained-checks DTD GTSRB --output outputs/2026-10-09/eight_task/pretrained_1828
 python experiments/validate_results.py
 python experiments/plot_results.py
 python experiments/build_report.py
@@ -468,33 +497,35 @@ PaRaMS 使用 CPU JAX、4 核 affinity 和 DataLoader workers=0；其他真实�
 已处理问题：非交互 shell 未初始化 Python PATH；本地 GitHub 直连失败后使用现有代理；服务器 Drive/HF 直连受限后使用 SSH 代理转发；MNIST 原源返回 404 后由 torchvision 切换 S3；旧 checkpoint 缺少 `src.modeling` 模块路径，用新入口兼容注册解决。初次机制入口因 SciPy 尚未安装退出，安装完成后成功重跑。
 
 保护耗时：{cm.get("protection_seconds", 0):.3f} s；作者恢复耗时：{cm.get("recovery_seconds", 0):.3f} s。参数、feature error 与 accuracy 计量对象不同，报告分别列出。
+
+FFN 原型各次 wall time：{"; ".join(f"{name}: {meta['total_seconds']:.3f} s" for name, _, meta in polynomial_runs)}。每次包括拟合和所有评价；仅四层扩展分别记录转换与重构耗时，单层未记录的攻击时间不填造。
+
+初次镜像比较假定 checkpoint 是模型对象而报错；实际为 OrderedDict。修正加载并只规范 model. 前缀后完成比较，失败与成功日志均留服务器。后台启动 SSH 通道曾返回 TimeoutError，但作业继续完成；以完整结果及 completed 元数据核验，不按启动响应判定实验失败。
 """
     (root / "experiment_log.md").write_text(log, encoding="utf-8")
     speech = f"""# 组会讲稿（约 4–5 分钟）
 
-老师，今天我把问题明确为：对已经训练好的模型，完全不再微调，通过后处理保护它的任务能力，避免未经授权的模型融合，同时保持模型单独使用的性能。
+老师，今天研究的是发布前的免微调后处理：保持专家的独立能力，并抵抗未经授权融合和自适应恢复。今天有真实运行的具体候选和负结果，还没有得到强防御。
 
-我先把论文和公开代码对应起来。AGA 对 Attention 的每个 head 分别做最小二乘，利用 pretrained 模型作为 anchor；MLP 则用余弦相似度和 Hungarian 找回神经元顺序。论文的 ARF 需要在微调时修改目标，所以不能直接用于我们这个限制下的问题。
+文献上，我核对了 PaRaMS、MergeLock、MergeBarrier、AGA，补读 MergeGuard、TSV 和 SVD-LLM。一般可逆变换、剪枝、低秩压缩、多项式表示和功能最小二乘都有前作。MergeGuard 的第一阶段包含微调，ARF 也修改训练目标，因此不能直接当成本课题答案。
 
-今天已经完成机制实验和真实 CLIP 实验。机制实验用了三个固定种子，确认置换、QK 和 VO 配对变换都保持函数。MLP 的置换被完全找回。Attention 的恢复不是精确逆变换，而是把 anchor 投影到微调权重的列空间。这个结论论文附录已经给出，我做了不同可逆矩阵、条件数和数值求解方法的验证，没有把它当成新贡献。
+先跑通官方 ViT-B/32 checkpoint、原 AGA、TaskVector 融合和完整测试。独立 MNIST 是 99.69%；系数 0.5 的未保护融合是 99.37% 和 92.50%。Attention 的理想 LS 会投影到微调权重列空间，这个结论原文已经证明，我只做核验。
 
-真实实验使用 Task Arithmetic 官方 ViT-B/32 的 MNIST、SVHN checkpoint，测试了全部一万张 MNIST 和两万六千多张 SVHN 图像。MNIST 模型原始和保护后都是 {accuracy("A_unprotected", "MNIST")}，AGA 后是 {accuracy("C_AGA", "MNIST")}。在两任务融合系数 0.5 下，未保护融合为 {accuracy("D_unprotected_merge", "MNIST", 0.5)}，保护后直接融合为 {accuracy("E_protected_merge", "MNIST", 0.5)}，AGA 恢复后融合为 {accuracy("F_AGA_merge", "MNIST", 0.5)}。因此这类可逆保护能破坏直接融合，但对 AGA 没有稳健保护。
+全部真实测试使用一万张 MNIST、26,032 张 SVHN，没有用测试集选择参数。保护的是 MNIST 专家，第二专家是 SVHN；一个种子、两个任务，不能当成统计显著性或八任务复现。
 
 {params_speech}
 
 {paired_speech}
 
-在老师提出的后处理方向上，我做了两个进一步检查。合成小模型上的跨 head 置换能让原代码失效，但加上一个子空间 matching 就能全部找回，所以它只是实现缺口。
-
-另一个候选利用 LayerNorm 的输入约束：它的输出落在一个已知仿射超平面上。我向后续 Linear 添加在这个超平面上恒为零的参数分量，并补偿 bias。这样无需训练或数据，理论上保持函数，却可以改变 AGA 所用的参数列空间。这是今天筛选的一种机制，尚不宣称首创。
-
-不过这个空方向由公开 LayerNorm 参数决定，攻击者也能投影去掉它。实际保护前后准确率保持一致，但原 AGA 以及投影消除加 AGA 都恢复到接近未保护融合的准确率。因此它是一个明确的负结果。
+此前的 LayerNorm 空方向可被公开投影消除。跨 head 置换也可被子空间 matching 找回，不能只利用原代码默认对应关系来声称安全。
 
 {low_speech}
 
-文献审查还表明，MergeLock 已使用一般可逆混合，MergeBarrier 的多项式重表示需要激活校准和结构修改，TaylorMLP 也已有参数提取攻击。所以不能只把参数变得更远或换一种格式。下一步优先在相同效用预算下研究不可逆的信息损失，并补公开无标签的功能拟合攻击。
+{probe_speech}
 
-目前没有得到强防御，但已排除两条具体路径并建立可复用评估。八任务的分类 head 齐备，六个专家权重遇到下载配额限制，不能用不同来源模型冒充。希望老师确认：是否允许公开无标签校准和极小效用损失，以及保护需要覆盖多大攻击预算。双任务继续开发，有效候选再做八任务验证。
+本轮发现的关键问题是：攻击者不必恢复原参数，只需恢复另一种可融合的功能表示。新方向应证明并测量任务特异信息难以被公共 anchor 和功能拟合补回，而不是只展示权重距离。下一步先分析这一条件是否与小独立效用损失同时成立，再做单候选实验，避免无依据拼接方法。
+
+八任务复现也在继续：全部 head 齐备，DTD 第一分割和 GTSRB 全测试入口已验证。六个原 checkpoint 仍遇到下载配额，公开镜像逐参数不一致，已拒绝替代。完整日志、失败配置留在服务器；轻量代码、真实结果、图表和报告已同步仓库。
 """
     (root / "speech.md").write_text(speech, encoding="utf-8")
     print("REPORTS_WRITTEN", root, "rows", len(all_rows))

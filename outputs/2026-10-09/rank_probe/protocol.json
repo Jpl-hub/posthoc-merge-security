@@ -1,0 +1,15 @@
+{
+  "seed": 20261009,
+  "layers": [8, 9, 10, 11],
+  "calibration": "32 procedural unlabelled stroke images; no task or test images",
+  "calibration_samples": 32,
+  "coefficient": 0.5,
+  "utility_budget_pp": 0.5,
+  "selection": "none; every preset is evaluated, including utility failures",
+  "presets": [
+    {"name": "activation_rank32", "method": "activation", "rank": 32},
+    {"name": "activation_rank16", "method": "activation", "rank": 16},
+    {"name": "weight_rank32", "method": "weight", "rank": 32},
+    {"name": "random_drop10", "method": "dropout", "drop_rate": 0.1}
+  ]
+}

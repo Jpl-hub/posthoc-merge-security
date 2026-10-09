@@ -152,6 +152,8 @@ def run(args):
     output.mkdir(parents=True, exist_ok=False)
     config_bytes = Path(args.config).read_bytes()
     config = json.loads(config_bytes)
+    layers = config.get("layers", [config.get("layer", 11)])
+    assert layers and len(set(layers)) == len(layers)
     (output / "protocol.json").write_bytes(config_bytes)
     torch.set_num_threads(4)
     torch.backends.cuda.matmul.allow_tf32 = False
@@ -183,13 +185,19 @@ def run(args):
     attack_images = synthetic_images(
         original.val_preprocess, config["attacker_samples"], config["seed"] + 1
     )
-    basis = feature_basis(anchor, images, config["layer"], config["latent_rank"])
+    conversion_start = time.perf_counter()
+    bases = {layer: feature_basis(anchor, images, layer, config["latent_rank"]) for layer in layers}
     candidates = []
     evidence = {}
     for name, model in [("anchor", anchor), ("protected", original), ("other", second)]:
-        converted, info = convert(model, images, config["layer"], basis, config["ridge_ratio"])
+        converted = model
+        details = {}
+        for layer in layers:
+            converted, info = convert(converted, images, layer, bases[layer], config["ridge_ratio"])
+            details[str(layer)] = info
         candidates.append(converted)
-        evidence[name] = info
+        evidence[name] = info if len(layers) == 1 else details
+    conversion_seconds = time.perf_counter() - conversion_start
     poly_anchor, protected, poly_second = candidates
     rows = []
 
@@ -202,7 +210,8 @@ def run(args):
                 scope="real_full_test",
                 seed=config["seed"],
                 coefficient=coefficient,
-                layer=config["layer"],
+                layer=layers[0] if len(layers) == 1 else None,
+                layers=layers,
                 rank=config["latent_rank"],
                 defender_calibration_samples=config["defender_samples"],
                 attacker_calibration_samples=config["attacker_samples"],
@@ -220,13 +229,23 @@ def run(args):
     record("converted_other_standalone", poly_second)
     attack_dir = output / "AGA_compatible_layers"
     attack_dir.mkdir()
-    aga = recover(protected, poly_anchor, author, attack_dir, skip_mlp_layers=[config["layer"]])
-    restored, evidence["protected_reconstruction"] = reconstruct(
-        protected, anchor, attack_images, config["layer"], config["ridge_ratio"]
-    )
-    control, evidence["control_reconstruction"] = reconstruct(
-        original, anchor, attack_images, config["layer"], config["ridge_ratio"]
-    )
+    aga = recover(protected, poly_anchor, author, attack_dir, skip_mlp_layers=layers)
+    reconstruction_seconds = {}
+    reconstructed = []
+    for name, released in [
+        ("protected_reconstruction", protected),
+        ("control_reconstruction", original),
+    ]:
+        reconstruction_start = time.perf_counter()
+        result = released
+        details = {}
+        for layer in layers:
+            result, info = reconstruct(result, anchor, attack_images, layer, config["ridge_ratio"])
+            details[str(layer)] = info
+        evidence[name] = info if len(layers) == 1 else details
+        reconstruction_seconds[name] = time.perf_counter() - reconstruction_start
+        reconstructed.append(result)
+    restored, control = reconstructed
     record("reconstructed_protected_standalone", restored)
     record("reconstructed_control_standalone", control)
     variants = [
@@ -248,7 +267,12 @@ def run(args):
         protocol=config,
         evidence=evidence,
         original_weights_retained_in_released_ffn=False,
-        aga_mlp_skipped_layers=[config["layer"]],
+        aga_mlp_skipped_layers=layers,
+        conversion_seconds=conversion_seconds,
+        reconstruction_seconds=reconstruction_seconds,
+        defender_calibration_seed=config["seed"],
+        attacker_calibration_seed=config["seed"] + 1,
+        conversion_order="sequential; each block fitted on current model activations",
         reconstruction_source="released_model_pretrained_and_independent_public_synthetic_images",
         merge_implementation="author_TaskVector_difference_and_sum",
         architecture_mismatch_counted_as_security=False,

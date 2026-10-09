@@ -1,6 +1,7 @@
 """Scientific acceptance checks over actual machine-generated outputs."""
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -139,6 +140,137 @@ def validate(path: Path):
             )
             assert a["correct"] == b["correct"] == baseline["correct"]
         checks += ["paired_source", "paired_function_preservation", "paired_counts_and_utility"]
+    source = json.loads(Path("configs/sources.json").read_text())
+    expected_n = {"MNIST": 10000, "SVHN": 26032}
+    if (path / "rank_probe/metadata.json").exists():
+        folder = path / "rank_probe"
+        meta = json.loads((folder / "metadata.json").read_text())
+        rank = json.loads((folder / "results.json").read_text())
+        protocol = json.loads((folder / "protocol.json").read_text())
+        assert meta["completed"] and len(rank) == 50
+        assert (
+            meta["config_sha256"]
+            == hashlib.sha256((folder / "protocol.json").read_bytes()).hexdigest()
+        )
+        assert (
+            meta["config_sha256"]
+            == hashlib.sha256(Path("configs/rank_probe.json").read_bytes()).hexdigest()
+        )
+        assert meta["author_sha256"] == source["AGA"]["sha256"]
+        assert meta["paired_source_sha256"] == source["RotationSymmetry"]["sha256"]
+        assert all(
+            r["n"] == expected_n[r["dataset"]] and r["top1"] == r["correct"] / r["n"] for r in rank
+        )
+        for preset in [dict(name="unprotected"), *protocol["presets"]]:
+            subset = [r for r in rank if r["preset"] == preset["name"]]
+            assert {(r["group"], r["dataset"]) for r in subset} == {
+                (g, d)
+                for g in ["standalone", "direct", "AGA", "paired", "completion"]
+                for d in expected_n
+            }
+            if preset.get("rank"):
+                detail = json.loads((folder / preset["name"] / "compression.json").read_text())
+                assert len(detail) == 48
+                assert {(r["layer"], r["head"]) for r in detail} == {
+                    (layer, head) for layer in protocol["layers"] for head in range(12)
+                }
+                assert all(r["effective_rank"] <= preset["rank"] for r in detail)
+        for dataset in expected_n:
+            control = next(
+                r
+                for r in rank
+                if r["preset"] == "unprotected"
+                and r["group"] == "direct"
+                and r["dataset"] == dataset
+            )
+            baseline = next(
+                r
+                for r in real
+                if r["group"] == "D_unprotected_merge"
+                and r["coefficient"] == 0.5
+                and r["dataset"] == dataset
+            )
+            assert control["correct"] == baseline["correct"]
+        assert all(r["training"] == "none" for r in rank)
+        assert all((r["calibration_samples"] == 32) == (r["method"] == "activation") for r in rank)
+        checks += [
+            "rank_protocol_and_sources",
+            "rank_full_counts_and_controls",
+            "rank_actual_operator_ranks",
+            "rank_calibration_labels",
+        ]
+    for name in ["polynomial_probe", "polynomial_multilayer"]:
+        folder = path / name
+        if not (folder / "metadata.json").exists():
+            continue
+        meta = json.loads((folder / "metadata.json").read_text())
+        poly = json.loads((folder / "results.json").read_text())
+        protocol = json.loads((folder / "protocol.json").read_text())
+        layers = protocol.get("layers", [protocol.get("layer", 11)])
+        assert meta["completed"] and len(poly) == 20
+        assert (
+            meta["config_sha256"]
+            == hashlib.sha256((folder / "protocol.json").read_bytes()).hexdigest()
+        )
+        assert (
+            meta["config_sha256"]
+            == hashlib.sha256(Path(f"configs/{name}.json").read_bytes()).hexdigest()
+        )
+        assert meta["author_sha256"] == source["AGA"]["sha256"]
+        assert not meta["original_weights_retained_in_released_ffn"]
+        assert not meta["architecture_mismatch_counted_as_security"]
+        assert meta["aga_mlp_skipped_layers"] == layers
+        assert all(
+            r["n"] == expected_n[r["dataset"]] and r["top1"] == r["correct"] / r["n"] for r in poly
+        )
+        groups = {
+            "unprotected_standalone",
+            "protected_standalone",
+            "converted_other_standalone",
+            "reconstructed_protected_standalone",
+            "reconstructed_control_standalone",
+            "original_direct_merge",
+            "shared_format_merge",
+            "shared_format_AGA_merge",
+            "reconstructed_protected_merge",
+            "reconstructed_control_merge",
+        }
+        assert {(r["group"], r["dataset"]) for r in poly} == {
+            (g, d) for g in groups for d in expected_n
+        }
+        assert protocol["defender_samples"] == protocol["attacker_samples"] == 32
+        if "attacker_calibration_seed" in meta:
+            assert meta["attacker_calibration_seed"] == meta["defender_calibration_seed"] + 1
+        assert all(
+            r["fitting"] == "closed_form_ridge" and r["training"] == "no_gradient_or_optimizer"
+            for r in poly
+        )
+        assert all(r["calibration"] == "procedural_unlabelled_strokes" for r in poly)
+        for dataset in expected_n:
+            control = next(
+                r for r in poly if r["group"] == "original_direct_merge" and r["dataset"] == dataset
+            )
+            baseline = next(
+                r
+                for r in real
+                if r["group"] == "D_unprotected_merge"
+                and r["coefficient"] == 0.5
+                and r["dataset"] == dataset
+            )
+            assert control["correct"] == baseline["correct"]
+        checks += [
+            f"{name}_protocol_and_source",
+            f"{name}_counts_and_control",
+            f"{name}_release_and_attack_scope",
+            f"{name}_calibration_and_fitting",
+        ]
+    resource = path / "eight_task/pretrained_1828/pretrained_checks.json"
+    if resource.exists():
+        rows = json.loads(resource.read_text())
+        assert len(rows) == 2
+        assert all(r["n"] == {"DTD": 1880, "GTSRB": 12630}[r["dataset"]] for r in rows)
+        assert all(r["top1"] == r["correct"] / r["n"] and not r["eight_task_result"] for r in rows)
+        checks.append("eight_task_preparatory_data_and_head_checks")
     report = {"status": "passed", "checks": checks}
     (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report))

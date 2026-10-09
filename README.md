@@ -73,6 +73,19 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
 - [八任务资源与缺项](outputs/2026-10-09/eight_task/status.md)
 - [文献核对](outputs/2026-10-09/literature_triage.md)
 - [研究方向审查](outputs/2026-10-09/research_direction_review.md)
+- [秩编辑与完整 FFN 重表示：数学依据、攻击与全部失败结果](outputs/2026-10-09/candidate_direction.md)
+
+本轮新增入口（服务器运行；重新执行应指定新的输出目录以保留旧结果）：
+
+```bash
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/rank_probe.py
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/polynomial_probe.py
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/polynomial_probe.py --config configs/polynomial_multilayer.json --output outputs/2026-10-09/polynomial_multilayer
+python experiments/prepare_eight_task_data.py
+OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark.py --pretrained-checks DTD GTSRB --output outputs/2026-10-09/eight_task/pretrained_1828
+```
+
+秩编辑使用无数据对照与明确标注的合成校准；FFN 新映射和恢复攻击有闭式参数拟合，不能称完全不拟合参数。单层改写保住独立效用但可恢复，四层改写损失超预算，均不计作有效保护。分类 head 与数据入口检查不计作八任务融合复现。
 
 本仓库不将论文报告数字记作我们的结果。head permutation 被自适应 matching 恢复时应作为负面结果保留。当前未宣称得到可抵抗自适应攻击的强防御。
 

@@ -18,6 +18,40 @@ from clip_benchmark import checkpoint_loader, evaluate, protect, recover
 from mechanisms import load_author, relative
 
 
+def pretrained_checks(args, root, config, output):
+    """Validate ready data and heads; never present this subset as eight tasks."""
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    author_repo = Path(args.author_repo)
+    load = checkpoint_loader(author_repo)
+    package = types.ModuleType("dataset")
+    package.__path__ = [str((author_repo / "datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    anchor = load(str(root / "zeroshot.pt"))
+    rows = []
+    for task in args.pretrained_checks:
+        dataset = get_dataset(
+            task, anchor.val_preprocess, args.data, batch_size=args.batch_size, num_workers=2
+        )
+        assert len(dataset.test_dataset) == config["expected_test_counts"][task], task
+        head = load(str(root / f"head_{task}.pt"))
+        row = dict(
+            stage="resource_validation",
+            group="pretrained_data_check",
+            dataset=task,
+            task_count=len(args.pretrained_checks),
+            eight_task_result=False,
+            data_provider="author_dataset_registry",
+            **evaluate(anchor, head, dataset.test_loader, "cuda"),
+        )
+        rows.append(row)
+        (output / "pretrained_checks.json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
+        print("PRETRAINED_DATA_CHECK", json.dumps(row), flush=True)
+
+
 def run(args):
     config = json.loads(Path(args.config).read_text(encoding="utf-8"))
     tasks = config["tasks"]
@@ -38,6 +72,9 @@ def run(args):
     (output / "preflight.json").write_text(json.dumps(preflight, indent=2), encoding="utf-8")
     print("EIGHT_TASK_PREFLIGHT", json.dumps(preflight), flush=True)
     if args.check_only:
+        return
+    if args.pretrained_checks:
+        pretrained_checks(args, root, config, output)
         return
     if missing:
         raise SystemExit("Eight-task evaluation requires every official expert; see preflight.json")
@@ -139,6 +176,12 @@ if __name__ == "__main__":
     parser.add_argument("--data", default="data")
     parser.add_argument("--output", default="outputs/2026-10-09/eight_task")
     parser.add_argument("--check-only", action="store_true")
+    parser.add_argument(
+        "--pretrained-checks",
+        nargs="+",
+        choices=["DTD", "GTSRB"],
+        help="Only check prepared data/heads; not an eight-task benchmark.",
+    )
     parser.add_argument(
         "--protected-task",
         choices=["SUN397", "Cars", "RESISC45", "EuroSAT", "SVHN", "GTSRB", "MNIST", "DTD"],

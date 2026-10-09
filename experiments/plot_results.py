@@ -360,6 +360,108 @@ def run(root: Path):
             "Official PaRaMS baseline: full tests, one seed; TA coefficient 0.5", fontsize=10
         )
         save(fig, out, "params_comparison")
+    if (root / "rank_probe/metadata.json").exists():
+        rank = json.loads((root / "rank_probe/results.json").read_text())
+        names = ["activation_rank32", "activation_rank16", "weight_rank32", "random_drop10"]
+
+        def value(preset, group, dataset):
+            return 100 * next(
+                r["top1"]
+                for r in rank
+                if r["preset"] == preset and r["group"] == group and r["dataset"] == dataset
+            )
+
+        fig, axes = plt.subplots(1, 3, figsize=(9.2, 2.8), layout="constrained")
+        xs = np.arange(len(names))
+        axes[0].bar(
+            xs,
+            [
+                value(p, "standalone", "MNIST") - value("unprotected", "standalone", "MNIST")
+                for p in names
+            ],
+            color=COLORS[0],
+        )
+        axes[0].set(title="(a) Standalone MNIST", ylabel="Accuracy change (pp)", ylim=(-0.55, 0.15))
+        axes[0].axhline(-0.5, color=COLORS[3], linestyle="--", linewidth=1)
+        axes[0].text(
+            0.02, 0.13, "Utility budget: -0.50 pp", transform=axes[0].transAxes, fontsize=7
+        )
+        for ax, dataset in zip(axes[1:], ["MNIST", "SVHN"], strict=True):
+            for j, group in enumerate(["direct", "AGA", "completion"]):
+                changes = [
+                    value(p, group, dataset) - value("unprotected", group, dataset) for p in names
+                ]
+                ax.bar(
+                    xs + (j - 1) * 0.24,
+                    changes,
+                    width=0.23,
+                    color=COLORS[j],
+                    label={
+                        "direct": "Direct TA",
+                        "AGA": "Author AGA",
+                        "completion": "Pretrained completion",
+                    }[group],
+                )
+            ax.set(title=f"Merged {dataset}", ylabel="Accuracy change (pp)", ylim=(-0.65, 0.5))
+        for ax in axes:
+            ax.axhline(0, color="black", linewidth=0.7)
+            ax.set(xticks=xs, xticklabels=["Act.\nr=32", "Act.\nr=16", "Weight\nr=32", "Drop\n10%"])
+            ax.grid(axis="y", alpha=0.2)
+        fig.legend(*axes[1].get_legend_handles_labels(), loc="outside lower center", ncol=3)
+        fig.suptitle(
+            "Rank-loss screening: differences from matched unprotected controls; full tests, one seed",
+            fontsize=10,
+        )
+        save(fig, out, "rank_screening")
+    for name in ["polynomial_probe", "polynomial_multilayer"]:
+        if not (root / name / "metadata.json").exists():
+            continue
+        rows = json.loads((root / name / "results.json").read_text())
+        meta = json.loads((root / name / "metadata.json").read_text())
+        fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.8), layout="constrained")
+        groups = [
+            "original_direct_merge",
+            "shared_format_merge",
+            "shared_format_AGA_merge",
+            "reconstructed_protected_merge",
+            "reconstructed_control_merge",
+        ]
+        for ax, dataset in zip(axes, ["MNIST", "SVHN"], strict=True):
+            values = [
+                100 * next(r["top1"] for r in rows if r["group"] == g and r["dataset"] == dataset)
+                for g in groups
+            ]
+            ax.bar(
+                range(len(groups)),
+                values,
+                color=[COLORS[0], COLORS[1], COLORS[1], COLORS[2], COLORS[2]],
+            )
+            for x, y in enumerate(values):
+                ax.text(x, y + 1, f"{y:.2f}", ha="center", fontsize=7)
+            ax.set(
+                xticks=range(len(groups)),
+                xticklabels=[
+                    "Original\nTA",
+                    "Shared\nformat",
+                    "Shared\n+ AGA",
+                    "Protected\nrefit",
+                    "Control\nrefit",
+                ],
+                ylim=(0, 112),
+                ylabel="Top-1 accuracy (%)",
+                title=dataset,
+            )
+            ax.grid(axis="y", alpha=0.2)
+        fig.suptitle(
+            f"Whole-FFN quadratic representation: {len(meta['aga_mlp_skipped_layers'])} block(s); full tests, one seed\n"
+            + "Standalone MNIST: "
+            + " -> ".join(
+                f"{100 * next(r['top1'] for r in rows if r['group'] == g and r['dataset'] == 'MNIST'):.2f}%"
+                for g in ["unprotected_standalone", "protected_standalone"]
+            ),
+            fontsize=10,
+        )
+        save(fig, out, name)
     print("FIGURES_WRITTEN", out)
 
 
