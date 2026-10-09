@@ -1,0 +1,21 @@
+{
+  "parent": "outputs/2026-10-10/reconstruction_budget",
+  "fitting_source": "outputs/2026-10-09/post_meeting/subspace_probe",
+  "task": "SVHN",
+  "other_task": "MNIST",
+  "layers": [3, 4, 5, 6],
+  "samples": 256,
+  "local_check_samples": 32,
+  "ridge_ratio": 0.0001,
+  "coefficient": 0.5,
+  "conditions": ["public_expert", "public_merged", "released_expert", "released_merged"],
+  "feature_sources": "fixed pretrained or original released control first layer; output layer always centered at pretrained",
+  "input_sources": "original released expert or original unprotected parameter-merged model",
+  "target": "original released control MLP applied to the selected frozen inputs; not a hidden pre-protection oracle",
+  "fitting": "same 256 frozen unlabeled SVHN images and 12800 token rows in every condition; no additional MNIST fitting images",
+  "local_check": "32 calibration images from each task; disjoint from fitting and evaluation; original frozen expert/merged inputs",
+  "selection": "report all four conditions without selecting features, context or ridge",
+  "evaluation": "same previously inspected SVHN 4000 and MNIST 2000 training subsets; not a fresh holdout",
+  "scope": "cause-isolation on an unprotected released control, not a new defense or an attack on a protected model",
+  "test_usage": "none"
+}

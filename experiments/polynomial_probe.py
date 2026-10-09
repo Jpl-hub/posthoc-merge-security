@@ -108,14 +108,25 @@ def convert(model, images, layer, basis, ridge_ratio):
 
 
 @torch.no_grad()
-def reconstruct(released, anchor, images, layer, ridge_ratio, solver="dual"):
+def reconstruct(
+    released,
+    anchor,
+    images,
+    layer,
+    ridge_ratio,
+    solver="dual",
+    *,
+    feature_model=None,
+    input_model=None,
+):
     """Fix pretrained W1 and fit W2 to released outputs; no original weights.
 
     Center the solution at pretrained W2, including a bias feature. The default
     dual solver is preserved; auto uses the smaller equivalent ridge system.
-    The same attack is applied to the unprotected control.
+    The same attack is applied to the unprotected control. Optional feature/input
+    models support explicitly labelled unprotected-control diagnostics only.
     """
-    x = capture(released, images, layer)
+    x = capture(released if input_model is None else input_model, images, layer)
     teacher = (
         copy.deepcopy(released.model.visual.transformer.resblocks[layer].mlp).double().cuda().eval()
     )
@@ -123,6 +134,11 @@ def reconstruct(released, anchor, images, layer, ridge_ratio, solver="dual"):
     student = (
         copy.deepcopy(anchor.model.visual.transformer.resblocks[layer].mlp).double().cuda().eval()
     )
+    if feature_model is not None:
+        student.c_fc.load_state_dict(
+            feature_model.model.visual.transformer.resblocks[layer].mlp.c_fc.state_dict(),
+            strict=True,
+        )
     hidden = student.gelu(student.c_fc(x))
     design = torch.cat([hidden, torch.ones_like(hidden[:, :1])], dim=1)
     initial = torch.cat([student.c_proj.weight.T, student.c_proj.bias[None, :]], dim=0)
@@ -164,7 +180,7 @@ def reconstruct(released, anchor, images, layer, ridge_ratio, solver="dual"):
         solver=solver,
         design_features=design.shape[1],
         normal_equation_relative_residual=normal_error,
-        first_layer="pretrained_fixed",
+        first_layer="pretrained_fixed" if feature_model is None else "released_control_fixed",
         second_layer="closed_form_anchor_centered_ridge",
     )
 
