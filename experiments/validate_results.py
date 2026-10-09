@@ -376,9 +376,90 @@ def validate_subspace(path: Path):
     print(json.dumps(report))
 
 
+def validate_subspace_diagnostics(path: Path):
+    protocol_bytes = (path / "protocol.json").read_bytes()
+    protocol = json.loads(protocol_bytes)
+    meta = json.loads((path / "metadata.json").read_text())
+    parent = Path(protocol["parent"])
+    parent_bytes = (parent / "results.json").read_bytes()
+    parent_rows = json.loads(parent_bytes)
+    rows = json.loads((path / "results.json").read_text())
+    assert meta["completed"] and meta["training"] == "none"
+    assert meta["config_sha256"] == hashlib.sha256(protocol_bytes).hexdigest()
+    assert meta["parent_results_sha256"] == hashlib.sha256(parent_bytes).hexdigest()
+    reused = [r for r in rows if r["origin"] == "parent_measurement"]
+    new = [r for r in rows if r["origin"] == "new_evaluation"]
+    assert len(reused) == meta["reused_measurements"] == 12
+    assert len(new) == meta["new_evaluations"] == 30
+    parent_lookup = {
+        (r["preset"], r["group"], r["dataset"]): r
+        for r in parent_rows
+        if r["split"] == "official_test"
+    }
+    for row in reused:
+        source = parent_lookup[row["preset"], row["group"], row["dataset"]]
+        assert all(row[key] == value for key, value in source.items())
+    assert len({(r["contrast"], r["group"], r["dataset"]) for r in rows}) == len(rows)
+    for row in rows:
+        assert row["n"] == {"MNIST": 10000, "SVHN": 26032}[row["dataset"]]
+        assert row["top1"] == row["correct"] / row["n"]
+        assert 0 <= row["correct"] <= row["n"] and math.isfinite(row["top1"])
+    decomp = json.loads((path / "decomposition.json").read_text())
+    assert 0 <= decomp["null_edit_energy_fraction"] <= 1
+    assert decomp["reconstruction_relative_error"] < 1e-6
+    screen = json.loads((parent / "development_screen.json").read_text())
+    expected_fc = min(
+        [p for p in screen if p["site"].startswith("FC:") and p["utility_feasible"]],
+        key=lambda p: (p["mean_merged_accuracy"], p["strength"]),
+    )
+    fc = json.loads((path / "fc_selection.json").read_text())
+    assert fc["source"] == "parent_development_only" and fc["selected"] == expected_fc
+    diagnostics = json.loads((path / "parameter_diagnostics.json").read_text())
+    assert set(diagnostics) == {"V_full", *protocol["contrasts"]}
+    for item in diagnostics.values():
+        for stage in ["before_AGA", "after_AGA"]:
+            assert math.isfinite(item[stage]["norm_over_original"])
+            assert item[stage]["norm_over_original"] > 0
+            assert all(
+                math.isfinite(view["relative_linear_output_rms"])
+                and view["relative_linear_output_rms"] >= 0
+                for view in item[stage]["same_input_linear_outputs"].values()
+            )
+    for contrast in ["control", "FC_development_selected"]:
+        for group in ["projection", "completion"]:
+            assert len([r for r in rows if r["contrast"] == contrast and r["group"] == group]) == 2
+    report = dict(
+        status="passed",
+        reused_measurements=len(reused),
+        new_evaluations=len(new),
+        checks=[
+            "protocol_and_parent_provenance",
+            "parent_metric_reuse_without_new_count",
+            "complete_counts_and_accuracy_arithmetic",
+            "additive_component_reconstruction",
+            "FC_development_only_selection",
+            "finite_local_parameter_diagnostics",
+            "matched_FC_projection_and_completion_controls",
+        ],
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
-    parser.add_argument("--subspace", action="store_true", help="Validate the subspace probe.")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--subspace", action="store_true", help="Validate the subspace probe.")
+    mode.add_argument(
+        "--subspace-diagnostics", action="store_true", help="Validate causal contrasts."
+    )
     args = parser.parse_args()
-    (validate_subspace if args.subspace else validate)(Path(args.output))
+    runner = (
+        validate_subspace_diagnostics
+        if args.subspace_diagnostics
+        else validate_subspace
+        if args.subspace
+        else validate
+    )
+    runner(Path(args.output))

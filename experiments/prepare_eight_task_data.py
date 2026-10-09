@@ -12,12 +12,15 @@ import concurrent.futures
 import hashlib
 import importlib.util
 import json
+import shutil
+import stat
+import zipfile
 from pathlib import Path
 from urllib.error import HTTPError
 
 import torch
 from torchvision.datasets import DTD
-from torchvision.datasets.utils import download_url
+from torchvision.datasets.utils import check_integrity, download_url
 
 
 def prepare_dtd(root):
@@ -88,15 +91,20 @@ def prepare_resisc_indices(root, author_repo):
     for split, url in constants["split_urls"].items():
         folder = root / "RESISC45" / split
         name = f"RESISC45-{split}.txt"
-        used_url = url
+        used_url = None
         original_error = None
-        try:
-            download_url(url, str(folder), filename=name, md5=constants["split_md5s"][split])
-        except HTTPError as exc:
-            original_error = str(exc)
-            # Public mirror referenced by TorchGeo; retain the original MD5.
-            used_url = f"https://huggingface.co/datasets/isaaccorley/resisc45/resolve/883edc0eee77b2c84225472f10f126e3ed83fa6e/resisc45-{split}.txt"
-            download_url(used_url, str(folder), filename=name, md5=constants["split_md5s"][split])
+        cached = check_integrity(str(folder / name), constants["split_md5s"][split])
+        if not cached:
+            used_url = url
+            try:
+                download_url(url, str(folder), filename=name, md5=constants["split_md5s"][split])
+            except HTTPError as exc:
+                original_error = str(exc)
+                # Public mirror referenced by TorchGeo; retain the original MD5.
+                used_url = f"https://huggingface.co/datasets/isaaccorley/resisc45/resolve/883edc0eee77b2c84225472f10f126e3ed83fa6e/resisc45-{split}.txt"
+                download_url(
+                    used_url, str(folder), filename=name, md5=constants["split_md5s"][split]
+                )
         payload = (folder / name).read_bytes()
         names = payload.decode().splitlines()
         assert len(names) == len(set(names))
@@ -112,6 +120,7 @@ def prepare_resisc_indices(root, author_repo):
                 url=url,
                 download_url=used_url,
                 original_url_error=original_error,
+                acquisition="verified_cache" if cached else "download",
                 md5=hashlib.md5(payload).hexdigest(),
                 sha256=hashlib.sha256(payload).hexdigest(),
                 upstream_md5_verified=True,
@@ -132,6 +141,74 @@ def prepare_resisc_indices(root, author_repo):
     )
 
 
+def prepare_resisc_images(root, indices):
+    """Verify TorchGeo's pinned public archive, then link original author splits."""
+    url = "https://huggingface.co/datasets/isaaccorley/resisc45/resolve/883edc0eee77b2c84225472f10f126e3ed83fa6e/NWPU-RESISC45.zip"
+    expected_sha = "beeecd0b63656290ae6d65cf7763185b0c1c4c54a753ef8088d6fba3faaf1f53"
+    resources = root / "RESISC45" / "source"
+    resources.mkdir(parents=True, exist_ok=True)
+    archive_path = resources / "NWPU-RESISC45.zip"
+    download_url(url, str(resources), filename=archive_path.name)
+    digest = hashlib.sha256()
+    with archive_path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(4 * 1024 * 1024), b""):
+            digest.update(chunk)
+    assert digest.hexdigest() == expected_sha, "RESISC45 archive SHA256 mismatch"
+    images_root = (resources / "images").resolve()
+    images_root.mkdir(exist_ok=True)
+    marker = images_root / ".archive_sha256"
+    if not marker.exists():
+        with zipfile.ZipFile(archive_path) as archive:
+            members = archive.infolist()
+            assert sum(m.file_size for m in members) < shutil.disk_usage(images_root).free
+            for member in members:
+                destination = (images_root / member.filename).resolve()
+                assert destination.is_relative_to(images_root), member.filename
+                assert not stat.S_ISLNK(member.external_attr >> 16), member.filename
+            archive.extractall(images_root)
+        marker.write_text(expected_sha)
+    assert marker.read_text() == expected_sha
+    files = list(images_root.rglob("*.jpg"))
+    by_name = {p.name: p for p in files}
+    assert len(files) == len(by_name) == 31500
+    all_names = set()
+    for record in indices["splits"]:
+        split = record["split"]
+        folder = root / "RESISC45" / split
+        names = (folder / f"RESISC45-{split}.txt").read_text().splitlines()
+        assert len(names) == record["count"]
+        for name in names:
+            source = by_name[name]
+            label = name.rsplit("_", 1)[0]
+            assert source.parent.name == label
+            link = folder / label / name
+            link.parent.mkdir(parents=True, exist_ok=True)
+            if link.exists():
+                assert link.resolve() == source, link
+            else:
+                link.symlink_to(source)
+        all_names.update(names)
+    assert all_names == set(by_name)
+    return dict(
+        **{
+            k: v
+            for k, v in indices.items()
+            if k not in {"status", "dataset_ready", "image_download"}
+        },
+        status="ready",
+        dataset_ready=True,
+        image_download="verified_public_mirror_archive",
+        archive_url=url,
+        archive_sha256=expected_sha,
+        archive_bytes=archive_path.stat().st_size,
+        archive_digest_source="https://github.com/torchgeo/torchgeo/blob/main/torchgeo/datasets/resisc45.py",
+        image_count=len(files),
+        test_count=6300,
+        layout="original_author_split_class_folders_with_symlinks",
+        test_index_sha256=next(r["sha256"] for r in indices["splits"] if r["split"] == "test"),
+    )
+
+
 def main(args):
     torch.set_num_threads(4)
     root, output = Path(args.data).resolve(), Path(args.output)
@@ -145,6 +222,8 @@ def main(args):
                 row = prepare_gtsrb(root, Path(args.author_repo))
             else:
                 row = prepare_resisc_indices(root, Path(args.author_repo))
+                if args.resisc_images:
+                    row = prepare_resisc_images(root, row)
         except Exception as exc:
             row = dict(task=task, status="failed", error=str(exc))
         print("DATA_PREPARATION", json.dumps(row), flush=True)
@@ -165,4 +244,5 @@ if __name__ == "__main__":
     parser.add_argument("--data", default="data")
     parser.add_argument("--output", default="outputs/2026-10-09/eight_task/data_1810")
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
+    parser.add_argument("--resisc-images", action="store_true", help="Download and verify images.")
     main(parser.parse_args())

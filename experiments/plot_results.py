@@ -590,11 +590,80 @@ def plot_subspace(root: Path):
     print("SUBSPACE_FIGURES_WRITTEN", out)
 
 
+def plot_subspace_diagnostics(root: Path):
+    meta = json.loads((root / "metadata.json").read_text())
+    assert meta["completed"]
+    rows = json.loads((root / "results.json").read_text())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+
+    def accuracy(contrast, group, task):
+        return 100 * next(
+            r["top1"]
+            for r in rows
+            if r["contrast"] == contrast and r["group"] == group and r["dataset"] == task
+        )
+
+    components = ["V_full", "V_layernorm_component", "V_non_layernorm_component"]
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.8), layout="constrained")
+    for ax, task in zip(axes, ["MNIST", "SVHN"], strict=True):
+        for i, group in enumerate(["direct", "AGA"]):
+            values = [accuracy(c, group, task) for c in components]
+            positions = np.arange(3) + (i - 0.5) * 0.34
+            ax.bar(positions, values, width=0.32, color=COLORS[i], label=group)
+            for x, y in zip(positions, values, strict=True):
+                ax.text(x, y + 1.5, f"{y:.2f}", ha="center", fontsize=7)
+        ax.axhline(accuracy("control", "direct", task), color="black", lw=0.8, ls=":")
+        ax.set(
+            xticks=range(3),
+            xticklabels=["Full noise", "LN component", "Other component"],
+            ylim=(0, 112),
+            ylabel="Merged accuracy (%)",
+            title=task,
+        )
+        ax.grid(axis="y", alpha=0.2)
+    axes[0].legend(fontsize=7, loc="lower right")
+    fig.suptitle("Additive decomposition; no rescaling; full-noise counts reused", fontsize=10)
+    save(fig, out, "components")
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.8), layout="constrained")
+    groups = ["direct", "AGA", "projection", "completion"]
+    for ax, task in zip(axes, ["MNIST", "SVHN"], strict=True):
+        for i, (contrast, label) in enumerate(
+            [("control", "Unprotected, same attack"), ("FC_development_selected", "FC protected")]
+        ):
+            values = [accuracy(contrast, g, task) for g in groups]
+            positions = np.arange(4) + (i - 0.5) * 0.35
+            ax.bar(positions, values, width=0.33, color=COLORS[i], label=label)
+            for x, y in zip(positions, values, strict=True):
+                ax.text(x, y + 1.5, f"{y:.2f}", ha="center", fontsize=6.7)
+        ax.set(
+            xticks=range(4),
+            xticklabels=["Direct", "AGA", "Projection", "Pretrained\ncompletion"],
+            ylim=(0, 112),
+            ylabel="Merged accuracy (%)",
+            title=task,
+        )
+        ax.grid(axis="y", alpha=0.2)
+    axes[0].legend(fontsize=7, loc="lower left")
+    fig.suptitle(
+        "FC complement noise: selected from earlier development data; one seed", fontsize=10
+    )
+    save(fig, out, "fc_attacks")
+    print("SUBSPACE_DIAGNOSTIC_FIGURES_WRITTEN", out)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
-    parser.add_argument(
-        "--subspace", action="store_true", help="Plot the standalone subspace probe."
-    )
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--subspace", action="store_true", help="Plot the standalone subspace probe.")
+    mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
     args = parser.parse_args()
-    (plot_subspace if args.subspace else run)(Path(args.output))
+    runner = (
+        plot_subspace_diagnostics
+        if args.subspace_diagnostics
+        else plot_subspace
+        if args.subspace
+        else run
+    )
+    runner(Path(args.output))

@@ -179,7 +179,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--pretrained-checks",
         nargs="+",
-        choices=["DTD", "GTSRB"],
+        choices=["DTD", "GTSRB", "RESISC45"],
         help="Only check prepared data/heads; not an eight-task benchmark.",
     )
     parser.add_argument(
