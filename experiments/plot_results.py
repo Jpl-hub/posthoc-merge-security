@@ -858,6 +858,37 @@ def plot_operator_diagnostics(root: Path):
     print("OPERATOR_FIGURES_WRITTEN", out)
 
 
+def plot_nufilt_alignment(root: Path):
+    result = json.loads((root / "results.json").read_bytes())
+    rows, config = result["rows"], result["protocol"]
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(2, 2, figsize=(7.2, 4.8), layout="constrained")
+    for i, task in enumerate(config["tasks"]):
+        for j, target in enumerate(config["targets"]):
+            ax = axes[i, j]
+            for k, rank in enumerate(config["task_vector_ranks"]):
+                selected = {
+                    int(row["site"].split(":")[1]): row
+                    for row in rows
+                    if row["task"] == task and row["moment"] == "uncentered"
+                    and row["task_vector_rank"] == rank and row["site"].startswith(target + ":")
+                }
+                layers = list(range(config["layers"]))
+                values = [100 * selected[layer]["activation_energy_outside_proxy_fraction"] for layer in layers]
+                ax.plot(layers, values, marker="o", markersize=3, color=COLORS[k], label=f"Task-vector rank {rank}")
+            ax.set(
+                xlabel="Transformer block (0-based)", ylabel="Input energy outside proxy (%)",
+                ylim=(0, 100), xticks=[0, 3, 6, 9, 11],
+                title=f"{task}: {'attention V' if target == 'V' else 'MLP FC'} input",
+            )
+            ax.grid(alpha=0.2)
+    fig.legend(*axes[0, 0].get_legend_handles_labels(), loc="outside lower center", ncol=2)
+    fig.suptitle("Uncentered moments; 256 frozen training images per task, all tokens", fontsize=10)
+    save(fig, out, "task_vector_coverage")
+    print("NUFILT_FIGURE_WRITTEN", out)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -866,6 +897,7 @@ if __name__ == "__main__":
     mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
     mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
+    mode.add_argument("--nufilt-alignment", action="store_true", help="Plot task-vector proxy coverage.")
     mode.add_argument(
         "--operator-diagnostics",
         action="store_true",
@@ -873,6 +905,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
+        plot_nufilt_alignment
+        if args.nufilt_alignment
+        else
         plot_operator_diagnostics
         if args.operator_diagnostics
         else plot_distribution_shift

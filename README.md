@@ -82,6 +82,7 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/coupled_alignment.py
 - [成分分解、MLP 扰动与无数据恢复](outputs/2026-10-09/post_meeting/followup.md)
 - [有界补空间编辑：双角色开发筛选](outputs/2026-10-09/post_meeting/bounded_notes.md)
 - [中层联合依赖与功能重建对照](outputs/2026-10-09/post_meeting/operator_notes.md)
+- [NUFILT：文献核对与任务子空间检查](outputs/2026-10-09/post_meeting/nufilt_notes.md)
 
 本轮新增入口（服务器运行；重新执行应指定新的输出目录以保留旧结果）：
 
