@@ -1,0 +1,30 @@
+{
+  "parent": "outputs/2026-10-10/reconstruction_budget",
+  "fitting_source": "outputs/2026-10-09/post_meeting/subspace_probe",
+  "task": "SVHN",
+  "other_task": "MNIST",
+  "layers": [3, 4, 5, 6],
+  "samples": 256,
+  "local_check_samples": 32,
+  "ridge_ratio": 0.0001,
+  "coefficient": 0.5,
+  "conditions": ["public_expert", "public_selfmerged"],
+  "feature_sources": "fixed public pretrained first layer in both conditions",
+  "input_sources": "released expert for pass 1; attacker-computable parameter merge of the cached pass-1 reconstruction for pass 2",
+  "target": "released control MLP evaluated on selected frozen inputs; no original-merged inputs used for fitting pass 2",
+  "fitting": "same 256 frozen unlabeled SVHN images in both passes; four MLPs fitted independently, no sequential updates of the context model",
+  "query_budget": {
+    "unique_images": 256,
+    "tokens_per_layer_per_pass": 12800,
+    "public_expert_total_target_tokens_per_layer": 12800,
+    "public_selfmerged_total_target_tokens_per_layer": 25600,
+    "cached_first_pass": true,
+    "new_second_pass_target_tokens_per_layer": 12800,
+    "scope": "two passes use twice the target-query budget; not a matched-query comparison"
+  },
+  "local_check": "same 32 disjoint calibration images per task; original-merged check inputs are diagnostic only and never used for fitting",
+  "selection": "one declared second pass; no choice of round count, feature basis or ridge based on evaluation",
+  "evaluation": "same previously inspected SVHN 4000 and MNIST 2000 training subsets; not a fresh holdout",
+  "scope": "adaptive functional-reconstruction control on an unprotected released model; not a new defense or a demonstrated protected-model attack",
+  "test_usage": "none"
+}

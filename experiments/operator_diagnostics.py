@@ -306,11 +306,9 @@ def run_context(args):
     artifacts.mkdir()
     config_bytes = Path(args.config).read_bytes()
     config = json.loads(config_bytes)
-    assert config["conditions"] == [
-        "public_expert",
-        "public_merged",
-        "released_expert",
-        "released_merged",
+    assert config["conditions"] in [
+        ["public_expert", "public_merged", "released_expert", "released_merged"],
+        ["public_expert", "public_selfmerged"],
     ]
     assert config["samples"] == 256 and config["test_usage"] == "none"
     (out / "protocol.json").write_bytes(config_bytes)
@@ -350,6 +348,15 @@ def run_context(args):
     original = load(str(root / "SVHN/finetuned.pt"))
     second = load(str(root / "MNIST/finetuned.pt"))
     original_merged = merge(anchor, original, second, config["coefficient"])
+    self_merged = None
+    if "public_selfmerged" in config["conditions"]:
+        first_pass = copy.deepcopy(original).cpu().eval()
+        for layer in config["layers"]:
+            first_pass.model.visual.transformer.resblocks[layer].mlp.load_state_dict(
+                public_state[layer]
+            )
+        self_merged = merge(anchor, first_pass, second, config["coefficient"])
+        del first_pass
     heads = {task: load(str(root / f"head_{task}.pt")) for task in ["MNIST", "SVHN"]}
     training = dict(
         MNIST=MNIST(args.data, train=True, transform=original.val_preprocess),
@@ -472,7 +479,11 @@ def run_context(args):
                     config["ridge_ratio"],
                     solver="auto",
                     feature_model=original if feature_source == "released" else None,
-                    input_model=original_merged if input_source == "merged" else None,
+                    input_model={
+                        "expert": original,
+                        "merged": original_merged,
+                        "selfmerged": self_merged,
+                    }[input_source],
                 )
                 seconds = time.perf_counter() - fit_start
                 joint.model.visual.transformer.resblocks[layer].mlp.load_state_dict(
@@ -536,8 +547,11 @@ def run_context(args):
             seed_count=1,
             new_evaluations=len(rows),
             reused_measurements=0,
-            new_fits=12,
-            reused_fits=4,
+            new_fits=(len(config["conditions"]) - 1) * len(config["layers"]),
+            reused_fits=len(config["layers"]),
+            query_budget=config.get(
+                "query_budget", "one 12800-token MLP target per condition/layer"
+            ),
             fitting_labels_used=False,
             optimizer_steps=0,
             seconds=time.perf_counter() - start,
