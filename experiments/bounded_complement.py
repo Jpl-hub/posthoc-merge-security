@@ -93,6 +93,9 @@ def run(args):
     artifacts.mkdir()
     protocol_bytes = Path(args.config).read_bytes()
     config = json.loads(protocol_bytes)
+    protected_task = config.get("protected_task", "MNIST")
+    assert protected_task in {"MNIST", "SVHN"}
+    other_task = "SVHN" if protected_task == "MNIST" else "MNIST"
     (out / "protocol.json").write_bytes(protocol_bytes)
     parent = Path(config["parent"])
     parent_bytes = (parent / "results.json").read_bytes()
@@ -106,8 +109,8 @@ def run(args):
     author, author_sha = load_author(Path(args.author_repo) / "utils_attack_B32.py")
     root = Path(args.checkpoints)
     anchor = load(str(root / "zeroshot.pt"))
-    original = load(str(root / "MNIST/finetuned.pt"))
-    second = load(str(root / "SVHN/finetuned.pt"))
+    original = load(str(root / f"{protected_task}/finetuned.pt"))
+    second = load(str(root / f"{other_task}/finetuned.pt"))
     heads = {task: load(str(root / f"head_{task}.pt")) for task in ["MNIST", "SVHN"]}
     training = {
         "MNIST": MNIST(args.data, train=True, transform=original.val_preprocess),
@@ -117,21 +120,28 @@ def run(args):
         task: make_loader(dataset, indices[task]["development"])
         for task, dataset in training.items()
     }
-    calibration = make_loader(training["MNIST"], indices["MNIST"]["calibration"], batch_size=32)
-    attack_loader = make_loader(training["MNIST"], indices["MNIST"]["attack"], batch_size=32)
+    calibration = make_loader(
+        training[protected_task], indices[protected_task]["calibration"], batch_size=32
+    )
+    attack_loader = make_loader(
+        training[protected_task], indices[protected_task]["attack"], batch_size=32
+    )
     all_sites = [f"{target}:{layer}" for layer in range(12) for target in ["V", "FC"]]
     rows = [
         dict(**row, origin="parent_measurement")
         for row in json.loads(parent_bytes)
-        if row["split"] == "development" and row["preset"] == "unprotected"
+        if row["split"] == "development"
+        and row["preset"] == "unprotected"
+        and (row["group"] == "direct" or row["dataset"] == protected_task)
     ]
-    assert len(rows) == 3
+    reused_measurements = len(rows)
+    assert reused_measurements == (3 if protected_task == "MNIST" else 2)
     scans, profile, screen = {}, [], []
 
     def record(preset, group, model, loaders=development, split="development"):
         accuracy = {}
         for task, loader in loaders.items():
-            if group.endswith("standalone") and task != "MNIST":
+            if group.endswith("standalone") and task != protected_task:
                 continue
             row = dict(
                 preset=preset,
@@ -149,7 +159,11 @@ def run(args):
         return accuracy
 
     baseline = {r["dataset"]: r["top1"] for r in rows if r["group"] == "direct"}
-    original_utility = next(r["top1"] for r in rows if r["group"] == "standalone")
+    original_utility = (
+        next(r["top1"] for r in rows if r["group"] == "standalone")
+        if protected_task == "MNIST"
+        else record("unprotected", "standalone", original)[protected_task]
+    )
     control, scans["unprotected"] = angular_cleanup(
         original, anchor, config["angular_cosine_threshold"]
     )
@@ -163,7 +177,7 @@ def run(args):
     record("pretrained", "direct", merge(anchor, anchor, second, config["coefficient"]))
     for site in all_sites:
         changed = replace_site(original, anchor, site)
-        utility = record(f"replace_{site}", "standalone", changed)["MNIST"]
+        utility = record(f"replace_{site}", "standalone", changed)[protected_task]
         combined = record(
             f"replace_{site}", "direct", merge(anchor, changed, second, config["coefficient"])
         )
@@ -183,7 +197,7 @@ def run(args):
         changed.model.visual.transformer.resblocks[layer].load_state_dict(
             anchor.model.visual.transformer.resblocks[layer].state_dict(), strict=True
         )
-        utility = record(f"replace_block_{layer}", "standalone", changed)["MNIST"]
+        utility = record(f"replace_block_{layer}", "standalone", changed)[protected_task]
         profile.append(
             dict(
                 site=f"block:{layer}",
@@ -209,25 +223,25 @@ def run(args):
     ):
         name = f"{site_group}_e{energy:g}_s{scale:g}"
         changed, check = bounded_edit(original, sites, basis_by_energy[str(energy)], scale)
-        utility = record(name, "standalone", changed)["MNIST"]
+        utility = record(name, "standalone", changed)[protected_task]
         direct = record(name, "direct", merge(anchor, changed, second, config["coefficient"]))
         cleaned, scans[name] = angular_cleanup(changed, anchor, config["angular_cosine_threshold"])
-        cleaned_utility = record(name, "angular_standalone", cleaned)["MNIST"]
+        cleaned_utility = record(name, "angular_standalone", cleaned)[protected_task]
         attacked = record(name, "angular", merge(anchor, cleaned, second, config["coefficient"]))
         norm_cleaned, norm_scan = replace_norm_outliers(
             changed, anchor, config["norm_ratio_threshold"]
         )
         utility_loss = 100 * (original_utility - utility)
         drops = {
-            group: dict(
-                MNIST=100 * (baseline["MNIST"] - acc["MNIST"]),
-                mean=50 * (sum(baseline.values()) - sum(acc.values())),
-            )
+            group: {
+                protected_task: 100 * (baseline[protected_task] - acc[protected_task]),
+                "mean": 50 * (sum(baseline.values()) - sum(acc.values())),
+            }
             for group, acc in [("direct", direct), ("angular", attacked)]
         }
         feasible = utility_loss <= config["utility_budget_pp"] + 1e-9
         passes = feasible and all(
-            d["MNIST"] >= config["minimum_protected_task_drop_pp"] - 1e-9
+            d[protected_task] >= config["minimum_protected_task_drop_pp"] - 1e-9
             and d["mean"] >= config["minimum_mean_drop_pp"] - 1e-9
             for d in drops.values()
         )
@@ -312,7 +326,8 @@ def run(args):
             parent_indices_sha256=hashlib.sha256(index_bytes).hexdigest(),
             author_sha256=author_sha,
             training="none",
-            reused_measurements=3,
+            reused_measurements=reused_measurements,
+            protected_task=protected_task,
             new_evaluations=sum(r["origin"] == "new_evaluation" for r in rows),
             official_test_rows=sum(r["split"] == "official_test" for r in rows),
         ),
