@@ -145,6 +145,15 @@ python experiments/validate_results.py --operator-diagnostics --output outputs/2
 python experiments/plot_results.py --operator-diagnostics --output outputs/2026-10-09/post_meeting/operator_diagnostics
 ```
 
+固定预算重建进一步比较第一层特征来源与拟合输入。第二轮可使用重建模型自己融合后的输入，但增加一轮拟合目标调用；这仍是未保护模型上的恢复控制。[协议、数学与本轮结果](outputs/2026-10-09/post_meeting/reconstruction_notes.md)。
+
+```bash
+python experiments/operator_diagnostics.py --reconstruction-context --config configs/reconstruction_context.json --output outputs/2026-10-10/reconstruction_context
+python experiments/operator_diagnostics.py --reconstruction-context --config configs/adaptive_context.json --output outputs/2026-10-10/adaptive_context
+python experiments/validate_results.py --reconstruction-context --output outputs/2026-10-10/adaptive_context
+python experiments/plot_results.py --reconstruction-context --output outputs/2026-10-10/adaptive_context
+```
+
 ## 工程检查
 
 ```bash

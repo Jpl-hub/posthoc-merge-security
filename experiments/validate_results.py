@@ -1045,11 +1045,239 @@ def validate_reconstruction_budget(path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_reconstruction_context(path, write_report=True):
+    """Verify declared feature/context controls, including raw server evidence."""
+    config = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    indices = json.loads((path / "training_indices.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    fitting = json.loads((path / "fitting.json").read_bytes())
+    local = json.loads((path / "local_errors.json").read_bytes())
+    shifts = json.loads((path / "input_shift.json").read_bytes())
+    parent, fit_parent = Path(config["parent"]), Path(config["fitting_source"])
+    previous = json.loads((parent / "training_indices.json").read_bytes())
+    frozen = json.loads((fit_parent / "training_indices.json").read_bytes())
+
+    def digest(p):
+        return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+
+    assert meta["completed"] and not meta["new_defense"]
+    assert config["test_usage"] == meta["test_usage"] == "none"
+    assert not meta["fitting_labels_used"] and meta["optimizer_steps"] == 0
+    assert meta["seed_count"] == 1 and meta["reused_measurements"] == 0
+    assert meta["config_sha256"] == digest(path / "protocol.json")
+    assert meta["indices_sha256"] == digest(path / "training_indices.json")
+    assert meta["parent_indices_sha256"] == digest(parent / "training_indices.json")
+    assert meta["parent_results_sha256"] == digest(parent / "results.json")
+    assert meta["fitting_parent_indices_sha256"] == digest(fit_parent / "training_indices.json")
+    assert indices["confirmation"] == previous["confirmation"]
+    assert indices["development"] == previous["development"]
+    assert indices["fitting"]["SVHN"] == previous["fitting"]["256"]
+    assert indices["fitting"]["SVHN"] == frozen["SVHN"]["attack"][:256]
+    for task in ["MNIST", "SVHN"]:
+        checks = indices["local_check"][task]
+        assert checks == frozen[task]["calibration"][:32] and len(set(checks)) == 32
+        assert not set(checks).intersection(indices["fitting"].get(task, []))
+        assert not set(checks).intersection(indices["development"].get(task, []))
+        assert not set(checks).intersection(indices["confirmation"].get(task, []))
+    assert not set(indices["fitting"]["SVHN"]).intersection(indices["confirmation"]["SVHN"])
+    groups = {
+        ("confirmation", "standalone", "SVHN"),
+        ("confirmation", "direct", "SVHN"),
+        ("development", "direct", "MNIST"),
+    }
+    presets = {"unprotected", *config["conditions"]}
+    expected = {(preset, *key) for preset in presets for key in groups}
+    assert len(rows) == meta["new_evaluations"] == 3 * len(presets)
+    assert {(r["preset"], r["split"], r["group"], r["dataset"]) for r in rows} == expected
+    controls = {
+        (r["split"], r["group"], r["dataset"]): r for r in rows if r["preset"] == "unprotected"
+    }
+    for row in rows:
+        key = (row["split"], row["group"], row["dataset"])
+        n, pair = len(indices[row["split"]][row["dataset"]]), row["paired"]
+        assert row["n"] == n and row["top1"] == row["correct"] / n
+        assert row["coefficient"] == (
+            None if row["group"] == "standalone" else config["coefficient"]
+        )
+        assert sum(pair[k] for k in ["both_correct", "lost", "gained", "both_wrong"]) == n
+        assert pair["both_correct"] + pair["gained"] == row["correct"]
+        assert pair["both_correct"] + pair["lost"] == controls[key]["correct"]
+        assert pair["loss_pp"] == 100 * (pair["lost"] - pair["gained"]) / n
+        if row["preset"] != "unprotected":
+            assert pair["family_size"] == len(config["conditions"])
+            assert pair["exact_mcnemar_p"] <= pair["holm_p"] <= 1
+        if row["preset"] in {"unprotected", "public_expert"}:
+            assert row["previous_prediction_exact_match"] is True
+    assert len(fitting) == len(config["conditions"]) * len(config["layers"])
+    assert {(f["preset"], f["layer"]) for f in fitting} == {
+        (p, layer) for p in config["conditions"] for layer in config["layers"]
+    }
+    assert (
+        sum(f["new_fit"] for f in fitting)
+        == meta["new_fits"]
+        == (len(config["conditions"]) - 1) * len(config["layers"])
+    )
+    assert sum(not f["new_fit"] for f in fitting) == meta["reused_fits"] == 4
+    for f in fitting:
+        feature, context = f["preset"].split("_")
+        assert f["feature_source"] == feature and f["input_source"] == context
+        assert f["new_fit"] == (f["preset"] != "public_expert")
+        assert f["fit"]["calibration_tokens"] == 12800
+        assert f["fit"]["solver"] == "primal" and f["fit"]["design_features"] == 3073
+        assert 0 <= f["fit"]["normal_equation_relative_residual"] < 1e-8
+        assert f["fit"]["first_layer"] == (
+            "pretrained_fixed" if feature == "public" else "released_control_fixed"
+        )
+    expected_local = {
+        (p, layer, task, context)
+        for p in config["conditions"]
+        for layer in config["layers"]
+        for task in ["MNIST", "SVHN"]
+        for context in ["expert", "merged"]
+    }
+    assert len(local) == len(expected_local)
+    assert {
+        (r["preset"], r["layer"], r["dataset"], r["input_context"]) for r in local
+    } == expected_local
+    for r in local:
+        assert r["tokens"] == 1600
+        for operator in ["expert_operator", "merged_operator"]:
+            m = r[operator]
+            for denominator, value in [
+                ("target_output_norm", "relative_full_output_error"),
+                ("task_update_output_norm", "relative_task_update_error"),
+            ]:
+                assert math.isclose(
+                    m[value],
+                    m["output_error_norm"] / max(m[denominator], 1e-12),
+                    rel_tol=1e-12,
+                    abs_tol=1e-14,
+                )
+    assert len(shifts) == 8
+    if "public_selfmerged" in config["conditions"]:
+        assert meta["query_budget"] == config["query_budget"]
+        query = config["query_budget"]
+        assert query["unique_images"] == 256 and query["cached_first_pass"]
+        assert query["public_expert_total_target_tokens_per_layer"] == 12800
+        assert query["public_selfmerged_total_target_tokens_per_layer"] == 25600
+        assert query["new_second_pass_target_tokens_per_layer"] == 12800
+    raw_checked = (path / "artifacts/predictions.pt").exists()
+    second_pass_contrasts = []
+    if raw_checked:
+        import torch
+        from operator_diagnostics import paired_counts
+
+        for name, fingerprint in meta["artifact_sha256"].items():
+            assert digest(path / "artifacts" / name) == fingerprint
+        for name, fingerprint in meta["parent_artifact_sha256"].items():
+            assert digest(parent / "artifacts" / name) == fingerprint
+        evidence = torch.load(
+            path / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+        )
+        prior = torch.load(
+            parent / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+        )
+        assert set(evidence) == expected
+        for row in rows:
+            key = (row["preset"], row["split"], row["group"], row["dataset"])
+            current, baseline = evidence[key], evidence[("unprotected", *key[1:])]
+            assert torch.equal(current["labels"], baseline["labels"])
+            assert torch.equal(current["prediction"], current["logits"].argmax(1))
+            correct = current["prediction"] == current["labels"]
+            reference = baseline["prediction"] == baseline["labels"]
+            assert int(correct.sum()) == row["correct"]
+            for k, value in paired_counts(reference, correct).items():
+                assert value == row["paired"][k]
+            score_error = float(
+                (current["logits"] - baseline["logits"]).norm() / baseline["logits"].norm()
+            )
+            assert score_error == row["relative_score_error"]
+            if row["preset"] in {"unprotected", "public_expert"}:
+                old_name = "unprotected" if row["preset"] == "unprotected" else "fit_256"
+                assert torch.equal(current["prediction"], prior[(old_name, *key[1:])]["prediction"])
+        inputs = torch.load(
+            path / "artifacts/check_inputs.pt", map_location="cpu", weights_only=True
+        )
+        assert set(inputs) == {
+            (task, layer, context)
+            for task in ["MNIST", "SVHN"]
+            for layer in config["layers"]
+            for context in ["expert", "merged"]
+        }
+        for shift in shifts:
+            x = inputs[(shift["dataset"], shift["layer"], "expert")]
+            y = inputs[(shift["dataset"], shift["layer"], "merged")]
+            assert x.shape == y.shape == (1600, 768)
+            assert float((y - x).norm() / x.norm()) == shift["relative_input_shift"]
+        if "public_selfmerged" in config["conditions"]:
+            first_state = torch.load(
+                parent / "artifacts/fitted_mlp_256.pt", map_location="cpu", weights_only=True
+            )
+            second_state = torch.load(
+                path / "artifacts/fitted_mlp_public_selfmerged.pt",
+                map_location="cpu",
+                weights_only=True,
+            )
+            for layer in config["layers"]:
+                for name in ["c_fc.weight", "c_fc.bias"]:
+                    assert torch.equal(first_state[layer][name], second_state[layer][name])
+            for key in sorted(groups):
+                first, second = (
+                    evidence[("public_expert", *key)],
+                    evidence[("public_selfmerged", *key)],
+                )
+                counts = paired_counts(
+                    first["prediction"] == first["labels"], second["prediction"] == second["labels"]
+                )
+                second_pass_contrasts.append(
+                    dict(
+                        split=key[0],
+                        group=key[1],
+                        dataset=key[2],
+                        reference="public_expert",
+                        candidate="public_selfmerged",
+                        **{k: v for k, v in counts.items() if k != "exact_mcnemar_p"},
+                        scope="descriptive comparison on previously inspected training subsets",
+                    )
+                )
+    report = dict(
+        status="passed",
+        new_defense=False,
+        new_evaluations=len(rows),
+        local_diagnostic_rows=len(local),
+        raw_artifacts_checked=raw_checked,
+        results_sha256=digest(path / "results.json"),
+        checks=[
+            "frozen data and parent fingerprints",
+            "complete declared feature/context contrasts",
+            "declared image/query budgets and no label use",
+            "paired counts and comparison families",
+            "ridge normal equations",
+            "local error and context-shift arithmetic",
+            "exact previous baseline predictions",
+            "server predictions and saved inputs"
+            if raw_checked
+            else "raw evidence retained on server",
+        ],
+    )
+    if second_pass_contrasts:
+        report["second_pass_vs_first"] = second_pass_contrasts
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--subspace", action="store_true", help="Validate the subspace probe.")
+    mode.add_argument(
+        "--reconstruction-context",
+        action="store_true",
+        help="Validate fitting feature/context controls.",
+    )
     mode.add_argument(
         "--subspace-diagnostics", action="store_true", help="Validate causal contrasts."
     )
@@ -1071,7 +1299,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_reconstruction_budget
+        validate_reconstruction_context
+        if args.reconstruction_context
+        else validate_reconstruction_budget
         if args.reconstruction_budget
         else validate_operator_diagnostics
         if args.operator_diagnostics

@@ -955,6 +955,82 @@ def plot_reconstruction_budget(root: Path):
     print("BUDGET_FIGURES_WRITTEN", out)
 
 
+def plot_reconstruction_context(root: Path):
+    rows = json.loads((root / "results.json").read_bytes())
+    config = json.loads((root / "protocol.json").read_bytes())
+    local = json.loads((root / "local_errors.json").read_bytes())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    names = ["unprotected", *config["conditions"]]
+    display = {
+        "unprotected": "Original",
+        "public_expert": "Public\nexpert",
+        "public_merged": "Public\nmerged",
+        "released_expert": "Released\nexpert",
+        "released_merged": "Released\nmerged",
+        "public_selfmerged": "Public\nself-merged",
+    }
+    labels = [display[name] for name in names]
+    groups = [("standalone", "SVHN"), ("direct", "SVHN"), ("direct", "MNIST")]
+    fig, axes = plt.subplots(1, 3, figsize=(10.2, 3.0), layout="constrained")
+    for ax, (group, task) in zip(axes, groups):
+        selected = {r["preset"]: r for r in rows if r["group"] == group and r["dataset"] == task}
+        values = [100 * selected[name]["top1"] for name in names]
+        ax.bar(range(len(names)), values, color=["#777777", *COLORS[: len(names) - 1]], width=0.7)
+        for x, value in enumerate(values):
+            ax.text(x, value + 1, f"{value:.3f}", ha="center", fontsize=7)
+        ax.set(
+            xticks=range(len(names)),
+            xticklabels=labels,
+            ylim=(0, 105),
+            ylabel="Accuracy (%)",
+            title=f"{task}: {'standalone' if group == 'standalone' else 'merged'}",
+        )
+        ax.tick_params(axis="x", labelsize=7)
+        ax.grid(axis="y", alpha=0.2)
+    headline = "Unprotected control; previously inspected training subsets"
+    if "public_selfmerged" in config["conditions"]:
+        headline += "\nSecond pass: same 256 images, twice the total fitting-target token budget"
+    fig.suptitle(headline, fontsize=9)
+    save(fig, out, "context_accuracy")
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.1), layout="constrained")
+    for ax, operator in zip(axes, ["expert_operator", "merged_operator"]):
+        for i, preset in enumerate(config["conditions"]):
+            selected = {
+                r["layer"]: r
+                for r in local
+                if r["preset"] == preset
+                and r["dataset"] == "SVHN"
+                and r["input_context"] == "merged"
+            }
+            values = [
+                100 * selected[layer][operator]["relative_full_output_error"]
+                for layer in config["layers"]
+            ]
+            ax.plot(
+                config["layers"],
+                values,
+                marker="o",
+                markersize=3,
+                color=COLORS[i],
+                label=preset.replace("_", " / "),
+            )
+        ax.set(
+            yscale="linear" if len(config["conditions"]) == 2 else "log",
+            xlabel="Transformer block (0-based)",
+            ylabel="Output error (%)",
+            xticks=config["layers"],
+            title=operator.replace("_", " ").capitalize(),
+        )
+        if len(config["conditions"]) == 2:
+            ax.set_ylim(bottom=0)
+        ax.grid(alpha=0.2)
+    fig.legend(*axes[0].get_legend_handles_labels(), loc="outside lower center", ncol=2)
+    fig.suptitle("32 disjoint SVHN check images; frozen original-merged inputs", fontsize=9)
+    save(fig, out, "context_local_error")
+    print("CONTEXT_FIGURES_WRITTEN", out)
+
+
 def plot_nufilt_response(root: Path):
     result = json.loads((root / "results.json").read_bytes())
     rows, config = result["rows"], result["protocol"]
@@ -1011,6 +1087,11 @@ if __name__ == "__main__":
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
     mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
     mode.add_argument(
+        "--reconstruction-context",
+        action="store_true",
+        help="Plot fitting feature/context controls.",
+    )
+    mode.add_argument(
         "--nufilt-alignment", action="store_true", help="Plot task-vector proxy coverage."
     )
     mode.add_argument(
@@ -1026,7 +1107,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_reconstruction_budget
+        plot_reconstruction_context
+        if args.reconstruction_context
+        else plot_reconstruction_budget
         if args.reconstruction_budget
         else plot_nufilt_response
         if args.nufilt_response
