@@ -72,9 +72,11 @@ $$
 
 ## 记录与复核
 
-四组控制源码提交 `0cae27c`，新增 15 次分类评价、12 次拟合，复用 4 次拟合；总实验 112.74 s。[协议](../../2026-10-10/reconstruction_context/protocol.json)、[元数据](../../2026-10-10/reconstruction_context/metadata.json)、[核验](../../2026-10-10/reconstruction_context/validation.json)。
+每次准确率测量指一个配置在一个任务及运行方式上预测固定图片，对照标签计算正确比例。一个配置测独立 SVHN、融合 SVHN、融合 MNIST 三项；记录条数不是新方法数、独立重复次数或新增图片数。
 
-第二轮源码提交 `e157850`，新增 9 次分类评价、4 次拟合，复用 4 次拟合；总实验 68.86 s。[协议](../../2026-10-10/adaptive_context/protocol.json)、[元数据](../../2026-10-10/adaptive_context/metadata.json)、[核验](../../2026-10-10/adaptive_context/validation.json)。两次实验均重新评价原模型和旧 256 张重建，6 条旧对照的逐图预测各自完全一致；重复运行不算独立种子。
+四组控制源码提交 `0cae27c`，执行 15 次准确率测量：9 项新增配置结果、6 项旧对照重测。新执行 12 次拟合，复用 4 次拟合；总实验 112.74 s。[协议](../../2026-10-10/reconstruction_context/protocol.json)、[元数据](../../2026-10-10/reconstruction_context/metadata.json)、[核验](../../2026-10-10/reconstruction_context/validation.json)。
+
+第二轮源码提交 `e157850`，执行 9 次准确率测量：3 项新增配置结果、6 项旧对照重测。新执行 4 次拟合，复用 4 次拟合；总实验 68.86 s。[协议](../../2026-10-10/adaptive_context/protocol.json)、[元数据](../../2026-10-10/adaptive_context/metadata.json)、[核验](../../2026-10-10/adaptive_context/validation.json)。两组对照合计新增 4 个重建配置、12 项配置结果，另有 12 次旧对照重测。每组原模型和旧 256 张重建的 6 项逐图预测与前次记录各自完全一致；重复运行不算独立种子。
 
 服务器保存权重、原始 logits/预测、冻结输入与完整日志，指纹记录在 metadata.json。这里只保留轻量 JSON 和图表。
 
