@@ -1,0 +1,25 @@
+{
+  "task": "Cars",
+  "seed": 20261016,
+  "calibration_samples": 128,
+  "exclusions": [
+    "outputs/2026-10-10/task_profile/training_indices.json",
+    "outputs/2026-10-10/task_relocation_cars/training_indices.json"
+  ],
+  "layers": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "components": ["attn", "mlp"],
+  "finite_difference_step": 0.05,
+  "regularizer_trace_fraction": 0.0001,
+  "feature_rms_budgets": [0.01, 0.04],
+  "maximum_absolute_coefficient": 2.0,
+  "evaluation_tasks": ["Cars", "MNIST", "DTD"],
+  "attacks": ["direct", "aga", "reset_attention", "reset_mlp", "reset_all"],
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "utility_reference_pp": 0.5,
+  "minimum_interesting_gap_pp": 5.0,
+  "time_limit_seconds": 1200,
+  "construction": "24 existing Attention/MLP task-vector directions. On unlabeled target images, contrast target and public-anchor normalized feature sensitivities using one generalized eigenvector. Two predeclared feature budgets; no future partners, labels, response fitting or gradient updates.",
+  "limitations": "Layerwise task-vector rescaling and generalized eigenanalysis are existing mechanisms. This is a falsifiable functional-sensitivity probe, not an established novel defense or a parameter-SVD-complement construction. Anchor sensitivity does not guarantee merge sensitivity; nonzero module scaling remains reversible if its coefficient is known.",
+  "evaluation_policy": "Report both points and all attacks, with matched unprotected controls. Keep the 0.5 pp utility reference but do not use it as the sole rejection gate. No coefficient selection or retuning after test results. The best achievable protected task accuracy across attacks, including doing nothing, is the security endpoint. Three official test sets in eight-expert fusion are not an eight-task average."
+}
