@@ -412,9 +412,11 @@ def prepare_sun397_images(root, indices, progress_path):
     }
     wanted = set(splits["train"]) | set(splits["test"])
     classes = sorted({str(Path(name).parent) for name in wanted})
-    labels = [name[3:].replace("/", "_") for name in classes]
-    assert len(set(labels)) == 397 and labels == sorted(labels), "Class ordering changed"
-    mapping = dict(zip(classes, labels, strict=True))
+    mapping = {name: name[3:].replace("/", "_") for name in classes}
+    assert len(set(mapping.values())) == 397, "Flattened class name collision"
+    # The author's ImageFolder sorts directory names; original ClassName order
+    # differs for jail/indoor and jail_cell. Never use its line number as label.
+    class_order = sorted(mapping.values())
     reader = VerifiedRangeReader(url, length)
     seen, extracted_bytes = set(), 0
 
@@ -492,6 +494,8 @@ def prepare_sun397_images(root, indices, progress_path):
         image_count=len(seen),
         selected_bytes=extracted_bytes,
         archive_stored=False,
+        class_order="unchanged_author_ImageFolder_sorted_flattened_directory_names",
+        class_order_sha256=hashlib.sha256("\n".join(class_order).encode()).hexdigest(),
         train_count=19850,
         test_count=19850,
     )
