@@ -138,6 +138,124 @@ def query_readout(model, head, images, capture_features=False):
 
 
 @torch.no_grad()
+def evaluate_readout(args):
+    """Evaluate frozen projection recovery on official tests without new fitting."""
+    parent = Path(args.evaluate_readout)
+    config = json.loads((parent / "protocol.json").read_bytes())
+    prior = json.loads((parent / "metadata.json").read_bytes())
+    assert prior["completed"] and prior["test_usage"] == "none"
+    assert digest(parent / "artifacts/predictions.pt") == prior["predictions_sha256"]
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    artifacts = out / "artifacts"
+    artifacts.mkdir()
+    presets = ["unprotected", "public_backbone", "readout_unprotected", "readout_protected"]
+    frozen = {
+        preset: digest(parent / f"artifacts/{preset}_projection.pt") for preset in presets[2:]
+    }
+    save_json(
+        out / "protocol.json",
+        dict(
+            parent=str(parent),
+            coefficient=config["coefficient"],
+            presets=presets,
+            projection_sha256=frozen,
+            test_usage="official complete MNIST and SVHN; frozen recovery, no fitting",
+            new_defense=False,
+        ),
+    )
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    load = checkpoint_loader(Path(args.author_repo))
+    root = Path(args.checkpoints)
+    for name, value in prior["checkpoint_sha256"].items():
+        assert digest(root / name) == value
+    anchor = load(str(root / "zeroshot.pt"))
+    original = load(str(root / "MNIST/finetuned.pt"))
+    partner = load(str(root / "SVHN/finetuned.pt"))
+    heads = {task: load(str(root / f"head_{task}.pt")) for task in ["MNIST", "SVHN"]}
+    datasets = dict(
+        MNIST=MNIST(args.data, train=False, transform=original.val_preprocess),
+        SVHN=SVHN(args.data, split="test", transform=original.val_preprocess),
+    )
+    assert len(datasets["MNIST"]) == 10000 and len(datasets["SVHN"]) == 26032
+    loaders = {task: make_loader(data, list(range(len(data)))) for task, data in datasets.items()}
+    rows, predictions, controls = [], {}, {}
+    for preset in presets:
+        model = original if preset == "unprotected" else copy.deepcopy(anchor).cpu().eval()
+        if preset in frozen:
+            projection = torch.load(
+                parent / f"artifacts/{preset}_projection.pt", map_location="cpu", weights_only=True
+            )
+            model.model.visual.proj.copy_(projection)
+        combined = merge(anchor, model, partner, config["coefficient"])
+        for group, evaluated in [("standalone", model), ("direct", combined)]:
+            for task, loader in loaders.items():
+                if group == "standalone" and task != "MNIST":
+                    continue
+                p, y = [], []
+
+                def sink(pred, labels):
+                    p.append(pred)
+                    y.append(labels)
+
+                metric = evaluate(evaluated, heads[task], loader, "cuda", sink)
+                pred, labels = torch.cat(p), torch.cat(y)
+                correct = pred == labels
+                key = ("test", group, task)
+                if preset == "unprotected":
+                    controls[key] = dict(correct=correct, labels=labels)
+                assert torch.equal(controls[key]["labels"], labels)
+                row = dict(
+                    preset=preset,
+                    split="test",
+                    group=group,
+                    dataset=task,
+                    coefficient=None if group == "standalone" else config["coefficient"],
+                    paired=paired_counts(controls[key]["correct"], correct),
+                    **metric,
+                )
+                if preset == "readout_protected":
+                    matched = predictions["readout_unprotected", *key]
+                    row["matched_recovery"] = paired_counts(
+                        matched["prediction"] == labels, correct
+                    )
+                    if prior["target_disagreement"] == 0:
+                        assert torch.equal(pred, matched["prediction"])
+                rows.append(row)
+                predictions[preset, *key] = dict(prediction=pred, labels=labels)
+                save_json(out / "results.json", rows)
+                print("READOUT_TEST_RESULT", preset, group, task, metric, flush=True)
+        del combined, model
+    for preset, value in frozen.items():
+        assert digest(parent / f"artifacts/{preset}_projection.pt") == value
+    torch.save(predictions, artifacts / "predictions.pt")
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            new_defense=False,
+            test_usage="official complete MNIST and SVHN; frozen recovery, no fitting",
+            new_evaluations=len(rows),
+            new_fits=0,
+            optimizer_steps=0,
+            fitting_labels_used=False,
+            target_disagreement=prior["target_disagreement"],
+            seconds=time.perf_counter() - start,
+            source_sha256=digest(__file__),
+            config_sha256=digest(out / "protocol.json"),
+            parent_metadata_sha256=digest(parent / "metadata.json"),
+            checkpoint_sha256=prior["checkpoint_sha256"],
+            projection_sha256=frozen,
+            predictions_sha256=digest(artifacts / "predictions.pt"),
+        ),
+    )
+    print("READOUT_TEST_COMPLETE", flush=True)
+
+
+@torch.no_grad()
 def run_readout(args):
     """Compile hard predictions into one public backbone, then merge at fixed lambda.
 
@@ -1055,9 +1173,12 @@ if __name__ == "__main__":
     mode.add_argument("--reconstruction-budget", action="store_true")
     mode.add_argument("--reconstruction-context", action="store_true")
     mode.add_argument("--readout-recovery", action="store_true")
+    mode.add_argument("--evaluate-readout", metavar="FROZEN_RUN")
     args = parser.parse_args()
     (
-        run_readout
+        evaluate_readout
+        if args.evaluate_readout
+        else run_readout
         if args.readout_recovery
         else run_context
         if args.reconstruction_context

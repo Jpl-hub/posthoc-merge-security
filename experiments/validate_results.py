@@ -776,6 +776,80 @@ def validate_readout_recovery(path, write_report=True):
     config = json.loads((path / "protocol.json").read_bytes())
     meta = json.loads((path / "metadata.json").read_bytes())
     rows = json.loads((path / "results.json").read_bytes())
+    if "projection_sha256" in config:
+        assert meta["completed"] and not meta["new_defense"]
+        assert meta["new_fits"] == meta["optimizer_steps"] == 0
+        assert not meta["fitting_labels_used"]
+        assert meta["test_usage"] == config["test_usage"]
+        assert (
+            meta["config_sha256"]
+            == hashlib.sha256((path / "protocol.json").read_bytes()).hexdigest()
+        )
+        parent = Path(config["parent"])
+        prior = json.loads((parent / "metadata.json").read_bytes())
+        assert (
+            meta["parent_metadata_sha256"]
+            == hashlib.sha256((parent / "metadata.json").read_bytes()).hexdigest()
+        )
+        assert meta["checkpoint_sha256"] == prior["checkpoint_sha256"]
+        assert meta["projection_sha256"] == config["projection_sha256"]
+        for preset, value in config["projection_sha256"].items():
+            assert (
+                hashlib.sha256(
+                    (parent / f"artifacts/{preset}_projection.pt").read_bytes()
+                ).hexdigest()
+                == value
+            )
+        expected = {
+            (preset, "test", group, task)
+            for preset in config["presets"]
+            for group, task in [("standalone", "MNIST"), ("direct", "MNIST"), ("direct", "SVHN")]
+        }
+        keyed = {(r["preset"], r["split"], r["group"], r["dataset"]): r for r in rows}
+        assert set(keyed) == expected and len(rows) == meta["new_evaluations"] == 12
+        raw = path / "artifacts/predictions.pt"
+        saved = None
+        if raw.exists():
+            import torch
+            from operator_diagnostics import paired_counts
+
+            assert hashlib.sha256(raw.read_bytes()).hexdigest() == meta["predictions_sha256"]
+            saved = torch.load(raw, map_location="cpu", weights_only=False)
+            assert set(saved) == expected
+        for key, row in keyed.items():
+            assert row["n"] == {"MNIST": 10000, "SVHN": 26032}[row["dataset"]]
+            assert row["top1"] == row["correct"] / row["n"]
+            if saved is not None:
+                pred, labels = saved[key]["prediction"], saved[key]["labels"]
+                assert len(pred) == len(labels) == row["n"]
+                assert int((pred == labels).sum()) == row["correct"]
+                reference = saved["unprotected", *key[1:]]
+                assert torch.equal(labels, reference["labels"])
+                for field, value in paired_counts(
+                    reference["prediction"] == labels, pred == labels
+                ).items():
+                    assert abs(row["paired"][field] - value) < 1e-10
+                if key[0] == "readout_protected":
+                    matched = saved["readout_unprotected", *key[1:]]
+                    for field, value in paired_counts(
+                        matched["prediction"] == labels, pred == labels
+                    ).items():
+                        assert abs(row["matched_recovery"][field] - value) < 1e-10
+                    if prior["target_disagreement"] == 0:
+                        assert torch.equal(pred, matched["prediction"])
+        report = dict(
+            status="passed",
+            rows=12,
+            raw_predictions_checked=raw.exists(),
+            frozen_projection_hashes_checked=True,
+            new_fits=0,
+            new_defense=False,
+            results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+        )
+        if write_report:
+            (path / "validation.json").write_text(json.dumps(report, indent=2))
+        print(json.dumps(report))
+        return
     indices = json.loads((path / "training_indices.json").read_bytes())
     fitting = json.loads((path / "fitting.json").read_bytes())
     assert meta["completed"] and not meta["new_defense"]
