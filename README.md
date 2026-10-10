@@ -6,6 +6,7 @@
 
 ## 当前结果
 
+- [保持两项伙伴预测的功能恢复](outputs/2026-10-11/score_recovery/summary.md)：256 张图、一次闭式拟合，MNIST 87.23% → 96.27%、DTD 47.23% → 58.24%；各自另外两个伙伴完整逐图预测不变，尚无有效新防御。
 - [MNIST／DTD 局部任务删除](outputs/2026-10-11/local_erasure/summary.md)：两个固定点、七条恢复路径，无性能门槛；MNIST 原版 AGA 后下降 6.78 pp，重缩放恢复目标至 98.90% 并损失伙伴能力，未获得有效新防御。
 - [MNIST 主任务方向删除代价](outputs/2026-10-11/critical_subspace_mnist/summary.md)：细粒度联合删除仍便宜，固定方向族已停止；[近期代码论文精读](outputs/2026-10-11/reading_focus.md)核对 AGA、NUFILT 与 SLOA 的机制边界。
 - [丢弃专家的完整测试基线](outputs/2026-10-11/expert_omission/summary.md)：固定系数，分别将目标任务向量置零，并检查伙伴任务；用于明确当前准确率指标的防御空间，不是原版 AGA 或恢复原权重的结果。
@@ -57,6 +58,14 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/local_erasure.py --output outputs/local_deletion_check
 python experiments/validate_results.py --local-erasure --output outputs/local_deletion_check
 python experiments/plot_results.py --local-erasure --output outputs/local_deletion_check
+```
+
+针对已冻结的局部删除，原生分数恢复单独运行。默认依赖父实验逐图预测和验证记录；在自定义父目录上复核时，修改 `configs/score_recovery.json` 的 `parent` 后先固定协议。只保持两个已测伙伴 head，未覆盖全部七个伙伴。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/score_recovery.py --output outputs/score_recovery_check
+python experiments/validate_results.py --score-recovery --output outputs/score_recovery_check
+python experiments/plot_results.py --score-recovery --output outputs/score_recovery_check
 ```
 
 最新方向与替换代价的预检入口如下；两轮都没有构造保护模型。复核投影诊断需要服务器父实验的原始激活。丢弃专家检查使用完整官方测试，预处理图片只缓存在服务器内存。
