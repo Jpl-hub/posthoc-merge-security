@@ -226,6 +226,8 @@ def run(args):
     artifacts = out / "artifacts"
     artifacts.mkdir()
     config = json.loads(Path(args.config).read_bytes())
+    fusion = json.loads(Path(config["fusion_config"]).read_bytes())
+    assert fusion["coefficient"] == config["coefficient"]
     save_json(out / "protocol.json", config)
     torch.set_num_threads(4)
     torch.backends.cuda.matmul.allow_tf32 = False
@@ -304,7 +306,6 @@ def run(args):
         ),
     )
     # Predeclared floor checks start only after target-only directions freeze.
-    fusion = json.loads(Path(config["fusion_config"]).read_bytes())
     models = {name: load(str(root / name / "finetuned.pt")) for name in fusion["tasks"]}
     models[task], models["anchor"] = original, anchor
     head = load(str(root / f"head_{task}.pt"))
