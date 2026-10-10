@@ -1,0 +1,33 @@
+{
+  "seed": 20261015,
+  "task": "Cars",
+  "support_parent": "outputs/2026-10-10/task_profile",
+  "layers": [
+    9,
+    10,
+    11
+  ],
+  "calibration_samples": 256,
+  "confirmation_samples": 2048,
+  "attack_samples": 1024,
+  "task_energy": 0.99,
+  "noise_rank": 16,
+  "own_value_response_ratio": 0.1,
+  "ridge_ratio": 1e-06,
+  "inverse_iterations": 64,
+  "inverse_damping": 0.5,
+  "inverse_tolerance": 1e-05,
+  "utility_budget_pp": 0.5,
+  "minimum_recovery_gap_pp": 5.0,
+  "coefficient": 0.2,
+  "time_limit_seconds": 1200,
+  "construction": "Erase target MLP task weights in the selected local region by replacing all three MLPs with public pretrained modules. For each block, perturb V in a target-vector complement after excluding the exact LN affine-null direction. Numerically invert U+M0(LN2(U))=Y for fixed teacher block targets; then perform one existing ridge solve for the attention output projection. No gradients or parameter optimizer. No future partners are loaded until release and utility gate are frozen.",
+  "limitations": "The activation solve has no global convergence guarantee; its residual is measured and failures stop construction. Linear attention features may not represent the inverse target, and calibration fidelity does not establish unseen utility. Removing MLP task weights does not imply their function cannot be reconstructed. Closed-form compensation is prior work; this candidate has no novelty claim.",
+  "evaluation": "Fresh target training subsets exclude the support selection and confirmation indices. Not held out from original expert training, not official test. Only after utility loss <=0.5 pp, measure eight-expert TA, author full AGA, five public replacements and an additional 1024-image unlabeled white-box block-response QKV reconstruction, all with matched unprotected controls. No parameter/rank/strength grid.",
+  "references": [
+    "https://arxiv.org/html/2509.21413v2",
+    "https://arxiv.org/html/2602.23795v2",
+    "https://arxiv.org/html/2606.30360v1"
+  ],
+  "test_usage": "none"
+}

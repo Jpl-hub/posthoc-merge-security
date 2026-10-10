@@ -1,0 +1,29 @@
+# Cars 局部响应迁移：逆解门槛停止
+
+**本次固定构造失败于第 9 层的激活逆解，没有生成发布模型，没有准确率或 AGA 结果。**未做参数拟合或梯度微调，也未加载未来融合伙伴。
+
+依据[三任务定位](../task_profile/summary.md)，选 Cars 的 9、10、11 层。计划将这三层 MLP 换成公开预训练 MLP，把原任务响应迁入 Attention 输出投影。V 扰动使用目标 task vector 的补空间及目标响应统计，明确排除已知 LayerNorm 仿射零方向；预定闭式补偿使用已有 ridge 实现。
+
+令原 block 输出为 \(Y\)，公开 MLP 为 \(M_0\)。先求后 Attention 状态 \(U\)：
+
+\[
+U+M_0(\operatorname{LN}_2(U))=Y.
+\]
+
+随后才可能从扰动后的 Attention 特征拟合 \(U-X\)。若能成功，原 MLP 任务权重将不在发布模型中；这只改变简单 FC 替换的作用位置，不能自动保证抗重建、AGA 或完整块替换。
+
+固定协议：256 张无标签 Cars 训练图校准，另外冻结 2048 张确认、1024 张攻击图；全部排除上轮 Cars 的选择和确认图。后两组尚未评价，不是官方测试或原专家未见数据。[协议](protocol.json)未做强度、秩或层数网格搜索。
+
+| 检查 | 范围 | 结果 |
+|---|---|---|
+| 构造中的阻尼不动点迭代 | 256 图、全部 token；每块数据最多 64 步 | 25 个数据块均未达相对残差 \(10^{-5}\)；最大值 0.57545 |
+| SciPy Anderson 诊断 | 同一校准组前 8 图、400 个 token，原 Attention 状态初始化 | 未收敛；最大相对残差 0.40330 |
+| 解析 Newton 诊断 | 同 8 图的 CLS token，原 Attention 状态初始化 | 未收敛；最大相对残差 0.08204 |
+
+诊断不含 V 扰动，只检查替换 MLP 后的激活方程；两个诊断的 token 范围不同，不能直接比较求解器优劣。0.08204 是张量相对残差，**不是准确率损失**。停滞点 Jacobian 条件数约 715–33028；解析 Jacobian 与方向有限差分相对误差 \(6.09\times10^{-7}\)，服务器用公开 MLP 和原始张量重新核算一致。
+
+结论是本次局部求解没有满足保持原计算的门槛，并非方程无解。事实上，正 epsilon 的 LN 使 \(M_0\circ\mathrm{LN}\) 连续且有界，\(Y-M_0(\mathrm{LN}(U))\) 在足够大的、以 \(Y\) 为中心的闭球内自映射，Brouwer 定理保证至少一个根；它不保证近邻求解稳定，也不保证该根可由 Attention 的线性输出投影表示。因此停止此构造，不继续调求解器或扩大攻击。
+
+[构造停止记录](decision.json)、[原始逆解计数](artifacts/layer_9_inverse_failure.json)、[Anderson](root_diagnostic.json)、[Newton](newton_root_diagnostic.json)、[服务器核验](validation.json)、[冻结源码核验](source_validation.json)。构造源码 `e24df5f`；诊断及核验源码 `3e8143b`。原始张量约 44 MB、完整日志只在服务器。另保留[首次接口错误](../task_relocation_cars_setup_failure/failure.json)，修复后未改变配置或样本。
+
+[NUFILT](https://arxiv.org/html/2509.21413v2) 的 task vector 低秩结构是条件模型，并不保证本补空间对任务响应无影响；[GRAIL](https://arxiv.org/html/2602.23795v2) 已有闭式响应补偿。本构造未宣称创新性或有效安全性。后续机制需先解决稳定、可表示的跨模块任务依赖，并受完整支持替换基线约束。

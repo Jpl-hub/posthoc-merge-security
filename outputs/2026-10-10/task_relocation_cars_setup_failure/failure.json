@@ -1,0 +1,18 @@
+{
+  "stage": "implementation_interface",
+  "source_commit": "a5887f237247206c5119337fb70e9f4d3752776e",
+  "error": "AttributeError: 'ResidualAttentionBlock' object has no attribute 'attn_mask'",
+  "reason": "Installed CLIP visual block exposes attention(x, attn_mask=None), without a block.attn_mask attribute.",
+  "fix_commit": "e24df5f31a7987e65498283683eab8d770ed8e2a",
+  "fix": "Use attn_mask=None, matching the unchanged visual attention method.",
+  "configuration_changed": false,
+  "sample_indices_changed": false,
+  "parameter_fits": 0,
+  "classification_rows": 0,
+  "source_checks": {
+    "experiments/task_relocation.py": true,
+    "configs/task_relocation_cars.json": true
+  },
+  "raw_log": "Server only: outputs/2026-10-10/task_relocation_cars_setup_failure/runtime.log",
+  "scope": "Runtime interface error before fitting or evaluation; subsequent scientific failure is recorded separately."
+}

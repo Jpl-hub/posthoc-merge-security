@@ -2,10 +2,12 @@
 
 对已微调专家施加发布前后处理，保持原任务能力，检验对未经授权融合及自适应恢复的保护。目标独立准确率损失 ≤0.5 个百分点；不进行额外梯度微调，有闭式拟合的实验明确记录校准数据。
 
-**目前没有达标的新防御。**旧四层候选被 FC 替换和功能重建绕过。本轮确认完整四块替换的恢复下限，并排除简单 LN 缩放绑定；任务依赖定位未找到经确认合格的局部组合。全部失败及历史结果保留。
+**目前没有达标的新防御。**旧四层候选被 FC 替换和功能重建绕过。三任务定位中，Cars 最后三层通过本轮关键区域筛选；在该区域尝试的响应迁移构造未通过数值逆解检查，停止于参数拟合及准确率评价之前。全部失败及历史结果保留。
 
 ## 当前结果
 
+- [MNIST／Cars／DTD 关键区域定位](outputs/2026-10-10/task_profile/summary.md)：Cars 9–11 层联合替换的独立损失 11.47 pp、八专家融合下降 6.20 pp；这是未保护模型的替换基线。
+- [Cars 局部响应迁移](outputs/2026-10-10/task_relocation_cars/summary.md)：只使用目标与公开预训练模型，首层逆解未收敛；无独立准确率、AGA 或防御成功结果。
 - [10 月 11 日汇报](outputs/2026-10-11/report.md)与[讲稿](outputs/2026-10-11/talk.md)：10 月 10 日晚更新，围绕恢复漏洞和机制结论。
 - [目标专家任务定位](outputs/2026-10-10/task_support_mnist/summary.md)：仅 MNIST 选择，独立贡献不能替代融合恢复代价；未找到合格局部支持。
 - [四个完整 block 替换](outputs/2026-10-10/subspace_compensation_mnist_block_reset/summary.md)：同四块内、架构不变的编辑具有 96.34% 的条件恢复下限。
@@ -57,6 +59,16 @@ python experiments/build_report.py --eight-protection --output outputs/params_ch
 python experiments/operator_diagnostics.py --task-support --config configs/task_support_mnist.json --output outputs/task_support
 python experiments/validate_results.py --task-support --output outputs/task_support
 python experiments/plot_results.py --task-support --output outputs/task_support
+```
+
+三任务定位与一次 Cars 响应迁移；迁移构造已经在逆解门槛停止。每次重跑构造使用新目录；最后一条核验命令需要服务器上的原始诊断张量。
+
+```bash
+python experiments/operator_diagnostics.py --task-profile --config configs/task_profile.json --output outputs/task_profile
+python experiments/validate_results.py --task-profile --output outputs/task_profile
+python experiments/task_relocation.py --config configs/task_relocation_cars.json --output outputs/cars_relocation
+python experiments/task_relocation.py --root-diagnostic --output outputs/cars_relocation
+python experiments/validate_results.py --task-relocation --output outputs/cars_relocation
 ```
 
 旧四层候选的保存与完整测试入口；后续恢复复用冻结保护，不重新生成；AGA 只运行受保护专家。双任务系数为 0.5，与七任务结果分开报告。
