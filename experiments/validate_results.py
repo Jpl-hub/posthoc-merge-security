@@ -788,36 +788,38 @@ def validate_operator_diagnostics(path, write_report=True):
     assert meta["config_sha256"] == hashlib.sha256(config_bytes).hexdigest()
     assert meta["data_indices_sha256"] == hashlib.sha256(indices_bytes).hexdigest()
     assert meta["parent_indices_sha256"] == hashlib.sha256(parent_bytes).hexdigest()
-    for task in ["MNIST", "SVHN"]:
-        assert indices["development"][task] == parent[task]["development"]
-    assert indices["fitting"]["SVHN"] == parent["SVHN"]["attack"][: config["attacker_samples"]]
+    task = config["protected_task"]
+    reconstruction = config.get("reconstruction", True)
+    for dataset in ["MNIST", "SVHN"]:
+        assert indices["development"][dataset] == parent[dataset]["development"]
+    assert indices["fitting"][task] == parent[task]["attack"][: config["attacker_samples"]]
     assert (
-        indices["local_check"]["SVHN"]
-        == parent["SVHN"]["calibration"][: config["local_check_samples"]]
+        indices["local_check"][task] == parent[task]["calibration"][: config["local_check_samples"]]
     )
-    confirmation = indices["confirmation"]["SVHN"]
+    confirmation = indices["confirmation"][task]
     assert len(confirmation) == len(set(confirmation)) == config["confirmation_samples"]
-    assert not set(confirmation).intersection(
-        i for subset in parent["SVHN"].values() for i in subset
-    )
-    assert all(0 <= i < 73257 for i in confirmation)
-    expected = {"unprotected", "reconstruct_joint"}
-    expected.update(f"reconstruct_L{layer}" for layer in config["layers"])
+    assert not set(confirmation).intersection(i for subset in parent[task].values() for i in subset)
+    assert all(0 <= i < {"SVHN": 73257, "MNIST": 60000}[task] for i in confirmation)
+    expected = {"unprotected"}
+    if reconstruction:
+        expected.add("reconstruct_joint")
+        expected.update(f"reconstruct_L{layer}" for layer in config["layers"])
     expected.update(
         f"replace_L{layer}_{component}"
         for layer in config["layers"]
         for component in config["components"]
     )
     expected.update(f"joint_{component}" for component in config["joint_components"])
-    assert len(expected) == 34
-    development_groups = {("standalone", "SVHN"), ("direct", "MNIST"), ("direct", "SVHN")}
+    development_groups = {("standalone", task), ("direct", "MNIST"), ("direct", "SVHN")}
     expected_keys = {(p, "development", g, d) for p in expected for g, d in development_groups}
     expected_keys.update(
-        (p, "confirmation", g, "SVHN")
+        (p, "confirmation", g, task)
         for p in config["confirmation_presets"]
         for g in ["standalone", "direct"]
     )
-    assert len(rows) == meta["new_evaluations"] == len(expected_keys) == 110
+    assert len(rows) == meta["new_evaluations"] == len(expected_keys)
+    assert config["confirmation_presets"][0] == "unprotected"
+    assert set(config["confirmation_presets"]) <= expected
     assert {(r["preset"], r["split"], r["group"], r["dataset"]) for r in rows} == expected_keys
     controls = {
         (r["split"], r["group"], r["dataset"]): r for r in rows if r["preset"] == "unprotected"
@@ -842,8 +844,15 @@ def validate_operator_diagnostics(path, write_report=True):
         assert 0 <= pair["exact_mcnemar_p"] <= 1
         if row["preset"] != "unprotected":
             assert pair["exact_mcnemar_p"] <= pair["holm_p"] <= 1
-            assert pair["family_size"] == (33 if row["split"] == "development" else 3)
-    assert len(profile) == 28 and len({p["preset"] for p in profile}) == 28
+            assert pair["family_size"] == (
+                len(expected) - 1
+                if row["split"] == "development"
+                else len(config["confirmation_presets"]) - 1
+            )
+    expected_profile = len(config["layers"]) * len(config["components"]) + len(
+        config["joint_components"]
+    )
+    assert len(profile) == len({p["preset"] for p in profile}) == expected_profile
     for item in profile:
         assert item["replaced_keys"] and len(item["replaced_keys"]) == len(
             set(item["replaced_keys"])
@@ -855,7 +864,8 @@ def validate_operator_diagnostics(path, write_report=True):
             )
             for key in item["replaced_keys"]
         )
-    assert {f["layer"] for f in fitting} == set(config["layers"]) and len(fitting) == 4
+    assert {f["layer"] for f in fitting} == (set(config["layers"]) if reconstruction else set())
+    assert len(fitting) == (len(config["layers"]) if reconstruction else 0)
     for fit in fitting:
         assert fit["fit"]["calibration_tokens"] == config["attacker_samples"] * 50
         assert fit["check"]["check_tokens"] == config["local_check_samples"] * 50

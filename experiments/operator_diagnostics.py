@@ -594,7 +594,11 @@ def run(args):
     artifacts.mkdir()
     config_bytes = Path(args.config).read_bytes()
     config = json.loads(config_bytes)
-    assert config["protected_task"] == "SVHN" and config["test_usage"] == "none"
+    protected_task = config["protected_task"]
+    partner_task = config.get("other_task", "MNIST")
+    reconstruction = config.get("reconstruction", True)
+    assert {protected_task, partner_task} == {"MNIST", "SVHN"}
+    assert config["test_usage"] == "none"
     (out / "protocol.json").write_bytes(config_bytes)
     parent = Path(config["parent"])
     index_bytes = (parent / "training_indices.json").read_bytes()
@@ -606,23 +610,25 @@ def run(args):
     load = checkpoint_loader(Path(args.author_repo))
     checkpoints = Path(args.checkpoints)
     anchor = load(str(checkpoints / "zeroshot.pt"))
-    original = load(str(checkpoints / "SVHN/finetuned.pt"))
-    second = load(str(checkpoints / "MNIST/finetuned.pt"))
+    original = load(str(checkpoints / f"{protected_task}/finetuned.pt"))
+    second = load(str(checkpoints / f"{partner_task}/finetuned.pt"))
     heads = {name: load(str(checkpoints / f"head_{name}.pt")) for name in ["MNIST", "SVHN"]}
     training = {
         "MNIST": MNIST(args.data, train=True, transform=original.val_preprocess),
         "SVHN": SVHN(args.data, split="train", transform=original.val_preprocess),
     }
-    excluded = set(itertools.chain.from_iterable(frozen["SVHN"].values()))
+    excluded = set(itertools.chain.from_iterable(frozen[protected_task].values()))
     order = torch.randperm(
-        len(training["SVHN"]), generator=torch.Generator().manual_seed(config["seed"])
+        len(training[protected_task]), generator=torch.Generator().manual_seed(config["seed"])
     ).tolist()
     confirmation = [i for i in order if i not in excluded][: config["confirmation_samples"]]
     indices = dict(
         development={task: splits["development"] for task, splits in frozen.items()},
-        confirmation={"SVHN": confirmation},
-        fitting={"SVHN": frozen["SVHN"]["attack"][: config["attacker_samples"]]},
-        local_check={"SVHN": frozen["SVHN"]["calibration"][: config["local_check_samples"]]},
+        confirmation={protected_task: confirmation},
+        fitting={protected_task: frozen[protected_task]["attack"][: config["attacker_samples"]]},
+        local_check={
+            protected_task: frozen[protected_task]["calibration"][: config["local_check_samples"]]
+        },
     )
     assert len(confirmation) == config["confirmation_samples"]
     save_json(out / "training_indices.json", indices)
@@ -631,14 +637,22 @@ def run(args):
         for split, by_task in indices.items()
         if split in {"development", "confirmation"}
     }
-    fit_images = torch.stack([training["SVHN"][i][0] for i in indices["fitting"]["SVHN"]])
-    check_images = torch.stack([training["SVHN"][i][0] for i in indices["local_check"]["SVHN"]])
+    fit_images, check_images = None, None
+    if reconstruction:
+        fit_images = torch.stack(
+            [training[protected_task][i][0] for i in indices["fitting"][protected_task]]
+        )
+        check_images = torch.stack(
+            [training[protected_task][i][0] for i in indices["local_check"][protected_task]]
+        )
+    else:
+        assert config["attacker_samples"] == config["local_check_samples"] == 0
     rows, predictions, controls = [], {}, {}
     profile, fitting = [], []
 
     def record(preset, group, model, split="development"):
         for task, loader in loaders[split].items():
-            if group == "standalone" and task != "SVHN":
+            if group == "standalone" and task != protected_task:
                 continue
             predicted, labels = [], []
 
@@ -705,23 +719,25 @@ def run(args):
         )
         evaluate_variant(name, model)
         del model
-    joint = copy.deepcopy(original).cpu().eval()
-    for layer in config["layers"]:
-        fitting_start = time.perf_counter()
-        model, details = reconstruct(original, anchor, fit_images, layer, config["ridge_ratio"])
-        fitting_seconds = time.perf_counter() - fitting_start
-        check = check_local_fit(original, model, anchor, check_images, layer)
-        joint.model.visual.transformer.resblocks[layer].mlp.load_state_dict(
-            model.model.visual.transformer.resblocks[layer].mlp.state_dict(), strict=True
-        )
-        fitting.append(
-            dict(layer=layer, fit=details, check=check, reconstruction_seconds=fitting_seconds)
-        )
-        evaluate_variant(f"reconstruct_L{layer}", model)
-        del model
-        save_json(out / "fitting.json", fitting)
-    evaluate_variant("reconstruct_joint", joint)
-    del joint
+    if reconstruction:
+        joint = copy.deepcopy(original).cpu().eval()
+        for layer in config["layers"]:
+            fitting_start = time.perf_counter()
+            model, details = reconstruct(original, anchor, fit_images, layer, config["ridge_ratio"])
+            fitting_seconds = time.perf_counter() - fitting_start
+            check = check_local_fit(original, model, anchor, check_images, layer)
+            joint.model.visual.transformer.resblocks[layer].mlp.load_state_dict(
+                model.model.visual.transformer.resblocks[layer].mlp.state_dict(), strict=True
+            )
+            fitting.append(
+                dict(layer=layer, fit=details, check=check, reconstruction_seconds=fitting_seconds)
+            )
+            evaluate_variant(f"reconstruct_L{layer}", model)
+            del model
+            save_json(out / "fitting.json", fitting)
+        evaluate_variant("reconstruct_joint", joint)
+        del joint
+    save_json(out / "fitting.json", fitting)
     adjust_comparisons(rows)
     save_json(out / "results.json", rows)
     save_json(out / "replacement_profile.json", profile)
@@ -733,7 +749,9 @@ def run(args):
             completed=True,
             total_seconds=time.perf_counter() - start,
             training="no_gradient_or_expert_fine_tuning",
-            parameter_fitting="attack-only closed-form ridge; unprotected control",
+            parameter_fitting="attack-only closed-form ridge; unprotected control"
+            if reconstruction
+            else "none; public pretrained component replacement only",
             new_defense=False,
             test_usage="none",
             new_evaluations=len(rows),
@@ -747,6 +765,16 @@ def run(args):
             seed_count=1,
             evaluation_implementation="author ImageClassifier/get_logits through shared evaluate",
             merge_implementation="author TaskVector through shared merge",
+            checkpoint_sha256={
+                str(p.relative_to(checkpoints)): digest(p)
+                for p in [
+                    checkpoints / "zeroshot.pt",
+                    checkpoints / f"{protected_task}/finetuned.pt",
+                    checkpoints / f"{partner_task}/finetuned.pt",
+                    checkpoints / f"head_{protected_task}.pt",
+                    checkpoints / f"head_{partner_task}.pt",
+                ]
+            },
         ),
     )
     print("OPERATOR_COMPLETE", flush=True)
