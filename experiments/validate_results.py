@@ -3458,6 +3458,14 @@ def validate_functional_contrast(path: Path):
         flat = derivative.double().flatten(0, 1)
         grams[name] = flat.T @ flat / n
         assert torch.allclose(grams[name], geometry[f"{name}_gram"], atol=1e-12, rtol=1e-12)
+    # Whiten the unregularized pair independently. This bounds the calibration
+    # linear proxy for every direction in the declared 24-dimensional family.
+    target_spectrum = torch.linalg.eigvalsh(grams["target"])
+    assert target_spectrum[0] > 0
+    lower = torch.linalg.cholesky(grams["target"])
+    left = torch.linalg.solve_triangular(lower, grams["anchor"], upper=False)
+    whitened = torch.linalg.solve_triangular(lower, left.T, upper=False).T
+    maximum_ratio = float(torch.linalg.eigvalsh((whitened + whitened.T) / 2)[-1])
     rho = config["regularizer_trace_fraction"] * float(grams["target"].trace()) / 24 + 1e-12
     assert math.isclose(rho, construction["rho"], rel_tol=1e-12)
     direction = geometry["direction"]
@@ -3600,6 +3608,11 @@ def validate_functional_contrast(path: Path):
         checkpoint_pins_checked=len(meta["checkpoint_sha256"]),
         geometry_verified=True,
         generalized_eigen_relative_residual=eigen_residual,
+        target_gram_minimum_eigenvalue=float(target_spectrum[0]),
+        target_gram_maximum_eigenvalue=float(target_spectrum[-1]),
+        unregularized_maximum_sensitivity_energy_ratio=maximum_ratio,
+        linearized_calibration_maximum_rms_ratio=math.sqrt(maximum_ratio),
+        sensitivity_bound_scope="Central-difference feature proxy on 128 calibration images, declared 24 task-vector directions only; not a finite-perturbation or unknown-merge guarantee",
         released_fields_checked=96,
         outside_support_exact=True,
         official_dataset_labels_verified=True,

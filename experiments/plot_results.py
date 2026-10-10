@@ -1587,11 +1587,89 @@ def plot_subspace_interference(root: Path):
     print("INTERFERENCE_FIGURES_WRITTEN", out)
 
 
+def plot_functional_contrast(root: Path):
+    """Display both frozen points, including bypasses and cross-task effects."""
+    rows = json.loads((root / "results.json").read_bytes())
+    decision = json.loads((root / "decision.json").read_bytes())
+    config = json.loads((root / "protocol.json").read_bytes())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    lookup = {r["id"]: r for r in rows}
+    task = config["task"]
+    presets = ["original", "budget_0", "budget_1"]
+    baseline = lookup[f"original/direct/fusion/{task}"]["top1"]
+    utility = [0] + [p["utility_loss_pp"] for p in decision["points"]]
+    fig, axes = plt.subplots(1, 2, figsize=(8.2, 3), layout="constrained")
+    for index, attack in enumerate(["direct", "aga", "best"]):
+        values = []
+        for preset in presets:
+            if attack == "best":
+                accuracy = max(
+                    r["top1"]
+                    for r in rows
+                    if r["preset"] == preset and r["group"] == "fusion" and r["dataset"] == task
+                )
+            else:
+                accuracy = lookup[f"{preset}/{attack}/fusion/{task}"]["top1"]
+            values.append(100 * (baseline - accuracy))
+        axes[0].plot(
+            utility,
+            values,
+            marker="o",
+            color=COLORS[index],
+            label={
+                "direct": "Direct merging",
+                "aga": "Original AGA",
+                "best": "Best tested recovery",
+            }[attack],
+        )
+    axes[0].axvline(config["utility_reference_pp"], color="0.5", ls="--", lw=0.8)
+    axes[0].axhline(0, color="0.5", lw=0.8)
+    axes[0].set(
+        xlabel="Standalone accuracy loss (pp)",
+        ylabel="Cars fusion drop (pp)",
+        title="Performance and recovery tradeoff",
+    )
+    axes[0].grid(alpha=0.15)
+    axes[0].legend()
+    positions = np.arange(len(config["evaluation_tasks"]))
+    for index, preset in enumerate(presets):
+        values = [
+            100 * lookup[f"{preset}/direct/fusion/{dataset}"]["top1"]
+            for dataset in config["evaluation_tasks"]
+        ]
+        axes[1].bar(
+            positions + (index - 1) * 0.25,
+            values,
+            width=0.25,
+            color=COLORS[index],
+            label={
+                "original": "Unprotected",
+                "budget_0": "RMS budget 0.01",
+                "budget_1": "RMS budget 0.04",
+            }[preset],
+        )
+    axes[1].set(
+        xticks=positions,
+        xticklabels=config["evaluation_tasks"],
+        ylim=(0, 105),
+        ylabel="Accuracy (%)",
+        title="Direct eight-expert fusion",
+    )
+    axes[1].grid(axis="y", alpha=0.15)
+    axes[1].legend()
+    fig.suptitle(
+        "Cars-only construction; three full official test sets; TA coefficient 0.2", fontsize=9
+    )
+    save(fig, out, "functional_contrast")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--task-support", action="store_true")
+    mode.add_argument("--functional-contrast", action="store_true")
     mode.add_argument(
         "--subspace-interference",
         action="store_true",
@@ -1627,7 +1705,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_task_support
+        plot_functional_contrast
+        if args.functional_contrast
+        else plot_task_support
         if args.task_support
         else plot_response_transfer
         if args.response_transfer
