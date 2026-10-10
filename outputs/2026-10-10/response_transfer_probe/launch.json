@@ -1,0 +1,39 @@
+{
+  "source_commit": "2b181e3697870959c5e59bf00f3112e0823cef01",
+  "started_at_utc": "2026-10-10T12:18:27.953405+00:00",
+  "commands": [
+    {
+      "argv": [
+        "/root/autodl-tmp/merge_env/bin/python",
+        "experiments/response_transfer_probe.py",
+        "--output",
+        "outputs/2026-10-10/response_transfer_probe"
+      ],
+      "timeout_seconds": 600
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/merge_env/bin/python",
+        "experiments/response_transfer_probe.py",
+        "--audit-output",
+        "outputs/2026-10-10/response_transfer_probe"
+      ],
+      "timeout_seconds": 120
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/merge_env/bin/python",
+        "experiments/plot_results.py",
+        "--response-transfer",
+        "--output",
+        "outputs/2026-10-10/response_transfer_probe"
+      ],
+      "timeout_seconds": 60
+    }
+  ],
+  "source_sha256": {
+    "experiments/response_transfer_probe.py": "e023121caddd87225c3f7db348779a751d131439f06af6bee2997e918cbf3011",
+    "experiments/plot_results.py": "c35e3d867a48868348fb9915de6f8db6a33a266055abfcecd962200cf5e0e75e",
+    "configs/response_transfer_probe.json": "8f9240ea41a03ad88d7712d6649fe24e891b8cdcdefaf274991871ff8a704c95"
+  }
+}

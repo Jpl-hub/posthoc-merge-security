@@ -1,0 +1,18 @@
+{
+  "parent": "outputs/2026-10-10/joint_transfer_mnist",
+  "parent_diagnostics": "outputs/2026-10-10/joint_transfer_diagnostics",
+  "layers": [
+    0,
+    5,
+    11
+  ],
+  "confirmation_prefix": 256,
+  "svd_relative_cutoff": "sqrt(float64 epsilon); fixed numerical truncation, not selected from accuracy",
+  "svd_driver": "gesvd",
+  "time_limit_seconds": 600,
+  "purpose": "Diagnose the frozen rejected release; do not install fitted coefficients or create a new defense.",
+  "fitting": "Three diagnostic least-squares fits on the existing 256 unlabeled training calibration images, all tokens; no optimizer or gradient steps.",
+  "evaluation": "The first 256 images of the already inspected training confirmation set; not new validation or official test.",
+  "interpretation": "A truncated numerical least-squares residual is not a rigorous lower bound for the unconstrained real-valued problem. Representation error is not a classification bound.",
+  "scope": "No causal separation of compression, branch transfer, regularization or accumulated earlier errors. No parameter selection, attack claim or novelty claim."
+}

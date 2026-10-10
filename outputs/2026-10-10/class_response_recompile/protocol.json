@@ -1,0 +1,47 @@
+{
+  "index_parent": "outputs/2026-10-09/post_meeting/subspace_probe",
+  "exclude_confirmations": [
+    "outputs/2026-10-10/operator_support_mnist",
+    "outputs/2026-10-10/operator_support_mnist_norms",
+    "outputs/2026-10-10/joint_transfer_mnist"
+  ],
+  "seed": 20261012,
+  "calibration_samples": 1024,
+  "confirmation_samples": 4000,
+  "ridge_ratio": 0.0001,
+  "coefficient": 0.5,
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "groups": [
+    "direct",
+    "aga_selected",
+    "pretrained_fc_all",
+    "pretrained_attn_all",
+    "pretrained_mlp_all",
+    "pretrained_outputs_all",
+    "pretrained_attn_mlp_all",
+    "output_delta_twice"
+  ],
+  "utility_budget_pp": 0.5,
+  "minimum_attack_gap_pp": 5.0,
+  "time_limit_seconds": 600,
+  "mechanism": "Replace all Attention and MLP parameters by the public anchor, then fit only the last MLP output to task-class response targets with the original mean and variance. Keep all other expert parameters and the classifier head unchanged.",
+  "fitting": "One closed-form ridge fit, 1024 unlabeled MNIST training images; original expert pre-LayerNorm CLS responses are available only to the defender. No gradients or optimizer.",
+  "scope": "The class-difference constraint has rank at most 9. The variance-preserving target also changes the class-null component, so the parameter update is not claimed to have rank 9. Exact geometry is a per-calibration-input construction, not a generalization guarantee.",
+  "early_stop": "Reject after utility loss above 0.5 pp; no attacks or test evaluation then. Otherwise compare fixed recovery groups including public last-output delta scaling by 2. Only survivors may proceed to functional recovery and full official test.",
+  "novelty": "Task-response fitting, distillation and closed-form reconstruction are known operations. This tests function relocation against support replacement; no novelty or security claim.",
+  "evaluation": "New MNIST training confirmation excludes the listed old subsets and new calibration; SVHN uses the already inspected development subset. Not held out from original expert training or official test.",
+  "test_usage": "none"
+}

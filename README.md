@@ -2,7 +2,7 @@
 
 对已微调专家施加发布前后处理，保持原任务能力，检验对未经授权融合及自适应恢复的保护。目标独立准确率损失 ≤0.5 个百分点；不进行额外梯度微调，有闭式拟合的实验明确记录校准数据。
 
-**目前没有达标的新防御。**旧四层候选被 FC 替换和功能重建绕过；十二层 Attention／MLP 联合构造因效用损失和公开组合恢复淘汰。保留全部真实结果及失败记录。
+**目前没有达标的新防御。**旧四层候选被 FC 替换和功能重建绕过；十二层联合构造与类别响应重编译均未过效用门槛。保留全部真实结果及失败记录。
 
 ## 当前结果
 
@@ -10,6 +10,8 @@
 - [七任务 PaRaMS／作者 AGA](outputs/2026-10-10/eight_task/params_seven_protection/summary.md)：八专家参与融合，七个完整测试集；本配置未抵抗 AGA。EuroSAT 原划分及 AGA Table 6 仍未对齐。
 - [只恢复受保护专家的 AGA](outputs/2026-10-10/subspace_compensation_mnist_selected_aga/summary.md)：保持伙伴原样的完整测试对照。
 - [联合构造、推导与淘汰依据](outputs/2026-10-10/joint_transfer_notes.md)：冻结配置、全部已测攻击与无重拟合诊断。
+- [固定响应可表示性诊断](outputs/2026-10-10/response_transfer_probe/summary.md)：数值 LS 没有改善确认误差，公开符号可精确还原 Attention 输出。
+- [类别响应重编译](outputs/2026-10-10/class_response_recompile/summary.md)：一次闭式拟合，独立确认损失 6.75 pp，按冻结门槛停止。
 - [实验前必要条件](outputs/2026-10-10/search_constraints.md)：完整支持替换、分类头零空间及响应可表示性。
 
 ## 环境与资源

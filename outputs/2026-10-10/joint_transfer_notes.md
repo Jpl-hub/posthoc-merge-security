@@ -72,7 +72,7 @@
 
 没有重拟合或调整候选。重放全部 256 张校准图及已评 4,000 张确认图的前 256 张：校准两组均 256 / 256；确认未保护 256 / 256、候选 240 / 256。确认子集此前已被查看，不能称为新的验证集。校准最后一层相对输出误差为 8.486%，确认前缀为 37.255%；十二层记录的校准拟合目标误差都被重放复核。
 
-这说明当前补偿没有在新图保持原任务分类能力。尚未计算最优列空间误差下界，不能单独归因于非局部响应，也不据此否定所有联合重表示。[逐图与拟合重放核验](joint_transfer_diagnostics/validation.json)、[真实层误差](joint_transfer_diagnostics/layer_errors.json)。
+这说明当前补偿没有在新图保持原任务分类能力。后续对层 0、5、11 的数值最小二乘诊断也没有改善已看确认子集的响应误差；它不是一般分类损失界，不能单独归因于非局部响应，也不据此否定所有联合重表示。[逐图与拟合重放核验](joint_transfer_diagnostics/validation.json)、[数值诊断与公开符号证明](response_transfer_probe/summary.md)。
 
 ![固定候选的分类、表示误差与输入方差代理](joint_transfer_diagnostics/figures/joint_transfer_diagnostics.png)
 
