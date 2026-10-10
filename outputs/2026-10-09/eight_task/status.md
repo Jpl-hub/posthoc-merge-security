@@ -29,7 +29,7 @@
 
 Cars 固定镜像版本，核验 16,193 个 Git blob；devkit 验证原 MD5，原 train/test 标注与镜像内容相同，测试 8,041 张。[成功清单](../../2026-10-10/eight_task/cars_data_retry_1258/data_manifest.json)。[首次 devkit 请求失败](../../2026-10-10/eight_task/cars_data_1250/data_manifest.json)保留。
 
-SUN397 原网站返回 404；固定公开镜像中的命名划分，第 1 划分 train/test 各 19,850、每类各 50、互不重叠。[划分核验](../../2026-10-10/eight_task/sun_partitions_1345/data_manifest.json)。不使用丢失原文件名的 parquet 替代。正在流式读取约 39 GB 原归档，只保留第 1 划分图片；需要全归档原 MD5、镜像 SHA256、39,700 张覆盖均通过才标记就绪。[启动协议](../../2026-10-10/eight_task/sun_stream_1357/launch.json)。原分类列表与扁平目录顺序并非相同，标签按作者 ImageFolder 排序；[首次顺序检查失败](../../2026-10-10/eight_task/sun_stream_startup_failure/failure.json)保留。EuroSAT 作者说明为 21,600 / 2,700 / 2,700 随机划分，目前缺原索引，其他论文划分或重新抽样不能默认等价。[Task Arithmetic 作者说明](https://github.com/mlfoundations/task_vectors/issues/1#issuecomment-1419521679)。
+SUN397 原网站返回 404；固定公开镜像中的命名划分，第 1 划分 train/test 各 19,850、每类各 50、互不重叠。[划分核验](../../2026-10-10/eight_task/sun_partitions_1345/data_manifest.json)。不使用丢失原文件名的 parquet 替代。已核验直连镜像与原源头归档前缀一致，改由服务器独立流式读取约 39 GB 原归档，只保留第 1 划分图片；需要全归档原 MD5、镜像 SHA256、39,700 张覆盖均通过才标记就绪。[启动协议](../../2026-10-10/eight_task/sun_stream_direct_1403/launch.json)。完成后已排队进行 SUN397 专家测试和八专家融合的七任务测试；不会提前填结果。[执行队列](../../2026-10-10/eight_task/sun_evaluation_queue/run_plan.json)。原分类列表与扁平目录顺序并非相同，标签按作者 ImageFolder 排序；[首次顺序检查失败](../../2026-10-10/eight_task/sun_stream_startup_failure/failure.json)保留。EuroSAT 作者说明为 21,600 / 2,700 / 2,700 随机划分，目前缺原索引，其他论文划分或重新抽样不能默认等价。[Task Arithmetic 作者说明](https://github.com/mlfoundations/task_vectors/issues/1#issuecomment-1419521679)。
 
 此前 Drive 配额、代理、网络、数据准备失败的 JSON 与服务器日志全部保留；没有用其他微调配置专家补表。
 
