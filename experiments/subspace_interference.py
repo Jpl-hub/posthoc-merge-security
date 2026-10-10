@@ -122,6 +122,8 @@ def run(args):
     artifacts.mkdir()
     protocol = Path(args.config).read_bytes()
     config = json.loads(protocol)
+    protected_task, partner_task = config["protected_task"], config["other_task"]
+    assert {protected_task, partner_task} == {"MNIST", "SVHN"}
     (out / "protocol.json").write_bytes(protocol)
     index_file = Path(config["parent"]) / "training_indices.json"
     index_bytes = index_file.read_bytes()
@@ -135,8 +137,8 @@ def run(args):
     svd = author_svd(args.nufilt_repo, nufilt)
     root = Path(args.checkpoints)
     anchor = load(str(root / "zeroshot.pt"))
-    original = load(str(root / "SVHN/finetuned.pt"))
-    second = load(str(root / "MNIST/finetuned.pt"))
+    original = load(str(root / f"{protected_task}/finetuned.pt"))
+    second = load(str(root / f"{partner_task}/finetuned.pt"))
     coefficient = config["coefficient"]
     start = time.perf_counter()
     original_merge = merge(anchor, original, second, coefficient)
@@ -150,17 +152,23 @@ def run(args):
         assert not set(indices[task]["calibration"]).intersection(indices[task]["attack"])
         assert not set(indices[task]["calibration"]).intersection(indices[task]["development"])
     images = torch.stack(
-        [datasets["SVHN"][i][0] for i in indices["SVHN"]["calibration"][: config["samples"]]]
+        [
+            datasets[protected_task][i][0]
+            for i in indices[protected_task]["calibration"][: config["samples"]]
+        ]
     )
     attack_images = torch.stack(
-        [datasets["SVHN"][i][0] for i in indices["SVHN"]["attack"][: config["attack_samples"]]]
+        [
+            datasets[protected_task][i][0]
+            for i in indices[protected_task]["attack"][: config["attack_samples"]]
+        ]
     )
     rows, predictions, controls = [], {}, {}
 
     def record(preset, group, model):
         scores = {}
         for task, loader in loaders.items():
-            if (group == "standalone" or group.endswith("_standalone")) and task != "SVHN":
+            if (group == "standalone" or group.endswith("_standalone")) and task != protected_task:
                 continue
             p, y = [], []
 
@@ -195,8 +203,8 @@ def run(args):
             )
         return scores
 
-    baseline_own = record("unprotected", "standalone", original)["SVHN"]
-    baseline_merge = record("unprotected", "direct", original_merge)["SVHN"]
+    baseline_own = record("unprotected", "standalone", original)[protected_task]
+    baseline_merge = record("unprotected", "direct", original_merge)[protected_task]
     bases, diagnostics = {}, []
     for layer in config["layers"]:
         bases[layer], evidence = construct_basis(
@@ -216,17 +224,21 @@ def run(args):
         "reconstruction_1",
         "reconstruction_2",
     ]
+    if config.get("aga_all", False):
+        attack_names.append("aga_all")
     author = None
+    attacked_partner = None
     measured_attacks = set()
 
     def attack_record(preset, attack, model):
         scores = record(preset, attack + "_standalone", model)
         # Attack standalone keeps the same task mask as the direct standalone.
-        scores.update(record(preset, attack, merge(anchor, model, second, coefficient)))
+        partner = attacked_partner if attack == "aga_all" else second
+        scores.update(record(preset, attack, merge(anchor, model, partner, coefficient)))
         return scores
 
     def attacks(model, name):
-        nonlocal author
+        nonlocal author, attacked_partner
         result, audit = angular_cleanup(model, anchor, 0.9)
         save_json(out / f"{name}_angular.json", audit)
         yield "angular", result
@@ -242,7 +254,14 @@ def run(args):
             author, _ = load_author(Path(args.author_repo) / "utils_attack_B32.py")
         recovery = out / f"{name}_aga"
         recovery.mkdir()
-        yield "aga", recover(model, anchor, author, recovery)
+        aga_model = recover(model, anchor, author, recovery)
+        yield "aga", aga_model
+        if config.get("aga_all", False):
+            if attacked_partner is None:
+                partner_output = out / "partner_aga"
+                partner_output.mkdir()
+                attacked_partner = recover(second, anchor, author, partner_output)
+            yield "aga_all", aga_model
         restored = copy.deepcopy(model)
         for step in range(2):
             context = model if step == 0 else merge(anchor, restored, second, coefficient)
@@ -327,8 +346,10 @@ def run(args):
             },
             artifacts / f"{name}.pt",
         )
-        own = record(name, "standalone", candidate)["SVHN"]
-        direct = record(name, "direct", merge(anchor, candidate, second, coefficient))["SVHN"]
+        own = record(name, "standalone", candidate)[protected_task]
+        direct = record(name, "direct", merge(anchor, candidate, second, coefficient))[
+            protected_task
+        ]
         passed = (
             100 * (baseline_own - own) <= config["utility_budget_pp"]
             and 100 * (baseline_merge - direct) >= config["minimum_protected_task_drop_pp"]
@@ -371,8 +392,8 @@ def run(args):
                 str(p.relative_to(root)): digest(p)
                 for p in [
                     root / "zeroshot.pt",
-                    root / "SVHN/finetuned.pt",
-                    root / "MNIST/finetuned.pt",
+                    root / f"{protected_task}/finetuned.pt",
+                    root / f"{partner_task}/finetuned.pt",
                 ]
             },
             helper_sha256={

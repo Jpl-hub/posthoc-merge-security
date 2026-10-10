@@ -1355,6 +1355,7 @@ def validate_context_erasure(path, write_report=True):
 def validate_subspace_interference(path, write_report=True):
     """Audit the finite perturbation grid and matched-control recovery results."""
     config = json.loads((path / "protocol.json").read_bytes())
+    protected_task = config["protected_task"]
     meta = json.loads((path / "metadata.json").read_bytes())
     indices = json.loads((path / "training_indices.json").read_bytes())
     rows = json.loads((path / "results.json").read_bytes())
@@ -1372,7 +1373,7 @@ def validate_subspace_interference(path, write_report=True):
         == hashlib.sha256((path / "training_indices.json").read_bytes()).hexdigest()
     )
     presets = {p["name"]: p for p in config["presets"]}
-    groups = {("standalone", "SVHN"), ("direct", "SVHN"), ("direct", "MNIST")}
+    groups = {("standalone", protected_task), ("direct", "SVHN"), ("direct", "MNIST")}
     expected = {(p, g, t) for p in ["unprotected", *presets] for g, t in groups}
     attack_names = {
         "angular",
@@ -1383,24 +1384,27 @@ def validate_subspace_interference(path, write_report=True):
         "reconstruction_1",
         "reconstruction_2",
     }
+    if config.get("aga_all", False):
+        attack_names.add("aga_all")
     attacked = {
         g["preset"] for g in gates if g["passed"] or config.get("force_attack_diagnostic", False)
     }
     if attacked:
         for name in {"unprotected", *attacked}:
             expected.update((name, a, t) for a in attack_names for t in ["MNIST", "SVHN"])
-            expected.update((name, a + "_standalone", "SVHN") for a in attack_names)
+            expected.update((name, a + "_standalone", protected_task) for a in attack_names)
     keyed = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
     assert len(keyed) == len(rows) and set(keyed) == expected
     assert {g["preset"] for g in gates} == set(presets)
     for g in gates:
         name = g["preset"]
         own = 100 * (
-            keyed["unprotected", "standalone", "SVHN"]["top1"]
-            - keyed[name, "standalone", "SVHN"]["top1"]
+            keyed["unprotected", "standalone", protected_task]["top1"]
+            - keyed[name, "standalone", protected_task]["top1"]
         )
         direct = 100 * (
-            keyed["unprotected", "direct", "SVHN"]["top1"] - keyed[name, "direct", "SVHN"]["top1"]
+            keyed["unprotected", "direct", protected_task]["top1"]
+            - keyed[name, "direct", protected_task]["top1"]
         )
         assert abs(own - g["utility_loss_pp"]) < 1e-10 and abs(direct - g["direct_loss_pp"]) < 1e-10
         assert g["passed"] == (
