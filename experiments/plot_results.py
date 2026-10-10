@@ -792,11 +792,11 @@ def plot_response_transfer(root: Path):
     out = root / "figures"
     out.mkdir(exist_ok=True)
     layers = [r["layer"] for r in spectra]
-    fig, axes = plt.subplots(1, 3, figsize=(11.5, 3.5))
+    fig, axes = plt.subplots(1, 3, figsize=(11.5, 3.8), layout="constrained")
     for ax, subset, title in zip(
         axes[:2],
         ["calibration", "confirmation_prefix"],
-        ["Calibration: 256 training images", "Confirmation: 256 inspected images"],
+        ["(a) Calibration (256 images)", "(b) Inspected confirmation (256 images)"],
         strict=True,
     ):
         selected = {r["layer"]: r for r in rows if r["subset"] == subset}
@@ -814,7 +814,7 @@ def plot_response_transfer(root: Path):
         layers, [r["coefficient_norm_ratio"] for r in spectra], marker="o", color=COLORS[1]
     )
     axes[2].set(
-        title="Diagnostic coefficient amplification",
+        title="(c) Coefficient amplification",
         xlabel="Block",
         ylabel="LS / frozen coefficient norm",
         xticks=layers,

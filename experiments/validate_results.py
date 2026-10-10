@@ -2575,12 +2575,21 @@ def validate_class_recompile(path: Path):
     output = fit["before"].float() + delta.float()
     assert torch.equal(release[11]["mlp.c_proj.weight"], output[:-1].T)
     assert torch.equal(release[11]["mlp.c_proj.bias"], output[-1])
+    fitted = fit["base"] + h @ delta
+    target_error = float((fitted - fit["target"]).norm() / fit["target"].norm())
+    class_error = float(
+        ((unit(fitted) - unit(fit["teacher"])) @ fit["class_directions"]).norm()
+        / (unit(fit["teacher"]) @ fit["class_directions"]).norm()
+    )
     report = dict(
         status="passed",
         raw_prediction_rows_checked=len(rows),
         excluded_subsets_checked=True,
         normal_equation_relative_residual=normal_error,
         exact_target_response_relative_error=response_error,
+        calibration_fitted_target_relative_error=target_error,
+        calibration_fitted_class_difference_relative_error=class_error,
+        validator_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         artifacts_sha256=meta["artifacts_sha256"],
         utility_gate_verified=True,
         new_defense_validated=False,
