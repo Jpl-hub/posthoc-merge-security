@@ -1078,10 +1078,122 @@ def plot_nufilt_response(root: Path):
     print("RESPONSE_FIGURE_WRITTEN", out)
 
 
+def plot_subspace_interference(root: Path):
+    """Plot measured utility and merging with matched unprotected attack controls."""
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    config = json.loads((root / "protocol.json").read_bytes())
+    rows = json.loads((root / "results.json").read_bytes())
+    keyed = {(r["preset"], r["group"], r["dataset"]): 100 * r["top1"] for r in rows}
+    attacked = any(r["group"] == "angular" for r in rows)
+    fig, axes = plt.subplots(1, 3, figsize=(12 if attacked else 9, 3.25), layout="constrained")
+    metrics = [
+        ("standalone", "SVHN", "Standalone SVHN"),
+        ("direct", "SVHN", "Merged SVHN"),
+        ("direct", "MNIST", "Merged MNIST"),
+    ]
+    if attacked:
+        name = config["presets"][0]["name"]
+        groups = [
+            "direct",
+            "angular",
+            "pretrained_fc",
+            "spectral",
+            "calibrated",
+            "aga",
+            "reconstruction_1",
+            "reconstruction_2",
+        ]
+        labels = [
+            "Direct",
+            "Anchor\nscan",
+            "FC\nreset",
+            "Rank\nremoval",
+            "Input\nfilter",
+            "AGA",
+            "Fit 1",
+            "Fit 2",
+        ]
+        for ax, (metric, task, title) in zip(axes, metrics, strict=True):
+            for j, preset in enumerate(["unprotected", name]):
+                values = [
+                    keyed[
+                        preset,
+                        ("standalone" if g == "direct" else g + "_standalone")
+                        if metric == "standalone"
+                        else g,
+                        task,
+                    ]
+                    for g in groups
+                ]
+                x = np.arange(len(groups)) + (j - 0.5) * 0.36
+                ax.bar(
+                    x,
+                    values,
+                    width=0.34,
+                    color=COLORS[j],
+                    label="Unprotected" if j == 0 else "Modified",
+                )
+                for pos, value in zip(x, values, strict=True):
+                    ax.text(
+                        pos,
+                        value + 1,
+                        f"{value:.1f}",
+                        ha="center",
+                        va="bottom",
+                        fontsize=5.5,
+                        rotation=90,
+                    )
+            ax.set(
+                title=title,
+                xticks=np.arange(len(groups)),
+                xticklabels=labels,
+                ylim=(0, 112),
+                ylabel="Accuracy (%)",
+            )
+            ax.tick_params(axis="x", labelsize=7)
+            ax.grid(axis="y", alpha=0.2)
+        fig.legend(*axes[0].get_legend_handles_labels(), loc="outside lower center", ncol=2)
+    else:
+        presets = ["unprotected", *[p["name"] for p in config["presets"]]]
+        for ax, (group, task, title) in zip(axes, metrics, strict=True):
+            values = [keyed[p, group, task] for p in presets]
+            ax.bar(
+                np.arange(len(presets)),
+                values,
+                color=[COLORS[0]] + [COLORS[1]] * (len(presets) - 1),
+            )
+            for pos, value in enumerate(values):
+                ax.text(pos, value + 1, f"{value:.1f}", ha="center", va="bottom", fontsize=7)
+            ax.set(
+                title=title,
+                xticks=np.arange(len(presets)),
+                xticklabels=presets,
+                ylim=(0, 110),
+                ylabel="Accuracy (%)",
+            )
+            ax.tick_params(axis="x", labelsize=7, rotation=20)
+            ax.grid(axis="y", alpha=0.2)
+    fig.suptitle(
+        "Complement perturbation and recovery: inspected training subsets, one seed\n"
+        "TA coefficient 0.5; calibrated output compensation"
+        if config.get("output_compensation", False)
+        else "Complement mechanism check: inspected training subsets, one seed; TA coefficient 0.5",
+        fontsize=9,
+    )
+    save(fig, out, "interference_accuracy")
+    print("INTERFERENCE_FIGURES_WRITTEN", out)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--subspace-interference",
+        action="store_true",
+        help="Plot complement perturbation and recovery.",
+    )
     mode.add_argument("--subspace", action="store_true", help="Plot the standalone subspace probe.")
     mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
@@ -1107,7 +1219,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_reconstruction_context
+        plot_subspace_interference
+        if args.subspace_interference
+        else plot_reconstruction_context
         if args.reconstruction_context
         else plot_reconstruction_budget
         if args.reconstruction_budget

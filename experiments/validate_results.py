@@ -1352,10 +1352,129 @@ def validate_context_erasure(path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_subspace_interference(path, write_report=True):
+    """Audit the finite perturbation grid and matched-control recovery results."""
+    config = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    indices = json.loads((path / "training_indices.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    gates = json.loads((path / "gates.json").read_bytes())
+    geometry = json.loads((path / "geometry.json").read_bytes())
+    edits = json.loads((path / "edits.json").read_bytes())
+    assert meta["completed"] and not meta["new_defense_validated"]
+    assert meta["optimizer_steps"] == 0 and not meta["calibration_labels_used"]
+    assert config["test_usage"] == meta["test_usage"] == "none"
+    assert (
+        meta["config_sha256"] == hashlib.sha256((path / "protocol.json").read_bytes()).hexdigest()
+    )
+    assert (
+        meta["indices_sha256"]
+        == hashlib.sha256((path / "training_indices.json").read_bytes()).hexdigest()
+    )
+    presets = {p["name"]: p for p in config["presets"]}
+    groups = {("standalone", "SVHN"), ("direct", "SVHN"), ("direct", "MNIST")}
+    expected = {(p, g, t) for p in ["unprotected", *presets] for g, t in groups}
+    attack_names = {
+        "angular",
+        "pretrained_fc",
+        "spectral",
+        "calibrated",
+        "aga",
+        "reconstruction_1",
+        "reconstruction_2",
+    }
+    attacked = {
+        g["preset"] for g in gates if g["passed"] or config.get("force_attack_diagnostic", False)
+    }
+    if attacked:
+        for name in {"unprotected", *attacked}:
+            expected.update((name, a, t) for a in attack_names for t in ["MNIST", "SVHN"])
+            expected.update((name, a + "_standalone", "SVHN") for a in attack_names)
+    keyed = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
+    assert len(keyed) == len(rows) and set(keyed) == expected
+    assert {g["preset"] for g in gates} == set(presets)
+    for g in gates:
+        name = g["preset"]
+        own = 100 * (
+            keyed["unprotected", "standalone", "SVHN"]["top1"]
+            - keyed[name, "standalone", "SVHN"]["top1"]
+        )
+        direct = 100 * (
+            keyed["unprotected", "direct", "SVHN"]["top1"] - keyed[name, "direct", "SVHN"]["top1"]
+        )
+        assert abs(own - g["utility_loss_pp"]) < 1e-10 and abs(direct - g["direct_loss_pp"]) < 1e-10
+        assert g["passed"] == (
+            own <= config["utility_budget_pp"]
+            and direct >= config["minimum_protected_task_drop_pp"]
+        )
+    geom = {g["layer"]: g for g in geometry}
+    assert set(geom) == set(config["layers"])
+    assert len(edits) == len(presets) * len(geom)
+    for e in edits:
+        g = geom[e["layer"]]
+        assert g["task_proxy_rank"] == config["task_rank"]
+        assert g["perturbation_rank"] == config["perturbation_rank"]
+        assert 0 <= g["task_span_leakage"] < 1e-8
+        assert g["calibration_tokens"] == config["samples"] * 50
+        response = presets[e["preset"]]["own_response_ratio"]
+        assert e["own_response_ratio"] == response
+        assert (
+            abs(e["scale"] * g["unit_expert_response"] / g["expert_preactivation_norm"] - response)
+            < 1e-10
+        )
+        assert (
+            abs(
+                config["coefficient"]
+                * e["scale"]
+                * g["unit_merged_response"]
+                / g["merged_preactivation_norm"]
+                - e["merged_response_ratio"]
+            )
+            < 1e-10
+        )
+        assert all(
+            math.isfinite(e[k])
+            for k in ["scale", "perturbation_norm", "weight_norm_ratio", "anchor_cosine"]
+        )
+    raw = path / "artifacts/predictions.pt"
+    raw_checked = raw.exists()
+    if raw_checked:
+        import torch
+        from operator_diagnostics import paired_counts
+
+        assert meta["predictions_sha256"] == hashlib.sha256(raw.read_bytes()).hexdigest()
+        saved = torch.load(raw, map_location="cpu", weights_only=False)
+        assert set(saved) == expected
+        for key, row in keyed.items():
+            pred, labels = saved[key]["prediction"], saved[key]["labels"]
+            reference = saved["unprotected", row["group"], row["dataset"]]
+            assert torch.equal(labels, reference["labels"])
+            assert len(labels) == len(indices[row["dataset"]]["development"]) == row["n"]
+            correct = pred == labels
+            assert int(correct.sum()) == row["correct"]
+            assert abs(row["top1"] - row["correct"] / row["n"]) < 1e-10
+            for k, value in paired_counts(reference["prediction"] == labels, correct).items():
+                assert abs(row["paired"][k] - value) < 1e-10
+    report = dict(
+        status="passed",
+        raw_artifacts_checked=raw_checked,
+        direct_gate_survivors=sum(g["passed"] for g in gates),
+        attacked_presets=sorted(attacked),
+        new_defense_validated=False,
+        results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--subspace-interference", action="store_true", help="Validate complement interference."
+    )
     mode.add_argument("--context-erasure", action="store_true", help="Validate context deletion.")
     mode.add_argument("--subspace", action="store_true", help="Validate the subspace probe.")
     mode.add_argument(
@@ -1384,7 +1503,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_context_erasure
+        validate_subspace_interference
+        if args.subspace_interference
+        else validate_context_erasure
         if args.context_erasure
         else validate_reconstruction_context
         if args.reconstruction_context
