@@ -3628,6 +3628,273 @@ def validate_functional_contrast(path: Path):
     return result
 
 
+def validate_fine_subspace(path: Path):
+    """Check held-out contrast, physical activations and achievable reset costs."""
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader, evaluate
+    from eight_task_benchmark import digest as sha
+    from fine_subspace import capture, fresh_indices, matrix_keys, reset
+    from operator_diagnostics import paired_counts
+    from subspace_probe import make_loader
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    config, meta, decision = read("protocol.json"), read("metadata.json"), read("decision.json")
+    assert meta["completed"] and meta["optimizer_steps"] == meta["response_fits"] == 0
+    assert not meta["calibration_labels_used"] and not meta["direction_partner_checkpoints_used"]
+    assert sha(Path(__file__).with_name("fine_subspace.py")) == meta["source_sha256"]
+    assert sha("configs/fine_subspace_cars.json") == meta["config_sha256"]
+    for name, expected in meta["raw_sha256"].items():
+        assert sha(path / "artifacts" / name) == expected
+    for name, expected in meta["helper_sha256"].items():
+        assert sha(Path(__file__).with_name(name)) == expected
+    root = Path("checkpoints/ViT-B-32")
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert sha(root / name) == expected
+    raw = torch.load(path / "artifacts/activations.pt", map_location="cpu", weights_only=True)
+    directions = torch.load(path / "artifacts/directions.pt", map_location="cpu", weights_only=True)
+    rows, records, supports = read("results.json"), read("directions.json"), read("supports.json")
+    assert len(records) == len(directions) == 9
+    sites = {f"{kind}:{layer}" for layer in config["layers"] for kind in ["qkv", "fc", "down"]}
+    assert set(directions) == sites
+    assert set(raw) == {
+        (split, task)
+        for split in ["calibration", "confirmation"]
+        for task in config["public_distributions"]
+    }
+    load = checkpoint_loader(Path("external/secure-merge-attack"))
+    task = config["task"]
+    original, anchor = load(str(root / task / "finetuned.pt")), load(str(root / "zeroshot.pt"))
+    checked_covariances, maximum_equation_residual = 0, 0.0
+    expected_support = {}
+    for record in records:
+        site = record["site"]
+        geometry = directions[site]
+        basis, vector, mean = geometry["basis"], geometry["incoming"], geometry["mean"]
+        dimension = 3072 if site.startswith("down:") else 768
+        assert basis.shape == (dimension, record["complement_dimension"])
+        assert math.isclose(float(vector.norm()), 1.0, abs_tol=1e-10)
+        assert math.isclose(float(geometry["outgoing"].norm()), 1.0, abs_tol=1e-10)
+        assert float((basis.T @ basis - torch.eye(basis.shape[1])).norm()) < 1e-8
+        assert float((vector - basis @ (basis.T @ vector)).norm()) < 1e-8
+        target_input = raw["calibration", task][site].double()
+        assert torch.allclose(mean, target_input.mean(0), atol=1e-10, rtol=1e-10)
+        weight, bias = matrix_keys(site)
+        delta = original.state_dict()[weight].double() - anchor.state_dict()[weight].double()
+        if site.startswith("down:"):
+            own_var = (target_input - mean).square().mean(0)
+            rho = config["regularizer_trace_fraction"] * own_var.mean()
+            contrasts = torch.stack(
+                [
+                    (raw["calibration", name][site].double() - mean).square().mean(0)
+                    / (own_var + rho)
+                    for name in config["public_distributions"]
+                    if name != task
+                ]
+            )
+            selected = torch.argsort(contrasts.min(0).values, descending=True, stable=True)[
+                : config["sparse_neurons"]
+            ]
+            assert selected.tolist() == record["neurons"]
+            assert torch.equal(basis, torch.eye(dimension, dtype=basis.dtype)[:, selected])
+        else:
+            singular = torch.linalg.svdvals(delta.cuda()).cpu()
+            fractions = singular.square().cumsum(0) / singular.square().sum()
+            expected_rank = int(torch.searchsorted(fractions, config["task_vector_energy"])) + 1
+            assert record["task_rank"] == expected_rank
+            assert math.isclose(
+                record["task_energy_retained"], float(fractions[expected_rank - 1]), rel_tol=1e-8
+            )
+            assert (
+                float((delta @ basis).square().sum() / delta.square().sum())
+                <= 1 - config["task_vector_energy"] + 1e-8
+            )
+            kind, layer = site.split(":")
+            block = original.model.visual.transformer.resblocks[int(layer)]
+            norm = block.ln_1 if kind == "qkv" else block.ln_2
+            null = norm.weight.double().reciprocal()
+            assert float(abs(vector @ null) / null.norm()) < 1e-8
+        covariance = {}
+        for split in ["calibration", "confirmation"]:
+            powers = {}
+            for name in config["public_distributions"]:
+                values = raw[split, name][site]
+                assert values.shape == (config[split + "_samples"] * 50, dimension)
+                assert torch.isfinite(values).all()
+                centered = values.double() - mean
+                powers[name] = float((centered @ vector).square().mean())
+                assert math.isclose(
+                    powers[name], record[split]["powers"][name], rel_tol=1e-9, abs_tol=1e-10
+                )
+                if split == "calibration":
+                    design = centered @ basis
+                    covariance[name] = design.T @ design / len(design)
+                    assert torch.allclose(
+                        covariance[name],
+                        geometry["projected_covariances"][name],
+                        atol=1e-9,
+                        rtol=1e-9,
+                    )
+                    checked_covariances += 1
+            ratios = {
+                name: math.sqrt(power / powers[task])
+                for name, power in powers.items()
+                if name != task
+            }
+            assert all(
+                math.isclose(value, record[split]["rms_ratios"][name], rel_tol=1e-9)
+                for name, value in ratios.items()
+            )
+        target = covariance[task]
+        other = sum(c for name, c in covariance.items() if name != task) / 2
+        rho = config["regularizer_trace_fraction"] * float(target.trace()) / len(target) + 1e-12
+        projected = basis.T @ vector
+        equation = (
+            other @ projected
+            - record["maximum_regularized_contrast"]
+            * (target + rho * torch.eye(len(target)))
+            @ projected
+        )
+        relative = float(equation.norm() / (other @ projected).norm())
+        maximum_equation_residual = max(maximum_equation_residual, relative)
+        assert relative < 1e-7
+        shift = record["confirmation"]["powers"][task] / record["calibration"]["powers"][task]
+        passed = (
+            min(record["confirmation"]["rms_ratios"].values())
+            >= config["minimum_confirmed_rms_ratio"]
+            and 1 / config["maximum_target_power_shift"]
+            <= shift
+            <= config["maximum_target_power_shift"]
+        )
+        assert record["contrast_passed"] == passed and math.isclose(
+            record["target_power_shift"], shift, rel_tol=1e-12
+        )
+        if passed:
+            expected_support[weight], expected_support[bias] = record["neurons"], None
+    assert supports["eligible_union"] == expected_support
+    freeze = read("direction_freeze.json")
+    assert freeze["directions_sha256"] == meta["raw_sha256"]["directions.pt"]
+    assert not freeze["future_partner_checkpoints_loaded"] and not freeze["labels_used"]
+    assert (
+        freeze["selected_sites"]
+        == decision["eligible_sites"]
+        == [r["site"] for r in records if r["contrast_passed"]]
+    )
+    package = types.ModuleType("dataset")
+    package.__path__ = [str(Path("external/secure-merge-attack/datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    datasets = {
+        name: get_dataset(name, original.val_preprocess, "data", batch_size=128, num_workers=2)
+        for name in config["public_distributions"]
+    }
+    indices = read("training_indices.json")
+    for name, data in datasets.items():
+        assert indices[name] == fresh_indices(config, name, len(data.train_dataset))
+    images = torch.stack(
+        [datasets[task].train_dataset[i][0] for i in indices[task]["calibration"][:16]]
+    )
+    replay = capture(original, images, config["layers"])
+    assert all(
+        torch.equal(value, raw["calibration", task][site][:800]) for site, value in replay.items()
+    )
+    parent = Path(config["replacement_parent"])
+    previous = torch.load(
+        parent / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+    )
+    parent_rows = json.loads((parent / "results.json").read_bytes())
+    old_indices = json.loads((parent / "training_indices.json").read_bytes())[task]["confirmation"]
+    labels = torch.tensor([y for _, y in datasets[task].train_dataset._samples])[old_indices]
+    predictions = torch.load(
+        path / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+    )
+    assert len(rows) == len(predictions) == (50 if decision["candidate_constructed"] else 10)
+    for row in rows:
+        data = predictions[row["id"]]
+        if row["stage"] == "replacement_preflight":
+            assert torch.equal(data["labels"], labels)
+            reference = predictions[f"replacement_preflight/original/{row['group']}/{task}"]
+        else:
+            official = datasets[row["dataset"]].test_dataset
+            actual_labels = (
+                torch.tensor([y for _, y in official._samples])
+                if row["dataset"] == "Cars"
+                else torch.as_tensor(official.targets)
+            )
+            assert torch.equal(data["labels"], actual_labels)
+            attack = row["preset"].split("_", 1)[1]
+            reference = predictions[
+                f"official_test/original_{attack}/{row['group']}/{row['dataset']}"
+            ]
+        correct = data["prediction"].eq(data["labels"])
+        assert row["correct"] == int(correct.sum()) and row["n"] == len(correct)
+        assert row["top1"] == row["correct"] / row["n"]
+        assert row["paired"] == paired_counts(
+            reference["prediction"].eq(reference["labels"]), correct
+        )
+        if row["stage"] == "replacement_preflight" and row["preset"] == "original":
+            prior_row = next(
+                r
+                for r in parent_rows
+                if r["task"] == task
+                and r["split"] == "confirmation"
+                and r["component"] == "none"
+                and r["group"] == row["group"]
+            )
+            assert torch.equal(data["prediction"], previous[prior_row["id"]]["prediction"])
+    lookup = {row["id"]: row for row in rows}
+    baseline = lookup[f"replacement_preflight/original/fusion/{task}"]
+    recovered = lookup[f"replacement_preflight/eligible_union/fusion/{task}"]
+    gap = 100 * (baseline["top1"] - recovered["top1"])
+    assert decision["support_recovery_floor"] == recovered["top1"]
+    assert math.isclose(decision["maximum_possible_drop_pp"], gap, abs_tol=1e-12)
+    assert decision["candidate_constructed"] == (
+        bool(expected_support) and gap >= config["minimum_recovery_gap_pp"]
+    )
+    reset_model = reset(original, anchor, expected_support)
+    head = load(str(root / f"head_{task}.pt"))
+    replay_predictions = []
+    evaluate(
+        reset_model,
+        head,
+        make_loader(datasets[task].train_dataset, old_indices[:128]),
+        "cuda",
+        prediction_sink=lambda p, _y: replay_predictions.append(p),
+    )
+    assert torch.equal(
+        torch.cat(replay_predictions),
+        predictions[f"replacement_preflight/eligible_union/standalone/{task}"]["prediction"][:128],
+    )
+    result = dict(
+        status="passed",
+        raw_rows_checked=len(rows),
+        raw_activation_sites_checked=54,
+        projected_covariances_checked=checked_covariances,
+        maximum_generalized_eigen_relative_residual=maximum_equation_residual,
+        direction_confirmation_verified=True,
+        source_and_checkpoint_pins_verified=True,
+        calibration_exclusions_verified=True,
+        first_16_image_activation_replay_exact=True,
+        original_prediction_replay_exact=True,
+        support_reset_prefix_forward_replay_exact=True,
+        candidate_constructed=decision["candidate_constructed"],
+        conditional_recovery_gap_pp=gap,
+        results_sha256=sha(path / "results.json"),
+        validator_source_sha256=sha(__file__),
+    )
+    (path / "validation.json").write_text(json.dumps(result, indent=2) + "\n")
+    print("FINE_SUBSPACE_VALIDATION", json.dumps(result), flush=True)
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -3637,6 +3904,7 @@ if __name__ == "__main__":
     mode.add_argument("--task-relocation", action="store_true")
     mode.add_argument("--public-reset", action="store_true")
     mode.add_argument("--functional-contrast", action="store_true")
+    mode.add_argument("--fine-subspace", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -3679,7 +3947,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_functional_contrast
+        validate_fine_subspace
+        if args.fine_subspace
+        else validate_functional_contrast
         if args.functional_contrast
         else validate_public_reset
         if args.public_reset
