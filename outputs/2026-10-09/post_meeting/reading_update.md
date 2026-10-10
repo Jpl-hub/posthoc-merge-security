@@ -45,3 +45,9 @@ Theorem 1 的损失界依赖局部光滑性、所删参数能量及方向上的�
 [Neuron merging via inverse-activation regression v1（2026-10-01）](https://arxiv.org/html/2610.02559v1)已有神经元合并与回归补偿用于 sigmoid 网络压缩的分析。其逆激活条件不能直接套到 CLIP QuickGELU。本轮“扰动加回归补偿”仅作为已有工具下的可证伪构造，不能据此宣称机制原创。
 
 这些工作与本轮负结果共同收紧了问题：需保留分类能力，同时使公开表示中的功能重建仍无法获得足够的融合能力。参数不可辨识、矩阵距离大或处理不可逆，单独都不是这一结论的证据。[本轮机制与恢复实测](subspace_interference_notes.md)。
+
+## Trap²：缩放敏感性与额外微调的区别
+
+核对 [ICML 2026 正式出版页](https://proceedings.mlr.press/v306/jang26e.html)、[原文 v2，§5、§6.4、附录 B/D](https://arxiv.org/html/2601.21898v2)与[作者代码](https://github.com/ml-postech/Trap2)。Trap² 在训练中同时降低正常缩放的损失、提高偏离缩放的损失；有梯度优化，不能直接保护我们已微调好且不再额外微调的专家。正文也测试 RegMean、CoM、ProDistill 和融合后 SFT；附录记录恢复每任务 64 张样本。其数据划分、专家训练与系数选择均不同于 AGA Table 6，论文数字不能拿来与我们的双任务结果直接对比。
+
+它已经覆盖“任务能力保持、融合时产生干扰”和部分数据恢复，不能把这些目标本身当成新颖性。我们仍需解决已有专家的免梯度后处理，并用同处理未保护对照判断恢复后的差异。本轮只完成原文与流程核查，未复现 Trap²。[我们的替换及分类输出恢复边界](recovery_boundary_notes.md)。

@@ -166,6 +166,15 @@ python experiments/validate_results.py --subspace-test --output outputs/mnist_te
 python experiments/plot_results.py --subspace-interference --output outputs/mnist_test
 ```
 
+完整编辑集合替换、联合模块依赖与分类输出恢复另列为机制检验。[数学边界与真实结果](outputs/2026-10-09/post_meeting/recovery_boundary_notes.md)。分类输出恢复只拟合公共特征，当前是已知伙伴、相同分类 head 的额外攻击，不能称原 AGA 或新防御：
+
+```bash
+python experiments/operator_diagnostics.py --readout-recovery --config configs/readout_recovery_mnist.json --output outputs/readout_dev
+python experiments/validate_results.py --readout-recovery --output outputs/readout_dev
+python experiments/operator_diagnostics.py --evaluate-readout outputs/readout_dev --output outputs/readout_test
+python experiments/validate_results.py --readout-recovery --output outputs/readout_test
+```
+
 ## 工程检查
 
 ```bash

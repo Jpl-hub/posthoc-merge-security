@@ -793,7 +793,17 @@ def plot_operator_diagnostics(root: Path):
     lookup = {(r["preset"], r["split"], r["group"], r["dataset"]): r for r in rows}
     if not config.get("components"):
         task = config.get("protected_task", config.get("task"))
-        presets = list(dict.fromkeys(r["preset"] for r in rows if r["split"] == "confirmation"))
+        official = "projection_sha256" in config
+        split = "test" if official else "confirmation"
+        panels = (
+            [("direct", "MNIST"), ("direct", "SVHN")]
+            if official
+            else [
+                ("standalone", task),
+                ("direct", task),
+            ]
+        )
+        presets = list(dict.fromkeys(r["preset"] for r in rows if r["split"] == split))
         names = {
             "unprotected": "Original",
             "joint_mlp": "All MLPs",
@@ -804,8 +814,8 @@ def plot_operator_diagnostics(root: Path):
             "readout_protected": "Readout\nprotected",
         }
         fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0), layout="constrained")
-        for ax, group in zip(axes, ["standalone", "direct"], strict=True):
-            values = [100 * lookup[p, "confirmation", group, task]["top1"] for p in presets]
+        for ax, (group, task) in zip(axes, panels, strict=True):
+            values = [100 * lookup[p, split, group, task]["top1"] for p in presets]
             ax.bar(range(len(presets)), values, color=COLORS[: len(presets)])
             for i, value in enumerate(values):
                 ax.text(i, value + 0.65, f"{value:.3f}", ha="center", fontsize=8)
@@ -814,15 +824,19 @@ def plot_operator_diagnostics(root: Path):
                 xticklabels=[names[p] for p in presets],
                 ylim=(0, 105),
                 ylabel="Accuracy (%)",
-                title=f"{'Standalone' if group == 'standalone' else 'Merged'} {task}",
+                title=f"{'Standalone' if group == 'standalone' else 'Merged'} {task}"
+                + (f" (n={lookup[presets[0], split, group, task]['n']:,})" if official else ""),
             )
             ax.tick_params(axis="x", labelsize=7)
             ax.grid(axis="y", alpha=0.2)
-        count = lookup[presets[0], "confirmation", "standalone", task]["n"]
+        count = lookup[presets[0], split, panels[0][0], panels[0][1]]["n"]
         fig.suptitle(
-            f"Frozen training confirmation subset: n={count:,}; TA 0.5; no new defense", fontsize=9
+            "Official complete tests; frozen output-only recovery; TA 0.5"
+            if official
+            else f"Frozen training confirmation subset: n={count:,}; TA 0.5; no new defense",
+            fontsize=9,
         )
-        save(fig, out, "operator_confirmation")
+        save(fig, out, "readout_test" if official else "operator_confirmation")
         print("OPERATOR_FIGURES_WRITTEN", out)
         return
     components, layers = config["components"], config["layers"]

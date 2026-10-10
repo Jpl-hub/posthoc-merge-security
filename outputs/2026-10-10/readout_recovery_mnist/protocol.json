@@ -1,0 +1,19 @@
+{
+  "task": "MNIST",
+  "partner": "SVHN",
+  "coefficient": 0.5,
+  "samples_per_task": 256,
+  "ridge_ratio": 0.0001,
+  "index_source": "outputs/2026-10-09/post_meeting/subspace_probe",
+  "confirmation_source": "outputs/2026-10-10/operator_support_mnist",
+  "release": "outputs/2026-10-10/subspace_compensation_mnist/artifacts/compensated_100.pt",
+  "release_sha256": "be077538944fe7367b7ef97cbcb7341e8c1e006e5a2504174c6bb4be0e9abaf7",
+  "scope": "Output-only canonical recovery gate. Fit hard teacher predictions with fixed public anchor/SVHN merged features; no protected hidden activations or original protected-task parameters used by the attack.",
+  "fitting": "256 frozen unlabeled MNIST training images and 256 frozen unlabeled SVHN training images. Ground-truth labels are ignored. Both unprotected and protected releases receive the same attack.",
+  "method": "Zero-centered ridge on 768 public CLS features and ten one-hot predicted classes; map the readout into the unchanged common task head. Algebraically choose the reconstructed expert projection so fixed TA realizes the fitted merged projection.",
+  "controls": "Original unprotected merge and public anchor plus half SVHN task vector; no reconstruction tuning or parameter grid.",
+  "evaluation": "Previously inspected MNIST-2000/SVHN-1000 development sets and the frozen disjoint 4000-image MNIST training confirmation set; exploratory, not final test evidence.",
+  "test_usage": "none",
+  "novelty": "Readout fitting and distillation are existing tools. This is an additional recovery test, not original AGA, SLOA reproduction, a new defense, or a novelty claim.",
+  "question": "Is protected-task ability recoverable from only class predictions in a fixed public feature basis, despite hidden parameter/representation protection? No accuracy conclusion follows from the ridge coupling bound alone."
+}
