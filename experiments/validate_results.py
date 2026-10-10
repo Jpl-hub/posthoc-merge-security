@@ -771,6 +771,61 @@ def validate_norm_cleanup(path: Path):
     print(json.dumps(report))
 
 
+def validate_readout_stability(path, write_report=True):
+    """Recompute conservative fixed-readout certificates from saved influences."""
+    config = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    assert meta["completed"] and not meta["new_defense"]
+    assert meta["new_models"] == meta["new_teacher_queries"] == meta["new_fits"] == 0
+    assert not meta["fitting_labels_used"] and meta["test_usage"] == "none"
+    assert meta["confirmation_predictions_exactly_match_parent"]
+    assert (
+        meta["config_sha256"] == hashlib.sha256((path / "protocol.json").read_bytes()).hexdigest()
+    )
+    parent = Path(config["parent"])
+    assert (
+        meta["parent_metadata_sha256"]
+        == hashlib.sha256((parent / "metadata.json").read_bytes()).hexdigest()
+    )
+    assert [r["changed_queries"] for r in rows] == config["budgets"] == [0, 1, 2, 4, 8, 16]
+    assert all(r["n"] == meta["baseline_n"] == 4000 for r in rows)
+    raw = path / "artifacts/certificate.pt"
+    if raw.exists():
+        import torch
+
+        assert meta["certificate_sha256"] == hashlib.sha256(raw.read_bytes()).hexdigest()
+        saved = torch.load(raw, map_location="cpu", weights_only=True)
+        influence, margins = saved["influence"], saved["margins"]
+        assert influence.shape == (4000, 512) and margins.shape == (4000,)
+        assert torch.isfinite(influence).all() and torch.isfinite(margins).all()
+        correct = saved["prediction"] == saved["labels"]
+        assert int(correct.sum()) == meta["baseline_correct"] == 3785
+        largest = influence[:, :256].abs().topk(16, dim=1).values.cumsum(dim=1)
+        for row in rows:
+            k = row["changed_queries"]
+            bound = torch.zeros_like(margins) if k == 0 else 2 * largest[:, k - 1]
+            certified = margins > bound + 1e-10
+            assert int(certified.sum()) == row["certified_unchanged"]
+            assert int((certified & correct).sum()) == row["certified_correct"]
+    for row in rows:
+        assert row["certified_fraction"] == row["certified_unchanged"] / row["n"]
+        assert row["lower_bound_accuracy"] == row["certified_correct"] / row["n"]
+    assert rows[0]["certified_unchanged"] == 4000
+    assert all(a["certified_unchanged"] >= b["certified_unchanged"] for a, b in zip(rows, rows[1:]))
+    report = dict(
+        status="passed",
+        rows=len(rows),
+        raw_influence_checked=raw.exists(),
+        whole_model_certified=False,
+        new_defense=False,
+        results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2))
+    print(json.dumps(report))
+
+
 def validate_readout_recovery(path, write_report=True):
     """Check output-only recovery without treating training probes as final evidence."""
     config = json.loads((path / "protocol.json").read_bytes())
@@ -1872,6 +1927,7 @@ if __name__ == "__main__":
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--readout-recovery", action="store_true")
+    mode.add_argument("--readout-stability", action="store_true")
     mode.add_argument(
         "--subspace-test", action="store_true", help="Validate frozen-release full tests."
     )
@@ -1906,7 +1962,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_readout_recovery
+        validate_readout_stability
+        if args.readout_stability
+        else validate_readout_recovery
         if args.readout_recovery
         else validate_subspace_test
         if args.subspace_test

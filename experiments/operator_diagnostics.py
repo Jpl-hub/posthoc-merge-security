@@ -138,6 +138,134 @@ def query_readout(model, head, images, capture_features=False):
 
 
 @torch.no_grad()
+def readout_stability(args):
+    """Certify a fixed ridge readout against any k changed MNIST query labels.
+
+    The certificate is conservative. Failure to certify does not exhibit a
+    perturbation, a successful defense, or an accuracy bound for a whole model.
+    """
+    parent = Path(args.readout_stability)
+    config = json.loads((parent / "protocol.json").read_bytes())
+    prior = json.loads((parent / "metadata.json").read_bytes())
+    indices = json.loads((parent / "training_indices.json").read_bytes())
+    fits = json.loads((parent / "fitting.json").read_bytes())
+    assert prior["completed"] and prior["target_disagreement"] == 0
+    assert prior["test_usage"] == "none"
+    assert digest(parent / "artifacts/predictions.pt") == prior["predictions_sha256"]
+    assert (
+        digest(parent / "artifacts/teacher_predictions.pt") == prior["teacher_predictions_sha256"]
+    )
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    artifacts = out / "artifacts"
+    artifacts.mkdir()
+    budgets = [0, 1, 2, 4, 8, 16]
+    save_json(
+        out / "protocol.json",
+        dict(
+            parent=str(parent),
+            task="MNIST",
+            coefficient=config["coefficient"],
+            budgets=budgets,
+            changed_targets="any k of the first 256 MNIST hard predictions; SVHN fixed",
+            condition="top1 margin greater than twice the sum of k largest absolute influence coefficients",
+            evaluation="same frozen 4000-image training confirmation set; no test use",
+            new_defense=False,
+            interpretation="an uncertified prediction is not a successful perturbation",
+            certificate_scope="fixed linear ridge readout; not whole-network or float32 compilation robustness",
+        ),
+    )
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    load = checkpoint_loader(Path(args.author_repo))
+    root = Path(args.checkpoints)
+    for name in ["zeroshot.pt", "SVHN/finetuned.pt", "head_MNIST.pt", "head_SVHN.pt"]:
+        assert digest(root / name) == prior["checkpoint_sha256"][name]
+    anchor = load(str(root / "zeroshot.pt"))
+    partner = load(str(root / "SVHN/finetuned.pt"))
+    heads = {t: load(str(root / f"head_{t}.pt")) for t in ["MNIST", "SVHN"]}
+    context = merge(anchor, anchor, partner, config["coefficient"])
+    training = dict(
+        MNIST=MNIST(args.data, train=True, transform=anchor.val_preprocess),
+        SVHN=SVHN(args.data, split="train", transform=anchor.val_preprocess),
+    )
+    designs = []
+    for task in ["MNIST", "SVHN"]:
+        images = torch.stack([training[task][i][0] for i in indices["fitting"][task]])
+        _, x = query_readout(context, heads[task], images, capture_features=True)
+        designs.append(x)
+    design = torch.cat(designs)
+    gram = design.T @ design
+    ridge = config["ridge_ratio"] * gram.trace() / len(design)
+    assert abs(float(ridge) - fits[0]["ridge"]) < 1e-10
+    system = gram + ridge * torch.eye(gram.shape[0], device="cuda", dtype=torch.float64)
+    solver = torch.linalg.solve(system, design.T)
+    classes = torch.load(
+        parent / "artifacts/teacher_predictions.pt", map_location="cpu", weights_only=True
+    )["readout_protected"]
+    targets = torch.nn.functional.one_hot(classes.cuda(), 10).double()
+    confirmation = indices["confirmation"]["MNIST"]
+    images = torch.stack([training["MNIST"][i][0] for i in confirmation])
+    _, check = query_readout(context, heads["MNIST"], images, capture_features=True)
+    influence = check @ solver
+    scores = influence @ targets
+    pred = scores.argmax(-1).cpu()
+    prior_predictions = torch.load(
+        parent / "artifacts/predictions.pt", map_location="cpu", weights_only=False
+    )["readout_protected", "confirmation", "direct", "MNIST"]
+    assert torch.equal(pred, prior_predictions["prediction"])
+    labels = prior_predictions["labels"]
+    top = scores.topk(2, dim=1).values
+    margins = top[:, 0] - top[:, 1]
+    largest = influence[:, :256].abs().topk(max(budgets), dim=1).values.cumsum(dim=1)
+    rows = []
+    for k in budgets:
+        bound = torch.zeros_like(margins) if k == 0 else 2 * largest[:, k - 1]
+        certified = margins > bound + 1e-10
+        rows.append(
+            dict(
+                changed_queries=k,
+                n=len(pred),
+                certified_unchanged=int(certified.sum()),
+                certified_fraction=float(certified.double().mean()),
+                certified_correct=int((certified.cpu() & pred.eq(labels)).sum()),
+                lower_bound_accuracy=float((certified.cpu() & pred.eq(labels)).double().mean()),
+            )
+        )
+    assert all(a["certified_unchanged"] >= b["certified_unchanged"] for a, b in zip(rows, rows[1:]))
+    assert rows[0]["certified_unchanged"] == len(pred)
+    save_json(out / "results.json", rows)
+    torch.save(
+        dict(influence=influence.cpu(), margins=margins.cpu(), prediction=pred, labels=labels),
+        artifacts / "certificate.pt",
+    )
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            new_defense=False,
+            new_models=0,
+            new_teacher_queries=0,
+            new_fits=0,
+            test_usage="none",
+            fitting_labels_used=False,
+            fixed_ridge=float(ridge),
+            confirmation_predictions_exactly_match_parent=True,
+            baseline_correct=int(pred.eq(labels).sum()),
+            baseline_n=len(pred),
+            source_sha256=digest(__file__),
+            parent_metadata_sha256=digest(parent / "metadata.json"),
+            config_sha256=digest(out / "protocol.json"),
+            certificate_sha256=digest(artifacts / "certificate.pt"),
+            seconds=time.perf_counter() - start,
+        ),
+    )
+    print("READOUT_STABILITY_COMPLETE", json.dumps(rows), flush=True)
+
+
+@torch.no_grad()
 def evaluate_readout(args):
     """Evaluate frozen projection recovery on official tests without new fitting."""
     parent = Path(args.evaluate_readout)
@@ -1174,9 +1302,12 @@ if __name__ == "__main__":
     mode.add_argument("--reconstruction-context", action="store_true")
     mode.add_argument("--readout-recovery", action="store_true")
     mode.add_argument("--evaluate-readout", metavar="FROZEN_RUN")
+    mode.add_argument("--readout-stability", metavar="FROZEN_RUN")
     args = parser.parse_args()
     (
-        evaluate_readout
+        readout_stability
+        if args.readout_stability
+        else evaluate_readout
         if args.evaluate_readout
         else run_readout
         if args.readout_recovery
