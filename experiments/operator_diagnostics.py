@@ -595,6 +595,18 @@ def run(args):
     config_bytes = Path(args.config).read_bytes()
     config = json.loads(config_bytes)
     protected_task = config["protected_task"]
+    if args.joint_components:
+        assert not config.get("reconstruction", True) and not config["components"]
+        assert len(args.joint_components) == len(set(args.joint_components))
+        config["joint_components"] = args.joint_components
+        config["confirmation_presets"] = [
+            "unprotected",
+            *[f"joint_{component}" for component in args.joint_components],
+        ]
+        config["protocol_amendment"] = (
+            "Joint support explicitly changed before evaluation; no new protection or test use"
+        )
+        config_bytes = json.dumps(config, indent=2).encode()
     partner_task = config.get("other_task", "MNIST")
     reconstruction = config.get("reconstruction", True)
     assert {protected_task, partner_task} == {"MNIST", "SVHN"}
@@ -787,6 +799,12 @@ if __name__ == "__main__":
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
+    parser.add_argument(
+        "--joint-components",
+        nargs="+",
+        choices=["block", "mlp", "attn", "norms"],
+        help="Declare a replacement-only joint-support follow-up without changing the saved parent protocol.",
+    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--reconstruction-budget", action="store_true")
     mode.add_argument("--reconstruction-context", action="store_true")
