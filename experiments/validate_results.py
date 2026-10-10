@@ -2599,10 +2599,146 @@ def validate_class_recompile(path: Path):
     print(json.dumps(report))
 
 
+def validate_task_support(path: Path):
+    """Audit the MNIST-only selection, deletion certificate and public recovery floor."""
+    import torch
+    from operator_diagnostics import paired_counts
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    meta, config = read("metadata.json"), read("protocol.json")
+    rows, selection = read("results.json"), read("selection.json")
+    indices, trace, decision = (
+        read("training_indices.json"),
+        read("pruning_trace.json"),
+        read("decision.json"),
+    )
+    assert (
+        meta["completed"]
+        and not meta["new_defense"]
+        and meta["fits"] == meta["optimizer_steps"] == 0
+    )
+    assert meta["test_usage"] == "none" and meta["partner_loaded_after_selection"]
+    for filename, key in [
+        ("selection.json", "selection_sha256"),
+        ("training_indices.json", "indices_sha256"),
+        ("artifacts/predictions.pt", "predictions_sha256"),
+    ]:
+        assert hashlib.sha256((path / filename).read_bytes()).hexdigest() == meta[key]
+    assert (
+        hashlib.sha256(Path("experiments/operator_diagnostics.py").read_bytes()).hexdigest()
+        == meta["source_sha256"]
+    )
+    assert (
+        hashlib.sha256(Path("configs/task_support_mnist.json").read_bytes()).hexdigest()
+        == meta["config_sha256"]
+    )
+    for name, sha in meta["helper_sha256"].items():
+        assert hashlib.sha256((Path("experiments") / name).read_bytes()).hexdigest() == sha
+    assert set(meta["selection_checkpoint_sha256"]) == {
+        "zeroshot.pt",
+        "MNIST/finetuned.pt",
+        "head_MNIST.pt",
+    }
+    assert set(meta["evaluation_only_checkpoint_sha256"]) == {"SVHN/finetuned.pt"}
+    parent = json.loads((Path(config["index_parent"]) / "training_indices.json").read_bytes())
+    assert (
+        indices["selection"]["MNIST"]
+        == parent["MNIST"]["development"][: config["selection_samples"]]
+    )
+    excluded = set().union(*(set(v) for v in parent["MNIST"].values()))
+    for folder in config["exclude_runs"]:
+        saved = json.loads((Path(folder) / "training_indices.json").read_bytes())
+        excluded.update(saved["confirmation"]["MNIST"])
+        excluded.update(saved.get("calibration", []))
+    order = torch.randperm(60000, generator=torch.Generator().manual_seed(config["seed"])).tolist()
+    expected = [i for i in order if i not in excluded][: config["confirmation_samples"]]
+    assert indices["confirmation"]["MNIST"] == expected and not set(expected) & excluded
+    raw = torch.load(path / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    assert len(raw) == len(rows)
+    controls, by_id, supports = {}, {}, {}
+    for row in rows:
+        item = raw[row["id"]]
+        p, y = item["prediction"], item["labels"]
+        key = row["split"], row["group"]
+        if not row["support"]:
+            controls[key] = item
+        ref = controls[key]
+        assert torch.equal(y, ref["labels"])
+        assert row["n"] == len(y) == len(indices[row["split"]]["MNIST"])
+        assert row["correct"] == int(p.eq(y).sum()) and row["top1"] == row["correct"] / row["n"]
+        assert row["paired"] == paired_counts(ref["prediction"].eq(y), p.eq(y))
+        by_id[row["id"]] = row
+        if row["split"] == "selection":
+            supports[tuple(map(tuple, row["support"]))] = row
+    baseline = supports[()]
+
+    def loss(row):
+        return 100 * (baseline["top1"] - row["top1"])
+
+    modules = {(layer, kind) for layer in range(12) for kind in ["attn", "mlp"]}
+    assert all((module,) in supports for module in modules)
+    assert all(((layer, "attn"), (layer, "mlp")) in supports for layer in range(12))
+    assert len(supports) == selection["selection_variants"] <= config["maximum_selection_variants"]
+    active = set(modules)
+    for step in trace:
+        assert set(map(tuple, step["before"])) == active
+        trial = active - {tuple(step["removed"])}
+        row = by_id[step["measurement"]]
+        assert set(map(tuple, step["trial"])) == set(map(tuple, row["support"])) == trial
+        assert step["accepted"] == (loss(row) >= config["minimum_task_drop_pp"])
+        if step["accepted"]:
+            active = trial
+    assert sorted(active) == list(map(tuple, selection["support"]))
+    assert (
+        selection["modules"] == len(active)
+        and not selection["globally_minimum"]
+        and not selection["partner_loaded"]
+    )
+    assert math.isclose(
+        loss(supports[tuple(sorted(active))]), selection["standalone_loss_pp"], abs_tol=1e-12
+    )
+    if selection["inclusion_minimal"]:
+        assert (
+            not selection["budget_stopped"]
+            and loss(supports[tuple(sorted(active))]) >= config["minimum_task_drop_pp"]
+        )
+        for certificate in selection["deletion_certificate"]:
+            row = by_id[certificate["measurement"]]
+            assert set(map(tuple, row["support"])) == active - {tuple(certificate["removed"])}
+            assert math.isclose(loss(row), certificate["task_loss_pp"], abs_tol=1e-12)
+            assert loss(row) < config["minimum_task_drop_pp"]
+    fusion = [row for row in rows if row["split"] == "confirmation" and row["group"] == "fusion"]
+    assert len(fusion) == 2
+    gap = 100 * (fusion[0]["top1"] - fusion[1]["top1"])
+    assert decision["public_support_reset_accuracy"] == fusion[1]["top1"]
+    assert math.isclose(gap, decision["direct_control_minus_recovery_floor_pp"], abs_tol=1e-12)
+    assert decision["necessary_support_gate_passed"] == (gap >= config["minimum_fusion_drop_pp"])
+    assert not decision["new_defense"]
+    report = dict(
+        status="passed",
+        raw_rows_checked=len(rows),
+        selection_variants=len(supports),
+        subset_exclusion_verified=True,
+        deletion_trace_verified=True,
+        inclusion_minimal=selection["inclusion_minimal"],
+        global_minimality_claim=False,
+        partner_used_for_selection=False,
+        public_reset_floor_verified=True,
+        results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+        validator_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        new_defense=False,
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--task-support", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -2645,7 +2781,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_class_recompile
+        validate_task_support
+        if args.task_support
+        else validate_class_recompile
         if args.class_recompile
         else validate_readout_stability
         if args.readout_stability
