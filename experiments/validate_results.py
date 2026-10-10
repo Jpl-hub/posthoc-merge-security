@@ -1268,10 +1268,95 @@ def validate_reconstruction_context(path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_context_erasure(path, write_report=True):
+    """Check the finite deletion protocol, paired counts and server predictions."""
+    config = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    indices = json.loads((path / "training_indices.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    gates = json.loads((path / "gates.json").read_bytes())
+    edits = json.loads((path / "edits.json").read_bytes())
+    assert meta["completed"] and not meta["new_defense_validated"]
+    assert config["test_usage"] == meta["test_usage"] == "none"
+    assert (
+        meta["config_sha256"] == hashlib.sha256((path / "protocol.json").read_bytes()).hexdigest()
+    )
+    assert (
+        meta["indices_sha256"]
+        == hashlib.sha256((path / "training_indices.json").read_bytes()).hexdigest()
+    )
+    presets = {p["name"]: p for p in config["presets"]}
+    assert {g["preset"] for g in gates} == set(presets)
+    groups = {("standalone", "SVHN"), ("direct", "SVHN"), ("direct", "MNIST")}
+    expected = {(p, g, t) for p in ["unprotected", *presets] for g, t in groups}
+    for gate in gates:
+        if gate["passed"]:
+            expected.update(
+                (gate["preset"], g, t)
+                for g in ["cleanup", "aga", "reconstruction_1", "reconstruction_2"]
+                for t in ["MNIST", "SVHN"]
+            )
+    keyed = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
+    assert len(keyed) == len(rows) and set(keyed) == expected
+    for gate in gates:
+        name = gate["preset"]
+        losses = []
+        for group in ["standalone", "direct"]:
+            losses.append(
+                100
+                * (keyed["unprotected", group, "SVHN"]["top1"] - keyed[name, group, "SVHN"]["top1"])
+            )
+        assert abs(gate["utility_loss_pp"] - losses[0]) < 1e-10
+        assert abs(gate["direct_loss_pp"] - losses[1]) < 1e-10
+        assert gate["passed"] == (
+            losses[0] <= config["utility_budget_pp"]
+            and losses[1] >= config["minimum_protected_task_drop_pp"]
+        )
+    assert len(edits) == len(presets) * len(config["layers"])
+    for edit in edits:
+        assert edit["rank"] == presets[edit["preset"]]["rank"]
+        assert edit["layer"] in config["layers"]
+        assert edit["erased_norm"] >= 0 and edit["projection_residual"] >= 0
+        assert all(math.isfinite(v) and v >= 0 for v in edit["response"].values())
+    raw = path / "artifacts/predictions.pt"
+    raw_checked = raw.exists()
+    if raw_checked:
+        import torch
+        from operator_diagnostics import paired_counts
+
+        assert meta["predictions_sha256"] == hashlib.sha256(raw.read_bytes()).hexdigest()
+        saved = torch.load(raw, map_location="cpu", weights_only=False)
+        assert set(saved) == expected
+        for key, row in keyed.items():
+            item = saved[key]
+            pred, labels = item["prediction"], item["labels"]
+            group = "standalone" if row["group"] == "standalone" else "direct"
+            reference = saved["unprotected", group, row["dataset"]]
+            assert torch.equal(labels, reference["labels"])
+            assert len(labels) == len(indices[row["dataset"]]["development"]) == row["n"]
+            correct = pred == labels
+            assert int(correct.sum()) == row["correct"]
+            counts = paired_counts(reference["prediction"] == labels, correct)
+            for name, value in counts.items():
+                assert abs(row["paired"][name] - value) < 1e-10
+            assert abs(row["top1"] - row["correct"] / row["n"]) < 1e-10
+    report = dict(
+        status="passed",
+        raw_artifacts_checked=raw_checked,
+        direct_gate_survivors=sum(g["passed"] for g in gates),
+        new_defense_validated=False,
+        results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--context-erasure", action="store_true", help="Validate context deletion.")
     mode.add_argument("--subspace", action="store_true", help="Validate the subspace probe.")
     mode.add_argument(
         "--reconstruction-context",
@@ -1299,7 +1384,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_reconstruction_context
+        validate_context_erasure
+        if args.context_erasure
+        else validate_reconstruction_context
         if args.reconstruction_context
         else validate_reconstruction_budget
         if args.reconstruction_budget
