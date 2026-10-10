@@ -15,11 +15,12 @@ import json
 import shutil
 import stat
 import tarfile
+import time
 import zipfile
 from collections import Counter
 from pathlib import Path
-from urllib.error import HTTPError
-from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 import torch
 from torchvision.datasets import DTD
@@ -351,6 +352,151 @@ def prepare_sun397_indices(root, author_repo):
     )
 
 
+class VerifiedRangeReader:
+    """Bounded HTTP ranges; hash the complete stream without caching the archive."""
+
+    def __init__(self, url, length, chunk_bytes=64 * 1024 * 1024):
+        self.url, self.length, self.chunk_bytes = url, length, chunk_bytes
+        self.offset, self.buffer = 0, b""
+        self.buffer_position = 0
+        self.sha256, self.md5 = hashlib.sha256(), hashlib.md5()
+
+    def read(self, size):
+        assert size >= 0
+        if not size or self.offset == self.length:
+            return b""
+        if self.buffer_position == len(self.buffer):
+            end = min(self.offset + self.chunk_bytes, self.length) - 1
+            for attempt in range(6):
+                try:
+                    request = Request(self.url, headers={"Range": f"bytes={self.offset}-{end}"})
+                    with urlopen(request, timeout=60) as response:
+                        assert response.status == 206, "Source must support exact byte ranges"
+                        assert response.headers["Content-Range"] == (
+                            f"bytes {self.offset}-{end}/{self.length}"
+                        ), "Unexpected archive range"
+                        data = response.read(end - self.offset + 1)
+                    if len(data) != end - self.offset + 1:
+                        raise OSError("Incomplete archive range")
+                    self.buffer = data
+                    self.buffer_position = 0
+                    break
+                except (OSError, URLError):
+                    if attempt == 5:
+                        raise
+                    time.sleep(min(2**attempt, 30))
+        result = self.buffer[self.buffer_position : self.buffer_position + size]
+        self.buffer_position += len(result)
+        self.offset += len(result)
+        self.sha256.update(result)
+        self.md5.update(result)
+        return result
+
+
+def prepare_sun397_images(root, indices, progress_path):
+    """Stream original archive, retain only partition 1, verify before linking."""
+    source = root / "SUN397_sources"
+    revision = indices["mirror_revision"]
+    url = f"https://huggingface.co/zhengli97/SUN397_Dataset/resolve/{revision}/SUN397.tar.gz"
+    expected_sha = "f404130965a7ad77bed5ececc71e720ab50f3cc1e1bb257257610d38f3b928ec"
+    # torchvision 0.18.0 SUN397's original dataset checksum.
+    expected_md5 = "8ca2778205c41d23104230ba66911c7a"
+    length = 39077296924
+    destination = source / "images_f4041309"
+    marker = destination / ".verified_archive_sha256"
+    assert not marker.exists(), "Archive already prepared; do not repeat the full transfer"
+    destination.mkdir(parents=True, exist_ok=True)
+    splits = {
+        split: (source / filename).read_text().splitlines()
+        for split, filename in [("train", "Training_01.txt"), ("test", "Testing_01.txt")]
+    }
+    wanted = set(splits["train"]) | set(splits["test"])
+    classes = sorted({str(Path(name).parent) for name in wanted})
+    labels = [name[3:].replace("/", "_") for name in classes]
+    assert len(set(labels)) == 397 and labels == sorted(labels), "Class ordering changed"
+    mapping = dict(zip(classes, labels, strict=True))
+    reader = VerifiedRangeReader(url, length)
+    seen, extracted_bytes = set(), 0
+
+    def progress(ready=False):
+        progress_path.write_text(
+            json.dumps(
+                dict(
+                    status="verified" if ready else "streaming_unverified",
+                    archive_bytes_read=reader.offset,
+                    archive_bytes_expected=length,
+                    selected_images=len(seen),
+                    expected_selected_images=len(wanted),
+                    selected_bytes=extracted_bytes,
+                    dataset_ready=ready,
+                ),
+                indent=2,
+            )
+        )
+
+    progress()
+    with tarfile.open(fileobj=reader, mode="r|gz") as archive:
+        for member in archive:
+            parts = Path(member.name).parts
+            if not parts or parts[0] != "SUN397":
+                continue
+            name = "/" + "/".join(parts[1:])
+            if name not in wanted:
+                continue
+            assert name not in seen and member.isfile(), member.name
+            assert 0 < member.size < 100 * 1024 * 1024
+            assert extracted_bytes + member.size < 22 * 1024**3, "Selection storage limit"
+            assert shutil.disk_usage(source).free > member.size + 2 * 1024**3
+            path = (destination / name.lstrip("/")).resolve()
+            assert path.is_relative_to(destination.resolve())
+            payload = archive.extractfile(member).read()
+            assert len(payload) == member.size
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if path.exists():
+                assert path.read_bytes() == payload, "Existing partial image differs"
+            else:
+                path.write_bytes(payload)
+            seen.add(name)
+            extracted_bytes += member.size
+            if len(seen) % 100 == 0:
+                progress()
+    # tar iteration can stop before the compressed stream ends. Hash every byte.
+    while reader.read(4 * 1024 * 1024):
+        pass
+    assert reader.offset == length and reader.sha256.hexdigest() == expected_sha
+    assert reader.md5.hexdigest() == expected_md5
+    assert seen == wanted
+    for split, names in splits.items():
+        for name in names:
+            image = destination / name.lstrip("/")
+            link = root / "sun397" / split / mapping[str(Path(name).parent)] / image.name
+            link.parent.mkdir(parents=True, exist_ok=True)
+            if link.exists():
+                assert link.resolve() == image.resolve()
+            else:
+                link.symlink_to(image.resolve())
+    marker.write_text(expected_sha)
+    progress(ready=True)
+    return dict(
+        **{
+            k: v
+            for k, v in indices.items()
+            if k not in {"status", "dataset_ready", "image_download"}
+        },
+        status="ready",
+        dataset_ready=True,
+        image_download="complete_archive_stream_verified_selected_partition1_only",
+        image_archive_sha256=expected_sha,
+        image_archive_original_md5=expected_md5,
+        image_archive_bytes=length,
+        image_count=len(seen),
+        selected_bytes=extracted_bytes,
+        archive_stored=False,
+        train_count=19850,
+        test_count=19850,
+    )
+
+
 def main(args):
     torch.set_num_threads(4)
     root, output = Path(args.data).resolve(), Path(args.output)
@@ -366,12 +512,19 @@ def main(args):
                 row = prepare_cars(root, Path(args.author_repo))
             elif task == "SUN397":
                 row = prepare_sun397_indices(root, Path(args.author_repo))
+                if args.sun397_images:
+                    row = prepare_sun397_images(root, row, output / "stream_progress.json")
             else:
                 row = prepare_resisc_indices(root, Path(args.author_repo))
                 if args.resisc_images:
                     row = prepare_resisc_images(root, row)
         except Exception as exc:
             row = dict(task=task, status="failed", error=str(exc))
+            progress = output / "stream_progress.json"
+            if task == "SUN397" and args.sun397_images and progress.exists():
+                state = json.loads(progress.read_bytes())
+                state.update(status="failed", error=str(exc), dataset_ready=False)
+                progress.write_text(json.dumps(state, indent=2))
         print("DATA_PREPARATION", json.dumps(row), flush=True)
         return row
 
@@ -394,4 +547,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", default="outputs/2026-10-09/eight_task/data_1810")
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
     parser.add_argument("--resisc-images", action="store_true", help="Download and verify images.")
+    parser.add_argument(
+        "--sun397-images", action="store_true", help="Stream original archive, retain partition 1."
+    )
     main(parser.parse_args())
