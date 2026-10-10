@@ -323,7 +323,7 @@ def run(args):
         )
         save_json(out / "gates.json", gates)
         save_json(out / "edits.json", edits)
-        if not passed:
+        if not passed and not config.get("force_attack_diagnostic", False):
             continue
         if not measured_attacks:
             for attack, restored in attacks(original, "unprotected"):
