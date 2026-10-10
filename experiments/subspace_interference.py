@@ -445,6 +445,9 @@ def evaluate_saved(args):
         source_directory=str(source),
         recovery_groups=groups,
         attack_scope="Additional frozen-release recovery checks; no new protection or tuning",
+        aga_selected_scope="author AGA on the selected expert only; partner unchanged"
+        if "aga_selected" in groups
+        else None,
     )
     save_json(out / "protocol.json", config)
     torch.set_num_threads(4)
@@ -483,12 +486,18 @@ def evaluate_saved(args):
         attack_images = torch.stack(
             [train[i][0] for i in indices[protected_task]["attack"][: config["attack_samples"]]]
         )
-    author, attacked_partner = None, None
+    author, attacked_partner, selected_author, selected_author_sha256 = None, None, None, None
     if "aga_all" in groups:
         author, _ = load_author(Path(args.author_repo) / "utils_attack_B32.py")
         partner_output = out / "partner_aga"
         partner_output.mkdir()
         attacked_partner = recover(partner, anchor, author, partner_output)
+    if "aga_selected" in groups:
+        selected_author, selected_author_sha256 = load_author(
+            Path(args.author_repo) / "utils_attack_B32.py", include_wrappers=True
+        )
+        pinned = json.loads(Path("configs/sources.json").read_bytes())["AGA"]["sha256"]
+        assert selected_author_sha256 == pinned
     rows, predictions, controls = [], {}, {}
     support_checks, reset_control = {}, None
 
@@ -558,6 +567,10 @@ def evaluate_saved(args):
                 recovery_output = out / f"{preset}_aga"
                 recovery_output.mkdir()
                 restored = recover(model, anchor, author, recovery_output)
+            elif group == "aga_selected":
+                from eight_task_benchmark import author_recover
+
+                restored = author_recover(model, anchor, selected_author)
             elif group == "reconstruction_1":
                 restored = copy.deepcopy(model).cpu().eval()
                 fitting = []
@@ -616,6 +629,13 @@ def evaluate_saved(args):
             new_defense_validated=False,
             support_reset_checked=bool(support_checks),
             support_audit_sha256=digest(out / "support_audit.json") if support_checks else None,
+            selected_aga_helper_sha256=digest(Path(__file__).with_name("eight_task_benchmark.py"))
+            if "aga_selected" in groups
+            else None,
+            selected_aga_normalized_source_sha256=selected_author_sha256,
+            selected_aga_raw_source_sha256=digest(Path(args.author_repo) / "utils_attack_B32.py")
+            if "aga_selected" in groups
+            else None,
         ),
     )
     print("INTERFERENCE_TEST_COMPLETE", flush=True)
@@ -635,7 +655,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--recovery-groups",
         nargs="+",
-        choices=["direct", "aga_all", "pretrained_fc", "pretrained_mlp", "reconstruction_1"],
+        choices=[
+            "direct",
+            "aga_all",
+            "aga_selected",
+            "pretrained_fc",
+            "pretrained_mlp",
+            "reconstruction_1",
+        ],
         help="Choose explicitly reported recovery checks for --evaluate-saved.",
     )
     args = parser.parse_args()

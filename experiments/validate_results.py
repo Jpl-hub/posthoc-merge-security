@@ -2070,10 +2070,22 @@ def validate_subspace_test(path: Path, write_report=True):
     assert set(groups) <= {
         "direct",
         "aga_all",
+        "aga_selected",
         "pretrained_fc",
         "pretrained_mlp",
         "reconstruction_1",
     }
+    if "aga_selected" in groups:
+        assert (
+            config["aga_selected_scope"]
+            == "author AGA on the selected expert only; partner unchanged"
+        )
+        sources = json.loads(Path("configs/sources.json").read_bytes())
+        assert meta["selected_aga_normalized_source_sha256"] == sources["AGA"]["sha256"]
+        assert (
+            meta["selected_aga_helper_sha256"]
+            == hashlib.sha256(Path("experiments/eight_task_benchmark.py").read_bytes()).hexdigest()
+        )
     expected = {(p, g, t) for p in ["unprotected", name] for g in groups for t in ["MNIST", "SVHN"]}
     expected.update((p, g + "_standalone", task) for p in ["unprotected", name] for g in groups)
     keyed = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
