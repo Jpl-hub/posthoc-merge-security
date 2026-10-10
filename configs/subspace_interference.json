@@ -1,0 +1,28 @@
+{
+  "parent": "outputs/2026-10-09/post_meeting/subspace_probe",
+  "layers": [3, 4, 5, 6],
+  "protected_task": "SVHN",
+  "other_task": "MNIST",
+  "samples": 256,
+  "task_rank": 128,
+  "perturbation_rank": 16,
+  "ridge_ratio": 0.0001,
+  "coefficient": 0.5,
+  "presets": [
+    {"name": "outside_001", "own_response_ratio": 0.001},
+    {"name": "outside_005", "own_response_ratio": 0.005},
+    {"name": "outside_020", "own_response_ratio": 0.02}
+  ],
+  "utility_budget_pp": 0.5,
+  "minimum_protected_task_drop_pp": 5.0,
+  "attack_samples": 256,
+  "calibration": "Frozen unlabeled SVHN calibration images only; original MNIST checkpoint used to construct a known-partner merged input distribution",
+  "construction": "FC perturbation outside top-128 right singular space of task increment, directed into its top-16 left singular space; generalized covariance ratio within that complement; per-layer magnitude set by expert preactivation response, not accuracy",
+  "training": "no gradients, optimizer or parameter fitting; SVD/eigendecomposition and direct weight addition only",
+  "selection": "Fixed three response magnitudes. Standalone utility and direct protected-task gate before attacks; no test-based tuning",
+  "attacks": "For every direct-gate survivor, angular pretrained replacement, joint edited-FC pretrained replacement, released-update rank-16 subtraction, independently calibrated activation-complement cleanup, original AGA, and two-pass public-feature MLP reconstruction",
+  "threat_model": "White-box architecture-preserving and architecture-modifying attacker; pretrained and partner checkpoint available; defender projection and pre-protection expert unavailable to attacks",
+  "novelty": "Mechanism hypothesis using known subspace operations; no originality or security claim",
+  "evaluation": "Previously inspected MNIST-2000 / SVHN-1000 training development subsets; no fresh holdout or official test",
+  "test_usage": "none"
+}
