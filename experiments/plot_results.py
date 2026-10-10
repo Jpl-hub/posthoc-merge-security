@@ -1587,6 +1587,114 @@ def plot_subspace_interference(root: Path):
     print("INTERFERENCE_FIGURES_WRITTEN", out)
 
 
+def plot_fine_subspace(root: Path):
+    """Show confirmed contrast separately from achievable replacement floors."""
+    directions = json.loads((root / "directions.json").read_bytes())
+    rows = json.loads((root / "results.json").read_bytes())
+    config = json.loads((root / "protocol.json").read_bytes())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(1, 2, figsize=(9, 3.1), layout="constrained")
+    positions = np.arange(len(directions))
+    for index, task in enumerate(["MNIST", "DTD"]):
+        axes[0].bar(
+            positions + (index - 0.5) * 0.36,
+            [r["confirmation"]["rms_ratios"][task] for r in directions],
+            width=0.36,
+            color=COLORS[index],
+            label=task,
+        )
+    axes[0].axhline(config["minimum_confirmed_rms_ratio"], color="0.5", ls="--", lw=0.8)
+    axes[0].set(
+        title="Fresh-image local response contrast",
+        ylabel="RMS response / Cars RMS (log scale)",
+        yscale="log",
+        ylim=(1, 20),
+        xticks=positions,
+        xticklabels=[r["site"] + ("*" if not r["contrast_passed"] else "") for r in directions],
+    )
+    axes[0].tick_params(axis="x", rotation=55, labelsize=7)
+    axes[0].legend()
+    axes[0].grid(axis="y", alpha=0.15)
+    lookup = {(r["preset"], r["group"]): r for r in rows}
+    presets = ["qkv", "fc", "down", "eligible_union"]
+    for index, group in enumerate(["standalone", "fusion"]):
+        losses = [lookup[preset, group]["paired"]["loss_pp"] for preset in presets]
+        axes[1].bar(
+            np.arange(4) + (index - 0.5) * 0.36,
+            losses,
+            width=0.36,
+            color=COLORS[index],
+            label="Standalone" if group == "standalone" else "Eight-expert fusion",
+        )
+    axes[1].axhline(config["minimum_recovery_gap_pp"], color="0.5", ls="--", lw=0.8)
+    axes[1].set(
+        title="Public parameter replacement cost",
+        ylabel="Accuracy loss vs unprotected control (pp)",
+        xticks=np.arange(4),
+        xticklabels=["QKV", "MLP up", "8 neurons/layer", "Eligible union"],
+        ylim=(0, 6),
+    )
+    axes[1].tick_params(axis="x", rotation=20, labelsize=7)
+    axes[1].legend()
+    axes[1].grid(axis="y", alpha=0.15)
+    fig.suptitle(
+        "Cars preflight; * rejected stability/contrast; replacement on inspected training data\n"
+        "No protected model constructed; no AGA or official-test defense result",
+        fontsize=9,
+    )
+    save(fig, out, "fine_subspace_preflight")
+
+
+def plot_subspace_recovery(root: Path):
+    """Keep oracle information and public-covariance diagnostics distinct."""
+    rows = json.loads((root / "results.json").read_bytes())
+    geometry = json.loads((root / "geometry.json").read_bytes())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(1, 2, figsize=(8.6, 3), layout="constrained")
+    lookup = {(r["preset"], r["group"]): r for r in rows}
+    presets = ["direction_oracle", "public_covariance"]
+    for index, group in enumerate(["standalone", "fusion"]):
+        axes[0].bar(
+            np.arange(2) + (index - 0.5) * 0.36,
+            [lookup[preset, group]["paired"]["loss_pp"] for preset in presets],
+            width=0.36,
+            color=COLORS[index],
+            label="Standalone" if group == "standalone" else "Eight-expert fusion",
+        )
+    axes[0].axhline(0, color="0.5", lw=0.8)
+    axes[0].set(
+        title="Projection replacement cost",
+        ylabel="Accuracy loss vs unprotected control (pp)",
+        xticks=np.arange(2),
+        xticklabels=["Exact direction (oracle)", "Public covariance tail"],
+    )
+    axes[0].tick_params(axis="x", labelsize=8, rotation=15)
+    axes[0].legend()
+    axes[0].grid(axis="y", alpha=0.15)
+    axes[1].bar(
+        np.arange(len(geometry)),
+        [100 * r["public_noise_energy_removed_fraction"] for r in geometry],
+        color=COLORS[2],
+    )
+    axes[1].set(
+        title="Public tail coverage of fixed directions",
+        ylabel="Input-direction energy removed (%)",
+        xticks=np.arange(len(geometry)),
+        xticklabels=[r["site"] for r in geometry],
+        ylim=(0, 105),
+    )
+    axes[1].tick_params(axis="x", rotation=55, labelsize=7)
+    axes[1].grid(axis="y", alpha=0.15)
+    fig.suptitle(
+        "Unprotected Cars expert; inspected training confirmation; TA coefficient 0.2\n"
+        "Protected-release recovery remains untested",
+        fontsize=9,
+    )
+    save(fig, out, "subspace_recovery_cost")
+
+
 def plot_functional_contrast(root: Path):
     """Display both frozen points, including bypasses and cross-task effects."""
     rows = json.loads((root / "results.json").read_bytes())
@@ -1678,6 +1786,8 @@ if __name__ == "__main__":
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--task-support", action="store_true")
     mode.add_argument("--functional-contrast", action="store_true")
+    mode.add_argument("--fine-subspace", action="store_true")
+    mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument(
         "--subspace-interference",
         action="store_true",
@@ -1713,7 +1823,11 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_functional_contrast
+        plot_fine_subspace
+        if args.fine_subspace
+        else plot_subspace_recovery
+        if args.subspace_recovery
+        else plot_functional_contrast
         if args.functional_contrast
         else plot_task_support
         if args.task_support

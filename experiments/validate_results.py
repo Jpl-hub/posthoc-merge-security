@@ -3628,6 +3628,207 @@ def validate_functional_contrast(path: Path):
     return result
 
 
+def validate_subspace_recovery(path: Path):
+    """Audit projection costs, public construction and conditional erasure algebra."""
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader, evaluate
+    from eight_task_benchmark import digest as sha
+    from eight_task_benchmark import merge_all
+    from fine_subspace import matrix_keys
+    from operator_diagnostics import paired_counts
+    from subspace_probe import make_loader
+    from subspace_recovery import projected_reset
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    config, meta = read("protocol.json"), read("metadata.json")
+    assert meta["completed"] and not meta["protected_model_evaluated"]
+    assert meta["optimizer_steps"] == meta["response_fits"] == 0
+    assert meta["test_usage"] == "none" and meta["oracle_access_explicit"]
+    assert sha(Path(__file__).with_name("subspace_recovery.py")) == meta["source_sha256"]
+    assert sha("configs/subspace_recovery_cars.json") == meta["config_sha256"]
+    for name, expected in meta["helper_sha256"].items():
+        assert sha(Path(__file__).with_name(name)) == expected
+    for name, expected in meta["raw_sha256"].items():
+        assert sha(path / "artifacts" / name) == expected
+    root = Path("checkpoints/ViT-B-32")
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert sha(root / name) == expected
+    parent = Path(config["parent"])
+    assert sha(parent / "metadata.json") == meta["parent_metadata_sha256"]
+    for name, expected in meta["parent_raw_sha256"].items():
+        assert sha(parent / "artifacts" / name) == expected
+    projections = torch.load(
+        path / "artifacts/projections.pt", map_location="cpu", weights_only=True
+    )
+    directions = torch.load(
+        parent / "artifacts/directions.pt", map_location="cpu", weights_only=True
+    )
+    activations = torch.load(
+        parent / "artifacts/activations.pt", map_location="cpu", weights_only=True
+    )
+    parent_directions = json.loads((parent / "directions.json").read_bytes())
+    selected = json.loads((parent / "decision.json").read_bytes())["eligible_sites"]
+    assert len(read("geometry.json")) == len(selected) == 7
+    assert set(projections) == {"direction_oracle", "public_covariance"}
+    load = checkpoint_loader(Path("external/secure-merge-attack"))
+    original, anchor = load(str(root / "Cars/finetuned.pt")), load(str(root / "zeroshot.pt"))
+    for record in read("geometry.json"):
+        site = record["site"]
+        assert site in selected
+        weight, bias = matrix_keys(site)
+        x = activations["calibration", "Cars"][site].double().cuda()
+        mean = x.mean(0).cpu()
+        v = directions[site]["incoming"].double()
+        assert torch.allclose(mean, directions[site]["mean"], atol=1e-10, rtol=1e-10)
+        for preset in projections:
+            basis = projections[preset][site]["basis"]
+            assert torch.allclose(projections[preset][site]["mean"], mean, atol=1e-10, rtol=1e-10)
+            assert float((basis.T @ basis - torch.eye(basis.shape[1])).norm()) < 1e-8
+        assert torch.equal(projections["direction_oracle"][site]["basis"], v[:, None])
+        coordinates = next(r for r in parent_directions if r["site"] == site)["neurons"]
+        support = torch.eye(x.shape[1], dtype=torch.float64, device="cuda")
+        if coordinates is not None:
+            support = support[:, coordinates]
+        z = (x - mean.cuda()) @ support
+        covariance = z.T @ z / len(z)
+        eigenvalues, eigenvectors = torch.linalg.eigh(covariance)
+        eigenvalues = eigenvalues.clamp_min(0)
+        fractions = eigenvalues.flip(0).cumsum(0) / eigenvalues.sum()
+        rank = int(torch.searchsorted(fractions, config["retained_input_covariance_energy"])) + 1
+        expected = (support @ eigenvectors[:, : len(eigenvalues) - rank]).cpu()
+        public = projections["public_covariance"][site]["basis"]
+        assert torch.allclose(public @ public.T, expected @ expected.T, atol=1e-9, rtol=1e-9)
+        assert record["public_retained_rank"] == rank
+        assert record["public_tail_dimension"] == expected.shape[1]
+        assert math.isclose(
+            record["public_retained_input_energy"], float(fractions[rank - 1]), rel_tol=1e-10
+        )
+        delta = original.state_dict()[weight].double() - anchor.state_dict()[weight].double()
+        energy = float(delta.square().sum())
+        assert math.isclose(
+            record["oracle_task_weight_energy_fraction"],
+            float((delta @ v).square().sum()) / energy,
+            rel_tol=1e-10,
+        )
+        assert math.isclose(
+            record["public_task_weight_energy_fraction"],
+            float((delta @ public).square().sum()) / energy,
+            rel_tol=1e-10,
+            abs_tol=1e-15,
+        )
+        assert math.isclose(
+            record["public_noise_energy_removed_fraction"],
+            float((public.T @ v).square().sum()),
+            rel_tol=1e-10,
+            abs_tol=1e-15,
+        )
+        rms = (
+            float((delta @ v).norm()) * float(((x - mean.cuda()) @ v.cuda()).square().mean()) ** 0.5
+        )
+        assert math.isclose(record["oracle_local_output_rms"], rms, rel_tol=1e-9)
+        # Algebra check on physical matrices, not a protected classification run.
+        w, b = original.state_dict()[weight].double(), original.state_dict()[bias].double()
+        noise = directions[site]["outgoing"].double()[:, None] @ v[None, :]
+        projected = (delta @ v[:, None]) @ v[None, :]
+        projected_release = ((delta + noise) @ v[:, None]) @ v[None, :]
+        assert torch.allclose(w + noise - projected_release, w - projected, atol=1e-12, rtol=1e-12)
+        assert torch.allclose(
+            b - noise @ mean + projected_release @ mean,
+            b + projected @ mean,
+            atol=1e-10,
+            rtol=1e-10,
+        )
+    del activations
+    freeze = read("projection_freeze.json")
+    assert freeze["projections_sha256"] == meta["raw_sha256"]["projections.pt"]
+    assert freeze["selected_sites"] == selected
+    assert not freeze["future_partner_checkpoints_loaded"] and not freeze["labels_used"]
+    assert not freeze["public_projection_uses_defender_vectors"]
+    parent_protocol = json.loads((parent / "protocol.json").read_bytes())
+    indices = read("training_indices.json")
+    expected_indices = json.loads(
+        (Path(parent_protocol["replacement_parent"]) / "training_indices.json").read_bytes()
+    )["Cars"]["confirmation"]
+    assert indices == expected_indices and len(indices) == len(set(indices)) == 2048
+    package = types.ModuleType("dataset")
+    package.__path__ = [str(Path("external/secure-merge-attack/datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    data = get_dataset("Cars", original.val_preprocess, "data").train_dataset
+    labels = torch.tensor([y for _, y in data._samples])[indices]
+    predictions = torch.load(
+        path / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+    )
+    prior = torch.load(parent / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    rows = read("results.json")
+    assert len(rows) == len(predictions) == 6
+    for row in rows:
+        current = predictions[row["id"]]
+        assert torch.equal(current["labels"], labels)
+        correct = current["prediction"].eq(labels)
+        reference = prior[f"replacement_preflight/original/{row['group']}/Cars"]
+        assert row["correct"] == int(correct.sum()) and row["n"] == len(labels)
+        assert row["top1"] == row["correct"] / row["n"]
+        assert row["paired"] == paired_counts(reference["prediction"].eq(labels), correct)
+        if row["preset"] == "original":
+            assert torch.equal(current["prediction"], reference["prediction"])
+    fusion = json.loads(Path(config["fusion_config"]).read_bytes())
+    assert fusion["coefficient"] == config["coefficient"]
+    models = {name: load(str(root / name / "finetuned.pt")) for name in fusion["tasks"]}
+    models.update(Cars=original, anchor=anchor)
+    head = load(str(root / "head_Cars.pt"))
+    for preset in ["direction_oracle", "public_covariance"]:
+        own = projected_reset(original, anchor, projections[preset])
+        keys = {key for site in selected for key in matrix_keys(site)}
+        assert all(
+            torch.equal(value, original.state_dict()[key])
+            for key, value in own.state_dict().items()
+            if key not in keys
+        )
+        combined = merge_all(dict(models, Cars=own), root, config["coefficient"])
+        for group, model in [("standalone", own), ("fusion", combined)]:
+            output = []
+            evaluate(
+                model,
+                head,
+                make_loader(data, indices[:128]),
+                "cuda",
+                prediction_sink=lambda p, _y: output.append(p),
+            )
+            assert torch.equal(
+                torch.cat(output), predictions[f"{preset}/{group}"]["prediction"][:128]
+            )
+        del combined
+    result = dict(
+        status="passed",
+        raw_rows_checked=6,
+        projection_sites_checked=7,
+        public_covariance_projections_recomputed=True,
+        oracle_information_separate=True,
+        rank_one_erasure_algebra_verified=True,
+        source_and_checkpoint_pins_verified=True,
+        real_training_labels_verified=True,
+        original_prediction_replay_exact=True,
+        four_prefix_forward_replays_exact=True,
+        outside_projection_keys_exact=True,
+        protected_release_attack_validated=False,
+        results_sha256=sha(path / "results.json"),
+        validator_source_sha256=sha(__file__),
+    )
+    (path / "validation.json").write_text(json.dumps(result, indent=2) + "\n")
+    print("SUBSPACE_RECOVERY_VALIDATION", json.dumps(result), flush=True)
+    return result
+
+
 def validate_fine_subspace(path: Path):
     """Check held-out contrast, physical activations and achievable reset costs."""
     import sys
@@ -3905,6 +4106,7 @@ if __name__ == "__main__":
     mode.add_argument("--public-reset", action="store_true")
     mode.add_argument("--functional-contrast", action="store_true")
     mode.add_argument("--fine-subspace", action="store_true")
+    mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -3947,7 +4149,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_fine_subspace
+        validate_subspace_recovery
+        if args.subspace_recovery
+        else validate_fine_subspace
         if args.fine_subspace
         else validate_functional_contrast
         if args.functional_contrast
