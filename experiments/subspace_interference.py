@@ -18,7 +18,7 @@ from bounded_complement import angular_cleanup
 from clip_benchmark import checkpoint_loader, evaluate, merge, recover
 from mechanisms import load_author
 from nufilt_alignment import author_svd
-from operator_diagnostics import adjust_comparisons, paired_counts
+from operator_diagnostics import adjust_comparisons, paired_counts, replace_components
 from polynomial_probe import capture, reconstruct
 from subspace_probe import make_loader, save_json
 from torch.utils.data import DataLoader
@@ -437,12 +437,14 @@ def evaluate_saved(args):
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=False)
     (out / "artifacts").mkdir()
-    groups = ["direct", "aga_all", "pretrained_fc", "reconstruction_1"]
+    groups = args.recovery_groups or ["direct", "aga_all", "pretrained_fc", "reconstruction_1"]
+    assert len(groups) == len(set(groups))
     config.update(
         evaluation="Full official MNIST and SVHN test sets; one frozen candidate, no test selection",
         test_usage="fixed_full_test_evaluation",
         source_directory=str(source),
         recovery_groups=groups,
+        attack_scope="Additional frozen-release recovery checks; no new protection or tuning",
     )
     save_json(out / "protocol.json", config)
     torch.set_num_threads(4)
@@ -471,19 +473,24 @@ def evaluate_saved(args):
         for task, data in tests.items()
     }
     expected_labels = dict(MNIST=tests["MNIST"].targets, SVHN=torch.as_tensor(tests["SVHN"].labels))
-    train = (
-        MNIST(args.data, train=True, transform=original.val_preprocess)
-        if protected_task == "MNIST"
-        else SVHN(args.data, split="train", transform=original.val_preprocess)
-    )
-    attack_images = torch.stack(
-        [train[i][0] for i in indices[protected_task]["attack"][: config["attack_samples"]]]
-    )
-    author, _ = load_author(Path(args.author_repo) / "utils_attack_B32.py")
-    partner_output = out / "partner_aga"
-    partner_output.mkdir()
-    attacked_partner = recover(partner, anchor, author, partner_output)
+    attack_images = None
+    if "reconstruction_1" in groups:
+        train = (
+            MNIST(args.data, train=True, transform=original.val_preprocess)
+            if protected_task == "MNIST"
+            else SVHN(args.data, split="train", transform=original.val_preprocess)
+        )
+        attack_images = torch.stack(
+            [train[i][0] for i in indices[protected_task]["attack"][: config["attack_samples"]]]
+        )
+    author, attacked_partner = None, None
+    if "aga_all" in groups:
+        author, _ = load_author(Path(args.author_repo) / "utils_attack_B32.py")
+        partner_output = out / "partner_aga"
+        partner_output.mkdir()
+        attacked_partner = recover(partner, anchor, author, partner_output)
     rows, predictions, controls = [], {}, {}
+    support_checks, reset_control = {}, None
 
     def measure(preset, group, model):
         for task, loader in loaders.items():
@@ -521,11 +528,37 @@ def evaluate_saved(args):
                 restored = model
             elif group == "pretrained_fc":
                 restored = pretrained_fc(model, anchor, config["layers"])
+            elif group == "pretrained_mlp":
+                restored, keys = replace_components(model, anchor, config["layers"], "mlp")
+                if preset == "unprotected":
+                    reset_control = restored
+                else:
+                    changed_keys = [
+                        k
+                        for k, v in candidate.state_dict().items()
+                        if not torch.equal(v, original.state_dict()[k])
+                    ]
+                    assert set(changed_keys) <= set(keys)
+                    state = reset_control.state_dict()
+                    exact_equal = all(
+                        torch.equal(v, state[k]) for k, v in restored.state_dict().items()
+                    )
+                    assert exact_equal
+                    support_checks = dict(
+                        reset_keys=keys,
+                        changed_release_keys=changed_keys,
+                        all_release_edits_erased=True,
+                        restored_state_exactly_matches_reset_control=exact_equal,
+                        calibration_images=0,
+                        protected_original_available_to_attack=False,
+                        original_used_only_for_matched_control_and_support_audit=True,
+                        support_source="Four declared MLP blocks in the public protection method",
+                    )
             elif group == "aga_all":
                 recovery_output = out / f"{preset}_aga"
                 recovery_output.mkdir()
                 restored = recover(model, anchor, author, recovery_output)
-            else:
+            elif group == "reconstruction_1":
                 restored = copy.deepcopy(model).cpu().eval()
                 fitting = []
                 for layer in config["layers"]:
@@ -537,6 +570,8 @@ def evaluate_saved(args):
                     )
                     fitting.append(dict(layer=layer, **evidence))
                 save_json(out / f"{preset}_reconstruction_1.json", fitting)
+            else:
+                raise ValueError(group)
             measure(preset, group + "_standalone", restored)
             second = attacked_partner if group == "aga_all" else partner
             measure(preset, group, merge(anchor, restored, second, config["coefficient"]))
@@ -544,6 +579,15 @@ def evaluate_saved(args):
     save_json(out / "results.json", rows)
     prediction_file = out / "artifacts/predictions.pt"
     torch.save(predictions, prediction_file)
+    if support_checks:
+        for group in ["pretrained_mlp", "pretrained_mlp_standalone"]:
+            tasks = [protected_task] if group.endswith("_standalone") else list(tests)
+            for task in tasks:
+                a, b = predictions["unprotected", group, task], predictions[name, group, task]
+                assert torch.equal(a["prediction"], b["prediction"])
+                assert torch.equal(a["labels"], b["labels"])
+        support_checks["all_reset_predictions_exactly_match_control"] = True
+        save_json(out / "support_audit.json", support_checks)
     save_json(
         out / "metadata.json",
         dict(
@@ -570,6 +614,8 @@ def evaluate_saved(args):
             protection_recomputed=False,
             optimizer_steps=0,
             new_defense_validated=False,
+            support_reset_checked=bool(support_checks),
+            support_audit_sha256=digest(out / "support_audit.json") if support_checks else None,
         ),
     )
     print("INTERFERENCE_TEST_COMPLETE", flush=True)
@@ -585,6 +631,12 @@ if __name__ == "__main__":
     parser.add_argument("--data", default="data")
     parser.add_argument(
         "--evaluate-saved", help="Evaluate a frozen release directory on full tests."
+    )
+    parser.add_argument(
+        "--recovery-groups",
+        nargs="+",
+        choices=["direct", "aga_all", "pretrained_fc", "pretrained_mlp", "reconstruction_1"],
+        help="Choose explicitly reported recovery checks for --evaluate-saved.",
     )
     args = parser.parse_args()
     if args.evaluate_saved:

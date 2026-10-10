@@ -1546,7 +1546,14 @@ def validate_subspace_test(path: Path, write_report=True):
     task = config["protected_task"]
     name = config["presets"][0]["name"]
     groups = config["recovery_groups"]
-    assert groups == ["direct", "aga_all", "pretrained_fc", "reconstruction_1"]
+    assert groups and len(groups) == len(set(groups))
+    assert set(groups) <= {
+        "direct",
+        "aga_all",
+        "pretrained_fc",
+        "pretrained_mlp",
+        "reconstruction_1",
+    }
     expected = {(p, g, t) for p in ["unprotected", name] for g in groups for t in ["MNIST", "SVHN"]}
     expected.update((p, g + "_standalone", task) for p in ["unprotected", name] for g in groups)
     keyed = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
@@ -1577,6 +1584,20 @@ def validate_subspace_test(path: Path, write_report=True):
                 control["prediction"] == labels, pred == labels
             ).items():
                 assert abs(row["paired"][field] - value) < 1e-10
+            if row["group"].startswith("pretrained_mlp"):
+                assert torch.equal(pred, control["prediction"])
+    support_checked = "pretrained_mlp" in groups
+    if support_checked:
+        support_file = path / "support_audit.json"
+        assert meta["support_reset_checked"]
+        assert meta["support_audit_sha256"] == hashlib.sha256(support_file.read_bytes()).hexdigest()
+        support = json.loads(support_file.read_bytes())
+        assert support["all_release_edits_erased"]
+        assert support["restored_state_exactly_matches_reset_control"]
+        assert support["all_reset_predictions_exactly_match_control"]
+        assert set(support["changed_release_keys"]) <= set(support["reset_keys"])
+        assert support["calibration_images"] == 0
+        assert not support["protected_original_available_to_attack"]
     source = Path(config["source_directory"])
     source_checked = (source / "artifacts" / f"{name}.pt").is_file()
     if source_checked:
@@ -1593,6 +1614,7 @@ def validate_subspace_test(path: Path, write_report=True):
         rows=len(rows),
         raw_artifacts_checked=raw.exists(),
         frozen_release_checked=source_checked,
+        support_reset_checked=support_checked,
         new_defense_validated=False,
         results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
     )
