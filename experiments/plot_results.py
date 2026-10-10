@@ -785,6 +785,72 @@ def plot_distribution_shift(root: Path):
     print("SHIFT_FIGURE_WRITTEN", out)
 
 
+def plot_joint_transfer(root: Path):
+    """Show utility, every cheap attack and the ridge transfer fit separately."""
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    rows = json.loads((root / "results.json").read_bytes())
+    fits = json.loads((root / "fitting.json").read_bytes())
+    lookup = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
+    groups = json.loads((root / "protocol.json").read_bytes())["groups"]
+    fig, axes = plt.subplots(1, 3, figsize=(11.6, 3.4), layout="constrained")
+    presets = ["unprotected", "joint_transfer"]
+    values = [100 * lookup[p, "direct_standalone", "MNIST"]["top1"] for p in presets]
+    axes[0].bar(range(2), values, color=COLORS[:2], width=0.6)
+    for i, value in enumerate(values):
+        axes[0].text(i, value + 0.5, f"{value:.3f}", ha="center", fontsize=8)
+    axes[0].set(
+        xticks=range(2),
+        xticklabels=["Original", "Joint transfer"],
+        ylim=(90, 101),
+        ylabel="Accuracy (%)",
+        title="(a) Standalone MNIST (axis starts at 90%)",
+    )
+    x = np.arange(len(groups))
+    for i, preset in enumerate(presets):
+        scores = [100 * lookup[preset, g, "MNIST"]["top1"] for g in groups]
+        axes[1].plot(
+            x,
+            scores,
+            marker="o",
+            markersize=4,
+            color=COLORS[i],
+            label="Original" if i == 0 else "Joint transfer",
+        )
+    axes[1].set(
+        xticks=x,
+        xticklabels=["Direct", "FC", "MLP", "Attn", "Outputs", "A+M", "Sign\n+ MLP"],
+        ylim=(0, 105),
+        ylabel="Fusion MNIST (%)",
+        title="(b) Attacker chooses the best result",
+    )
+    axes[1].legend(loc="lower right", fontsize=7)
+    for name, label in [
+        ("residual_target_relative_error", "Transferred response"),
+        ("original_block_relative_error", "Whole block output"),
+    ]:
+        axes[2].plot(
+            [f["layer"] for f in fits],
+            [100 * f[name] for f in fits],
+            marker="o",
+            markersize=3,
+            label=label,
+        )
+    axes[2].set(
+        xlabel="Transformer block (0-based)",
+        ylabel="Relative fit error (%)",
+        title="(c) Unlabeled calibration, not accuracy",
+    )
+    axes[2].legend(fontsize=7)
+    for ax in axes:
+        ax.grid(axis="y", alpha=0.2)
+    fig.suptitle(
+        "CLIP ViT-B/32: frozen construction rejected; MNIST training confirmation, n=4000",
+        fontsize=10,
+    )
+    save(fig, out, "joint_transfer")
+
+
 def plot_redundancy_erasure(root: Path):
     rows = json.loads((root / "results.json").read_bytes())
     decision = json.loads((root / "decision.json").read_bytes())
@@ -1302,6 +1368,7 @@ if __name__ == "__main__":
     mode.add_argument("--subspace", action="store_true", help="Plot the standalone subspace probe.")
     mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
     mode.add_argument("--redundancy-erasure", action="store_true")
+    mode.add_argument("--joint-transfer", action="store_true")
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
     mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
     mode.add_argument(
@@ -1339,6 +1406,8 @@ if __name__ == "__main__":
         if args.operator_diagnostics
         else plot_redundancy_erasure
         if args.redundancy_erasure
+        else plot_joint_transfer
+        if args.joint_transfer
         else plot_distribution_shift
         if args.distribution_shift
         else plot_bounded_complement

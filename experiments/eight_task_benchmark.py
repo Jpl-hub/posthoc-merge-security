@@ -7,6 +7,7 @@ experts cause a hard stop; the task list is never reduced silently.
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import sys
@@ -15,7 +16,7 @@ import types
 from pathlib import Path
 
 import torch
-from clip_benchmark import checkpoint_loader, evaluate, protect, recover
+from clip_benchmark import checkpoint_loader, evaluate, protect, protect_params, recover
 from mechanisms import load_author, relative
 
 
@@ -211,11 +212,194 @@ def pretrained_checks(args, root, config, output):
         print("PRETRAINED_DATA_CHECK", json.dumps(row), flush=True)
 
 
+@torch.no_grad()
+def author_recover(model, anchor, author):
+    """Call both unchanged public entry functions in the author's order."""
+    result = copy.deepcopy(model).cpu().eval()
+    state = author["universal_attention_attack_params"](
+        defender_params=result.state_dict(),
+        anchor_params=anchor.state_dict(),
+        layer_indices=list(range(12)),
+        device="cuda",
+    )
+    assert set(state) == set(result.state_dict())
+    assert all(torch.isfinite(value).all() for value in state.values())
+    result.load_state_dict(state, strict=True)
+    return author["attack_vit_mlp_only"](result, anchor).cpu().eval()
+
+
+@torch.no_grad()
+def protection_checks(args, root, config, output):
+    """Protect one expert at a time; retain all eight experts in every fusion."""
+    from operator_diagnostics import paired_counts
+
+    assert args.protection == "params" and config["coefficient"] == 0.2
+    assert set(args.protection_checks) <= set(config["tasks"]) - {"EuroSAT"}
+    output.mkdir(parents=True, exist_ok=False)
+    (output / "artifacts").mkdir()
+    sources = json.loads(Path("configs/sources.json").read_bytes())
+    source = Path(args.params_source)
+    assert digest(source) == sources["PaRaMS"]["sha256"]
+    attack_source = Path(args.author_repo) / "utils_attack_B32.py"
+    assert digest(attack_source) == sources["AGA"]["sha256"]
+    protocol = dict(
+        config,
+        evaluation_tasks=args.protection_checks,
+        protection="official_PaRaMS",
+        params_max_iter=args.params_max_iter,
+        seed=args.seed,
+        protection_scope="one expert at a time",
+        attack_scope="author universal_attention_attack_params followed by attack_vit_mlp_only on that expert only",
+        missing_evaluation_task="EuroSAT",
+        table6_reproduction=False,
+        data_selection="fixed official test splits; no calibration or tuning on tests",
+        sources=sources,
+    )
+    (output / "protocol.json").write_text(json.dumps(protocol, indent=2), encoding="utf-8")
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    load = checkpoint_loader(Path(args.author_repo))
+    package = types.ModuleType("dataset")
+    package.__path__ = [str((Path(args.author_repo) / "datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    start = time.perf_counter()
+    author, _ = load_author(attack_source, include_wrappers=True)
+    anchor = load(str(root / "zeroshot.pt"))
+    models = {task: load(str(root / task / "finetuned.pt")) for task in config["tasks"]}
+    models["anchor"] = anchor
+    baseline = merge_all(models, root, config["coefficient"])
+    rows, audits, hashes = [], [], {}
+    for task in args.protection_checks:
+        current_start = time.perf_counter()
+        original = models[task]
+        head = load(str(root / f"head_{task}.pt"))
+        dataset = get_dataset(
+            task, anchor.val_preprocess, args.data, batch_size=args.batch_size, num_workers=2
+        )
+        assert len(dataset.test_dataset) == config["expected_test_counts"][task]
+        predictions = {}
+
+        def record(group, model, reference_group=None):
+            chunks, labels = [], []
+
+            def sink(pred, target):
+                chunks.append(pred.clone())
+                labels.append(target.clone())
+
+            score = evaluate(model, head, dataset.test_loader, "cuda", prediction_sink=sink)
+            pred, target = torch.cat(chunks), torch.cat(labels)
+            evidence = None
+            if reference_group is not None:
+                reference = predictions[reference_group]
+                assert torch.equal(target, reference["labels"])
+                evidence = paired_counts(reference["prediction"].eq(target), pred.eq(target))
+            predictions[group] = dict(prediction=pred, labels=target)
+            rows.append(
+                dict(
+                    stage="eight_expert_protection_check",
+                    group=group,
+                    dataset=task,
+                    protected_task=task,
+                    reference_group=reference_group,
+                    paired=evidence,
+                    merge_tasks=config["tasks"],
+                    coefficient=config["coefficient"],
+                    **score,
+                )
+            )
+            (output / "results.json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
+            print("PROTECTION_CHECK", task, group, score["correct"], score["n"], flush=True)
+
+        record("unprotected_standalone", original)
+        record("unprotected_merge", baseline)
+        protected = protect_params(original, anchor, source, args.seed, args.params_max_iter)
+        record("params_standalone", protected, "unprotected_standalone")
+        protected_merge = merge_all(dict(models, **{task: protected}), root, config["coefficient"])
+        record("params_merge", protected_merge, "unprotected_merge")
+        del protected_merge
+        recovered_original = author_recover(original, anchor, author)
+        record("AGA_unprotected_standalone", recovered_original, "unprotected_standalone")
+        recovered_merge = merge_all(
+            dict(models, **{task: recovered_original}), root, config["coefficient"]
+        )
+        record("AGA_unprotected_merge", recovered_merge, "unprotected_merge")
+        del recovered_merge, recovered_original
+        recovered_protected = author_recover(protected, anchor, author)
+        record("AGA_params_standalone", recovered_protected, "AGA_unprotected_standalone")
+        recovered_merge = merge_all(
+            dict(models, **{task: recovered_protected}), root, config["coefficient"]
+        )
+        record("AGA_params_merge", recovered_merge, "AGA_unprotected_merge")
+        for name, model in [("params", protected), ("AGA_params", recovered_protected)]:
+            state = {
+                layer: {
+                    key: value.detach().clone()
+                    for key, value in block.state_dict().items()
+                    if key.startswith(("attn.", "mlp."))
+                }
+                for layer, block in enumerate(model.model.visual.transformer.resblocks)
+            }
+            target = output / "artifacts" / f"{task}_{name}.pt"
+            torch.save(state, target)
+            hashes[target.name] = digest(target)
+        raw = output / "artifacts" / f"{task}_predictions.pt"
+        torch.save(predictions, raw)
+        hashes[raw.name] = digest(raw)
+        audits.append(
+            dict(
+                task=task,
+                seconds=time.perf_counter() - current_start,
+                utility_prediction_changes=int(
+                    predictions["params_standalone"]["prediction"]
+                    .ne(predictions["unprotected_standalone"]["prediction"])
+                    .sum()
+                ),
+            )
+        )
+        (output / "task_audits.json").write_text(json.dumps(audits, indent=2))
+        (output / "artifact_hashes.json").write_text(json.dumps(hashes, indent=2))
+        del protected, recovered_protected, recovered_merge, state, model
+    metadata = dict(
+        completed=True,
+        elapsed_seconds=time.perf_counter() - start,
+        source_sha256=digest(__file__),
+        helpers_sha256={
+            name: digest(Path(__file__).with_name(name))
+            for name in ["clip_benchmark.py", "mechanisms.py", "operator_diagnostics.py"]
+        },
+        protocol_sha256=digest(output / "protocol.json"),
+        upstream_source_sha256={"PaRaMS": digest(source), "AGA": digest(attack_source)},
+        checkpoint_sha256={
+            str(p.relative_to(root)): digest(p)
+            for p in [
+                root / "zeroshot.pt",
+                *[root / task / "finetuned.pt" for task in config["tasks"]],
+                *[root / f"head_{task}.pt" for task in args.protection_checks],
+            ]
+        },
+        evaluation_tasks=args.protection_checks,
+        merge_tasks=config["tasks"],
+        coefficient=config["coefficient"],
+        table6_reproduction=False,
+        eight_task_average_reported=False,
+        training="none; official data-free PaRaMS, one exact independent-group assignment pass",
+        gpu=torch.cuda.get_device_name(),
+    )
+    (output / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+    print("PROTECTION_CHECKS_COMPLETE", flush=True)
+
+
 def run(args):
     config = json.loads(Path(args.config).read_text(encoding="utf-8"))
     tasks = config["tasks"]
     assert len(tasks) == len(set(tasks)) == 8
     root, output = Path(args.checkpoints), Path(args.output)
+    if args.protection_checks:
+        protection_checks(args, root, config, output)
+        return
     output.mkdir(parents=True, exist_ok=True)
     required = [root / "zeroshot.pt"] + [
         path for task in tasks for path in [root / task / "finetuned.pt", root / f"head_{task}.pt"]
@@ -361,6 +545,14 @@ if __name__ == "__main__":
         choices=["DTD", "GTSRB", "RESISC45"],
         help="Only check prepared data/heads; not an eight-task benchmark.",
     )
+    checks.add_argument(
+        "--protection-checks",
+        nargs="+",
+        choices=["SUN397", "Cars", "RESISC45", "SVHN", "GTSRB", "MNIST", "DTD"],
+    )
+    parser.add_argument("--protection", choices=["basis", "params"], default="params")
+    parser.add_argument("--params-source", default="external/PaRaMS/src/PaRaMS/PaRaMS_algorithm.py")
+    parser.add_argument("--params-max-iter", type=int, default=1)
     parser.add_argument(
         "--protected-task",
         choices=["SUN397", "Cars", "RESISC45", "EuroSAT", "SVHN", "GTSRB", "MNIST", "DTD"],

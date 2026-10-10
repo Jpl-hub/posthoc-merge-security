@@ -1524,6 +1524,144 @@ def validate_reconstruction_context(path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_joint_transfer(path, write_report=True):
+    """Recount raw predictions and verify the frozen joint-transfer gate."""
+    import torch
+    from operator_diagnostics import paired_counts
+
+    config = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    indices = json.loads((path / "training_indices.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    decision = json.loads((path / "decision.json").read_bytes())
+    fitting = json.loads((path / "fitting.json").read_bytes())
+    assert meta["completed"] and not meta["new_defense_validated"]
+    assert config["test_usage"] == meta["test_usage"] == "none"
+    assert meta["optimizer_steps"] == 0 and meta["closed_form_defender_fits"] == 12
+    assert not meta["original_protected_checkpoint_available_to_attack"]
+    parent_file = Path(config["indices_parent"]) / "training_indices.json"
+    old_file = Path(config["exclude_confirmation"])
+    parent = json.loads(parent_file.read_bytes())
+    old = json.loads(old_file.read_bytes())
+    excluded = set(old["confirmation"]["MNIST"])
+    for subset in parent["MNIST"].values():
+        excluded.update(subset)
+    order = torch.randperm(60000, generator=torch.Generator().manual_seed(config["seed"])).tolist()
+    expected_indices = [i for i in order if i not in excluded][: config["confirmation_samples"]]
+    assert indices["confirmation"]["MNIST"] == expected_indices
+    assert indices["confirmation"]["SVHN"] == parent["SVHN"]["development"]
+    assert indices["calibration"] == parent["MNIST"]["calibration"]
+    for key, file in [
+        ("config_sha256", path / "protocol.json"),
+        ("indices_sha256", path / "training_indices.json"),
+        ("parent_indices_sha256", parent_file),
+        ("excluded_indices_sha256", old_file),
+        ("predictions_sha256", path / "artifacts/predictions.pt"),
+        ("release_sha256", path / "artifacts/release.pt"),
+    ]:
+        assert meta[key] == hashlib.sha256(file.read_bytes()).hexdigest()
+    expected = {
+        (p, g, t)
+        for p in ["unprotected", "joint_transfer"]
+        for stage in config["groups"]
+        for g, t in [(stage + "_standalone", "MNIST"), (stage, "MNIST"), (stage, "SVHN")]
+    }
+    lookup = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
+    saved = torch.load(path / "artifacts/predictions.pt", map_location="cpu", weights_only=False)
+    assert set(lookup) == set(saved) == expected
+    assert len(rows) == meta["evaluations"] == len(expected)
+    for key, row in lookup.items():
+        pred, target = saved[key]["prediction"], saved[key]["labels"]
+        reference = saved["unprotected", *key[1:]]
+        assert torch.equal(target, reference["labels"])
+        assert row["n"] == len(pred) == len(indices["confirmation"][row["dataset"]])
+        assert row["correct"] == int(pred.eq(target).sum())
+        assert row["top1"] == row["correct"] / row["n"]
+        assert row["paired"] == paired_counts(reference["prediction"].eq(target), pred.eq(target))
+        assert ((pred >= 0) & (pred < 10)).all()
+    loss = 100 * (
+        lookup["unprotected", "direct_standalone", "MNIST"]["top1"]
+        - lookup["joint_transfer", "direct_standalone", "MNIST"]["top1"]
+    )
+    gaps = {
+        g: 100
+        * (lookup["unprotected", g, "MNIST"]["top1"] - lookup["joint_transfer", g, "MNIST"]["top1"])
+        for g in config["groups"]
+    }
+    assert math.isclose(decision["utility_loss_pp"], loss, abs_tol=1e-10)
+    assert decision["matched_attack_gap_pp"] == gaps
+    best = {
+        p: max((lookup[p, g, "MNIST"] for g in config["groups"]), key=lambda r: r["top1"])
+        for p in ["unprotected", "joint_transfer"]
+    }
+    gap = 100 * (best["unprotected"]["top1"] - best["joint_transfer"]["top1"])
+    assert math.isclose(gap, decision["best_measured_attack_gap_pp"], abs_tol=1e-10)
+    for p, row in best.items():
+        assert decision["best_measured_attack"][p] == {
+            k: row[k] for k in ["group", "correct", "n", "top1"]
+        }
+    assert decision["passed_initial_gate"] == (
+        loss <= config["utility_budget_pp"] and gap >= config["minimum_attack_gap_pp"]
+    )
+    reset = "pretrained_attn_mlp_all"
+    cost = 100 * (
+        lookup["unprotected", "direct", "MNIST"]["top1"]
+        - lookup["joint_transfer", reset, "MNIST"]["top1"]
+    )
+    assert math.isclose(cost, decision["complete_support_reset_cost_pp"], abs_tol=1e-10)
+    assert meta["full_support_reset_parameters_and_predictions_exactly_equal"]
+    for g, t in [(reset, "MNIST"), (reset, "SVHN"), (reset + "_standalone", "MNIST")]:
+        assert torch.equal(
+            saved["unprotected", g, t]["prediction"], saved["joint_transfer", g, t]["prediction"]
+        )
+    release = torch.load(path / "artifacts/release.pt", map_location="cpu", weights_only=True)
+    assert set(release) == set(config["layers"]) == set(range(12))
+    suffixes = {
+        "attn.in_proj_weight",
+        "attn.in_proj_bias",
+        "attn.out_proj.weight",
+        "attn.out_proj.bias",
+        "mlp.c_fc.weight",
+        "mlp.c_fc.bias",
+        "mlp.c_proj.weight",
+        "mlp.c_proj.bias",
+    }
+    for state in release.values():
+        assert set(state) == suffixes and all(torch.isfinite(v).all() for v in state.values())
+    support = json.loads((path / "release_support.json").read_bytes())["keys"]
+    assert set(support) <= {
+        f"model.visual.transformer.resblocks.{layer}.{suffix}"
+        for layer in range(12)
+        for suffix in suffixes
+    }
+    assert len(fitting) == 12 and [f["layer"] for f in fitting] == list(range(12))
+    for fit in fitting:
+        assert fit["ridge"] > 0 and fit["normal_equation_relative_residual"] < 1e-8
+        for name in ["attention_input_projection", "mlp_input_projection"]:
+            assert fit[name]["rank"] == config["representation_rank"]
+            assert fit[name]["samples"] == config["calibration_samples"] * 50
+            assert fit[name]["parameter_span_residual"] < 1e-8
+    report = dict(
+        status="passed",
+        raw_predictions_checked=True,
+        evaluations=len(rows),
+        new_defense_validated=False,
+        results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+        checks=[
+            "frozen_protocol_and_artifact_hashes",
+            "fresh_disjoint_training_confirmation",
+            "all_raw_counts_and_paired_tables",
+            "complete_matched_controls",
+            "best_attack_envelope_gate",
+            "full_support_reset_prediction_identity",
+            "finite_release_and_projection_fits",
+        ],
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps(report))
+
+
 def validate_redundancy_erasure(path, write_report=True):
     """Validate the declared redundancy deletion and its raw paired outcomes."""
     import torch
@@ -2082,6 +2220,7 @@ if __name__ == "__main__":
     )
     mode.add_argument("--context-erasure", action="store_true", help="Validate context deletion.")
     mode.add_argument("--redundancy-erasure", action="store_true")
+    mode.add_argument("--joint-transfer", action="store_true")
     mode.add_argument("--subspace", action="store_true", help="Validate the subspace probe.")
     mode.add_argument(
         "--reconstruction-context",
@@ -2123,6 +2262,8 @@ if __name__ == "__main__":
         if args.context_erasure
         else validate_redundancy_erasure
         if args.redundancy_erasure
+        else validate_joint_transfer
+        if args.joint_transfer
         else validate_reconstruction_context
         if args.reconstruction_context
         else validate_reconstruction_budget

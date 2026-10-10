@@ -22,7 +22,7 @@ import torch.nn.functional as F
 from scipy.optimize import linear_sum_assignment
 
 
-def load_author(path):
+def load_author(path, include_wrappers=False):
     source = Path(path).read_text(encoding="utf-8")
     tree = ast.parse(source)
     names = {
@@ -30,10 +30,12 @@ def load_author(path):
         "solve_linear_transformation",
         "attack_attention_headwise_precise",
     }
+    if include_wrappers:
+        names |= {"universal_attention_attack_params", "attack_vit_mlp_only"}
     tree.body = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name in names]
-    from typing import Dict
+    from typing import Dict, Optional
 
-    env = dict(torch=torch, np=np, scipy=scipy, Dict=Dict)
+    env = dict(torch=torch, np=np, scipy=scipy, Dict=Dict, Optional=Optional)
     exec(compile(tree, str(path), "exec"), env)
     return env, hashlib.sha256(source.encode()).hexdigest()
 
