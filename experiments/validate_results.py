@@ -771,6 +771,103 @@ def validate_norm_cleanup(path: Path):
     print(json.dumps(report))
 
 
+def validate_readout_recovery(path, write_report=True):
+    """Check output-only recovery without treating training probes as final evidence."""
+    config = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    indices = json.loads((path / "training_indices.json").read_bytes())
+    fitting = json.loads((path / "fitting.json").read_bytes())
+    assert meta["completed"] and not meta["new_defense"]
+    assert meta["test_usage"] == config["test_usage"] == "none"
+    assert not meta["fitting_labels_used"] and meta["optimizer_steps"] == 0
+    assert meta["task_head_weights_exactly_equal"] and meta["task_head_biases_zero"]
+    for filename, field in [
+        ("protocol.json", "config_sha256"),
+        ("training_indices.json", "indices_sha256"),
+    ]:
+        assert meta[field] == hashlib.sha256((path / filename).read_bytes()).hexdigest()
+    parent = json.loads((Path(config["index_source"]) / "training_indices.json").read_bytes())
+    confirmation = json.loads(
+        (Path(config["confirmation_source"]) / "training_indices.json").read_bytes()
+    )
+    assert indices["confirmation"] == confirmation["confirmation"]
+    for task in ["MNIST", "SVHN"]:
+        assert indices["development"][task] == parent[task]["development"]
+        assert indices["fitting"][task] == parent[task]["attack"][:256]
+        assert len(set(indices["fitting"][task])) == 256
+        assert not set(indices["fitting"][task]).intersection(indices["development"][task])
+        assert not set(indices["fitting"][task]).intersection(parent[task]["calibration"])
+        assert not set(indices["fitting"][task]).intersection(indices["confirmation"].get(task, []))
+    presets = ["unprotected", "public_backbone", "readout_unprotected", "readout_protected"]
+    scopes = [
+        (s, g, t)
+        for s in ["development", "confirmation"]
+        for t in indices[s]
+        for g in ["standalone", "direct"]
+        if g == "direct" or t == "MNIST"
+    ]
+    expected = {(p, *scope) for p in presets for scope in scopes}
+    keyed = {(r["preset"], r["split"], r["group"], r["dataset"]): r for r in rows}
+    assert set(keyed) == expected and len(rows) == len(expected) == meta["new_evaluations"] == 20
+    for row in rows:
+        assert row["n"] == len(indices[row["split"]][row["dataset"]])
+        assert row["top1"] == row["correct"] / row["n"]
+        assert 0 <= row["correct"] <= row["n"]
+    assert {f["preset"] for f in fitting} == {"readout_unprotected", "readout_protected"}
+    for fit in fitting:
+        assert fit["images"] == 512 and fit["features"] == 768
+        assert fit["normal_equation_relative_residual"] < 1e-8
+        assert fit["head_mapping_relative_error"] < 1e-8
+        assert fit["merged_projection_relative_error"] < 1e-6
+    raw, targets = path / "artifacts/predictions.pt", path / "artifacts/teacher_predictions.pt"
+    if raw.exists():
+        import torch
+        from operator_diagnostics import paired_counts
+
+        assert meta["predictions_sha256"] == hashlib.sha256(raw.read_bytes()).hexdigest()
+        assert (
+            meta["teacher_predictions_sha256"] == hashlib.sha256(targets.read_bytes()).hexdigest()
+        )
+        teacher = torch.load(targets, map_location="cpu", weights_only=True)
+        a, b = teacher["readout_unprotected"], teacher["readout_protected"]
+        assert a.shape == b.shape == (512,) and torch.equal(a[256:], b[256:])
+        assert int((a != b).sum()) == meta["target_disagreement"]
+        assert math.isclose(meta["target_difference_frobenius"], (2 * int((a != b).sum())) ** 0.5)
+        saved = torch.load(raw, map_location="cpu", weights_only=False)
+        assert set(saved) == expected
+        for key, row in keyed.items():
+            pred, labels = saved[key]["prediction"], saved[key]["labels"]
+            assert int((pred == labels).sum()) == row["correct"]
+            assert len(pred) == len(labels) == row["n"]
+            control = saved["unprotected", *key[1:]]
+            assert torch.equal(labels, control["labels"])
+            for field, value in paired_counts(
+                control["prediction"] == labels, pred == labels
+            ).items():
+                assert abs(row["paired"][field] - value) < 1e-10
+            if row["preset"] == "readout_protected":
+                matched = saved["readout_unprotected", *key[1:]]
+                for field, value in paired_counts(
+                    matched["prediction"] == labels, pred == labels
+                ).items():
+                    assert abs(row["matched_recovery"][field] - value) < 1e-10
+                if meta["target_disagreement"] == 0:
+                    assert torch.equal(pred, matched["prediction"])
+    report = dict(
+        status="passed",
+        rows=len(rows),
+        raw_predictions_checked=raw.exists(),
+        ground_truth_labels_used_for_fitting=False,
+        test_usage="none",
+        new_defense=False,
+        results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2))
+    print(json.dumps(report))
+
+
 def validate_operator_diagnostics(path, write_report=True):
     meta = json.loads((path / "metadata.json").read_bytes())
     config_bytes = (path / "protocol.json").read_bytes()
@@ -1700,6 +1797,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--eight-task-resources", action="store_true")
+    mode.add_argument("--readout-recovery", action="store_true")
     mode.add_argument(
         "--subspace-test", action="store_true", help="Validate frozen-release full tests."
     )
@@ -1734,7 +1832,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_subspace_test
+        validate_readout_recovery
+        if args.readout_recovery
+        else validate_subspace_test
         if args.subspace_test
         else validate_eight_task_resources
         if args.eight_task_resources

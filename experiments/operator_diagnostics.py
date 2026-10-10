@@ -111,6 +111,252 @@ def signed_margin(logits, labels):
 
 
 @torch.no_grad()
+def query_readout(model, head, images, capture_features=False):
+    """Query predictions only; optional features come from the public student."""
+    from modeling import ImageClassifier
+    from utils import get_logits
+
+    features, predictions = [], []
+    handle = None
+    if capture_features:
+        handle = model.model.visual.ln_post.register_forward_hook(
+            lambda _m, _a, value: features.append(value.detach().cpu())
+        )
+    classifier = ImageClassifier(model, head).cuda().eval()
+    try:
+        for batch in images.split(32):
+            predictions.append(get_logits(batch.cuda(), classifier).argmax(-1).cpu())
+    finally:
+        if handle is not None:
+            handle.remove()
+        classifier.cpu()
+    prediction = torch.cat(predictions)
+    design = torch.cat(features).double().cuda() if capture_features else None
+    if design is not None:
+        assert design.shape == (len(images), 768)
+    return prediction, design
+
+
+@torch.no_grad()
+def run_readout(args):
+    """Compile hard predictions into one public backbone, then merge at fixed lambda.
+
+    This is a calibration-dependent functional recovery probe, not a new defense
+    or a complete implementation of a prior model merging method.
+    """
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    artifacts = out / "artifacts"
+    artifacts.mkdir()
+    protocol = Path(args.config).read_bytes()
+    config = json.loads(protocol)
+    assert config["task"] == "MNIST" and config["partner"] == "SVHN"
+    assert config["test_usage"] == "none" and config["samples_per_task"] == 256
+    (out / "protocol.json").write_bytes(protocol)
+    parent = Path(config["index_source"])
+    frozen = json.loads((parent / "training_indices.json").read_bytes())
+    confirmation = json.loads(
+        (Path(config["confirmation_source"]) / "training_indices.json").read_bytes()
+    )
+    indices = dict(
+        development={t: frozen[t]["development"] for t in ["MNIST", "SVHN"]},
+        confirmation=confirmation["confirmation"],
+        fitting={t: frozen[t]["attack"][:256] for t in ["MNIST", "SVHN"]},
+    )
+    for task in ["MNIST", "SVHN"]:
+        assert len(indices["fitting"][task]) == len(set(indices["fitting"][task])) == 256
+        assert not set(indices["fitting"][task]).intersection(indices["development"][task])
+        assert not set(indices["fitting"][task]).intersection(frozen[task]["calibration"])
+        assert not set(indices["fitting"][task]).intersection(indices["confirmation"].get(task, []))
+    save_json(out / "training_indices.json", indices)
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    load = checkpoint_loader(Path(args.author_repo))
+    root = Path(args.checkpoints)
+    anchor = load(str(root / "zeroshot.pt"))
+    original = load(str(root / "MNIST/finetuned.pt"))
+    partner = load(str(root / "SVHN/finetuned.pt"))
+    heads = {t: load(str(root / f"head_{t}.pt")) for t in ["MNIST", "SVHN"]}
+    assert torch.equal(heads["MNIST"].weight, heads["SVHN"].weight)
+    assert torch.equal(heads["MNIST"].bias, heads["SVHN"].bias)
+    assert torch.count_nonzero(heads["MNIST"].bias) == 0
+    release_file = Path(config["release"])
+    assert digest(release_file) == config["release_sha256"]
+    protected = copy.deepcopy(original).cpu().eval()
+    released = torch.load(release_file, map_location="cpu", weights_only=False)
+    for layer, state in released.items():
+        protected.model.visual.transformer.resblocks[layer].mlp.load_state_dict(state, strict=True)
+    training = dict(
+        MNIST=MNIST(args.data, train=True, transform=original.val_preprocess),
+        SVHN=SVHN(args.data, split="train", transform=original.val_preprocess),
+    )
+    loaders = {
+        (split, task): make_loader(training[task], subset)
+        for split in ["development", "confirmation"]
+        for task, subset in indices[split].items()
+    }
+    images = {t: torch.stack([training[t][i][0] for i in indices["fitting"][t]]) for t in training}
+    coefficient = config["coefficient"]
+    context = merge(anchor, anchor, partner, coefficient)
+    designs, targets, fit_rows = [], {}, []
+    for task in ["MNIST", "SVHN"]:
+        _, design = query_readout(context, heads[task], images[task], capture_features=True)
+        designs.append(design)
+    design = torch.cat(designs)
+    gram = design.T @ design
+    ridge = config["ridge_ratio"] * gram.trace() / len(design)
+    system = gram + ridge * torch.eye(gram.shape[0], device="cuda", dtype=torch.float64)
+    head = heads["MNIST"].weight.double().cuda()
+    right_inverse = torch.linalg.solve(head @ head.T, head)
+    assert torch.allclose(
+        head @ right_inverse.T,
+        torch.eye(10, device="cuda", dtype=torch.float64),
+        atol=1e-8,
+        rtol=1e-8,
+    )
+    public_projection = context.model.visual.proj.double().cuda()
+    partner_predictions, _ = query_readout(partner, heads["SVHN"], images["SVHN"])
+    rows, predictions, controls = [], {}, {}
+
+    def measure(preset, model, combined):
+        for split, task in loaders:
+            for group, evaluated in [("standalone", model), ("direct", combined)]:
+                if group == "standalone" and task != "MNIST":
+                    continue
+                p, y = [], []
+
+                def sink(pred, labels):
+                    p.append(pred)
+                    y.append(labels)
+
+                metric = evaluate(evaluated, heads[task], loaders[split, task], "cuda", sink)
+                pred, labels = torch.cat(p), torch.cat(y)
+                correct = pred == labels
+                key = split, group, task
+                if preset == "unprotected":
+                    controls[key] = correct
+                row = dict(
+                    preset=preset,
+                    split=split,
+                    group=group,
+                    dataset=task,
+                    coefficient=None if group == "standalone" else coefficient,
+                    paired=paired_counts(controls[key], correct),
+                    **metric,
+                )
+                if preset == "readout_protected":
+                    matched = predictions["readout_unprotected", *key]
+                    assert torch.equal(matched["labels"], labels)
+                    row["matched_recovery"] = paired_counts(
+                        matched["prediction"] == labels, correct
+                    )
+                rows.append(row)
+                predictions[preset, *key] = dict(prediction=pred, labels=labels)
+                save_json(out / "results.json", rows)
+                print(
+                    "READOUT_RESULT",
+                    preset,
+                    split,
+                    group,
+                    task,
+                    metric["correct"],
+                    metric["n"],
+                    flush=True,
+                )
+
+    measure("unprotected", original, merge(anchor, original, partner, coefficient))
+    measure("public_backbone", anchor, context)
+    for preset, teacher in [("readout_unprotected", original), ("readout_protected", protected)]:
+        own_predictions, _ = query_readout(teacher, heads["MNIST"], images["MNIST"])
+        classes = torch.cat([own_predictions, partner_predictions])
+        targets[preset] = classes
+        target = torch.nn.functional.one_hot(classes.cuda(), 10).double()
+        effective = torch.linalg.solve(system, design.T @ target)
+        residual = system @ effective - design.T @ target
+        normal_error = float(residual.norm() / (design.T @ target).norm().clamp_min(1e-30))
+        assert normal_error < 1e-8
+        projection = public_projection + (effective - public_projection @ head.T) @ right_inverse
+        mapping_error = float((projection @ head.T - effective).norm() / effective.norm())
+        assert mapping_error < 1e-8
+        restored = copy.deepcopy(anchor).cpu().eval()
+        a0, ap = anchor.model.visual.proj.double().cuda(), partner.model.visual.proj.double().cuda()
+        restored.model.visual.proj.copy_(
+            (a0 + (projection - a0 - coefficient * (ap - a0)) / coefficient).float().cpu()
+        )
+        combined = merge(anchor, restored, partner, coefficient)
+        projection_error = float(
+            (combined.model.visual.proj.double().cuda() - projection).norm() / projection.norm()
+        )
+        assert projection_error < 1e-6
+        fit_rows.append(
+            dict(
+                preset=preset,
+                images=len(design),
+                features=design.shape[1],
+                ridge=float(ridge),
+                normal_equation_relative_residual=normal_error,
+                head_mapping_relative_error=mapping_error,
+                merged_projection_relative_error=projection_error,
+                fit_correct=int((design @ effective).argmax(-1).cpu().eq(classes).sum()),
+            )
+        )
+        torch.save(restored.model.visual.proj.detach().cpu(), artifacts / f"{preset}_projection.pt")
+        measure(preset, restored, combined)
+    adjust_comparisons(rows)
+    save_json(out / "results.json", rows)
+    save_json(out / "fitting.json", fit_rows)
+    torch.save(predictions, artifacts / "predictions.pt")
+    torch.save(targets, artifacts / "teacher_predictions.pt")
+    disagreement = int((targets["readout_unprotected"] != targets["readout_protected"]).sum())
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            new_defense=False,
+            test_usage="none",
+            seed_count=1,
+            total_seconds=time.perf_counter() - start,
+            new_evaluations=len(rows),
+            fitting_labels_used=False,
+            teacher_signals="hard predictions only; no released hidden activations or original protected-task parameters",
+            target_disagreement=disagreement,
+            target_difference_frobenius=(2 * disagreement) ** 0.5,
+            public_features_source="anchor plus coefficient times the known SVHN task vector; frozen before teacher queries",
+            samples_per_task=256,
+            task_head_weights_exactly_equal=True,
+            task_head_biases_zero=True,
+            optimizer_steps=0,
+            parameter_fitting="ridge effective task readout, mapped into original visual projection; original head unchanged",
+            source_sha256=digest(__file__),
+            config_sha256=digest(out / "protocol.json"),
+            indices_sha256=digest(out / "training_indices.json"),
+            release_sha256=digest(release_file),
+            predictions_sha256=digest(artifacts / "predictions.pt"),
+            teacher_predictions_sha256=digest(artifacts / "teacher_predictions.pt"),
+            checkpoint_sha256={
+                str(p.relative_to(root)): digest(p)
+                for p in [
+                    root / "zeroshot.pt",
+                    root / "MNIST/finetuned.pt",
+                    root / "SVHN/finetuned.pt",
+                    root / "head_MNIST.pt",
+                    root / "head_SVHN.pt",
+                ]
+            },
+            helper_sha256={
+                p: digest(Path(__file__).with_name(p))
+                for p in ["clip_benchmark.py", "subspace_probe.py"]
+            },
+            threat_scope="One original-architecture merged ViT, not an ensemble or test-time routing; partner-specific, calibrated additional attack",
+            novelty="Existing linear readout distillation and least squares; mechanism stress test, no algorithmic novelty claim",
+        ),
+    )
+    print("READOUT_COMPLETE", flush=True)
+
+
+@torch.no_grad()
 def run_budget(args):
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=False)
@@ -808,9 +1054,12 @@ if __name__ == "__main__":
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--reconstruction-budget", action="store_true")
     mode.add_argument("--reconstruction-context", action="store_true")
+    mode.add_argument("--readout-recovery", action="store_true")
     args = parser.parse_args()
     (
-        run_context
+        run_readout
+        if args.readout_recovery
+        else run_context
         if args.reconstruction_context
         else run_budget
         if args.reconstruction_budget
