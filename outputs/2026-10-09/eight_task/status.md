@@ -4,16 +4,16 @@ ViT-B/32；任务顺序、TA 系数 0.2 按论文设置。当前尚无八任务�
 
 | 任务 | 官方专家权重 | 官方 classification head | 测试划分 |
 |---|---|---|---|
-| SUN397 | Drive 配额限制 | 已取得 | 第 1 分割；19,850，图片待准备 |
-| Cars | Drive 配额限制 | 已取得 | 官方 test；8,041，待准备 |
-| RESISC45 | Drive 配额限制 | 已取得 | 6,300；图片与原索引已核验，作者入口已全量推理 |
-| EuroSAT | Drive 配额限制 | 已取得 | 2,700；原随机索引待取得 |
+| SUN397 | 已从官方 Drive 取得 | 已取得 | 第 1 分割；19,850，图片待准备 |
+| Cars | 已从官方 Drive 取得 | 已取得 | 官方 test；8,041，待准备 |
+| RESISC45 | 已从官方 Drive 取得 | 已取得 | 6,300；图片与原索引已核验，作者入口已全量推理 |
+| EuroSAT | 已从官方 Drive 取得 | 已取得 | 2,700；原随机索引待取得 |
 | SVHN | 已验证 SHA256 | 已验证 SHA256 | 官方 test；26,032，已评价 |
-| GTSRB | Drive 配额限制 | 已取得 | 官方 test；12,630，原作者入口已全量推理 |
+| GTSRB | 已从官方 Drive 取得 | 已取得 | 官方 test；12,630，原作者入口已全量推理 |
 | MNIST | 已验证 SHA256 | 已验证 SHA256 | 官方 test；10,000，已评价 |
-| DTD | Drive 配额限制 | 已取得 | 第 1 分割；1,880，原作者入口已全量推理 |
+| DTD | 已从官方 Drive 取得 | 已取得 | 第 1 分割；1,880，原作者入口已全量推理 |
 
-官方 pretrained 权重已取得。来源、Drive ID、已有文件指纹在 `configs/checkpoints.json`。完整下载失败日志留在服务器；`preflight.json` 列出六个缺失专家。未用近似配置模型填补缺项。
+官方 pretrained 权重已取得。来源、Drive ID、已有文件指纹在 `configs/checkpoints.json`。历史下载失败日志留在服务器；10 月 10 日修复代理后，八个官方专家与全部 head 已齐备。未用近似配置模型填补缺项。
 
 Task Arithmetic 作者确认 DTD、SUN397 使用第 1 分割，EuroSAT 为 21,600/2,700/2,700 随机划分，但缺少可直接复用的原始索引。[作者说明](https://github.com/mlfoundations/task_vectors/issues/1#issuecomment-1419521679)
 
@@ -67,3 +67,15 @@ OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark
 10 月 10 日 00:06 再次重试：已有 11 个文件通过指纹检查，Cars、DTD、EuroSAT、GTSRB、RESISC45、SUN397 六个官方专家仍受 Drive 限制。[本次清单](../../2026-10-10/eight_task/retry_0006/checkpoint_manifest.json)。
 
 10 月 10 日 01:01 重试结果相同：六个缺失专家返回下载配额限制，11 个已有文件通过指纹检查。没有替换权重或缩减任务设置。[本次清单](../../2026-10-10/eight_task/retry_0101/checkpoint_manifest.json)。
+
+## 10 月 10 日：官方权重阻塞解除
+
+修复 4090 服务器的转发代理后，Cars、DTD、EuroSAT、GTSRB、RESISC45、SUN397 六个官方专家下载成功。共 17 个文件全部取得，来源仍是原作者 Drive ID。[成功下载清单](../../2026-10-10/eight_task/retry_proxy_1235_4090/checkpoint_manifest.json)。新文件的 SHA256 是首次成功取得后的固定指纹，不能表述为作者另行公布的校验值。八个专家形状均与原 pretrained 一致，数值有限，分类头类别数匹配；文件指纹核验入口为 `--verify-checkpoints`。
+
+Cars 使用固定版本公开图片镜像，逐文件核验 Git blob，并与原 devkit 的官方 MD5 及内容比较；准备仍在运行。SUN397 原网站返回 404，正在核查公开镜像图片标识与第 1 划分的对应关系。EuroSAT 缺少原作者随机索引，TorchGeo 或另采样的划分均不能直接作为原划分。资源检查与单专家准确率检查不计作八任务融合结果。
+
+```bash
+python experiments/eight_task_benchmark.py --verify-checkpoints --check-only --output outputs/checkpoint_check
+python experiments/eight_task_benchmark.py --expert-checks DTD GTSRB RESISC45 SVHN MNIST --output outputs/expert_check
+python experiments/prepare_eight_task_data.py --tasks Cars --output outputs/cars_data
+```

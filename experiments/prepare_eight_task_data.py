@@ -14,9 +14,11 @@ import importlib.util
 import json
 import shutil
 import stat
+import tarfile
 import zipfile
 from pathlib import Path
 from urllib.error import HTTPError
+from urllib.request import urlopen
 
 import torch
 from torchvision.datasets import DTD
@@ -71,6 +73,93 @@ def prepare_gtsrb(root, author_repo):
         test_index_sha256=hashlib.sha256(json.dumps(pairs).encode()).hexdigest(),
         source="original_AGA_PyTorchGTSRB_official_images_and_labels",
         source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+        calibration_usage="none",
+    )
+
+
+def prepare_cars(root, author_repo):
+    """Use a pinned image mirror, verify Git blobs and the original devkit."""
+    repo = "jhpohovey/StanfordCars-Dataset"
+    revision = "c7421951b5a2292c8951ef69394231be7fc32474"
+    resources = root / "stanford_cars_source"
+    resources.mkdir(parents=True, exist_ok=True)
+    manifest = resources / "git_tree.json"
+    if not manifest.exists():
+        url = f"https://api.github.com/repos/{repo}/git/trees/{revision}?recursive=1"
+        with urlopen(url, timeout=30) as response:
+            manifest.write_bytes(response.read())
+    tree = json.loads(manifest.read_bytes())
+    assert not tree["truncated"]
+    entries = [
+        e for e in tree["tree"] if e["type"] == "blob" and e["path"].startswith("stanford_cars/")
+    ]
+    assert len(entries) > 16185
+    archive = resources / "cars_mirror.zip"
+    extracted = resources / "extracted"
+    if not extracted.exists():
+        assert shutil.disk_usage(resources).free > 6 * 1024**3
+        download_url(
+            f"https://codeload.github.com/{repo}/zip/{revision}",
+            str(resources),
+            filename=archive.name,
+        )
+        with zipfile.ZipFile(archive) as zipped:
+            for member in zipped.infolist():
+                assert (extracted / member.filename).resolve().is_relative_to(extracted.resolve())
+                assert not stat.S_ISLNK(member.external_attr >> 16)
+            extracted.mkdir()
+            zipped.extractall(extracted)
+    source = extracted / f"StanfordCars-Dataset-{revision}"
+    for entry in entries:
+        payload = (source / entry["path"]).read_bytes()
+        assert len(payload) == entry["size"]
+        git_blob = hashlib.sha1(f"blob {len(payload)}\0".encode() + payload).hexdigest()
+        assert git_blob == entry["sha"], entry["path"]
+    devkit = resources / "car_devkit.tgz"
+    download_url(
+        "https://github.com/pytorch/vision/files/11644847/car_devkit.tgz",
+        str(resources),
+        filename=devkit.name,
+        md5="c3b158d763b6e2245038c8ad08e45376",
+    )
+    with tarfile.open(devkit) as tar:
+        for name in ["cars_meta.mat", "cars_train_annos.mat", "cars_test_annos.mat"]:
+            assert (
+                tar.extractfile(f"devkit/{name}").read()
+                == (source / "stanford_cars/devkit" / name).read_bytes()
+            )
+    destination = root / "stanford_cars"
+    if not destination.exists():
+        destination.symlink_to((source / "stanford_cars").resolve(), target_is_directory=True)
+    assert destination.resolve() == (source / "stanford_cars").resolve()
+    labelled_test = destination / "devkit/cars_test_annos_withlabels.mat"
+    if not labelled_test.exists():
+        labelled_test.symlink_to((destination / "cars_test_annos_withlabels.mat").resolve())
+    source_file = author_repo / "datasets/cars.py"
+    spec = importlib.util.spec_from_file_location("author_cars_data", source_file)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    datasets = {s: module.PytorchStanfordCars(str(root), split=s) for s in ["train", "test"]}
+    assert len(datasets["train"]) == 8144 and len(datasets["test"]) == 8041
+    assert datasets["train"].classes == datasets["test"].classes
+    assert len(datasets["test"].classes) == 196
+    pairs = [(Path(p).name, int(y)) for p, y in datasets["test"]._samples]
+    assert len({p for p, _ in pairs}) == 8041 and {y for _, y in pairs} == set(range(196))
+    assert all(Path(p).is_file() for d in datasets.values() for p, _ in d._samples)
+    return dict(
+        task="Cars",
+        status="ready",
+        train_count=8144,
+        test_count=8041,
+        source="pinned_public_image_mirror_original_annotations",
+        mirror_repository=repo,
+        mirror_revision=revision,
+        verified_git_blobs=len(entries),
+        devkit_original_md5_verified=True,
+        author_source_sha256=hashlib.sha256(source_file.read_bytes()).hexdigest(),
+        tree_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest(),
+        test_annotation_sha256=hashlib.sha256(labelled_test.read_bytes()).hexdigest(),
+        test_index_sha256=hashlib.sha256(json.dumps(pairs).encode()).hexdigest(),
         calibration_usage="none",
     )
 
@@ -220,6 +309,8 @@ def main(args):
                 row = prepare_dtd(root)
             elif task == "GTSRB":
                 row = prepare_gtsrb(root, Path(args.author_repo))
+            elif task == "Cars":
+                row = prepare_cars(root, Path(args.author_repo))
             else:
                 row = prepare_resisc_indices(root, Path(args.author_repo))
                 if args.resisc_images:
@@ -239,7 +330,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--tasks", nargs="+", choices=["DTD", "GTSRB", "RESISC45"], default=["DTD", "GTSRB"]
+        "--tasks", nargs="+", choices=["DTD", "GTSRB", "RESISC45", "Cars"], default=["DTD", "GTSRB"]
     )
     parser.add_argument("--data", default="data")
     parser.add_argument("--output", default="outputs/2026-10-09/eight_task/data_1810")
