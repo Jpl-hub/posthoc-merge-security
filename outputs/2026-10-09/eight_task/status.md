@@ -23,6 +23,8 @@
 
 单专家也与论文 Table 8 有差异，例如 DTD 为 79.41% 对 73.99%，RESISC45 为 96.11% 对 91.67%。因此应继续核对作者实际 checkpoint、head 与划分，而不能靠调融合系数填近表格。已取得文件来自 Task Arithmetic 官方 Drive；它们尚未被独立确认为 AGA 作者表格使用的精确文件。AGA 公开 README 没有提供这些实验文件的指纹。当前证据不足以确定差异原因。
 
+新增文献交叉核对：[TADrop v1 Table 1](https://arxiv.org/html/2508.06163v1) 的 ViT-B/32 Task Arithmetic 行，在七个就绪任务上为 SUN397 63.8、Cars 62.1、RESISC45 72.0、SVHN 74.4、GTSRB 65.1、MNIST 94.0、DTD 52.2，全部与本项目结果四舍五入到一位小数一致。它支持当前未保护融合计算的可信度，不证明两个项目用了相同文件，也不解决与 AGA Table 6 的差异。
+
 ## 资源来源与剩余阻塞
 
 17 个权重文件通过指纹、有限数值、专家结构与 head 类别数检查。[核验结果](../../2026-10-10/eight_task/expert_checks_1252/checkpoint_validation.json)。[下载清单](../../2026-10-10/eight_task/retry_proxy_1235_4090/checkpoint_manifest.json)与 `configs/checkpoints.json` 固定 Drive ID；新增 SHA256 是首次成功下载后的固定指纹，不是作者另行公布的校验值。
