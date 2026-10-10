@@ -2959,6 +2959,135 @@ def validate_task_profile(path: Path):
     return result
 
 
+def validate_public_reset(path: Path):
+    """Audit exact reset slices, unchanged parameters and reused original predictions."""
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader
+    from eight_task_benchmark import digest
+    from operator_diagnostics import paired_counts
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    config, meta, rows = read("protocol.json"), read("metadata.json"), read("results.json")
+    assert meta["completed"] and meta["fits"] == meta["optimizer_steps"] == 0
+    assert not meta["fresh_data"] and meta["test_usage"] == "none"
+    assert meta["source_sha256"] == digest("experiments/public_reset.py")
+    assert meta["config_sha256"] == digest("configs/relocation_public_reset.json")
+    for name, expected in meta["helper_sha256"].items():
+        assert digest(Path("experiments") / name) == expected
+    root = Path("checkpoints/ViT-B-32")
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert digest(root / name) == expected
+    parent = Path(config["parent"])
+    previous_meta = json.loads((parent / "metadata.json").read_bytes())
+    previous_file = parent / "artifacts/predictions.pt"
+    assert (
+        digest(previous_file)
+        == meta["parent_predictions_sha256"]
+        == previous_meta["predictions_sha256"]
+    )
+    assert previous_meta["source_sha256"] == meta["parent_source_sha256"]
+    indices = read("training_indices.json")
+    assert (
+        indices
+        == json.loads((parent / "training_indices.json").read_bytes())["Cars"]["confirmation"]
+    )
+    assert len(indices) == 2048
+    for name, key in [
+        ("predictions.pt", "predictions_sha256"),
+        ("public_reset.pt", "reset_sha256"),
+    ]:
+        assert digest(path / "artifacts" / name) == meta[key]
+    load = checkpoint_loader(Path("external/secure-merge-attack"))
+    original = load(str(root / "Cars/finetuned.pt")).state_dict()
+    anchor = load(str(root / "zeroshot.pt")).state_dict()
+    state = torch.load(path / "artifacts/public_reset.pt", map_location="cpu", weights_only=True)
+    assert state.keys() == original.keys() == anchor.keys()
+    expected_keys = {
+        f"model.visual.transformer.resblocks.{i}.{part}"
+        for i in [9, 10, 11]
+        for part in [
+            "attn.in_proj_weight",
+            "attn.in_proj_bias",
+            "attn.out_proj.weight",
+            "attn.out_proj.bias",
+            "mlp.c_fc.weight",
+            "mlp.c_fc.bias",
+            "mlp.c_proj.weight",
+            "mlp.c_proj.bias",
+        ]
+    }
+    support = read("support.json")
+    assert set(support) == expected_keys
+    for key, value in state.items():
+        if key not in support:
+            assert torch.equal(value, original[key])
+        else:
+            expected_slice = (
+                [1536, 2304]
+                if key.endswith(("attn.in_proj_weight", "attn.in_proj_bias"))
+                else [0, len(value)]
+            )
+            assert support[key] == expected_slice
+            start, end = expected_slice
+            assert torch.equal(value[start:end], anchor[key][start:end])
+            assert torch.equal(value[:start], original[key][:start])
+            assert torch.equal(value[end:], original[key][end:])
+    package = types.ModuleType("dataset")
+    package.__path__ = [str(Path("external/secure-merge-attack/datasets"))]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    dataset = get_dataset("Cars", None, "data").train_dataset
+    labels = torch.tensor([target for _, target in dataset._samples])[indices]
+    old = torch.load(previous_file, map_location="cpu", weights_only=True)
+    raw = torch.load(path / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    assert (
+        {(r["preset"], r["group"]) for r in rows}
+        == set(raw)
+        == {(p, g) for p in ["original", "public_reset"] for g in ["standalone", "fusion"]}
+    )
+    for row in rows:
+        evidence = raw[row["preset"], row["group"]]
+        reference = old[row["parent_control_id"]]
+        assert torch.equal(evidence["labels"], labels) and torch.equal(reference["labels"], labels)
+        correct = evidence["prediction"].eq(labels)
+        assert int(correct.sum()) == row["correct"] and row["n"] == 2048
+        assert row["top1"] == row["correct"] / 2048
+        assert row["paired"] == paired_counts(reference["prediction"].eq(labels), correct)
+        if row["preset"] == "original":
+            assert row["original_replay_exact"] and torch.equal(
+                evidence["prediction"], reference["prediction"]
+            )
+    loss = next(
+        r["paired"]["loss_pp"]
+        for r in rows
+        if r["preset"] == "public_reset" and r["group"] == "fusion"
+    )
+    decision = read("decision.json")
+    assert not decision["new_defense"]
+    assert decision["maximum_drop_from_original_direct_pp"] == loss
+    assert decision["proposed_support_can_meet_gap"] == (loss >= config["minimum_gap_pp"])
+    report = dict(
+        status="passed",
+        raw_rows_checked=4,
+        source_and_checkpoint_hashes_verified=True,
+        exact_reset_slices=24,
+        all_other_parameter_values_unchanged=True,
+        original_predictions_replayed_exactly=True,
+        dataset_labels_verified=True,
+        results_sha256=digest(path / "results.json"),
+        validator_source_sha256=digest(__file__),
+        scope="Conditional replacement floor for the proposed support, on reused training confirmation data. No tested protected model or official test claim.",
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
+    return report
+
+
 def validate_relocation_failure(path: Path):
     """Audit a stopped activation solve without inventing classification results."""
     import copy
@@ -3273,6 +3402,7 @@ if __name__ == "__main__":
     mode.add_argument("--task-support", action="store_true")
     mode.add_argument("--task-profile", action="store_true")
     mode.add_argument("--task-relocation", action="store_true")
+    mode.add_argument("--public-reset", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -3315,7 +3445,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_task_relocation
+        validate_public_reset
+        if args.public_reset
+        else validate_task_relocation
         if args.task_relocation
         else validate_task_profile
         if args.task_profile

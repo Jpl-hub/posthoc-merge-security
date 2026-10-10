@@ -24,6 +24,14 @@ U+M_0(\operatorname{LN}_2(U))=Y.
 
 结论是本次局部求解没有满足保持原计算的门槛，并非方程无解。事实上，正 epsilon 的 LN 使 \(M_0\circ\mathrm{LN}\) 连续且有界，\(Y-M_0(\mathrm{LN}(U))\) 在足够大的、以 \(Y\) 为中心的闭球内自映射，Brouwer 定理保证至少一个根；它不保证近邻求解稳定，也不保证该根可由 Attention 的线性输出投影表示。因此停止此构造，不继续调求解器或扩大攻击。
 
+完整支持替换也限制这条路线。若 \(P_B\) 只修改 block 9–11，架构、head 与区外参数保持原样，公开完整替换 \(R_B\) 满足
+
+\[
+R_B(P_B(\theta))=R_B(\theta).
+\]
+
+在本轮固定八专家、系数 0.2、2048 图确认协议中，攻击者因此至少能取得 1219/2048 =59.521% 的 Cars 融合准确率。相对原始直接融合 1346/2048 =65.723%，这种支持上的任何保护最多造成 6.201 pp 下降，距预定 5 pp 门槛只多 1.201 pp。这里比较的是原始直接融合；不是所有任务、融合伙伴、攻击预算或未保护最佳对照的一般上界。独立替换损失 11.475 pp 并不扩大这个空间。
+
 [构造停止记录](decision.json)、[原始逆解计数](artifacts/layer_9_inverse_failure.json)、[Anderson](root_diagnostic.json)、[Newton](newton_root_diagnostic.json)、[服务器核验](validation.json)、[冻结源码核验](source_validation.json)。构造源码 `e24df5f`；诊断及核验源码 `3e8143b`。原始张量约 44 MB、完整日志只在服务器。另保留[首次接口错误](../task_relocation_cars_setup_failure/failure.json)，修复后未改变配置或样本。
 
 [NUFILT](https://arxiv.org/html/2509.21413v2) 的 task vector 低秩结构是条件模型，并不保证本补空间对任务响应无影响；[GRAIL](https://arxiv.org/html/2602.23795v2) 已有闭式响应补偿。本构造未宣称创新性或有效安全性。后续机制需先解决稳定、可表示的跨模块任务依赖，并受完整支持替换基线约束。
