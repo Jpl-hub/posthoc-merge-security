@@ -1630,7 +1630,7 @@ def plot_fine_subspace(root: Path):
     axes[1].axhline(config["minimum_recovery_gap_pp"], color="0.5", ls="--", lw=0.8)
     axes[1].set(
         title="Public parameter replacement cost",
-        ylabel="Accuracy loss vs unprotected control (pp)",
+        ylabel="Accuracy loss (pp)",
         xticks=np.arange(4),
         xticklabels=["QKV", "MLP up", "8 neurons/layer", "Eligible union"],
         ylim=(0, 6),
@@ -1656,17 +1656,19 @@ def plot_subspace_recovery(root: Path):
     lookup = {(r["preset"], r["group"]): r for r in rows}
     presets = ["direction_oracle", "public_covariance"]
     for index, group in enumerate(["standalone", "fusion"]):
-        axes[0].bar(
+        bars = axes[0].bar(
             np.arange(2) + (index - 0.5) * 0.36,
             [lookup[preset, group]["paired"]["loss_pp"] for preset in presets],
             width=0.36,
             color=COLORS[index],
             label="Standalone" if group == "standalone" else "Eight-expert fusion",
         )
+        axes[0].bar_label(bars, fmt="%.3f", padding=3, fontsize=8)
     axes[0].axhline(0, color="0.5", lw=0.8)
     axes[0].set(
         title="Projection replacement cost",
-        ylabel="Accuracy loss vs unprotected control (pp)",
+        ylabel="Accuracy loss (pp)",
+        ylim=(-0.05, 1),
         xticks=np.arange(2),
         xticklabels=["Exact direction (oracle)", "Public covariance tail"],
     )

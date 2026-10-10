@@ -3628,6 +3628,123 @@ def validate_functional_contrast(path: Path):
     return result
 
 
+def validate_expert_omission(path: Path):
+    """Verify full-test discard controls with fixed partner coefficients."""
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader, evaluate
+    from eight_task_benchmark import digest as sha
+    from eight_task_benchmark import merge_all
+    from operator_diagnostics import paired_counts
+    from subspace_probe import make_loader
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    config, meta = read("protocol.json"), read("metadata.json")
+    assert meta["completed"] and not meta["protected_model_evaluated"]
+    assert not meta["coefficient_renormalized"]
+    assert meta["optimizer_steps"] == meta["response_fits"] == meta["calibration_samples"] == 0
+    assert sha(Path(__file__).with_name("expert_omission.py")) == meta["source_sha256"]
+    assert sha("configs/expert_omission.json") == meta["config_sha256"]
+    assert sha(config["fusion_config"]) == meta["fusion_config_sha256"]
+    for name, expected in meta["helper_sha256"].items():
+        assert sha(Path(__file__).with_name(name)) == expected
+    for name, expected in meta["raw_sha256"].items():
+        assert sha(path / "artifacts" / name) == expected
+    root = Path("checkpoints/ViT-B-32")
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert sha(root / name) == expected
+    parent = Path(config["parent"])
+    assert sha(parent / "artifacts/predictions.pt") == meta["parent_predictions_sha256"]
+    prior = torch.load(parent / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    predictions = torch.load(
+        path / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+    )
+    rows = read("results.json")
+    assert len(rows) == len(predictions) == 12
+    assert set(predictions) == {
+        f"{preset}/{task}" for preset in config["presets"] for task in config["tasks"]
+    }
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    load = checkpoint_loader(Path("external/secure-merge-attack"))
+    fusion = json.loads(Path(config["fusion_config"]).read_bytes())
+    assert config["coefficient"] == fusion["coefficient"] == 0.2
+    models = {task: load(str(root / task / "finetuned.pt")) for task in fusion["tasks"]}
+    models["anchor"] = load(str(root / "zeroshot.pt"))
+    package = types.ModuleType("dataset")
+    package.__path__ = [str(Path("external/secure-merge-attack/datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+    from task_vectors import TaskVector
+
+    zero = TaskVector(models["anchor"].state_dict(), models["anchor"].state_dict())
+    assert all(torch.count_nonzero(value) == 0 for value in zero.vector.values())
+    datasets = {
+        task: get_dataset(
+            task, models["anchor"].val_preprocess, "data", batch_size=128, num_workers=2
+        ).test_dataset
+        for task in config["tasks"]
+    }
+    heads = {task: load(str(root / f"head_{task}.pt")) for task in config["tasks"]}
+    for row in rows:
+        task = row["dataset"]
+        dataset = datasets[task]
+        labels = (
+            torch.tensor([y for _, y in dataset._samples])
+            if hasattr(dataset, "_samples")
+            else torch.as_tensor(dataset.targets)
+        )
+        current = predictions[row["id"]]
+        assert torch.equal(current["labels"], labels)
+        assert len(labels) == fusion["expected_test_counts"][task]
+        correct = current["prediction"].eq(labels)
+        reference = prior[f"original/direct/fusion/{task}"]
+        assert row["correct"] == int(correct.sum()) and row["n"] == len(labels)
+        assert row["top1"] == row["correct"] / row["n"]
+        assert row["paired"] == paired_counts(reference["prediction"].eq(labels), correct)
+        omitted = None if row["preset"] == "all_eight" else row["preset"].removeprefix("omit_")
+        assert row["omitted_expert"] == omitted
+        assert row["actual_nonzero_experts"] == (7 if omitted else 8)
+        if omitted is None:
+            assert torch.equal(current["prediction"], reference["prediction"])
+    for task in config["tasks"]:
+        combined = merge_all(dict(models, **{task: models["anchor"]}), root, config["coefficient"])
+        for dataset in config["tasks"]:
+            output = []
+            evaluate(
+                combined,
+                heads[dataset],
+                make_loader(datasets[dataset], list(range(128))),
+                "cuda",
+                prediction_sink=lambda p, _y: output.append(p),
+            )
+            assert torch.equal(
+                torch.cat(output), predictions[f"omit_{task}/{dataset}"]["prediction"][:128]
+            )
+        del combined
+    result = dict(
+        status="passed",
+        raw_rows_checked=12,
+        official_test_labels_verified=True,
+        three_original_full_prediction_replays_exact=True,
+        nine_omission_prefix_forward_replays_exact=True,
+        discarded_task_vector_exactly_zero=True,
+        source_and_checkpoint_pins_verified=True,
+        coefficient_renormalized=False,
+        protected_model_evaluated=False,
+        results_sha256=sha(path / "results.json"),
+        validator_source_sha256=sha(__file__),
+    )
+    (path / "validation.json").write_text(json.dumps(result, indent=2) + "\n")
+    print("EXPERT_OMISSION_VALIDATION", json.dumps(result), flush=True)
+    return result
+
+
 def validate_subspace_recovery(path: Path):
     """Audit projection costs, public construction and conditional erasure algebra."""
     import sys
@@ -4107,6 +4224,7 @@ if __name__ == "__main__":
     mode.add_argument("--functional-contrast", action="store_true")
     mode.add_argument("--fine-subspace", action="store_true")
     mode.add_argument("--subspace-recovery", action="store_true")
+    mode.add_argument("--expert-omission", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -4149,7 +4267,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_subspace_recovery
+        validate_expert_omission
+        if args.expert_omission
+        else validate_subspace_recovery
         if args.subspace_recovery
         else validate_fine_subspace
         if args.fine_subspace
