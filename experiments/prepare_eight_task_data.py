@@ -393,11 +393,13 @@ class VerifiedRangeReader:
         return result
 
 
-def prepare_sun397_images(root, indices, progress_path):
+def prepare_sun397_images(root, indices, progress_path, use_mirror=False):
     """Stream original archive, retain only partition 1, verify before linking."""
     source = root / "SUN397_sources"
     revision = indices["mirror_revision"]
     url = f"https://huggingface.co/zhengli97/SUN397_Dataset/resolve/{revision}/SUN397.tar.gz"
+    if use_mirror:
+        url = url.replace("https://huggingface.co/", "https://hf-mirror.com/")
     expected_sha = "f404130965a7ad77bed5ececc71e720ab50f3cc1e1bb257257610d38f3b928ec"
     # torchvision 0.18.0 SUN397's original dataset checksum.
     expected_md5 = "8ca2778205c41d23104230ba66911c7a"
@@ -491,6 +493,7 @@ def prepare_sun397_images(root, indices, progress_path):
         image_archive_sha256=expected_sha,
         image_archive_original_md5=expected_md5,
         image_archive_bytes=length,
+        image_archive_download_url=url,
         image_count=len(seen),
         selected_bytes=extracted_bytes,
         archive_stored=False,
@@ -517,7 +520,9 @@ def main(args):
             elif task == "SUN397":
                 row = prepare_sun397_indices(root, Path(args.author_repo))
                 if args.sun397_images:
-                    row = prepare_sun397_images(root, row, output / "stream_progress.json")
+                    row = prepare_sun397_images(
+                        root, row, output / "stream_progress.json", use_mirror=args.sun397_mirror
+                    )
             else:
                 row = prepare_resisc_indices(root, Path(args.author_repo))
                 if args.resisc_images:
@@ -553,5 +558,8 @@ if __name__ == "__main__":
     parser.add_argument("--resisc-images", action="store_true", help="Download and verify images.")
     parser.add_argument(
         "--sun397-images", action="store_true", help="Stream original archive, retain partition 1."
+    )
+    parser.add_argument(
+        "--sun397-mirror", action="store_true", help="Use mirror transport with the same checksums."
     )
     main(parser.parse_args())
