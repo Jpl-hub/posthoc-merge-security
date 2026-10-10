@@ -785,6 +785,51 @@ def plot_distribution_shift(root: Path):
     print("SHIFT_FIGURE_WRITTEN", out)
 
 
+def plot_response_transfer(root: Path):
+    """Plot diagnostic fits on a frozen release; these are not accuracy results."""
+    rows = json.loads((root / "results.json").read_text())
+    spectra = json.loads((root / "spectra.json").read_text())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    layers = [r["layer"] for r in spectra]
+    fig, axes = plt.subplots(1, 3, figsize=(11.5, 3.5))
+    for ax, subset, title in zip(
+        axes[:2],
+        ["calibration", "confirmation_prefix"],
+        ["Calibration: 256 training images", "Confirmation: 256 inspected images"],
+        strict=True,
+    ):
+        selected = {r["layer"]: r for r in rows if r["subset"] == subset}
+        for key, label, color in [
+            ("frozen", "Frozen ridge fit", COLORS[0]),
+            ("least_squares", "Diagnostic truncated LS", COLORS[1]),
+        ]:
+            values = [100 * selected[layer][key]["relative_teacher_error"] for layer in layers]
+            ax.plot(layers, values, marker="o", label=label, color=color)
+        ax.set(title=title, xlabel="Block", ylabel="Relative block error (%)", xticks=layers)
+        ax.set_yscale("log")
+        ax.grid(alpha=0.2)
+        ax.legend(fontsize=7)
+    axes[2].plot(
+        layers, [r["coefficient_norm_ratio"] for r in spectra], marker="o", color=COLORS[1]
+    )
+    axes[2].set(
+        title="Diagnostic coefficient amplification",
+        xlabel="Block",
+        ylabel="LS / frozen coefficient norm",
+        xticks=layers,
+    )
+    axes[2].set_yscale("log")
+    axes[2].grid(alpha=0.2)
+    fig.suptitle(
+        "Frozen response-transfer diagnosis: no new release or accuracy claim\n"
+        "All panels use logarithmic y scales; numerical truncation is not a rigorous error floor",
+        fontsize=9,
+    )
+    save(fig, out, "response_transfer_probe")
+    print("RESPONSE_TRANSFER_FIGURES_WRITTEN", out)
+
+
 def plot_joint_diagnostics(root: Path):
     """Keep calibration fit, classification and confirmation error separate."""
     protocol = json.loads((root / "protocol.json").read_bytes())
@@ -1496,6 +1541,7 @@ if __name__ == "__main__":
     mode.add_argument("--redundancy-erasure", action="store_true")
     mode.add_argument("--joint-transfer", action="store_true")
     mode.add_argument("--joint-diagnostics", action="store_true")
+    mode.add_argument("--response-transfer", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
     mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
@@ -1520,7 +1566,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_subspace_interference
+        plot_response_transfer
+        if args.response_transfer
+        else plot_subspace_interference
         if args.subspace_interference
         else plot_reconstruction_context
         if args.reconstruction_context
