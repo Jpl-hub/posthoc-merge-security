@@ -8,6 +8,7 @@
 
 - [MNIST／Cars／DTD 关键区域定位](outputs/2026-10-10/task_profile/summary.md)：Cars 9–11 层联合替换的独立损失 11.47 pp、八专家融合下降 6.20 pp；这是未保护模型的替换基线。
 - [Cars 局部响应迁移](outputs/2026-10-10/task_relocation_cars/summary.md)：只使用目标与公开预训练模型，首层逆解未收敛；无独立准确率、AGA 或防御成功结果。
+- [实际编辑支持的替换下限](outputs/2026-10-10/relocation_public_reset/summary.md)：V／Attention 输出／MLP 替换达到 60.11%；同支持保护相对当前原始融合最多下降 5.62 pp，未获得有效候选。
 - [10 月 11 日汇报](outputs/2026-10-11/report.md)与[讲稿](outputs/2026-10-11/talk.md)：10 月 10 日晚更新，围绕恢复漏洞和机制结论。
 - [目标专家任务定位](outputs/2026-10-10/task_support_mnist/summary.md)：仅 MNIST 选择，独立贡献不能替代融合恢复代价；未找到合格局部支持。
 - [四个完整 block 替换](outputs/2026-10-10/subspace_compensation_mnist_block_reset/summary.md)：同四块内、架构不变的编辑具有 96.34% 的条件恢复下限。
@@ -69,6 +70,8 @@ python experiments/validate_results.py --task-profile --output outputs/task_prof
 python experiments/task_relocation.py --config configs/task_relocation_cars.json --output outputs/cars_relocation
 python experiments/task_relocation.py --root-diagnostic --output outputs/cars_relocation
 python experiments/validate_results.py --task-relocation --output outputs/cars_relocation
+python experiments/public_reset.py --config configs/relocation_public_reset.json --output outputs/reset_floor
+python experiments/validate_results.py --public-reset --output outputs/reset_floor
 ```
 
 旧四层候选的保存与完整测试入口；后续恢复复用冻结保护，不重新生成；AGA 只运行受保护专家。双任务系数为 0.5，与七任务结果分开报告。

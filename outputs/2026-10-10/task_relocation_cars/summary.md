@@ -32,6 +32,8 @@ R_B(P_B(\theta))=R_B(\theta).
 
 在本轮固定八专家、系数 0.2、2048 图确认协议中，攻击者因此至少能取得 1219/2048 =59.521% 的 Cars 融合准确率。相对原始直接融合 1346/2048 =65.723%，这种支持上的任何保护最多造成 6.201 pp 下降，距预定 5 pp 门槛只多 1.201 pp。这里比较的是原始直接融合；不是所有任务、融合伙伴、攻击预算或未保护最佳对照的一般上界。独立替换损失 11.475 pp 并不扩大这个空间。
 
+随后只测一次[全部实际编辑支持的替换](../relocation_public_reset/summary.md)：仅 V、Attention 输出投影和 MLP，保留原 Q／K／LN，得到 1231/2048 =60.107% 融合。因此这条构造的下降上界进一步收紧至 5.615 pp；这是支持约束，尚未排除所有同支持构造，也不是有效防御结果。
+
 [构造停止记录](decision.json)、[原始逆解计数](artifacts/layer_9_inverse_failure.json)、[Anderson](root_diagnostic.json)、[Newton](newton_root_diagnostic.json)、[服务器核验](validation.json)、[冻结源码核验](source_validation.json)。构造源码 `e24df5f`；诊断及核验源码 `3e8143b`。原始张量约 44 MB、完整日志只在服务器。另保留[首次接口错误](../task_relocation_cars_setup_failure/failure.json)，修复后未改变配置或样本。
 
 [NUFILT](https://arxiv.org/html/2509.21413v2) 的 task vector 低秩结构是条件模型，并不保证本补空间对任务响应无影响；[GRAIL](https://arxiv.org/html/2602.23795v2) 已有闭式响应补偿。本构造未宣称创新性或有效安全性。后续机制需先解决稳定、可表示的跨模块任务依赖，并受完整支持替换基线约束。
