@@ -2469,10 +2469,132 @@ def validate_eight_task_resources(path: Path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_class_recompile(path: Path):
+    """Recount predictions and check the saved fit and class geometry independently."""
+    import torch
+    from operator_diagnostics import paired_counts
+
+    torch.set_num_threads(4)
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    meta, config, decision = read("metadata.json"), read("protocol.json"), read("decision.json")
+    rows, indices = read("results.json"), read("training_indices.json")
+    assert meta["completed"] and meta["optimizer_steps"] == 0 and meta["closed_form_fits"] == 1
+    assert not meta["calibration_labels_used"] and meta["test_usage"] == "none"
+    for filename, expected in meta["artifacts_sha256"].items():
+        assert hashlib.sha256((path / "artifacts" / filename).read_bytes()).hexdigest() == expected
+    assert (
+        hashlib.sha256(Path("experiments/class_response_recompile.py").read_bytes()).hexdigest()
+        == meta["source_sha256"]
+    )
+    assert (
+        hashlib.sha256(Path("configs/class_response_recompile.json").read_bytes()).hexdigest()
+        == meta["config_sha256"]
+    )
+    for filename, expected in meta["helpers_sha256"].items():
+        assert hashlib.sha256((Path("experiments") / filename).read_bytes()).hexdigest() == expected
+    calibration, confirmation = set(indices["calibration"]), set(indices["confirmation"]["MNIST"])
+    assert len(calibration) == config["calibration_samples"]
+    assert len(confirmation) == config["confirmation_samples"] and not calibration & confirmation
+    parent = json.loads((Path(config["index_parent"]) / "training_indices.json").read_bytes())
+    previous = set().union(*(set(v) for v in parent["MNIST"].values()))
+    for folder in config["exclude_confirmations"]:
+        previous.update(
+            json.loads((Path(folder) / "training_indices.json").read_bytes())["confirmation"][
+                "MNIST"
+            ]
+        )
+    assert not (calibration | confirmation) & previous
+    assert indices["confirmation"]["SVHN"] == parent["SVHN"]["development"]
+    predictions = torch.load(
+        path / "artifacts/predictions.pt", map_location="cpu", weights_only=False
+    )
+    assert len(predictions) == len(rows)
+    for row in rows:
+        item = predictions[row["preset"], row["group"], row["dataset"]]
+        p, y = item["prediction"], item["labels"]
+        ref = predictions["unprotected", row["group"], row["dataset"]]
+        assert torch.equal(y, ref["labels"])
+        assert row["n"] == len(y) == len(indices["confirmation"][row["dataset"]])
+        assert row["correct"] == int(p.eq(y).sum()) and row["top1"] == row["correct"] / row["n"]
+        assert row["paired"] == paired_counts(ref["prediction"].eq(y), p.eq(y))
+    utility = {r["preset"]: r["top1"] for r in rows if r["group"] == "standalone"}
+    loss = 100 * (utility["unprotected"] - utility["recompiled"])
+    assert math.isclose(loss, decision["utility_loss_pp"], abs_tol=1e-12)
+    assert decision["utility_passed"] == (loss <= config["utility_budget_pp"])
+    assert len(rows) == (2 + 4 * len(config["groups"]) if decision["utility_passed"] else 2)
+    if decision["utility_passed"]:
+        best = {
+            p: max(
+                r["top1"]
+                for r in rows
+                if r["preset"] == p and r["group"] != "standalone" and r["dataset"] == "MNIST"
+            )
+            for p in utility
+        }
+        gap = 100 * (best["unprotected"] - best["recompiled"])
+        assert math.isclose(gap, decision["best_measured_attack_gap_pp"], abs_tol=1e-12)
+        assert decision["attack_gate_passed"] == (gap >= config["minimum_attack_gap_pp"])
+        for task in indices["confirmation"]:
+            a = predictions["unprotected", "pretrained_attn_mlp_all", task]["prediction"]
+            b = predictions["recompiled", "pretrained_attn_mlp_all", task]["prediction"]
+            assert torch.equal(a, b)
+    else:
+        assert read("attack_audits.json") == []
+    assert not decision["new_defense_validated"] and not decision["functional_recovery_tested"]
+    fit = torch.load(path / "artifacts/fitting.pt", map_location="cpu", weights_only=False)
+    h, target, delta = fit["design"], fit["target_delta"], fit["update"]
+    ridge = config["ridge_ratio"] * h.square().sum() / len(h)
+    normal_error = float(
+        (h.T @ (h @ delta - target) + ridge * delta).norm() / (h.T @ target).norm().clamp_min(1e-30)
+    )
+    assert normal_error < 1e-8
+
+    def unit(z):
+        center = z - z.mean(1, keepdim=True)
+        return center / (center.square().mean(1, keepdim=True) + fit["epsilon"]).sqrt()
+
+    response_error = float(
+        (
+            unit(fit["target"]) @ fit["class_directions"]
+            - unit(fit["teacher"]) @ fit["class_directions"]
+        ).norm()
+        / (unit(fit["teacher"]) @ fit["class_directions"]).norm()
+    )
+    assert response_error < 1e-10
+    for operation in [
+        lambda z: z.mean(1),
+        lambda z: (z - z.mean(1, keepdim=True)).square().mean(1),
+    ]:
+        assert torch.allclose(
+            operation(fit["target"]), operation(fit["base"]), rtol=1e-10, atol=1e-10
+        )
+    release = torch.load(path / "artifacts/release.pt", map_location="cpu", weights_only=False)
+    output = fit["before"].float() + delta.float()
+    assert torch.equal(release[11]["mlp.c_proj.weight"], output[:-1].T)
+    assert torch.equal(release[11]["mlp.c_proj.bias"], output[-1])
+    report = dict(
+        status="passed",
+        raw_prediction_rows_checked=len(rows),
+        excluded_subsets_checked=True,
+        normal_equation_relative_residual=normal_error,
+        exact_target_response_relative_error=response_error,
+        artifacts_sha256=meta["artifacts_sha256"],
+        utility_gate_verified=True,
+        new_defense_validated=False,
+        functional_recovery_tested=False,
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
     mode.add_argument("--readout-recovery", action="store_true")
@@ -2514,7 +2636,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_readout_stability
+        validate_class_recompile
+        if args.class_recompile
+        else validate_readout_stability
         if args.readout_stability
         else validate_readout_recovery
         if args.readout_recovery
