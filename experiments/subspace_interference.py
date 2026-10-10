@@ -300,6 +300,26 @@ def run(args):
                     anchor_cosine=cosine,
                 )
             )
+        if config.get("output_compensation", False):
+            fitting = []
+            # Match the original function on calibration inputs while retaining E.
+            # This is explicit closed-form parameter fitting, not extra fine-tuning.
+            for layer in config["layers"]:
+                fitted, evidence = reconstruct(
+                    original,
+                    anchor,
+                    images,
+                    layer,
+                    config["compensation_ridge_ratio"],
+                    solver="auto",
+                    feature_model=candidate,
+                    input_model=original,
+                )
+                candidate.model.visual.transformer.resblocks[layer].mlp.load_state_dict(
+                    fitted.model.visual.transformer.resblocks[layer].mlp.state_dict()
+                )
+                fitting.append(dict(layer=layer, **evidence))
+            save_json(out / f"{name}_defender_compensation.json", fitting)
         torch.save(
             {
                 layer: candidate.model.visual.transformer.resblocks[layer].mlp.state_dict()
@@ -370,6 +390,11 @@ def run(args):
             seed_count=1,
             calibration_labels_used=False,
             optimizer_steps=0,
+            defender_parameter_fitting=(
+                "closed-form output compensation on 256 unlabeled calibration images"
+                if config.get("output_compensation", False)
+                else "none"
+            ),
         ),
     )
     print("INTERFERENCE_COMPLETE", flush=True)
