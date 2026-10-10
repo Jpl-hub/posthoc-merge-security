@@ -785,6 +785,61 @@ def plot_distribution_shift(root: Path):
     print("SHIFT_FIGURE_WRITTEN", out)
 
 
+def plot_eight_protection(root: Path):
+    """Plot per-task author-AGA controls without an incomplete eight-task mean."""
+    rows = json.loads((root / "results.json").read_bytes())
+    protocol = json.loads((root / "protocol.json").read_bytes())
+    assert len(rows) == 56 and not protocol["table6_reproduction"]
+    tasks = protocol["evaluation_tasks"]
+    keyed = {(r["dataset"], r["group"]): r["top1"] * 100 for r in rows}
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(
+        1, 2, figsize=(10.5, 3.25), layout="constrained", width_ratios=[2.8, 1]
+    )
+    groups = ["unprotected_merge", "params_merge", "AGA_unprotected_merge", "AGA_params_merge"]
+    labels = ["Unprotected", "PaRaMS", "AGA on unprotected", "AGA on PaRaMS"]
+    positions = np.arange(len(tasks))
+    for idx, (group, label) in enumerate(zip(groups, labels, strict=True)):
+        values = [keyed[t, group] for t in tasks]
+        axes[0].bar(
+            positions + (idx - 1.5) * 0.2, values, width=0.18, color=COLORS[idx], label=label
+        )
+    axes[0].set(
+        xticks=positions,
+        xticklabels=tasks,
+        ylim=(0, 105),
+        ylabel="Task accuracy (%)",
+        title="Eight experts fused; protect and attack one expert at a time",
+    )
+    axes[0].tick_params(axis="x", rotation=20)
+    axes[0].grid(axis="y", alpha=0.2)
+    utility = [keyed[t, "unprotected_standalone"] - keyed[t, "params_standalone"] for t in tasks]
+    gap = [keyed[t, "AGA_unprotected_merge"] - keyed[t, "AGA_params_merge"] for t in tasks]
+    axes[1].plot(positions, utility, "o-", color=COLORS[1], label="Standalone loss")
+    axes[1].plot(positions, gap, "s--", color=COLORS[3], label="Matched AGA gap")
+    bound = max(0.6, max(abs(v) for v in utility + gap) * 1.2)
+    axes[1].set(
+        xticks=positions,
+        xticklabels=tasks,
+        ylim=(-bound, bound),
+        ylabel="Difference (percentage points)",
+        title="Matched differences",
+    )
+    axes[1].tick_params(axis="x", rotation=60)
+    axes[1].axhline(0, color="0.65", linewidth=0.7)
+    axes[1].grid(axis="y", alpha=0.2)
+    axes[1].legend(fontsize=7, loc="upper right")
+    fig.legend(*axes[0].get_legend_handles_labels(), loc="outside lower center", ncol=4)
+    fig.suptitle(
+        "Official PaRaMS and author AGA: seven full test splits, TA coefficient 0.2\n"
+        "EuroSAT split unresolved; supplementary check, not Table 6 reproduction",
+        fontsize=9,
+    )
+    save(fig, out, "params_seven_protection")
+    print("EIGHT_PROTECTION_FIGURES_WRITTEN", out)
+
+
 def plot_joint_transfer(root: Path):
     """Show utility, every cheap attack and the ridge transfer fit separately."""
     out = root / "figures"
@@ -1369,6 +1424,7 @@ if __name__ == "__main__":
     mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
     mode.add_argument("--redundancy-erasure", action="store_true")
     mode.add_argument("--joint-transfer", action="store_true")
+    mode.add_argument("--eight-protection", action="store_true")
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
     mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
     mode.add_argument(
@@ -1408,6 +1464,8 @@ if __name__ == "__main__":
         if args.redundancy_erasure
         else plot_joint_transfer
         if args.joint_transfer
+        else plot_eight_protection
+        if args.eight_protection
         else plot_distribution_shift
         if args.distribution_shift
         else plot_bounded_complement

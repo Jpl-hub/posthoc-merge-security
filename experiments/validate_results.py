@@ -2143,6 +2143,156 @@ def validate_subspace_test(path: Path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_eight_protection(path: Path, write_report=True):
+    """Audit each protected expert against its matching author-AGA control."""
+    import torch
+    from operator_diagnostics import paired_counts
+
+    config = json.loads(Path("configs/eight_tasks.json").read_bytes())
+    protocol = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    audits = json.loads((path / "task_audits.json").read_bytes())
+    hashes = json.loads((path / "artifact_hashes.json").read_bytes())
+    sources = json.loads(Path("configs/sources.json").read_bytes())
+    expected_hashes = {
+        entry["path"].removeprefix("ViT-B-32/"): entry["sha256"]
+        for entry in json.loads(Path("configs/checkpoints.json").read_bytes())["files"]
+    }
+    tasks = protocol["evaluation_tasks"]
+    assert len(tasks) == len(set(tasks)) == 7
+    assert set(tasks) == set(config["tasks"]) - {"EuroSAT"}
+    assert meta["completed"] and not meta["table6_reproduction"]
+    assert not meta["eight_task_average_reported"] and not protocol["table6_reproduction"]
+    assert protocol["tasks"] == meta["merge_tasks"] == config["tasks"]
+    assert protocol["coefficient"] == meta["coefficient"] == config["coefficient"] == 0.2
+    assert protocol["missing_evaluation_task"] == "EuroSAT"
+    assert protocol["protection"] == "official_PaRaMS" and protocol["params_max_iter"] == 1
+    assert protocol["protection_scope"] == "one expert at a time"
+    assert protocol["sources"] == sources
+    assert meta["evaluation_tasks"] == tasks
+    assert (
+        meta["protocol_sha256"] == hashlib.sha256((path / "protocol.json").read_bytes()).hexdigest()
+    )
+    assert (
+        meta["source_sha256"]
+        == hashlib.sha256(Path("experiments/eight_task_benchmark.py").read_bytes()).hexdigest()
+    )
+    for name, value in meta["helpers_sha256"].items():
+        assert value == hashlib.sha256((Path("experiments") / name).read_bytes()).hexdigest()
+    assert meta["upstream_source_sha256"]["PaRaMS"] == sources["PaRaMS"]["sha256"]
+    assert meta["upstream_normalized_source_sha256"]["AGA"] == sources["AGA"]["sha256"]
+    required = (
+        {"zeroshot.pt"}
+        | {f"{t}/finetuned.pt" for t in config["tasks"]}
+        | {f"head_{t}.pt" for t in tasks}
+    )
+    assert set(meta["checkpoint_sha256"]) == required
+    for name, value in meta["checkpoint_sha256"].items():
+        assert value == expected_hashes[name]
+    references = {
+        "unprotected_standalone": None,
+        "unprotected_merge": None,
+        "params_standalone": "unprotected_standalone",
+        "params_merge": "unprotected_merge",
+        "AGA_unprotected_standalone": "unprotected_standalone",
+        "AGA_unprotected_merge": "unprotected_merge",
+        "AGA_params_standalone": "AGA_unprotected_standalone",
+        "AGA_params_merge": "AGA_unprotected_merge",
+    }
+    assert len(rows) == 56 and len(audits) == 7 and len(hashes) == 21
+    assert [a["task"] for a in audits] == tasks
+    assert len({(r["dataset"], r["group"]) for r in rows}) == 56
+    evidence = []
+    block_keys = {
+        "attn.in_proj_weight",
+        "attn.in_proj_bias",
+        "attn.out_proj.weight",
+        "attn.out_proj.bias",
+        "mlp.c_fc.weight",
+        "mlp.c_fc.bias",
+        "mlp.c_proj.weight",
+        "mlp.c_proj.bias",
+    }
+    for task, audit in zip(tasks, audits, strict=True):
+        for suffix in ["params", "AGA_params", "predictions"]:
+            raw = path / "artifacts" / f"{task}_{suffix}.pt"
+            assert hashlib.sha256(raw.read_bytes()).hexdigest() == hashes[raw.name]
+            saved = torch.load(raw, map_location="cpu", weights_only=True)
+            if suffix != "predictions":
+                assert set(saved) == set(range(12))
+                assert all(set(block) == block_keys for block in saved.values())
+                assert all(
+                    torch.isfinite(v).all() for block in saved.values() for v in block.values()
+                )
+        assert set(saved) == set(references)
+        task_rows = [r for r in rows if r["dataset"] == task]
+        assert [r["group"] for r in task_rows] == list(references)
+        target = saved["unprotected_standalone"]["labels"]
+        for row in task_rows:
+            group = row["group"]
+            pred, labels = saved[group]["prediction"], saved[group]["labels"]
+            assert row["stage"] == "eight_expert_protection_check"
+            assert row["protected_task"] == task and row["merge_tasks"] == config["tasks"]
+            assert row["coefficient"] == 0.2 and row["n"] == config["expected_test_counts"][task]
+            assert pred.shape == labels.shape == (row["n"],) and torch.equal(labels, target)
+            assert int(pred.eq(labels).sum()) == row["correct"]
+            assert row["top1"] == row["correct"] / row["n"]
+            assert row["reference_group"] == references[group]
+            if references[group] is None:
+                assert row["paired"] is None
+            else:
+                ref = saved[references[group]]["prediction"]
+                assert row["paired"] == paired_counts(ref.eq(labels), pred.eq(labels))
+        changes = int(
+            saved["params_standalone"]["prediction"]
+            .ne(saved["unprotected_standalone"]["prediction"])
+            .sum()
+        )
+        assert audit["utility_prediction_changes"] == changes
+        evidence.append(
+            dict(
+                task=task,
+                n=len(target),
+                utility_prediction_changes=changes,
+                aga_merge_prediction_changes=int(
+                    saved["AGA_params_merge"]["prediction"]
+                    .ne(saved["AGA_unprotected_merge"]["prediction"])
+                    .sum()
+                ),
+                aga_standalone_prediction_changes=int(
+                    saved["AGA_params_standalone"]["prediction"]
+                    .ne(saved["AGA_unprotected_standalone"]["prediction"])
+                    .sum()
+                ),
+            )
+        )
+    report = dict(
+        status="passed",
+        rows=len(rows),
+        protected_experts=len(tasks),
+        examples_per_group=sum(config["expected_test_counts"][t] for t in tasks),
+        raw_predictions_checked=True,
+        artifact_hashes_checked=21,
+        results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+        matched_prediction_evidence=evidence,
+        checks=[
+            "fixed eight-expert fusion and coefficient",
+            "seven full official test splits",
+            "paired prediction counts",
+            "raw artifact hashes and finite block states",
+            "author source pins with explicit line-ending normalization",
+            "frozen runner/helper source hashes",
+            "all input checkpoint manifest hashes",
+        ],
+        full_eight_task_accuracy_reported=False,
+        paper_table_reproduced=False,
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 def validate_eight_task_resources(path: Path, write_report=True):
     """Audit test counts and saved predictions without claiming full reproduction."""
     config = json.loads(Path("configs/eight_tasks.json").read_bytes())
@@ -2210,6 +2360,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--eight-task-resources", action="store_true")
+    mode.add_argument("--eight-protection", action="store_true")
     mode.add_argument("--readout-recovery", action="store_true")
     mode.add_argument("--readout-stability", action="store_true")
     mode.add_argument(
@@ -2256,6 +2407,8 @@ if __name__ == "__main__":
         if args.subspace_test
         else validate_eight_task_resources
         if args.eight_task_resources
+        else validate_eight_protection
+        if args.eight_protection
         else validate_subspace_interference
         if args.subspace_interference
         else validate_context_erasure
