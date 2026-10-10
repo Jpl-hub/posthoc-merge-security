@@ -4664,6 +4664,185 @@ def validate_local_erasure(path: Path):
     return result
 
 
+def validate_score_recovery(path: Path):
+    """Recompute score-fit algebra, partner controls and full-test counts."""
+    import copy
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader, evaluate
+    from eight_task_benchmark import digest, merge_all
+    from operator_diagnostics import paired_counts
+    from score_recovery import head_inverse, recover
+    from subspace_probe import make_loader
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    cfg, meta = read("protocol.json"), read("metadata.json")
+    assert meta["completed"] and meta["rows"] == 12 and meta["fits"] == 4
+    assert not meta["protection_changed"] and not meta["full_sloa"]
+    assert not meta["all_seven_partner_heads_preserved"] and not meta["calibration_truth_used"]
+    assert meta["attack_selected_after_parent_results"]
+    assert read("execution.json")["exit_code"] == 0 and not read("execution.json")["timed_out"]
+    assert digest(Path(__file__).with_name("score_recovery.py")) == meta["source_sha256"]
+    assert digest("configs/score_recovery.json") == meta["config_sha256"]
+    parent, root = Path(cfg["parent"]), Path("checkpoints/ViT-B-32")
+    for name, expected in meta["parent_files_sha256"].items():
+        assert digest(parent / name) == expected
+    for name, expected in meta["parent_raw_sha256"].items():
+        assert digest(parent / "artifacts" / name) == expected
+    for name, expected in meta["raw_sha256"].items():
+        assert digest(path / "artifacts" / name) == expected
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert digest(root / name) == expected
+    for name, expected in meta["helper_sha256"].items():
+        assert digest(Path(__file__).with_name(name)) == expected
+    assert json.loads((parent / "validation.json").read_bytes())["status"] == "passed"
+    old = torch.load(parent / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    raw = torch.load(path / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    rows = read("results.json")
+    expected_ids = {
+        f"{t}/{p}/{d}"
+        for t in cfg["tasks"]
+        for p in ("original", "erased")
+        for d in cfg["evaluation_tasks"]
+    }
+    assert set(raw) == {r["id"] for r in rows} == expected_ids
+    load = checkpoint_loader(Path("external/secure-merge-attack"))
+    fusion = json.loads(Path("configs/eight_tasks.json").read_bytes())
+    models = {t: load(str(root / t / "finetuned.pt")) for t in fusion["tasks"]}
+    models["anchor"] = load(str(root / "zeroshot.pt"))
+    heads = {t: load(str(root / f"head_{t}.pt")) for t in cfg["evaluation_tasks"]}
+    assert all(h.normalize and torch.count_nonzero(h.bias) == 0 for h in heads.values())
+    package = types.ModuleType("dataset")
+    package.__path__ = [str(Path("external/secure-merge-attack/datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    data = {
+        t: get_dataset(t, models["anchor"].val_preprocess, "data", batch_size=128, num_workers=2)
+        for t in heads
+    }
+    labels = {
+        t: torch.tensor([y for _, y in d.test_dataset._samples])
+        if hasattr(d.test_dataset, "_samples")
+        else torch.as_tensor(d.test_dataset.targets)
+        for t, d in data.items()
+    }
+    for row in rows:
+        t, preset, d = row["target"], row["preset"], row["dataset"]
+        current = raw[row["id"]]
+        y = labels[d]
+        assert torch.equal(current["labels"], y) and len(y) == fusion["expected_test_counts"][d]
+        assert current["prediction"].dtype == torch.int64 and current["prediction"].shape == y.shape
+        assert current["prediction"].min() >= 0 and current["prediction"].max() < len(
+            heads[d].weight
+        )
+        assert row["correct"] == int(current["prediction"].eq(y).sum())
+        assert row["n"] == len(y) and row["top1"] == row["correct"] / len(y)
+        control = old[f"{t}/{preset}/direct/fusion/{d}"]
+        assert torch.equal(control["labels"], y)
+        assert row["changed_from_parent_direct"] == int(
+            current["prediction"].ne(control["prediction"]).sum()
+        )
+        assert row["paired_to_parent_direct"] == paired_counts(
+            control["prediction"].eq(y), current["prediction"].eq(y)
+        )
+    indices = json.loads((parent / "attack_indices.json").read_bytes())
+    replays, algebra = 0, []
+    for target in cfg["tasks"]:
+        images = torch.stack([data[target].train_dataset[i][0] for i in indices[target]])
+        assert len(images) == 256
+        inverse, geometry = head_inverse(
+            heads[target], [h for t, h in heads.items() if t != target]
+        )
+        assert geometry == read("geometry.json")[target]
+        for preset in ("original", "erased"):
+            release = copy.deepcopy(models[target]).cpu().eval()
+            if preset == "erased":
+                edits = torch.load(
+                    parent / "artifacts" / f"{target}_edits.pt",
+                    map_location="cpu",
+                    weights_only=True,
+                )
+                for k, v in edits.items():
+                    release.state_dict()[k].copy_(v)
+            student = merge_all(dict(models, **{target: release}), root, 0.2)
+            restored, fit, evidence = recover(
+                release, student, heads[target], inverse, images, cfg["ridge_ratio"]
+            )
+            saved = torch.load(
+                path / "artifacts" / f"{target}_{preset}.pt", map_location="cpu", weights_only=True
+            )
+            assert fit == read("fitting.json")[f"{target}/{preset}"]
+            for key, value in evidence.items():
+                assert torch.equal(value, saved[key]), key
+            h, r, u, delta = [
+                saved[k] for k in ("design", "residual", "update", "projection_delta")
+            ]
+            assert float((h.T @ (h @ u - r) + fit["ridge"] * u).norm() / (h.T @ r).norm()) < 1e-8
+            c = heads[target].weight.double()
+            b = torch.cat([head.weight.double() for t, head in heads.items() if t != target])
+            target_error = float((delta @ c.T - u).norm() / u.norm())
+            partner_error = float((delta @ b.T).norm() / u.norm())
+            assert target_error < 1e-8 and partner_error < 1e-8
+            combined = merge_all(dict(models, **{target: restored}), root, 0.2)
+            before, after = student.state_dict(), combined.state_dict()
+            key = "model.visual.proj"
+            assert all(torch.equal(v, after[k]) for k, v in before.items() if k != key)
+            assert (
+                float((after[key].double() - before[key].double() - delta).norm() / delta.norm())
+                < 1e-6
+            )
+            for task in cfg["evaluation_tasks"]:
+                sink = []
+                evaluate(
+                    combined,
+                    heads[task],
+                    make_loader(data[task].test_dataset, list(range(128))),
+                    "cuda",
+                    prediction_sink=lambda p, _y: sink.append(p),
+                )
+                assert torch.equal(
+                    torch.cat(sink), raw[f"{target}/{preset}/{task}"]["prediction"][:128]
+                )
+                replays += 1
+            algebra.append(
+                dict(
+                    target=target,
+                    preset=preset,
+                    target_mapping_error=target_error,
+                    partner_null_error=partner_error,
+                )
+            )
+            del release, student, restored, combined
+    result = dict(
+        status="passed",
+        raw_rows_checked=12,
+        official_test_labels_verified=True,
+        frozen_releases_verified=True,
+        four_native_score_fits_replayed_exactly=True,
+        projection_only_attack_verified=True,
+        algebra=algebra,
+        prefix_replays=replays,
+        replay_samples_per_row=128,
+        partner_prediction_changes={
+            r["id"]: r["changed_from_parent_direct"] for r in rows if r["dataset"] != r["target"]
+        },
+        all_seven_partner_heads_preserved=False,
+        results_sha256=digest(path / "results.json"),
+        validator_source_sha256=digest(__file__),
+    )
+    (path / "validation.json").write_text(json.dumps(result, indent=2) + "\n")
+    print("SCORE_RECOVERY_VALIDATION", json.dumps(result), flush=True)
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -4678,6 +4857,7 @@ if __name__ == "__main__":
     mode.add_argument("--expert-omission", action="store_true")
     mode.add_argument("--critical-subspace", action="store_true")
     mode.add_argument("--local-erasure", action="store_true")
+    mode.add_argument("--score-recovery", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -4720,7 +4900,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_local_erasure
+        validate_score_recovery
+        if args.score_recovery
+        else validate_local_erasure
         if args.local_erasure
         else validate_critical_subspace
         if args.critical_subspace
