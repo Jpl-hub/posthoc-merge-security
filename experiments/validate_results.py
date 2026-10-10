@@ -3395,6 +3395,226 @@ def validate_task_relocation(path: Path):
     return result
 
 
+def validate_functional_contrast(path: Path):
+    """Audit raw geometry, released tensors, official labels and matched controls."""
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader, evaluate
+    from eight_task_benchmark import digest as sha
+    from operator_diagnostics import paired_counts
+    from subspace_probe import make_loader
+
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    meta, config, construction = (
+        read("metadata.json"),
+        read("protocol.json"),
+        read("construction.json"),
+    )
+    assert meta["completed"] and meta["optimizer_steps"] == 0
+    assert not meta["calibration_labels_used"] and not meta["future_partners_in_constructor"]
+    assert not meta["official_test_selection"] and not meta["full_eight_task_average"]
+    assert sha(Path(__file__).with_name("functional_contrast.py")) == meta["source_sha256"]
+    assert sha("configs/functional_contrast_cars.json") == meta["config_sha256"]
+    assert config == json.loads(Path("configs/functional_contrast_cars.json").read_bytes())
+    for name, expected in meta["helper_sha256"].items():
+        assert sha(Path(__file__).with_name(name)) == expected
+    for name, expected in meta["raw_sha256"].items():
+        assert sha(path / "artifacts" / name) == expected
+    root = Path("checkpoints/ViT-B-32")
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert sha(root / name) == expected
+    load = checkpoint_loader(Path("external/secure-merge-attack"))
+    task = config["task"]
+    original, anchor = load(str(root / task / "finetuned.pt")), load(str(root / "zeroshot.pt"))
+    before, base = original.state_dict(), anchor.state_dict()
+    geometry = torch.load(path / "artifacts/geometry.pt", map_location="cpu", weights_only=True)
+    support = read("support.json")
+    assert len(support) == 24
+    expected_groups = [
+        (layer, component) for layer in config["layers"] for component in config["components"]
+    ]
+    assert [(item["layer"], item["component"]) for item in support] == expected_groups
+    edited = set()
+    for item in support:
+        prefix = f"model.visual.transformer.resblocks.{item['layer']}.{item['component']}."
+        assert item["keys"] == [k for k in before if k.startswith(prefix)]
+        assert len(item["keys"]) == 4
+        edited.update(item["keys"])
+    assert len(edited) == 96
+    n = config["calibration_samples"]
+    assert geometry["images"].shape == (n, 3, 224, 224)
+    grams = {}
+    for name in ("target", "anchor"):
+        derivative = geometry[f"{name}_derivatives"]
+        assert derivative.shape == (n, 512, 24) and torch.isfinite(derivative).all()
+        flat = derivative.double().flatten(0, 1)
+        grams[name] = flat.T @ flat / n
+        assert torch.allclose(grams[name], geometry[f"{name}_gram"], atol=1e-12, rtol=1e-12)
+    rho = config["regularizer_trace_fraction"] * float(grams["target"].trace()) / 24 + 1e-12
+    assert math.isclose(rho, construction["rho"], rel_tol=1e-12)
+    direction = geometry["direction"]
+    assert float(direction.abs().max()) == 1.0 and direction[direction.abs().argmax()] > 0
+    regularized = grams["target"] + rho * torch.eye(24)
+    eigenvalue = construction["maximum_generalized_eigenvalue"]
+    residual = grams["anchor"] @ direction - eigenvalue * (regularized @ direction)
+    eigen_residual = float(residual.norm() / (grams["anchor"] @ direction).norm())
+    assert eigen_residual < 1e-7
+    target_rms = float((direction @ grams["target"] @ direction).sqrt())
+    assert math.isclose(target_rms, construction["target_direction_feature_rms"], rel_tol=1e-12)
+    for index, budget in enumerate(config["feature_rms_budgets"]):
+        name = f"budget_{index}"
+        amplitude = min(config["maximum_absolute_coefficient"], budget / target_rms)
+        assert math.isclose(amplitude, construction["points"][index]["amplitude"], rel_tol=1e-12)
+        assert torch.equal(geometry["coefficients"][name], amplitude * direction)
+        released = torch.load(path / f"artifacts/{name}.pt", map_location="cpu", weights_only=True)
+        for item, coefficient in zip(support, geometry["coefficients"][name], strict=True):
+            for key in item["keys"]:
+                assert torch.equal(
+                    released[key], before[key] + coefficient * (before[key] - base[key])
+                )
+        assert all(
+            torch.equal(value, before[k]) for k, value in released.items() if k not in edited
+        )
+        assert all(torch.isfinite(value).all() for value in released.values())
+    assert read("release_manifest.json") == {
+        name: meta["raw_sha256"][name + ".pt"] for name in geometry["coefficients"]
+    }
+    package = types.ModuleType("dataset")
+    package.__path__ = [str(Path("external/secure-merge-attack/datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    datasets = {
+        t: get_dataset(t, original.val_preprocess, "data", batch_size=128, num_workers=2)
+        for t in config["evaluation_tasks"]
+    }
+    indices = read("training_indices.json")
+    excluded = set()
+    for name in config["exclusions"]:
+        value = json.loads(Path(name).read_bytes())
+        value = value.get(task, value)
+        for selected in value.values():
+            if isinstance(selected, list):
+                excluded.update(selected)
+    order = torch.randperm(
+        len(datasets[task].train_dataset), generator=torch.Generator().manual_seed(config["seed"])
+    ).tolist()
+    assert indices["calibration"] == [i for i in order if i not in excluded][:n]
+    assert indices["excluded_count"] == len(excluded)
+    images = torch.stack([datasets[task].train_dataset[i][0] for i in indices["calibration"]])
+    assert torch.equal(images, geometry["images"])
+    labels = {}
+    for name, dataset in datasets.items():
+        test = dataset.test_dataset
+        labels[name] = (
+            torch.tensor([y for _, y in test._samples])
+            if name == "Cars"
+            else torch.as_tensor(test.targets)
+        )
+    raw, rows = (
+        torch.load(path / "artifacts/predictions.pt", map_location="cpu", weights_only=True),
+        read("results.json"),
+    )
+    expected = {
+        f"{p}/{a}/{g}/{d}"
+        for p in ["original", "budget_0", "budget_1"]
+        for a in config["attacks"]
+        for g, tasks in [("standalone", [task]), ("fusion", config["evaluation_tasks"])]
+        for d in tasks
+    }
+    assert {r["id"] for r in rows} == set(raw) == expected
+    assert len(rows) == len(expected) == meta["rows"] == 60
+    for row in rows:
+        evidence = raw[row["id"]]
+        assert torch.equal(evidence["labels"], labels[row["dataset"]])
+        correct = evidence["prediction"].eq(evidence["labels"])
+        assert row["correct"] == int(correct.sum()) and row["n"] == len(correct)
+        assert row["top1"] == row["correct"] / row["n"]
+        ref = raw[f"original/{row['attack']}/{row['group']}/{row['dataset']}"]
+        assert row["paired"] == paired_counts(ref["prediction"].eq(ref["labels"]), correct)
+        if row["attack"] == "reset_all":
+            assert torch.equal(evidence["prediction"], ref["prediction"])
+    prior = Path("outputs/2026-10-10/eight_task/params_seven_protection/artifacts")
+    for name in config["evaluation_tasks"]:
+        historical = torch.load(
+            prior / f"{name}_predictions.pt", map_location="cpu", weights_only=True
+        )
+        assert torch.equal(
+            raw[f"original/direct/fusion/{name}"]["prediction"],
+            historical["unprotected_merge"]["prediction"],
+        )
+        if name == task:
+            for attack, group, old in [
+                ("direct", "standalone", "unprotected_standalone"),
+                ("aga", "standalone", "AGA_unprotected_standalone"),
+                ("aga", "fusion", "AGA_unprotected_merge"),
+            ]:
+                assert torch.equal(
+                    raw[f"original/{attack}/{group}/{name}"]["prediction"],
+                    historical[old]["prediction"],
+                )
+    # Replay one frozen release on a predeclared official prefix, not new selection data.
+    released = torch.load(path / "artifacts/budget_0.pt", map_location="cpu", weights_only=True)
+    original.load_state_dict(released)
+    head = load(str(root / f"head_{task}.pt"))
+    predictions = []
+    evaluate(
+        original,
+        head,
+        make_loader(datasets[task].test_dataset, list(range(128))),
+        "cuda",
+        prediction_sink=lambda p, _y: predictions.append(p),
+    )
+    assert torch.equal(
+        torch.cat(predictions), raw[f"budget_0/direct/standalone/{task}"]["prediction"][:128]
+    )
+    lookup = {r["id"]: r for r in rows}
+    for point in read("decision.json")["points"]:
+        name = point["preset"]
+        candidate = max(
+            [
+                r
+                for r in rows
+                if r["preset"] == name and r["group"] == "fusion" and r["dataset"] == task
+            ],
+            key=lambda r: r["top1"],
+        )
+        assert point["best_recovery_attack"] == candidate["attack"]
+        assert point["best_recovered_top1"] == candidate["top1"]
+        gap = 100 * (lookup[f"original/direct/fusion/{task}"]["top1"] - candidate["top1"])
+        assert math.isclose(point["gap_from_unprotected_direct_pp"], gap, abs_tol=1e-12)
+        utility_loss = lookup[f"{name}/direct/standalone/{task}"]["paired"]["loss_pp"]
+        assert point["utility_loss_pp"] == utility_loss
+        assert point["utility_reference_met"] == (utility_loss <= config["utility_reference_pp"])
+    result = dict(
+        status="passed",
+        raw_rows_checked=len(rows),
+        checkpoint_pins_checked=len(meta["checkpoint_sha256"]),
+        geometry_verified=True,
+        generalized_eigen_relative_residual=eigen_residual,
+        released_fields_checked=96,
+        outside_support_exact=True,
+        official_dataset_labels_verified=True,
+        calibration_exclusion_and_images_verified=True,
+        prior_control_prediction_replay_exact=True,
+        release_prefix_forward_replay_exact=True,
+        support_reset_predictions_identical=True,
+        results_sha256=sha(path / "results.json"),
+        validator_source_sha256=sha(__file__),
+    )
+    (path / "validation.json").write_text(json.dumps(result, indent=2) + "\n")
+    print("FUNCTIONAL_CONTRAST_VALIDATION", json.dumps(result), flush=True)
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -3403,6 +3623,7 @@ if __name__ == "__main__":
     mode.add_argument("--task-profile", action="store_true")
     mode.add_argument("--task-relocation", action="store_true")
     mode.add_argument("--public-reset", action="store_true")
+    mode.add_argument("--functional-contrast", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -3445,7 +3666,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_public_reset
+        validate_functional_contrast
+        if args.functional_contrast
+        else validate_public_reset
         if args.public_reset
         else validate_task_relocation
         if args.task_relocation

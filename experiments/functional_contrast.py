@@ -213,7 +213,22 @@ def run(args):
             name, original.val_preprocess, args.data, batch_size=128, num_workers=2
         )
         assert len(dataset.test_dataset) == fusion["expected_test_counts"][name]
-        loaders[name] = dataset.test_loader
+        # Identical deterministic author preprocessing, materialized once in
+        # server RAM. No test images are persisted to disk or copied locally.
+        from torch.utils.data import DataLoader, TensorDataset
+
+        image_batches, label_batches = [], []
+        for batch, labels in dataset.test_loader:
+            image_batches.append(batch)
+            label_batches.append(labels)
+        loaders[name] = DataLoader(
+            TensorDataset(torch.cat(image_batches), torch.cat(label_batches)),
+            batch_size=128,
+            shuffle=False,
+            pin_memory=True,
+        )
+        del image_batches, label_batches
+        print("OFFICIAL_INPUTS_CACHED", name, len(dataset.test_dataset), flush=True)
     author, source_hash = load_author(
         Path(args.author_repo) / "utils_attack_B32.py", include_wrappers=True
     )
@@ -234,6 +249,8 @@ def run(args):
         rows.append(
             dict(id=key, preset=preset, attack=attack, group=group, dataset=dataset, **score)
         )
+        # Preserve every real prediction even if a later stage fails or times out.
+        torch.save(raw, artifacts / "predictions.pt")
         save_json(out / "results.json", rows)
         print("RESULT", key, score["correct"], score["n"], flush=True)
 
@@ -336,6 +353,7 @@ def run(args):
             future_partners_in_constructor=False,
             official_test_selection=False,
             full_eight_task_average=False,
+            official_inputs_cached="Unchanged author preprocessing; float32 server RAM only",
         ),
     )
 
