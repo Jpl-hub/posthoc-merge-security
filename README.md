@@ -175,6 +175,14 @@ python experiments/operator_diagnostics.py --evaluate-readout outputs/readout_de
 python experiments/validate_results.py --readout-recovery --output outputs/readout_test
 ```
 
+固定 readout 的查询分类稳定性与精确单次变化诊断使用同一入口；其界限只适用于固定线性 readout，oracle 确认集结果不计作防御：
+
+```bash
+python experiments/operator_diagnostics.py --readout-stability outputs/readout_dev --output outputs/readout_stability
+python experiments/validate_results.py --readout-stability --output outputs/readout_stability
+python experiments/operator_diagnostics.py --readout-sensitivity outputs/readout_stability --output outputs/readout_sensitivity
+```
+
 ## 工程检查
 
 ```bash
