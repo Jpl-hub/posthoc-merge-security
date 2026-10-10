@@ -453,12 +453,206 @@ def run(args):
     print("TASK_RELOCATION_COMPLETE", json.dumps(status), flush=True)
 
 
+@torch.no_grad()
+def root_diagnostic(args):
+    """Audit two activation solvers without fitting weights or changing the candidate."""
+    import numpy as np
+
+    out = Path(args.output)
+    config = json.loads((out / "protocol.json").read_text())
+    assert config["task"] == "Cars" and config["layers"][0] == 9
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    load = checkpoint_loader(Path(args.author_repo))
+    original = load(str(Path(args.checkpoints) / "Cars/finetuned.pt"))
+    anchor = load(str(Path(args.checkpoints) / "zeroshot.pt"))
+    package = types.ModuleType("dataset")
+    package.__path__ = [str(Path(args.author_repo) / "datasets")]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    indices = json.loads((out / "training_indices.json").read_text())["calibration"][:8]
+    data = get_dataset("Cars", original.val_preprocess, args.data).train_dataset
+    images = torch.stack([data[i][0] for i in indices])
+    values = capture_blocks(original, images, [9], details=True)[9]
+    y = values["output"].double().cuda()
+    initial = values["post_attention"].double()
+    block = original.model.visual.transformer.resblocks[9]
+    mlp = copy.deepcopy(anchor.model.visual.transformer.resblocks[9].mlp).double().cuda().eval()
+    gamma, beta = block.ln_2.weight.double().cuda(), block.ln_2.bias.double().cuda()
+    eps = block.ln_2.eps
+    # Existing SciPy solver, applied to all 400 token states.
+    from scipy.optimize import NoConvergence, anderson
+
+    normalizer = y.norm(dim=1).cpu().numpy()
+    calls = 0
+
+    def residual(value):
+        nonlocal calls
+        calls += 1
+        x = torch.as_tensor(value, dtype=torch.float64, device="cuda")
+        z = F.layer_norm(x, [x.shape[-1]], gamma, beta, eps)
+        return (x + mlp(z) - y).cpu().numpy()
+
+    def norm(value):
+        return float(
+            np.max(np.linalg.norm(np.asarray(value).reshape(len(y), -1), axis=1) / normalizer)
+        )
+
+    started = time.perf_counter()
+    converged = True
+    try:
+        result = anderson(
+            residual, initial.numpy(), alpha=-1.0, M=5, maxiter=64, f_tol=1e-5, tol_norm=norm
+        )
+    except NoConvergence as error:
+        converged = False
+        result = error.args[0]
+    record = dict(
+        images=8,
+        tokens=len(y),
+        solver="scipy.optimize.anderson",
+        maxiter=64,
+        memory=5,
+        alpha=-1.0,
+        converged=converged,
+        maximum_relative_residual=norm(residual(result)),
+        function_evaluations=calls,
+        seconds=time.perf_counter() - started,
+        weight_fits=0,
+        optimizer_steps=0,
+        source_sha256=digest(__file__),
+        sample_indices=indices,
+        scope="Activation equation only. No candidate or classification result.",
+    )
+    save_json(out / "root_diagnostic.json", record)
+    print("ANDERSON_ROOT_DIAGNOSTIC", json.dumps(record), flush=True)
+    started = time.perf_counter()
+    u = initial.reshape(8, 50, -1)[:, 0].cuda()
+    y = y.reshape(8, 50, -1)[:, 0]
+    fc, proj = mlp.c_fc, mlp.c_proj
+    assert isinstance(mlp.ln, torch.nn.Identity)
+    kind = type(mlp.gelu).__name__
+    trace = []
+    for step in range(16):
+        c = u - u.mean(1, keepdim=True)
+        scale = (c.square().mean(1, keepdim=True) + eps).sqrt()
+        z = c / scale * gamma + beta
+        pre = F.linear(z, fc.weight, fc.bias)
+        if kind == "QuickGELU":
+            sigmoid = torch.sigmoid(1.702 * pre)
+            derivative = sigmoid + 1.702 * pre * sigmoid * (1 - sigmoid)
+        elif kind == "GELU":
+            derivative = (
+                0.5 * (1 + torch.erf(pre / (2.0**0.5)))
+                + pre * torch.exp(-0.5 * pre.square()) / (2 * np.pi) ** 0.5
+            )
+        else:
+            raise RuntimeError(kind)
+        residual_value = u + mlp(z) - y
+        error = residual_value.norm(dim=1) / y.norm(dim=1)
+        trace.append({"step": step, "maximum_relative_residual": float(error.max())})
+        if float(error.max()) <= 1e-5:
+            break
+        # Analytic MLP-LayerNorm Jacobian; float32 matrix products, double linear solve.
+        b = (
+            (proj.weight.float()[None] * derivative.float()[:, None, :]) @ fc.weight.float()[None]
+        ).double()
+        b = b * gamma[None, None, :] / scale[:, None, :]
+        j = (
+            torch.eye(u.shape[1], device="cuda", dtype=torch.float64)[None]
+            + b
+            - b.sum(2, keepdim=True) / u.shape[1]
+        )
+        j -= ((b @ c[:, :, None]) @ c[:, None, :]) / (u.shape[1] * scale[:, :, None].square())
+        du = torch.linalg.solve(j, -residual_value[:, :, None]).squeeze(-1)
+        accepted = torch.zeros(len(u), device="cuda", dtype=torch.bool)
+        best = u.clone()
+        for power in range(12):
+            trial = u + (2.0 ** (-power)) * du
+            normalized = F.layer_norm(trial, [trial.shape[-1]], gamma, beta, eps)
+            trial_error = (trial + mlp(normalized) - y).norm(dim=1) / y.norm(dim=1)
+            good = (trial_error < error) & ~accepted
+            best[good] = trial[good]
+            accepted |= good
+        u = best
+        if not bool(accepted.all()):
+            break
+    z = F.layer_norm(u, [u.shape[-1]], gamma, beta, eps)
+    final = (u + mlp(z) - y).norm(dim=1) / y.norm(dim=1)
+    # Verify the analytic Jacobian, then measure conditioning at the stalled states.
+    c = u - u.mean(1, keepdim=True)
+    scale = (c.square().mean(1, keepdim=True) + eps).sqrt()
+    z = c / scale * gamma + beta
+    pre = F.linear(z, fc.weight, fc.bias)
+    if kind == "QuickGELU":
+        sigmoid = torch.sigmoid(1.702 * pre)
+        derivative = sigmoid + 1.702 * pre * sigmoid * (1 - sigmoid)
+    else:
+        derivative = (
+            0.5 * (1 + torch.erf(pre / (2.0**0.5)))
+            + pre * torch.exp(-0.5 * pre.square()) / (2 * np.pi) ** 0.5
+        )
+    b = (
+        (proj.weight.float()[None] * derivative.float()[:, None, :]) @ fc.weight.float()[None]
+    ).double()
+    b = b * gamma[None, None, :] / scale[:, None, :]
+    j = (
+        torch.eye(u.shape[1], device="cuda", dtype=torch.float64)[None]
+        + b
+        - b.sum(2, keepdim=True) / u.shape[1]
+    )
+    j -= ((b @ c[:, :, None]) @ c[:, None, :]) / (u.shape[1] * scale[:, :, None].square())
+    sv = torch.linalg.svdvals(j)
+    generator = torch.Generator().manual_seed(20261015)
+    v = torch.randn(u.shape, generator=generator, dtype=torch.float64).cuda()
+    v /= v.norm(dim=1, keepdim=True)
+
+    def point_residual(x):
+        return x + mlp(F.layer_norm(x, [x.shape[-1]], gamma, beta, eps)) - y
+
+    fd = (point_residual(u + 1e-4 * v) - point_residual(u - 1e-4 * v)) / (2e-4)
+    analytic = (j @ v[:, :, None]).squeeze(-1)
+    jacobian_error = float((analytic - fd).norm() / fd.norm())
+    assert jacobian_error < 1e-5, jacobian_error
+    record = {
+        "images": 8,
+        "tokens": 8,
+        "token_scope": "CLS only",
+        "solver": "Batched analytic Newton with backtracking residual decrease",
+        "maxiter": 16,
+        "converged": bool((final <= 1e-5).all()),
+        "maximum_relative_residual": float(final.max()),
+        "per_token_residual": final.cpu().tolist(),
+        "trace": trace,
+        "minimum_singular_values": sv[:, -1].cpu().tolist(),
+        "condition_numbers": (sv[:, 0] / sv[:, -1]).cpu().tolist(),
+        "directional_jacobian_relative_error": jacobian_error,
+        "seconds": time.perf_counter() - started,
+        "weight_fits": 0,
+        "optimizer_steps": 0,
+        "scope": "Activation inverse diagnostic only. Analytic Jacobian uses input derivatives, no parameter gradients or weight updates.",
+    }
+    record.update(
+        source_sha256=digest(__file__),
+        sample_indices=indices,
+        checkpoint_sha256={
+            name: digest(Path(args.checkpoints) / name)
+            for name in ["Cars/finetuned.pt", "zeroshot.pt"]
+        },
+    )
+    save_json(out / "newton_root_diagnostic.json", record)
+    print(json.dumps(record), flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root-diagnostic", action="store_true")
     parser.add_argument("--config", default="configs/task_relocation_cars.json")
     parser.add_argument("--output", default="outputs/2026-10-10/task_relocation_cars")
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
     parser.add_argument("--nufilt-repo", default="external/NUFILT")
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
-    run(parser.parse_args())
+    args = parser.parse_args()
+    (root_diagnostic if args.root_diagnostic else run)(args)
