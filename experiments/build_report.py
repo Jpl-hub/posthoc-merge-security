@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import statistics
 from pathlib import Path
@@ -25,6 +26,104 @@ def table(headers, rows):
 
 def mean(rows, field):
     return statistics.mean(row[field] for row in rows)
+
+
+def eight_protection_report(root: Path):
+    """Build a compact per-task table only from recounted protection checks."""
+    rows = read(root, "results.json")
+    protocol, validation = read(root, "protocol.json"), read(root, "validation.json")
+    assert validation["status"] == "passed" and validation["raw_predictions_checked"]
+    assert (
+        validation["results_sha256"]
+        == hashlib.sha256((root / "results.json").read_bytes()).hexdigest()
+    )
+    assert len(rows) == 56 and not protocol["table6_reproduction"]
+    tasks = protocol["evaluation_tasks"]
+    keyed = {(r["dataset"], r["group"]): r for r in rows}
+    groups = ["unprotected_merge", "params_merge", "AGA_unprotected_merge", "AGA_params_merge"]
+    cells = [
+        [
+            t,
+            keyed[t, "unprotected_merge"]["n"],
+            *[f"{100 * keyed[t, g]['top1']:.2f}" for g in groups],
+        ]
+        for t in tasks
+    ]
+    headers = ["任务", "测试图数", "未保护融合", "PaRaMS 融合", "AGA 未保护对照", "AGA 后 PaRaMS"]
+    comparisons = validation["matched_prediction_evidence"]
+    identical_utility = all(r["utility_prediction_changes"] == 0 for r in comparisons)
+    identical_aga = all(r["aga_merge_prediction_changes"] == 0 for r in comparisons)
+    utility = (
+        "七任务保护前后的独立分类预测逐图相同。"
+        if identical_utility
+        else (
+            "独立分类预测变化数："
+            + str({r["task"]: r["utility_prediction_changes"] for r in comparisons})
+        )
+    )
+    recovery = (
+        "AGA 后两组融合预测逐图相同；本配置未抵抗恢复。"
+        if identical_aga
+        else (
+            "AGA 两组融合预测变化数："
+            + str({r["task"]: r["aga_merge_prediction_changes"] for r in comparisons})
+        )
+    )
+    text = (
+        "# PaRaMS 与原作者 AGA：七任务完整测试\n\n"
+        "每次只保护并恢复一个专家，融合始终包含八专家，TA 系数固定 0.2。"
+        "所有数值为该受保护任务准确率（%），不计算缺 EuroSAT 的八任务均值。\n\n"
+        + table(headers, cells)
+        + "\n\n"
+        + utility
+        + recovery
+        + "\n\n"
+        "PaRaMS 使用官方实现、一轮独立置换组 assignment 和既定 Attention 缩放。"
+        "AGA 调用作者完整 Attention 入口后调用 MLP 入口；未保护组接受同样恢复。"
+        "无校准或测试调参，原始预测与保护权重仅保存在服务器。\n\n"
+        "这是补充复现对照。PaRaMS 不是 AGA Table 6 中的防御方法；"
+        "EuroSAT 原划分、论文精确权重及 Table 6 防御配置仍未对齐。\n\n"
+        "[逐图核验](validation.json)、[全部计数](results.csv)、[冻结协议](protocol.json)、"
+        "[源码与输入指纹](metadata.json)。\n\n"
+        "![完整测试与匹配差值](figures/params_seven_protection.png)\n"
+    )
+    (root / "summary.md").write_text(text, encoding="utf-8")
+    fields = [
+        "dataset",
+        "group",
+        "protected_task",
+        "reference_group",
+        "coefficient",
+        "correct",
+        "n",
+        "accuracy_pct",
+        "paired_loss_pp",
+        "paired_lost",
+        "paired_gained",
+    ]
+    with (root / "results.csv").open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        for row in rows:
+            record = {k: row[k] for k in fields[:7]}
+            record["accuracy_pct"] = row["top1"] * 100
+            record.update(
+                {
+                    "paired_" + k: (row["paired"][k] if row["paired"] else None)
+                    for k in ["loss_pp", "lost", "gained"]
+                }
+            )
+            writer.writerow(record)
+    proof = dict(
+        source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        results_sha256=validation["results_sha256"],
+        outputs_sha256={
+            name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+            for name in ["summary.md", "results.csv"]
+        },
+    )
+    (root / "report_generation.json").write_text(json.dumps(proof, indent=2), encoding="utf-8")
+    print("EIGHT_PROTECTION_REPORT_WRITTEN", root)
 
 
 def run(root: Path):
@@ -552,4 +651,6 @@ FFN 原型各次 wall time：{"; ".join(f"{name}: {meta['total_seconds']:.3f} s"
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
-    run(Path(parser.parse_args().output))
+    parser.add_argument("--eight-protection", action="store_true")
+    args = parser.parse_args()
+    (eight_protection_report if args.eight_protection else run)(Path(args.output))
