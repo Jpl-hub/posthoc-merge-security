@@ -1597,7 +1597,6 @@ def plot_functional_contrast(root: Path):
     lookup = {r["id"]: r for r in rows}
     task = config["task"]
     presets = ["original", "budget_0", "budget_1"]
-    baseline = lookup[f"original/direct/fusion/{task}"]["top1"]
     utility = [0] + [p["utility_loss_pp"] for p in decision["points"]]
     fig, axes = plt.subplots(1, 2, figsize=(8.2, 3), layout="constrained")
     for index, attack in enumerate(["direct", "aga", "best"]):
@@ -1609,13 +1608,20 @@ def plot_functional_contrast(root: Path):
                     for r in rows
                     if r["preset"] == preset and r["group"] == "fusion" and r["dataset"] == task
                 )
+                baseline = max(
+                    r["top1"]
+                    for r in rows
+                    if r["preset"] == "original" and r["group"] == "fusion" and r["dataset"] == task
+                )
             else:
                 accuracy = lookup[f"{preset}/{attack}/fusion/{task}"]["top1"]
+                baseline = lookup[f"original/{attack}/fusion/{task}"]["top1"]
             values.append(100 * (baseline - accuracy))
+        order = np.argsort(utility)
         axes[0].plot(
-            utility,
-            values,
-            marker="o",
+            np.asarray(utility)[order],
+            np.asarray(values)[order],
+            marker=["o", "s", "^"][index],
             color=COLORS[index],
             label={
                 "direct": "Direct merging",
@@ -1625,10 +1631,12 @@ def plot_functional_contrast(root: Path):
         )
     axes[0].axvline(config["utility_reference_pp"], color="0.5", ls="--", lw=0.8)
     axes[0].axhline(0, color="0.5", lw=0.8)
+    axes[0].axhline(config["minimum_interesting_gap_pp"], color="0.5", ls=":", lw=0.8)
     axes[0].set(
         xlabel="Standalone accuracy loss (pp)",
-        ylabel="Cars fusion drop (pp)",
+        ylabel="Fusion loss vs matched control (pp)",
         title="Performance and recovery tradeoff",
+        ylim=(-0.5, 6),
     )
     axes[0].grid(alpha=0.15)
     axes[0].legend()

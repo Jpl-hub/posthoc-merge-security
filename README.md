@@ -1,11 +1,12 @@
 # Post-hoc Model Merging Security
 
-对已微调专家施加发布前后处理，保持原任务能力，检验对未经授权融合及自适应恢复的保护。目标独立准确率损失 ≤0.5 个百分点；不进行额外梯度微调，有闭式拟合的实验明确记录校准数据。
+对已微调专家施加发布前后处理，保持原任务能力，检验对未经授权融合及自适应恢复的保护。目标独立准确率损失 ≤0.5 个百分点，同时完整报告性能与防御权衡；不进行额外梯度微调，有闭式拟合的实验明确记录校准数据。
 
-**目前没有达标的新防御。**旧四层候选被 FC 替换和功能重建绕过。三任务定位中，Cars 最后三层通过本轮关键区域筛选；在该区域尝试的响应迁移构造未通过数值逆解检查，停止于参数拟合及准确率评价之前。全部失败及历史结果保留。
+**目前没有达标的新防御。**最新 Cars 跨模块敏感性构造保留了独立性能，但直接融合仅下降 0.0373 pp，原版 AGA 后没有防御收益，已停止该构造。旧四层候选被 FC 替换和功能重建绕过；Cars 局部响应迁移未通过数值逆解检查。全部失败及历史结果保留。
 
 ## 当前结果
 
+- [Cars 跨模块功能敏感性](outputs/2026-10-10/functional_contrast_cars/summary.md)：两个冻结幅度、三个完整测试集、原版 AGA 及公开替换同条件对照；24 方向族的校准一阶 RMS 对比上限约 1.0933 倍，未获得有效防御。
 - [MNIST／Cars／DTD 关键区域定位](outputs/2026-10-10/task_profile/summary.md)：Cars 9–11 层联合替换的独立损失 11.47 pp、八专家融合下降 6.20 pp；这是未保护模型的替换基线。
 - [Cars 局部响应迁移](outputs/2026-10-10/task_relocation_cars/summary.md)：只使用目标与公开预训练模型，首层逆解未收敛；无独立准确率、AGA 或防御成功结果。
 - [实际编辑支持的替换下限](outputs/2026-10-10/relocation_public_reset/summary.md)：V／Attention 输出／MLP 替换达到 60.11%；同支持保护相对当前原始融合最多下降 5.62 pp，未获得有效候选。
@@ -44,6 +45,14 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 ## 运行当前实验
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
+
+当前跨模块敏感性构造已得到负结果，不继续调幅度。如下入口用于复核冻结协议；预处理图片仅缓存在服务器内存。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/functional_contrast.py --config configs/functional_contrast_cars.json --output outputs/contrast_check
+python experiments/validate_results.py --functional-contrast --output outputs/contrast_check
+python experiments/plot_results.py --functional-contrast --output outputs/contrast_check
+```
 
 七任务对照：每次保护一个专家，八专家按固定 TA 系数 0.2 融合。PaRaMS 使用一轮独立置换组 assignment 和预先固定的 Attention 缩放。
 
