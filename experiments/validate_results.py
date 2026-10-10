@@ -2756,11 +2756,215 @@ def validate_task_support(path: Path):
     print(json.dumps(report))
 
 
+def validate_task_profile(path: Path):
+    """Retally raw predictions, verify labels, fixed selection and public reset support."""
+    import itertools
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader
+    from operator_diagnostics import paired_counts
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    def sha(file):
+        return hashlib.sha256(Path(file).read_bytes()).hexdigest()
+
+    meta, config, rows = read("metadata.json"), read("protocol.json"), read("results.json")
+    selection, indices, decisions = (
+        read("selection.json"),
+        read("training_indices.json"),
+        read("decision.json"),
+    )
+    audit, freeze = read("reset_audit.json"), read("selection_freeze.json")
+    assert meta["completed"] and not meta["new_defense"] and meta["test_usage"] == "none"
+    assert meta["fits"] == meta["optimizer_steps"] == 0 and meta["partner_loaded_after_selection"]
+    assert meta["source_sha256"] == sha("experiments/operator_diagnostics.py")
+    assert meta["config_sha256"] == sha("configs/task_profile.json")
+    for name, expected in meta["helper_sha256"].items():
+        assert sha(Path("experiments") / name) == expected
+    for name, expected in meta["upstream_sha256"].items():
+        assert sha(Path(meta["author_repo"]) / name) == expected
+    manifest = json.loads(Path("configs/checkpoints.json").read_bytes())
+    manifest_hashes = {
+        item["path"].removeprefix("ViT-B-32/"): item["sha256"] for item in manifest["files"]
+    }
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert sha(Path(meta["checkpoint_root"]) / name) == expected == manifest_hashes[name]
+    assert sha("configs/checkpoints.json") == meta["manifest_sha256"]
+    for filename, key in [
+        ("selection.json", "selection_sha256"),
+        ("training_indices.json", "indices_sha256"),
+        ("artifacts/predictions.pt", "predictions_sha256"),
+    ]:
+        assert sha(path / filename) == meta[key]
+    assert freeze == dict(
+        selection_sha256=meta["selection_sha256"], rows_before_partner=132, partner_loaded=False
+    )
+    raw = torch.load(path / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    assert len(rows) == len(raw) == meta["row_count"] == 162
+    excluded = set()
+    for folder in config["mnist_exclusions"]:
+        saved = json.loads((Path(folder) / "training_indices.json").read_bytes())
+        if "MNIST" in saved:
+            value = saved["MNIST"]
+            excluded.update(
+                itertools.chain.from_iterable(value.values()) if isinstance(value, dict) else value
+            )
+        for key in ["selection", "confirmation"]:
+            if key in saved and "MNIST" in saved[key]:
+                excluded.update(saved[key]["MNIST"])
+        excluded.update(
+            saved.get("calibration", []) if isinstance(saved.get("calibration", []), list) else []
+        )
+    assert set(read("excluded_mnist_indices.json")) == excluded
+    checkpoint_loader(Path(meta["author_repo"]))
+    package = types.ModuleType("dataset")
+    package.__path__ = [str((Path(meta["author_repo"]) / "datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    expected_family = [("none", ())]
+    expected_family += [(name, (i,)) for i in range(12) for name in ["attn", "mlp", "attn_mlp"]]
+    expected_family += [("attn_mlp", tuple(w)) for w in config["windows"]]
+    expected_family += [(name, tuple(range(12))) for name in ["attn", "mlp", "attn_mlp"]]
+    for offset, task in enumerate(config["tasks"]):
+        dataset = get_dataset(task, None, meta["data"]).train_dataset
+        targets = getattr(dataset, "targets", None)
+        if targets is None:
+            targets = [target for _, target in dataset._samples]
+        y_all = torch.as_tensor(targets, dtype=torch.int64)
+        assert len(dataset) == meta["dataset_metadata"][task]["train_count"]
+        assert (
+            hashlib.sha256(y_all.numpy().tobytes()).hexdigest()
+            == meta["dataset_metadata"][task]["labels_sha256"]
+        )
+        order = torch.randperm(
+            len(dataset), generator=torch.Generator().manual_seed(config["seed"] + offset)
+        ).tolist()
+        allowed = [i for i in order if task != "MNIST" or i not in excluded]
+        n, m = config["selection_samples"], config["confirmation_samples"][task]
+        assert indices[task] == dict(selection=allowed[:n], confirmation=allowed[n : n + m])
+        assert not set(indices[task]["selection"]) & set(indices[task]["confirmation"])
+        profile = [r for r in rows if r["task"] == task and r["split"] == "selection"]
+        assert [(r["component"], tuple(r["layers"])) for r in profile] == expected_family
+        assert all(r["group"] == "standalone" for r in profile)
+        candidates = [r for r in profile if r["component"] == "attn_mlp" and len(r["layers"]) <= 3]
+        base = profile[0]
+        for row in profile[1:]:
+            assert abs(row["standalone_loss_pp"] - 100 * (base["top1"] - row["top1"])) < 1e-9
+        eligible = [
+            r for r in candidates if r["standalone_loss_pp"] >= config["minimum_task_drop_pp"]
+        ]
+        chosen = (
+            min(eligible, key=lambda r: (len(r["layers"]), -r["standalone_loss_pp"], r["layers"]))
+            if eligible
+            else max(candidates, key=lambda r: (r["standalone_loss_pp"], [-i for i in r["layers"]]))
+        )
+        item = selection[task]
+        assert item["measurement_id"] == chosen["id"] and item["layers"] == chosen["layers"]
+        assert item["selection_gate_passed"] == bool(eligible) and not item["partner_used"]
+        assert item["inputs"] == [
+            f"{task}/finetuned.pt",
+            "zeroshot.pt",
+            f"head_{task}.pt",
+            f"{task} training selection labels",
+        ]
+        for split, group in [
+            ("selection", "standalone"),
+            ("confirmation", "standalone"),
+            ("confirmation", "fusion"),
+        ]:
+            values = [
+                r for r in rows if (r["task"], r["split"], r["group"]) == (task, split, group)
+            ]
+            assert len(values) == (44 if split == "selection" else 5)
+            reference = raw[next(r for r in values if r["component"] == "none")["id"]]
+            expected_labels = y_all[indices[task][split]]
+            for row in values:
+                evidence = raw[row["id"]]
+                assert torch.equal(evidence["labels"], expected_labels)
+                assert evidence["prediction"].shape == expected_labels.shape
+                correct = evidence["prediction"].eq(expected_labels)
+                assert row["correct"] == int(correct.sum()) and row["n"] == len(expected_labels)
+                assert row["top1"] == row["correct"] / row["n"]
+                assert row["paired"] == paired_counts(
+                    reference["prediction"].eq(expected_labels), correct
+                )
+        confirmation = [r for r in rows if r["task"] == task and r["split"] == "confirmation"]
+        lookup = {(r["group"], r["component"]): r for r in confirmation}
+        for component in ["attn", "mlp", "attn_mlp", "block"]:
+            keys = audit[task][component]["keys"]
+            assert (
+                len(keys)
+                == len(item["layers"])
+                * {"attn": 4, "mlp": 4, "attn_mlp": 8, "block": 12}[component]
+            )
+            assert len(keys) == len(set(keys))
+            assert all(
+                any(
+                    k.startswith(f"model.visual.transformer.resblocks.{i}.") for i in item["layers"]
+                )
+                for k in keys
+            )
+            assert (
+                audit[task][component]["replaced_values_match_anchor"]
+                and audit[task][component]["outside_support_matches_original"]
+            )
+            floor = decisions[task]["floors"][component]
+            assert floor["fusion_accuracy"] == lookup["fusion", component]["top1"]
+            assert (
+                abs(
+                    floor["standalone_loss_pp"]
+                    - 100
+                    * (
+                        lookup["standalone", "none"]["top1"]
+                        - lookup["standalone", component]["top1"]
+                    )
+                )
+                < 1e-9
+            )
+            assert (
+                abs(
+                    floor["direct_minus_reset_pp"]
+                    - 100 * (lookup["fusion", "none"]["top1"] - lookup["fusion", component]["top1"])
+                )
+                < 1e-9
+            )
+        dec = decisions[task]
+        assert not dec["new_defense"] and dec["selection_gate_passed"] == bool(eligible)
+        assert dec["confirmation_task_gate_passed"] == (
+            dec["floors"]["attn_mlp"]["standalone_loss_pp"] >= config["minimum_task_drop_pp"]
+        )
+        assert dec["necessary_support_gate_passed"] == (
+            dec["floors"]["attn_mlp"]["direct_minus_reset_pp"] >= config["minimum_fusion_drop_pp"]
+        )
+        assert dec["full_block_gate_passed"] == (
+            dec["floors"]["block"]["direct_minus_reset_pp"] >= config["minimum_fusion_drop_pp"]
+        )
+    result = dict(
+        status="passed",
+        raw_rows_checked=len(rows),
+        source_and_checkpoint_hashes_verified=True,
+        dataset_labels_and_subset_exclusions_verified=True,
+        frozen_target_only_selection_verified=True,
+        reset_coverage_verified=True,
+        new_defense=False,
+        results_sha256=sha(path / "results.json"),
+        validator_source_sha256=sha(__file__),
+    )
+    (path / "validation.json").write_text(json.dumps(result, indent=2) + "\n")
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--task-support", action="store_true")
+    mode.add_argument("--task-profile", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -2803,7 +3007,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_task_support
+        validate_task_profile
+        if args.task_profile
+        else validate_task_support
         if args.task_support
         else validate_class_recompile
         if args.class_recompile

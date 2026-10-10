@@ -1614,6 +1614,301 @@ def task_support(args):
     print("TASK_SUPPORT_COMPLETE", json.dumps(selection), flush=True)
 
 
+@torch.no_grad()
+def task_profile(args):
+    """Profile target-only dependencies, freeze local regions, then audit eight-task recovery."""
+    import sys
+    import types
+
+    from eight_task_benchmark import merge_all
+    from torch.utils.data import DataLoader, TensorDataset
+
+    config = json.loads(Path(args.config).read_bytes())
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    (out / "artifacts").mkdir()
+    save_json(out / "protocol.json", config)
+    torch.set_num_threads(4)
+    torch.manual_seed(config["seed"])
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    load = checkpoint_loader(Path(args.author_repo))
+    package = types.ModuleType("dataset")
+    package.__path__ = [str((Path(args.author_repo) / "datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    root = Path(args.checkpoints)
+    manifest = json.loads(Path("configs/checkpoints.json").read_bytes())
+    # The manifest has already verified these exact Task Arithmetic files.
+    anchor = load(str(root / "zeroshot.pt"))
+    rows, predictions, indices, selections = [], {}, {}, {}
+    checkpoint_hashes, dataset_hashes = {}, {}
+    excluded = set()
+    for folder in config["mnist_exclusions"]:
+        saved = json.loads((Path(folder) / "training_indices.json").read_bytes())
+        for key, value in saved.items():
+            if key == "MNIST" or (isinstance(value, dict) and "MNIST" in value):
+                entries = value if key == "MNIST" else value["MNIST"]
+                if isinstance(entries, dict):
+                    excluded.update(itertools.chain.from_iterable(entries.values()))
+                else:
+                    excluded.update(entries)
+            elif key == "calibration" and isinstance(value, list):
+                excluded.update(value)
+    save_json(out / "excluded_mnist_indices.json", sorted(excluded))
+
+    def cached_loader(dataset, selected):
+        batches = list(make_loader(dataset, selected))
+        x, y = torch.cat([v[0] for v in batches]), torch.cat([v[1] for v in batches])
+        return DataLoader(TensorDataset(x, y), batch_size=128, shuffle=False, pin_memory=True)
+
+    def record(task, model, head, loader, split, group, component, layers):
+        pred, labels = [], []
+        score = evaluate(
+            model,
+            head,
+            loader,
+            "cuda",
+            prediction_sink=lambda p, y: (pred.append(p.clone()), labels.append(y.clone())),
+        )
+        p, y = torch.cat(pred), torch.cat(labels)
+        identifier = f"measurement_{len(rows):03d}"
+        ref = next(
+            (
+                r
+                for r in rows
+                if r["task"] == task
+                and r["split"] == split
+                and r["group"] == group
+                and r["component"] == "none"
+            ),
+            None,
+        )
+        reference = predictions[ref["id"]] if ref else dict(prediction=p, labels=y)
+        assert torch.equal(y, reference["labels"])
+        row = dict(
+            id=identifier,
+            task=task,
+            split=split,
+            group=group,
+            component=component,
+            layers=layers,
+            paired=paired_counts(reference["prediction"].eq(y), p.eq(y)),
+            **score,
+        )
+        rows.append(row)
+        predictions[identifier] = dict(prediction=p, labels=y)
+        save_json(out / "results.json", rows)
+        print(
+            "TASK_PROFILE_RESULT",
+            task,
+            split,
+            group,
+            component,
+            layers,
+            score["correct"],
+            score["n"],
+            flush=True,
+        )
+        return row
+
+    for offset, task in enumerate(config["tasks"]):
+        original = load(str(root / task / "finetuned.pt"))
+        head = load(str(root / f"head_{task}.pt"))
+        dataset = get_dataset(
+            task, original.val_preprocess, args.data, batch_size=128, num_workers=2
+        ).train_dataset
+        targets = getattr(dataset, "targets", None)
+        if targets is None:
+            targets = [target for _, target in dataset._samples]
+        labels = torch.as_tensor(targets, dtype=torch.int64)
+        dataset_hashes[task] = dict(
+            train_count=len(dataset),
+            labels_sha256=hashlib.sha256(labels.numpy().tobytes()).hexdigest(),
+        )
+        generator = torch.Generator().manual_seed(config["seed"] + offset)
+        order = torch.randperm(len(dataset), generator=generator).tolist()
+        allowed = [i for i in order if task != "MNIST" or i not in excluded]
+        n, m = config["selection_samples"], config["confirmation_samples"][task]
+        assert len(allowed) >= n + m
+        indices[task] = dict(selection=allowed[:n], confirmation=allowed[n : n + m])
+        save_json(out / "training_indices.json", indices)
+        loader = cached_loader(dataset, indices[task]["selection"])
+        base = record(task, original, head, loader, "selection", "standalone", "none", [])
+        family = [(name, [layer]) for layer in range(12) for name in ["attn", "mlp", "attn_mlp"]]
+        family += [("attn_mlp", list(window)) for window in config["windows"]]
+        family += [(name, list(range(12))) for name in ["attn", "mlp", "attn_mlp"]]
+        candidates = []
+        for component, layers in family:
+            model, _ = replace_components(original, anchor, layers, component)
+            measured = record(
+                task, model, head, loader, "selection", "standalone", component, layers
+            )
+            measured["standalone_loss_pp"] = 100 * (base["top1"] - measured["top1"])
+            if component == "attn_mlp" and len(layers) <= config["maximum_local_blocks"]:
+                candidates.append(measured)
+            del model
+        eligible = [
+            r for r in candidates if r["standalone_loss_pp"] >= config["minimum_task_drop_pp"]
+        ]
+        chosen = (
+            min(eligible, key=lambda r: (len(r["layers"]), -r["standalone_loss_pp"], r["layers"]))
+            if eligible
+            else max(candidates, key=lambda r: (r["standalone_loss_pp"], [-i for i in r["layers"]]))
+        )
+        selections[task] = dict(
+            layers=chosen["layers"],
+            measurement_id=chosen["id"],
+            selection_loss_pp=chosen["standalone_loss_pp"],
+            selection_gate_passed=bool(eligible),
+            partner_used=False,
+            global_minimality=False,
+            inputs=[
+                f"{task}/finetuned.pt",
+                "zeroshot.pt",
+                f"head_{task}.pt",
+                f"{task} training selection labels",
+            ],
+        )
+        for filename in [f"{task}/finetuned.pt", f"head_{task}.pt"]:
+            checkpoint_hashes[filename] = digest(root / filename)
+        save_json(out / "results.json", rows)
+        save_json(out / "selection.json", selections)
+        del original, head, dataset, loader
+    selection_sha = digest(out / "selection.json")
+    # Every target's region is frozen before any future fusion partner is loaded.
+    save_json(
+        out / "selection_freeze.json",
+        dict(selection_sha256=selection_sha, rows_before_partner=len(rows), partner_loaded=False),
+    )
+    fusion = json.loads(Path(config["fusion_config"]).read_bytes())
+    assert fusion["coefficient"] == config["coefficient"]
+    models = {task: load(str(root / task / "finetuned.pt")) for task in fusion["tasks"]}
+    models["anchor"] = anchor
+    baseline_fusion = merge_all(models, root, config["coefficient"])
+    decisions, reset_audits = {}, {}
+    for task in config["tasks"]:
+        original = models[task]
+        head = load(str(root / f"head_{task}.pt"))
+        dataset = get_dataset(
+            task, original.val_preprocess, args.data, batch_size=128, num_workers=2
+        ).train_dataset
+        loader = cached_loader(dataset, indices[task]["confirmation"])
+        baseline = record(task, original, head, loader, "confirmation", "standalone", "none", [])
+        direct = record(task, baseline_fusion, head, loader, "confirmation", "fusion", "none", [])
+        floors = {}
+        reset_audits[task] = {}
+        for component in ["attn", "mlp", "attn_mlp", "block"]:
+            local, keys = replace_components(
+                original, anchor, selections[task]["layers"], component
+            )
+            state, base, before = local.state_dict(), anchor.state_dict(), original.state_dict()
+            assert all(torch.equal(state[k], base[k]) for k in keys)
+            assert all(torch.equal(v, before[k]) for k, v in state.items() if k not in keys)
+            reset_audits[task][component] = dict(
+                keys=keys, replaced_values_match_anchor=True, outside_support_matches_original=True
+            )
+            single = record(
+                task,
+                local,
+                head,
+                loader,
+                "confirmation",
+                "standalone",
+                component,
+                selections[task]["layers"],
+            )
+            trial = dict(models)
+            trial[task] = local
+            combined = merge_all(trial, root, config["coefficient"])
+            recovered = record(
+                task,
+                combined,
+                head,
+                loader,
+                "confirmation",
+                "fusion",
+                component,
+                selections[task]["layers"],
+            )
+            floors[component] = dict(
+                standalone_loss_pp=100 * (baseline["top1"] - single["top1"]),
+                fusion_accuracy=recovered["top1"],
+                direct_minus_reset_pp=100 * (direct["top1"] - recovered["top1"]),
+            )
+            del combined, local, trial
+        decisions[task] = dict(
+            selection_gate_passed=selections[task]["selection_gate_passed"],
+            confirmation_task_gate_passed=floors["attn_mlp"]["standalone_loss_pp"]
+            >= config["minimum_task_drop_pp"],
+            necessary_support_gate_passed=floors["attn_mlp"]["direct_minus_reset_pp"]
+            >= config["minimum_fusion_drop_pp"],
+            full_block_gate_passed=floors["block"]["direct_minus_reset_pp"]
+            >= config["minimum_fusion_drop_pp"],
+            floors=floors,
+            new_defense=False,
+        )
+        del head, dataset, loader
+    assert digest(out / "selection.json") == selection_sha
+    save_json(out / "decision.json", decisions)
+    save_json(out / "reset_audit.json", reset_audits)
+    raw = out / "artifacts/predictions.pt"
+    torch.save(predictions, raw)
+    checkpoint_hashes.update({"zeroshot.pt": digest(root / "zeroshot.pt")})
+    checkpoint_hashes.update(
+        {f"{task}/finetuned.pt": digest(root / task / "finetuned.pt") for task in fusion["tasks"]}
+    )
+    expected = {
+        item["path"].removeprefix("ViT-B-32/"): item["sha256"] for item in manifest["files"]
+    }
+    assert all(value == expected[name] for name, value in checkpoint_hashes.items())
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            new_defense=False,
+            fits=0,
+            optimizer_steps=0,
+            source_sha256=digest(__file__),
+            config_sha256=digest(args.config),
+            selection_sha256=selection_sha,
+            indices_sha256=digest(out / "training_indices.json"),
+            predictions_sha256=digest(raw),
+            helper_sha256={
+                name: digest(Path(__file__).with_name(name))
+                for name in ["clip_benchmark.py", "subspace_probe.py", "eight_task_benchmark.py"]
+            },
+            checkpoint_sha256=checkpoint_hashes,
+            manifest_sha256=digest("configs/checkpoints.json"),
+            dataset_metadata=dataset_hashes,
+            upstream_sha256={
+                name: digest(Path(args.author_repo) / name)
+                for name in [
+                    "modeling.py",
+                    "utils.py",
+                    "task_vectors.py",
+                    "datasets/registry.py",
+                    "datasets/cars.py",
+                    "datasets/mnist.py",
+                    "datasets/dtd.py",
+                ]
+            },
+            test_usage="none",
+            data=args.data,
+            checkpoint_root=str(root),
+            author_repo=args.author_repo,
+            partner_loaded_after_selection=True,
+            elapsed_seconds=time.perf_counter() - start,
+            row_count=len(rows),
+            scope="Bounded support screening on training data. Public full-support resets give achievable recovery floors, not upper bounds on all attacks.",
+        ),
+    )
+    assert manifest
+    print("TASK_PROFILE_COMPLETE", json.dumps(decisions), flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/operator_diagnostics.json")
@@ -1629,6 +1924,7 @@ if __name__ == "__main__":
     )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--task-support", action="store_true")
+    mode.add_argument("--task-profile", action="store_true")
     mode.add_argument("--reconstruction-budget", action="store_true")
     mode.add_argument("--reconstruction-context", action="store_true")
     mode.add_argument("--readout-recovery", action="store_true")
@@ -1637,7 +1933,9 @@ if __name__ == "__main__":
     mode.add_argument("--readout-sensitivity", metavar="CERTIFICATE_RUN")
     args = parser.parse_args()
     (
-        task_support
+        task_profile
+        if args.task_profile
+        else task_support
         if args.task_support
         else readout_sensitivity
         if args.readout_sensitivity
