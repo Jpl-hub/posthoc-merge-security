@@ -1526,10 +1526,73 @@ def validate_subspace_interference(path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_eight_task_resources(path: Path, write_report=True):
+    """Audit test counts and saved predictions without claiming full reproduction."""
+    config = json.loads(Path("configs/eight_tasks.json").read_bytes())
+    checks = []
+    for prefix in ["expert", "merged_resource"]:
+        for result in sorted(path.glob(f"*/{prefix}_checks.json")):
+            folder = result.parent
+            rows = json.loads(result.read_bytes())
+            meta = json.loads((folder / f"{prefix}_check_metadata.json").read_bytes())
+            source = json.loads((folder / "source_validation.json").read_bytes())
+            assert source["source_sha256"] == meta["source_sha256"]
+            assert source["matches_committed_source"]
+            assert meta["completed"] and not meta["eight_task_result"]
+            assert [r["dataset"] for r in rows] == meta["tasks"]
+            assert len(meta["tasks"]) == len(set(meta["tasks"]))
+            raw = folder / f"{prefix}_predictions.pt"
+            saved = None
+            if raw.exists():
+                import torch
+
+                assert hashlib.sha256(raw.read_bytes()).hexdigest() == meta["predictions_sha256"]
+                saved = torch.load(raw, map_location="cpu", weights_only=True)
+                assert set(saved) == set(meta["tasks"])
+            for row in rows:
+                task = row["dataset"]
+                assert row["stage"] == "resource_validation" and not row["eight_task_result"]
+                assert row["n"] == config["expected_test_counts"][task]
+                assert 0 <= row["correct"] <= row["n"]
+                assert row["top1"] == row["correct"] / row["n"]
+                if prefix == "merged_resource":
+                    assert row["group"] == "eight_expert_resource_check"
+                    assert row["merge_tasks"] == meta["merge_tasks"] == config["tasks"]
+                    assert len(row["merge_tasks"]) == 8
+                    assert row["coefficient"] == meta["coefficient"] == config["coefficient"]
+                else:
+                    assert row["group"] == "official_expert_check"
+                if saved is not None:
+                    pred, labels = saved[task]["prediction"], saved[task]["labels"]
+                    assert pred.shape == labels.shape == (row["n"],)
+                    assert int((pred == labels).sum()) == row["correct"]
+            checks.append(
+                dict(
+                    directory=folder.name,
+                    rows=len(rows),
+                    raw_predictions_checked=saved is not None,
+                    results_sha256=hashlib.sha256(result.read_bytes()).hexdigest(),
+                    source_commit=source["source_commit"],
+                )
+            )
+    assert checks, "No completed resource evaluations"
+    report = dict(
+        status="passed",
+        checks=checks,
+        all_raw_predictions_checked=all(c["raw_predictions_checked"] for c in checks),
+        full_eight_task_accuracy_reported=False,
+        paper_table_reproduced=False,
+    )
+    if write_report:
+        (path / "resource_validation.json").write_text(json.dumps(report, indent=2))
+    print(json.dumps(report))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument(
         "--subspace-interference", action="store_true", help="Validate complement interference."
     )
@@ -1561,7 +1624,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_subspace_interference
+        validate_eight_task_resources
+        if args.eight_task_resources
+        else validate_subspace_interference
         if args.subspace_interference
         else validate_context_erasure
         if args.context_erasure

@@ -16,6 +16,7 @@ import shutil
 import stat
 import tarfile
 import zipfile
+from collections import Counter
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -298,6 +299,58 @@ def prepare_resisc_images(root, indices):
     )
 
 
+def prepare_sun397_indices(root, author_repo):
+    """Verify a pinned copy of the original named partitions, without images."""
+    revision = "99bbf6ad18ca4f01e47f8f96ca1a8b7e53cb235a"
+    url = f"https://huggingface.co/zhengli97/SUN397_Dataset/resolve/{revision}/Partitions.zip"
+    expected_sha = "e3311ea5f812d4cc6faef194688343d1111f6cd6f70f2c62f393c2b8d6ba1ec9"
+    folder = root / "SUN397_sources"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / "Partitions.zip"
+    download_url(url, str(folder), filename=path.name)
+    assert path.stat().st_size == 18293705
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == expected_sha
+    records, split_sets = [], []
+    with zipfile.ZipFile(path) as archive:
+        classes = archive.read("ClassName.txt").decode().splitlines()
+        assert len(classes) == len(set(classes)) == 397
+        for split, name in [("train", "Training_01.txt"), ("test", "Testing_01.txt")]:
+            payload = archive.read(name)
+            names = payload.decode().splitlines()
+            assert len(names) == len(set(names)) == 19850
+            assert all(n.startswith("/") and ".." not in Path(n).parts for n in names)
+            counts = Counter(str(Path(n).parent) for n in names)
+            assert set(counts) == set(classes) and set(counts.values()) == {50}
+            destination = folder / name
+            if destination.exists():
+                assert destination.read_bytes() == payload
+            else:
+                destination.write_bytes(payload)
+            records.append(
+                dict(split=split, count=len(names), sha256=hashlib.sha256(payload).hexdigest())
+            )
+            split_sets.append(set(names))
+    assert not split_sets[0].intersection(split_sets[1])
+    return dict(
+        task="SUN397",
+        status="indices_ready_images_missing",
+        dataset_ready=False,
+        partition=1,
+        source="pinned_mirror_of_named_original_partitions",
+        mirror_revision=revision,
+        archive_url=url,
+        archive_sha256=expected_sha,
+        digest_provenance="mirror_LFS_SHA256; not a separately published original checksum",
+        classes_sha256=hashlib.sha256("\n".join(classes).encode()).hexdigest(),
+        author_source_sha256=hashlib.sha256(
+            (author_repo / "datasets/sun397.py").read_bytes()
+        ).hexdigest(),
+        splits=records,
+        image_download="not_performed",
+        calibration_usage="none",
+    )
+
+
 def main(args):
     torch.set_num_threads(4)
     root, output = Path(args.data).resolve(), Path(args.output)
@@ -311,6 +364,8 @@ def main(args):
                 row = prepare_gtsrb(root, Path(args.author_repo))
             elif task == "Cars":
                 row = prepare_cars(root, Path(args.author_repo))
+            elif task == "SUN397":
+                row = prepare_sun397_indices(root, Path(args.author_repo))
             else:
                 row = prepare_resisc_indices(root, Path(args.author_repo))
                 if args.resisc_images:
@@ -330,7 +385,10 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--tasks", nargs="+", choices=["DTD", "GTSRB", "RESISC45", "Cars"], default=["DTD", "GTSRB"]
+        "--tasks",
+        nargs="+",
+        choices=["DTD", "GTSRB", "RESISC45", "Cars", "SUN397"],
+        default=["DTD", "GTSRB"],
     )
     parser.add_argument("--data", default="data")
     parser.add_argument("--output", default="outputs/2026-10-09/eight_task/data_1810")
