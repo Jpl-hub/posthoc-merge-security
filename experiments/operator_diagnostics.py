@@ -138,6 +138,99 @@ def query_readout(model, head, images, capture_features=False):
 
 
 @torch.no_grad()
+def readout_sensitivity(args):
+    """Enumerate all single MNIST target changes in the fixed linear readout.
+
+    This oracle diagnostic uses confirmation labels to summarize the worst
+    case. It is not a deployable protection or a held-out selected candidate.
+    """
+    parent = Path(args.readout_sensitivity)
+    prior = json.loads((parent / "metadata.json").read_bytes())
+    config = json.loads((parent / "protocol.json").read_bytes())
+    raw = parent / "artifacts/certificate.pt"
+    assert prior["completed"] and digest(raw) == prior["certificate_sha256"]
+    teacher_parent = Path(config["parent"])
+    teacher_meta = json.loads((teacher_parent / "metadata.json").read_bytes())
+    target_file = teacher_parent / "artifacts/teacher_predictions.pt"
+    assert digest(target_file) == teacher_meta["teacher_predictions_sha256"]
+    saved = torch.load(raw, map_location="cpu", weights_only=True)
+    classes = torch.load(target_file, map_location="cpu", weights_only=True)["readout_protected"]
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    (out / "artifacts").mkdir()
+    save_json(
+        out / "protocol.json",
+        dict(
+            parent=str(parent),
+            changed_queries=1,
+            trials=256 * 9,
+            scope="exact linear readout; every one of 256 MNIST targets changed to every other class",
+            selection="oracle worst case on already inspected confirmation labels; not a held-out defense result",
+            new_defense=False,
+            test_usage="none",
+        ),
+    )
+    torch.set_num_threads(4)
+    start = time.perf_counter()
+    influence = saved["influence"].cuda()
+    targets = torch.nn.functional.one_hot(classes.cuda(), 10).double()
+    scores = influence @ targets
+    baseline = scores.argmax(-1)
+    assert torch.equal(baseline.cpu(), saved["prediction"])
+    labels = saved["labels"].cuda()
+    identity = torch.eye(10, dtype=torch.float64, device="cuda")
+    cases = []
+    for j in range(256):
+        change = identity - identity[int(classes[j])]
+        altered = scores.unsqueeze(0) + influence[:, j][None, :, None] * change[:, None, :]
+        predicted = altered.argmax(-1)
+        counts = predicted.eq(labels[None, :]).sum(dim=1).cpu()
+        disagreements = predicted.ne(baseline[None, :]).sum(dim=1).cpu()
+        for new_class in range(10):
+            if new_class != int(classes[j]):
+                cases.append([j, new_class, int(counts[new_class]), int(disagreements[new_class])])
+    cases = torch.tensor(cases)
+    assert cases.shape == (2304, 4)
+    worst = cases[cases[:, 2].argmin()].tolist()
+    best = cases[cases[:, 2].argmax()].tolist()
+    rows = dict(
+        n=len(labels),
+        trials=len(cases),
+        baseline_correct=int(baseline.eq(labels).sum()),
+        worst_correct=worst[2],
+        best_correct=best[2],
+        worst_changed_query_index=worst[0],
+        worst_new_class=worst[1],
+        worst_prediction_disagreements=worst[3],
+        max_prediction_disagreements=int(cases[:, 3].max()),
+        median_correct=float(cases[:, 2].double().median()),
+        worst_accuracy=worst[2] / len(labels),
+        worst_loss_pp=100 * (int(baseline.eq(labels).sum()) - worst[2]) / len(labels),
+    )
+    save_json(out / "results.json", rows)
+    torch.save(cases, out / "artifacts/cases.pt")
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            new_defense=False,
+            new_models=0,
+            new_teacher_queries=0,
+            new_fits=0,
+            ground_truth_used="oracle diagnostic summarization, not fitting or a valid selected defense",
+            test_usage="none",
+            source_sha256=digest(__file__),
+            parent_certificate_sha256=digest(raw),
+            parent_metadata_sha256=digest(parent / "metadata.json"),
+            cases_sha256=digest(out / "artifacts/cases.pt"),
+            results_sha256=digest(out / "results.json"),
+            seconds=time.perf_counter() - start,
+        ),
+    )
+    print("READOUT_SENSITIVITY_COMPLETE", json.dumps(rows), flush=True)
+
+
+@torch.no_grad()
 def readout_stability(args):
     """Certify a fixed ridge readout against any k changed MNIST query labels.
 
@@ -1303,9 +1396,12 @@ if __name__ == "__main__":
     mode.add_argument("--readout-recovery", action="store_true")
     mode.add_argument("--evaluate-readout", metavar="FROZEN_RUN")
     mode.add_argument("--readout-stability", metavar="FROZEN_RUN")
+    mode.add_argument("--readout-sensitivity", metavar="CERTIFICATE_RUN")
     args = parser.parse_args()
     (
-        readout_stability
+        readout_sensitivity
+        if args.readout_sensitivity
+        else readout_stability
         if args.readout_stability
         else evaluate_readout
         if args.evaluate_readout
