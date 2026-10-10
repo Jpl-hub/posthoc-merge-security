@@ -61,14 +61,21 @@ def eight_protection_report(root: Path):
             + str({r["task"]: r["utility_prediction_changes"] for r in comparisons})
         )
     )
+    changed = [r for r in comparisons if r["aga_merge_prediction_changes"]]
     recovery = (
-        "AGA 后两组融合预测逐图相同；本配置未抵抗恢复。"
+        "AGA 后两组融合预测逐图相同。"
         if identical_aga
         else (
-            "AGA 两组融合预测变化数："
-            + str({r["task"]: r["aga_merge_prediction_changes"] for r in comparisons})
+            "AGA 后融合预测差异："
+            + "；".join(f"{r['task']} {r['aga_merge_prediction_changes']} 张" for r in changed)
+            + f"，其余 {len(tasks) - len(changed)} 任务逐图相同。"
         )
     )
+    if all(
+        keyed[t, "AGA_params_merge"]["top1"] >= keyed[t, "AGA_unprotected_merge"]["top1"]
+        for t in tasks
+    ):
+        recovery += "七任务恢复后准确率均不低于匹配未保护对照；本配置未抵抗 AGA。"
     text = (
         "# PaRaMS 与原作者 AGA：七任务完整测试\n\n"
         "每次只保护并恢复一个专家，融合始终包含八专家，TA 系数固定 0.2。"

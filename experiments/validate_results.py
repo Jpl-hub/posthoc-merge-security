@@ -2155,6 +2155,108 @@ def validate_subspace_test(path: Path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_joint_diagnostics(path: Path, write_report=True):
+    """Recount fixed-release calibration/confirmation predictions and fit replay."""
+    import torch
+    from operator_diagnostics import paired_counts
+
+    meta = json.loads((path / "metadata.json").read_bytes())
+    protocol = json.loads((path / "protocol.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    errors = json.loads((path / "layer_errors.json").read_bytes())
+    parent = Path(protocol["parent"])
+    indices = json.loads((parent / "training_indices.json").read_bytes())
+    fitting = json.loads((parent / "fitting.json").read_bytes())
+    assert meta["completed"] and meta["no_parameters_fitted_or_selected"]
+    assert meta["calibrated_block_targets_replayed"]
+    assert protocol["subsets"] == {
+        "calibration": indices["calibration"],
+        "confirmation_prefix_256": indices["confirmation"]["MNIST"][:256],
+    }
+    assert not set(protocol["subsets"]["calibration"]) & set(
+        protocol["subsets"]["confirmation_prefix_256"]
+    )
+    for key, file in [
+        ("parent_release_sha256", parent / "artifacts/release.pt"),
+        ("parent_protocol_sha256", parent / "protocol.json"),
+        ("parent_indices_sha256", parent / "training_indices.json"),
+        ("predictions_sha256", path / "artifacts/predictions.pt"),
+    ]:
+        assert meta[key] == hashlib.sha256(file.read_bytes()).hexdigest()
+    assert (
+        meta["source_sha256"]
+        == hashlib.sha256(Path("experiments/joint_diagnostics.py").read_bytes()).hexdigest()
+    )
+    for name, value in meta["helpers_sha256"].items():
+        assert value == hashlib.sha256((Path("experiments") / name).read_bytes()).hexdigest()
+    raw = torch.load(path / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    expected = {(s, g) for s in protocol["subsets"] for g in ["unprotected", "joint_transfer"]}
+    assert len(rows) == len(raw) == 4 and set(raw) == expected
+    assert {(r["subset"], r["group"]) for r in rows} == expected
+    for row in rows:
+        item = raw[row["subset"], row["group"]]
+        pred, labels = item["prediction"], item["labels"]
+        assert pred.shape == labels.shape == (256,) and row["n"] == 256
+        assert int(pred.eq(labels).sum()) == row["correct"]
+        assert row["top1"] == row["correct"] / row["n"]
+        reference = raw[row["subset"], "unprotected"]
+        assert torch.equal(labels, reference["labels"])
+        if row["group"] == "unprotected":
+            assert row["paired"] is None
+        else:
+            assert row["paired"] == paired_counts(
+                reference["prediction"].eq(labels), pred.eq(labels)
+            )
+    assert len(errors) == 24
+    assert {(e["subset"], e["layer"]) for e in errors} == {
+        (s, layer) for s in protocol["subsets"] for layer in range(12)
+    }
+    for row in errors:
+        assert all(math.isfinite(v) for v in row.values() if isinstance(v, (float, int)))
+        assert math.isclose(
+            row["residual_target_relative_error"] * row["residual_target_to_teacher_norm"],
+            row["original_block_relative_error"],
+            rel_tol=1e-9,
+        )
+        assert (
+            row["recorded_calibration_residual"]
+            == fitting[row["layer"]]["residual_target_relative_error"]
+        )
+        if row["subset"] == "calibration":
+            assert math.isclose(
+                row["residual_target_relative_error"],
+                row["recorded_calibration_residual"],
+                rel_tol=2e-5,
+            )
+    last = next(e for e in errors if e["subset"] == "calibration" and e["layer"] == 11)
+    original_check = json.loads((parent / "calibration_check.json").read_bytes())
+    assert math.isclose(
+        last["actual_block_relative_error"],
+        original_check["final_block_relative_error"],
+        rel_tol=1e-8,
+    )
+    report = dict(
+        status="passed",
+        rows=4,
+        raw_predictions_checked=True,
+        no_refit_or_new_candidate=True,
+        confirmation_previously_inspected=True,
+        results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+        validator_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        checks=[
+            "exact frozen parent release",
+            "subset indices and disjointness",
+            "raw paired prediction recount",
+            "calibrated block target replay",
+            "finite relative errors and norm identities",
+            "runner and helper source hashes",
+        ],
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report))
+
+
 def validate_eight_protection(path: Path, write_report=True):
     """Audit each protected expert against its matching author-AGA control."""
     import torch
@@ -2384,6 +2486,7 @@ if __name__ == "__main__":
     mode.add_argument("--context-erasure", action="store_true", help="Validate context deletion.")
     mode.add_argument("--redundancy-erasure", action="store_true")
     mode.add_argument("--joint-transfer", action="store_true")
+    mode.add_argument("--joint-diagnostics", action="store_true")
     mode.add_argument("--subspace", action="store_true", help="Validate the subspace probe.")
     mode.add_argument(
         "--reconstruction-context",
@@ -2429,6 +2532,8 @@ if __name__ == "__main__":
         if args.redundancy_erasure
         else validate_joint_transfer
         if args.joint_transfer
+        else validate_joint_diagnostics
+        if args.joint_diagnostics
         else validate_reconstruction_context
         if args.reconstruction_context
         else validate_reconstruction_budget

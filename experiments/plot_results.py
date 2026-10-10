@@ -785,6 +785,77 @@ def plot_distribution_shift(root: Path):
     print("SHIFT_FIGURE_WRITTEN", out)
 
 
+def plot_joint_diagnostics(root: Path):
+    """Keep calibration fit, classification and confirmation error separate."""
+    protocol = json.loads((root / "protocol.json").read_bytes())
+    rows = json.loads((root / "results.json").read_bytes())
+    errors = json.loads((root / "layer_errors.json").read_bytes())
+    fits = json.loads((Path(protocol["parent"]) / "fitting.json").read_bytes())
+    keyed = {(r["subset"], r["group"]): r["top1"] * 100 for r in rows}
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(1, 3, figsize=(10.5, 3.2), layout="constrained")
+    subsets = list(protocol["subsets"])
+    for i, group in enumerate(["unprotected", "joint_transfer"]):
+        values = [keyed[s, group] for s in subsets]
+        positions = np.arange(2) + (i - 0.5) * 0.3
+        axes[0].bar(
+            positions,
+            values,
+            width=0.28,
+            color=COLORS[i],
+            label="Unprotected" if i == 0 else "Rejected release",
+        )
+        for x, value in zip(positions, values, strict=True):
+            axes[0].text(x, value + 1, f"{value:.2f}", ha="center", fontsize=7)
+    axes[0].set(
+        xticks=[0, 1],
+        xticklabels=["Calibration\n256 images", "Confirmation prefix\n256 inspected images"],
+        ylim=(0, 108),
+        ylabel="Accuracy (%)",
+        title="Calibration utility is insufficient",
+    )
+    axes[0].legend(fontsize=7, loc="lower left")
+    for i, subset in enumerate(subsets):
+        values = [e["actual_block_relative_error"] * 100 for e in errors if e["subset"] == subset]
+        axes[1].plot(
+            range(12),
+            values,
+            "o-",
+            color=COLORS[i],
+            label="Calibration" if i == 0 else "Confirmation prefix",
+        )
+    axes[1].set(
+        xlabel="Block",
+        ylabel="Relative block output error (%)",
+        title="Error outside the fitting images",
+        xticks=[0, 3, 6, 9, 11],
+    )
+    axes[1].legend(fontsize=7)
+    for i, (name, label) in enumerate(
+        [("attention_input_projection", "QKV"), ("mlp_input_projection", "MLP input")]
+    ):
+        tail = [(1 - f[name]["centered_input_energy_retained"]) * 100 for f in fits]
+        response = [f[name]["linear_response_energy_removed_fraction"] * 100 for f in fits]
+        axes[2].scatter(tail, response, color=COLORS[i], label=label, s=22)
+    axes[2].set(
+        xscale="log",
+        xlabel="Discarded input variance (%)",
+        ylabel="Removed linear response energy (%)",
+        title="Input variance is a limited proxy",
+    )
+    axes[2].legend(fontsize=7)
+    for ax in axes:
+        ax.grid(alpha=0.2)
+    fig.suptitle(
+        "Fixed joint-transfer diagnosis: training subsets, no parameter refit or new candidate\n"
+        "Confirmation prefix was already evaluated; representation error is not an accuracy bound",
+        fontsize=9,
+    )
+    save(fig, out, "joint_transfer_diagnostics")
+    print("JOINT_DIAGNOSTIC_FIGURES_WRITTEN", out)
+
+
 def plot_eight_protection(root: Path):
     """Plot per-task author-AGA controls without an incomplete eight-task mean."""
     rows = json.loads((root / "results.json").read_bytes())
@@ -1424,6 +1495,7 @@ if __name__ == "__main__":
     mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
     mode.add_argument("--redundancy-erasure", action="store_true")
     mode.add_argument("--joint-transfer", action="store_true")
+    mode.add_argument("--joint-diagnostics", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
     mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
@@ -1464,6 +1536,8 @@ if __name__ == "__main__":
         if args.redundancy_erasure
         else plot_joint_transfer
         if args.joint_transfer
+        else plot_joint_diagnostics
+        if args.joint_diagnostics
         else plot_eight_protection
         if args.eight_protection
         else plot_distribution_shift
