@@ -1,0 +1,20 @@
+{
+  "tasks": [
+    "Cars",
+    "MNIST",
+    "DTD"
+  ],
+  "presets": [
+    "all_eight",
+    "omit_Cars",
+    "omit_MNIST",
+    "omit_DTD"
+  ],
+  "fusion_config": "configs/eight_tasks.json",
+  "parent": "outputs/2026-10-10/functional_contrast_cars",
+  "coefficient": 0.2,
+  "time_limit_seconds": 180,
+  "scope": "Additional expert-discard baseline on full official tests, separate from original AGA and paper-standard eight-expert results.",
+  "rule": "Replace the entire named expert by the public anchor, so its task vector is exactly zero. Retain coefficient 0.2 for every other expert without renormalization. No parameter selection, protection, calibration, fitting or optimizer steps.",
+  "interpretation": "For defenses that only change the discarded expert, its release cannot affect this baseline. The omission accuracy is an achievable attacker floor for the fixed partner pool and public classification heads, not a claim that an attacker recovers its original weights. Check partner-task utility as well."
+}

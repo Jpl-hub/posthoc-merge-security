@@ -1,0 +1,18 @@
+{
+  "task": "Cars",
+  "parent": "outputs/2026-10-11/fine_subspace_cars",
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "retained_input_covariance_energy": 0.99,
+  "time_limit_seconds": 180,
+  "presets": [
+    "original",
+    "direction_oracle",
+    "public_covariance"
+  ],
+  "scope": "Recovery-cost diagnostic on an unprotected expert, not a protected-model attack or a new defense.",
+  "oracle_access": "direction_oracle receives the defender's exact input directions and calibration means. It is a conditional diagnostic, not an attacker-only recovery result.",
+  "public_covariance_access": "Uses target-expert activations on public unlabeled calibration images, the public anchor and declared candidate edit sites. Does not use defender direction vectors to choose the projection. Feasibility after protection remains untested.",
+  "data_usage": "Reuse the frozen Cars calibration activations and previously inspected 2048-image Cars training confirmation. No official tests, new images, optimizer steps or response fitting.",
+  "rule": "For each eligible matrix, replace only the selected input projection of its task update by the public anchor and compensate its mean response in the bias. The oracle projection is rank one. The public projection is the covariance tail after retaining 99% input energy, confined to the declared edit coordinates. Freeze all projections before loading future partner checkpoints. No projection-rank search."
+}

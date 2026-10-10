@@ -2,10 +2,13 @@
 
 对已微调专家施加发布前后处理，保持原任务能力，检验对未经授权融合及自适应恢复的保护。目标独立准确率损失 ≤0.5 个百分点，同时完整报告性能与防御权衡；不进行额外梯度微调，有闭式拟合的实验明确记录校准数据。
 
-**目前没有达标的新防御。**最新 Cars 跨模块敏感性构造保留了独立性能，但直接融合仅下降 0.0373 pp，原版 AGA 后没有防御收益，已停止该构造。旧四层候选被 FC 替换和功能重建绕过；Cars 局部响应迁移未通过数值逆解检查。全部失败及历史结果保留。
+**目前没有达标的新防御。**Cars 细粒度预检找到七个稳定分离方向，但沿精确方向删除任务更新后，独立和融合正确集合均不变；方向由防御方提供，属于条件诊断。该轮没有构造保护模型。上一轮跨模块候选的直接融合仅下降 0.0373 pp，原版 AGA 没有收益。旧四层候选被 FC 替换和功能重建绕过。全部真实结果保留。
 
 ## 当前结果
 
+- [丢弃专家的完整测试基线](outputs/2026-10-11/expert_omission/summary.md)：固定系数，分别将目标任务向量置零，并检查伙伴任务；用于明确当前准确率指标的防御空间，不是原版 AGA 或恢复原权重的结果。
+- [沿输入子空间删除更新](outputs/2026-10-11/subspace_recovery_cars/summary.md)：七个精确方向投影的任务代价为零；公开协方差规则只覆盖部分方向，保护后恢复未验证。
+- [Cars 细粒度预检](outputs/2026-10-11/fine_subspace_cars/summary.md)：独立确认响应分离，实际编辑支持替换的条件恢复下限为 61.67%，未进入保护构造。
 - [Cars 跨模块功能敏感性](outputs/2026-10-10/functional_contrast_cars/summary.md)：两个冻结幅度、三个完整测试集、原版 AGA 及公开替换同条件对照；24 方向族的校准一阶 RMS 对比上限约 1.0933 倍，未获得有效防御。
 - [MNIST／Cars／DTD 关键区域定位](outputs/2026-10-10/task_profile/summary.md)：Cars 9–11 层联合替换的独立损失 11.47 pp、八专家融合下降 6.20 pp；这是未保护模型的替换基线。
 - [Cars 局部响应迁移](outputs/2026-10-10/task_relocation_cars/summary.md)：只使用目标与公开预训练模型，首层逆解未收敛；无独立准确率、AGA 或防御成功结果。
@@ -46,7 +49,20 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
 
-当前跨模块敏感性构造已得到负结果，不继续调幅度。如下入口用于复核冻结协议；预处理图片仅缓存在服务器内存。
+最新方向与替换代价的预检入口如下；两轮都没有构造保护模型。复核投影诊断需要服务器父实验的原始激活。丢弃专家检查使用完整官方测试，预处理图片只缓存在服务器内存。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/fine_subspace.py --config configs/fine_subspace_cars.json --output outputs/fine_check
+python experiments/validate_results.py --fine-subspace --output outputs/fine_check
+python experiments/plot_results.py --fine-subspace --output outputs/fine_check
+python experiments/subspace_recovery.py --config configs/subspace_recovery_cars.json --output outputs/projection_check
+python experiments/validate_results.py --subspace-recovery --output outputs/projection_check
+python experiments/plot_results.py --subspace-recovery --output outputs/projection_check
+python experiments/expert_omission.py --config configs/expert_omission.json --output outputs/omission_check
+python experiments/validate_results.py --expert-omission --output outputs/omission_check
+```
+
+此前的跨模块敏感性构造已得到负结果，不继续调幅度。如下入口用于复核冻结协议。
 
 ```bash
 JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/functional_contrast.py --config configs/functional_contrast_cars.json --output outputs/contrast_check
