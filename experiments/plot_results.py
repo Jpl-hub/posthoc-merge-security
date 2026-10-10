@@ -791,6 +791,40 @@ def plot_operator_diagnostics(root: Path):
     out = root / "figures"
     out.mkdir(exist_ok=True)
     lookup = {(r["preset"], r["split"], r["group"], r["dataset"]): r for r in rows}
+    if not config.get("components"):
+        task = config.get("protected_task", config.get("task"))
+        presets = list(dict.fromkeys(r["preset"] for r in rows if r["split"] == "confirmation"))
+        names = {
+            "unprotected": "Original",
+            "joint_mlp": "All MLPs",
+            "joint_attn": "All attention",
+            "joint_block": "All blocks\n(incl. LN)",
+            "public_backbone": "Public\nbackbone",
+            "readout_unprotected": "Readout\ncontrol",
+            "readout_protected": "Readout\nprotected",
+        }
+        fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0), layout="constrained")
+        for ax, group in zip(axes, ["standalone", "direct"], strict=True):
+            values = [100 * lookup[p, "confirmation", group, task]["top1"] for p in presets]
+            ax.bar(range(len(presets)), values, color=COLORS[: len(presets)])
+            for i, value in enumerate(values):
+                ax.text(i, value + 0.65, f"{value:.3f}", ha="center", fontsize=8)
+            ax.set(
+                xticks=range(len(presets)),
+                xticklabels=[names[p] for p in presets],
+                ylim=(0, 105),
+                ylabel="Accuracy (%)",
+                title=f"{'Standalone' if group == 'standalone' else 'Merged'} {task}",
+            )
+            ax.tick_params(axis="x", labelsize=7)
+            ax.grid(axis="y", alpha=0.2)
+        count = lookup[presets[0], "confirmation", "standalone", task]["n"]
+        fig.suptitle(
+            f"Frozen training confirmation subset: n={count:,}; TA 0.5; no new defense", fontsize=9
+        )
+        save(fig, out, "operator_confirmation")
+        print("OPERATOR_FIGURES_WRITTEN", out)
+        return
     components, layers = config["components"], config["layers"]
     fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.3), layout="constrained")
     matrices = [
