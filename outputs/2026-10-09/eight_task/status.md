@@ -1,81 +1,43 @@
-# 八任务资源状态
+# 八任务复现状态
 
-ViT-B/32；任务顺序、TA 系数 0.2 按论文设置。当前尚无八任务准确率。
+10 月 10 日。八个 Task Arithmetic 官方专家及全部 head 已齐；八专家融合在六个完整测试集上完成。**Table 6 尚未对齐，不能报告八任务均值。**
 
-| 任务 | 官方专家权重 | 官方 classification head | 测试划分 |
-|---|---|---|---|
-| SUN397 | 已从官方 Drive 取得 | 已取得 | 第 1 分割；19,850，图片待准备 |
-| Cars | 已从官方 Drive 取得 | 已取得 | 官方 test；8,041，待准备 |
-| RESISC45 | 已从官方 Drive 取得 | 已取得 | 6,300；图片与原索引已核验，作者入口已全量推理 |
-| EuroSAT | 已从官方 Drive 取得 | 已取得 | 2,700；原随机索引待取得 |
-| SVHN | 已验证 SHA256 | 已验证 SHA256 | 官方 test；26,032，已评价 |
-| GTSRB | 已从官方 Drive 取得 | 已取得 | 官方 test；12,630，原作者入口已全量推理 |
-| MNIST | 已验证 SHA256 | 已验证 SHA256 | 官方 test；10,000，已评价 |
-| DTD | 已从官方 Drive 取得 | 已取得 | 第 1 分割；1,880，原作者入口已全量推理 |
+| 任务 | 测试资源 | 原专家正确数 / 总数 | 八专家融合正确数 / 总数 | 融合准确率 | 论文 Table 6 基线 |
+|---|---|---:|---:|---:|---:|
+| SUN397 | 第 1 划分已核验，图片缺 | — | — | — | 61.75% |
+| Cars | 原 test 标注，镜像图片逐文件核验 | 6,245 / 8,041 | 4,990 / 8,041 | 62.06% | 55.52% |
+| RESISC45 | 原 6,300 索引与图片已核验 | 6,055 / 6,300 | 4,536 / 6,300 | 72.00% | 60.24% |
+| EuroSAT | 原随机索引缺 | — | — | — | 69.32% |
+| SVHN | 官方 test | 25,371 / 26,032 | 19,374 / 26,032 | 74.42% | 83.25% |
+| GTSRB | 官方 test 与 GT | 12,470 / 12,630 | 8,220 / 12,630 | 65.08% | 63.20% |
+| MNIST | 官方 test | 9,969 / 10,000 | 9,400 / 10,000 | 94.00% | 97.55% |
+| DTD | 官方 partition 1 test | 1,493 / 1,880 | 981 / 1,880 | 52.18% | 47.02% |
 
-官方 pretrained 权重已取得。来源、Drive ID、已有文件指纹在 `configs/checkpoints.json`。历史下载失败日志留在服务器；10 月 10 日修复代理后，八个官方专家与全部 head 已齐备。未用近似配置模型填补缺项。
+融合包含全部八个专家；这里只测试六个就绪任务，未减少融合模型数。固定系数 0.2 来自 [AGA 作者代码](https://github.com/krumpguo/secure-merge-attack/blob/fb61429f5e6f3517102d506697a150ac26abbdea/main_task_arithmetic.py#L78)，没有按测试结果扫系数。论文数字仅作对照，来自 [Table 6](https://arxiv.org/html/2606.30360v1)，不记作我们的结果。
 
-Task Arithmetic 作者确认 DTD、SUN397 使用第 1 分割，EuroSAT 为 21,600/2,700/2,700 随机划分，但缺少可直接复用的原始索引。[作者说明](https://github.com/mlfoundations/task_vectors/issues/1#issuecomment-1419521679)
+[五项专家计数](../../2026-10-10/eight_task/expert_checks_1252/expert_checks.json)、[Cars 专家计数](../../2026-10-10/eight_task/cars_expert_1330/expert_checks.json)、[八专家融合的六项计数](../../2026-10-10/eight_task/merged_ready_1330/merged_resource_checks.json)。[服务器原始预测核验](../../2026-10-10/eight_task/resource_validation.json)覆盖全部 12 条记录；预测文件仅存服务器。源码 commit 和 SHA256 随每个结果目录保存。
 
-公开 [tanganke MNIST model card](https://huggingface.co/tanganke/clip-vit-base-patch32_mnist) 标明另一套微调配置，不能默认视为官方 Drive 权重的等价镜像。
+## 对齐问题
 
-```bash
-python experiments/download_checkpoints.py --all-tasks --output outputs/2026-10-09/eight_task
-python experiments/eight_task_benchmark.py --check-only
-# 所有权重及数据齐备后，使用原 TaskVector.apply_to 和 dataset registry：
-OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark.py
-```
+作者原始 `eval.eval_single_dataset` 在 DTD、RESISC45 上复算，得到 52.18%、72.00%，与封装计数完全相同。[原入口核验](../../2026-10-10/eight_task/author_eval_1350/validation.json)。
 
-当前仅验证了资源检查入口；完整八任务执行尚未验证。默认先跑未保护基线，禁止缺少专家时悄悄缩减任务数。可选基变换保护仍是独立对照，不属于 Table 6 的原配置防御。
+单专家也与论文 Table 8 有差异，例如 DTD 为 79.41% 对 73.99%，RESISC45 为 96.11% 对 91.67%。因此应继续核对作者实际 checkpoint、head 与划分，而不能靠调融合系数填近表格。已取得文件来自 Task Arithmetic 官方 Drive；它们尚未被独立确认为 AGA 作者表格使用的精确文件。AGA 公开 README 没有提供这些实验文件的指纹。当前证据不足以确定差异原因。
 
-## 本轮实际推进
+## 资源来源与剩余阻塞
 
-官方六个缺失 checkpoint 再次返回配额限制，记录见 [下载清单](retry_1805/checkpoint_manifest.json)。沿 TSV 作者引用的 TALL 镜像取得 MNIST 候选，LFS SHA256 验证通过；但规范 model. 前缀后，与原权重 158 个字段全部不一致，其中 152 个是视觉字段，因此拒绝作为原权重替代。[逐参数比较](../continuation/mirror_check.json)。没有继续下载其他候选权重。
+17 个权重文件通过指纹、有限数值、专家结构与 head 类别数检查。[核验结果](../../2026-10-10/eight_task/expert_checks_1252/checkpoint_validation.json)。[下载清单](../../2026-10-10/eight_task/retry_proxy_1235_4090/checkpoint_manifest.json)与 `configs/checkpoints.json` 固定 Drive ID；新增 SHA256 是首次成功下载后的固定指纹，不是作者另行公布的校验值。
 
-DTD 使用 torchvision 官方 partition=1，train/val/test 各 1,880；在服务器建立作者 ImageFolder 入口。GTSRB 使用原作者 PyTorchGTSRB 和官方 GT。测试索引 SHA256 与原源码指纹见 [数据清单](data_1810/data_manifest.json)。
+Cars 固定镜像版本，核验 16,193 个 Git blob；devkit 验证原 MD5，原 train/test 标注与镜像内容相同，测试 8,041 张。[成功清单](../../2026-10-10/eight_task/cars_data_retry_1258/data_manifest.json)。[首次 devkit 请求失败](../../2026-10-10/eight_task/cars_data_1250/data_manifest.json)保留。
 
-pretrained + 官方 head 的完整测试：DTD 835/1,880（44.41%），GTSRB 4,112/12,630（32.56%）。这些是输入、标签和 head 推理检查，不能单独证明与原训练划分完全一致，也不是八任务融合结果。[原始计数](pretrained_1828/pretrained_checks.json)。
+SUN397 原网站返回 404；固定公开镜像中的命名划分，第 1 划分 train/test 各 19,850、每类各 50、互不重叠。[划分核验](../../2026-10-10/eight_task/sun_partitions_1345/data_manifest.json)。不使用丢失原文件名的 parquet 替代。正在流式读取约 39 GB 原归档，只保留第 1 划分图片；需要全归档原 MD5、镜像 SHA256、39,700 张覆盖均通过才标记就绪。[启动协议](../../2026-10-10/eight_task/sun_stream_1357/launch.json)。原分类列表与扁平目录顺序并非相同，标签按作者 ImageFolder 排序；[首次顺序检查失败](../../2026-10-10/eight_task/sun_stream_startup_failure/failure.json)保留。EuroSAT 作者说明为 21,600 / 2,700 / 2,700 随机划分，目前缺原索引，其他论文划分或重新抽样不能默认等价。[Task Arithmetic 作者说明](https://github.com/mlfoundations/task_vectors/issues/1#issuecomment-1419521679)。
 
-```bash
-python experiments/prepare_eight_task_data.py
-OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark.py --pretrained-checks DTD GTSRB --output outputs/2026-10-09/eight_task/pretrained_1828
-```
-
-19:23 再次重试官方 checkpoint：已有 11 个文件通过检查，六个缺失专家仍受配额限制。[本次清单](retry_1923/checkpoint_manifest.json)。
-
-RESISC45 三份索引已取得，train/val/test 为 18,900/6,300/6,300，覆盖 45 类且互不重叠。原 Google 地址返回 403，保留了[失败记录](splits_1926/data_manifest.json)；随后使用 [TorchGeo 官方代码引用的公开镜像](https://github.com/torchgeo/torchgeo/blob/main/torchgeo/datasets/resisc45.py)，固定镜像版本并按 AGA 原源码的 MD5 校验，三份均一致。[核验清单](splits_1927/data_manifest.json)。这里只补齐划分索引，图片尚未准备，不能算数据集就绪。索引仅保存在服务器。
-
-```bash
-python experiments/prepare_eight_task_data.py --tasks RESISC45 --output outputs/2026-10-09/eight_task/splits_1927
-```
-
-21:04 开始的图片准备已完成：31,500 张图片全部覆盖原 18,900 / 6,300 / 6,300 索引，并建立原作者的划分和分类目录。使用 TorchGeo 官方代码引用的公开镜像，固定 Hugging Face 版本 `883edc0eee77b2c84225472f10f126e3ed83fa6e`；427,389,445 字节压缩包 SHA256 为 `beeecd0b63656290ae6d65cf7763185b0c1c4c54a753ef8088d6fba3faaf1f53`。图片与压缩包仅保存在服务器。[本次数据清单](data_2104/data_manifest.json)。
-
-21:17 作者 RESISC45 入口 pretrained + 官方 head 完整测试：3,794 / 6,300（60.22%）。这是资源与推理检查，不是官方 RESISC45 专家准确率或八任务融合结果。[原始计数](pretrained_2117/pretrained_checks.json)。
-
-```bash
-python experiments/prepare_eight_task_data.py --tasks RESISC45 --resisc-images --output outputs/2026-10-09/eight_task/data_2104
-OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark.py --pretrained-checks RESISC45 --output outputs/2026-10-09/eight_task/pretrained_2117
-```
-
-21:46 再次请求六个官方专家，仍全部受 Drive 下载限制；已有 11 个文件完成指纹检查。[本次清单](retry_2146/checkpoint_manifest.json)。保留原始失败原因，不使用其他微调配置替代。
-
-22:50 重试仍缺同样六个官方专家，已有 11 个文件通过指纹检查。[本次清单](retry_2250/checkpoint_manifest.json)。本轮核对了[官方 README](https://github.com/mlfoundations/task_vectors#checkpoints) 的 Drive 入口；未找到可确认等价的官方替代来源，没有下载不同配置的专家填表。
-
-后续顺序：补齐原专家权重与数据，先运行八任务未保护基线，再按论文配置运行保护与 AGA，对照 Table 6。新机制继续在双任务环境筛选，两条工作分别保留结果。
-
-10 月 10 日 00:06 再次重试：已有 11 个文件通过指纹检查，Cars、DTD、EuroSAT、GTSRB、RESISC45、SUN397 六个官方专家仍受 Drive 限制。[本次清单](../../2026-10-10/eight_task/retry_0006/checkpoint_manifest.json)。
-
-10 月 10 日 01:01 重试结果相同：六个缺失专家返回下载配额限制，11 个已有文件通过指纹检查。没有替换权重或缩减任务设置。[本次清单](../../2026-10-10/eight_task/retry_0101/checkpoint_manifest.json)。
-
-## 10 月 10 日：官方权重阻塞解除
-
-修复 4090 服务器的转发代理后，Cars、DTD、EuroSAT、GTSRB、RESISC45、SUN397 六个官方专家下载成功。共 17 个文件全部取得，来源仍是原作者 Drive ID。[成功下载清单](../../2026-10-10/eight_task/retry_proxy_1235_4090/checkpoint_manifest.json)。新文件的 SHA256 是首次成功取得后的固定指纹，不能表述为作者另行公布的校验值。八个专家形状均与原 pretrained 一致，数值有限，分类头类别数匹配；文件指纹核验入口为 `--verify-checkpoints`。
-
-Cars 使用固定版本公开图片镜像，逐文件核验 Git blob，并与原 devkit 的官方 MD5 及内容比较；准备仍在运行。SUN397 原网站返回 404，正在核查公开镜像图片标识与第 1 划分的对应关系。EuroSAT 缺少原作者随机索引，TorchGeo 或另采样的划分均不能直接作为原划分。资源检查与单专家准确率检查不计作八任务融合结果。
+此前 Drive 配额、代理、网络、数据准备失败的 JSON 与服务器日志全部保留；没有用其他微调配置专家补表。
 
 ```bash
 python experiments/eight_task_benchmark.py --verify-checkpoints --check-only --output outputs/checkpoint_check
-python experiments/eight_task_benchmark.py --expert-checks DTD GTSRB RESISC45 SVHN MNIST --output outputs/expert_check
-python experiments/prepare_eight_task_data.py --tasks Cars --output outputs/cars_data
+python experiments/eight_task_benchmark.py --expert-checks DTD GTSRB RESISC45 SVHN MNIST Cars --output outputs/expert_check
+python experiments/eight_task_benchmark.py --ready-task-checks DTD GTSRB RESISC45 SVHN MNIST Cars --output outputs/merged_resource_check
+python experiments/validate_results.py --eight-task-resources --output outputs/2026-10-10/eight_task
 ```
+
+默认完整入口仍要求八任务齐备后执行。保护和 AGA 的八任务比较尚未开始；可选基变换对照不等于 Table 6 原防御配置。

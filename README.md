@@ -6,7 +6,7 @@
 
 ## 实验原则
 
-- 不执行模型训练或额外微调。
+- 不执行额外专家梯度训练；闭式参数拟合明确记录校准数据与调用预算。
 - toy/matrix 机制验证与真实数据集准确率分开记录。
 - 使用作者真实 AGA 函数；源代码保持原样并固定 commit。
 - 严格等价保护检查函数等价性；近似后处理明确校准来源与独立效用损失，再评价攻击及融合效果。
@@ -15,7 +15,7 @@
 
 ## 依赖与源码
 
-当前 GPU 环境：Python 3.12.3、PyTorch 2.3.0+cu121、RTX 3090 24 GB。先确认现有 torch CUDA 可用；请勿为安装其他依赖盲目覆盖 CUDA PyTorch。
+当前 GPU 环境：Python 3.12.3、PyTorch 2.3.0+cu121、RTX 4090 D 24 GB；依赖装在独立环境，原 3090 环境与成果保留。先确认现有 torch CUDA 可用；请勿为安装其他依赖盲目覆盖 CUDA PyTorch。
 
 ```bash
 python -m pip install numpy==1.26.4 scipy==1.13.1 open-clip-torch==2.0.2 gdown==5.2.0 huggingface_hub==0.24.7
@@ -119,7 +119,7 @@ python experiments/validate_results.py --norm-cleanup --output outputs/2026-10-0
 python experiments/plot_results.py --subspace-diagnostics --output outputs/2026-10-09/post_meeting/subspace_diagnostics
 ```
 
-RESISC45 图片与原划分已核验；`prepare_eight_task_data.py --tasks RESISC45 --resisc-images` 在服务器准备图片，`eight_task_benchmark.py --pretrained-checks RESISC45` 检查完整测试入口。六个官方专家仍未取得，资源检查不计作八任务融合结果。
+八个 Task Arithmetic 官方专家与全部分类头已取得并核验；Cars 数据准备完成。八专家按作者代码系数 0.2 融合，在六个就绪测试集上完成评估；SUN397 图片和 EuroSAT 原随机索引仍缺。六项结果与论文表格尚未对齐，不能报告完整八任务均值。[计数、来源及差异](outputs/2026-10-09/eight_task/status.md)。
 
 多层投影删除与范数保持反射使用同一入口，先检验开发集效用与无数据角度清理；只有通过门槛才运行官方测试。两角色本轮均未通过，未进行最终测试。输入诊断不计作准确率实验。JSON 保留原始字节，便于跨平台核对记录的指纹。
 
