@@ -1,10 +1,10 @@
 # 八任务复现状态
 
-10 月 10 日。八个 Task Arithmetic 官方专家及全部 head 已齐；八专家融合在六个完整测试集上完成。**Table 6 尚未对齐，不能报告八任务均值。**
+10 月 10 日。八个 Task Arithmetic 官方专家及全部 head 已齐；八专家融合在七个完整测试集上完成。**Table 6 尚未对齐，不能报告八任务均值。**
 
 | 任务 | 测试资源 | 原专家正确数 / 总数 | 八专家融合正确数 / 总数 | 融合准确率 | 论文 Table 6 基线 |
 |---|---|---:|---:|---:|---:|
-| SUN397 | 第 1 划分已核验，图片缺 | — | — | — | 61.75% |
+| SUN397 | 原第 1 划分，归档哈希与覆盖已核验 | 14,944 / 19,850 | 12,657 / 19,850 | 63.76% | 61.75% |
 | Cars | 原 test 标注，镜像图片逐文件核验 | 6,245 / 8,041 | 4,990 / 8,041 | 62.06% | 55.52% |
 | RESISC45 | 原 6,300 索引与图片已核验 | 6,055 / 6,300 | 4,536 / 6,300 | 72.00% | 60.24% |
 | EuroSAT | 原随机索引缺 | — | — | — | 69.32% |
@@ -13,9 +13,9 @@
 | MNIST | 官方 test | 9,969 / 10,000 | 9,400 / 10,000 | 94.00% | 97.55% |
 | DTD | 官方 partition 1 test | 1,493 / 1,880 | 981 / 1,880 | 52.18% | 47.02% |
 
-融合包含全部八个专家；这里只测试六个就绪任务，未减少融合模型数。固定系数 0.2 来自 [AGA 作者代码](https://github.com/krumpguo/secure-merge-attack/blob/fb61429f5e6f3517102d506697a150ac26abbdea/main_task_arithmetic.py#L78)，没有按测试结果扫系数。论文数字仅作对照，来自 [Table 6](https://arxiv.org/html/2606.30360v1)，不记作我们的结果。
+融合包含全部八个专家；这里只测试七个就绪任务，未减少融合模型数。固定系数 0.2 来自 [AGA 作者代码](https://github.com/krumpguo/secure-merge-attack/blob/fb61429f5e6f3517102d506697a150ac26abbdea/main_task_arithmetic.py#L78)，没有按测试结果扫系数。论文数字仅作对照，来自 [Table 6](https://arxiv.org/html/2606.30360v1)，不记作我们的结果。
 
-[五项专家计数](../../2026-10-10/eight_task/expert_checks_1252/expert_checks.json)、[Cars 专家计数](../../2026-10-10/eight_task/cars_expert_1330/expert_checks.json)、[八专家融合的六项计数](../../2026-10-10/eight_task/merged_ready_1330/merged_resource_checks.json)。[服务器原始预测核验](../../2026-10-10/eight_task/resource_validation.json)覆盖全部 12 条记录；预测文件仅存服务器。源码 commit 和 SHA256 随每个结果目录保存。
+[五项专家计数](../../2026-10-10/eight_task/expert_checks_1252/expert_checks.json)、[Cars 专家计数](../../2026-10-10/eight_task/cars_expert_1330/expert_checks.json)、[SUN397 专家计数](../../2026-10-10/eight_task/sun_expert_after_download/expert_checks.json)、[八专家融合的七项计数](../../2026-10-10/eight_task/merged_seven_after_download/merged_resource_checks.json)。[服务器原始预测核验](../../2026-10-10/eight_task/resource_validation.json)包含新增 SUN397 专家、七任务融合与之前结果；其余六项融合正确数与之前完全相同。预测文件仅存服务器。源码 commit 和 SHA256 随每个结果目录保存。
 
 ## 对齐问题
 
@@ -29,7 +29,7 @@
 
 Cars 固定镜像版本，核验 16,193 个 Git blob；devkit 验证原 MD5，原 train/test 标注与镜像内容相同，测试 8,041 张。[成功清单](../../2026-10-10/eight_task/cars_data_retry_1258/data_manifest.json)。[首次 devkit 请求失败](../../2026-10-10/eight_task/cars_data_1250/data_manifest.json)保留。
 
-SUN397 原网站返回 404；固定公开镜像中的命名划分，第 1 划分 train/test 各 19,850、每类各 50、互不重叠。[划分核验](../../2026-10-10/eight_task/sun_partitions_1345/data_manifest.json)。不使用丢失原文件名的 parquet 替代。已核验直连镜像与原源头归档前缀一致，改由服务器独立流式读取约 39 GB 原归档，只保留第 1 划分图片；需要全归档原 MD5、镜像 SHA256、39,700 张覆盖均通过才标记就绪。[启动协议](../../2026-10-10/eight_task/sun_stream_direct_1403/launch.json)。完成后已排队进行 SUN397 专家测试和八专家融合的七任务测试；不会提前填结果。[执行队列](../../2026-10-10/eight_task/sun_evaluation_queue/run_plan.json)。原分类列表与扁平目录顺序并非相同，标签按作者 ImageFolder 排序；[首次顺序检查失败](../../2026-10-10/eight_task/sun_stream_startup_failure/failure.json)保留。EuroSAT 作者说明为 21,600 / 2,700 / 2,700 随机划分，目前缺原索引，其他论文划分或重新抽样不能默认等价。[Task Arithmetic 作者说明](https://github.com/mlfoundations/task_vectors/issues/1#issuecomment-1419521679)。
+SUN397 原网站返回 404；固定公开镜像中的命名划分，第 1 划分 train/test 各 19,850、每类各 50、互不重叠。[划分核验](../../2026-10-10/eight_task/sun_partitions_1345/data_manifest.json)。服务器已完整流式读取 39,077,296,924 字节归档，全归档原 MD5、镜像 SHA256 与 39,700 张覆盖全部通过；只保留第 1 划分约 13.56 GiB 图片，未存完整归档，也未下载到本地。[完成清单](../../2026-10-10/eight_task/sun_stream_direct_1403/data_manifest.json)。自动队列完成了专家测试和八专家融合的七任务测试。[执行协议](../../2026-10-10/eight_task/sun_evaluation_queue/run_plan.json)。原分类列表与扁平目录顺序并非相同，标签按作者 ImageFolder 排序；[首次顺序检查失败](../../2026-10-10/eight_task/sun_stream_startup_failure/failure.json)保留。EuroSAT 作者说明为 21,600 / 2,700 / 2,700 随机划分，目前缺原索引，其他论文划分或重新抽样不能默认等价。[Task Arithmetic 作者说明](https://github.com/mlfoundations/task_vectors/issues/1#issuecomment-1419521679)。
 
 此前 Drive 配额、代理、网络、数据准备失败的 JSON 与服务器日志全部保留；没有用其他微调配置专家补表。
 
