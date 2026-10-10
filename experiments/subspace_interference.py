@@ -499,7 +499,7 @@ def evaluate_saved(args):
         pinned = json.loads(Path("configs/sources.json").read_bytes())["AGA"]["sha256"]
         assert selected_author_sha256 == pinned
     rows, predictions, controls = [], {}, {}
-    support_checks, reset_control = {}, None
+    support_checks, reset_controls, reset_audits = {}, {}, {}
 
     def measure(preset, group, model):
         for task, loader in loaders.items():
@@ -537,10 +537,11 @@ def evaluate_saved(args):
                 restored = model
             elif group == "pretrained_fc":
                 restored = pretrained_fc(model, anchor, config["layers"])
-            elif group == "pretrained_mlp":
-                restored, keys = replace_components(model, anchor, config["layers"], "mlp")
+            elif group in {"pretrained_mlp", "pretrained_block"}:
+                component = "mlp" if group == "pretrained_mlp" else "block"
+                restored, keys = replace_components(model, anchor, config["layers"], component)
                 if preset == "unprotected":
-                    reset_control = restored
+                    reset_controls[group] = restored
                 else:
                     changed_keys = [
                         k
@@ -548,12 +549,12 @@ def evaluate_saved(args):
                         if not torch.equal(v, original.state_dict()[k])
                     ]
                     assert set(changed_keys) <= set(keys)
-                    state = reset_control.state_dict()
+                    state = reset_controls[group].state_dict()
                     exact_equal = all(
                         torch.equal(v, state[k]) for k, v in restored.state_dict().items()
                     )
                     assert exact_equal
-                    support_checks = dict(
+                    reset_audits[group] = dict(
                         reset_keys=keys,
                         changed_release_keys=changed_keys,
                         all_release_edits_erased=True,
@@ -561,7 +562,7 @@ def evaluate_saved(args):
                         calibration_images=0,
                         protected_original_available_to_attack=False,
                         original_used_only_for_matched_control_and_support_audit=True,
-                        support_source="Four declared MLP blocks in the public protection method",
+                        support_source=f"Declared {component} parameters in layers {config['layers']}",
                     )
             elif group == "aga_all":
                 recovery_output = out / f"{preset}_aga"
@@ -592,13 +593,16 @@ def evaluate_saved(args):
     save_json(out / "results.json", rows)
     prediction_file = out / "artifacts/predictions.pt"
     torch.save(predictions, prediction_file)
-    if support_checks:
-        for group in ["pretrained_mlp", "pretrained_mlp_standalone"]:
-            tasks = [protected_task] if group.endswith("_standalone") else list(tests)
-            for task in tasks:
-                a, b = predictions["unprotected", group, task], predictions[name, group, task]
-                assert torch.equal(a["prediction"], b["prediction"])
-                assert torch.equal(a["labels"], b["labels"])
+    if reset_audits:
+        for reset_group, audit in reset_audits.items():
+            for group in [reset_group, reset_group + "_standalone"]:
+                tasks = [protected_task] if group.endswith("_standalone") else list(tests)
+                for task in tasks:
+                    a, b = predictions["unprotected", group, task], predictions[name, group, task]
+                    assert torch.equal(a["prediction"], b["prediction"])
+                    assert torch.equal(a["labels"], b["labels"])
+            audit["all_reset_predictions_exactly_match_control"] = True
+        support_checks = dict(next(iter(reset_audits.values())), reset_groups=reset_audits)
         support_checks["all_reset_predictions_exactly_match_control"] = True
         save_json(out / "support_audit.json", support_checks)
     save_json(
@@ -661,6 +665,7 @@ if __name__ == "__main__":
             "aga_selected",
             "pretrained_fc",
             "pretrained_mlp",
+            "pretrained_block",
             "reconstruction_1",
         ],
         help="Choose explicitly reported recovery checks for --evaluate-saved.",

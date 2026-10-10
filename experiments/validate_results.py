@@ -2073,6 +2073,7 @@ def validate_subspace_test(path: Path, write_report=True):
         "aga_selected",
         "pretrained_fc",
         "pretrained_mlp",
+        "pretrained_block",
         "reconstruction_1",
     }
     if "aga_selected" in groups:
@@ -2116,9 +2117,9 @@ def validate_subspace_test(path: Path, write_report=True):
                 control["prediction"] == labels, pred == labels
             ).items():
                 assert abs(row["paired"][field] - value) < 1e-10
-            if row["group"].startswith("pretrained_mlp"):
+            if row["group"].startswith(("pretrained_mlp", "pretrained_block")):
                 assert torch.equal(pred, control["prediction"])
-    support_checked = "pretrained_mlp" in groups
+    support_checked = bool({"pretrained_mlp", "pretrained_block"} & set(groups))
     if support_checked:
         support_file = path / "support_audit.json"
         assert meta["support_reset_checked"]
@@ -2130,6 +2131,12 @@ def validate_subspace_test(path: Path, write_report=True):
         assert set(support["changed_release_keys"]) <= set(support["reset_keys"])
         assert support["calibration_images"] == 0
         assert not support["protected_original_available_to_attack"]
+        if "pretrained_block" in groups:
+            block = support["reset_groups"]["pretrained_block"]
+            assert block["restored_state_exactly_matches_reset_control"]
+            assert block["all_reset_predictions_exactly_match_control"]
+            assert set(block["changed_release_keys"]) <= set(block["reset_keys"])
+            assert len(block["reset_keys"]) == 12 * len(config["layers"])
     source = Path(config["source_directory"])
     source_checked = (source / "artifacts" / f"{name}.pt").is_file()
     if source_checked:
