@@ -110,7 +110,7 @@ def run(args):
         cutoff_ratio = torch.finfo(h.dtype).eps ** 0.5
         keep = singular > cutoff_ratio * singular[0]
         coefficients = vh[keep].T @ ((u[:, keep].T @ t) / singular[keep, None])
-        projection_residual = t - u[:, keep] @ (u[:, keep].T @ t)
+        projection_residual = u[:, keep] @ (u[:, keep].T @ t) - t
         consistency = relative(h @ coefficients - t, projection_residual)
         assert torch.isfinite(coefficients).all() and consistency < 1e-5
         spectra.append(
