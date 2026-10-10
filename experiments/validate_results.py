@@ -2959,6 +2959,144 @@ def validate_task_profile(path: Path):
     return result
 
 
+def validate_relocation_failure(path: Path):
+    """Audit a stopped activation solve without inventing classification results."""
+    import copy
+
+    import torch
+    import torch.nn.functional as functional
+    from clip_benchmark import checkpoint_loader
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    def sha(file):
+        return hashlib.sha256(Path(file).read_bytes()).hexdigest()
+
+    config, decision, indices = (
+        read("protocol.json"),
+        read("decision.json"),
+        read("training_indices.json"),
+    )
+    assert decision["completed"] and not decision["construction_gate_passed"]
+    assert not decision["candidate_valid"] and not decision["partner_used_for_construction"]
+    assert decision["optimizer_steps"] == 0
+    assert not (path / "results.json").exists() and not (path / "artifacts/release.pt").exists()
+    parent = Path(config["support_parent"])
+    prior = json.loads((parent / "training_indices.json").read_bytes())[config["task"]]
+    excluded = set(prior["selection"]) | set(prior["confirmation"])
+    order = torch.randperm(8144, generator=torch.Generator().manual_seed(config["seed"])).tolist()
+    available = [i for i in order if i not in excluded]
+    n, m, k = (
+        config["calibration_samples"],
+        config["confirmation_samples"],
+        config["attack_samples"],
+    )
+    assert indices == dict(
+        calibration=available[:n],
+        confirmation=available[n : n + m],
+        attack=available[n + m : n + m + k],
+    )
+    failed = read("artifacts/layer_9_inverse_failure.json")
+    assert not failed["converged"] and len(failed["chunks"]) == 25
+    assert all(1 <= v["iterations"] <= config["inverse_iterations"] for v in failed["chunks"])
+    assert any(
+        v["maximum_relative_residual"] > config["inverse_tolerance"] for v in failed["chunks"]
+    )
+    anderson, newton = read("root_diagnostic.json"), read("newton_root_diagnostic.json")
+    assert (
+        anderson["source_sha256"]
+        == newton["source_sha256"]
+        == sha("experiments/task_relocation.py")
+    )
+    assert anderson["sample_indices"] == newton["sample_indices"] == indices["calibration"][:8]
+    assert anderson["weight_fits"] == newton["weight_fits"] == 0
+    assert anderson["optimizer_steps"] == newton["optimizer_steps"] == 0
+    assert sha(path / "artifacts/root_problem.pt") == anderson["raw_problem_sha256"]
+    assert sha(path / "artifacts/newton_diagnostic.pt") == newton["raw_newton_sha256"]
+    for name, expected in newton["checkpoint_sha256"].items():
+        assert sha(Path("checkpoints/ViT-B-32") / name) == expected
+    torch.set_num_threads(4)
+    load = checkpoint_loader(Path("external/secure-merge-attack"))
+    anchor = load("checkpoints/ViT-B-32/zeroshot.pt")
+    problem = torch.load(path / "artifacts/root_problem.pt", map_location="cpu", weights_only=True)
+    evidence = torch.load(
+        path / "artifacts/newton_diagnostic.pt", map_location="cpu", weights_only=True
+    )
+    mlp = copy.deepcopy(anchor.model.visual.transformer.resblocks[9].mlp).double().eval()
+    original = load("checkpoints/ViT-B-32/Cars/finetuned.pt")
+    ln = original.model.visual.transformer.resblocks[9].ln_2
+    assert torch.equal(problem["gamma"], ln.weight.double())
+    assert torch.equal(problem["beta"], ln.bias.double()) and problem["epsilon"] == ln.eps
+
+    def error(u, target):
+        with torch.no_grad():
+            z = functional.layer_norm(
+                u, [u.shape[-1]], problem["gamma"], problem["beta"], problem["epsilon"]
+            )
+            return (u + mlp(z) - target).norm(dim=1) / target.norm(dim=1)
+
+    aerror = error(problem["anderson_solution"], problem["target"])
+    nerror = error(evidence["solution"], evidence["target"])
+    assert abs(float(aerror.max()) - anderson["maximum_relative_residual"]) < 1e-8
+    assert abs(float(nerror.max()) - newton["maximum_relative_residual"]) < 1e-8
+    assert not anderson["converged"] and not newton["converged"]
+    assert torch.allclose(
+        nerror,
+        torch.tensor(newton["per_token_residual"], dtype=torch.float64),
+        atol=1e-8,
+        rtol=1e-8,
+    )
+    analytic = (evidence["jacobian"] @ evidence["direction"][:, :, None]).squeeze(-1)
+    fd = evidence["finite_difference"]
+    with torch.no_grad():
+        values = []
+        for sign in [1.0, -1.0]:
+            state = evidence["solution"] + sign * 1e-4 * evidence["direction"]
+            z = functional.layer_norm(
+                state, [state.shape[-1]], problem["gamma"], problem["beta"], problem["epsilon"]
+            )
+            values.append(state + mlp(z) - evidence["target"])
+        actual_fd = (values[0] - values[1]) / 2e-4
+    assert torch.allclose(fd, actual_fd, rtol=1e-6, atol=1e-8)
+    jacobian_error = float((analytic - fd).norm() / fd.norm())
+    assert (
+        jacobian_error < 1e-5
+        and abs(jacobian_error - newton["directional_jacobian_relative_error"]) < 1e-8
+    )
+    spectrum = torch.linalg.svdvals(evidence["jacobian"])
+    assert torch.allclose(
+        spectrum[:, -1],
+        torch.tensor(newton["minimum_singular_values"], dtype=torch.float64),
+        rtol=1e-6,
+        atol=1e-10,
+    )
+    condition = spectrum[:, 0] / spectrum[:, -1]
+    assert torch.allclose(
+        condition,
+        torch.tensor(newton["condition_numbers"], dtype=torch.float64),
+        rtol=1e-6,
+        atol=1e-4,
+    )
+    result = dict(
+        status="passed",
+        stage="activation_inverse_failure",
+        classification_rows=0,
+        parameter_fits=0,
+        optimizer_steps=0,
+        source_and_checkpoint_hashes_verified=True,
+        subset_exclusion_verified=True,
+        numerical_root_residuals_recomputed=True,
+        directional_jacobian_relative_error=jacobian_error,
+        newton_maximum_condition_number=float(condition.max()),
+        candidate_valid=False,
+        validator_source_sha256=sha(__file__),
+        scope="The fixed construct stopped before fitting or utility evaluation. Failed solvers do not prove no root exists or all relocation impossible.",
+    )
+    (path / "validation.json").write_text(json.dumps(result, indent=2) + "\n")
+    return result
+
+
 def validate_task_relocation(path: Path):
     """Verify raw classification, erased MLP weights and the activation/linear solves."""
     import sys
@@ -2974,7 +3112,10 @@ def validate_task_relocation(path: Path):
     def sha(file):
         return hashlib.sha256(Path(file).read_bytes()).hexdigest()
 
-    config, meta, decision = read("protocol.json"), read("metadata.json"), read("decision.json")
+    decision = read("decision.json")
+    if not decision["construction_gate_passed"]:
+        return validate_relocation_failure(path)
+    config, meta = read("protocol.json"), read("metadata.json")
     assert meta["completed"] and decision["completed"] and decision["construction_gate_passed"]
     assert meta["optimizer_steps"] == 0 and not meta["calibration_labels_used"]
     assert meta["source_sha256"] == sha("experiments/task_relocation.py")

@@ -525,6 +525,19 @@ def root_diagnostic(args):
         sample_indices=indices,
         scope="Activation equation only. No candidate or classification result.",
     )
+    raw_problem = out / "artifacts/root_problem.pt"
+    torch.save(
+        dict(
+            initial=initial,
+            target=y.cpu(),
+            anderson_solution=torch.as_tensor(result),
+            gamma=gamma.cpu(),
+            beta=beta.cpu(),
+            epsilon=eps,
+        ),
+        raw_problem,
+    )
+    record["raw_problem_sha256"] = digest(raw_problem)
     save_json(out / "root_diagnostic.json", record)
     print("ANDERSON_ROOT_DIAGNOSTIC", json.dumps(record), flush=True)
     started = time.perf_counter()
@@ -641,6 +654,19 @@ def root_diagnostic(args):
             for name in ["Cars/finetuned.pt", "zeroshot.pt"]
         },
     )
+    raw_newton = out / "artifacts/newton_diagnostic.pt"
+    torch.save(
+        dict(
+            solution=u.cpu(),
+            target=y.cpu(),
+            jacobian=j.cpu(),
+            finite_difference=fd.cpu(),
+            direction=v.cpu(),
+            analytic_direction=analytic.cpu(),
+        ),
+        raw_newton,
+    )
+    record["raw_newton_sha256"] = digest(raw_newton)
     save_json(out / "newton_root_diagnostic.json", record)
     print(json.dumps(record), flush=True)
 
