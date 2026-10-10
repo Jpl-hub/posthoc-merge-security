@@ -1,0 +1,35 @@
+{
+  "source_commit": "63857058ae93f019924a29c32ab824116c789212",
+  "started_at_utc": "2026-10-10T13:34:26.418677+00:00",
+  "commands": [
+    {
+      "argv": [
+        "/root/autodl-tmp/merge_env/bin/python",
+        "experiments/subspace_interference.py",
+        "--evaluate-saved",
+        "outputs/2026-10-10/subspace_compensation_mnist",
+        "--recovery-groups",
+        "canonical_fc",
+        "--output",
+        "outputs/2026-10-10/subspace_compensation_mnist_canonical_fc"
+      ],
+      "timeout_seconds": 300
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/merge_env/bin/python",
+        "experiments/validate_results.py",
+        "--subspace-test",
+        "--output",
+        "outputs/2026-10-10/subspace_compensation_mnist_canonical_fc"
+      ],
+      "timeout_seconds": 120
+    }
+  ],
+  "source_sha256": {
+    "experiments/subspace_interference.py": "89566431e65600ee06959a9ac9b9a6c14ed5fa628246b3f53f111f2f15c5c0f2",
+    "experiments/validate_results.py": "a9a5e8e1b05df1e555069dfc4ab178f2042d0a0635450a946bf8f97d9914311f",
+    "experiments/layernorm_posthoc.py": "b008604793c3bc99d160db5abb8457d52fb0c79da7786eea263884e6acb575a7",
+    "configs/subspace_compensation_mnist.json": "a13c2b670b3b2c0ed387cd517a42aa82dc1b0b34c7af4912fba6bb3112132e14"
+  }
+}

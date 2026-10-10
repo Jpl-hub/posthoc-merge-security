@@ -2,11 +2,14 @@
 
 对已微调专家施加发布前后处理，保持原任务能力，检验对未经授权融合及自适应恢复的保护。目标独立准确率损失 ≤0.5 个百分点；不进行额外梯度微调，有闭式拟合的实验明确记录校准数据。
 
-**目前没有达标的新防御。**旧四层候选被 FC 替换和功能重建绕过；十二层联合构造与类别响应重编译均未过效用门槛。保留全部真实结果及失败记录。
+**目前没有达标的新防御。**旧四层候选被 FC 替换和功能重建绕过。本轮确认完整四块替换的恢复下限，并排除简单 LN 缩放绑定；任务依赖定位未找到经确认合格的局部组合。全部失败及历史结果保留。
 
 ## 当前结果
 
-- [10 月 11 日汇报](outputs/2026-10-11/report.md)与[讲稿](outputs/2026-10-11/talk.md)：效用、匹配攻击、文献依据及尚未解决的问题。
+- [10 月 11 日汇报](outputs/2026-10-11/report.md)与[讲稿](outputs/2026-10-11/talk.md)：10 月 10 日晚更新，围绕恢复漏洞和机制结论。
+- [目标专家任务定位](outputs/2026-10-10/task_support_mnist/summary.md)：仅 MNIST 选择，独立贡献不能替代融合恢复代价；未找到合格局部支持。
+- [四个完整 block 替换](outputs/2026-10-10/subspace_compensation_mnist_block_reset/summary.md)：同四块内、架构不变的编辑具有 96.34% 的条件恢复下限。
+- [LN 规范化＋FC 替换](outputs/2026-10-10/subspace_compensation_mnist_canonical_fc/summary.md)：公开消去精确缩放绑定，旧候选仍恢复至 99.25%。
 - [七任务 PaRaMS／作者 AGA](outputs/2026-10-10/eight_task/params_seven_protection/summary.md)：八专家参与融合，七个完整测试集；本配置未抵抗 AGA。EuroSAT 原划分及 AGA Table 6 仍未对齐。
 - [只恢复受保护专家的 AGA](outputs/2026-10-10/subspace_compensation_mnist_selected_aga/summary.md)：保持伙伴原样的完整测试对照。
 - [联合构造、推导与淘汰依据](outputs/2026-10-10/joint_transfer_notes.md)：冻结配置、全部已测攻击与无重拟合诊断。
@@ -48,18 +51,15 @@ python experiments/plot_results.py --eight-protection --output outputs/params_ch
 python experiments/build_report.py --eight-protection --output outputs/params_check
 ```
 
-冻结联合构造及诊断：256 张无标签训练校准图，十二次岭回归拟合；不使用优化器或测试调参。此配置已经失败，以下入口用于复核，不能将其视为有效防御。
+任务定位不生成保护，使用 MNIST 标签选择替换支持；伙伴在选择冻结后仅用于评价。训练确认结果不与官方测试混表。
 
 ```bash
-python experiments/joint_posthoc.py --config configs/joint_transfer_mnist.json --output outputs/joint_check
-python experiments/validate_results.py --joint-transfer --output outputs/joint_check
-python experiments/plot_results.py --joint-transfer --output outputs/joint_check
-python experiments/joint_diagnostics.py --parent outputs/joint_check --output outputs/joint_diagnosis
-python experiments/validate_results.py --joint-diagnostics --output outputs/joint_diagnosis
-python experiments/plot_results.py --joint-diagnostics --output outputs/joint_diagnosis
+python experiments/operator_diagnostics.py --task-support --config configs/task_support_mnist.json --output outputs/task_support
+python experiments/validate_results.py --task-support --output outputs/task_support
+python experiments/plot_results.py --task-support --output outputs/task_support
 ```
 
-旧四层候选的保存与完整测试入口；最后一项只运行受保护专家的作者 AGA，不重新生成保护。双任务系数为 0.5，与七任务结果分开报告。
+旧四层候选的保存与完整测试入口；后续恢复复用冻结保护，不重新生成；AGA 只运行受保护专家。双任务系数为 0.5，与七任务结果分开报告。
 
 ```bash
 python experiments/subspace_interference.py --config configs/subspace_compensation_mnist.json --output outputs/mnist_dev
@@ -68,6 +68,10 @@ python experiments/subspace_interference.py --evaluate-saved outputs/mnist_dev -
 python experiments/validate_results.py --subspace-test --output outputs/mnist_test
 python experiments/subspace_interference.py --evaluate-saved outputs/mnist_dev --recovery-groups aga_selected --output outputs/mnist_selected_aga
 python experiments/validate_results.py --subspace-test --output outputs/mnist_selected_aga
+python experiments/subspace_interference.py --evaluate-saved outputs/mnist_dev --recovery-groups pretrained_block --output outputs/mnist_block_reset
+python experiments/validate_results.py --subspace-test --output outputs/mnist_block_reset
+python experiments/subspace_interference.py --evaluate-saved outputs/mnist_dev --recovery-groups canonical_fc --output outputs/mnist_canonical_fc
+python experiments/validate_results.py --subspace-test --output outputs/mnist_canonical_fc
 ```
 
 `validation.json` 在服务器重新统计原始逐图预测、配对计数，并检查源码、参数及数据子集指纹。本地缺原始预测时不能声称完成同一核验。论文报告数字不记作本项目结果，训练开发子集不与官方 test 拼表。

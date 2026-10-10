@@ -1,0 +1,29 @@
+{
+  "completed": true,
+  "steps": [
+    {
+      "argv": [
+        "/root/autodl-tmp/merge_env/bin/python",
+        "experiments/subspace_interference.py",
+        "--evaluate-saved",
+        "outputs/2026-10-10/subspace_compensation_mnist",
+        "--recovery-groups",
+        "canonical_fc",
+        "--output",
+        "outputs/2026-10-10/subspace_compensation_mnist_canonical_fc"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/merge_env/bin/python",
+        "experiments/validate_results.py",
+        "--subspace-test",
+        "--output",
+        "outputs/2026-10-10/subspace_compensation_mnist_canonical_fc"
+      ],
+      "returncode": 0
+    }
+  ],
+  "finished_at_utc": "2026-10-10T13:35:52.248925+00:00"
+}
