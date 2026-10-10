@@ -2,7 +2,7 @@
 
 研究问题：不再微调已训练模型，通过后处理抑制未经授权的模型融合，同时保持 standalone utility，并评估自适应恢复攻击。
 
-[当前研究简报](outputs/2026-10-09/post_meeting/report.md)：尚无有效防御；所有失败配置和真实恢复结果保留。
+[当前研究简报](outputs/2026-10-09/post_meeting/report.md)：MNIST 后处理保住独立能力并干扰原 AGA 后的融合，强恢复仍能绕过；所有真实结果和失败配置保留。
 
 ## 实验原则
 
@@ -154,11 +154,23 @@ python experiments/validate_results.py --reconstruction-context --output outputs
 python experiments/plot_results.py --reconstruction-context --output outputs/2026-10-10/adaptive_context
 ```
 
+## 当前子空间实验
+
+固定 MNIST 保护、SVHN 伙伴，单个扰动强度；无梯度微调，闭式响应补偿使用无标签训练校准图。官方完整测试加载已保存的候选参数，额外功能重建单列。[机制与全部结果](outputs/2026-10-09/post_meeting/subspace_interference_notes.md)。在服务器运行，输出目录须为新目录：
+
+```bash
+python experiments/subspace_interference.py --config configs/subspace_compensation_mnist.json --output outputs/mnist_dev
+python experiments/validate_results.py --subspace-interference --output outputs/mnist_dev
+python experiments/subspace_interference.py --evaluate-saved outputs/mnist_dev --output outputs/mnist_test
+python experiments/validate_results.py --subspace-test --output outputs/mnist_test
+python experiments/plot_results.py --subspace-interference --output outputs/mnist_test
+```
+
 ## 工程检查
 
 ```bash
-python -m ruff check experiments scripts
-python -m ruff format --check experiments scripts
+python -m ruff check experiments
+python -m ruff format --check experiments
 python -m compileall -q experiments
 ```
 
