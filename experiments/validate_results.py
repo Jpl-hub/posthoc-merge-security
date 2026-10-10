@@ -2959,12 +2959,179 @@ def validate_task_profile(path: Path):
     return result
 
 
+def validate_task_relocation(path: Path):
+    """Verify raw classification, erased MLP weights and the activation/linear solves."""
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader
+    from operator_diagnostics import paired_counts
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    def sha(file):
+        return hashlib.sha256(Path(file).read_bytes()).hexdigest()
+
+    config, meta, decision = read("protocol.json"), read("metadata.json"), read("decision.json")
+    assert meta["completed"] and decision["completed"] and decision["construction_gate_passed"]
+    assert meta["optimizer_steps"] == 0 and not meta["calibration_labels_used"]
+    assert meta["source_sha256"] == sha("experiments/task_relocation.py")
+    assert meta["config_sha256"] == sha("configs/task_relocation_cars.json")
+    assert config["test_usage"] == "none"
+    for name, expected in meta["helper_sha256"].items():
+        assert sha(Path("experiments") / name) == expected
+    for filename, key in [
+        ("training_indices.json", "indices_sha256"),
+        ("artifacts/release.pt", "release_sha256"),
+        ("artifacts/predictions.pt", "predictions_sha256"),
+    ]:
+        assert sha(path / filename) == meta[key]
+    parent = Path(config["support_parent"])
+    assert sha(parent / "selection.json") == meta["support_selection_sha256"]
+    prior = json.loads((parent / "training_indices.json").read_bytes())[config["task"]]
+    excluded = set(prior["selection"]) | set(prior["confirmation"])
+    indices = read("training_indices.json")
+    assert all(not set(selected) & excluded for selected in indices.values())
+    assert all(
+        not set(indices[a]) & set(indices[b])
+        for a, b in [
+            ("calibration", "confirmation"),
+            ("calibration", "attack"),
+            ("confirmation", "attack"),
+        ]
+    )
+    assert len(indices["calibration"]) == config["calibration_samples"]
+    assert len(indices["confirmation"]) == config["confirmation_samples"]
+    assert len(indices["attack"]) == config["attack_samples"]
+    load = checkpoint_loader(Path(meta["author_repo"]))
+    root = Path("checkpoints/ViT-B-32")
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert sha(root / name) == expected
+    original = load(str(root / config["task"] / "finetuned.pt"))
+    anchor = load(str(root / "zeroshot.pt"))
+    release = torch.load(path / "artifacts/release.pt", map_location="cpu", weights_only=True)
+    before, base = original.state_dict(), anchor.state_dict()
+    support = [f"model.visual.transformer.resblocks.{i}." for i in config["layers"]]
+    edited_keys = []
+    for key, value in release.items():
+        if not torch.equal(value, before[key]):
+            edited_keys.append(key)
+            assert any(key.startswith(prefix) for prefix in support)
+            assert ".attn." in key or ".mlp." in key
+        if any(key.startswith(prefix + "mlp.") for prefix in support):
+            assert torch.equal(value, base[key])
+    fitting = json.loads((path / "artifacts/fitting.json").read_bytes())
+    assert len(fitting) == meta["fits"] == len(config["layers"])
+    inverse_maximum = 0.0
+    for row in fitting:
+        layer = row["layer"]
+        raw = torch.load(
+            path / f"artifacts/layer_{layer}_fit.pt", map_location="cpu", weights_only=True
+        )
+        a, target, before_fit, delta = raw["design"], raw["target"], raw["before"], raw["update"]
+        ridge = row["fit"]["ridge"]
+        residual = a.T @ (a @ (before_fit + delta) - target) + ridge * delta
+        relative = float(
+            residual.norm() / (a.T @ (target - a @ before_fit)).norm().clamp_min(1e-30)
+        )
+        assert relative < 1e-8
+        out = f"model.visual.transformer.resblocks.{layer}.attn.out_proj."
+        expected = before_fit + delta
+        assert torch.allclose(
+            release[out + "weight"].double(), expected[:-1].T, rtol=1e-6, atol=1e-6
+        )
+        assert torch.allclose(release[out + "bias"].double(), expected[-1], rtol=1e-6, atol=1e-6)
+        block = original.model.visual.transformer.resblocks[layer]
+        block.mlp.load_state_dict(anchor.model.visual.transformer.resblocks[layer].mlp.state_dict())
+        with torch.no_grad():
+            u, y = raw["inversion_solution"], raw["inversion_target"]
+            inverse_residual = u + block.mlp(block.ln_2(u)) - y
+            worst = float((inverse_residual.norm(dim=1) / y.norm(dim=1).clamp_min(1e-8)).max())
+        assert worst <= config["inverse_tolerance"] * 1.1
+        inverse_maximum = max(inverse_maximum, worst)
+        n, task = raw["perturbation"], raw["task_basis"]
+        assert float((n @ task).norm() / n.norm()) < 1e-8
+        assert row["noise"]["affine_null_leakage"] < 1e-8
+    package = types.ModuleType("dataset")
+    package.__path__ = [str((Path(meta["author_repo"]) / "datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    dataset = get_dataset(config["task"], None, meta["data"]).train_dataset
+    labels = torch.tensor([target for _, target in dataset._samples])
+    order = torch.randperm(
+        len(dataset), generator=torch.Generator().manual_seed(config["seed"])
+    ).tolist()
+    available = [i for i in order if i not in excluded]
+    n, m, k = (
+        config["calibration_samples"],
+        config["confirmation_samples"],
+        config["attack_samples"],
+    )
+    assert indices == dict(
+        calibration=available[:n],
+        confirmation=available[n : n + m],
+        attack=available[n + m : n + m + k],
+    )
+    predictions = torch.load(
+        path / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+    )
+    rows = read("results.json")
+    assert len(rows) == len(predictions) == (18 if decision["utility_gate_passed"] else 2)
+    for row in rows:
+        evidence = predictions[row["preset"], row["group"]]
+        expected_labels = labels[indices["confirmation"]]
+        assert torch.equal(evidence["labels"], expected_labels)
+        correct = evidence["prediction"].eq(expected_labels)
+        assert row["correct"] == int(correct.sum()) and row["n"] == len(expected_labels)
+        assert row["top1"] == row["correct"] / row["n"]
+        ref = predictions["unprotected", row["group"]]["prediction"].eq(expected_labels)
+        assert row["paired"] == paired_counts(ref, correct)
+    lookup = {(r["preset"], r["group"]): r for r in rows}
+    loss = 100 * (
+        lookup["unprotected", "standalone"]["top1"] - lookup["relocation", "standalone"]["top1"]
+    )
+    assert abs(loss - decision["utility_loss_pp"]) < 1e-9
+    assert decision["utility_gate_passed"] == (loss <= config["utility_budget_pp"])
+    if not decision["utility_gate_passed"]:
+        assert not decision["candidate_valid"]
+    else:
+        best = {
+            preset: max(
+                (r for r in rows if r["preset"] == preset and r["group"] != "standalone"),
+                key=lambda r: r["top1"],
+            )
+            for preset in ["unprotected", "relocation"]
+        }
+        gap = 100 * (best["unprotected"]["top1"] - best["relocation"]["top1"])
+        assert best == decision["best_measured_attack"]
+        assert abs(gap - decision["best_recovery_gap_pp"]) < 1e-9
+        assert decision["candidate_valid"] == (gap >= config["minimum_recovery_gap_pp"])
+    result = dict(
+        status="passed",
+        raw_rows_checked=len(rows),
+        fits_verified=len(fitting),
+        maximum_inverse_relative_residual=inverse_maximum,
+        public_mlp_state_verified=True,
+        edited_keys=edited_keys,
+        subset_exclusion_verified=True,
+        utility_loss_pp=loss,
+        results_sha256=sha(path / "results.json"),
+        validator_source_sha256=sha(__file__),
+    )
+    (path / "validation.json").write_text(json.dumps(result, indent=2) + "\n")
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--task-support", action="store_true")
     mode.add_argument("--task-profile", action="store_true")
+    mode.add_argument("--task-relocation", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -3007,7 +3174,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_task_profile
+        validate_task_relocation
+        if args.task_relocation
+        else validate_task_profile
         if args.task_profile
         else validate_task_support
         if args.task_support
