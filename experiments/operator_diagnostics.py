@@ -1378,6 +1378,242 @@ def run(args):
     print("OPERATOR_COMPLETE", flush=True)
 
 
+@torch.no_grad()
+def task_support(args):
+    """Select an essential reset support from MNIST alone, then freeze and audit it."""
+    config = json.loads(Path(args.config).read_bytes())
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    (out / "artifacts").mkdir()
+    save_json(out / "protocol.json", config)
+    parent = json.loads((Path(config["index_parent"]) / "training_indices.json").read_bytes())
+    selected_indices = parent["MNIST"]["development"][: config["selection_samples"]]
+    excluded = set(itertools.chain.from_iterable(parent["MNIST"].values()))
+    for folder in config["exclude_runs"]:
+        saved = json.loads((Path(folder) / "training_indices.json").read_bytes())
+        excluded.update(saved["confirmation"]["MNIST"])
+        excluded.update(saved.get("calibration", []))
+    order = torch.randperm(60000, generator=torch.Generator().manual_seed(config["seed"])).tolist()
+    confirmation = [i for i in order if i not in excluded][: config["confirmation_samples"]]
+    assert len(confirmation) == config["confirmation_samples"]
+    indices = dict(selection={"MNIST": selected_indices}, confirmation={"MNIST": confirmation})
+    save_json(out / "training_indices.json", indices)
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    load = checkpoint_loader(Path(args.author_repo))
+    root = Path(args.checkpoints)
+    original = load(str(root / "MNIST/finetuned.pt"))
+    anchor = load(str(root / "zeroshot.pt"))
+    head = load(str(root / "head_MNIST.pt"))
+    data = MNIST(args.data, train=True, transform=original.val_preprocess)
+    loaders = {split: make_loader(data, item["MNIST"]) for split, item in indices.items()}
+    rows, predictions, cache, trace = [], {}, {}, []
+
+    def reset(support):
+        model = original
+        for component in ["attn", "mlp"]:
+            layers = [layer for layer, kind in support if kind == component]
+            if layers:
+                model, _ = replace_components(model, anchor, layers, component)
+        return model
+
+    def record(model, support, split, group, phase):
+        pred, labels = [], []
+
+        def sink(p, y):
+            pred.append(p.clone())
+            labels.append(y.clone())
+
+        score = evaluate(model, head, loaders[split], "cuda", prediction_sink=sink)
+        p, y = torch.cat(pred), torch.cat(labels)
+        item = dict(prediction=p, labels=y)
+        control = next(
+            (r for r in rows if r["split"] == split and r["group"] == group and not r["support"]),
+            None,
+        )
+        ref = predictions[control["id"]] if control is not None else item
+        assert torch.equal(y, ref["labels"])
+        identifier = f"measurement_{len(rows):03d}"
+        row = dict(
+            id=identifier,
+            support=list(support),
+            split=split,
+            group=group,
+            phase=phase,
+            paired=paired_counts(ref["prediction"].eq(y), p.eq(y)),
+            **score,
+        )
+        rows.append(row)
+        predictions[identifier] = item
+        save_json(out / "results.json", rows)
+        print(
+            "TASK_SUPPORT_RESULT",
+            identifier,
+            len(support),
+            split,
+            group,
+            score["correct"],
+            score["n"],
+            flush=True,
+        )
+        return row
+
+    def measure(support, phase):
+        key = tuple(sorted(support))
+        if key not in cache:
+            if len(cache) >= config["maximum_selection_variants"]:
+                raise RuntimeError("selection variant budget")
+            cache[key] = record(reset(key), key, "selection", "standalone", phase)
+        return cache[key]
+
+    baseline = measure([], "baseline")
+    modules = [(layer, kind) for layer in range(12) for kind in ["attn", "mlp"]]
+    all_reset = measure(modules, "full_reset")
+    singles = {module: measure([module], "single") for module in modules}
+    for layer in range(12):
+        measure([(layer, "attn"), (layer, "mlp")], "same_block")
+
+    def cost(row):
+        return 100 * (baseline["top1"] - row["top1"])
+
+    ordering = sorted(modules, key=lambda module: (cost(singles[module]), module))
+    support = set(modules)
+    budget_stopped = False
+    if cost(all_reset) >= config["minimum_task_drop_pp"]:
+        while True:
+            changed = False
+            for module in ordering:
+                if module not in support:
+                    continue
+                trial = support - {module}
+                try:
+                    measured = measure(trial, "prune")
+                except RuntimeError:
+                    budget_stopped = True
+                    break
+                accepted = cost(measured) >= config["minimum_task_drop_pp"]
+                trace.append(
+                    dict(
+                        before=sorted(support),
+                        removed=module,
+                        trial=sorted(trial),
+                        measurement=measured["id"],
+                        accepted=accepted,
+                    )
+                )
+                if accepted:
+                    support = trial
+                    changed = True
+            if budget_stopped or not changed:
+                break
+    else:
+        support = set()
+    final = measure(support, "final_cached")
+    certificate = []
+    for module in sorted(support):
+        row = cache.get(tuple(sorted(support - {module})))
+        certificate.append(
+            dict(
+                removed=module,
+                measurement=row["id"] if row else None,
+                task_loss_pp=cost(row) if row else None,
+            )
+        )
+    minimal = (
+        bool(support)
+        and not budget_stopped
+        and all(
+            item["task_loss_pp"] is not None
+            and item["task_loss_pp"] < config["minimum_task_drop_pp"]
+            for item in certificate
+        )
+    )
+    selection = dict(
+        support=sorted(support),
+        modules=len(support),
+        standalone_loss_pp=cost(final),
+        inclusion_minimal=minimal,
+        globally_minimum=False,
+        budget_stopped=budget_stopped,
+        selection_variants=len(cache),
+        deletion_certificate=certificate,
+        construction_inputs=[
+            "MNIST/finetuned.pt",
+            "zeroshot.pt",
+            "head_MNIST.pt",
+            "MNIST training development",
+        ],
+        partner_loaded=False,
+    )
+    save_json(out / "selection.json", selection)
+    save_json(out / "pruning_trace.json", trace)
+    frozen_selection_hash = digest(out / "selection.json")
+    record(original, [], "confirmation", "standalone", "confirmation_control")
+    restored = reset(support)
+    record(restored, sorted(support), "confirmation", "standalone", "confirmation_selected")
+    partner = load(str(root / "SVHN/finetuned.pt"))
+    assert digest(out / "selection.json") == frozen_selection_hash
+    control = record(
+        merge(anchor, original, partner, config["coefficient"]),
+        [],
+        "confirmation",
+        "fusion",
+        "fusion_control",
+    )
+    recovered = record(
+        merge(anchor, restored, partner, config["coefficient"]),
+        sorted(support),
+        "confirmation",
+        "fusion",
+        "fusion_selected",
+    )
+    floor = recovered["top1"]
+    gap = 100 * (control["top1"] - floor)
+    save_json(
+        out / "decision.json",
+        dict(
+            public_support_reset_accuracy=floor,
+            control_direct_fusion_accuracy=control["top1"],
+            direct_control_minus_recovery_floor_pp=gap,
+            necessary_support_gate_passed=gap >= config["minimum_fusion_drop_pp"],
+            new_defense=False,
+            scope="A recovery floor for any same-support edit; no general impossibility theorem.",
+        ),
+    )
+    torch.save(predictions, out / "artifacts/predictions.pt")
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            new_defense=False,
+            optimizer_steps=0,
+            fits=0,
+            test_usage="none",
+            partner_loaded_after_selection=True,
+            selection_sha256=frozen_selection_hash,
+            source_sha256=digest(__file__),
+            config_sha256=digest(args.config),
+            indices_sha256=digest(out / "training_indices.json"),
+            predictions_sha256=digest(out / "artifacts/predictions.pt"),
+            helper_sha256={
+                name: digest(Path(__file__).with_name(name))
+                for name in ["clip_benchmark.py", "subspace_probe.py"]
+            },
+            selection_checkpoint_sha256={
+                name: digest(root / name)
+                for name in ["zeroshot.pt", "MNIST/finetuned.pt", "head_MNIST.pt"]
+            },
+            evaluation_only_checkpoint_sha256={
+                "SVHN/finetuned.pt": digest(root / "SVHN/finetuned.pt")
+            },
+            elapsed_seconds=time.perf_counter() - start,
+        ),
+    )
+    print("TASK_SUPPORT_COMPLETE", json.dumps(selection), flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/operator_diagnostics.json")
@@ -1392,6 +1628,7 @@ if __name__ == "__main__":
         help="Declare a replacement-only joint-support follow-up without changing the saved parent protocol.",
     )
     mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--task-support", action="store_true")
     mode.add_argument("--reconstruction-budget", action="store_true")
     mode.add_argument("--reconstruction-context", action="store_true")
     mode.add_argument("--readout-recovery", action="store_true")
@@ -1400,7 +1637,9 @@ if __name__ == "__main__":
     mode.add_argument("--readout-sensitivity", metavar="CERTIFICATE_RUN")
     args = parser.parse_args()
     (
-        readout_sensitivity
+        task_support
+        if args.task_support
+        else readout_sensitivity
         if args.readout_sensitivity
         else readout_stability
         if args.readout_stability
