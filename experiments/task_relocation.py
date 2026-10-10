@@ -78,7 +78,7 @@ def head_features(block, inputs, image_count):
             None,
             training=False,
             need_weights=False,
-            attn_mask=block.attn_mask,
+            attn_mask=None,
         )
         # Check that the extracted representation reconstructs the actual branch.
         actual = block.attention(q)
