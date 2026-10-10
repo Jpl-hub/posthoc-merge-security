@@ -42,4 +42,13 @@ python experiments/eight_task_benchmark.py --ready-task-checks DTD GTSRB RESISC4
 python experiments/validate_results.py --eight-task-resources --output outputs/2026-10-10/eight_task
 ```
 
-默认完整入口仍要求八任务齐备后执行。保护和 AGA 的八任务比较尚未开始；可选基变换对照不等于 Table 6 原防御配置。
+默认完整入口仍要求八任务齐备后执行。新增[官方 PaRaMS 与完整作者 AGA 的七任务对照](../../2026-10-10/eight_task/params_seven_protection/summary.md)已经完成；每次只保护与恢复一名专家，八专家融合固定系数 0.2。56 行结果、21 个原始文件哈希及逐图配对计数均通过核验。保护前后独立分类预测逐图相同；AGA 后六任务融合预测完全相同，MNIST 仅 1 张不同，保护组高 0.01 pp。本配置没有抗 AGA 效果。
+
+PaRaMS 使用官方实现的一轮独立置换组 assignment 与既定 Attention 缩放。这是补充基线，PaRaMS 不属于 AGA Table 6 的原防御列表，不能把本次结果标为 Table 6 完整复现。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark.py --protection params --protection-checks MNIST DTD SVHN GTSRB RESISC45 Cars SUN397 --output outputs/params_seven
+python experiments/validate_results.py --eight-protection --output outputs/params_seven
+python experiments/plot_results.py --eight-protection --output outputs/params_seven
+python experiments/build_report.py --eight-protection --output outputs/params_seven
+```

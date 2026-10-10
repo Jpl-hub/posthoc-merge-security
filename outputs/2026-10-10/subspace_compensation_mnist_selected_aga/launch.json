@@ -1,0 +1,28 @@
+{
+  "source_commit": "62248e8",
+  "commands": [
+    [
+      "/root/autodl-tmp/merge_env/bin/python",
+      "experiments/subspace_interference.py",
+      "--evaluate-saved",
+      "outputs/2026-10-10/subspace_compensation_mnist",
+      "--recovery-groups",
+      "aga_selected",
+      "--output",
+      "outputs/2026-10-10/subspace_compensation_mnist_selected_aga"
+    ],
+    [
+      "/root/autodl-tmp/merge_env/bin/python",
+      "experiments/validate_results.py",
+      "--subspace-test",
+      "--output",
+      "outputs/2026-10-10/subspace_compensation_mnist_selected_aga"
+    ]
+  ],
+  "source_sha256": {
+    "subspace_interference.py": "314c37e2250ffb017cacf732e74ac2506ccb6426501fd379a9207ace5db0507a",
+    "eight_task_benchmark.py": "8d3a290d8e93043952169858a62653c081abfd8c78a521515f6cd30299d3ffad",
+    "validate_results.py": "2d442c8d0744fac29b2fa39d29e3d82be83ff43337df141a46c21b1fbff4af1c"
+  },
+  "started_at_utc": "2026-10-10T10:43:44.085118+00:00"
+}

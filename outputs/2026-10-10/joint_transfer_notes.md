@@ -68,6 +68,20 @@
 
 岭求解器提取前后的原始 MLP 重建在 primal / dual 两条路径都逐参数完全相同，投影的均值响应误差约 $1.06\times10^{-7}$。这些检查排除了对应实现环节的错误，并不证明构造本身正确。全部逐图计数、配对表、冻结门槛、子集互斥、参数及源码指纹已核验。[结果与判定](joint_transfer_mnist/decision.json)、[逐图核验](joint_transfer_mnist/validation.json)、[代码回归核验](joint_transfer_mnist/runtime_check.json)。原始参数和预测只放服务器。
 
+## 固定参数诊断：校准保真未泛化
+
+没有重拟合或调整候选。重放全部 256 张校准图及已评 4,000 张确认图的前 256 张：校准两组均 256 / 256；确认未保护 256 / 256、候选 240 / 256。确认子集此前已被查看，不能称为新的验证集。校准最后一层相对输出误差为 8.486%，确认前缀为 37.255%；十二层记录的校准拟合目标误差都被重放复核。
+
+这说明当前补偿没有在新图保持原任务分类能力。尚未计算最优列空间误差下界，不能单独归因于非局部响应，也不据此否定所有联合重表示。[逐图与拟合重放核验](joint_transfer_diagnostics/validation.json)、[真实层误差](joint_transfer_diagnostics/layer_errors.json)。
+
+![固定候选的分类、表示误差与输入方差代理](joint_transfer_diagnostics/figures/joint_transfer_diagnostics.png)
+
+```bash
+python experiments/joint_diagnostics.py --parent outputs/2026-10-10/joint_transfer_mnist --output outputs/joint_diagnosis
+python experiments/validate_results.py --joint-diagnostics --output outputs/joint_diagnosis
+python experiments/plot_results.py --joint-diagnostics --output outputs/joint_diagnosis
+```
+
 ![效用、所有恢复攻击及拟合误差](joint_transfer_mnist/figures/joint_transfer.png)
 
 停止这个冻结构造。下一机制必须解释如何保住分类相关响应，并使攻击者无法用公开参数识别可逆部分后删去补偿；不能仅以更大的编辑集合或单种恢复准确率低来论证安全性。
