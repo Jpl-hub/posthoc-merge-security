@@ -95,8 +95,19 @@ def verify_checkpoints(args, root, config, output):
     )
 
 
+def merge_all(models, root, coefficient):
+    from task_vectors import TaskVector
+
+    anchor = models["anchor"]
+    vectors = [
+        TaskVector(anchor.state_dict(), models[t].state_dict()) for t in models if t != "anchor"
+    ]
+    assert len(vectors) == 8
+    return sum(vectors).apply_to(str(root / "zeroshot.pt"), scaling_coef=coefficient)
+
+
 def expert_checks(args, root, config, output):
-    """Measure original experts on ready official splits, without a merge claim."""
+    """Check experts or all-eight-expert fusion on explicitly selected ready splits."""
     torch.set_num_threads(4)
     torch.backends.cuda.matmul.allow_tf32 = False
     torch.backends.cudnn.allow_tf32 = False
@@ -107,9 +118,18 @@ def expert_checks(args, root, config, output):
     sys.modules.setdefault("dataset", package)
     from dataset.registry import get_dataset
 
+    ready = bool(args.ready_task_checks)
+    tasks = args.ready_task_checks if ready else args.expert_checks
+    prefix = "merged_resource" if ready else "expert"
+    fused = None
+    if ready:
+        models = {t: load(str(root / t / "finetuned.pt")) for t in config["tasks"]}
+        models["anchor"] = load(str(root / "zeroshot.pt"))
+        fused = merge_all(models, root, config["coefficient"])
+        del models
     rows, predictions = [], {}
-    for task in args.expert_checks:
-        model = load(str(root / task / "finetuned.pt"))
+    for task in tasks:
+        model = fused if ready else load(str(root / task / "finetuned.pt"))
         dataset = get_dataset(
             task, model.val_preprocess, args.data, batch_size=args.batch_size, num_workers=2
         )
@@ -125,24 +145,30 @@ def expert_checks(args, root, config, output):
         predictions[task] = dict(prediction=torch.cat(pred), labels=torch.cat(labels))
         row = dict(
             stage="resource_validation",
-            group="official_expert_check",
+            group="eight_expert_resource_check" if ready else "official_expert_check",
             dataset=task,
             eight_task_result=False,
             **metric,
         )
+        if ready:
+            row.update(merge_tasks=config["tasks"], coefficient=config["coefficient"])
         rows.append(row)
-        (output / "expert_checks.json").write_text(json.dumps(rows, indent=2))
-        print("EXPERT_DATA_CHECK", json.dumps(row), flush=True)
+        (output / f"{prefix}_checks.json").write_text(json.dumps(rows, indent=2))
+        print("RESOURCE_DATA_CHECK", json.dumps(row), flush=True)
         del model, head, dataset
-    raw = output / "expert_predictions.pt"
+    raw = output / f"{prefix}_predictions.pt"
     torch.save(predictions, raw)
-    (output / "expert_check_metadata.json").write_text(
+    (output / f"{prefix}_check_metadata.json").write_text(
         json.dumps(
             dict(
                 completed=True,
                 source_sha256=digest(__file__),
                 predictions_sha256=digest(raw),
-                tasks=args.expert_checks,
+                tasks=tasks,
+                merge_tasks=config["tasks"] if ready else None,
+                coefficient=config["coefficient"] if ready else None,
+                checkpoint_manifest_sha256=digest("configs/checkpoints.json"),
+                author_taskvector_sha256=digest(author_repo / "task_vectors.py"),
                 data_provider="unchanged_author_dataset_registry",
                 eight_task_result=False,
             ),
@@ -215,7 +241,7 @@ def run(args):
         return
     if missing:
         raise SystemExit("Eight-task evaluation requires every official expert; see preflight.json")
-    if args.expert_checks:
+    if args.expert_checks or args.ready_task_checks:
         expert_checks(args, root, config, output)
         return
     if args.verify_checkpoints:
@@ -225,7 +251,6 @@ def run(args):
     torch.backends.cudnn.allow_tf32 = False
     author_repo = Path(args.author_repo)
     load = checkpoint_loader(author_repo)
-    from task_vectors import TaskVector
 
     # The author uses 'dataset' imports but the repository directory is 'datasets'.
     package = types.ModuleType("dataset")
@@ -265,8 +290,7 @@ def run(args):
             print("EIGHT_TASK_RESULT", json.dumps(row), flush=True)
 
     def merged(candidates):
-        vectors = [TaskVector(anchor.state_dict(), candidates[task].state_dict()) for task in tasks]
-        return sum(vectors).apply_to(str(root / "zeroshot.pt"), scaling_coef=config["coefficient"])
+        return merge_all(dict(candidates, anchor=anchor), root, config["coefficient"])
 
     baseline = merged(models)
     record("unprotected_merge", baseline, tasks)
@@ -319,12 +343,19 @@ if __name__ == "__main__":
     parser.add_argument("--output", default="outputs/2026-10-09/eight_task")
     parser.add_argument("--check-only", action="store_true")
     parser.add_argument("--verify-checkpoints", action="store_true")
-    parser.add_argument(
+    checks = parser.add_mutually_exclusive_group()
+    checks.add_argument(
         "--expert-checks",
         nargs="+",
         choices=["SUN397", "Cars", "RESISC45", "EuroSAT", "SVHN", "GTSRB", "MNIST", "DTD"],
     )
-    parser.add_argument(
+    checks.add_argument(
+        "--ready-task-checks",
+        nargs="+",
+        choices=["SUN397", "Cars", "RESISC45", "EuroSAT", "SVHN", "GTSRB", "MNIST", "DTD"],
+        help="Fuse all eight experts; evaluate explicit ready splits without a full benchmark claim.",
+    )
+    checks.add_argument(
         "--pretrained-checks",
         nargs="+",
         choices=["DTD", "GTSRB", "RESISC45"],
