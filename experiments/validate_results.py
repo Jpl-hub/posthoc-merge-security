@@ -1090,6 +1090,26 @@ def validate_operator_diagnostics(path, write_report=True):
             )
             for key in item["replaced_keys"]
         )
+        if item["component"] in {"norms", "attn_mlp"}:
+            suffixes = (
+                {"ln_1.weight", "ln_1.bias", "ln_2.weight", "ln_2.bias"}
+                if item["component"] == "norms"
+                else {
+                    "attn.in_proj_weight",
+                    "attn.in_proj_bias",
+                    "attn.out_proj.weight",
+                    "attn.out_proj.bias",
+                    "mlp.c_fc.weight",
+                    "mlp.c_fc.bias",
+                    "mlp.c_proj.weight",
+                    "mlp.c_proj.bias",
+                }
+            )
+            assert set(item["replaced_keys"]) == {
+                f"model.visual.transformer.resblocks.{layer}.{suffix}"
+                for layer in item["layers"]
+                for suffix in suffixes
+            }
     assert {f["layer"] for f in fitting} == (set(config["layers"]) if reconstruction else set())
     assert len(fitting) == (len(config["layers"]) if reconstruction else 0)
     for fit in fitting:

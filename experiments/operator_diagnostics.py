@@ -39,6 +39,7 @@ def replace_components(original, anchor, layers, component):
             suffix = key.removeprefix(prefix)
             matches = (
                 component == "block"
+                or (component == "attn_mlp" and suffix.startswith(("attn.", "mlp.")))
                 or (component == "norms" and suffix.startswith(("ln_1.", "ln_2.")))
                 or suffix.startswith(component + ".")
                 or (component == "attn.in_proj" and suffix.startswith("attn.in_proj_"))
@@ -1387,7 +1388,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--joint-components",
         nargs="+",
-        choices=["block", "mlp", "attn", "norms"],
+        choices=["block", "mlp", "attn", "norms", "attn_mlp"],
         help="Declare a replacement-only joint-support follow-up without changing the saved parent protocol.",
     )
     mode = parser.add_mutually_exclusive_group()
