@@ -809,6 +809,8 @@ def plot_operator_diagnostics(root: Path):
             "joint_mlp": "All MLPs",
             "joint_attn": "All attention",
             "joint_block": "All blocks\n(incl. LN)",
+            "joint_norms": "LayerNorm\nonly",
+            "joint_attn_mlp": "Attention\n+ MLP",
             "public_backbone": "Public\nbackbone",
             "readout_unprotected": "Readout\ncontrol",
             "readout_protected": "Readout\nprotected",

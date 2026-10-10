@@ -1524,6 +1524,132 @@ def validate_reconstruction_context(path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_redundancy_erasure(path, write_report=True):
+    """Validate the declared redundancy deletion and its raw paired outcomes."""
+    import torch
+    from operator_diagnostics import paired_counts
+
+    config = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    indices = json.loads((path / "training_indices.json").read_bytes())
+    parent_file = Path(config["indices_parent"]) / "training_indices.json"
+    parent = json.loads(parent_file.read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    decision = json.loads((path / "decision.json").read_bytes())
+    edits = json.loads((path / "edits.json").read_bytes())
+    assert meta["completed"] and not meta["new_defense_validated"]
+    assert meta["test_usage"] == config["test_usage"] == "none"
+    assert (
+        meta["new_perturbations"]
+        == meta["new_fits"]
+        == meta["optimizer_steps"]
+        == meta["teacher_queries"]
+        == 0
+    )
+    assert not meta["original_protected_task_checkpoint_available_to_attack"]
+    for key, filename in [
+        ("config_sha256", "protocol.json"),
+        ("indices_sha256", "training_indices.json"),
+    ]:
+        assert meta[key] == hashlib.sha256((path / filename).read_bytes()).hexdigest()
+    assert meta["parent_indices_sha256"] == hashlib.sha256(parent_file.read_bytes()).hexdigest()
+    assert meta["frozen_release_sha256"] == config["frozen_release_sha256"]
+    assert indices["MNIST"] == parent["confirmation"]["MNIST"] and len(indices["MNIST"]) == 4000
+    assert indices["SVHN"] == parent["development"]["SVHN"] and len(indices["SVHN"]) == 1000
+    presets = ["unprotected", "erasure_only", "frozen_release", "combined"]
+    groups = config["groups"]
+    expected = {
+        (p, g, t)
+        for p in presets
+        for stage in groups
+        for g, t in [(stage + "_standalone", "MNIST"), (stage, "MNIST"), (stage, "SVHN")]
+    }
+    lookup = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
+    assert set(lookup) == expected and len(rows) == meta["new_evaluations"] == len(expected)
+    raw = path / "artifacts/predictions.pt"
+    assert (
+        raw.exists() and meta["predictions_sha256"] == hashlib.sha256(raw.read_bytes()).hexdigest()
+    )
+    saved = torch.load(raw, map_location="cpu", weights_only=False)
+    assert set(saved) == expected
+    for key, row in lookup.items():
+        pred, labels = saved[key]["prediction"], saved[key]["labels"]
+        reference = saved["unprotected", *key[1:]]
+        assert torch.equal(labels, reference["labels"])
+        assert row["n"] == len(labels) == len(indices[row["dataset"]])
+        assert row["correct"] == int(pred.eq(labels).sum())
+        assert row["top1"] == row["correct"] / row["n"]
+        assert row["paired"] == paired_counts(reference["prediction"].eq(labels), pred.eq(labels))
+    loss = 100 * (
+        lookup["unprotected", "direct_standalone", "MNIST"]["top1"]
+        - lookup["combined", "direct_standalone", "MNIST"]["top1"]
+    )
+    gaps = {
+        g: 100
+        * (lookup["unprotected", g, "MNIST"]["top1"] - lookup["combined", g, "MNIST"]["top1"])
+        for g in groups
+    }
+    assert math.isclose(decision["utility_loss_pp"], loss, abs_tol=1e-10)
+    assert decision["protected_task_gap_pp"] == gaps
+    assert decision["passed_initial_gate"] == (
+        loss <= config["utility_budget_pp"]
+        and min(gaps.values()) >= config["minimum_attack_gap_pp"]
+    )
+    assert not decision["further_aga_or_reconstruction_run"]
+    attn_suffix = {"in_proj_weight", "in_proj_bias", "out_proj.weight", "out_proj.bias"}
+    assert set(edits["erased_attention_keys"]) == {
+        f"model.visual.transformer.resblocks.{layer}.attn.{suffix}"
+        for layer in range(12)
+        for suffix in attn_suffix
+    }
+    assert len(edits["attack_edits"]) == len(presets) * 2
+    for edit in edits["attack_edits"]:
+        suffixes = {"c_fc.weight", "c_fc.bias"}
+        layers = config["protected_layers"]
+        if edit["group"] == "pretrained_mlp_all":
+            suffixes |= {"c_proj.weight", "c_proj.bias"}
+            layers = list(range(12))
+        assert set(edit["keys"]) == {
+            f"model.visual.transformer.resblocks.{layer}.mlp.{suffix}"
+            for layer in layers
+            for suffix in suffixes
+        }
+    for item, pair in zip(
+        edits["full_mlp_reset_identities"],
+        [("unprotected", "frozen_release"), ("erasure_only", "combined")],
+        strict=True,
+    ):
+        assert (item["left"], item["right"]) == pair and item[
+            "parameters_and_predictions_exactly_equal"
+        ]
+        for g, t in [
+            ("pretrained_mlp_all_standalone", "MNIST"),
+            ("pretrained_mlp_all", "MNIST"),
+            ("pretrained_mlp_all", "SVHN"),
+        ]:
+            assert torch.equal(
+                saved[pair[0], g, t]["prediction"], saved[pair[1], g, t]["prediction"]
+            )
+    report = dict(
+        status="passed",
+        raw_predictions_checked=True,
+        new_evaluations=len(rows),
+        new_defense_validated=False,
+        checks=[
+            "frozen_release_and_protocol_fingerprints",
+            "exact_parent_indices",
+            "complete_controls_and_replacements",
+            "raw_correct_counts_and_paired_tables",
+            "declared_stop_gate",
+            "attention_and_mlp_edit_support",
+            "full_mlp_reset_prediction_identity",
+        ],
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps(report))
+
+
 def validate_context_erasure(path, write_report=True):
     """Check the finite deletion protocol, paired counts and server predictions."""
     config = json.loads((path / "protocol.json").read_bytes())
@@ -1955,6 +2081,7 @@ if __name__ == "__main__":
         "--subspace-interference", action="store_true", help="Validate complement interference."
     )
     mode.add_argument("--context-erasure", action="store_true", help="Validate context deletion.")
+    mode.add_argument("--redundancy-erasure", action="store_true")
     mode.add_argument("--subspace", action="store_true", help="Validate the subspace probe.")
     mode.add_argument(
         "--reconstruction-context",
@@ -1994,6 +2121,8 @@ if __name__ == "__main__":
         if args.subspace_interference
         else validate_context_erasure
         if args.context_erasure
+        else validate_redundancy_erasure
+        if args.redundancy_erasure
         else validate_reconstruction_context
         if args.reconstruction_context
         else validate_reconstruction_budget

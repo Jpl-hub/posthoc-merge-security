@@ -18,7 +18,7 @@ import torch
 from bounded_complement import angular_cleanup
 from clip_benchmark import checkpoint_loader, evaluate, merge, recover
 from mechanisms import load_author
-from operator_diagnostics import adjust_comparisons, paired_counts
+from operator_diagnostics import adjust_comparisons, paired_counts, replace_components
 from polynomial_probe import capture, reconstruct
 from subspace_probe import make_loader, save_json
 from torchvision.datasets import MNIST, SVHN
@@ -26,6 +26,197 @@ from torchvision.datasets import MNIST, SVHN
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+@torch.no_grad()
+def redundancy_probe(args):
+    """Delete one redundant task-update route before testing a frozen release.
+
+    No new perturbation, strength search, compensation or fitting. The target
+    and diagnostic subsets were selected from already inspected support runs.
+    This is a falsifiable building-block check, not a novel defense claim.
+    """
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    artifacts = out / "artifacts"
+    artifacts.mkdir()
+    config_bytes = Path(args.config).read_bytes()
+    config = json.loads(config_bytes)
+    assert config["groups"] == ["direct", "pretrained_fc", "pretrained_mlp_all"]
+    assert config["test_usage"] == "none" and config["erased_layers"] == list(range(12))
+    (out / "protocol.json").write_bytes(config_bytes)
+    parent = Path(config["indices_parent"])
+    indices_bytes = (parent / "training_indices.json").read_bytes()
+    parent_indices = json.loads(indices_bytes)
+    indices = {
+        "MNIST": parent_indices["confirmation"]["MNIST"],
+        "SVHN": parent_indices["development"]["SVHN"],
+    }
+    save_json(out / "training_indices.json", indices)
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    load = checkpoint_loader(Path(args.author_repo))
+    root = Path(args.checkpoints)
+    anchor = load(str(root / "zeroshot.pt"))
+    original = load(str(root / "MNIST/finetuned.pt"))
+    partner = load(str(root / "SVHN/finetuned.pt"))
+    release = Path(config["frozen_release"])
+    assert digest(release) == config["frozen_release_sha256"]
+    protected = copy.deepcopy(original).cpu().eval()
+    saved = torch.load(release, map_location="cpu", weights_only=False)
+    assert set(saved) == set(config["protected_layers"])
+    for layer, state in saved.items():
+        protected.model.visual.transformer.resblocks[layer].mlp.load_state_dict(state, strict=True)
+    heads = {task: load(str(root / f"head_{task}.pt")) for task in indices}
+    datasets = {
+        "MNIST": MNIST(args.data, train=True, transform=original.val_preprocess),
+        "SVHN": SVHN(args.data, split="train", transform=original.val_preprocess),
+    }
+    loaders = {task: make_loader(datasets[task], subset) for task, subset in indices.items()}
+    erased, keys = replace_components(original, anchor, config["erased_layers"], "attn")
+    combined, combined_keys = replace_components(protected, anchor, config["erased_layers"], "attn")
+    assert keys == combined_keys
+    models = dict(
+        unprotected=original, erasure_only=erased, frozen_release=protected, combined=combined
+    )
+    rows, predictions, controls, edits, reset_states = [], {}, {}, [], {}
+
+    def record(preset, group, model):
+        for task, loader in loaders.items():
+            if group.endswith("standalone") and task != "MNIST":
+                continue
+            chunks, labels = [], []
+
+            def sink(prediction, target):
+                chunks.append(prediction.clone())
+                labels.append(target.clone())
+
+            score = evaluate(model, heads[task], loader, "cuda", prediction_sink=sink)
+            pred, target = torch.cat(chunks), torch.cat(labels)
+            current = pred == target
+            if preset == "unprotected":
+                controls[group, task] = current, target
+            reference, reference_labels = controls[group, task]
+            assert torch.equal(target, reference_labels)
+            row = dict(
+                preset=preset,
+                group=group,
+                dataset=task,
+                split="inspected_training",
+                paired=paired_counts(reference, current),
+                **score,
+            )
+            rows.append(row)
+            predictions[preset, group, task] = dict(prediction=pred, labels=target)
+            save_json(out / "results.json", rows)
+            print(
+                "REDUNDANCY_RESULT", preset, group, task, score["correct"], score["n"], flush=True
+            )
+
+    for preset, model in models.items():
+        for group in config["groups"]:
+            if group == "direct":
+                restored = model
+            else:
+                layers = config["protected_layers"] if group == "pretrained_fc" else list(range(12))
+                component = "mlp.c_fc" if group == "pretrained_fc" else "mlp"
+                restored, changed = replace_components(model, anchor, layers, component)
+                edits.append(dict(preset=preset, group=group, keys=changed))
+            if group == "pretrained_mlp_all":
+                reset_states[preset] = restored.state_dict()
+            record(preset, group + "_standalone", restored)
+            merged = merge(anchor, restored, partner, config["coefficient"])
+            record(preset, group, merged)
+            del merged
+    identities = []
+    for left, right in [("unprotected", "frozen_release"), ("erasure_only", "combined")]:
+        assert all(
+            torch.equal(reset_states[left][k], reset_states[right][k]) for k in reset_states[left]
+        )
+        for group, task in [
+            ("pretrained_mlp_all_standalone", "MNIST"),
+            ("pretrained_mlp_all", "MNIST"),
+            ("pretrained_mlp_all", "SVHN"),
+        ]:
+            assert torch.equal(
+                predictions[left, group, task]["prediction"],
+                predictions[right, group, task]["prediction"],
+            )
+        identities.append(
+            dict(left=left, right=right, parameters_and_predictions_exactly_equal=True)
+        )
+    lookup = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
+    utility_loss = 100 * (
+        lookup["unprotected", "direct_standalone", "MNIST"]["top1"]
+        - lookup["combined", "direct_standalone", "MNIST"]["top1"]
+    )
+    gaps = {
+        group: 100
+        * (
+            lookup["unprotected", group, "MNIST"]["top1"]
+            - lookup["combined", group, "MNIST"]["top1"]
+        )
+        for group in config["groups"]
+    }
+    passed = (
+        utility_loss <= config["utility_budget_pp"]
+        and min(gaps.values()) >= config["minimum_attack_gap_pp"]
+    )
+    decision = dict(
+        utility_loss_pp=utility_loss,
+        protected_task_gap_pp=gaps,
+        passed_initial_gate=passed,
+        further_aga_or_reconstruction_run=False,
+        reason="Proceed to stronger attacks only if this necessary gate passes"
+        if passed
+        else "Stop: utility or direct/zero-data-replacement gate failed; no strength or compensation retuning",
+    )
+    save_json(out / "decision.json", decision)
+    save_json(
+        out / "edits.json",
+        dict(erased_attention_keys=keys, attack_edits=edits, full_mlp_reset_identities=identities),
+    )
+    torch.save(predictions, artifacts / "predictions.pt")
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            new_defense_validated=False,
+            new_perturbations=0,
+            new_fits=0,
+            optimizer_steps=0,
+            teacher_queries=0,
+            original_protected_task_checkpoint_available_to_attack=False,
+            source_sha256=digest(__file__),
+            helpers_sha256={
+                n: digest(Path(__file__).with_name(n))
+                for n in ["operator_diagnostics.py", "clip_benchmark.py", "subspace_probe.py"]
+            },
+            config_sha256=hashlib.sha256(config_bytes).hexdigest(),
+            parent_indices_sha256=hashlib.sha256(indices_bytes).hexdigest(),
+            indices_sha256=digest(out / "training_indices.json"),
+            frozen_release_sha256=digest(release),
+            checkpoint_sha256={
+                str(p.relative_to(root)): digest(p)
+                for p in [
+                    root / "zeroshot.pt",
+                    root / "MNIST/finetuned.pt",
+                    root / "SVHN/finetuned.pt",
+                    root / "head_MNIST.pt",
+                    root / "head_SVHN.pt",
+                ]
+            },
+            predictions_sha256=digest(artifacts / "predictions.pt"),
+            new_evaluations=len(rows),
+            elapsed_seconds=time.perf_counter() - start,
+            test_usage="none",
+            evaluation_scope=config["evaluation"],
+            calibration="Reuse frozen candidate built using 256 unlabeled MNIST images; new erasure and attacks use no calibration; design informed by inspected dependency results",
+        ),
+    )
+    print("REDUNDANCY_COMPLETE", json.dumps(decision), flush=True)
 
 
 @torch.no_grad()
@@ -268,4 +459,6 @@ if __name__ == "__main__":
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
-    run(parser.parse_args())
+    parser.add_argument("--redundancy-probe", action="store_true")
+    args = parser.parse_args()
+    (redundancy_probe if args.redundancy_probe else run)(args)
