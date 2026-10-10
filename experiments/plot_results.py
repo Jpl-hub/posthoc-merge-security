@@ -1085,12 +1085,13 @@ def plot_subspace_interference(root: Path):
     config = json.loads((root / "protocol.json").read_bytes())
     rows = json.loads((root / "results.json").read_bytes())
     keyed = {(r["preset"], r["group"], r["dataset"]): 100 * r["top1"] for r in rows}
-    attacked = any(r["group"] == "angular" for r in rows)
+    attacked = any(r["group"] in {"angular", "aga_all"} for r in rows)
     fig, axes = plt.subplots(1, 3, figsize=(12 if attacked else 9, 3.25), layout="constrained")
+    protected_task, partner_task = config["protected_task"], config["other_task"]
     metrics = [
-        ("standalone", "SVHN", "Standalone SVHN"),
-        ("direct", "SVHN", "Merged SVHN"),
-        ("direct", "MNIST", "Merged MNIST"),
+        ("standalone", protected_task, f"Standalone {protected_task}"),
+        ("direct", protected_task, f"Merged {protected_task}"),
+        ("direct", partner_task, f"Merged {partner_task}"),
     ]
     if attacked:
         name = config["presets"][0]["name"]
@@ -1114,12 +1115,22 @@ def plot_subspace_interference(root: Path):
             "Fit 1",
             "Fit 2",
         ]
+        if config.get("aga_all", False):
+            groups.insert(6, "aga_all")
+            labels.insert(6, "AGA\nboth")
+        available = {row["group"] for row in rows}
+        retained = [(g, label) for g, label in zip(groups, labels, strict=True) if g in available]
+        groups, labels = zip(*retained, strict=True)
         for ax, (metric, task, title) in zip(axes, metrics, strict=True):
             for j, preset in enumerate(["unprotected", name]):
                 values = [
                     keyed[
                         preset,
-                        ("standalone" if g == "direct" else g + "_standalone")
+                        (
+                            "standalone"
+                            if (preset, "standalone", task) in keyed and g == "direct"
+                            else g + "_standalone"
+                        )
                         if metric == "standalone"
                         else g,
                         task,
@@ -1174,8 +1185,13 @@ def plot_subspace_interference(root: Path):
             )
             ax.tick_params(axis="x", labelsize=7, rotation=20)
             ax.grid(axis="y", alpha=0.2)
+    scope = (
+        "full official test sets, frozen candidate"
+        if config.get("test_usage") == "fixed_full_test_evaluation"
+        else "inspected training subsets, one seed"
+    )
     fig.suptitle(
-        "Complement perturbation and recovery: inspected training subsets, one seed\n"
+        f"Complement perturbation and recovery: {scope}\n"
         "TA coefficient 0.5; calibrated output compensation"
         if config.get("output_compensation", False)
         else "Complement mechanism check: inspected training subsets, one seed; TA coefficient 0.5",

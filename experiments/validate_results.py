@@ -1530,6 +1530,77 @@ def validate_subspace_interference(path, write_report=True):
     print(json.dumps(report))
 
 
+def validate_subspace_test(path: Path, write_report=True):
+    """Check frozen-release full-test counts, labels, provenance and paired comparisons."""
+    config = json.loads((path / "protocol.json").read_bytes())
+    meta = json.loads((path / "metadata.json").read_bytes())
+    rows = json.loads((path / "results.json").read_bytes())
+    assert meta["completed"] and not meta["new_defense_validated"]
+    assert meta["test_usage"] == config["test_usage"] == "fixed_full_test_evaluation"
+    assert not meta["test_data_used_for_protection_or_reconstruction"]
+    assert not meta["protection_recomputed"] and meta["optimizer_steps"] == 0
+    assert not meta["calibration_labels_used"]
+    assert (
+        meta["config_sha256"] == hashlib.sha256((path / "protocol.json").read_bytes()).hexdigest()
+    )
+    task = config["protected_task"]
+    name = config["presets"][0]["name"]
+    groups = config["recovery_groups"]
+    assert groups == ["direct", "aga_all", "pretrained_fc", "reconstruction_1"]
+    expected = {(p, g, t) for p in ["unprotected", name] for g in groups for t in ["MNIST", "SVHN"]}
+    expected.update((p, g + "_standalone", task) for p in ["unprotected", name] for g in groups)
+    keyed = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
+    assert len(keyed) == len(rows) and set(keyed) == expected
+    counts = {"MNIST": 10000, "SVHN": 26032}
+    for row in rows:
+        assert row["split"] == "test" and row["n"] == counts[row["dataset"]]
+        assert 0 <= row["correct"] <= row["n"]
+        assert abs(row["top1"] - row["correct"] / row["n"]) < 1e-12
+    raw = path / "artifacts/predictions.pt"
+    if raw.exists():
+        import torch
+        from operator_diagnostics import paired_counts
+
+        assert meta["predictions_sha256"] == hashlib.sha256(raw.read_bytes()).hexdigest()
+        saved = torch.load(raw, map_location="cpu", weights_only=False)
+        assert set(saved) == expected
+        for key, row in keyed.items():
+            labels, pred = saved[key]["labels"], saved[key]["prediction"]
+            assert (
+                hashlib.sha256(labels.numpy().tobytes()).hexdigest()
+                == meta["test_label_sha256"][row["dataset"]]
+            )
+            assert len(labels) == row["n"] and int((pred == labels).sum()) == row["correct"]
+            control = saved["unprotected", row["group"], row["dataset"]]
+            assert torch.equal(labels, control["labels"])
+            for field, value in paired_counts(
+                control["prediction"] == labels, pred == labels
+            ).items():
+                assert abs(row["paired"][field] - value) < 1e-10
+    source = Path(config["source_directory"])
+    source_checked = (source / "artifacts" / f"{name}.pt").is_file()
+    if source_checked:
+        assert (
+            meta["release_sha256"]
+            == hashlib.sha256((source / "artifacts" / f"{name}.pt").read_bytes()).hexdigest()
+        )
+        assert (
+            meta["training_indices_sha256"]
+            == hashlib.sha256((source / "training_indices.json").read_bytes()).hexdigest()
+        )
+    report = dict(
+        status="passed",
+        rows=len(rows),
+        raw_artifacts_checked=raw.exists(),
+        frozen_release_checked=source_checked,
+        new_defense_validated=False,
+        results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
+    )
+    if write_report:
+        (path / "validation.json").write_text(json.dumps(report, indent=2))
+    print(json.dumps(report))
+
+
 def validate_eight_task_resources(path: Path, write_report=True):
     """Audit test counts and saved predictions without claiming full reproduction."""
     config = json.loads(Path("configs/eight_tasks.json").read_bytes())
@@ -1598,6 +1669,9 @@ if __name__ == "__main__":
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument(
+        "--subspace-test", action="store_true", help="Validate frozen-release full tests."
+    )
+    mode.add_argument(
         "--subspace-interference", action="store_true", help="Validate complement interference."
     )
     mode.add_argument("--context-erasure", action="store_true", help="Validate context deletion.")
@@ -1628,7 +1702,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_eight_task_resources
+        validate_subspace_test
+        if args.subspace_test
+        else validate_eight_task_resources
         if args.eight_task_resources
         else validate_subspace_interference
         if args.subspace_interference

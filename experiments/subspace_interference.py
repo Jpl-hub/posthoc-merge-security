@@ -21,6 +21,7 @@ from nufilt_alignment import author_svd
 from operator_diagnostics import adjust_comparisons, paired_counts
 from polynomial_probe import capture, reconstruct
 from subspace_probe import make_loader, save_json
+from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST, SVHN
 
 
@@ -421,6 +422,159 @@ def run(args):
     print("INTERFERENCE_COMPLETE", flush=True)
 
 
+@torch.no_grad()
+def evaluate_saved(args):
+    """Evaluate one frozen release on full tests; fit attacks only on training data."""
+    source = Path(args.evaluate_saved)
+    parent_meta = json.loads((source / "metadata.json").read_bytes())
+    parent_validation = json.loads((source / "validation.json").read_bytes())
+    assert parent_meta["completed"] and parent_validation["raw_artifacts_checked"]
+    config = json.loads((source / "protocol.json").read_bytes())
+    assert len(config["presets"]) == 1
+    protected_task, partner_task = config["protected_task"], config["other_task"]
+    name = config["presets"][0]["name"]
+    indices = json.loads((source / "training_indices.json").read_bytes())
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=False)
+    (out / "artifacts").mkdir()
+    groups = ["direct", "aga_all", "pretrained_fc", "reconstruction_1"]
+    config.update(
+        evaluation="Full official MNIST and SVHN test sets; one frozen candidate, no test selection",
+        test_usage="fixed_full_test_evaluation",
+        source_directory=str(source),
+        recovery_groups=groups,
+    )
+    save_json(out / "protocol.json", config)
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    start = time.perf_counter()
+    root = Path(args.checkpoints)
+    load = checkpoint_loader(Path(args.author_repo))
+    anchor = load(str(root / "zeroshot.pt"))
+    original = load(str(root / f"{protected_task}/finetuned.pt"))
+    partner = load(str(root / f"{partner_task}/finetuned.pt"))
+    candidate = copy.deepcopy(original).cpu().eval()
+    release_file = source / "artifacts" / f"{name}.pt"
+    released_state = torch.load(release_file, map_location="cpu", weights_only=False)
+    assert set(released_state) == set(config["layers"])
+    for layer, state in released_state.items():
+        assert all(torch.isfinite(t).all() for t in state.values())
+        candidate.model.visual.transformer.resblocks[layer].mlp.load_state_dict(state, strict=True)
+    tests = dict(
+        MNIST=MNIST(args.data, train=False, transform=original.val_preprocess),
+        SVHN=SVHN(args.data, split="test", transform=original.val_preprocess),
+    )
+    heads = {task: load(str(root / f"head_{task}.pt")) for task in tests}
+    loaders = {
+        task: DataLoader(data, batch_size=128, shuffle=False, num_workers=4)
+        for task, data in tests.items()
+    }
+    expected_labels = dict(MNIST=tests["MNIST"].targets, SVHN=torch.as_tensor(tests["SVHN"].labels))
+    train = (
+        MNIST(args.data, train=True, transform=original.val_preprocess)
+        if protected_task == "MNIST"
+        else SVHN(args.data, split="train", transform=original.val_preprocess)
+    )
+    attack_images = torch.stack(
+        [train[i][0] for i in indices[protected_task]["attack"][: config["attack_samples"]]]
+    )
+    author, _ = load_author(Path(args.author_repo) / "utils_attack_B32.py")
+    partner_output = out / "partner_aga"
+    partner_output.mkdir()
+    attacked_partner = recover(partner, anchor, author, partner_output)
+    rows, predictions, controls = [], {}, {}
+
+    def measure(preset, group, model):
+        for task, loader in loaders.items():
+            if group.endswith("_standalone") and task != protected_task:
+                continue
+            saved_pred, saved_labels = [], []
+
+            def sink(pred, labels):
+                saved_pred.append(pred)
+                saved_labels.append(labels)
+
+            score = evaluate(model, heads[task], loader, "cuda", prediction_sink=sink)
+            pred, labels = torch.cat(saved_pred), torch.cat(saved_labels)
+            assert torch.equal(labels, expected_labels[task])
+            correct = pred == labels
+            if preset == "unprotected":
+                controls[group, task] = correct
+            score.update(
+                preset=preset,
+                group=group,
+                dataset=task,
+                split="test",
+                paired=paired_counts(controls[group, task], correct),
+            )
+            rows.append(score)
+            predictions[preset, group, task] = dict(prediction=pred, labels=labels)
+            save_json(out / "results.json", rows)
+            print(
+                "INTERFERENCE_TEST", preset, group, task, score["correct"], score["n"], flush=True
+            )
+
+    for preset, model in [("unprotected", original), (name, candidate)]:
+        for group in groups:
+            if group == "direct":
+                restored = model
+            elif group == "pretrained_fc":
+                restored = pretrained_fc(model, anchor, config["layers"])
+            elif group == "aga_all":
+                recovery_output = out / f"{preset}_aga"
+                recovery_output.mkdir()
+                restored = recover(model, anchor, author, recovery_output)
+            else:
+                restored = copy.deepcopy(model).cpu().eval()
+                fitting = []
+                for layer in config["layers"]:
+                    fitted, evidence = reconstruct(
+                        model, anchor, attack_images, layer, 1e-4, solver="auto"
+                    )
+                    restored.model.visual.transformer.resblocks[layer].mlp.load_state_dict(
+                        fitted.model.visual.transformer.resblocks[layer].mlp.state_dict()
+                    )
+                    fitting.append(dict(layer=layer, **evidence))
+                save_json(out / f"{preset}_reconstruction_1.json", fitting)
+            measure(preset, group + "_standalone", restored)
+            second = attacked_partner if group == "aga_all" else partner
+            measure(preset, group, merge(anchor, restored, second, config["coefficient"]))
+    adjust_comparisons(rows)
+    save_json(out / "results.json", rows)
+    prediction_file = out / "artifacts/predictions.pt"
+    torch.save(predictions, prediction_file)
+    save_json(
+        out / "metadata.json",
+        dict(
+            completed=True,
+            total_seconds=time.perf_counter() - start,
+            source_sha256=digest(__file__),
+            config_sha256=digest(out / "protocol.json"),
+            release_sha256=digest(release_file),
+            source_predictions_sha256=parent_meta["predictions_sha256"],
+            training_indices_sha256=digest(source / "training_indices.json"),
+            predictions_sha256=digest(prediction_file),
+            test_label_sha256={
+                task: hashlib.sha256(labels.numpy().tobytes()).hexdigest()
+                for task, labels in expected_labels.items()
+            },
+            checkpoint_sha256={str(p.relative_to(root)): digest(p) for p in root.rglob("*.pt")},
+            helper_sha256={
+                p: digest(Path(__file__).with_name(p))
+                for p in ["clip_benchmark.py", "polynomial_probe.py", "operator_diagnostics.py"]
+            },
+            test_usage="fixed_full_test_evaluation",
+            calibration_labels_used=False,
+            test_data_used_for_protection_or_reconstruction=False,
+            protection_recomputed=False,
+            optimizer_steps=0,
+            new_defense_validated=False,
+        ),
+    )
+    print("INTERFERENCE_TEST_COMPLETE", flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/subspace_interference.json")
@@ -429,4 +583,11 @@ if __name__ == "__main__":
     parser.add_argument("--nufilt-repo", default="external/NUFILT")
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
-    run(parser.parse_args())
+    parser.add_argument(
+        "--evaluate-saved", help="Evaluate a frozen release directory on full tests."
+    )
+    args = parser.parse_args()
+    if args.evaluate_saved:
+        evaluate_saved(args)
+    else:
+        run(args)
