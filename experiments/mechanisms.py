@@ -33,9 +33,9 @@ def load_author(path, include_wrappers=False):
     if include_wrappers:
         names |= {"universal_attention_attack_params", "attack_vit_mlp_only"}
     tree.body = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name in names]
-    from typing import Dict, Optional
+    from typing import Dict, List, Optional
 
-    env = dict(torch=torch, np=np, scipy=scipy, Dict=Dict, Optional=Optional)
+    env = dict(torch=torch, np=np, scipy=scipy, Dict=Dict, List=List, Optional=Optional)
     exec(compile(tree, str(path), "exec"), env)
     return env, hashlib.sha256(source.encode()).hexdigest()
 
