@@ -6,6 +6,7 @@
 
 ## 当前结果
 
+- [MNIST／DTD 局部任务删除](outputs/2026-10-11/local_erasure/summary.md)：两个固定点、七条恢复路径，无性能门槛；MNIST 原版 AGA 后下降 6.78 pp，重缩放恢复目标至 98.90% 并损失伙伴能力，未获得有效新防御。
 - [MNIST 主任务方向删除代价](outputs/2026-10-11/critical_subspace_mnist/summary.md)：细粒度联合删除仍便宜，固定方向族已停止；[近期代码论文精读](outputs/2026-10-11/reading_focus.md)核对 AGA、NUFILT 与 SLOA 的机制边界。
 - [丢弃专家的完整测试基线](outputs/2026-10-11/expert_omission/summary.md)：固定系数，分别将目标任务向量置零，并检查伙伴任务；用于明确当前准确率指标的防御空间，不是原版 AGA 或恢复原权重的结果。
 - [沿输入子空间删除更新](outputs/2026-10-11/subspace_recovery_cars/summary.md)：七个精确方向投影的任务代价为零；公开协方差规则只覆盖部分方向，保护后恢复未验证。
@@ -49,6 +50,14 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 ## 运行当前实验
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
+
+局部任务删除使用两个运行前固定发布点；所有攻击均运行，无准确率淘汰门槛。重缩放和输出拟合单列于原版 AGA，三套完整测试不称八任务均值。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/local_erasure.py --output outputs/local_deletion_check
+python experiments/validate_results.py --local-erasure --output outputs/local_deletion_check
+python experiments/plot_results.py --local-erasure --output outputs/local_deletion_check
+```
 
 最新方向与替换代价的预检入口如下；两轮都没有构造保护模型。复核投影诊断需要服务器父实验的原始激活。丢弃专家检查使用完整官方测试，预处理图片只缓存在服务器内存。
 
