@@ -33,3 +33,15 @@ Theorem 1 的损失界依赖局部光滑性、所删参数能量及方向上的�
 核对 [PLeaS v2，§4.2–4.3、附录 B.1](https://arxiv.org/html/2407.02447v2)。它先部分匹配特征，再逐层拟合置换后特征的组合；闭式 OLS 在数学上可解，论文实践采用梯度优化。PLeaS-free 仍需通用视觉数据，不能称完全无数据。[固定版本源码](https://github.com/SewoongLab/PLeaS-Merging/blob/55b35eeda860e82dea47613cd2e248345a37a06f/pleas/methods/pleas_merging.py#L218)用层级 MSE、Adam 与梯度掩码。
 
 我们的四层 MLP 固定公开第一层，只闭式拟合发布功能；新增第二轮改用重建模型自己的融合输入。目标、特征和宽度约束都不同，没有复现 PLeaS 的置换、部分融合或完整评价。功能拟合与层级最小二乘已有基础，当前结果用于加严恢复对照，不作为新防御或原创融合算法。[数学和本轮实测](reconstruction_notes.md)。
+
+## 10 月 10 日：算子恢复、保护约束与量化
+
+[SLOA v1（2026-10-05），§3、附录 D–E](https://arxiv.org/html/2610.06415v1)沿部分融合模型的执行顺序匹配局部功能，闭式求解，再将 QK/VO 算子分解回参数；视觉实验使用每任务 256 张训练校准图。它说明攻击不必识别原参数对应关系，也可在自己的融合输入上匹配功能。我们的两轮四层 MLP 重建没有实现其注意力、LayerNorm、顺序算子更新或完整评价，不能称 SLOA 复现或原创攻击。后续若采用完整方法，优先核对[作者源码](https://github.com/akansh12/SLOA-Merge)及其 checkpoint 配置。
+
+[MergeGuard v1，§4–5](https://arxiv.org/html/2511.11851v1)第一阶段用 L2 正则微调控制任务增量密度，第二阶段按关键层与权重掩码对任务增量取负。后处理阶段免训练，但完整报告依赖第一阶段，不能直接满足“对既有专家不再微调”的约束。其自适应检验包含线性修正与再训练；有限计算预算的威胁模型排除了蒸馏，不能借其结果证明本项目的功能重建不可行。
+
+[HDRQ v1，Merge-Friendly Post-Training Quantization，§3–4](https://arxiv.org/html/2505.23651v1)通过 Hessian 引导舍入与噪声采样减少量化误差干扰，目标是改善融合。参数量化的不可逆性并不自动破坏可融合能力；其优化式舍入也不等于完全无参数优化。我们未运行 HDRQ，不把它当成新保护机制。
+
+[Neuron merging via inverse-activation regression v1（2026-10-01）](https://arxiv.org/html/2610.02559v1)已有神经元合并与回归补偿用于 sigmoid 网络压缩的分析。其逆激活条件不能直接套到 CLIP QuickGELU。本轮“扰动加回归补偿”仅作为已有工具下的可证伪构造，不能据此宣称机制原创。
+
+这些工作与本轮负结果共同收紧了问题：需保留分类能力，同时使公开表示中的功能重建仍无法获得足够的融合能力。参数不可辨识、矩阵距离大或处理不可逆，单独都不是这一结论的证据。[本轮机制与恢复实测](subspace_interference_notes.md)。

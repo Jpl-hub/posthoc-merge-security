@@ -1,0 +1,44 @@
+{
+  "parent": "outputs/2026-10-09/post_meeting/subspace_probe",
+  "layers": [
+    3,
+    4,
+    5,
+    6
+  ],
+  "protected_task": "SVHN",
+  "other_task": "MNIST",
+  "samples": 256,
+  "coefficient": 0.5,
+  "ridge_ratio": 0.0001,
+  "presets": [
+    {
+      "name": "contrast_r1",
+      "rule": "contrast",
+      "rank": 1
+    },
+    {
+      "name": "contrast_r8",
+      "rule": "contrast",
+      "rank": 8
+    },
+    {
+      "name": "contrast_r32",
+      "rule": "contrast",
+      "rank": 32
+    },
+    {
+      "name": "own_r32",
+      "rule": "own",
+      "rank": 32
+    }
+  ],
+  "utility_budget_pp": 0.5,
+  "minimum_protected_task_drop_pp": 5.0,
+  "calibration": "256 frozen unlabeled SVHN calibration images; original expert and unprotected SVHN-MNIST merged inputs; partner checkpoint explicitly used",
+  "editing": "orthogonal removal of output-projection task delta along selected hidden-feature directions; no noise, optimizer or fine-tuning; bias unchanged",
+  "evaluation": "previously inspected development training subsets, not fresh holdout or official test",
+  "attack_gate": "only direct-gate survivors receive angular cleanup, AGA and two-pass public-feature reconstruction; not tested if direct gate fails",
+  "novelty": "known covariance analysis and projection used for a pair-conditioned falsifiable hypothesis; no originality or security claim",
+  "test_usage": "none"
+}

@@ -1436,8 +1436,54 @@ def validate_subspace_interference(path, write_report=True):
             math.isfinite(e[k])
             for k in ["scale", "perturbation_norm", "weight_norm_ratio", "anchor_cosine"]
         )
+    fitting_audit = []
+    for name in sorted({"unprotected", *attacked} if attacked else set()):
+        for step in [1, 2]:
+            fit_path = path / f"{name}_reconstruction_{step}.json"
+            evidence = json.loads(fit_path.read_bytes())
+            assert {e["layer"] for e in evidence} == set(config["layers"])
+            assert len(evidence) == len(config["layers"])
+            for e in evidence:
+                assert e["calibration_tokens"] == config["attack_samples"] * 50
+                assert e["design_features"] == 3073 and e["first_layer"] == "pretrained_fixed"
+                assert 0 < e["ridge"] < math.inf
+                assert 0 <= e["normal_equation_relative_residual"] < 1e-8
+                assert 0 <= e["fit_feature_error"] < math.inf
+            fitting_audit.append(
+                dict(
+                    file=fit_path.name,
+                    sha256=hashlib.sha256(fit_path.read_bytes()).hexdigest(),
+                    target_token_evaluations=sum(e["calibration_tokens"] for e in evidence),
+                    maximum_normal_residual=max(
+                        e["normal_equation_relative_residual"] for e in evidence
+                    ),
+                )
+            )
+    if config.get("output_compensation", False):
+        for name in presets:
+            fit_path = path / f"{name}_defender_compensation.json"
+            evidence = json.loads(fit_path.read_bytes())
+            assert {e["layer"] for e in evidence} == set(config["layers"])
+            assert len(evidence) == len(config["layers"])
+            for e in evidence:
+                assert e["calibration_tokens"] == config["samples"] * 50
+                assert e["first_layer"] == "released_control_fixed"
+                assert e["design_features"] == 3073 and 0 < e["ridge"] < math.inf
+                assert 0 <= e["normal_equation_relative_residual"] < 1e-8
+                assert 0 <= e["fit_feature_error"] < math.inf
+            fitting_audit.append(
+                dict(
+                    file=fit_path.name,
+                    sha256=hashlib.sha256(fit_path.read_bytes()).hexdigest(),
+                    target_token_evaluations=sum(e["calibration_tokens"] for e in evidence),
+                    maximum_normal_residual=max(
+                        e["normal_equation_relative_residual"] for e in evidence
+                    ),
+                )
+            )
     raw = path / "artifacts/predictions.pt"
     raw_checked = raw.exists()
+    prediction_agreement = []
     if raw_checked:
         import torch
         from operator_diagnostics import paired_counts
@@ -1455,11 +1501,23 @@ def validate_subspace_interference(path, write_report=True):
             assert abs(row["top1"] - row["correct"] / row["n"]) < 1e-10
             for k, value in paired_counts(reference["prediction"] == labels, correct).items():
                 assert abs(row["paired"][k] - value) < 1e-10
+            if row["preset"] != "unprotected" and row["group"] not in ["standalone", "direct"]:
+                prediction_agreement.append(
+                    dict(
+                        preset=row["preset"],
+                        group=row["group"],
+                        dataset=row["dataset"],
+                        differing_predictions=int((pred != reference["prediction"]).sum()),
+                        n=len(labels),
+                    )
+                )
     report = dict(
         status="passed",
         raw_artifacts_checked=raw_checked,
         direct_gate_survivors=sum(g["passed"] for g in gates),
         attacked_presets=sorted(attacked),
+        fitting_audit=fitting_audit,
+        recovery_prediction_agreement=prediction_agreement,
         new_defense_validated=False,
         results_sha256=hashlib.sha256((path / "results.json").read_bytes()).hexdigest(),
     )
