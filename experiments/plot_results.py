@@ -785,6 +785,45 @@ def plot_distribution_shift(root: Path):
     print("SHIFT_FIGURE_WRITTEN", out)
 
 
+def plot_redundancy_erasure(root: Path):
+    rows = json.loads((root / "results.json").read_bytes())
+    decision = json.loads((root / "decision.json").read_bytes())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    lookup = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
+    presets = ["unprotected", "erasure_only", "frozen_release", "combined"]
+    names = ["Original", "Attention\nerasure", "Frozen\nrelease", "Combined"]
+    panels = [
+        ("direct_standalone", "MNIST", "Standalone MNIST"),
+        ("direct", "MNIST", "Direct merge"),
+        ("pretrained_fc", "MNIST", "FC replacement"),
+        ("pretrained_mlp_all", "MNIST", "All-MLP replacement"),
+    ]
+    fig, axes = plt.subplots(1, 4, figsize=(11.8, 3.1), layout="constrained")
+    for ax, (group, task, title) in zip(axes, panels, strict=True):
+        values = [100 * lookup[p, group, task]["top1"] for p in presets]
+        ax.bar(range(len(presets)), values, color=COLORS[:4])
+        for pos, value in enumerate(values):
+            ax.text(pos, value + 0.9, f"{value:.3f}", ha="center", fontsize=7)
+        ax.set(
+            xticks=range(len(presets)),
+            xticklabels=names,
+            ylim=(0, 108),
+            title=title,
+            ylabel="Accuracy (%)",
+        )
+        ax.tick_params(axis="x", labelsize=7)
+        ax.grid(axis="y", alpha=0.2)
+    outcome = "passed necessary gate" if decision["passed_initial_gate"] else "rejected"
+    fig.suptitle(
+        f"Task-update erasure: {outcome}; inspected MNIST training subset n=4,000; TA 0.5\n"
+        "Frozen protection reused; no new perturbation, fitting or strength selection",
+        fontsize=9,
+    )
+    save(fig, out, "redundancy_erasure")
+    print("REDUNDANCY_FIGURES_WRITTEN", out)
+
+
 def plot_operator_diagnostics(root: Path):
     rows = json.loads((root / "results.json").read_bytes())
     config = json.loads((root / "protocol.json").read_bytes())
@@ -1262,6 +1301,7 @@ if __name__ == "__main__":
     )
     mode.add_argument("--subspace", action="store_true", help="Plot the standalone subspace probe.")
     mode.add_argument("--subspace-diagnostics", action="store_true", help="Plot causal contrasts.")
+    mode.add_argument("--redundancy-erasure", action="store_true")
     mode.add_argument("--bounded-complement", action="store_true", help="Plot bounded edits.")
     mode.add_argument("--distribution-shift", action="store_true", help="Plot input diagnostics.")
     mode.add_argument(
@@ -1297,6 +1337,8 @@ if __name__ == "__main__":
         if args.nufilt_alignment
         else plot_operator_diagnostics
         if args.operator_diagnostics
+        else plot_redundancy_erasure
+        if args.redundancy_erasure
         else plot_distribution_shift
         if args.distribution_shift
         else plot_bounded_complement

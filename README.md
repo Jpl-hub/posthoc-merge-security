@@ -119,7 +119,7 @@ python experiments/validate_results.py --norm-cleanup --output outputs/2026-10-0
 python experiments/plot_results.py --subspace-diagnostics --output outputs/2026-10-09/post_meeting/subspace_diagnostics
 ```
 
-八个 Task Arithmetic 官方专家与全部分类头已取得并核验；Cars 数据准备完成。八专家按作者代码系数 0.2 融合，在六个就绪测试集上完成评估；SUN397 图片和 EuroSAT 原随机索引仍缺。六项结果与论文表格尚未对齐，不能报告完整八任务均值。[计数、来源及差异](outputs/2026-10-09/eight_task/status.md)。
+八个 Task Arithmetic 官方专家与全部分类头已取得并核验。八专家按作者代码系数 0.2 融合，在七个完整测试集上完成评估；SUN397 归档与第 1 划分图片已核验，EuroSAT 原随机索引仍缺。现有结果与论文表格尚未对齐，不能报告完整八任务均值。[计数、来源及差异](outputs/2026-10-09/eight_task/status.md)。
 
 多层投影删除与范数保持反射使用同一入口，先检验开发集效用与无数据角度清理；只有通过门槛才运行官方测试。两角色本轮均未通过，未进行最终测试。输入诊断不计作准确率实验。JSON 保留原始字节，便于跨平台核对记录的指纹。
 
@@ -167,6 +167,19 @@ python experiments/plot_results.py --subspace-interference --output outputs/mnis
 ```
 
 完整编辑集合替换、联合模块依赖与分类输出恢复另列为机制检验。[数学边界与真实结果](outputs/2026-10-09/post_meeting/recovery_boundary_notes.md)。分类输出恢复只拟合公共特征，当前是已知伙伴、相同分类 head 的额外攻击，不能称原 AGA 或新防御：
+
+联合依赖对照区分 LayerNorm 与 Attention＋MLP；任务更新删除检验复用已冻结保护参数，不改变扰动或重新补偿。以下均为已查看训练子集上的机制筛选，失败后按协议停止：
+
+```bash
+python experiments/operator_diagnostics.py --config configs/operator_support_mnist_norms.json --output outputs/norm_support
+python experiments/validate_results.py --operator-diagnostics --output outputs/norm_support
+python experiments/plot_results.py --operator-diagnostics --output outputs/norm_support
+python experiments/context_erasure.py --redundancy-probe --config configs/redundancy_erasure_mnist.json --output outputs/redundancy_erasure
+python experiments/validate_results.py --redundancy-erasure --output outputs/redundancy_erasure
+python experiments/plot_results.py --redundancy-erasure --output outputs/redundancy_erasure
+```
+
+分类输出恢复：
 
 ```bash
 python experiments/operator_diagnostics.py --readout-recovery --config configs/readout_recovery_mnist.json --output outputs/readout_dev
