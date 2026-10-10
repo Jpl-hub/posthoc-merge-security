@@ -785,6 +785,66 @@ def plot_distribution_shift(root: Path):
     print("SHIFT_FIGURE_WRITTEN", out)
 
 
+def plot_task_support(root: Path):
+    """Separate module costs used for selection from the frozen-support confirmation."""
+    rows = json.loads((root / "results.json").read_bytes())
+    selection = json.loads((root / "selection.json").read_bytes())
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.6), layout="constrained")
+    profiles = {tuple(map(tuple, r["support"])): r for r in rows if r["split"] == "selection"}
+    for offset, component, label, color in [
+        (-0.25, "attn", "Attention", COLORS[0]),
+        (0, "mlp", "MLP", COLORS[1]),
+        (0.25, "both", "Attention + MLP", COLORS[2]),
+    ]:
+        supports = [
+            ((i, "attn"), (i, "mlp")) if component == "both" else ((i, component),)
+            for i in range(12)
+        ]
+        losses = [profiles[key]["paired"]["loss_pp"] for key in supports]
+        axes[0].bar(np.arange(12) + offset, losses, width=0.25, label=label, color=color)
+    axes[0].axhline(0, linewidth=0.7, color="0.4")
+    axes[0].set(
+        title="(a) Single-layer public resets",
+        xlabel="Block",
+        ylabel="Standalone MNIST loss (pp)",
+        xticks=range(12),
+    )
+    axes[0].legend(fontsize=7)
+    confirm = [r for r in rows if r["split"] == "confirmation"]
+    for offset, modified, label, color in [
+        (-0.18, False, "Original", COLORS[0]),
+        (0.18, True, "Selected support reset", COLORS[1]),
+    ]:
+        scores = [
+            100
+            * next(
+                r["top1"] for r in confirm if r["group"] == group and bool(r["support"]) == modified
+            )
+            for group in ["standalone", "fusion"]
+        ]
+        bars = axes[1].bar(np.arange(2) + offset, scores, width=0.36, label=label, color=color)
+        axes[1].bar_label(bars, fmt="%.3f", fontsize=8, padding=3)
+    axes[1].set(
+        title=f"(b) Frozen support ({selection['modules']} modules)",
+        ylabel="MNIST accuracy (%)",
+        xticks=[0, 1],
+        xticklabels=["Standalone", "Fusion"],
+        ylim=(90, 101.5),
+    )
+    axes[1].legend(loc="lower left", fontsize=7)
+    for ax in axes:
+        ax.grid(axis="y", alpha=0.2)
+        ax.set_axisbelow(True)
+    fig.suptitle(
+        "MNIST-only support selection; not a defense result\n(a) inspected 2000 training images; (b) disjoint 4000 training images",
+        fontsize=9,
+    )
+    save(fig, out, "task_support")
+    print("TASK_SUPPORT_FIGURES_WRITTEN", out)
+
+
 def plot_response_transfer(root: Path):
     """Plot diagnostic fits on a frozen release; these are not accuracy results."""
     rows = json.loads((root / "results.json").read_text())
@@ -1531,6 +1591,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
     mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--task-support", action="store_true")
     mode.add_argument(
         "--subspace-interference",
         action="store_true",
@@ -1566,7 +1627,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_response_transfer
+        plot_task_support
+        if args.task_support
+        else plot_response_transfer
         if args.response_transfer
         else plot_subspace_interference
         if args.subspace_interference
