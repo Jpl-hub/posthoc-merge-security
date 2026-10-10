@@ -537,6 +537,12 @@ def evaluate_saved(args):
                 restored = model
             elif group == "pretrained_fc":
                 restored = pretrained_fc(model, anchor, config["layers"])
+            elif group == "canonical_fc":
+                from layernorm_posthoc import canonicalize_affine
+
+                canonical, audit = canonicalize_affine(model, anchor, config["layers"])
+                save_json(out / f"{preset}_affine_audit.json", audit)
+                restored = pretrained_fc(canonical, anchor, config["layers"])
             elif group in {"pretrained_mlp", "pretrained_block"}:
                 component = "mlp" if group == "pretrained_mlp" else "block"
                 restored, keys = replace_components(model, anchor, config["layers"], component)
@@ -624,6 +630,7 @@ def evaluate_saved(args):
             helper_sha256={
                 p: digest(Path(__file__).with_name(p))
                 for p in ["clip_benchmark.py", "polynomial_probe.py", "operator_diagnostics.py"]
+                + (["layernorm_posthoc.py"] if "canonical_fc" in groups else [])
             },
             test_usage="fixed_full_test_evaluation",
             calibration_labels_used=False,
@@ -639,6 +646,12 @@ def evaluate_saved(args):
             selected_aga_normalized_source_sha256=selected_author_sha256,
             selected_aga_raw_source_sha256=digest(Path(args.author_repo) / "utils_attack_B32.py")
             if "aga_selected" in groups
+            else None,
+            affine_audit_sha256={
+                preset: digest(out / f"{preset}_affine_audit.json")
+                for preset in ["unprotected", name]
+            }
+            if "canonical_fc" in groups
             else None,
         ),
     )
@@ -664,6 +677,7 @@ if __name__ == "__main__":
             "aga_all",
             "aga_selected",
             "pretrained_fc",
+            "canonical_fc",
             "pretrained_mlp",
             "pretrained_block",
             "reconstruction_1",

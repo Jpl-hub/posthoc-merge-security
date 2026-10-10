@@ -2072,6 +2072,7 @@ def validate_subspace_test(path: Path, write_report=True):
         "aga_all",
         "aga_selected",
         "pretrained_fc",
+        "canonical_fc",
         "pretrained_mlp",
         "pretrained_block",
         "reconstruction_1",
@@ -2092,6 +2093,20 @@ def validate_subspace_test(path: Path, write_report=True):
     keyed = {(r["preset"], r["group"], r["dataset"]): r for r in rows}
     assert len(keyed) == len(rows) and set(keyed) == expected
     counts = {"MNIST": 10000, "SVHN": 26032}
+    if "canonical_fc" in groups:
+        for preset in ["unprotected", name]:
+            audit_bytes = (path / f"{preset}_affine_audit.json").read_bytes()
+            assert hashlib.sha256(audit_bytes).hexdigest() == meta["affine_audit_sha256"][preset]
+            audit = json.loads(audit_bytes)
+            assert (
+                audit["binary_diagonal_gauge_state_exact_match"]
+                and audit["calibration_images"] == 0
+            )
+            assert len(audit["operator_checks"]) == 2 * len(config["layers"])
+            assert (
+                max(r["effective_weight_relative_error"] for r in audit["operator_checks"]) < 1e-6
+            )
+            assert max(r["effective_bias_relative_error"] for r in audit["operator_checks"]) < 1e-6
     for row in rows:
         assert row["split"] == "test" and row["n"] == counts[row["dataset"]]
         assert 0 <= row["correct"] <= row["n"]

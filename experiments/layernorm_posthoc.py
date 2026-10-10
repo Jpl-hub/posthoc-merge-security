@@ -60,6 +60,82 @@ def canonicalize(model):
     return result
 
 
+@torch.no_grad()
+def canonicalize_affine(model, anchor, layers):
+    """Set LN affine terms to the public anchor and absorb them into the next Linear."""
+
+    def fold(source):
+        result = copy.deepcopy(source).cpu().eval()
+        records = []
+        for layer in layers:
+            block = result.model.visual.transformer.resblocks[layer]
+            public = anchor.model.visual.transformer.resblocks[layer]
+            pairs = [
+                (
+                    "attention",
+                    block.ln_1,
+                    public.ln_1,
+                    block.attn.in_proj_weight,
+                    block.attn.in_proj_bias,
+                ),
+                ("mlp", block.ln_2, public.ln_2, block.mlp.c_fc.weight, block.mlp.c_fc.bias),
+            ]
+            for name, norm, base, weight, bias in pairs:
+                assert norm.eps == base.eps and float(base.weight.abs().min()) > 1e-8
+                w, b = weight.double(), bias.double()
+                effective = w * norm.weight.double()[None]
+                offset = b + w @ norm.bias.double()
+                canonical = effective / base.weight.double()[None]
+                constant = offset - canonical @ base.bias.double()
+                weight.copy_(canonical.float())
+                bias.copy_(constant.float())
+                norm.load_state_dict(base.state_dict(), strict=True)
+                weight_error = float(
+                    (weight.double() * norm.weight.double()[None] - effective).norm()
+                    / effective.norm()
+                )
+                bias_error = float(
+                    (bias.double() + weight.double() @ norm.bias.double() - offset).norm()
+                    / offset.norm().clamp_min(1e-12)
+                )
+                assert weight_error < 1e-6 and bias_error < 1e-6
+                records.append(
+                    dict(
+                        layer=layer,
+                        component=name,
+                        effective_weight_relative_error=weight_error,
+                        effective_bias_relative_error=bias_error,
+                    )
+                )
+        return result, records
+
+    result, records = fold(model)
+    # A deterministic CPU control of the affine identity; not a new protection run.
+    shadow = copy.deepcopy(model).cpu().eval()
+    for layer in layers:
+        block = shadow.model.visual.transformer.resblocks[layer]
+        for norm, weight in [
+            (block.ln_1, block.attn.in_proj_weight),
+            (block.ln_2, block.mlp.c_fc.weight),
+        ]:
+            factors = 2.0 ** ((torch.arange(weight.shape[1]) % 5) - 2)
+            weight.mul_(factors[None])
+            norm.weight.div_(factors)
+            norm.bias.div_(factors)
+    gauged, _ = fold(shadow)
+    equal = all(
+        torch.equal(value, gauged.state_dict()[key]) for key, value in result.state_dict().items()
+    )
+    assert equal
+    return result, dict(
+        operator_checks=records,
+        binary_diagonal_gauge_state_exact_match=equal,
+        control_gains=[0.25, 0.5, 1.0, 2.0, 4.0],
+        calibration_images=0,
+        scope="Affine identity and float32 parameter roundoff; not a classification-error bound.",
+    )
+
+
 def run(args):
     output = Path(args.output)
     output.mkdir(parents=True, exist_ok=True)
