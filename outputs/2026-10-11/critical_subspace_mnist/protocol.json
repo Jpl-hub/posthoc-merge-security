@@ -1,0 +1,33 @@
+{
+  "task": "MNIST",
+  "seed": 20261018,
+  "layers": [
+    6,
+    7,
+    8
+  ],
+  "calibration_samples": 128,
+  "confirmation_samples": 128,
+  "exclusions": [
+    "outputs/2026-10-10/task_profile/training_indices.json",
+    "outputs/2026-10-11/fine_subspace_cars/training_indices.json"
+  ],
+  "mnist_exclusions": "outputs/2026-10-10/task_profile/excluded_mnist_indices.json",
+  "profile_parent": "outputs/2026-10-10/task_profile",
+  "fusion_config": "configs/eight_tasks.json",
+  "nufilt_config": "configs/nufilt_alignment.json",
+  "coefficient": 0.2,
+  "presets": [
+    "original",
+    "oracle_attention",
+    "oracle_mlp",
+    "oracle_union",
+    "public_support"
+  ],
+  "minimum_fusion_erasure_cost_pp": 5.0,
+  "time_limit_seconds": 300,
+  "rule": "One leading task-increment right singular vector per V, Attention-output, MLP-up and MLP-down matrix in fixed target-selected layers. For V and up, remove the exact LayerNorm affine-null direction and renormalize. Freeze all vectors and input means before loading partners. Oracle resets the rank-one task update and compensates its mean in the bias. Public-support resets all edited matrices and biases (V rows only, preserving Q/K). No rank or amplitude search.",
+  "scope": "Necessary-condition diagnostic, not a new defense, protected-model attack or NUFILT reproduction. Exact directions and means are oracle knowledge. No extra training, gradient updates or response reconstruction.",
+  "data_usage": "128 fresh unlabeled MNIST training calibration and 128 fresh disjoint confirmation images for geometry. Recovery cost reuses the previously inspected 2048-image MNIST training confirmation. No official test images or labels used.",
+  "decision": "Continue to a single joint functional-cancellation candidate only if both union oracle erasure and public-support replacement lose at least 5 pp in the fixed eight-expert fusion. This is a declared research-priority threshold, not an impossibility theorem. Report every standalone and fusion cost regardless of the gate. Do not retune this direction family on failure."
+}

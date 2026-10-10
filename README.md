@@ -2,10 +2,11 @@
 
 对已微调专家施加发布前后处理，保持原任务能力，检验对未经授权融合及自适应恢复的保护。目标独立准确率损失 ≤0.5 个百分点，同时完整报告性能与防御权衡；不进行额外梯度微调，有闭式拟合的实验明确记录校准数据。
 
-**目前没有达标的新防御。**Cars 细粒度预检找到七个稳定分离方向，但沿精确方向删除任务更新后，独立和融合正确集合均不变；方向由防御方提供，属于条件诊断。该轮没有构造保护模型。上一轮跨模块候选的直接融合仅下降 0.0373 pp，原版 AGA 没有收益。旧四层候选被 FC 替换和功能重建绕过。全部真实结果保留。
+**目前没有达标的新防御。**最新 MNIST 诊断检查 12 个任务主方向：联合精确方向删除无独立准确率损失，融合只下降 0.6836 pp；完整支持替换下降 7.6172 pp，不能替代细粒度删除代价。方向由防御方提供，属于 oracle 条件诊断，尚未构造保护或运行其 AGA。此前 Cars 七个稳定分离方向删除几乎无代价；跨模块候选的直接融合仅下降 0.0373 pp，原版 AGA 没有收益。旧四层候选被 FC 替换和功能重建绕过。全部真实结果保留。
 
 ## 当前结果
 
+- [MNIST 主任务方向删除代价](outputs/2026-10-11/critical_subspace_mnist/summary.md)：细粒度联合删除仍便宜，固定方向族已停止；[近期代码论文精读](outputs/2026-10-11/reading_focus.md)核对 AGA、NUFILT 与 SLOA 的机制边界。
 - [丢弃专家的完整测试基线](outputs/2026-10-11/expert_omission/summary.md)：固定系数，分别将目标任务向量置零，并检查伙伴任务；用于明确当前准确率指标的防御空间，不是原版 AGA 或恢复原权重的结果。
 - [沿输入子空间删除更新](outputs/2026-10-11/subspace_recovery_cars/summary.md)：七个精确方向投影的任务代价为零；公开协方差规则只覆盖部分方向，保护后恢复未验证。
 - [Cars 细粒度预检](outputs/2026-10-11/fine_subspace_cars/summary.md)：独立确认响应分离，实际编辑支持替换的条件恢复下限为 61.67%，未进入保护构造。
@@ -52,6 +53,8 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 最新方向与替换代价的预检入口如下；两轮都没有构造保护模型。复核投影诊断需要服务器父实验的原始激活。丢弃专家检查使用完整官方测试，预处理图片只缓存在服务器内存。
 
 ```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/critical_subspace.py --output outputs/critical_check
+python experiments/validate_results.py --critical-subspace --output outputs/critical_check
 JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/fine_subspace.py --config configs/fine_subspace_cars.json --output outputs/fine_check
 python experiments/validate_results.py --fine-subspace --output outputs/fine_check
 python experiments/plot_results.py --fine-subspace --output outputs/fine_check
