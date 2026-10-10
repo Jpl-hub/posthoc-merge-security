@@ -4399,6 +4399,271 @@ def validate_critical_subspace(path: Path):
     return report
 
 
+def validate_local_erasure(path: Path):
+    """Audit releases, raw official predictions and every fixed recovery path."""
+    import copy
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader, evaluate
+    from critical_subspace import parameters
+    from eight_task_benchmark import author_recover, digest, merge_all
+    from local_erasure import reconstruct_projection, rescale, sites, spectral_cleanup
+    from mechanisms import load_author
+    from nufilt_alignment import author_svd
+    from operator_diagnostics import paired_counts, replace_components
+    from subspace_probe import make_loader
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    config, meta, decision = read("protocol.json"), read("metadata.json"), read("decision.json")
+    execution = read("execution.json")
+    assert execution["exit_code"] == 0 and not execution["timed_out"] and meta["completed"]
+    assert not decision["threshold_used"] and not decision["new_algorithm_claim"]
+    assert not decision["full_sloa_tested"]
+    assert meta["defender_optimizer_steps"] == meta["defender_fits"] == 0
+    assert not meta["constructor_future_partner_access"]
+    assert not meta["calibration_truth_for_attack"] and meta["calibration_reused"]
+    assert not meta["official_tests_used_for_selection"] and not meta["full_eight_task_average"]
+    assert digest(Path(__file__).with_name("local_erasure.py")) == meta["source_sha256"]
+    assert digest("configs/local_erasure.json") == meta["config_sha256"]
+    assert json.loads(Path("configs/local_erasure.json").read_bytes()) == config
+    assert digest(config["fusion_config"]) == meta["fusion_config_sha256"]
+    for name, expected in meta["source_helpers_sha256"].items():
+        assert digest(Path(__file__).with_name(name)) == expected
+    author_repo, root = Path("external/secure-merge-attack"), Path("checkpoints/ViT-B-32")
+    for name, expected in meta["author_helpers_sha256"].items():
+        assert digest(author_repo / name) == expected
+    for name, expected in meta["raw_sha256"].items():
+        assert digest(path / "artifacts" / name) == expected
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert digest(root / name) == expected
+    parent = Path(config["profile_parent"])
+    assert digest(parent / "selection.json") == meta["profile_selection_sha256"]
+    assert digest(parent / "training_indices.json") == meta["profile_indices_sha256"]
+    assert json.loads((parent / "validation.json").read_bytes())["status"] == "passed"
+    selection = json.loads((parent / "selection.json").read_bytes())
+    old_indices = json.loads((parent / "training_indices.json").read_bytes())
+    indices = read("attack_indices.json")
+    for target in config["tasks"]:
+        assert selection[target]["layers"] == config["layers"][target]
+        assert not selection[target]["partner_used"]
+        assert indices[target] == old_indices[target]["selection"][: config["attacker_samples"]]
+        assert len(indices[target]) == len(set(indices[target])) == 256
+    fusion = json.loads(Path(config["fusion_config"]).read_bytes())
+    assert config["coefficient"] == fusion["coefficient"] == 0.2
+    load = checkpoint_loader(author_repo)
+    anchor = load(str(root / "zeroshot.pt"))
+    models = {t: load(str(root / t / "finetuned.pt")) for t in fusion["tasks"]}
+    models["anchor"] = anchor
+    released = {}
+    manifest = read("release_freeze.json")
+    assert manifest["optimizer_steps"] == manifest["constructor_fits"] == 0
+    assert not manifest["future_partners_loaded"]
+    for target in config["tasks"]:
+        own = models[target].state_dict()
+        current = copy.deepcopy(models[target]).cpu().eval()
+        edits_file = path / "artifacts" / f"{target}_edits.pt"
+        assert digest(edits_file) == manifest["models"][target]["edits_sha256"]
+        edits = torch.load(edits_file, map_location="cpu", weights_only=True)
+        assert list(edits) == manifest["models"][target]["edited_keys"]
+        state = current.state_dict()
+        for key, value in edits.items():
+            state[key].copy_(value)
+        expected = {key: value.clone() for key, value in own.items()}
+        for site in sites(config["layers"][target]):
+            _, weight, bias = parameters(expected, site)
+            _, public_weight, public_bias = parameters(anchor.state_dict(), site)
+            weight.copy_(public_weight)
+            bias.copy_(public_bias)
+        assert all(torch.equal(state[k], v) for k, v in expected.items())
+        assert set(edits) == {k for k in own if not torch.equal(own[k], expected[k])}
+        released[target] = current
+    package = types.ModuleType("dataset")
+    package.__path__ = [str((author_repo / "datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    data = {
+        t: get_dataset(t, anchor.val_preprocess, "data", batch_size=128, num_workers=2)
+        for t in config["evaluation_tasks"]
+    }
+    heads = {t: load(str(root / f"head_{t}.pt")) for t in data}
+    labels = {
+        t: torch.tensor([y for _, y in d.test_dataset._samples])
+        if hasattr(d.test_dataset, "_samples")
+        else torch.as_tensor(d.test_dataset.targets)
+        for t, d in data.items()
+    }
+    raw = torch.load(path / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    rows = read("results.json")
+    expected_ids = {
+        f"{t}/{p}/{a}/{g}/{d}"
+        for t in config["tasks"]
+        for p in ("original", "erased")
+        for a in config["attacks"]
+        for g in ("standalone", "fusion")
+        for d in ([t] if g == "standalone" else config["evaluation_tasks"])
+        if g == "fusion" or a not in ("target_weight_one", "readout")
+    }
+    assert set(raw) == {r["id"] for r in rows} == expected_ids
+    assert len(rows) == meta["reported_rows"] == 104
+    assert (
+        sum(r["reused_from"] is None for r in rows) == meta["actual_full_test_evaluations"] == 101
+    )
+    prior = torch.load(
+        "outputs/2026-10-11/expert_omission/artifacts/predictions.pt",
+        map_location="cpu",
+        weights_only=True,
+    )
+    for row in rows:
+        current = raw[row["id"]]
+        y = labels[row["dataset"]]
+        assert torch.equal(current["labels"], y)
+        assert len(y) == fusion["expected_test_counts"][row["dataset"]]
+        p = current["prediction"]
+        assert p.shape == y.shape and p.dtype == torch.int64
+        assert p.min() >= 0 and p.max() < len(heads[row["dataset"]].weight)
+        assert row["correct"] == int(p.eq(y).sum()) and row["n"] == len(y)
+        assert row["top1"] == row["correct"] / len(y)
+        control = raw[f"{row['target']}/original/{row['attack']}/{row['group']}/{row['dataset']}"]
+        assert row["matched"] == paired_counts(control["prediction"].eq(y), p.eq(y))
+        if row["reused_from"]:
+            assert torch.equal(p, raw[row["reused_from"]]["prediction"])
+        if row["preset"] == "original" and row["attack"] == "direct" and row["group"] == "fusion":
+            assert torch.equal(p, prior[f"all_eight/{row['dataset']}"]["prediction"])
+    for point in decision["points"]:
+        target = point["target"]
+        best = {
+            preset: max(
+                [
+                    r
+                    for r in rows
+                    if r["target"] == target
+                    and r["preset"] == preset
+                    and r["group"] == "fusion"
+                    and r["dataset"] == target
+                ],
+                key=lambda r: r["top1"],
+            )
+            for preset in ("original", "erased")
+        }
+        utility = next(r for r in rows if r["id"] == f"{target}/erased/direct/standalone/{target}")
+        assert point["utility_loss_pp"] == utility["matched"]["loss_pp"]
+        assert point["best_tested_recovery"] == best["erased"]["attack"]
+        assert point["protected_best_accuracy"] == best["erased"]["top1"]
+        assert point["unprotected_best_accuracy"] == best["original"]["top1"]
+        assert point["best_to_best_gap_pp"] == 100 * (
+            best["original"]["top1"] - best["erased"]["top1"]
+        )
+    author, author_hash = load_author(author_repo / "utils_attack_B32.py", include_wrappers=True)
+    assert author_hash == meta["original_author_aga_sha256"]
+    assert author_hash == json.loads(Path("configs/sources.json").read_bytes())["AGA"]["sha256"]
+    svd = author_svd("external/NUFILT", meta["upstream_svd"])
+    prefixes = {t: make_loader(d.test_dataset, list(range(128))) for t, d in data.items()}
+    prefix_replays = 0
+    for target in config["tasks"]:
+        images = torch.stack([data[target].train_dataset[i][0] for i in indices[target]])
+        for preset, release in [("original", models[target]), ("erased", released[target])]:
+            for attack in config["attacks"]:
+                if attack == "direct":
+                    recovered = release
+                elif attack == "aga":
+                    recovered = author_recover(release, anchor, author)
+                elif attack in ("reset_attention", "reset_mlp"):
+                    recovered, _ = replace_components(
+                        release, anchor, range(12), "attn" if attack == "reset_attention" else "mlp"
+                    )
+                elif attack == "spectral":
+                    recovered, evidence = spectral_cleanup(release, anchor, svd)
+                    assert evidence == read("spectral.json")[f"{target}/{preset}"]
+                    assert sum(r["skipped_zero"] for r in evidence) == (
+                        12 if preset == "erased" else 0
+                    )
+                    before, after = release.state_dict(), recovered.state_dict()
+                    for site in sites(range(12)):
+                        _, _, bias_before = parameters(before, site)
+                        _, _, bias_after = parameters(after, site)
+                        assert torch.equal(bias_before, bias_after)
+                elif attack == "target_weight_one":
+                    recovered = rescale(release, anchor, 5)
+                else:
+                    student = merge_all(dict(models, **{target: release}), root, 0.2)
+                    recovered, fit, evidence = reconstruct_projection(
+                        release, student, heads[target], images, config["readout_ridge_ratio"], 0.2
+                    )
+                    saved = torch.load(
+                        path / "artifacts" / f"{target}_{preset}_readout.pt", weights_only=True
+                    )
+                    for key, value in evidence.items():
+                        assert torch.equal(value, saved[key])
+                    assert fit == read("fitting.json")[f"{target}/{preset}"]
+                    h, r, u = saved["design"], saved["residual"], saved["update"]
+                    assert (
+                        float((h.T @ (h @ u - r) + fit["ridge"] * u).norm() / (h.T @ r).norm())
+                        < 1e-8
+                    )
+                    del student
+                combined = merge_all(dict(models, **{target: recovered}), root, 0.2)
+                if attack == "readout":
+                    direct_projection = merge_all(
+                        dict(models, **{target: release}), root, 0.2
+                    ).model.visual.proj
+                    desired = direct_projection.double() + saved["projection_delta"]
+                    assert (
+                        float(
+                            (combined.model.visual.proj.double() - desired).norm() / desired.norm()
+                        )
+                        < 1e-6
+                    )
+                for group, model, tasks in [
+                    ("standalone", recovered, [target])
+                    if attack not in ("target_weight_one", "readout")
+                    else ("standalone", recovered, []),
+                    ("fusion", combined, config["evaluation_tasks"]),
+                ]:
+                    for task in tasks:
+                        sink = []
+                        evaluate(
+                            model,
+                            heads[task],
+                            prefixes[task],
+                            "cuda",
+                            prediction_sink=lambda p, _y: sink.append(p),
+                        )
+                        assert torch.equal(
+                            torch.cat(sink),
+                            raw[f"{target}/{preset}/{attack}/{group}/{task}"]["prediction"][:128],
+                        )
+                        prefix_replays += 1
+                del combined, recovered
+    result = dict(
+        status="passed",
+        raw_rows_checked=len(rows),
+        actual_full_test_evaluations=101,
+        official_test_labels_verified=True,
+        exact_coordinate_releases_verified=True,
+        six_original_full_predictions_match_prior=True,
+        all_attack_prefix_replays=prefix_replays,
+        replay_samples_per_row=128,
+        author_aga_unchanged=True,
+        public_spectral_attack_replayed=True,
+        four_functional_fits_and_projection_mapping_verified=True,
+        source_and_checkpoint_pins_verified=True,
+        fixed_threshold_used=False,
+        results_sha256=digest(path / "results.json"),
+        validator_source_sha256=digest(__file__),
+    )
+    (path / "validation.json").write_text(json.dumps(result, indent=2) + "\n")
+    print("LOCAL_ERASURE_VALIDATION", json.dumps(result), flush=True)
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -4412,6 +4677,7 @@ if __name__ == "__main__":
     mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument("--expert-omission", action="store_true")
     mode.add_argument("--critical-subspace", action="store_true")
+    mode.add_argument("--local-erasure", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -4454,7 +4720,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_critical_subspace
+        validate_local_erasure
+        if args.local_erasure
+        else validate_critical_subspace
         if args.critical_subspace
         else validate_expert_omission
         if args.expert_omission

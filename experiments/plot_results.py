@@ -1782,6 +1782,61 @@ def plot_functional_contrast(root: Path):
     save(fig, out, "functional_contrast")
 
 
+def plot_local_erasure(root: Path):
+    """Matched controls on full tests; no seed error bars for one release point."""
+    config = json.loads((root / "protocol.json").read_bytes())
+    rows = {r["id"]: r for r in json.loads((root / "results.json").read_bytes())}
+    assert json.loads((root / "validation.json").read_bytes())["status"] == "passed"
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    labels = ["Direct", "AGA", "Reset A", "Reset M", "Rank-1", "Target=1", "Readout"]
+    x = np.arange(len(labels))
+    fig, axes = plt.subplots(2, 3, figsize=(10, 5), layout="constrained", sharey=True)
+    for i, target in enumerate(config["tasks"]):
+        original = rows[f"{target}/original/direct/standalone/{target}"]["top1"] * 100
+        erased = rows[f"{target}/erased/direct/standalone/{target}"]["top1"] * 100
+        for j, dataset in enumerate(config["evaluation_tasks"]):
+            ax = axes[i, j]
+            for index, preset in enumerate(("original", "erased")):
+                values = [
+                    100 * rows[f"{target}/{preset}/{a}/fusion/{dataset}"]["top1"]
+                    for a in config["attacks"]
+                ]
+                ax.plot(
+                    x,
+                    values,
+                    marker="o" if index == 0 else "s",
+                    ms=3.2,
+                    lw=1.2,
+                    color=COLORS[index],
+                    label="Unprotected control" if index == 0 else "Local deletion",
+                )
+            ax.set(
+                ylim=(0, 102),
+                xticks=x,
+                xticklabels=labels,
+                title=f"Release: {target}; test: {dataset}",
+            )
+            ax.tick_params(axis="x", rotation=45, labelsize=7)
+            ax.grid(axis="y", alpha=0.2)
+            if j == 0:
+                ax.set_ylabel("Merged accuracy (%)")
+                ax.text(
+                    0.02,
+                    0.06,
+                    f"Standalone {original:.2f}% → {erased:.2f}%",
+                    transform=ax.transAxes,
+                    fontsize=8,
+                )
+    axes[0, 0].legend(loc="lower left", bbox_to_anchor=(0, 0.12), fontsize=7)
+    fig.suptitle("Eight experts; full official tests; fixed matched attacks", fontsize=11)
+    fig.supxlabel(
+        "Target=1: target weight 1, other weights 0.2; Readout: 256 teacher queries. Other attacks: TA 0.2.",
+        fontsize=8,
+    )
+    save(fig, out, "local_erasure")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -1789,6 +1844,7 @@ if __name__ == "__main__":
     mode.add_argument("--task-support", action="store_true")
     mode.add_argument("--functional-contrast", action="store_true")
     mode.add_argument("--fine-subspace", action="store_true")
+    mode.add_argument("--local-erasure", action="store_true")
     mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument(
         "--subspace-interference",
@@ -1825,7 +1881,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_fine_subspace
+        plot_local_erasure
+        if args.local_erasure
+        else plot_fine_subspace
         if args.fine_subspace
         else plot_subspace_recovery
         if args.subspace_recovery
