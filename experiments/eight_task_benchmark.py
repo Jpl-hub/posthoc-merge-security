@@ -241,7 +241,9 @@ def protection_checks(args, root, config, output):
     source = Path(args.params_source)
     assert digest(source) == sources["PaRaMS"]["sha256"]
     attack_source = Path(args.author_repo) / "utils_attack_B32.py"
-    assert digest(attack_source) == sources["AGA"]["sha256"]
+    # The source manifest pins LF text; migrated Windows checkouts may use CRLF.
+    author, normalized_author_sha256 = load_author(attack_source, include_wrappers=True)
+    assert normalized_author_sha256 == sources["AGA"]["sha256"]
     protocol = dict(
         config,
         evaluation_tasks=args.protection_checks,
@@ -266,7 +268,6 @@ def protection_checks(args, root, config, output):
     from dataset.registry import get_dataset
 
     start = time.perf_counter()
-    author, _ = load_author(attack_source, include_wrappers=True)
     anchor = load(str(root / "zeroshot.pt"))
     models = {task: load(str(root / task / "finetuned.pt")) for task in config["tasks"]}
     models["anchor"] = anchor
@@ -372,6 +373,7 @@ def protection_checks(args, root, config, output):
         },
         protocol_sha256=digest(output / "protocol.json"),
         upstream_source_sha256={"PaRaMS": digest(source), "AGA": digest(attack_source)},
+        upstream_normalized_source_sha256={"AGA": normalized_author_sha256},
         checkpoint_sha256={
             str(p.relative_to(root)): digest(p)
             for p in [
