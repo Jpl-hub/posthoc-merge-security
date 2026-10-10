@@ -4213,6 +4213,192 @@ def validate_fine_subspace(path: Path):
     return result
 
 
+def validate_critical_subspace(path: Path):
+    """Audit task-leading directions, conditional erasure and actual cost rows."""
+    import sys
+    import types
+
+    import torch
+    from clip_benchmark import checkpoint_loader, evaluate
+    from critical_subspace import capture, parameters, reset
+    from eight_task_benchmark import digest as sha
+    from eight_task_benchmark import merge_all
+    from fine_subspace import fresh_indices
+    from nufilt_alignment import author_svd
+    from operator_diagnostics import paired_counts
+    from subspace_probe import make_loader
+
+    def read(name):
+        return json.loads((path / name).read_bytes())
+
+    torch.set_num_threads(4)
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    config, meta, decision = read("protocol.json"), read("metadata.json"), read("decision.json")
+    assert meta["completed"] and not meta["official_test_used"]
+    assert meta["optimizer_steps"] == 0
+    assert not meta["calibration_labels_used"] and not meta["constructor_future_partners_used"]
+    assert not decision["candidate_constructed"] and not decision["aga_run"]
+    assert sha(Path(__file__).with_name("critical_subspace.py")) == meta["source_sha256"]
+    assert sha("configs/critical_subspace_mnist.json") == meta["config_sha256"]
+    for name, expected in meta["helper_sha256"].items():
+        assert sha(Path(__file__).with_name(name)) == expected
+    for name, expected in meta["raw_sha256"].items():
+        assert sha(path / "artifacts" / name) == expected
+    for name, expected in meta["exclusions_sha256"].items():
+        assert sha(name) == expected
+    root, parent = Path("checkpoints/ViT-B-32"), Path(config["profile_parent"])
+    for name, expected in meta["checkpoint_sha256"].items():
+        assert sha(root / name) == expected
+    assert sha(parent / "selection.json") == meta["parent_selection_sha256"]
+    assert json.loads((parent / "validation.json").read_bytes())["status"] == "passed"
+    load = checkpoint_loader(Path("external/secure-merge-attack"))
+    task = config["task"]
+    teacher, anchor = load(str(root / f"{task}/finetuned.pt")), load(str(root / "zeroshot.pt"))
+    package = types.ModuleType("dataset")
+    package.__path__ = [str(Path("external/secure-merge-attack/datasets").resolve())]
+    sys.modules.setdefault("dataset", package)
+    from dataset.registry import get_dataset
+
+    data = get_dataset(task, teacher.val_preprocess, "data").train_dataset
+    fresh = read("training_indices.json")[task]
+    assert fresh == fresh_indices(config, task, len(data))
+    assert not set(fresh["calibration"]).intersection(fresh["confirmation"])
+    captures = torch.load(path / "artifacts/activations.pt", map_location="cpu", weights_only=True)
+    evidence = torch.load(path / "artifacts/directions.pt", map_location="cpu", weights_only=True)
+    records = read("directions.json")
+    assert len(records) == len(evidence) == 12
+    svd_config = json.loads(Path(config["nufilt_config"]).read_bytes())
+    assert meta["upstream_commit"] == svd_config["upstream_commit"]
+    assert meta["upstream_svd_sha256"] == svd_config["upstream_svd_sha256"]
+    svd = author_svd("external/NUFILT", svd_config)
+    largest_erasure_error = 0.0
+    for row in records:
+        site = row["site"]
+        kind, layer = site.split(":")
+        _, we, be = parameters(teacher.state_dict(), site)
+        _, w0, _ = parameters(anchor.state_dict(), site)
+        delta = we.double() - w0.double()
+        v, mean = evidence[site]["incoming"], evidence[site]["mean"]
+        assert abs(float(v.norm()) - 1) < 1e-10
+        assert torch.equal(mean, captures["calibration"][site].double().mean(0))
+        _, singular, vectors = svd(delta.cuda(), full_matrices=False)
+        expected = vectors[:, 0]
+        if kind in ("v", "up"):
+            block = teacher.model.visual.transformer.resblocks[int(layer)]
+            norm = block.ln_1 if kind == "v" else block.ln_2
+            null = norm.weight.double().cuda().reciprocal()
+            null /= null.norm()
+            expected -= (expected @ null) * null
+            expected /= expected.norm()
+            assert abs(float(expected @ null)) < 1e-10
+        assert abs(float(expected.cpu() @ v)) > 1 - 1e-8
+        assert math.isclose(float(singular[0]), row["leading_singular_value"], rel_tol=1e-8)
+        removed = (delta @ v[:, None]) @ v[None, :]
+        assert torch.allclose(delta @ v, evidence[site]["outgoing"], atol=1e-10, rtol=1e-10)
+        assert math.isclose(
+            float(removed.square().sum() / delta.square().sum()),
+            row["removed_task_weight_energy_fraction"],
+            rel_tol=1e-9,
+        )
+        for split, field in [
+            ("calibration", "centered_input_power"),
+            ("confirmation", "confirmation_input_power"),
+        ]:
+            x = captures[split][site]
+            assert x.shape[0] == config[f"{split}_samples"] * 50
+            power = float(((x.double() - mean) @ v).square().mean())
+            assert math.isclose(power, row[field], rel_tol=1e-10)
+        # Independent matrix algebra check, at three fixed coefficients; no release.
+        for coefficient in (-0.7, 0.3, 1.1):
+            wp = we.double() + coefficient * removed
+            bp = be.double() - coefficient * (removed @ mean)
+            projected = ((wp - w0.double()) @ v[:, None]) @ v[None, :]
+            errors = [
+                float((wp - projected - (we.double() - removed)).abs().max()),
+                float((bp + projected @ mean - (be.double() + removed @ mean)).abs().max()),
+            ]
+            largest_erasure_error = max(largest_erasure_error, *errors)
+            assert max(errors) < 1e-10
+    for split in ("calibration", "confirmation"):
+        images = torch.stack([data[i][0] for i in fresh[split][:16]])
+        replay, errors = capture(teacher, images, config["layers"])
+        assert max(r["max_absolute_error"] for r in errors) < 2e-5
+        for site, values in replay.items():
+            assert torch.equal(values, captures[split][site][: len(values)])
+    indices = read("cost_indices.json")
+    old_indices = json.loads((parent / "training_indices.json").read_bytes())[task]["confirmation"]
+    assert indices == old_indices and len(indices) == 2048
+    labels = torch.as_tensor(data.targets, dtype=torch.int64)[indices]
+    raw = torch.load(path / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    rows = read("results.json")
+    assert len(rows) == len(raw) == meta["rows"] == 10
+    previous = torch.load(
+        parent / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+    )
+    prior_rows = json.loads((parent / "results.json").read_bytes())
+    for row in rows:
+        item = raw[row["id"]]
+        assert torch.equal(item["labels"], labels)
+        correct = item["prediction"].eq(labels)
+        assert row["correct"] == int(correct.sum()) and row["n"] == len(labels)
+        assert row["top1"] == row["correct"] / len(labels)
+        reference = raw[f"original/{row['group']}"]
+        assert row["paired"] == paired_counts(reference["prediction"].eq(labels), correct)
+        if row["preset"] == "original":
+            old = next(
+                r
+                for r in prior_rows
+                if r["task"] == task
+                and r["split"] == "confirmation"
+                and r["component"] == "none"
+                and r["group"] == row["group"]
+            )
+            assert torch.equal(item["prediction"], previous[old["id"]]["prediction"])
+    costs = {r["preset"]: r["paired"]["loss_pp"] for r in rows if r["group"] == "fusion"}
+    assert decision["fusion_cost_pp"] == costs
+    assert decision["recovery_cost_gate_passed"] == all(
+        costs[p] >= config["minimum_fusion_erasure_cost_pp"]
+        for p in ("public_support", "oracle_union")
+    )
+    models = {
+        t: load(str(root / t / "finetuned.pt"))
+        for t in json.loads(Path(config["fusion_config"]).read_bytes())["tasks"]
+    }
+    models.update({task: teacher, "anchor": anchor})
+    head = load(str(root / f"head_{task}.pt"))
+    for preset in config["presets"]:
+        own = teacher if preset == "original" else reset(teacher, anchor, evidence, preset)
+        fused = merge_all(dict(models, **{task: own}), root, config["coefficient"])
+        for group, model in [("standalone", own), ("fusion", fused)]:
+            p = []
+            evaluate(
+                model,
+                head,
+                make_loader(data, indices[:128]),
+                "cuda",
+                prediction_sink=lambda a, _b: p.append(a),
+            )
+            assert torch.equal(torch.cat(p), raw[f"{preset}/{group}"]["prediction"][:128])
+    report = dict(
+        status="passed",
+        raw_rows_checked=10,
+        direction_svd_replays=12,
+        source_and_checkpoint_pins_verified=True,
+        fresh_indices_and_labels_verified=True,
+        activation_prefix_replays_exact=True,
+        forward_prediction_prefix_replays=10,
+        original_prediction_replay_exact=True,
+        maximum_conditional_erasure_error=largest_erasure_error,
+        candidate_constructed=False,
+        results_sha256=sha(path / "results.json"),
+        validator_source_sha256=sha(__file__),
+    )
+    (path / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
+    print("CRITICAL_SUBSPACE_VALIDATION", json.dumps(report), flush=True)
+    return report
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -4225,6 +4411,7 @@ if __name__ == "__main__":
     mode.add_argument("--fine-subspace", action="store_true")
     mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument("--expert-omission", action="store_true")
+    mode.add_argument("--critical-subspace", action="store_true")
     mode.add_argument("--class-recompile", action="store_true")
     mode.add_argument("--eight-task-resources", action="store_true")
     mode.add_argument("--eight-protection", action="store_true")
@@ -4267,7 +4454,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        validate_expert_omission
+        validate_critical_subspace
+        if args.critical_subspace
+        else validate_expert_omission
         if args.expert_omission
         else validate_subspace_recovery
         if args.subspace_recovery
