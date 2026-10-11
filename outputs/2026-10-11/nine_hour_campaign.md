@@ -15,3 +15,7 @@
 更新的 00:09:54 截止后停止启动新探索，完成已有作业的必要收尾，核查最强已测恢复及伙伴代价。最终如实给出有效候选或机制性失败结论，不把诊断、压缩或任务退化写成突破。
 
 续接入口：[状态](campaign_state.json)。服务器工作目录 `/root/autodl-tmp/merge_security_20261009`，运行环境 `/root/autodl-tmp/merge_env/bin/python`；本地仓库 `/mnt/d/code/myproject2`。先检查现有进程和冻结版本，禁止覆盖运行中源码或旧原始结果。
+
+当前续接：最初的神经元投影、anchor 不变重表示、固定 GPTQ 控制均已失败，不能重新启动。旧 DTD 查询恢复的七任务代价已补齐；一次固定伙伴约束恢复也已完成并复核，只得到目标恢复与伙伴损伤的权衡。见[最新真实结果](partner_conditioned_recovery/summary.md)。当前无活跃 GPU 作业、无有效防御。
+
+下一步先过[功能迁移检查](functional_transfer_gate.md)：近期 PTA 核心源码已核查，完整作者方法未运行；参数不可逆不能替代功能恢复成本的证据。非可逆 Attention／MLP 局部构造须说明具体任务信息与保持条件，并排除已有廉价转换反例后才进入 GPU。不得把后续数学筛选写成已取得候选。
