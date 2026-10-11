@@ -90,6 +90,13 @@ def holders(cfg):
     for name in raw_names:
         assert digest(parent / "artifacts" / name) == meta["raw_sha256"][name]
     target = cfg["target"]
+    for preset in ["original", "protected"]:
+        fit = read(parent / "fitting.json")[f"{target}/{preset}"]
+        assert fit["calibration_samples"] == 256
+        assert (
+            not fit["calibration_ground_truth_used"]
+            and not fit["teacher_intermediate_features_used"]
+        )
     release = copy.deepcopy(originals[target]).cpu().eval()
     edits = torch.load(
         parent / "artifacts" / f"{target}_edits.pt", map_location="cpu", weights_only=True
@@ -253,6 +260,10 @@ def run(args):
                 ]
             },
             raw_sha256={p.name: digest(p) for p in artifacts.iterdir()},
+            dataset_source_sha256={
+                str(p): digest(p)
+                for p in sorted(Path("external/secure-merge-attack/datasets").glob("*.py"))
+            },
             new_defense_generated=False,
             new_queries=0,
             new_fits=0,
@@ -271,6 +282,8 @@ def validate(args):
     for name, pin in meta["source_manifest"].items():
         assert digest(name) == pin
     for name, pin in meta["parent_input_sha256"].items():
+        assert digest(name) == pin
+    for name, pin in meta["dataset_source_sha256"].items():
         assert digest(name) == pin
     for name, pin in meta["raw_sha256"].items():
         assert digest(out / "artifacts" / name) == pin
