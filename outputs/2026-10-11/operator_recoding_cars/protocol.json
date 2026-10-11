@@ -1,0 +1,23 @@
+{
+  "target": "Cars",
+  "layers": [
+    9,
+    10,
+    11
+  ],
+  "qk_rank": 32,
+  "moment_ridge": 1e-08,
+  "value_rank_per_head": 32,
+  "active_neurons": 768,
+  "calibration_samples": 256,
+  "ridge_ratio": 0.0001,
+  "profile_parent": "outputs/2026-10-10/task_profile",
+  "baseline_parent": "outputs/2026-10-11/public_restore_gate_cars",
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "construction": "One fixed local QK/VO/neuron recoding on the prior target-selected region. QK rank32 factorization minimizes a ridge-stabilized independent-token bilinear moment metric; encode coupled factors into first32 coordinates, keep the original sqrt64 attention denominator. Per-head target value-response PCA32 projects both V/O. Hidden-neuron PCA768 encodes the affine MLP input. Sequentially fit each of three MLP decoders once to original full-block outputs on the current candidate inputs. No gradient or iterative finetuning; closed-form calibration fitting explicitly used. No rank, strength, layer or ridge search.",
+  "data": "First256 old Cars profile selection training images, no labels during construction. The earlier region selection did use target training labels. Disjoint2048 profile confirmation and official8041 test are calibration-external but historically inspected. No future partner models or data are loaded during construction.",
+  "reason": "Full Attention includingQ/K plusMLP9-11 public reset costs11.2175pp native on the unprotected target; fusion remains57.8038 vs62.0570. A fixed256 score-query fit reaches54.8191 and does not improve reset. This motivates one Q/K-aware check, not a defense claim. Any release confined here retains the complete public-reset recovery floor57.8038; the strongest-attack drop cannot exceed4.2532pp under this exact protocol.",
+  "limits": "The independent-token covariance metric does not bound correlated within-image attention or test classification. Record actual calibration score/softmax errors. Low-rank factorization, PCA and response fitting are existing tools and not claimed novel. QK effective operators remain observable and can be canonically refactorized; rank loss is not a security guarantee. Only joint nonlinear function changes might alter recovery cost, which must be measured.",
+  "screen": "Save real compiled release weights before evaluation. Validate original/release standalone official and confirmation arrays, independent primal fit replay and complete public support identity. If task utility is plausible report its full loss, then separately freeze real eight-expert fusion, author AGA, full and branch replacement, fixed public-reset score query, and a factor-canonicalization control. Stop on failure; do not tune ranks to rescue this construct."
+}

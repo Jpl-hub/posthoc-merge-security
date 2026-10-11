@@ -59,3 +59,5 @@ MLP 实现用行归一化后的 cosine assignment；附录的原始欧氏 margin
 [Theseus v3，2026-07-30](https://arxiv.org/html/2602.12952v3)正文提供[研究代码](https://github.com/apanariello4/merge-and-rebase)，ICML 2026 的[正式条目](https://proceedings.mlr.press/v306/rinaldi26a.html)可核对。阅读 §3、附录 A/B：以输入／输出激活的双线性效应和 Procrustes 共享子空间迁移更新；需要源基础模型、源专家和相应激活，不等于任意白盒发布都可保证恢复。异宽情形须区分嵌入与截断，截断不能保证任意更新零残差。HTML 中 Eq10/18 的转置方向与声明维数有冲突，使用前须核对原 PDF／源码；本轮尚未核对实现，也未运行完整方法。
 
 Theseus 源码新增核查：commit563e3ee，6files143425bytes。`_shared.py` 实际权重运输为Tout.T @ delta @ Tin，维数正确，CLIP proj转置另处理。之前HTML不一致不能归咎实现，未核查PDF。两个矩阵 primitive 的 CPU形状／放宽功能签名检查通过；完整作者方法未运行，没安装依赖或下载checkpoint。见theseus_source_audit。
+
+补充范围核查：[Merge++ v1，2026-09-19](https://arxiv.org/html/2609.22886v1)的正文HTML只发现页尾arXiv维护仓库，未核实作者研究代码入口。因此不计入用户要求的代码可复核精读成果，未运行或安装其方法。
