@@ -57,6 +57,224 @@ def inputs(cfg):
     return root, fusion, models, heads, data, ids, images, prior
 
 
+def projection_inputs(cfg):
+    """Load fixed public-replacement controls without querying a teacher."""
+    root, load, fusion, models = context(cfg, all_tasks=True)
+    expected = {
+        r["path"].split("/", 1)[1]: r["sha256"] for r in read("configs/checkpoints.json")["files"]
+    }
+    assert cfg["coefficient"] == fusion["coefficient"] == 0.2
+    assert {str(p.relative_to(root)): digest(p) for p in root.rglob("*.pt")} == expected
+    parent = Path(cfg["baseline_parent"])
+    meta = read(parent / "metadata.json")
+    assert meta["completed"] and read(parent / "validation.json")["status"] == "passed"
+    assert meta["checkpoint_sha256"] == expected
+    assert digest(parent / "artifacts/predictions.pt") == meta["raw_sha256"]["predictions.pt"]
+    assert meta["source_manifest"]["experiments/eight_task_benchmark.py"] == digest(
+        "experiments/eight_task_benchmark.py"
+    )
+    prior = torch.load(parent / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    selection = read(Path(cfg["profile_parent"]) / "selection.json")
+    for target in cfg["targets"]:
+        assert cfg["layers"][target] == selection[target]["layers"]
+        assert not selection[target]["partner_used"]
+    heads = {t: load(str(root / f"head_{t}.pt")) for t in cfg["evaluation_tasks"]}
+    from dataset.registry import get_dataset
+
+    data = {
+        t: get_dataset(t, models["anchor"].val_preprocess, "data", batch_size=128, num_workers=2)
+        for t in cfg["evaluation_tasks"]
+    }
+    return root, fusion, models, heads, data, prior, expected
+
+
+@torch.no_grad()
+def projection_reset(teacher, anchor, layers, preset):
+    assert preset in {"projection", "block", "block_projection"}
+    if preset == "projection":
+        result, keys = copy.deepcopy(teacher).cpu().eval(), []
+    else:
+        result, keys = replace_components(teacher, anchor, layers, "block")
+    if preset != "block":
+        result.model.visual.proj.copy_(anchor.model.visual.proj)
+        keys = [*keys, "model.visual.proj"]
+    state, own, public = result.state_dict(), teacher.state_dict(), anchor.state_dict()
+    assert all(torch.equal(v, public[k] if k in keys else own[k]) for k, v in state.items())
+    return result, keys
+
+
+@torch.no_grad()
+def projection_dependency(args):
+    """A fixed support-necessity test, not a defense or adaptive attack fit."""
+    start, cfg, out = time.perf_counter(), read(args.config), Path(args.output)
+    runtime()
+    validating = args.validate
+    if not validating:
+        out.mkdir(parents=True, exist_ok=False)
+        (out / "artifacts").mkdir()
+        save_json(out / "protocol.json", cfg)
+    else:
+        meta = read(out / "metadata.json")
+        assert meta["completed"] and digest(args.config) == meta["config_sha256"]
+        for path, sha in meta["source_manifest"].items():
+            assert digest(path) == sha, path
+        for name, sha in meta["raw_sha256"].items():
+            assert digest(out / "artifacts" / name) == sha
+    root, fusion, models, heads, data, prior, checkpoints = projection_inputs(cfg)
+    if validating:
+        rows = read(out / "results.json")
+        raw = torch.load(out / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
+    else:
+        rows, raw = [], {}
+    loaders = {} if validating else {t: cache(d) for t, d in data.items()}
+    audits, checked = {}, 0
+    for target in cfg["targets"]:
+        teacher, anchor = models[target], models["anchor"]
+        for preset in ["original", *cfg["presets"]]:
+            if preset == "original":
+                native, keys = teacher, []
+            else:
+                native, keys = projection_reset(teacher, anchor, cfg["layers"][target], preset)
+            if validating and preset != "original":
+                # Independent name-based erasure; do not call the module reset helper.
+                replay = copy.deepcopy(teacher).cpu().eval()
+                prefixes = tuple(
+                    f"model.visual.transformer.resblocks.{layer}."
+                    for layer in cfg["layers"][target]
+                )
+                expected_keys = []
+                for key, value in replay.state_dict().items():
+                    replace = (preset != "projection" and key.startswith(prefixes)) or (
+                        preset != "block" and key == "model.visual.proj"
+                    )
+                    if replace:
+                        value.copy_(anchor.state_dict()[key])
+                        expected_keys.append(key)
+                assert sorted(keys) == sorted(expected_keys)
+                assert all(
+                    torch.equal(v, replay.state_dict()[k]) for k, v in native.state_dict().items()
+                )
+                del replay
+            audits[f"{target}/{preset}"] = dict(
+                public_reset_keys=keys, outside_support_unchanged=True
+            )
+            merged = None
+            if preset != "original" or validating:
+                merged = merge_all(dict(models, **{target: native}), root, cfg["coefficient"])
+            for group, model, tasks in [
+                ("standalone", native, [target]),
+                ("fusion", merged, cfg["evaluation_tasks"]),
+            ]:
+                for task in tasks:
+                    key = f"{target}/{preset}/{group}/{task}"
+                    parent_key = f"original/direct/fusion/{task}"
+                    labels = truth(data[task], task)
+                    if validating:
+                        row = next(r for r in rows if r["key"] == key)
+                        assert torch.equal(raw[key]["labels"], labels)
+                        assert row["n"] == len(labels) == fusion["expected_test_counts"][task]
+                        assert row["correct"] == int(raw[key]["prediction"].eq(labels).sum())
+                        assert row["top1"] == row["correct"] / row["n"]
+                        if row["reused"]:
+                            assert torch.equal(
+                                raw[key]["prediction"], prior[parent_key]["prediction"]
+                            )
+                        sink = []
+                        evaluate(
+                            model,
+                            heads[task],
+                            make_loader(data[task].test_dataset, list(range(128)), 128),
+                            "cuda",
+                            prediction_sink=lambda p, _y: sink.append(p),
+                        )
+                        assert torch.equal(torch.cat(sink), raw[key]["prediction"][:128])
+                        reference = raw[f"{target}/original/{group}/{task}"]
+                        assert row["original_change"] == paired_counts(
+                            reference["prediction"].eq(labels), raw[key]["prediction"].eq(labels)
+                        )
+                        checked += 1
+                    else:
+                        reused = preset == "original" and group == "fusion"
+                        if reused:
+                            value = prior[parent_key]
+                            assert torch.equal(value["labels"], labels)
+                            score = dict(
+                                correct=int(value["prediction"].eq(labels).sum()), n=len(labels)
+                            )
+                            score["top1"] = score["correct"] / score["n"]
+                        else:
+                            p, y = [], []
+                            score = evaluate(
+                                model,
+                                heads[task],
+                                loaders[task],
+                                "cuda",
+                                prediction_sink=lambda a, b: (p.append(a), y.append(b)),
+                            )
+                            value = dict(prediction=torch.cat(p), labels=torch.cat(y))
+                        raw[key] = value
+                        rows.append(
+                            dict(
+                                key=key,
+                                target=target,
+                                preset=preset,
+                                group=group,
+                                dataset=task,
+                                reused=reused,
+                                **score,
+                            )
+                        )
+                        print(
+                            "PROJECTION_DEPENDENCY", key, score["correct"], score["n"], flush=True
+                        )
+                        save_json(out / "results.json", rows)
+            del merged, native
+    assert len(rows) == len(raw) == 60
+    if validating:
+        assert audits == read(out / "reset_audit.json")
+        save_json(
+            out / "validation.json",
+            dict(
+                status="passed",
+                elapsed_seconds=time.perf_counter() - start,
+                counts_pairs_and_prefixes_checked=checked,
+                independent_parameter_masks_checked=9,
+                results_sha256=digest(out / "results.json"),
+                metadata_sha256=digest(out / "metadata.json"),
+                new_defense=False,
+            ),
+        )
+    else:
+        for row in rows:
+            labels = raw[row["key"]]["labels"]
+            reference = raw[f"{row['target']}/original/{row['group']}/{row['dataset']}"]
+            row["original_change"] = paired_counts(
+                reference["prediction"].eq(labels), raw[row["key"]]["prediction"].eq(labels)
+            )
+        torch.save(raw, out / "artifacts/predictions.pt")
+        save_json(out / "results.json", rows)
+        save_json(out / "reset_audit.json", audits)
+        save_json(
+            out / "metadata.json",
+            dict(
+                completed=True,
+                elapsed_seconds=time.perf_counter() - start,
+                fresh_full_evaluations=sum(not r["reused"] for r in rows),
+                reused_baselines=sum(r["reused"] for r in rows),
+                source_manifest=read(args.manifest)["source_manifest"],
+                config_sha256=digest(args.config),
+                checkpoint_sha256=checkpoints,
+                raw_sha256={"predictions.pt": digest(out / "artifacts/predictions.pt")},
+                teacher_queries=0,
+                calibration_used=False,
+                response_fits=0,
+                optimizer_steps=0,
+                new_defense=False,
+                eight_task_mean=False,
+            ),
+        )
+
+
 @torch.no_grad()
 def states(cfg, models, root, heads, images):
     target = cfg["target"]
@@ -276,5 +494,9 @@ if __name__ == "__main__":
     parser.add_argument("--output", default="outputs/2026-10-11/public_restore_gate_cars")
     parser.add_argument("--manifest", required=True)
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument("--projection-dependency", action="store_true")
     args = parser.parse_args()
-    (validate if args.validate else run)(args)
+    if args.projection_dependency:
+        projection_dependency(args)
+    else:
+        (validate if args.validate else run)(args)
