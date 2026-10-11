@@ -2,10 +2,11 @@
 
 对已微调专家施加发布前后处理，尽量保持原任务能力，检验对未经授权融合及自适应恢复的保护。完整报告性能与防御权衡，不以单个准确率阈值作为唯一淘汰条件；不进行额外梯度微调，校准数据与闭式拟合均明确记录。
 
-**目前没有有效新防御。**联合局部有损改写保留 MNIST 独立99.63%（原99.69%），AGA后融合降到64.93%，但256图功能恢复达到96.88%（同攻击原96.93%）。Cars联合算子候选独立损失23.04个百分点，已停止。最新定向补空间检查能找到对SVHN高响应的方向，但第0层公开投影替换仍几乎没有双方任务代价，不能解决廉价恢复。
+**目前没有有效新防御。**联合局部有损改写保留 MNIST 独立99.63%（原99.69%），AGA后融合降到64.93%；但公共局部替换＋256个硬标签原型已恢复94.93%，SVHN相对未保护直接融合损失1.96个百分点。原模型与发布模型的标签和恢复参数相同。连续分数恢复仍达96.88%，但SVHN代价17.87个百分点。Cars联合算子候选独立损失23.04个百分点，已停止。
 
 ## 当前结果
 
+- [硬标签原型恢复](outputs/2026-10-11/prototype_recovery_gate/summary.md)：复用固定作者分类原语，局部学生融合MNIST94.93%、SVHN72.4647%，单专家98.71%；五次新全测试加五条参数恒等的匹配别名。[全专家省略对照](outputs/2026-10-11/prototype_omission_gate/summary.md)零新增查询，融合MNIST91.04%、SVHN63.2299%，单专家仅21.31%；没有完整专家恢复或新防御。[条件性机制结论](outputs/2026-10-11/hard_label_boundary.md)与[协议](outputs/2026-10-11/prototype_recovery_protocol.md)明确适用范围。
 - [完整三块替换与功能恢复](outputs/2026-10-11/block_restore_norm_gate_cars/summary.md)：补齐 Cars 9–11 层的 LayerNorm，三次闭式恢复仍达融合60.2413%（原62.0570%），没有显示额外恢复障碍；教师未保护。[不可逆重表示条件](outputs/2026-10-11/irreversible_factorization.md)限定后续构造。
 - [已知伙伴定向补空间的恢复检查](outputs/2026-10-11/partner_nullspace_gate/summary.md)：九次新全测试及独立复核。公开替换第0层V后，MNIST独立99.69%、融合MNIST99.37%、SVHN92.5054%；使用已知伙伴，仅为机制预检，没有合格保护候选或抗AGA成果。
 - [联合局部有损改写的完整恢复](outputs/2026-10-11/local_release_audit/summary.md)：真实MNIST发布权重、原版AGA、参数替换和256图恢复同条件对照，候选仍被恢复；伙伴损失明确报告。
@@ -63,6 +64,21 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 ## 运行当前实验
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
+
+硬标签原型需要历史发布编辑、原始预测与256训练索引。作者只下载一个已固定的源文件，不运行训练入口：
+
+```bash
+mkdir -p external/nc_by_design/networks
+curl -fL https://raw.githubusercontent.com/pakoromilas/nc_by_design/4ee84352e42194b60cfa505f62ebc369942230c7/networks/resnet_big.py -o external/nc_by_design/networks/resnet_big.py
+cp outputs/2026-10-11/prototype_source_audit/source.json external/nc_by_design/source.json
+```
+
+局部实验源为 `8577d9a`，整体省略源为 `0907954`。核验历史结果应使用对应源码提交及轻量文件，并保留服务器上的父实验重文件；源码指纹会拒绝混用版本。整体省略入口复用已保存的原型实验标签，零新查询：
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/prototype_recovery_gate.py --config configs/prototype_omission_gate.json --manifest outputs/2026-10-11/prototype_omission_gate/launch.json --output outputs/prototype_omission_check
+python experiments/prototype_recovery_gate.py --validate --config configs/prototype_omission_gate.json --manifest outputs/2026-10-11/prototype_omission_gate/launch.json --output outputs/prototype_omission_check
+```
 
 三层完整替换控制复用同一恢复实现，新增配置把 LayerNorm 也纳入公开替换。需要现有服务器上的父结果、原始预测和训练索引；教师未保护。
 

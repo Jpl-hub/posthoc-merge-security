@@ -1,0 +1,33 @@
+{
+  "target": "MNIST",
+  "parent": "outputs/2026-10-11/joint_lossy_recoding",
+  "audit_parent": "outputs/2026-10-11/local_release_audit",
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "layers": [
+    6,
+    7,
+    8
+  ],
+  "evaluation_tasks": [
+    "MNIST",
+    "SVHN",
+    "Cars",
+    "DTD"
+  ],
+  "preserved_query_heads": [
+    "Cars",
+    "DTD"
+  ],
+  "attacker_samples": 256,
+  "author_source": "external/nc_by_design/networks/resnet_big.py",
+  "author_commit": "4ee84352e42194b60cfa505f62ebc369942230c7",
+  "author_sha256": "08c203001d1540692d24bb4b202ef760775c33515807b8fa7d3cc48da894f6bc",
+  "prototype_class": "PrototypeClassifier",
+  "prototype_scale": "median norm of original target head rows; fixed before evaluation",
+  "teacher_access": "Reuse the already validated 256 hard labels per teacher from query_parent, identical to the partial-reset gate. Zero new teacher queries.",
+  "student": "Public anchor plus the other seven experts at .2. No released target expert parameter enters the student. The prototype projection is compiled into a public anchor copy.",
+  "scope": "Whole-expert omission control for the same fixed hard-label prototype primitive. No new defense or parameter search. Native target and four fusion tests, matched original/protected controls. Comparisons reset_change and score_recovery_change explicitly refer to the historical partial-reset benchmark, not a whole-omission baseline. Previously inspected tests; no eight-task mean or Table6 claim.",
+  "student_mode": "whole_omission",
+  "query_parent": "outputs/2026-10-11/prototype_recovery_gate"
+}
