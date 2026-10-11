@@ -1902,7 +1902,7 @@ def plot_input_score_recovery(root: Path):
             title=task,
             ylim=(0, 102),
             xticks=x,
-            xticklabels=["Direct", "Head constraint", "Input constraint"],
+            xticklabels=["Direct", "Head\nconstraint", "Input\nconstraint"],
         )
         axes[i].grid(axis="y", alpha=0.2)
     axes[0].set_ylabel("Merged test accuracy (%)")
