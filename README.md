@@ -1,11 +1,12 @@
 # Post-hoc Model Merging Security
 
-对已微调专家施加发布前后处理，保持原任务能力，检验对未经授权融合及自适应恢复的保护。目标独立准确率损失 ≤0.5 个百分点，同时完整报告性能与防御权衡；不进行额外梯度微调，有闭式拟合的实验明确记录校准数据。
+对已微调专家施加发布前后处理，尽量保持原任务能力，检验对未经授权融合及自适应恢复的保护。完整报告性能与防御权衡，不以单个准确率阈值作为唯一淘汰条件；不进行额外梯度微调，校准数据与闭式拟合均明确记录。
 
-**目前没有有效新防御。**最新共享数字 head 检查中，局部删除后的 MNIST 可由输入约束恢复到 95.37%，但 SVHN 下降 6.15 pp；两项其他已测伙伴预测保持。上轮 MNIST 96.27% 的输出恢复会使 SVHN 下降 15.80 pp，不能称所有伙伴保持。后续须同时检查目标恢复、伙伴代价及校准外效果。旧候选和全部真实失败记录保留。
+**目前没有有效新防御。**最新融合路径实验实际生成 MNIST／DTD 两份免微调权重，独立准确率均保持；MNIST 原版 AGA 后反而由 93.23% 提高到 93.63%，DTD 只下降 0.05 pp。输出 RMS 分离没有选出破坏分类的方向，公开替换没有新增删除成本；这一固定方向停止调强度。代码、真实结果与失败记录保留。
 
 ## 当前结果
 
+- [融合路径敏感性候选](outputs/2026-10-11/path_subspace/summary.md)：48 个细粒度联合方向、β=0.2/0.5、两份真实发布权重、原版 AGA／参数替换／256 图恢复同条件对照；尚无有效防御。[构造协议](outputs/2026-10-11/path_subspace_protocol.md)记录数学、校准与 DTD 取样失败修订。
 - [共享数字 head 与输入子空间恢复](outputs/2026-10-11/input_score_recovery/summary.md)：固定补充攻击，完整 MNIST／SVHN／DTD／Cars 测试；校准保持没有泛化到 SVHN 测试，没有新防御。[机制检查](outputs/2026-10-11/mechanism_boundary.md)另排除可代数还原的激活分拆族。
 - [保持两项伙伴预测的功能恢复](outputs/2026-10-11/score_recovery/summary.md)：256 张图、一次闭式拟合，MNIST 87.23% → 96.27%、DTD 47.23% → 58.24%；各自另外两个伙伴完整逐图预测不变，尚无有效新防御。
 - [MNIST／DTD 局部任务删除](outputs/2026-10-11/local_erasure/summary.md)：两个固定点、七条恢复路径，无性能门槛；MNIST 原版 AGA 后下降 6.78 pp，重缩放恢复目标至 98.90% 并损失伙伴能力，未获得有效新防御。
@@ -52,6 +53,16 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 ## 运行当前实验
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
+
+融合路径候选用目标专家与公开预训练构造，不额外微调；固定方向与幅度后再加载融合伙伴。默认生成两份候选并运行全部对照。重权重和逐图预测只在服务器，当前没有方法成功或创新声明。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/path_subspace.py --output outputs/path_check
+python experiments/path_subspace.py --validate --output outputs/path_check
+python experiments/plot_results.py --path-subspace --output outputs/path_check
+```
+
+已公布运行的构造源冻结于 `e38bc26`，后续只修订核验函数和其入口。复核旧结果时用 `git show e38bc26:experiments/path_subspace.py > /tmp/path_subspace_e38bc26.py` 导出源，并给验证入口传 `--frozen-source /tmp/path_subspace_e38bc26.py`；验证器核对构造／运行函数的 AST 没有变化。
 
 局部任务删除使用两个运行前固定发布点；所有攻击均运行，无准确率淘汰门槛。重缩放和输出拟合单列于原版 AGA，三套完整测试不称八任务均值。
 

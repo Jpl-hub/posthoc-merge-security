@@ -1,0 +1,63 @@
+{
+  "status": "failed_candidate",
+  "points": [
+    {
+      "target": "MNIST",
+      "utility_loss_pp": 0.0,
+      "direct_fusion_loss_pp": -0.38,
+      "aga_loss_pp": -0.4,
+      "best_tested_recovery": "readout",
+      "best_accuracy": 0.9763,
+      "matched_unprotected_accuracy": 0.9757,
+      "best_to_matched_gap_pp": -0.05999999999999339
+    },
+    {
+      "target": "DTD",
+      "utility_loss_pp": 0.0,
+      "direct_fusion_loss_pp": 0.10638297872340426,
+      "aga_loss_pp": 0.05319148936170213,
+      "best_tested_recovery": "readout",
+      "best_accuracy": 0.6531914893617021,
+      "matched_unprotected_accuracy": 0.6553191489361702,
+      "best_to_matched_gap_pp": 0.21276595744680327
+    }
+  ],
+  "accepted_defense": false,
+  "accuracy_threshold_used": false,
+  "amplitude_search": false,
+  "novelty_claim": false,
+  "proxy_security_validated": false,
+  "statistical_proxy_prediction_validated": false,
+  "failure": "RMS energy did not select classification-damaging directions; public support reset erases all edits without extra cost.",
+  "next": "Test a signed task-margin proxy under a separately frozen protocol; do not retune this family.",
+  "family_first_order_rms_limits": {
+    "MNIST": {
+      "expert_gram_condition": 81.68656106242571,
+      "paths": {
+        "beta_0.2": {
+          "maximum_unregularized_rms_ratio": 0.9201930400450106,
+          "selected_rms_ratio": 0.8784364934265492
+        },
+        "beta_0.5": {
+          "maximum_unregularized_rms_ratio": 1.8018902159495114,
+          "selected_rms_ratio": 1.7958421494218124
+        }
+      },
+      "scope": "Unregularized calibration first-order upper bound within the fixed 48-direction family; not an accuracy or nonlinear bound"
+    },
+    "DTD": {
+      "expert_gram_condition": 1575.4140595413978,
+      "paths": {
+        "beta_0.2": {
+          "maximum_unregularized_rms_ratio": 0.38204175281498554,
+          "selected_rms_ratio": 0.3788420975594963
+        },
+        "beta_0.5": {
+          "maximum_unregularized_rms_ratio": 0.9426062870717765,
+          "selected_rms_ratio": 0.9424835395922395
+        }
+      },
+      "scope": "Unregularized calibration first-order upper bound within the fixed 48-direction family; not an accuracy or nonlinear bound"
+    }
+  }
+}
