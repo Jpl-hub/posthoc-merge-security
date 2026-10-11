@@ -1,0 +1,20 @@
+{
+  "target": "MNIST",
+  "layers": [
+    6,
+    7,
+    8
+  ],
+  "value_rank_per_head": 32,
+  "active_neurons": 768,
+  "calibration_samples": 256,
+  "ridge_ratio": 0.0001,
+  "profile_parent": "outputs/2026-10-10/task_profile",
+  "baseline_parent": "outputs/2026-10-11/path_subspace",
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "construction": "One fixed local lossy joint recoding, not a sweep. Per-head uncentered target value-response PCA, project both V and O to rank32. Original target MLP hidden-response PCA to rank768, encode affine up weights into that neuronal frame, retain standard width3072 with inactive zero rows. Sequentially fit each of three down projections once to original full-block responses on the current candidate inputs. No gradients, optimizer, extra training epochs or future partner access. Closed-form calibration fitting is explicitly used.",
+  "data": "Reuse first256 target-only profile selection training images without labels for construction. Profile confirmation2048 is disjoint from these images but historically inspected. Official MNIST test10000 was also previously inspected; it is calibration-external, not a new unseen research test. No test or confirmation selection of rank, layer, ridge or sign.",
+  "screen": "Evaluate original, actual compiled release, and oracle-frame anchor completion on confirmation and full target test. Complete public reset of precisely the edited V/O/up/down support must map original and release to identical states; the existing fusion floor is conditional on these fixed sites. No future partners are loaded in this screen. Oracle completion uses defender frames and is labelled privileged, not a public attack.",
+  "gate": "No automatic accuracy cutoff. Report utility and information-loss diagnostics first; stop this fixed construction if task computation cannot be preserved. Only a plausible utility result advances to separately frozen real fusion, author AGA, public replacement and bounded functional recovery with matched original controls. No novelty, irreversibility-of-model or defense claim follows from matrix rank reduction alone."
+}

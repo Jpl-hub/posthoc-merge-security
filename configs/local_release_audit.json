@@ -1,0 +1,16 @@
+{
+  "target": "MNIST",
+  "parent": "outputs/2026-10-11/joint_lossy_recoding",
+  "baseline_parent": "outputs/2026-10-11/path_subspace",
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "layers": [6, 7, 8],
+  "evaluation_tasks": ["MNIST", "SVHN", "Cars", "DTD"],
+  "preserved_query_heads": ["Cars", "DTD"],
+  "attacks": ["direct", "aga", "support_reset", "support_reset_query", "mlp_reset", "value_output_reset"],
+  "attacker_samples": 256,
+  "ridge_ratio": 0.0001,
+  "query_access": "White-box unnormalized native class scores from the accessible target release, no ground truth or teacher hidden features. Reuse the parent256 target training images. Fixed student is the eight-expert fusion with edited target V/O/MLP support replaced by public anchor; it must be identical for original and protected controls. One closed-form response fit each, followed by compilation into that reset expert's output projection. Cars/DTD heads are exactly preserved in ideal arithmetic; SVHN cost is measured, not assumed zero. This is a bounded functional attack, not the author AGA or a black-box hard-label attack.",
+  "parameter_attacks": "support_reset replaces only V/O/up/down weights and biases at the three edited layers, preserving Q/K. mlp_reset and value_output_reset replace their respective parts at those same layers to diagnose cross-module dependence. The combined support reset is a public attack, not an oracle. No search over layers, ranks, coefficients or query budgets.",
+  "reporting": "Original and protected use identical attacks and data. Native target accuracy and four official tests of eight-expert TA(.2) are measured; no eight-task mean or Table6 claim. Record real partner costs and strongest tested target recovery. Direct utility never establishes security. A successful score recovery invalidates a defense claim even if AGA fails."
+}
