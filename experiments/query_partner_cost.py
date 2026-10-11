@@ -14,11 +14,17 @@ from pathlib import Path
 import torch
 from clip_benchmark import evaluate
 from eight_task_benchmark import digest, merge_all
-from head_collapse import truth
+from head_collapse import truth as subset_truth
 from local_erasure import cache
 from operator_diagnostics import paired_counts
 from path_subspace import context, read
 from subspace_probe import make_loader, save_json
+
+
+def truth(data, task):
+    if task == "GTSRB":
+        return torch.tensor([label for _, label in data.test_dataset._samples], dtype=torch.long)
+    return subset_truth(data, task)
 
 
 def contrasts(head):
