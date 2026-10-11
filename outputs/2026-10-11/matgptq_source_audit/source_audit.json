@@ -1,0 +1,357 @@
+{
+  "repository": "https://github.com/IST-DASLab/MatGPTQ",
+  "commit": "86ee3eeae8555531e1e91978c8cbc0c8f74b4853",
+  "checked_utc": "2026-10-11T08:08:37.463630+00:00",
+  "paper": "https://arxiv.org/html/2602.03537v2",
+  "files": {
+    "LICENSE": {
+      "sha256": "c3a5d5dc916364963eeb8a9d3375e46b122a8b3e2fbb16ec1f60919fb45b3bb3",
+      "bytes": 1107
+    },
+    "README.md": {
+      "sha256": "4821e9cc2a6492f2b07b6a176e48f64adcab87dafbfe14297eaf839806566f0e",
+      "bytes": 9004
+    },
+    "quant.py": {
+      "sha256": "ccca37dde0aeb6bf6aa6447d50d46297c98d6687e1d165ccd2153f05c3420db8",
+      "bytes": 11038
+    },
+    "requirements.txt": {
+      "sha256": "d0ee488b98c966bf2c8049506ab2154b1e5bd812ad4665199d8f8cdb550d33e7",
+      "bytes": 192
+    },
+    "src/__init__.py": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "src/benchmarks/bench_quant_runtime.py": {
+      "sha256": "a039e4415d10ce939a1895a2fe7186fb4bdc8ba90d06477b5b104dcd56f2f664",
+      "bytes": 4936
+    },
+    "src/common_utils.py": {
+      "sha256": "5e79b4c69ac68d8a0e32dbde79c3d36e546609821ee84d34100ea9021425bac6",
+      "bytes": 958
+    },
+    "src/data_utils.py": {
+      "sha256": "04a0d9c8f844baec0f24056b5e3e0057feb720d8bb9c08b8894a972fc8000be9",
+      "bytes": 5962
+    },
+    "src/dist_utils.py": {
+      "sha256": "83e0ddcedd86d46a15704873f935ef9862ac0b1ff56181731101086fbcb27835",
+      "bytes": 1464
+    },
+    "src/gptq.py": {
+      "sha256": "d5357b861f68fa98abfa733ddac5ae1ba45f2eb63002831f797c4530ffdce5e8",
+      "bytes": 7377
+    },
+    "src/linalg_utils.py": {
+      "sha256": "df706b1bb9942da5462ddec5672a9a3fa34a4e55f508ccbf48209426179d5723",
+      "bytes": 216
+    },
+    "src/mat_gptq.py": {
+      "sha256": "6c26a48eec7c596a0ae4840ac991eae6910256e5dff299b49139a2d5d1fc9597",
+      "bytes": 9327
+    },
+    "src/metrics.py": {
+      "sha256": "c9c35ee989b154ae6abd66cfb728891c854ed669c45a7aec3ea3f55a3c87f2aa",
+      "bytes": 7094
+    },
+    "src/model_utils.py": {
+      "sha256": "efbb216a62b2975701afcdf9ad95bb139e7523240f02ba888aa65524d75f356b",
+      "bytes": 9278
+    },
+    "src/quant_utils_gptq.py": {
+      "sha256": "4581c928db582f07cfff0d9920f888951f00ce0adde84e9daaef16edfaf42ff1",
+      "bytes": 6499
+    },
+    "src/quant_utils_matgpqt.py": {
+      "sha256": "9532dd7f83239430bd18738253a26f047558a2caba88a753defce2bfd2695194",
+      "bytes": 10208
+    },
+    "src/quantizer.py": {
+      "sha256": "8ab5194a999cbf3c1ebb76b32701b3d83963e62b4e61a17c52faa960721b71c4",
+      "bytes": 8116
+    }
+  },
+  "modules": [
+    {
+      "file": "quant.py",
+      "imports": [
+        "import os",
+        "import argparse",
+        "import time",
+        "import torch",
+        "import torch.distributed as dist",
+        "from transformers import AutoModelForCausalLM, AutoTokenizer",
+        "import wandb",
+        "from src import dist_utils",
+        "from src.data_utils import get_data",
+        "from src.quantizer import Quantizer",
+        "from src.mat_gptq import MatGPTQ",
+        "from src.gptq import GPTQ"
+      ],
+      "classes": [],
+      "functions": [
+        "parse_args",
+        "main"
+      ]
+    },
+    {
+      "file": "src/__init__.py",
+      "imports": [],
+      "classes": [],
+      "functions": []
+    },
+    {
+      "file": "src/benchmarks/bench_quant_runtime.py",
+      "imports": [
+        "import argparse",
+        "import gc",
+        "import statistics",
+        "import sys",
+        "import time",
+        "from pathlib import Path",
+        "import torch",
+        "import torch.nn as nn",
+        "from src.gptq import GPTQ",
+        "from src.mat_gptq import MatGPTQ",
+        "from src.quant_utils_gptq import quantize as gptq_quantize",
+        "from src.quant_utils_matgpqt import quantize as matgptq_quantize"
+      ],
+      "classes": [],
+      "functions": [
+        "wall_s",
+        "call_ms",
+        "column_ms",
+        "pass_s",
+        "main"
+      ]
+    },
+    {
+      "file": "src/common_utils.py",
+      "imports": [
+        "import random",
+        "import dataclasses",
+        "from typing import Any, Sequence",
+        "import numpy as np",
+        "import torch"
+      ],
+      "classes": [],
+      "functions": [
+        "fix_seed",
+        "to",
+        "maybe_first_element"
+      ]
+    },
+    {
+      "file": "src/data_utils.py",
+      "imports": [
+        "import os",
+        "import random",
+        "from tqdm import trange",
+        "from typing import Iterable, List",
+        "import torch",
+        "from datasets import load_dataset",
+        "from transformers import AutoTokenizer",
+        "from src.dist_utils import is_main, print_on_main"
+      ],
+      "classes": [],
+      "functions": [
+        "collect_samples_with_join",
+        "get_wikitext2",
+        "get_fineweb_edu",
+        "get_c4",
+        "get_data"
+      ]
+    },
+    {
+      "file": "src/dist_utils.py",
+      "imports": [
+        "from typing import Optional, Any",
+        "import torch",
+        "import torch.nn as nn",
+        "import torch.distributed as dist"
+      ],
+      "classes": [],
+      "functions": [
+        "is_dist_available_and_initialized",
+        "get_world_size",
+        "get_rank",
+        "is_main",
+        "broadcast_parameters",
+        "gather_into_tensor",
+        "print_on_main"
+      ]
+    },
+    {
+      "file": "src/gptq.py",
+      "imports": [
+        "from typing import Tuple, Optional",
+        "import torch",
+        "import torch.nn as nn",
+        "import torch.distributed as dist",
+        "from torch import Tensor",
+        "from torch.nn.modules.conv import _ConvNd",
+        "from src import dist_utils",
+        "from src import model_utils",
+        "from src import linalg_utils as linalg_utils",
+        "from src.quant_utils_gptq import Quantizer"
+      ],
+      "classes": [
+        "GPTQ"
+      ],
+      "functions": []
+    },
+    {
+      "file": "src/linalg_utils.py",
+      "imports": [
+        "import torch",
+        "from torch import Tensor"
+      ],
+      "classes": [],
+      "functions": [
+        "inv_sym"
+      ]
+    },
+    {
+      "file": "src/mat_gptq.py",
+      "imports": [
+        "from typing import Tuple, Optional, List, Dict",
+        "import torch",
+        "import torch.nn as nn",
+        "import torch.distributed as dist",
+        "from torch import Tensor",
+        "from torch.nn.modules.conv import _ConvNd",
+        "from src import dist_utils",
+        "from src import model_utils",
+        "from src import linalg_utils as linalg_utils",
+        "from src.quant_utils_matgpqt import MatryoshkaQuantizer"
+      ],
+      "classes": [
+        "MatGPTQ"
+      ],
+      "functions": []
+    },
+    {
+      "file": "src/metrics.py",
+      "imports": [
+        "from tqdm import trange",
+        "import torch",
+        "import torch.nn.functional as F",
+        "from src.common_utils import to",
+        "from src.model_utils import Catcher, CatcherExit, get_layers, get_lm_head, get_lm_logits"
+      ],
+      "classes": [],
+      "functions": [
+        "compute_perplexity",
+        "compute_perplexity_",
+        "compute_kl_div",
+        "compute_sparse_kl_div",
+        "compute_perplexity_layer_per_layer"
+      ]
+    },
+    {
+      "file": "src/model_utils.py",
+      "imports": [
+        "from contextlib import contextmanager",
+        "import re",
+        "import os",
+        "import gc",
+        "from collections import defaultdict",
+        "from typing import List, Dict, Optional, Union, Optional, Sequence, Tuple",
+        "import numpy as np",
+        "import torch",
+        "import torch.nn as nn",
+        "from torch.nn.modules.conv import _ConvNd",
+        "from transformers import AutoModelForCausalLM",
+        "from src.common_utils import to",
+        "from src.quant_utils_matgpqt import FakeMatryoshkaLinear, dequantize"
+      ],
+      "classes": [
+        "CatcherExit",
+        "Catcher",
+        "ForwardInterrupt",
+        "InputCollector"
+      ],
+      "functions": [
+        "get_layers",
+        "get_lm_head",
+        "get_lm_logits",
+        "select_layers",
+        "get_number_of_rows_and_cols",
+        "load_gptq_weights",
+        "load_mat_gptq_weights",
+        "layer_order_fn",
+        "group_layers",
+        "suspend_nn_inits"
+      ]
+    },
+    {
+      "file": "src/quant_utils_gptq.py",
+      "imports": [
+        "import torch",
+        "import torch.nn as nn",
+        "import torch.nn.functional as F",
+        "from torch import Tensor"
+      ],
+      "classes": [
+        "Quantizer",
+        "GPTQLinear"
+      ],
+      "functions": [
+        "pack4to8",
+        "pack8to4",
+        "quantize_dequantize",
+        "quantize",
+        "dequantize"
+      ]
+    },
+    {
+      "file": "src/quant_utils_matgpqt.py",
+      "imports": [
+        "import torch",
+        "import torch.nn as nn",
+        "import torch.nn.functional as F",
+        "from torch import Tensor"
+      ],
+      "classes": [
+        "MatryoshkaQuantizer",
+        "FakeMatryoshkaLinear"
+      ],
+      "functions": [
+        "matryoshka_slice",
+        "slice_offset",
+        "slice_shift",
+        "dequantize",
+        "quantize"
+      ]
+    },
+    {
+      "file": "src/quantizer.py",
+      "imports": [
+        "from collections import defaultdict",
+        "from typing import Iterable, Dict, List, Any, Optional, Union, Type",
+        "import os",
+        "import torch",
+        "import torch.nn as nn",
+        "import torch.distributed as dist",
+        "from src import dist_utils",
+        "from src.common_utils import to, maybe_first_element",
+        "from src.model_utils import InputCollector, ForwardInterrupt, LINEAR_LAYERS, select_layers",
+        "from src.quant_utils_gptq import GPTQLinear",
+        "from src.quant_utils_matgpqt import FakeMatryoshkaLinear",
+        "from src.mat_gptq import MatGPTQ",
+        "from src.gptq import GPTQ"
+      ],
+      "classes": [
+        "Quantizer"
+      ],
+      "functions": [
+        "get_relative_mse_error"
+      ]
+    }
+  ],
+  "dependencies_installed": false,
+  "full_method_run": false,
+  "defense_claim": false
+}
