@@ -1915,6 +1915,79 @@ def plot_input_score_recovery(root: Path):
     save(fig, out, "input_score_recovery")
 
 
+def plot_path_subspace(root: Path):
+    config = json.loads((root / "protocol.json").read_bytes())
+    rows = {r["id"]: r for r in json.loads((root / "results.json").read_bytes())}
+    response = json.loads((root / "responses.json").read_bytes())
+    assert json.loads((root / "validation.json").read_bytes())["status"] == "passed"
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    labels = [
+        "Utility",
+        "Direct",
+        "AGA",
+        "Local\nreset",
+        "Attention\nreset",
+        "MLP\nreset",
+        "Score\nrecovery",
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(9, 3), layout="constrained", sharey=True)
+    for ax, target in zip(axes, config["tasks"], strict=True):
+        for index, preset in enumerate(("original", "protected")):
+            keys = [f"{target}/{preset}/direct/standalone/{target}"] + [
+                f"{target}/{preset}/{attack}/fusion/{target}" for attack in config["attacks"]
+            ]
+            ax.plot(
+                np.arange(len(keys)),
+                [100 * rows[k]["top1"] for k in keys],
+                marker="o" if index == 0 else "s",
+                color=COLORS[index],
+                label="Unprotected" if index == 0 else "Path candidate",
+            )
+        ax.set(title=target, ylim=(0, 102), xticks=np.arange(len(labels)), xticklabels=labels)
+        ax.tick_params(axis="x", labelsize=7)
+        ax.grid(axis="y", alpha=0.2)
+    axes[0].set_ylabel("Full test accuracy (%)")
+    axes[1].legend(loc="lower left")
+    fig.supxlabel(
+        "Eight experts, fixed TA 0.2; extra recovery attacks have matched unprotected controls.",
+        fontsize=8,
+    )
+    save(fig, out, "path_recovery")
+
+    fig, axes = plt.subplots(1, 2, figsize=(7.4, 3), layout="constrained", sharey=True)
+    names = ["expert", "beta_0.2", "beta_0.5"]
+    x = np.arange(4)
+    for ax, target in zip(axes, config["tasks"], strict=True):
+        for split, marker, color in [
+            ("calibration", "o", COLORS[0]),
+            ("confirmation", "s", COLORS[1]),
+        ]:
+            values = [response[f"{target}/{name}/{split}"]["actual_feature_rms"] for name in names]
+            values.append(response[f"{target}/protected/real_fusion/{split}"]["actual_feature_rms"])
+            ax.plot(x, values, marker=marker, color=color, label=split.capitalize())
+        predicted = [
+            response[f"{target}/{name}/calibration"]["predicted_feature_rms"] for name in names
+        ]
+        ax.scatter(
+            x[:3], predicted, marker="x", color=COLORS[2], label="Finite difference", zorder=3
+        )
+        ax.set(
+            title=target,
+            ylim=(0, None),
+            xticks=x,
+            xticklabels=["Expert", r"$\beta=0.2$", r"$\beta=0.5$", "Real\nfusion"],
+        )
+        ax.grid(axis="y", alpha=0.2)
+    axes[0].set_ylabel("Normalized feature RMS change")
+    axes[1].legend(fontsize=7)
+    fig.supxlabel(
+        "Confirmation images: MNIST 128, DTD 24; labels unused. Response magnitude is not defense success.",
+        fontsize=8,
+    )
+    save(fig, out, "path_response")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -1925,6 +1998,7 @@ if __name__ == "__main__":
     mode.add_argument("--local-erasure", action="store_true")
     mode.add_argument("--score-recovery", action="store_true")
     mode.add_argument("--input-score-recovery", action="store_true")
+    mode.add_argument("--path-subspace", action="store_true")
     mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument(
         "--subspace-interference",
@@ -1961,7 +2035,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_input_score_recovery
+        plot_path_subspace
+        if args.path_subspace
+        else plot_input_score_recovery
         if args.input_score_recovery
         else plot_score_recovery
         if args.score_recovery
