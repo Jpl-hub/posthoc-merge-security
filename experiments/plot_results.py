@@ -1878,6 +1878,43 @@ def plot_score_recovery(root: Path):
     save(fig, out, "score_recovery")
 
 
+def plot_input_score_recovery(root: Path):
+    rows = {r["id"]: r for r in json.loads((root / "results.json").read_bytes())}
+    assert json.loads((root / "validation.json").read_bytes())["status"] == "passed"
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.9), layout="constrained", sharey=True)
+    x = np.arange(3)
+    for i, task in enumerate(("MNIST", "SVHN")):
+        for j, preset in enumerate(("original", "erased")):
+            values = [
+                100 * rows[f"{preset}/{method}/{task}"]["top1"]
+                for method in ("direct", "head_only", "input_null")
+            ]
+            axes[i].plot(
+                x,
+                values,
+                marker="o" if j == 0 else "s",
+                color=COLORS[j],
+                label="Unprotected" if j == 0 else "Local deletion",
+            )
+        axes[i].set(
+            title=task,
+            ylim=(0, 102),
+            xticks=x,
+            xticklabels=["Direct", "Head constraint", "Input constraint"],
+        )
+        axes[i].grid(axis="y", alpha=0.2)
+    axes[0].set_ylabel("Merged test accuracy (%)")
+    axes[1].legend(loc="lower left", fontsize=7)
+    fig.supxlabel(
+        "256 target queries; input constraint uses 256 public SVHN training images.\n"
+        "SVHN is constrained only on calibration; DTD and Cars predictions are unchanged.",
+        fontsize=8,
+    )
+    save(fig, out, "input_score_recovery")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -1887,6 +1924,7 @@ if __name__ == "__main__":
     mode.add_argument("--fine-subspace", action="store_true")
     mode.add_argument("--local-erasure", action="store_true")
     mode.add_argument("--score-recovery", action="store_true")
+    mode.add_argument("--input-score-recovery", action="store_true")
     mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument(
         "--subspace-interference",
@@ -1923,7 +1961,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_score_recovery
+        plot_input_score_recovery
+        if args.input_score_recovery
+        else plot_score_recovery
         if args.score_recovery
         else plot_local_erasure
         if args.local_erasure
