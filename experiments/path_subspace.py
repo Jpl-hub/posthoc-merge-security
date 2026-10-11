@@ -544,7 +544,24 @@ def validate(args):
     cfg, meta, rows = [
         read(out / name) for name in ("protocol.json", "metadata.json", "results.json")
     ]
-    assert meta["completed"] and digest(__file__) == meta["source_sha256"]
+    frozen_source = Path(args.frozen_source) if args.frozen_source else Path(__file__)
+    assert meta["completed"] and digest(frozen_source) == meta["source_sha256"]
+    if frozen_source != Path(__file__):
+        import ast
+
+        def runner_tree(path):
+            tree = ast.parse(Path(path).read_text())
+            tree.body = [
+                n
+                for n in tree.body
+                if not (isinstance(n, ast.FunctionDef) and n.name == "validate")
+                and not isinstance(n, ast.If)
+            ]
+            return ast.dump(tree, include_attributes=False)
+
+        assert runner_tree(frozen_source) == runner_tree(__file__), (
+            "Runner changed after release freeze"
+        )
     assert (
         digest(args.config) == meta["config_sha256"]
         and digest(cfg["fusion_config"]) == meta["fusion_config_sha256"]
@@ -558,6 +575,16 @@ def validate(args):
     root, load, fusion, models = context(cfg, True)
     for name, expected in meta["checkpoint_sha256"].items():
         assert digest(root / name) == expected
+        pin = next(
+            p for p in read("configs/checkpoints.json")["files"] if p["path"] == "ViT-B-32/" + name
+        )
+        assert expected == pin["sha256"] and (root / name).stat().st_size == pin["bytes"]
+    for target, parent_record in meta["reused_construction"].items():
+        parent = Path(parent_record["parent"])
+        assert (
+            digest(parent / f"artifacts/{target}_geometry.pt") == parent_record["geometry_sha256"]
+        )
+        assert digest(parent / f"artifacts/{target}_edits.pt") == parent_record["edits_sha256"]
     from dataset.registry import get_dataset
 
     data = {
@@ -570,7 +597,13 @@ def validate(args):
     assert len({r["id"] for r in rows}) == len(rows)
     for row in rows:
         item = raw[row["id"]]
-        labels = torch.tensor(data[row["dataset"]].test_dataset.targets, dtype=torch.long)
+        dataset = data[row["dataset"]].test_dataset
+        labels = torch.as_tensor(
+            [label for _, label in dataset._samples]
+            if row["dataset"] == "Cars"
+            else dataset.targets,
+            dtype=torch.long,
+        )
         assert torch.equal(item["labels"], labels)
         assert row["n"] == fusion["expected_test_counts"][row["dataset"]] == len(labels)
         correct = int(item["prediction"].eq(labels).sum())
@@ -584,7 +617,7 @@ def validate(args):
     )
     indices = read(out / "training_indices.json")
     attack_indices = read(out / "attack_indices.json")
-    checks, prefixes, fd_columns = [], 0, 0
+    checks, prefixes, fd_columns, limits, partner_changes = [], 0, 0, {}, {}
     for target in cfg["tasks"]:
         geometry = torch.load(
             out / f"artifacts/{target}_geometry.pt", map_location="cpu", weights_only=True
@@ -597,6 +630,27 @@ def validate(args):
         assert (
             torch.equal(coeff, geometry["coefficients"])
             and construction == read(out / "construction.json")[target]
+        )
+        own = grams["expert"]
+        spectrum = torch.linalg.eigvalsh(own)
+        assert float(spectrum[0]) > 0
+        lower = torch.linalg.cholesky(own)
+        bounds = {}
+        for name, matrix in grams.items():
+            if name == "expert":
+                continue
+            left = torch.linalg.solve_triangular(lower, matrix, upper=False)
+            whitened = torch.linalg.solve_triangular(lower, left.T, upper=False).T
+            maximum = float(torch.linalg.eigvalsh((whitened + whitened.T) / 2)[-1])
+            selected = float((coeff @ matrix @ coeff) / (coeff @ own @ coeff))
+            assert selected <= maximum + 1e-10
+            bounds[name] = dict(
+                maximum_unregularized_rms_ratio=maximum**0.5, selected_rms_ratio=selected**0.5
+            )
+        limits[target] = dict(
+            expert_gram_condition=float(spectrum[-1] / spectrum[0]),
+            paths=bounds,
+            scope="Unregularized calibration first-order upper bound within the fixed 48-direction family; not an accuracy or nonlinear bound",
         )
         predicted = apply(models[target], edits_for(records, coeff))
         edits = torch.load(
@@ -677,6 +731,11 @@ def validate(args):
                         weights_only=True,
                     )
                     assert all(torch.equal(v, saved[k]) for k, v in evidence.items())
+                    delta, update = evidence["projection_delta"], evidence["update"]
+                    c = heads[target].weight.double()
+                    b = torch.cat([h.weight.double() for t, h in heads.items() if t != target])
+                    assert float((delta @ c.T - update).norm() / update.norm()) < 1e-8
+                    assert float((delta @ b.T).norm() / update.norm()) < 1e-8
                     del student
                 cases = []
                 if attack != "readout":
@@ -700,6 +759,11 @@ def validate(args):
             a = raw[f"{target}/original/support_reset/fusion/{task}"]["prediction"]
             b = raw[f"{target}/protected/support_reset/fusion/{task}"]["prediction"]
             assert torch.equal(a, b)
+            if task != target:
+                for preset in ("original", "protected"):
+                    before = raw[f"{target}/{preset}/direct/fusion/{task}"]["prediction"]
+                    after = raw[f"{target}/{preset}/readout/fusion/{task}"]["prediction"]
+                    partner_changes[f"{target}/{preset}/{task}"] = int(before.ne(after).sum())
         checks.append(
             dict(
                 target=target,
@@ -710,6 +774,7 @@ def validate(args):
         )
         del geometry, predicted
     assert prefixes == len(rows)
+    save_json(out / "sensitivity_limits.json", limits)
     save_json(
         out / "validation.json",
         dict(
@@ -719,8 +784,10 @@ def validate(args):
             prefix_replays=prefixes,
             finite_difference_columns_replayed=fd_columns,
             all_four_readout_fits_replayed=True,
+            readout_partner_prediction_changes=partner_changes,
             checks=checks,
             validator_sha256=digest(__file__),
+            frozen_run_source_sha256=digest(frozen_source),
             results_sha256=digest(out / "results.json"),
         ),
     )
@@ -731,6 +798,10 @@ if __name__ == "__main__":
     parser.add_argument("--config", default="configs/path_subspace.json")
     parser.add_argument("--output", default="outputs/2026-10-11/path_subspace")
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument(
+        "--frozen-source",
+        help="Original runner source for auditing results with a later validator revision",
+    )
     parser.add_argument(
         "--reuse-construction",
         help="Reuse an immutable partial constructor with exactly matching settings and indices",
