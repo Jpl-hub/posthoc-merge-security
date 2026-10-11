@@ -2,10 +2,11 @@
 
 对已微调专家施加发布前后处理，尽量保持原任务能力，检验对未经授权融合及自适应恢复的保护。完整报告性能与防御权衡，不以单个准确率阈值作为唯一淘汰条件；不进行额外梯度微调，校准数据与闭式拟合均明确记录。
 
-**目前没有有效新防御。**最新响应压缩对照使独立 MNIST 仅损失 0.07 pp、直接融合下降 2.21 pp，但被 256 查询恢复至 97.73%，同条件原专家为 97.89%。公开响应清理也没有解决旧候选的 FC 替换漏洞。保留全部真实失败，不将标准压缩、原版 AGA 下的下降或参数距离当作创新和安全成功。
+**目前没有有效新防御。**响应压缩的 MNIST 独立损失仅 0.07 pp，但 256 查询又恢复目标至 97.73%；整体省略攻击虽恢复目标至 95.11%，SVHN 却降到 45.04%。原任务、同条件恢复和伙伴代价并列报告，不把标准压缩或单项准确率当作创新和成功。
 
 ## 当前结果
 
+- [整体省略专家后的功能恢复](outputs/2026-10-11/omission_recovery/summary.md)：没有合入 MNIST 专家参数，256 查询使目标恢复到 95.11%，同时 SVHN 降至 45.04%。原教师同条件控制、四项完整测试及实际伙伴代价均记录；不称整体融合恢复成功。
 - [响应压缩的功能恢复检验](outputs/2026-10-11/compression_probe/summary.md)：一个明确标注事后选择的压缩对照，查询与压缩校准不重叠；六次新完整评价、相同查询的原专家控制、完整支持替换和逐图伙伴核查。仍未达到保护目标。
 - [公开响应约束清理](outputs/2026-10-11/response_cleanup/summary.md)：固定闭式解与均值补偿，44 次新完整评价、44 条明确复用对照，清理后接作者原版 AGA。六份实际权重及 64 处局部求解均精确复核。[协议](outputs/2026-10-11/response_cleanup_protocol.md)记录条件与边界。
 - [分类间隔编辑](outputs/2026-10-11/path_margin/summary.md)：一次解析构造、两份实际权重、26 次新完整评价，明确复用 42 行冻结对照／状态恒等结果；原版 AGA、功能恢复与浮点核验均记录，仍未达到保护目标。[协议](outputs/2026-10-11/path_margin_protocol.md)与[公开回填反例](outputs/2026-10-11/mechanism_boundary.md)约束后续构造。
@@ -65,6 +66,10 @@ python experiments/validate_response_cleanup.py --output outputs/response_cleanu
 python experiments/plot_results.py --response-cleanup --output outputs/response_cleanup_check
 python experiments/compression_probe.py --output outputs/compression_check
 python experiments/compression_probe.py --validate --output outputs/compression_check
+python experiments/omission_recovery.py --output outputs/omission_check
+python experiments/omission_recovery.py --validate --output outputs/omission_check
+python experiments/omission_partner_cost.py --parent outputs/omission_check
+python experiments/plot_results.py --omission-recovery --output outputs/omission_check
 ```
 
 分类间隔检验依赖已核验 `path_subspace` 的服务器原始张量。构造只使用目标伪标签与校准数据，一次解析求解后冻结权重；不额外梯度训练。精确子空间回填仍是条件性反例，实际响应预算清理不能被当成它对所有候选的成功证明。
