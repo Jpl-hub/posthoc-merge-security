@@ -1,16 +1,16 @@
 {
-  "status": "active",
+  "status": "stopped_by_user",
   "started_at_utc": "2026-10-11T07:09:54Z",
   "deadline_utc": "2026-10-11T16:09:54Z",
   "timezone": "Asia/Shanghai",
   "automation_id": "automation",
-  "goal_enabled": true,
+  "goal_enabled": false,
   "breakthrough_verified": false,
-  "phase": "block_restore_gate_freeze",
+  "phase": "closed_without_breakthrough",
   "current_direction": "Cars QK/VO/neuron recoding failed task preservation: native77.6645->54.6201%,23.0444pp loss; confirmation26.3184pp loss. Hidden PCA retained86.53-94.14% but nonlinear commutation3.335-8.464 relative error, block fit37.67-50.07%. Stop without fusion/AGA or tuning. Test one stronger white-box public-basis block recovery control before treating the Cars region as hard to restore.",
   "baseline_commit": "6ee779667195ce41fd6b4e05bcdc37471db90a7a",
   "active_server_job": null,
-  "next_action": "Freeze and run block_restore_gate on unprotected Cars full-reset9-11 with same256 inputs. Three sequential public3072-neuron MLP decoder fits from accessible full block responses,5 fresh full evaluations and10 checked aliases, independent Cholesky validation. Stronger access than class scores:29,491,200 hidden-output scalars; no new defense claim. Preserve original candidate failure weights, no rank/strength rescue.",
+  "next_action": "No automatic exploration. If the user authorizes further research, first reconsider the nonlinear utility/recovery mechanism; do not retune rejected candidates. Latest unprotected Cars white-box control is not defense success.",
   "constraints": [
     "No additional defender gradient or iterative finetuning; state any calibration-dependent selection or fitting.",
     "No future fusion partner during protection construction.",
@@ -19,8 +19,8 @@
     "No breakthrough claim before matched utility, fusion and recovery validation.",
     "Heavy artifacts stay on server; GitHub receives curated code and lightweight evidence."
   ],
-  "frozen_source_commit": "f8ec4d2e5d31d5b1c114a864d6bc54fe8676d4ef",
-  "last_validated_result": "outputs/2026-10-11/operator_recoding_cars/validation.json",
+  "frozen_source_commit": "a9fa9071dc089c540564d154afd2db7d5eb11b23",
+  "last_validated_result": "outputs/2026-10-11/block_restore_gate_cars/validation.json",
   "previous_deadline_utc": "2026-10-11T15:00:00Z",
   "deadline_basis": "User explicitly restarted the nine-hour campaign on departure.",
   "last_result": {
@@ -42,7 +42,7 @@
   "setup_failure": "outputs/2026-10-11/query_partner_cost_setup_failure/failure.json",
   "goal_runtime_status": "usageLimited",
   "ordinary_usage_currently_allowed": true,
-  "last_updated_utc": "2026-10-11T13:00:06.212967+00:00",
+  "last_updated_utc": "2026-10-11T13:14:18.241353+00:00",
   "last_candidate_failure": {
     "native_loss_pp": 23.044397463002113,
     "protected_native_top1": 54.62007213033205,
@@ -50,5 +50,20 @@
     "fusion_or_aga_run": false,
     "validated": true,
     "output": "outputs/2026-10-11/operator_recoding_cars"
+  },
+  "automation_deleted": true,
+  "stop_reason": "User returned, withdrew the nine-hour campaign and asked whether there is a breakthrough. Automation deleted; finish existing verification and synchronization only.",
+  "last_recovery_control": {
+    "output": "outputs/2026-10-11/block_restore_gate_cars",
+    "teacher": "unprotected Cars",
+    "native_top1": 74.09526178336029,
+    "fusion_top1": 60.22882726029101,
+    "native_loss_pp": 3.569207809973884,
+    "fusion_loss_pp": 1.8281308294988186,
+    "teacher_scalar_outputs": 29491200,
+    "unique_inputs": 256,
+    "partner_svhn_loss_pp": 0.19207129686539642,
+    "validated": true,
+    "protected_release_attack": false
   }
 }
