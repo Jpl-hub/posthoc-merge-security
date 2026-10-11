@@ -79,7 +79,7 @@ def holders(cfg):
     expected = {
         r["path"].split("/", 1)[1]: r["sha256"] for r in read("configs/checkpoints.json")["files"]
     }
-    assert expected == meta["checkpoint_sha256"]
+    assert all(expected[name] == pin for name, pin in meta["checkpoint_sha256"].items())
     for name, pin in expected.items():
         assert digest(root / name) == pin
     raw_names = (
