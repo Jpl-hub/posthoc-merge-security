@@ -53,3 +53,7 @@ MLP 实现用行归一化后的 cosine assignment；附录的原始欧氏 margin
 [ESM，CVPR 2026 的 v2](https://arxiv.org/html/2602.20208v2)和[扩展 v3](https://arxiv.org/html/2606.19164v3)正文均提供[研究代码](https://github.com/kiddo127/ESM)。精读 §III-B、附录 A/B，并固定源码 fc82fe7，读取 3 文件共 15,232 字节。对输出增量 y=τx 的未中心化二阶矩取主方向 E，得到 τ̂=EEᵀτ；在同一分布二阶矩已知的条件下，平方输出误差等于被舍弃特征值之和。代理样本只给经验保证，不能推出测试分类保持或安全性。
 
 源码对 activation_diff 做未中心化 SVD，特征值按 n−1 缩放。静态 ESM 的极分解合并与动态 ESM++ 的专家路由分别记录；QKV 钩子不等于完整 QK／VO 算子复现，out_proj 钩子在该实现中被注释。样本少于特征维数时零特征值补基不能自动视为正交。未安装入口依赖、未运行完整方法，[源码核查](esm_source_audit/source_audit.json)。主要启示是按实际响应衡量任务信息；低能尾部可被丢弃这一事实同时构成防御的恢复风险，不能将 ESD 本身当创新。
+
+[Platonic Task Arithmetic v2，2026-10-02](https://arxiv.org/html/2610.00929v2)正文提供[研究代码](https://github.com/jhpark-ai/Platonic-Task-Arithmetic)。精读 §4、附录 C，固定源码 2011bad，读取 6 文件共 20,411 字节。描述符只观察图像表征变化在文本方向上的投影；主路线是双边岭回归并折入最终投影，另一个 LoRA 路线需要训练。固定源码实际均匀抽取类别数×30 张训练图，并非逐类配额；保留标签供诊断，求解不读标签。描述符残差不提供自动分类／校准外保证，不同任务算子相加也有真实伙伴代价。[源码核查](pta_source_audit/source_audit.json)；未运行完整作者方法、不下载新模型，不将本项目既有投影恢复改名为该论文复现。
+
+[Theseus v3，2026-07-30](https://arxiv.org/html/2602.12952v3)正文提供[研究代码](https://github.com/apanariello4/merge-and-rebase)，ICML 2026 的[正式条目](https://proceedings.mlr.press/v306/rinaldi26a.html)可核对。阅读 §3、附录 A/B：以输入／输出激活的双线性效应和 Procrustes 共享子空间迁移更新；需要源基础模型、源专家和相应激活，不等于任意白盒发布都可保证恢复。异宽情形须区分嵌入与截断，截断不能保证任意更新零残差。HTML 中 Eq10/18 的转置方向与声明维数有冲突，使用前须核对原 PDF／源码；本轮尚未核对实现，也未运行完整方法。

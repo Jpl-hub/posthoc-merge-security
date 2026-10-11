@@ -1,0 +1,108 @@
+{
+  "repository": "https://github.com/jhpark-ai/Platonic-Task-Arithmetic",
+  "commit": "2011bad8b837abe8e2630f2379e509bac705d60b",
+  "body_link_verified": "https://arxiv.org/html/2610.00929v2",
+  "checked_utc": "2026-10-11T09:34:44.152002+00:00",
+  "files": {
+    "README.md": {
+      "bytes": 4306,
+      "sha256": "611f34d7af4577fc4ed9f4619213aa1cdf93784ce3aa22882816fffbad64c8ac",
+      "git_blob_sha1": "2773eb5b7326dd476f9bf9b27e850b526e657b34"
+    },
+    "LICENSE": {
+      "bytes": 1070,
+      "sha256": "09f7ccb7ccdf9205f8305c06b5e46c50527513aeb6edd63ad6212a37f9a086f9",
+      "git_blob_sha1": "ceb9cd08328137c1cbeed4a86851c8b3eee83a1b"
+    },
+    "pta/solver.py": {
+      "bytes": 3045,
+      "sha256": "e689eef4b1bc466e857e0d6cb7d9b4b5de5e30412cd3343af9830dfedd3ade6c",
+      "git_blob_sha1": "4ba5d84dc9108336a12eeaf2c6be4af735189ccf"
+    },
+    "pta/transfer.py": {
+      "bytes": 3742,
+      "sha256": "e647935f39fa81e82de20701e154832247b875dae56d836c16c6ccc0a8e14080",
+      "git_blob_sha1": "98f143874a4c58c79f45e047cbbe404771ac864f"
+    },
+    "pta/features.py": {
+      "bytes": 6345,
+      "sha256": "70ecc6bcbb196a9784144c3bd0b00c6eae88e063e51b7c85f99fe94a21c3bf8f",
+      "git_blob_sha1": "597a203724005a18d52c97f335c45680d6a6ccd2"
+    },
+    "pta/config.py": {
+      "bytes": 1903,
+      "sha256": "2f57ac85fcaf1e9a596095de8210fb7b0b04cae1b6d3330c4ccf7db70a2f93a0",
+      "git_blob_sha1": "8e5ec9d357aabb64a36bc771a30d43414ab7cdb5"
+    }
+  },
+  "definitions": [
+    {
+      "file": "pta/solver.py",
+      "functions": [
+        "ridge_solver",
+        "ridge_solve",
+        "rank_capped_solve",
+        "relative_residual",
+        "solve"
+      ],
+      "imports": [
+        "import torch"
+      ]
+    },
+    {
+      "file": "pta/transfer.py",
+      "functions": [
+        "parse_terms",
+        "prepare",
+        "closed_form_update",
+        "apply_closed_form",
+        "fit_adapter"
+      ],
+      "imports": [
+        "from . import adapter as AD",
+        "from . import config as C",
+        "from . import features as FT",
+        "from . import head as HD",
+        "from . import models as M",
+        "from .solver import ridge_solver"
+      ]
+    },
+    {
+      "file": "pta/features.py",
+      "functions": [
+        "build_probe_bundle",
+        "image_slice",
+        "prompt_slice",
+        "embed_pool",
+        "model_features",
+        "shift_field",
+        "task_grid",
+        "descriptor"
+      ],
+      "imports": [
+        "import os",
+        "import torch",
+        "import torch.nn.functional as F",
+        "from torch.utils.data import DataLoader, Subset",
+        "from . import config as C",
+        "from . import models as M",
+        "from .data.tasks import get_task",
+        "from .data.transforms import eval_transform"
+      ]
+    },
+    {
+      "file": "pta/config.py",
+      "functions": [
+        "source_path",
+        "cache_path"
+      ],
+      "imports": [
+        "import os"
+      ]
+    }
+  ],
+  "full_method_run": false,
+  "dependencies_installed": false,
+  "checkpoints_downloaded": false,
+  "defense_claim": false
+}
