@@ -2108,7 +2108,7 @@ def plot_head_collapse(root: Path):
                         color=COLORS[j],
                         label=("Original", "Release")[j] if i == 0 else None,
                     )
-                    ax.bar_label(bars, fmt="%.2f", padding=2, fontsize=7)
+                    ax.bar_label(bars, fmt="%.2f", padding=2 + 10 * j, fontsize=7, color=COLORS[j])
         ax.set(
             title=task,
             ylabel="Accuracy (%)",
