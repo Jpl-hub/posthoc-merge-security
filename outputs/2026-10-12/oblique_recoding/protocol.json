@@ -1,0 +1,23 @@
+{
+  "target": "Cars",
+  "layers": [
+    9,
+    10,
+    11
+  ],
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "indices_parent": "outputs/2026-10-11/block_restore_norm_gate_cars",
+  "baseline_parent": "outputs/2026-10-12/projection_dependency",
+  "attacks": [
+    "direct",
+    "canonical",
+    "public_completion"
+  ],
+  "inverse_rcond": 0.0001,
+  "construction": "Fixed rank-767 T=I+(u-v)v^T on Cars blocks 9–11; u is the leading target output-task-vector direction, v minimizes normalized target input/output covariance orthogonal to u and ones. Fold LayerNorm affine parameters into input maps; apply T to their right and to branch outputs on the left. No response fit or strength/rank search.",
+  "limits": "Standard linear algebra; no novelty or security claim. LayerNorm and nonlinear blocks do not generally commute with T. Low calibration energy and parameter rank loss do not guarantee utility, merging harm, or recovery cost.",
+  "calibration": "Reuse 256 target training images from the audited block-recovery control; no labels for construction. Official test images were inspected in previous diagnostics. No test-based selection or independent confirmation claim.",
+  "controls": "Original validated baseline; neutral affine-folding control T=I; identical public LayerNorm canonicalization and anchor-based completion on control and protected models. Attacks use released and public weights only, without calibration or teacher queries.",
+  "screen": "12 complete Cars evaluations plus two validated baseline rows. Freeze release before loading partners. If utility or the public recovery screen fails, close this candidate. Otherwise test original AGA, whole-block erasure, partner costs, and matched query recovery. Unrun attacks are not passed."
+}

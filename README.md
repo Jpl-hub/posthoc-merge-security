@@ -8,6 +8,7 @@
 
 ## 当前结果
 
+- [Cars局部不可逆斜投影](outputs/2026-10-12/oblique_recoding/summary.md)：独立损失0.0124个百分点，直接融合61.2486%（原62.0570%）；公开规范化已恢复61.9699%。中性折叠控制61.1615%，14行独立核验通过。不可逆参数损失未形成有效防御，停止此候选；未测原版AGA或伙伴性能。
 - [硬标签原型恢复](outputs/2026-10-11/prototype_recovery_gate/summary.md)：复用固定作者分类原语，局部学生融合MNIST94.93%、SVHN72.4647%，单专家98.71%；五次新全测试加五条参数恒等的匹配别名。[全专家省略对照](outputs/2026-10-11/prototype_omission_gate/summary.md)零新增查询，融合MNIST91.04%、SVHN63.2299%，单专家仅21.31%；没有完整专家恢复或新防御。[条件性机制结论](outputs/2026-10-11/hard_label_boundary.md)与[协议](outputs/2026-10-11/prototype_recovery_protocol.md)明确适用范围。
 - [完整三块替换与功能恢复](outputs/2026-10-11/block_restore_norm_gate_cars/summary.md)：补齐 Cars 9–11 层的 LayerNorm，三次闭式恢复仍达融合60.2413%（原62.0570%），没有显示额外恢复障碍；教师未保护。[不可逆重表示条件](outputs/2026-10-11/irreversible_factorization.md)限定后续构造。
 - [已知伙伴定向补空间的恢复检查](outputs/2026-10-11/partner_nullspace_gate/summary.md)：九次新全测试及独立复核。公开替换第0层V后，MNIST独立99.69%、融合MNIST99.37%、SVHN92.5054%；使用已知伙伴，仅为机制预检，没有合格保护候选或抗AGA成果。
@@ -66,6 +67,13 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 ## 运行当前实验
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
+
+局部斜投影源码冻结于 `df6a130`，复用256张历史目标训练校准图，不使用标签或未来伙伴构造。需要父实验的原始数组及索引；新输出目录须不存在：
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/oblique_recoding.py --config configs/oblique_recoding.json --manifest outputs/2026-10-12/oblique_recoding/launch.json --output outputs/oblique_check
+python experiments/oblique_recoding.py --validate --config configs/oblique_recoding.json --manifest outputs/2026-10-12/oblique_recoding/launch.json --output outputs/oblique_check
+```
 
 最终投影检验沿用历史选区与已审计原融合数组，无新校准或拟合。源码冻结于 `51cc05b`，需要服务器父实验的原始数组：
 
