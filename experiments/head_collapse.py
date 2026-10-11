@@ -283,7 +283,10 @@ def run(args):
     functions["confirmation"] = response(original, release, confirmation)
     measure(original, "original", "none", "standalone", [task])
     measure(release, "protected", "none", "standalone", [task])
-    author = load_author("external/secure-merge-attack/utils_attack_B32.py", include_wrappers=True)
+    author, author_hash = load_author(
+        "external/secure-merge-attack/utils_attack_B32.py", include_wrappers=True
+    )
+    assert author_hash == "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
     inverse, inverse_geometry = head_inverse(
         heads[task], [heads[t] for t in cfg["preserved_query_heads"]]
     )
@@ -385,6 +388,7 @@ def run(args):
             },
             raw_sha256={p.name: digest(p) for p in sorted(artifacts.iterdir()) if p.is_file()},
             construction_frozen_before_partner_loading=True,
+            author_aga_sha256=author_hash,
             eight_task_mean_reported=False,
         ),
     )

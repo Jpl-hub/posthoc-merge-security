@@ -152,7 +152,7 @@ def validate(args):
     for preset, teacher in [("original", original), ("protected", release)]:
         student = merge_all(dict(models, **{task: teacher}), root, cfg["coefficient"])
         states[preset, "direct"] = student
-        restored = author_recover(teacher, anchor, (author, author_hash))
+        restored = author_recover(teacher, anchor, author)
         saved_aga = torch.load(
             out / f"artifacts/{preset}_aga_edits.pt", map_location="cpu", weights_only=True
         )
