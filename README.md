@@ -2,10 +2,14 @@
 
 对已微调专家施加发布前后处理，尽量保持原任务能力，检验对未经授权融合及自适应恢复的保护。完整报告性能与防御权衡，不以单个准确率阈值作为唯一淘汰条件；不进行额外梯度微调，校准数据与闭式拟合均明确记录。
 
-**目前没有有效新防御。**最新联合头有损表示保留 MNIST 独立 99.69%，却未降低直接融合或原版 AGA 准确率，256 查询后为 97.90%。完整公开 Attention 替换给仅修改 Attention 的同架构保护提供固定协议下 88.28% 的目标恢复下限。停止这一候选的强度／rank 调整；原任务、同条件恢复与伙伴代价均保留。
+**目前没有有效新防御。**联合局部有损改写保留 MNIST 独立99.63%（原99.69%），AGA后融合降到64.93%，但256图功能恢复达到96.88%（同攻击原96.93%）。Cars联合算子候选独立损失23.04个百分点，已停止。最新定向补空间检查能找到对SVHN高响应的方向，但第0层公开投影替换仍几乎没有双方任务代价，不能解决廉价恢复。
 
 ## 当前结果
 
+- [已知伙伴定向补空间的恢复检查](outputs/2026-10-11/partner_nullspace_gate/summary.md)：九次新全测试及独立复核。公开替换第0层V后，MNIST独立99.69%、融合MNIST99.37%、SVHN92.5054%；使用已知伙伴，仅为机制预检，没有合格保护候选或抗AGA成果。
+- [联合局部有损改写的完整恢复](outputs/2026-10-11/local_release_audit/summary.md)：真实MNIST发布权重、原版AGA、参数替换和256图恢复同条件对照，候选仍被恢复；伙伴损失明确报告。
+- [Cars联合算子改写失败](outputs/2026-10-11/operator_recoding_cars/summary.md)：独立77.6645%→54.6201%，已生成并复核真实权重；停止，不调秩或ridge。
+- [Cars中间层功能恢复控制](outputs/2026-10-11/block_restore_gate_cars/summary.md)：三次公开基底闭式恢复，独立74.0953%、融合60.2288%；访问强于类别分数查询，教师未保护，不能当防御结果。
 - [联合头有损表示](outputs/2026-10-11/head_collapse/summary.md)：三个 rank-128 → 64 算子，实际发布权重与全部同条件恢复已复核，仍无保护效果。公开替换的任务代价及适用边界明确记录；[协议](outputs/2026-10-11/head_collapse_protocol.md)与[首次接口失败](outputs/2026-10-11/head_collapse_setup_failure/summary.md)均保留。不把现有头压缩作为创新。
 - [整体省略专家后的功能恢复](outputs/2026-10-11/omission_recovery/summary.md)：没有合入 MNIST 专家参数，256 查询使目标恢复到 95.11%，同时 SVHN 降至 45.04%。原教师同条件控制、四项完整测试及实际伙伴代价均记录；不称整体融合恢复成功。
 - [响应压缩的功能恢复检验](outputs/2026-10-11/compression_probe/summary.md)：一个明确标注事后选择的压缩对照，查询与压缩校准不重叠；六次新完整评价、相同查询的原专家控制、完整支持替换和逐图伙伴核查。仍未达到保护目标。
@@ -58,6 +62,13 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 ## 运行当前实验
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
+
+已知伙伴恢复预检需要历史校准索引及冻结依赖，来源可复用所保存的launch清单；它只检查两个单投影支持，不生成经过效用认证的保护模型。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/partner_nullspace_gate.py --manifest outputs/2026-10-11/partner_nullspace_gate/launch.json --output outputs/partner_gate_check
+python experiments/partner_nullspace_gate.py --validate --manifest outputs/2026-10-11/partner_nullspace_gate/launch.json --output outputs/partner_gate_check
+```
 
 联合头构造只使用目标校准和既有目标层选择；发布编辑保存后再载入其他专家。校准驱动的 SVD 压缩明确标注，没有额外梯度或迭代微调。需要保留前序协议中的训练索引，复核和作图单独执行。
 
