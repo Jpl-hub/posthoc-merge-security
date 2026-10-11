@@ -35,3 +35,11 @@ MLP 实现用行归一化后的 cosine assignment；附录的原始欧氏 margin
 先明确后处理改变了哪项不可廉价删除的任务计算，再说明独立输入上的保持条件，以及融合或恢复为何破坏该条件。每项结论分别列假设和反例。对有代数删除规则且实测删除代价小的方向族停止调参；当前没有已证明可行的新构造。后续只对机制通过者运行官方测试、原版 AGA 和同条件恢复对照。
 
 导师要求依据此前保存的[录音反馈整理](../2026-10-09/post_meeting/review.md)：任务子空间及补空间、保持原任务、检验融合干扰、核对评价目标。这份整理标明转写错词与例举维数；本轮没有找到原 Downloads 录音转写文件，不能声称重新逐字核对了原录音。抗替换要求来自用户后续明确指令，不归作导师逐字原话。
+
+## 本轮新增核查
+
+[Model Fusion via Retrofitting，ICML 2026](https://proceedings.mlr.press/v306/luenam26a.html)，[v2 正文](https://arxiv.org/html/2507.00037v2)提供[作者代码](https://github.com/AndrewSpano/model-fusion-via-retrofitting)。核对 §4、Theorem 2 与 §6：先匹配／聚类，再让当前层逼近目标表征，输入来自正在构建的融合模型。仿射层用闭式最小二乘；一般非线性层用 SGD，不能将后者称为无训练。定理要求先前层固定；表示匹配代价的保证不等于分类或安全保证。尚未运行该方法；攻击启示是顺序重建实际计算，而不是只恢复坐标。当前最终投影攻击不等于完整 Retrofitting。
+
+[CASS，2026-09-28](https://arxiv.org/html/2609.34184v1)的 HTML 中仅发现 arXiv 页尾维护仓库，没有核实正文研究代码入口；不纳入本轮用户要求的精读清单。不能把页尾 GitHub 链接当作者代码。
+
+再次查看 [Task Arithmetic 原始划分讨论](https://github.com/mlfoundations/task_vectors/issues/1)：作者确认 EuroSAT 数量，但未提供原始索引或随机种子；后续参与者的随机划分脚本不能补作原始划分。此复现阻塞仍在，暂不重复搜索同一讨论，也不生成新划分冒充论文协议。
