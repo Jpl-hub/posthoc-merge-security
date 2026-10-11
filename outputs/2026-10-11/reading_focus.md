@@ -43,3 +43,7 @@ MLP 实现用行归一化后的 cosine assignment；附录的原始欧氏 margin
 [CASS，2026-09-28](https://arxiv.org/html/2609.34184v1)的 HTML 中仅发现 arXiv 页尾维护仓库，没有核实正文研究代码入口；不纳入本轮用户要求的精读清单。不能把页尾 GitHub 链接当作者代码。
 
 再次查看 [Task Arithmetic 原始划分讨论](https://github.com/mlfoundations/task_vectors/issues/1)：作者确认 EuroSAT 数量，但未提供原始索引或随机种子；后续参与者的随机划分脚本不能补作原始划分。此复现阻塞仍在，暂不重复搜索同一讨论，也不生成新划分冒充论文协议。
+
+[Q-realign，2026](https://arxiv.org/html/2601.08089v1)正文确实提供[作者代码](https://github.com/Skilteee/Q-Realign)，仓库标为 EMNLP 2026 Findings。核对 §2—3 与官方运行命令：它用于 LLM 微调后的安全对齐恢复，先训练冻结激活上的稀疏逻辑探针，再用重建与分离目标优化量化平滑／裁剪参数；代码示例明确运行 10 个 epoch。不能因为称为 post-training quantization，就把完整流程改称没有梯度优化；它也未评价未经授权的模型融合。不升级环境或将此方法直接当我们的保护机制。启示仅是需要明确哪些量被训练、在哪些输入上保持功能，当前未复现。
+
+另外核查 MergeBarrier 与 MergeGuard 的 arXiv HTML 代码入口：尚未确认正文作者研究仓库，页尾维护链接不能算代码。保留已有相关工作范围核查，但本轮不将它们加入满足用户代码条件的精读成果。Sensitivity as a Shield 的直接 OpenReview 访问被验证页阻挡，未核实研究代码，不作方法成功或完整阅读的结论。

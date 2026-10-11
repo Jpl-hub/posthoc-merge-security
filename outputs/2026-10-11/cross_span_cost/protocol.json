@@ -1,0 +1,29 @@
+{
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "evaluation_tasks": [
+    "MNIST",
+    "SVHN",
+    "DTD",
+    "Cars"
+  ],
+  "cases": {
+    "MNIST": [
+      6,
+      7,
+      8
+    ],
+    "DTD": [
+      9,
+      10,
+      11
+    ]
+  },
+  "shear_parent": "outputs/2026-10-11/nonlinear_shear",
+  "release_sha256": "59ab95c4480aebb50f08a3c9357320fadd6d9e9b56af2424ab0be5f39de48c16",
+  "time_limit_seconds": 1200,
+  "purpose": "Measure the actual public-deletion recovery floor of the anchor-stabilizing shear family before amplifying or extending it. No new defense is generated. Region choice is frozen from previous task profiling; public projectors use only anchor weights.",
+  "attack": "On each declared MLP, restore delta-up and delta-bias to rowspace(V0), delta-down to colspace([W0,b0]). Also apply the attack directly to the frozen accessible DTD shear release, without defender vectors, calibration images or private original weights in the attack function.",
+  "evaluation": "All 21 metric evaluations are fresh and full: original own MNIST/DTD plus one original eight-expert fusion on four tests; deleted original MNIST, deleted original DTD and deleted protected DTD each have own plus four fusion tests. No aliases or eight-task average. DTD release utility and direct/AGA/query defense efficacy are not measured here.",
+  "interpretation": "This gives conditional recovery floors for these task regions, eight expert checkpoints and TA(0.2), not a universal impossibility claim. Preserve standalone and partner changes, paired tests and floating-point differences. Continue only if the measured deletion cost leaves a defensible mechanism; do not tune shear amplitude on official tests."
+}
