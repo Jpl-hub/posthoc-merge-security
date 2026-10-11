@@ -1,0 +1,31 @@
+{
+  "target": "MNIST",
+  "parent": "outputs/2026-10-11/joint_lossy_recoding",
+  "audit_parent": "outputs/2026-10-11/local_release_audit",
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "layers": [
+    6,
+    7,
+    8
+  ],
+  "evaluation_tasks": [
+    "MNIST",
+    "SVHN",
+    "Cars",
+    "DTD"
+  ],
+  "preserved_query_heads": [
+    "Cars",
+    "DTD"
+  ],
+  "attacker_samples": 256,
+  "author_source": "external/nc_by_design/networks/resnet_big.py",
+  "author_commit": "4ee84352e42194b60cfa505f62ebc369942230c7",
+  "author_sha256": "08c203001d1540692d24bb4b202ef760775c33515807b8fa7d3cc48da894f6bc",
+  "prototype_class": "PrototypeClassifier",
+  "prototype_scale": "median norm of original target head rows; fixed before evaluation",
+  "teacher_access": "One hard argmax label per image, no continuous scores, hidden features or ground-truth labels. The same 256 historical target training images are queried on original and protected teachers.",
+  "student": "Identical eight-expert TA(.2) after public replacement of target V/O/up/down at layers 6,7,8. Remaining released target parameters are retained; this is not complete expert erasure.",
+  "scope": "A new hard-label recovery primitive on an existing frozen release, not a new defense or full Neural Collapse reproduction. Use the author's ordinary unit-normalized class means, not its EMA subclass. No gradient training, ridge fitting, amplitude, rank or query-budget search. All 10 classes must be observed. Compile the prototype readout into visual.proj using the existing partner-preserving head inverse. Measure native target and four official fusion tests. Previously inspected tests are diagnostic, not fresh confirmation; no eight-task mean or Table6 claim."
+}

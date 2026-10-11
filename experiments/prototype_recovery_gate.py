@@ -51,6 +51,36 @@ def audited_parent(cfg):
     return meta, torch.load(parent / "artifacts/predictions.pt", weights_only=True)
 
 
+def reset_student(cfg, models, release, root):
+    mode = cfg.get("student_mode", "support_reset")
+    if mode == "whole_omission":
+        reset_expert = copy.deepcopy(models["anchor"]).cpu().eval()
+    else:
+        assert mode == "support_reset"
+        reset_expert = branch_reset(models[cfg["target"]], models["anchor"], cfg, "support_reset")
+        assert state_equal(
+            reset_expert, branch_reset(release, models["anchor"], cfg, "support_reset")
+        )
+    student = merge_all(dict(models, **{cfg["target"]: reset_expert}), root, cfg["coefficient"])
+    return reset_expert, student
+
+
+def saved_queries(cfg, indices):
+    if "query_parent" not in cfg:
+        return None
+    parent = Path(cfg["query_parent"])
+    meta = read(parent / "metadata.json")
+    assert meta["completed"] and read(parent / "validation.json")["status"] == "passed"
+    assert read(parent / "protocol.json")["parent"] == cfg["parent"]
+    assert indices == read(parent / "attack_indices.json")
+    for name, sha in meta["raw_sha256"].items():
+        assert digest(parent / "artifacts" / name) == sha
+    certificate = torch.load(parent / "artifacts/certificate.pt", weights_only=True)
+    return {
+        preset: certificate[preset]["teacher_predictions"] for preset in ("original", "protected")
+    }
+
+
 @torch.no_grad()
 def compile_prototypes(reset_expert, student, head, inverse, prototypes, coefficient):
     p, c = student.model.visual.proj.double().cuda(), head.weight.double().cuda()
@@ -86,9 +116,13 @@ def run(args):
     assert indices == read(Path(cfg["audit_parent"]) / "attack_indices.json")
     save_json(out / "attack_indices.json", indices)
     target = cfg["target"]
-    reset_expert = branch_reset(models[target], models["anchor"], cfg, "support_reset")
-    assert state_equal(reset_expert, branch_reset(release, models["anchor"], cfg, "support_reset"))
-    student = merge_all(dict(models, **{target: reset_expert}), root, cfg["coefficient"])
+    reset_expert, student = reset_student(cfg, models, release, root)
+    reused_queries = saved_queries(cfg, indices)
+    attack = (
+        "omission_prototype"
+        if cfg.get("student_mode") == "whole_omission"
+        else "support_reset_prototype"
+    )
     inverse, geometry = head_inverse(
         heads[target], [heads[t] for t in cfg["preserved_query_heads"]]
     )
@@ -98,7 +132,10 @@ def run(args):
     classifier = author_classifier(cfg)
     labels, prototypes, counts, restored, evidence, checks = {}, {}, {}, {}, {}, {}
     for preset, teacher in [("original", models[target]), ("protected", release)]:
-        pseudo, _ = query_readout(teacher, heads[target], images)
+        if reused_queries is None:
+            pseudo, _ = query_readout(teacher, heads[target], images)
+        else:
+            pseudo = reused_queries[preset]
         labels[preset] = pseudo
         counts[preset] = torch.bincount(pseudo, minlength=len(heads[target].weight)).tolist()
         assert min(counts[preset]) > 0, "Missing queried class; no test-based completion allowed"
@@ -161,7 +198,7 @@ def run(args):
         for group, task, model in [("standalone", target, restored[preset])] + [
             ("fusion", t, merged) for t in cfg["evaluation_tasks"]
         ]:
-            key = f"{preset}/support_reset_prototype/{group}/{task}"
+            key = f"{preset}/{attack}/{group}/{task}"
             predicted, ground_truth = [], []
             score = evaluate(
                 model,
@@ -175,7 +212,7 @@ def run(args):
                 dict(
                     key=key,
                     preset=preset,
-                    attack="support_reset_prototype",
+                    attack=attack,
                     group=group,
                     dataset=task,
                     **score,
@@ -219,7 +256,12 @@ def run(args):
             full_evaluations=unique,
             reported_rows=len(rows),
             aliased_rows=len(rows) - unique,
-            teacher_queries_per_control=len(images),
+            teacher_queries_per_control=0 if reused_queries is not None else len(images),
+            available_hard_label_samples_per_control=len(images),
+            query_parent=cfg.get("query_parent"),
+            target_parameters_used_in_student=cfg.get("student_mode", "support_reset")
+            != "whole_omission",
+            comparison_reference="Direct, support_reset and support_reset_query rows from audit_parent; support references remain partial-reset benchmarks even in whole_omission mode.",
             teacher_access="hard argmax only",
             teacher_ground_truth_or_hidden_features_used=False,
             continuous_teacher_scores_used=False,
@@ -253,9 +295,8 @@ def validate(args):
     certificate = torch.load(out / "artifacts/certificate.pt", weights_only=True)
     raw = torch.load(out / "artifacts/predictions.pt", weights_only=True)
     rows = read(out / "results.json")
-    reset_expert = branch_reset(models[cfg["target"]], models["anchor"], cfg, "support_reset")
-    assert state_equal(reset_expert, branch_reset(release, models["anchor"], cfg, "support_reset"))
-    student = merge_all(dict(models, **{cfg["target"]: reset_expert}), root, cfg["coefficient"])
+    reset_expert, student = reset_student(cfg, models, release, root)
+    reused_queries = saved_queries(cfg, indices)
     _, design = query_readout(student, heads[cfg["target"]], images, capture_features=True)
     assert torch.equal(design.cpu(), certificate["design"])
     features = F.normalize(design @ student.model.visual.proj.double().cuda(), dim=1).cpu()
@@ -272,6 +313,8 @@ def validate(args):
     for preset in ("original", "protected"):
         evidence = certificate[preset]
         labels = evidence["teacher_predictions"]
+        if reused_queries is not None:
+            assert torch.equal(labels, reused_queries[preset])
         # Independent index aggregation, FP64 means and normalization.
         sums = torch.zeros(len(c), features.shape[1], dtype=torch.double)
         sums.index_add_(0, labels, features)
