@@ -36,9 +36,15 @@ def cholesky_check(design, target, ratio):
     return update, dict(ridge=float(ridge), normal_equation_relative_residual=error)
 
 
+def reset_region(teacher, anchor, cfg):
+    component = cfg.get("reset_component", "attn_mlp")
+    assert component in {"attn_mlp", "block"}
+    return replace_components(teacher, anchor, cfg["layers"], component)
+
+
 @torch.no_grad()
 def build(teacher, anchor, images, cfg, independent=False):
-    restored, keys = replace_components(teacher, anchor, cfg["layers"], "attn_mlp")
+    restored, keys = reset_region(teacher, anchor, cfg)
     target_blocks = capture_blocks(teacher, images, cfg["layers"])
     rows = []
     for layer in cfg["layers"]:
@@ -89,7 +95,7 @@ def run(args):
     save_json(out / "attack_indices.json", ids)
     target = cfg["target"]
     restored, fitting, keys = build(models[target], models["anchor"], images, cfg)
-    erased, _ = replace_components(models[target], models["anchor"], cfg["layers"], "attn_mlp")
+    erased, _ = reset_region(models[target], models["anchor"], cfg)
     edits = {
         k: v.clone()
         for k, v in restored.state_dict().items()
@@ -100,7 +106,8 @@ def run(args):
     save_json(out / "fitting.json", fitting)
     loaders = {t: cache(d) for t, d in data.items()}
     raw, rows = {}, []
-    for preset in ["original", "reset"]:
+    reuse_reset = cfg.get("reset_component", "attn_mlp") == "attn_mlp"
+    for preset in ["original", "reset"] if reuse_reset else ["original"]:
         for group, tasks in [("standalone", [target]), ("fusion", cfg["evaluation_tasks"])]:
             for task in tasks:
                 key = f"{preset}/{group}/{task}"
@@ -120,35 +127,32 @@ def run(args):
                         reused=True,
                     )
                 )
-    merged = merge_all(dict(models, **{target: restored}), root, cfg["coefficient"])
-    for group, model, tasks in [
-        ("standalone", restored, [target]),
-        ("fusion", merged, cfg["evaluation_tasks"]),
-    ]:
-        for task in tasks:
-            p, y = [], []
-            score = evaluate(
-                model,
-                heads[task],
-                loaders[task],
-                "cuda",
-                prediction_sink=lambda a, b: (p.append(a), y.append(b)),
-            )
-            key = f"block_restore/{group}/{task}"
-            raw[key] = dict(prediction=torch.cat(p), labels=torch.cat(y))
-            rows.append(
-                dict(
-                    key=key,
-                    preset="block_restore",
-                    group=group,
-                    dataset=task,
-                    reused=False,
-                    **score,
+    cases = (
+        {"block_restore": restored} if reuse_reset else {"reset": erased, "block_restore": restored}
+    )
+    for preset, native in cases.items():
+        merged = merge_all(dict(models, **{target: native}), root, cfg["coefficient"])
+        for group, model, tasks in [
+            ("standalone", native, [target]),
+            ("fusion", merged, cfg["evaluation_tasks"]),
+        ]:
+            for task in tasks:
+                p, y = [], []
+                score = evaluate(
+                    model,
+                    heads[task],
+                    loaders[task],
+                    "cuda",
+                    prediction_sink=lambda a, b: (p.append(a), y.append(b)),
                 )
-            )
-            save_json(out / "results.json", rows)
-            torch.save(raw, artifacts / "predictions.pt")
-            print("BLOCK_RESTORE_GATE", key, score["correct"], score["n"], flush=True)
+                key = f"{preset}/{group}/{task}"
+                raw[key] = dict(prediction=torch.cat(p), labels=torch.cat(y))
+                rows.append(
+                    dict(key=key, preset=preset, group=group, dataset=task, reused=False, **score)
+                )
+                save_json(out / "results.json", rows)
+                torch.save(raw, artifacts / "predictions.pt")
+                print("BLOCK_RESTORE_GATE", key, score["correct"], score["n"], flush=True)
     for row in rows:
         labels = raw[row["key"]]["labels"]
         reference = raw[f"original/{row['group']}/{row['dataset']}"]
@@ -162,8 +166,9 @@ def run(args):
         dict(
             completed=True,
             elapsed_seconds=time.perf_counter() - start,
-            fresh_full_evaluations=5,
-            reused_baselines=10,
+            fresh_full_evaluations=sum(not r["reused"] for r in rows),
+            reused_baselines=sum(r["reused"] for r in rows),
+            layernorm_also_publicly_reset=not reuse_reset,
             new_defense=False,
             teacher_is_unprotected=True,
             teacher_unique_query_inputs=len(images),
@@ -196,7 +201,7 @@ def validate(args):
     assert ids == read(out / "attack_indices.json")
     target = cfg["target"]
     replay, fitting, _ = build(models[target], models["anchor"], images, cfg, independent=True)
-    erased, _ = replace_components(models[target], models["anchor"], cfg["layers"], "attn_mlp")
+    erased, _ = reset_region(models[target], models["anchor"], cfg)
     restored = copy.deepcopy(erased).cpu().eval()
     edits = torch.load(out / "artifacts/restore_edits.pt", map_location="cpu", weights_only=True)
     for key, value in edits.items():

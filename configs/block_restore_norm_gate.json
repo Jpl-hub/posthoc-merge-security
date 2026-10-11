@@ -1,0 +1,25 @@
+{
+  "target": "Cars",
+  "layers": [
+    9,
+    10,
+    11
+  ],
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "baseline_parent": "outputs/2026-10-11/public_restore_gate_cars",
+  "profile_parent": "outputs/2026-10-10/task_profile",
+  "evaluation_tasks": [
+    "Cars",
+    "MNIST",
+    "SVHN",
+    "DTD"
+  ],
+  "attacker_samples": 256,
+  "ridge_ratio": 0.0001,
+  "purpose": "Fixed missing-dependency check: also reset both LayerNorm affine pairs in the same Cars9-11 region. Compare complete-block replacement and the unchanged three closed-form public-basis MLP decoder fits with the previous Attention/MLP-only reset control. No protected release, parameter sweep, extra defender training or twelve-layer reconstruction.",
+  "attack": "Replace every tensor in the three selected residual blocks with public pretrained values, including LayerNorm. Query original unprotected block outputs on the same256 old target training images. Reuse one sequential closed-form decoder+bias fit per layer; LayerNorm, Q/K/V/output and MLP first projections stay public. Teacher responses are much stronger white-box access than final-score queries.",
+  "access": "Stronger than class-score-only: white-box intermediate block outputs,256 unique images,50 tokens per image,3 blocks of768 floats =29491200 teacher scalars. No training labels, original private weights or decoder parameters are copied into the rebuilt region. Region selection historically used target labels. Repeated validation uses the same inputs; no new query input budget. Preservation of standalone classes alone does not imply these hidden responses match for every possible release.",
+  "reporting": "Ten fresh full evaluations: reset and reconstructed Cars standalone, each plus Cars/MNIST/SVHN/DTD tests of eight-expert TA(.2). Reuse five pinned original baselines. Validate three fits with an independent Cholesky solver and replay all15 prediction prefixes. No EuroSAT, eight-task mean, AGA or defense efficacy claim. Compare to historical Attention/MLP-only reset from its recorded source, not by rerunning or overwriting it.",
+  "reset_component": "block"
+}
