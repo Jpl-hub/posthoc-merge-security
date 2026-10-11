@@ -1,0 +1,97 @@
+{
+  "fusion_config": "configs/eight_tasks.json",
+  "samples": 256,
+  "confirmation_samples": 128,
+  "relative_response_budget": 0.01,
+  "attacks": [
+    "cleanup",
+    "cleanup_aga"
+  ],
+  "time_limit_seconds": 1800,
+  "cases": [
+    {
+      "name": "four_layer",
+      "task": "MNIST",
+      "release": "outputs/2026-10-10/subspace_compensation_mnist/artifacts/compensated_100.pt",
+      "format": "mlp_blocks",
+      "layers": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "kinds": [
+        "up",
+        "down"
+      ],
+      "fusion": "two_task",
+      "coefficient": 0.5,
+      "evaluation_tasks": [
+        "MNIST",
+        "SVHN"
+      ],
+      "indices_parent": "outputs/2026-10-10/subspace_compensation_mnist",
+      "baseline_direct": "outputs/2026-10-10/subspace_compensation_mnist_test",
+      "baseline_aga": "outputs/2026-10-10/subspace_compensation_mnist_selected_aga"
+    },
+    {
+      "name": "margin_mnist",
+      "task": "MNIST",
+      "release": "outputs/2026-10-11/path_margin/artifacts/MNIST_edits.pt",
+      "format": "edited_state",
+      "layers": [
+        6,
+        7,
+        8
+      ],
+      "kinds": [
+        "v",
+        "out",
+        "up",
+        "down"
+      ],
+      "fusion": "eight_task",
+      "coefficient": 0.2,
+      "evaluation_tasks": [
+        "MNIST",
+        "DTD",
+        "Cars"
+      ],
+      "indices_parent": "outputs/2026-10-11/path_subspace",
+      "baseline_direct": "outputs/2026-10-11/path_margin",
+      "baseline_aga": "outputs/2026-10-11/path_margin"
+    },
+    {
+      "name": "margin_dtd",
+      "task": "DTD",
+      "release": "outputs/2026-10-11/path_margin/artifacts/DTD_edits.pt",
+      "format": "edited_state",
+      "layers": [
+        9,
+        10,
+        11
+      ],
+      "kinds": [
+        "v",
+        "out",
+        "up",
+        "down"
+      ],
+      "fusion": "eight_task",
+      "coefficient": 0.2,
+      "evaluation_tasks": [
+        "MNIST",
+        "DTD",
+        "Cars"
+      ],
+      "indices_parent": "outputs/2026-10-11/path_subspace",
+      "baseline_direct": "outputs/2026-10-11/path_margin",
+      "baseline_aga": "outputs/2026-10-11/path_margin"
+    }
+  ],
+  "scope": "One response-constrained public cleanup and its composition with original author AGA; recovery diagnostic, not a new defense. No amplitude, rank or tolerance sweep.",
+  "mechanism": "Minimize distance from the public anchor subject to at most 1% RMS error in the released linear centered response on public target calibration tokens. Covariance spectral Tikhonov solution with mean bias compensation. Sites use the frozen released input distribution in one simultaneous pass; per-site constraints are not an end-to-end guarantee.",
+  "attacker_access": "Released expert, public anchor, unlabeled target training inputs and publicly declared site support. No original expert, defender directions, partner inputs, labels or test fitting. Original expert enters only its separate matched control.",
+  "sampling": "Reuse fixed 256 attacker training indices; disjoint from defender calibration and confirmation within each case. Earlier profile selection labels and some confirmation results have already been inspected; no claim of fresh research holdout.",
+  "reporting": "44 new full official evaluations and 44 explicit parent prediction comparisons. Two-task 0.5 pilot and eight-expert 0.2 cases stay separate. Four evaluated official splits, not an eight-task mean or Table 6 replication. Report utility, partner costs, calibration generalization, same-attack controls and best already tested recovery."
+}

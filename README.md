@@ -2,10 +2,12 @@
 
 对已微调专家施加发布前后处理，尽量保持原任务能力，检验对未经授权融合及自适应恢复的保护。完整报告性能与防御权衡，不以单个准确率阈值作为唯一淘汰条件；不进行额外梯度微调，校准数据与闭式拟合均明确记录。
 
-**目前没有有效新防御。**最新分类间隔构造实际生成两份解析编辑权重：MNIST 原版 AGA 后降至 85.33%，但独立能力损失 10.73 pp；DTD 独立只损失 0.43 pp，AGA 后却仅下降 0.21 pp。一阶分类约束未保住大幅编辑后的 MNIST 功能，公开替换也没有新增删除成本。停止调整这两份方向，真实结果与失败记录保留。
+**目前没有有效新防御。**最新响应压缩对照使独立 MNIST 仅损失 0.07 pp、直接融合下降 2.21 pp，但被 256 查询恢复至 97.73%，同条件原专家为 97.89%。公开响应清理也没有解决旧候选的 FC 替换漏洞。保留全部真实失败，不将标准压缩、原版 AGA 下的下降或参数距离当作创新和安全成功。
 
 ## 当前结果
 
+- [响应压缩的功能恢复检验](outputs/2026-10-11/compression_probe/summary.md)：一个明确标注事后选择的压缩对照，查询与压缩校准不重叠；六次新完整评价、相同查询的原专家控制、完整支持替换和逐图伙伴核查。仍未达到保护目标。
+- [公开响应约束清理](outputs/2026-10-11/response_cleanup/summary.md)：固定闭式解与均值补偿，44 次新完整评价、44 条明确复用对照，清理后接作者原版 AGA。六份实际权重及 64 处局部求解均精确复核。[协议](outputs/2026-10-11/response_cleanup_protocol.md)记录条件与边界。
 - [分类间隔编辑](outputs/2026-10-11/path_margin/summary.md)：一次解析构造、两份实际权重、26 次新完整评价，明确复用 42 行冻结对照／状态恒等结果；原版 AGA、功能恢复与浮点核验均记录，仍未达到保护目标。[协议](outputs/2026-10-11/path_margin_protocol.md)与[公开回填反例](outputs/2026-10-11/mechanism_boundary.md)约束后续构造。
 - [融合路径敏感性候选](outputs/2026-10-11/path_subspace/summary.md)：48 个细粒度联合方向、β=0.2/0.5、两份真实发布权重、原版 AGA／参数替换／256 图恢复同条件对照；尚无有效防御。[构造协议](outputs/2026-10-11/path_subspace_protocol.md)记录数学、校准与 DTD 取样失败修订。
 - [共享数字 head 与输入子空间恢复](outputs/2026-10-11/input_score_recovery/summary.md)：固定补充攻击，完整 MNIST／SVHN／DTD／Cars 测试；校准保持没有泛化到 SVHN 测试，没有新防御。[机制检查](outputs/2026-10-11/mechanism_boundary.md)另排除可代数还原的激活分拆族。
@@ -55,7 +57,17 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
 
-分类间隔检验依赖已核验 `path_subspace` 的服务器原始张量。构造只使用目标伪标签与校准数据，一次解析求解后冻结权重；不额外梯度训练。公开回填反例是条件性数学分析，未称为已实现攻击。
+响应清理依赖三份已核验的服务器发布权重；是附加恢复诊断。压缩检验默认引用该父目录，修改自定义父路径时先固定配置，之后执行同条件查询对照。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/response_cleanup.py --output outputs/response_cleanup_check
+python experiments/validate_response_cleanup.py --output outputs/response_cleanup_check
+python experiments/plot_results.py --response-cleanup --output outputs/response_cleanup_check
+python experiments/compression_probe.py --output outputs/compression_check
+python experiments/compression_probe.py --validate --output outputs/compression_check
+```
+
+分类间隔检验依赖已核验 `path_subspace` 的服务器原始张量。构造只使用目标伪标签与校准数据，一次解析求解后冻结权重；不额外梯度训练。精确子空间回填仍是条件性反例，实际响应预算清理不能被当成它对所有候选的成功证明。
 
 ```bash
 JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/path_margin.py --output outputs/margin_check

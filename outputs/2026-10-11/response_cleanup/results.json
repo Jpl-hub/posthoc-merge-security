@@ -1,0 +1,1630 @@
+[
+  {
+    "id": "four_layer/original/cleanup/standalone/MNIST",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "standalone",
+    "dataset": "MNIST",
+    "correct": 9968,
+    "n": 10000,
+    "top1": 0.9968,
+    "evaluation_seconds": 6.167349956929684,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_test",
+      "source_id": "('unprotected', 'direct_standalone', 'MNIST')",
+      "correct": 9969,
+      "n": 10000,
+      "source_predictions_sha256": "0cab7e47bce1e140af63f5ddb9372e7ba7d4d25154ea53e64fa74b5458473d7a"
+    },
+    "change_from_parent": {
+      "both_correct": 9962,
+      "lost": 7,
+      "gained": 6,
+      "both_wrong": 25,
+      "loss_pp": 0.01,
+      "exact_mcnemar_p": 1.0
+    },
+    "matched": {
+      "both_correct": 9968,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 32,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "four_layer/original/cleanup/fusion/MNIST",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 9917,
+    "n": 10000,
+    "top1": 0.9917,
+    "evaluation_seconds": 5.966459639370441,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_test",
+      "source_id": "('unprotected', 'direct', 'MNIST')",
+      "correct": 9937,
+      "n": 10000,
+      "source_predictions_sha256": "0cab7e47bce1e140af63f5ddb9372e7ba7d4d25154ea53e64fa74b5458473d7a"
+    },
+    "change_from_parent": {
+      "both_correct": 9913,
+      "lost": 24,
+      "gained": 4,
+      "both_wrong": 59,
+      "loss_pp": 0.2,
+      "exact_mcnemar_p": 0.00017999112606048584
+    },
+    "matched": {
+      "both_correct": 9917,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 83,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "four_layer/original/cleanup/fusion/SVHN",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "SVHN",
+    "correct": 24221,
+    "n": 26032,
+    "top1": 0.9304317762753535,
+    "evaluation_seconds": 16.92428945749998,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_test",
+      "source_id": "('unprotected', 'direct', 'SVHN')",
+      "correct": 24079,
+      "n": 26032,
+      "source_predictions_sha256": "0cab7e47bce1e140af63f5ddb9372e7ba7d4d25154ea53e64fa74b5458473d7a"
+    },
+    "change_from_parent": {
+      "both_correct": 24038,
+      "lost": 41,
+      "gained": 183,
+      "both_wrong": 1770,
+      "loss_pp": -0.5454824830977258,
+      "exact_mcnemar_p": 1.3156078366925178e-22
+    },
+    "matched": {
+      "both_correct": 24221,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 1811,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "four_layer/original/cleanup_aga/standalone/MNIST",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "standalone",
+    "dataset": "MNIST",
+    "correct": 9968,
+    "n": 10000,
+    "top1": 0.9968,
+    "evaluation_seconds": 5.304573118686676,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_selected_aga",
+      "source_id": "('unprotected', 'aga_selected_standalone', 'MNIST')",
+      "correct": 9968,
+      "n": 10000,
+      "source_predictions_sha256": "10eb0a0bcae534644afb3152e8a4feba33f571906721b742c30a5373affddc09"
+    },
+    "change_from_parent": {
+      "both_correct": 9962,
+      "lost": 6,
+      "gained": 6,
+      "both_wrong": 26,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    },
+    "matched": {
+      "both_correct": 9968,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 32,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "four_layer/original/cleanup_aga/fusion/MNIST",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 9911,
+    "n": 10000,
+    "top1": 0.9911,
+    "evaluation_seconds": 6.003128603100777,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_selected_aga",
+      "source_id": "('unprotected', 'aga_selected', 'MNIST')",
+      "correct": 9930,
+      "n": 10000,
+      "source_predictions_sha256": "10eb0a0bcae534644afb3152e8a4feba33f571906721b742c30a5373affddc09"
+    },
+    "change_from_parent": {
+      "both_correct": 9908,
+      "lost": 22,
+      "gained": 3,
+      "both_wrong": 67,
+      "loss_pp": 0.19,
+      "exact_mcnemar_p": 0.00015652179718017578
+    },
+    "matched": {
+      "both_correct": 9911,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 89,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "four_layer/original/cleanup_aga/fusion/SVHN",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "SVHN",
+    "correct": 24269,
+    "n": 26032,
+    "top1": 0.9322756607252612,
+    "evaluation_seconds": 14.483998991549015,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_selected_aga",
+      "source_id": "('unprotected', 'aga_selected', 'SVHN')",
+      "correct": 24153,
+      "n": 26032,
+      "source_predictions_sha256": "10eb0a0bcae534644afb3152e8a4feba33f571906721b742c30a5373affddc09"
+    },
+    "change_from_parent": {
+      "both_correct": 24105,
+      "lost": 48,
+      "gained": 164,
+      "both_wrong": 1715,
+      "loss_pp": -0.44560540872771975,
+      "exact_mcnemar_p": 4.9493500473668555e-16
+    },
+    "matched": {
+      "both_correct": 24269,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 1763,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "four_layer/protected/cleanup/standalone/MNIST",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "standalone",
+    "dataset": "MNIST",
+    "correct": 9963,
+    "n": 10000,
+    "top1": 0.9963,
+    "evaluation_seconds": 4.565046235918999,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_test",
+      "source_id": "('compensated_100', 'direct_standalone', 'MNIST')",
+      "correct": 9965,
+      "n": 10000,
+      "source_predictions_sha256": "0cab7e47bce1e140af63f5ddb9372e7ba7d4d25154ea53e64fa74b5458473d7a"
+    },
+    "change_from_parent": {
+      "both_correct": 9962,
+      "lost": 3,
+      "gained": 1,
+      "both_wrong": 34,
+      "loss_pp": 0.02,
+      "exact_mcnemar_p": 0.625
+    },
+    "matched": {
+      "both_correct": 9957,
+      "lost": 11,
+      "gained": 6,
+      "both_wrong": 26,
+      "loss_pp": 0.05,
+      "exact_mcnemar_p": 0.332305908203125
+    }
+  },
+  {
+    "id": "four_layer/protected/cleanup/fusion/MNIST",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 2053,
+    "n": 10000,
+    "top1": 0.2053,
+    "evaluation_seconds": 4.545900374650955,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_test",
+      "source_id": "('compensated_100', 'direct', 'MNIST')",
+      "correct": 1724,
+      "n": 10000,
+      "source_predictions_sha256": "0cab7e47bce1e140af63f5ddb9372e7ba7d4d25154ea53e64fa74b5458473d7a"
+    },
+    "change_from_parent": {
+      "both_correct": 1666,
+      "lost": 58,
+      "gained": 387,
+      "both_wrong": 7889,
+      "loss_pp": -3.29,
+      "exact_mcnemar_p": 9.096182752762717e-61
+    },
+    "matched": {
+      "both_correct": 2047,
+      "lost": 7870,
+      "gained": 6,
+      "both_wrong": 77,
+      "loss_pp": 78.64,
+      "exact_mcnemar_p": 0.0
+    }
+  },
+  {
+    "id": "four_layer/protected/cleanup/fusion/SVHN",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "SVHN",
+    "correct": 6747,
+    "n": 26032,
+    "top1": 0.25918100799016597,
+    "evaluation_seconds": 11.907170921564102,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_test",
+      "source_id": "('compensated_100', 'direct', 'SVHN')",
+      "correct": 5733,
+      "n": 26032,
+      "source_predictions_sha256": "0cab7e47bce1e140af63f5ddb9372e7ba7d4d25154ea53e64fa74b5458473d7a"
+    },
+    "change_from_parent": {
+      "both_correct": 5383,
+      "lost": 350,
+      "gained": 1364,
+      "both_wrong": 18935,
+      "loss_pp": -3.8952059004302395,
+      "exact_mcnemar_p": 4.230480439098922e-141
+    },
+    "matched": {
+      "both_correct": 6451,
+      "lost": 17770,
+      "gained": 296,
+      "both_wrong": 1515,
+      "loss_pp": 67.12507682851874,
+      "exact_mcnemar_p": 0.0
+    }
+  },
+  {
+    "id": "four_layer/protected/cleanup_aga/standalone/MNIST",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "standalone",
+    "dataset": "MNIST",
+    "correct": 9962,
+    "n": 10000,
+    "top1": 0.9962,
+    "evaluation_seconds": 4.835771091282368,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_selected_aga",
+      "source_id": "('compensated_100', 'aga_selected_standalone', 'MNIST')",
+      "correct": 9959,
+      "n": 10000,
+      "source_predictions_sha256": "10eb0a0bcae534644afb3152e8a4feba33f571906721b742c30a5373affddc09"
+    },
+    "change_from_parent": {
+      "both_correct": 9959,
+      "lost": 0,
+      "gained": 3,
+      "both_wrong": 38,
+      "loss_pp": -0.03,
+      "exact_mcnemar_p": 0.25
+    },
+    "matched": {
+      "both_correct": 9957,
+      "lost": 11,
+      "gained": 5,
+      "both_wrong": 27,
+      "loss_pp": 0.06,
+      "exact_mcnemar_p": 0.210113525390625
+    }
+  },
+  {
+    "id": "four_layer/protected/cleanup_aga/fusion/MNIST",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 1795,
+    "n": 10000,
+    "top1": 0.1795,
+    "evaluation_seconds": 4.609718672931194,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_selected_aga",
+      "source_id": "('compensated_100', 'aga_selected', 'MNIST')",
+      "correct": 1556,
+      "n": 10000,
+      "source_predictions_sha256": "10eb0a0bcae534644afb3152e8a4feba33f571906721b742c30a5373affddc09"
+    },
+    "change_from_parent": {
+      "both_correct": 1497,
+      "lost": 59,
+      "gained": 298,
+      "both_wrong": 8146,
+      "loss_pp": -2.39,
+      "exact_mcnemar_p": 1.5423130324240492e-39
+    },
+    "matched": {
+      "both_correct": 1789,
+      "lost": 8122,
+      "gained": 6,
+      "both_wrong": 83,
+      "loss_pp": 81.16,
+      "exact_mcnemar_p": 0.0
+    }
+  },
+  {
+    "id": "four_layer/protected/cleanup_aga/fusion/SVHN",
+    "case": "four_layer",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "SVHN",
+    "correct": 6383,
+    "n": 26032,
+    "top1": 0.2451982175783651,
+    "evaluation_seconds": 16.570662043988705,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-10/subspace_compensation_mnist_selected_aga",
+      "source_id": "('compensated_100', 'aga_selected', 'SVHN')",
+      "correct": 5417,
+      "n": 26032,
+      "source_predictions_sha256": "10eb0a0bcae534644afb3152e8a4feba33f571906721b742c30a5373affddc09"
+    },
+    "change_from_parent": {
+      "both_correct": 5071,
+      "lost": 346,
+      "gained": 1312,
+      "both_wrong": 19303,
+      "loss_pp": -3.710817455439459,
+      "exact_mcnemar_p": 3.3856583702889525e-132
+    },
+    "matched": {
+      "both_correct": 6091,
+      "lost": 18178,
+      "gained": 292,
+      "both_wrong": 1471,
+      "loss_pp": 68.7077443146896,
+      "exact_mcnemar_p": 0.0
+    }
+  },
+  {
+    "id": "margin_mnist/original/cleanup/standalone/MNIST",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "standalone",
+    "dataset": "MNIST",
+    "correct": 9962,
+    "n": 10000,
+    "top1": 0.9962,
+    "evaluation_seconds": 5.204641684889793,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/original/direct/standalone/MNIST",
+      "correct": 9969,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 9961,
+      "lost": 8,
+      "gained": 1,
+      "both_wrong": 30,
+      "loss_pp": 0.07,
+      "exact_mcnemar_p": 0.0390625
+    },
+    "matched": {
+      "both_correct": 9962,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 38,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_mnist/original/cleanup/fusion/MNIST",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 9179,
+    "n": 10000,
+    "top1": 0.9179,
+    "evaluation_seconds": 4.635183252394199,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/original/direct/fusion/MNIST",
+      "correct": 9400,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 9176,
+      "lost": 224,
+      "gained": 3,
+      "both_wrong": 597,
+      "loss_pp": 2.21,
+      "exact_mcnemar_p": 1.807963517204967e-62
+    },
+    "matched": {
+      "both_correct": 9179,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 821,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_mnist/original/cleanup/fusion/DTD",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "DTD",
+    "correct": 979,
+    "n": 1880,
+    "top1": 0.5207446808510638,
+    "evaluation_seconds": 1.0156504586338997,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/original/direct/fusion/DTD",
+      "correct": 981,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 974,
+      "lost": 7,
+      "gained": 5,
+      "both_wrong": 894,
+      "loss_pp": 0.10638297872340426,
+      "exact_mcnemar_p": 0.7744140625
+    },
+    "matched": {
+      "both_correct": 979,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 901,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_mnist/original/cleanup/fusion/Cars",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "Cars",
+    "correct": 4972,
+    "n": 8041,
+    "top1": 0.6183310533515732,
+    "evaluation_seconds": 4.2411975264549255,
+    "peak_gpu_bytes": 855664640,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/original/direct/fusion/Cars",
+      "correct": 4990,
+      "n": 8041,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 4943,
+      "lost": 47,
+      "gained": 29,
+      "both_wrong": 3022,
+      "loss_pp": 0.2238527546325084,
+      "exact_mcnemar_p": 0.050452410247217666
+    },
+    "matched": {
+      "both_correct": 4972,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 3069,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_mnist/original/cleanup_aga/standalone/MNIST",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "standalone",
+    "dataset": "MNIST",
+    "correct": 9960,
+    "n": 10000,
+    "top1": 0.996,
+    "evaluation_seconds": 4.560132421553135,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/original/aga/standalone/MNIST",
+      "correct": 9968,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 9958,
+      "lost": 10,
+      "gained": 2,
+      "both_wrong": 30,
+      "loss_pp": 0.08,
+      "exact_mcnemar_p": 0.03857421875
+    },
+    "matched": {
+      "both_correct": 9960,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 40,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_mnist/original/cleanup_aga/fusion/MNIST",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 9097,
+    "n": 10000,
+    "top1": 0.9097,
+    "evaluation_seconds": 4.61905562132597,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/original/aga/fusion/MNIST",
+      "correct": 9323,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 9095,
+      "lost": 228,
+      "gained": 2,
+      "both_wrong": 675,
+      "loss_pp": 2.26,
+      "exact_mcnemar_p": 3.0793365812238136e-65
+    },
+    "matched": {
+      "both_correct": 9097,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 903,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_mnist/original/cleanup_aga/fusion/DTD",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "DTD",
+    "correct": 980,
+    "n": 1880,
+    "top1": 0.5212765957446809,
+    "evaluation_seconds": 0.8533849194645882,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/original/aga/fusion/DTD",
+      "correct": 984,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 976,
+      "lost": 8,
+      "gained": 4,
+      "both_wrong": 892,
+      "loss_pp": 0.2127659574468085,
+      "exact_mcnemar_p": 0.3876953125
+    },
+    "matched": {
+      "both_correct": 980,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 900,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_mnist/original/cleanup_aga/fusion/Cars",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "Cars",
+    "correct": 4979,
+    "n": 8041,
+    "top1": 0.6192015918418107,
+    "evaluation_seconds": 3.699933722615242,
+    "peak_gpu_bytes": 855664640,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/original/aga/fusion/Cars",
+      "correct": 4987,
+      "n": 8041,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 4948,
+      "lost": 39,
+      "gained": 31,
+      "both_wrong": 3023,
+      "loss_pp": 0.09949011317000372,
+      "exact_mcnemar_p": 0.40296307504607976
+    },
+    "matched": {
+      "both_correct": 4979,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 3062,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_mnist/protected/cleanup/standalone/MNIST",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "standalone",
+    "dataset": "MNIST",
+    "correct": 8870,
+    "n": 10000,
+    "top1": 0.887,
+    "evaluation_seconds": 5.121307343244553,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/protected/direct/standalone/MNIST",
+      "correct": 8896,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 8837,
+      "lost": 59,
+      "gained": 33,
+      "both_wrong": 1071,
+      "loss_pp": 0.26,
+      "exact_mcnemar_p": 0.008780930806975229
+    },
+    "matched": {
+      "both_correct": 8863,
+      "lost": 1099,
+      "gained": 7,
+      "both_wrong": 31,
+      "loss_pp": 10.92,
+      "exact_mcnemar_p": 0.0
+    }
+  },
+  {
+    "id": "margin_mnist/protected/cleanup/fusion/MNIST",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 8682,
+    "n": 10000,
+    "top1": 0.8682,
+    "evaluation_seconds": 4.826151788234711,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/protected/direct/fusion/MNIST",
+      "correct": 8759,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 8665,
+      "lost": 94,
+      "gained": 17,
+      "both_wrong": 1224,
+      "loss_pp": 0.77,
+      "exact_mcnemar_p": 4.263496347096334e-14
+    },
+    "matched": {
+      "both_correct": 8659,
+      "lost": 520,
+      "gained": 23,
+      "both_wrong": 798,
+      "loss_pp": 4.97,
+      "exact_mcnemar_p": 1.3931744701092564e-123
+    }
+  },
+  {
+    "id": "margin_mnist/protected/cleanup/fusion/DTD",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "DTD",
+    "correct": 957,
+    "n": 1880,
+    "top1": 0.5090425531914894,
+    "evaluation_seconds": 0.8690246269106865,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/protected/direct/fusion/DTD",
+      "correct": 952,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 937,
+      "lost": 15,
+      "gained": 20,
+      "both_wrong": 908,
+      "loss_pp": -0.26595744680851063,
+      "exact_mcnemar_p": 0.4995598332025112
+    },
+    "matched": {
+      "both_correct": 932,
+      "lost": 47,
+      "gained": 25,
+      "both_wrong": 876,
+      "loss_pp": 1.1702127659574468,
+      "exact_mcnemar_p": 0.012774595538064901
+    }
+  },
+  {
+    "id": "margin_mnist/protected/cleanup/fusion/Cars",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "Cars",
+    "correct": 4825,
+    "n": 8041,
+    "top1": 0.600049745056585,
+    "evaluation_seconds": 4.28094195574522,
+    "peak_gpu_bytes": 855664640,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/protected/direct/fusion/Cars",
+      "correct": 4731,
+      "n": 8041,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 4638,
+      "lost": 93,
+      "gained": 187,
+      "both_wrong": 3123,
+      "loss_pp": -1.1690088297475438,
+      "exact_mcnemar_p": 2.0309781079803988e-08
+    },
+    "matched": {
+      "both_correct": 4613,
+      "lost": 359,
+      "gained": 212,
+      "both_wrong": 2857,
+      "loss_pp": 1.8281308294988186,
+      "exact_mcnemar_p": 8.092790744545817e-10
+    }
+  },
+  {
+    "id": "margin_mnist/protected/cleanup_aga/standalone/MNIST",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "standalone",
+    "dataset": "MNIST",
+    "correct": 8532,
+    "n": 10000,
+    "top1": 0.8532,
+    "evaluation_seconds": 4.543461188673973,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/protected/aga/standalone/MNIST",
+      "correct": 8521,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 8414,
+      "lost": 107,
+      "gained": 118,
+      "both_wrong": 1361,
+      "loss_pp": -0.11,
+      "exact_mcnemar_p": 0.5050737415102844
+    },
+    "matched": {
+      "both_correct": 8524,
+      "lost": 1436,
+      "gained": 8,
+      "both_wrong": 32,
+      "loss_pp": 14.28,
+      "exact_mcnemar_p": 0.0
+    }
+  },
+  {
+    "id": "margin_mnist/protected/cleanup_aga/fusion/MNIST",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 8541,
+    "n": 10000,
+    "top1": 0.8541,
+    "evaluation_seconds": 4.607950814068317,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/protected/aga/fusion/MNIST",
+      "correct": 8533,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 8479,
+      "lost": 54,
+      "gained": 62,
+      "both_wrong": 1405,
+      "loss_pp": -0.08,
+      "exact_mcnemar_p": 0.5159130749957949
+    },
+    "matched": {
+      "both_correct": 8528,
+      "lost": 569,
+      "gained": 13,
+      "both_wrong": 890,
+      "loss_pp": 5.56,
+      "exact_mcnemar_p": 1.5946541790299415e-149
+    }
+  },
+  {
+    "id": "margin_mnist/protected/cleanup_aga/fusion/DTD",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "DTD",
+    "correct": 960,
+    "n": 1880,
+    "top1": 0.5106382978723404,
+    "evaluation_seconds": 1.0431896075606346,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/protected/aga/fusion/DTD",
+      "correct": 951,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 941,
+      "lost": 10,
+      "gained": 19,
+      "both_wrong": 910,
+      "loss_pp": -0.4787234042553192,
+      "exact_mcnemar_p": 0.13604594767093658
+    },
+    "matched": {
+      "both_correct": 932,
+      "lost": 48,
+      "gained": 28,
+      "both_wrong": 872,
+      "loss_pp": 1.0638297872340425,
+      "exact_mcnemar_p": 0.028626655508737896
+    }
+  },
+  {
+    "id": "margin_mnist/protected/cleanup_aga/fusion/Cars",
+    "case": "margin_mnist",
+    "target": "MNIST",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "Cars",
+    "correct": 4831,
+    "n": 8041,
+    "top1": 0.60079592090536,
+    "evaluation_seconds": 3.7508485689759254,
+    "peak_gpu_bytes": 855664640,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "MNIST/protected/aga/fusion/Cars",
+      "correct": 4736,
+      "n": 8041,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 4651,
+      "lost": 85,
+      "gained": 180,
+      "both_wrong": 3125,
+      "loss_pp": -1.1814450938937944,
+      "exact_mcnemar_p": 5.348235366408521e-09
+    },
+    "matched": {
+      "both_correct": 4618,
+      "lost": 361,
+      "gained": 213,
+      "both_wrong": 2849,
+      "loss_pp": 1.840567093645069,
+      "exact_mcnemar_p": 6.867782967356238e-10
+    }
+  },
+  {
+    "id": "margin_dtd/original/cleanup/standalone/DTD",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "standalone",
+    "dataset": "DTD",
+    "correct": 1481,
+    "n": 1880,
+    "top1": 0.7877659574468086,
+    "evaluation_seconds": 0.893984779715538,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/original/direct/standalone/DTD",
+      "correct": 1493,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 1464,
+      "lost": 29,
+      "gained": 17,
+      "both_wrong": 370,
+      "loss_pp": 0.6382978723404256,
+      "exact_mcnemar_p": 0.10380535550410741
+    },
+    "matched": {
+      "both_correct": 1481,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 399,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/original/cleanup/fusion/MNIST",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 9402,
+    "n": 10000,
+    "top1": 0.9402,
+    "evaluation_seconds": 4.916412241756916,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/original/direct/fusion/MNIST",
+      "correct": 9400,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 9398,
+      "lost": 2,
+      "gained": 4,
+      "both_wrong": 596,
+      "loss_pp": -0.02,
+      "exact_mcnemar_p": 0.6875
+    },
+    "matched": {
+      "both_correct": 9402,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 598,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/original/cleanup/fusion/DTD",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "DTD",
+    "correct": 935,
+    "n": 1880,
+    "top1": 0.4973404255319149,
+    "evaluation_seconds": 0.8708531185984612,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/original/direct/fusion/DTD",
+      "correct": 981,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 932,
+      "lost": 49,
+      "gained": 3,
+      "both_wrong": 896,
+      "loss_pp": 2.4468085106382977,
+      "exact_mcnemar_p": 1.042677055806962e-11
+    },
+    "matched": {
+      "both_correct": 935,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 945,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/original/cleanup/fusion/Cars",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "original",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "Cars",
+    "correct": 4990,
+    "n": 8041,
+    "top1": 0.6205695808978983,
+    "evaluation_seconds": 3.713509224355221,
+    "peak_gpu_bytes": 855664640,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/original/direct/fusion/Cars",
+      "correct": 4990,
+      "n": 8041,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 4972,
+      "lost": 18,
+      "gained": 18,
+      "both_wrong": 3033,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    },
+    "matched": {
+      "both_correct": 4990,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 3051,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/original/cleanup_aga/standalone/DTD",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "standalone",
+    "dataset": "DTD",
+    "correct": 1479,
+    "n": 1880,
+    "top1": 0.7867021276595745,
+    "evaluation_seconds": 0.8389629274606705,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/original/aga/standalone/DTD",
+      "correct": 1490,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 1460,
+      "lost": 30,
+      "gained": 19,
+      "both_wrong": 371,
+      "loss_pp": 0.5851063829787234,
+      "exact_mcnemar_p": 0.15240777196147803
+    },
+    "matched": {
+      "both_correct": 1479,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 401,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/original/cleanup_aga/fusion/MNIST",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 9403,
+    "n": 10000,
+    "top1": 0.9403,
+    "evaluation_seconds": 5.260695867240429,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/original/aga/fusion/MNIST",
+      "correct": 9406,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 9401,
+      "lost": 5,
+      "gained": 2,
+      "both_wrong": 592,
+      "loss_pp": 0.03,
+      "exact_mcnemar_p": 0.453125
+    },
+    "matched": {
+      "both_correct": 9403,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 597,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/original/cleanup_aga/fusion/DTD",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "DTD",
+    "correct": 925,
+    "n": 1880,
+    "top1": 0.4920212765957447,
+    "evaluation_seconds": 1.0178461149334908,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/original/aga/fusion/DTD",
+      "correct": 966,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 922,
+      "lost": 44,
+      "gained": 3,
+      "both_wrong": 911,
+      "loss_pp": 2.1808510638297873,
+      "exact_mcnemar_p": 2.4647306418046355e-10
+    },
+    "matched": {
+      "both_correct": 925,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 955,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/original/cleanup_aga/fusion/Cars",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "original",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "Cars",
+    "correct": 4989,
+    "n": 8041,
+    "top1": 0.6204452182564357,
+    "evaluation_seconds": 4.264242134988308,
+    "peak_gpu_bytes": 855664640,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/original/aga/fusion/Cars",
+      "correct": 4988,
+      "n": 8041,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 4975,
+      "lost": 13,
+      "gained": 14,
+      "both_wrong": 3039,
+      "loss_pp": -0.012436264146250466,
+      "exact_mcnemar_p": 1.0
+    },
+    "matched": {
+      "both_correct": 4989,
+      "lost": 0,
+      "gained": 0,
+      "both_wrong": 3052,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/protected/cleanup/standalone/DTD",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "standalone",
+    "dataset": "DTD",
+    "correct": 1482,
+    "n": 1880,
+    "top1": 0.7882978723404256,
+    "evaluation_seconds": 0.834809847176075,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/protected/direct/standalone/DTD",
+      "correct": 1485,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 1465,
+      "lost": 20,
+      "gained": 17,
+      "both_wrong": 378,
+      "loss_pp": 0.1595744680851064,
+      "exact_mcnemar_p": 0.7428293587290682
+    },
+    "matched": {
+      "both_correct": 1471,
+      "lost": 10,
+      "gained": 11,
+      "both_wrong": 388,
+      "loss_pp": -0.05319148936170213,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/protected/cleanup/fusion/MNIST",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 9399,
+    "n": 10000,
+    "top1": 0.9399,
+    "evaluation_seconds": 4.612215086817741,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/protected/direct/fusion/MNIST",
+      "correct": 9399,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 9396,
+      "lost": 3,
+      "gained": 3,
+      "both_wrong": 598,
+      "loss_pp": 0.0,
+      "exact_mcnemar_p": 1.0
+    },
+    "matched": {
+      "both_correct": 9398,
+      "lost": 4,
+      "gained": 1,
+      "both_wrong": 597,
+      "loss_pp": 0.03,
+      "exact_mcnemar_p": 0.375
+    }
+  },
+  {
+    "id": "margin_dtd/protected/cleanup/fusion/DTD",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "DTD",
+    "correct": 936,
+    "n": 1880,
+    "top1": 0.4978723404255319,
+    "evaluation_seconds": 0.9130546078085899,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/protected/direct/fusion/DTD",
+      "correct": 975,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 933,
+      "lost": 42,
+      "gained": 3,
+      "both_wrong": 902,
+      "loss_pp": 2.074468085106383,
+      "exact_mcnemar_p": 8.654978955746628e-10
+    },
+    "matched": {
+      "both_correct": 931,
+      "lost": 4,
+      "gained": 5,
+      "both_wrong": 940,
+      "loss_pp": -0.05319148936170213,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/protected/cleanup/fusion/Cars",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "protected",
+    "attack": "cleanup",
+    "group": "fusion",
+    "dataset": "Cars",
+    "correct": 4968,
+    "n": 8041,
+    "top1": 0.6178336027857232,
+    "evaluation_seconds": 3.733278639614582,
+    "peak_gpu_bytes": 855664640,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/protected/direct/fusion/Cars",
+      "correct": 4976,
+      "n": 8041,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 4950,
+      "lost": 26,
+      "gained": 18,
+      "both_wrong": 3047,
+      "loss_pp": 0.09949011317000372,
+      "exact_mcnemar_p": 0.2912152365458951
+    },
+    "matched": {
+      "both_correct": 4935,
+      "lost": 55,
+      "gained": 33,
+      "both_wrong": 3018,
+      "loss_pp": 0.27359781121751026,
+      "exact_mcnemar_p": 0.024622831581791033
+    }
+  },
+  {
+    "id": "margin_dtd/protected/cleanup_aga/standalone/DTD",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "standalone",
+    "dataset": "DTD",
+    "correct": 1480,
+    "n": 1880,
+    "top1": 0.7872340425531915,
+    "evaluation_seconds": 0.8477374836802483,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/protected/aga/standalone/DTD",
+      "correct": 1487,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 1466,
+      "lost": 21,
+      "gained": 14,
+      "both_wrong": 379,
+      "loss_pp": 0.3723404255319149,
+      "exact_mcnemar_p": 0.31050465907901537
+    },
+    "matched": {
+      "both_correct": 1470,
+      "lost": 9,
+      "gained": 10,
+      "both_wrong": 391,
+      "loss_pp": -0.05319148936170213,
+      "exact_mcnemar_p": 1.0
+    }
+  },
+  {
+    "id": "margin_dtd/protected/cleanup_aga/fusion/MNIST",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "MNIST",
+    "correct": 9406,
+    "n": 10000,
+    "top1": 0.9406,
+    "evaluation_seconds": 4.542395740747452,
+    "peak_gpu_bytes": 855187968,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/protected/aga/fusion/MNIST",
+      "correct": 9407,
+      "n": 10000,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 9403,
+      "lost": 4,
+      "gained": 3,
+      "both_wrong": 590,
+      "loss_pp": 0.01,
+      "exact_mcnemar_p": 1.0
+    },
+    "matched": {
+      "both_correct": 9401,
+      "lost": 2,
+      "gained": 5,
+      "both_wrong": 592,
+      "loss_pp": -0.03,
+      "exact_mcnemar_p": 0.453125
+    }
+  },
+  {
+    "id": "margin_dtd/protected/cleanup_aga/fusion/DTD",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "DTD",
+    "correct": 928,
+    "n": 1880,
+    "top1": 0.49361702127659574,
+    "evaluation_seconds": 0.8466201648116112,
+    "peak_gpu_bytes": 855282688,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/protected/aga/fusion/DTD",
+      "correct": 962,
+      "n": 1880,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 925,
+      "lost": 37,
+      "gained": 3,
+      "both_wrong": 915,
+      "loss_pp": 1.8085106382978724,
+      "exact_mcnemar_p": 1.946500560734421e-08
+    },
+    "matched": {
+      "both_correct": 921,
+      "lost": 4,
+      "gained": 7,
+      "both_wrong": 948,
+      "loss_pp": -0.1595744680851064,
+      "exact_mcnemar_p": 0.548828125
+    }
+  },
+  {
+    "id": "margin_dtd/protected/cleanup_aga/fusion/Cars",
+    "case": "margin_dtd",
+    "target": "DTD",
+    "preset": "protected",
+    "attack": "cleanup_aga",
+    "group": "fusion",
+    "dataset": "Cars",
+    "correct": 4974,
+    "n": 8041,
+    "top1": 0.6185797786344982,
+    "evaluation_seconds": 3.6357715502381325,
+    "peak_gpu_bytes": 855664640,
+    "baseline": {
+      "source": "outputs/2026-10-11/path_margin",
+      "source_id": "DTD/protected/aga/fusion/Cars",
+      "correct": 4973,
+      "n": 8041,
+      "source_predictions_sha256": "57802c6d8730cd2eeac7f1e353a318989b93e74e44702e81cf26db0d7bd2a7ac"
+    },
+    "change_from_parent": {
+      "both_correct": 4955,
+      "lost": 18,
+      "gained": 19,
+      "both_wrong": 3049,
+      "loss_pp": -0.012436264146250466,
+      "exact_mcnemar_p": 1.0
+    },
+    "matched": {
+      "both_correct": 4929,
+      "lost": 60,
+      "gained": 45,
+      "both_wrong": 3007,
+      "loss_pp": 0.186543962193757,
+      "exact_mcnemar_p": 0.17156469715424197
+    }
+  }
+]
