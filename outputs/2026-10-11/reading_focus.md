@@ -48,4 +48,4 @@ MLP 实现用行归一化后的 cosine assignment；附录的原始欧氏 margin
 
 另外核查 MergeBarrier 与 MergeGuard 的 arXiv HTML 代码入口：尚未确认正文作者研究仓库，页尾维护链接不能算代码。保留已有相关工作范围核查，但本轮不将它们加入满足用户代码条件的精读成果。Sensitivity as a Shield 的直接 OpenReview 访问被验证页阻挡，未核实研究代码，不作方法成功或完整阅读的结论。
 
-[MatGPTQ v2，2026-09-30](https://arxiv.org/html/2602.03537v2)正文提供[作者代码](https://github.com/IST-DASLab/MatGPTQ)。核对 §3.2 的多位宽格点目标与 OBS 误差补偿，以及固定源码的原 GPTQ 核心：单次顺序量化不使用梯度训练。它与 Q-realign 的学习型 PTQ 不能混为一谈；多精度格式、压缩精度和推理速度不提供抗融合保证。尚未用于 CLIP 或复现完整方法；新入口的恢复反例与实验门槛见[机制检查](quantization_gate.md)。
+[MatGPTQ v2，2026-09-30](https://arxiv.org/html/2602.03537v2)正文提供[作者代码](https://github.com/IST-DASLab/MatGPTQ)。核对 §3.2 的多位宽格点目标与 OBS 误差补偿，以及固定源码的原 GPTQ 核心：单次顺序量化不使用梯度训练。它与 Q-realign 的学习型 PTQ 不能混为一谈；多精度格式、压缩精度和推理速度不提供抗融合保证。随后仅复用其中原 GPTQ 核心完成一次固定 CLIP 有损表示控制：独立性能小幅变化、真实融合没有下降，[原始结果与复核](quantization_probe/summary.md)。没有复现完整多精度方法，也没有新防御结论；入口的恢复反例与门槛见[机制检查](quantization_gate.md)。
