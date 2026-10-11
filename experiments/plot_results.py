@@ -2081,6 +2081,55 @@ def plot_response_cleanup(root: Path):
     save(fig, out, "response_cleanup")
 
 
+def plot_head_collapse(root: Path):
+    assert json.loads((root / "validation.json").read_text())["status"] == "passed"
+    rows = json.loads((root / "results.json").read_text())
+    values = {r["key"]: 100 * r["correct"] / r["n"] for r in rows}
+    methods = ["direct", "aga", "support_reset", "reset_attention", "readout"]
+    labels = ["Direct", "AGA", "Head\nreset", "All Attention\nreset", "Score\nfit"]
+    fig, axes = plt.subplots(2, 2, figsize=(8.3, 5.4), layout="constrained")
+    for ax, task in zip(axes.flat, ["MNIST", "SVHN", "DTD", "Cars"], strict=True):
+        for i, method in enumerate(methods):
+            if method in ("support_reset", "reset_attention"):
+                bars = ax.bar(
+                    i,
+                    values[f"identical_reset/{method}/fusion/{task}"],
+                    0.66,
+                    color="#777777",
+                    label="Identical reset state" if i == 2 else None,
+                )
+                ax.bar_label(bars, fmt="%.2f", padding=2, fontsize=7)
+            else:
+                for j, preset in enumerate(("original", "protected")):
+                    bars = ax.bar(
+                        i + (j - 0.5) * 0.34,
+                        values[f"{preset}/{method}/fusion/{task}"],
+                        0.32,
+                        color=COLORS[j],
+                        label=("Original", "Release")[j] if i == 0 else None,
+                    )
+                    ax.bar_label(bars, fmt="%.2f", padding=2, fontsize=7)
+        ax.set(
+            title=task,
+            ylabel="Accuracy (%)",
+            ylim=(0, 105),
+            xticks=range(len(methods)),
+            xticklabels=labels,
+        )
+        ax.grid(axis="y", alpha=0.18)
+        ax.set_axisbelow(True)
+    axes.flat[0].legend(loc="lower left", frameon=False)
+    original = values["original/none/standalone/MNIST"]
+    release = values["protected/none/standalone/MNIST"]
+    fig.suptitle(f"MNIST standalone: original {original:.2f}%, release {release:.2f}%")
+    fig.supxlabel(
+        "Eight experts, TA = 0.2; reset states evaluated once for both references", fontsize=8
+    )
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    save(fig, out, "head_collapse")
+
+
 def plot_omission_recovery(root: Path):
     rows = {r["id"]: r for r in json.loads((root / "results.json").read_bytes())}
     svhn = {r["preset"]: r for r in json.loads((root / "svhn_results.json").read_bytes())}
@@ -2125,6 +2174,7 @@ if __name__ == "__main__":
     mode.add_argument("--path-margin", action="store_true")
     mode.add_argument("--response-cleanup", action="store_true")
     mode.add_argument("--omission-recovery", action="store_true")
+    mode.add_argument("--head-collapse", action="store_true")
     mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument(
         "--subspace-interference",
@@ -2161,7 +2211,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_omission_recovery
+        plot_head_collapse
+        if args.head_collapse
+        else plot_omission_recovery
         if args.omission_recovery
         else plot_response_cleanup
         if args.response_cleanup
