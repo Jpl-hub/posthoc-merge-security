@@ -57,3 +57,5 @@ MLP 实现用行归一化后的 cosine assignment；附录的原始欧氏 margin
 [Platonic Task Arithmetic v2，2026-10-02](https://arxiv.org/html/2610.00929v2)正文提供[研究代码](https://github.com/jhpark-ai/Platonic-Task-Arithmetic)。精读 §4、附录 C，固定源码 2011bad，读取 6 文件共 20,411 字节。描述符只观察图像表征变化在文本方向上的投影；主路线是双边岭回归并折入最终投影，另一个 LoRA 路线需要训练。固定源码实际均匀抽取类别数×30 张训练图，并非逐类配额；保留标签供诊断，求解不读标签。描述符残差不提供自动分类／校准外保证，不同任务算子相加也有真实伙伴代价。[源码核查](pta_source_audit/source_audit.json)；未运行完整作者方法、不下载新模型，不将本项目既有投影恢复改名为该论文复现。
 
 [Theseus v3，2026-07-30](https://arxiv.org/html/2602.12952v3)正文提供[研究代码](https://github.com/apanariello4/merge-and-rebase)，ICML 2026 的[正式条目](https://proceedings.mlr.press/v306/rinaldi26a.html)可核对。阅读 §3、附录 A/B：以输入／输出激活的双线性效应和 Procrustes 共享子空间迁移更新；需要源基础模型、源专家和相应激活，不等于任意白盒发布都可保证恢复。异宽情形须区分嵌入与截断，截断不能保证任意更新零残差。HTML 中 Eq10/18 的转置方向与声明维数有冲突，使用前须核对原 PDF／源码；本轮尚未核对实现，也未运行完整方法。
+
+Theseus 源码新增核查：commit563e3ee，6files143425bytes。`_shared.py` 实际权重运输为Tout.T @ delta @ Tin，维数正确，CLIP proj转置另处理。之前HTML不一致不能归咎实现，未核查PDF。两个矩阵 primitive 的 CPU形状／放宽功能签名检查通过；完整作者方法未运行，没安装依赖或下载checkpoint。见theseus_source_audit。
