@@ -1,0 +1,22 @@
+{
+  "task": "DTD",
+  "layers": [
+    9,
+    10,
+    11
+  ],
+  "parent": "outputs/2026-10-11/neuron_projection",
+  "fusion_config": "configs/eight_tasks.json",
+  "betas": [
+    0.2,
+    0.5
+  ],
+  "rank": 1,
+  "gram_ridge_ratio": 0.001,
+  "anchor_rank_rcond": 1e-10,
+  "construction": "One unit Householder direction per selected MLP, constrained to the nullspace of the public joint up/bias/down-transpose matrix. Select by a generalized eigenproblem on target-only preactivation and nonlinear activation moments versus beta paths. Fixed reflection, no amplitude/rank sweep, labels, gradients, response fitting or future partner.",
+  "selection_proxy": "Normalize projected preactivation and activation second moments by their native per-token energies; maximize mean beta-path energy over native energy plus fixed ridge. This proxy is not the exact nonlinear commutator or classification loss. Both are checked after selection; no tuning if it fails.",
+  "data": "Reuse the verified parent 64 DTD training calibration inputs and the same 24 disjoint training confirmation images. Historically inspected data; not new held-out evidence. Layer choice comes from prior supervised task_profile. Official tests are not accessed in this construction screen.",
+  "public_attack": "Project accessible up rows/bias and down columns onto the column space of the joint public anchor matrix. This erases all anchor-null task information and algebraically removes any reflection confined there. Measure the removal cost on matched original/protected models before claiming resistance. Also require original AGA, whole MLP reset and finite-query recovery if the screen warrants a full benchmark.",
+  "claims": "The anchor leaves this reflection unidentified, but that does not prove security or novelty. It is a conditional nonlinear reparameterization, not a globally exact GELU symmetry, not NUFILT reproduction and not an irreversible protection. Public subspace deletion and function recovery remain explicit counterattacks."
+}
