@@ -1,0 +1,27 @@
+{
+  "task": "DTD",
+  "layers": [
+    9,
+    10,
+    11
+  ],
+  "indices_parent": "outputs/2026-10-11/path_subspace",
+  "profile_parent": "outputs/2026-10-10/task_profile",
+  "fusion_config": "configs/eight_tasks.json",
+  "betas": [
+    0.2,
+    0.5
+  ],
+  "shortlist_pairs": 1024,
+  "local_relative_rms_budget": 0.02,
+  "ratio_relative_rms_floor": 0.0001,
+  "upstream_commit": "694691556e8314a835178a741938dd3d4d80c171",
+  "upstream_source": "external/folding_as_projection/compression/fold.py",
+  "upstream_sha256": "42029e2bdc60c198a0af225a53a3961c2e4c6ebbe784946848b18512dd288e47",
+  "construction": "One target-only singular MLP projection. Shortlist the 1024 smallest native Lipschitz pair-error bounds per layer, then order by actual mean beta-path local error divided by native local error plus a fixed floor. Greedily accept disjoint pairs only if their cumulative actual frozen-input MLP output RMS stays within 2%. No labels, optimizer, gradient, amplitude/rank sweep or future partner access.",
+  "compilation": "Reuse the unchanged pinned author CLIPViT_ModelFolding.compress_function with a supplied fixed-label clustering adapter. Expand merged units back to the original width with tied input rows and evenly split output sums. Preserve all unpaired rows/columns, output biases and other tensors exactly. This changes cluster selection and release encoding; it is not the full author method or a novelty claim.",
+  "data": "Reuse 64 target training calibration images and 24 disjoint DTD training confirmation images from path_subspace. These samples have been inspected previously. No test access during construction.",
+  "screening": "Save actual protection edits before any partner loading. Measure end-to-end normalized features on calibration and confirmation for the original expert, beta paths and their protected counterparts. This stage is a mechanism screen, not a defense result. A subsequent frozen benchmark must measure standalone accuracy, real fusion, author AGA, public pair reset, full MLP reset, public unfolding and finite-query recovery with matched controls.",
+  "public_unfolding": "Infer tied units from the released equal input rows/biases and output columns. Add the public anchor complement: Wr=Wp+(I-P)W0, br=bp+(I-P)b0, Vr=Vp+V0(I-P). Test rather than assume whether this restores fusion cheaply.",
+  "claims": "Irreversible neuron averaging loses the original within-pair differences. It does not prove security, independent utility or recovery cost. The pair-selection proxy uses original upstream inputs and may fail when all edits propagate jointly. Do not adjust the budget, shortlist or pair count on official tests if this fixed construction fails."
+}
