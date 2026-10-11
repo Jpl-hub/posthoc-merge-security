@@ -49,3 +49,5 @@
 ![两任务功能恢复](figures/score_recovery.png)
 
 [完整计数](results.json) · [几何证据](geometry.json) · [父实验与全部旧恢复路径](../local_erasure/summary.md)
+
+后续已补查共享数字 head：上表 MNIST 96.27% 的恢复伴随 SVHN 73.67% → 57.87%；加入固定输入约束后，MNIST 为 95.37%、SVHN 为 67.51%。原来的“两项伙伴保持”结论不扩大到 SVHN，完整同条件对照见[补充检查](../input_score_recovery/summary.md)。

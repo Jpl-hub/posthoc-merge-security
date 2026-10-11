@@ -2,10 +2,11 @@
 
 对已微调专家施加发布前后处理，保持原任务能力，检验对未经授权融合及自适应恢复的保护。目标独立准确率损失 ≤0.5 个百分点，同时完整报告性能与防御权衡；不进行额外梯度微调，有闭式拟合的实验明确记录校准数据。
 
-**目前没有达标的新防御。**最新 MNIST 诊断检查 12 个任务主方向：联合精确方向删除无独立准确率损失，融合只下降 0.6836 pp；完整支持替换下降 7.6172 pp，不能替代细粒度删除代价。方向由防御方提供，属于 oracle 条件诊断，尚未构造保护或运行其 AGA。此前 Cars 七个稳定分离方向删除几乎无代价；跨模块候选的直接融合仅下降 0.0373 pp，原版 AGA 没有收益。旧四层候选被 FC 替换和功能重建绕过。全部真实结果保留。
+**目前没有有效新防御。**最新共享数字 head 检查中，局部删除后的 MNIST 可由输入约束恢复到 95.37%，但 SVHN 下降 6.15 pp；两项其他已测伙伴预测保持。上轮 MNIST 96.27% 的输出恢复会使 SVHN 下降 15.80 pp，不能称所有伙伴保持。后续须同时检查目标恢复、伙伴代价及校准外效果。旧候选和全部真实失败记录保留。
 
 ## 当前结果
 
+- [共享数字 head 与输入子空间恢复](outputs/2026-10-11/input_score_recovery/summary.md)：固定补充攻击，完整 MNIST／SVHN／DTD／Cars 测试；校准保持没有泛化到 SVHN 测试，没有新防御。[机制检查](outputs/2026-10-11/mechanism_boundary.md)另排除可代数还原的激活分拆族。
 - [保持两项伙伴预测的功能恢复](outputs/2026-10-11/score_recovery/summary.md)：256 张图、一次闭式拟合，MNIST 87.23% → 96.27%、DTD 47.23% → 58.24%；各自另外两个伙伴完整逐图预测不变，尚无有效新防御。
 - [MNIST／DTD 局部任务删除](outputs/2026-10-11/local_erasure/summary.md)：两个固定点、七条恢复路径，无性能门槛；MNIST 原版 AGA 后下降 6.78 pp，重缩放恢复目标至 98.90% 并损失伙伴能力，未获得有效新防御。
 - [MNIST 主任务方向删除代价](outputs/2026-10-11/critical_subspace_mnist/summary.md)：细粒度联合删除仍便宜，固定方向族已停止；[近期代码论文精读](outputs/2026-10-11/reading_focus.md)核对 AGA、NUFILT 与 SLOA 的机制边界。
@@ -66,6 +67,14 @@ python experiments/plot_results.py --local-erasure --output outputs/local_deleti
 JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/score_recovery.py --output outputs/score_recovery_check
 python experiments/validate_results.py --score-recovery --output outputs/score_recovery_check
 python experiments/plot_results.py --score-recovery --output outputs/score_recovery_check
+```
+
+共享 MNIST／SVHN head 的补充检查复用上述两轮冻结结果。输入约束只保证校准图上的 SVHN 响应，必须查看完整测试代价；它是攻击诊断。验证入口复算原始张量，重文件仍只存服务器。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/input_score_recovery.py --output outputs/input_recovery_check
+python experiments/input_score_recovery.py --validate --output outputs/input_recovery_check
+python experiments/plot_results.py --input-score-recovery --output outputs/input_recovery_check
 ```
 
 最新方向与替换代价的预检入口如下；两轮都没有构造保护模型。复核投影诊断需要服务器父实验的原始激活。丢弃专家检查使用完整官方测试，预处理图片只缓存在服务器内存。
