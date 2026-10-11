@@ -33,6 +33,16 @@ def read(path):
     return json.loads(Path(path).read_bytes())
 
 
+def sampling_config(cfg, task):
+    return dict(
+        cfg,
+        task=task,
+        confirmation_samples=cfg.get("confirmation_samples_by_task", {}).get(
+            task, cfg["confirmation_samples"]
+        ),
+    )
+
+
 @torch.no_grad()
 def basis(expert, anchor, inputs, layers, rank, svd):
     records, rows = [], []
@@ -246,6 +256,7 @@ def run(args):
         for t in cfg["tasks"]
     }
     indices, construction, responses, manifests, releases, images = {}, {}, {}, {}, {}, {}
+    reused = {}
     svd = author_svd("external/NUFILT", read(cfg["nufilt_config"]))
     selection = read(Path(cfg["profile_parent"]) / "selection.json")
     for task in cfg["tasks"]:
@@ -253,25 +264,48 @@ def run(args):
             cfg["layers"][task] == selection[task]["layers"] and not selection[task]["partner_used"]
         )
         original = load(str(root / task / "finetuned.pt")).cpu().eval()
-        indices[task] = fresh_indices(dict(cfg, task=task), task, len(data[task].train_dataset))
+        indices[task] = fresh_indices(
+            sampling_config(cfg, task), task, len(data[task].train_dataset)
+        )
         images[task] = {
             name: torch.stack([data[task].train_dataset[i][0] for i in indices[task][name]])
             for name in ("calibration", "confirmation")
         }
         x = images[task]["calibration"]
-        inputs, checks = capture(original, x, cfg["layers"][task])
-        records, descriptions = basis(
-            original, anchor, inputs, cfg["layers"][task], cfg["rank_per_matrix"], svd
-        )
-        del inputs
-        derivatives = {}
-        for name, factor in [("expert", 1.0), *[(f"beta_{b}", b) for b in cfg["betas"]]]:
-            reference = original if name == "expert" else rescale(original, anchor, factor)
-            derivatives[name] = finite_differences(
-                reference, x, records, cfg["finite_difference_step"], factor
+        parent = Path(args.reuse_construction) if args.reuse_construction else None
+        if parent is not None and (parent / f"artifacts/{task}_geometry.pt").exists():
+            prior = read(parent / "protocol.json")
+            for key in cfg:
+                if key != "confirmation_samples_by_task":
+                    assert cfg[key] == prior[key]
+            assert task not in cfg["confirmation_samples_by_task"]
+            assert indices[task] == read(parent / "training_indices.json")[task]
+            saved = torch.load(
+                parent / f"artifacts/{task}_geometry.pt", map_location="cpu", weights_only=True
             )
-            if name != "expert":
-                del reference
+            records, derivatives = saved["basis"], saved["derivatives"]
+            descriptions = read(parent / f"{task}_basis.json")
+            checks = read(parent / f"{task}_context_checks.json")
+            reused[task] = dict(
+                parent=str(parent),
+                parent_source_commit=read(parent / "launch.json")["source_commit"],
+                geometry_sha256=digest(parent / f"artifacts/{task}_geometry.pt"),
+                edits_sha256=digest(parent / f"artifacts/{task}_edits.pt"),
+            )
+        else:
+            inputs, checks = capture(original, x, cfg["layers"][task])
+            records, descriptions = basis(
+                original, anchor, inputs, cfg["layers"][task], cfg["rank_per_matrix"], svd
+            )
+            del inputs
+            derivatives = {}
+            for name, factor in [("expert", 1.0), *[(f"beta_{b}", b) for b in cfg["betas"]]]:
+                reference = original if name == "expert" else rescale(original, anchor, factor)
+                derivatives[name] = finite_differences(
+                    reference, x, records, cfg["finite_difference_step"], factor
+                )
+                if name != "expert":
+                    del reference
         grams = {name: gram(value) for name, value in derivatives.items()}
         coefficients, construction[task] = solve(grams, original, records, cfg)
         release = apply(original, edits_for(records, coefficients))
@@ -281,6 +315,15 @@ def run(args):
             for k, v in release.state_dict().items()
             if not torch.equal(v, original.state_dict()[k])
         }
+        if task in reused:
+            prior_edits = torch.load(
+                parent / f"artifacts/{task}_edits.pt", map_location="cpu", weights_only=True
+            )
+            assert (
+                all(torch.equal(v, prior_edits[k]) for k, v in edited.items())
+                and edited.keys() == prior_edits.keys()
+            )
+            assert construction[task] == read(parent / "construction.json")[task]
         torch.save(edited, artifacts / f"{task}_edits.pt")
         torch.save(
             dict(basis=records, derivatives=derivatives, grams=grams, coefficients=coefficients),
@@ -490,6 +533,7 @@ def run(args):
             optimizer_steps=0,
             constructor_response_fits=0,
             future_partners_used=False,
+            reused_construction=reused,
         ),
     )
 
@@ -568,7 +612,7 @@ def validate(args):
         )
         assert not set(indices[target]["calibration"]) & set(indices[target]["confirmation"])
         recalculated = fresh_indices(
-            dict(cfg, task=target), target, len(data[target].train_dataset)
+            sampling_config(cfg, target), target, len(data[target].train_dataset)
         )
         assert recalculated == indices[target]
         x = torch.stack([data[target].train_dataset[i][0] for i in indices[target]["calibration"]])
@@ -687,6 +731,10 @@ if __name__ == "__main__":
     parser.add_argument("--config", default="configs/path_subspace.json")
     parser.add_argument("--output", default="outputs/2026-10-11/path_subspace")
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument(
+        "--reuse-construction",
+        help="Reuse an immutable partial constructor with exactly matching settings and indices",
+    )
     torch.set_num_threads(4)
     torch.backends.cuda.matmul.allow_tf32 = False
     torch.backends.cudnn.allow_tf32 = False
