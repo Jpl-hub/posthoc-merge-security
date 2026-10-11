@@ -6,6 +6,7 @@
 
 ## 当前结果
 
+- [完整三块替换与功能恢复](outputs/2026-10-11/block_restore_norm_gate_cars/summary.md)：补齐 Cars 9–11 层的 LayerNorm，三次闭式恢复仍达融合60.2413%（原62.0570%），没有显示额外恢复障碍；教师未保护。[不可逆重表示条件](outputs/2026-10-11/irreversible_factorization.md)限定后续构造。
 - [已知伙伴定向补空间的恢复检查](outputs/2026-10-11/partner_nullspace_gate/summary.md)：九次新全测试及独立复核。公开替换第0层V后，MNIST独立99.69%、融合MNIST99.37%、SVHN92.5054%；使用已知伙伴，仅为机制预检，没有合格保护候选或抗AGA成果。
 - [联合局部有损改写的完整恢复](outputs/2026-10-11/local_release_audit/summary.md)：真实MNIST发布权重、原版AGA、参数替换和256图恢复同条件对照，候选仍被恢复；伙伴损失明确报告。
 - [Cars联合算子改写失败](outputs/2026-10-11/operator_recoding_cars/summary.md)：独立77.6645%→54.6201%，已生成并复核真实权重；停止，不调秩或ridge。
@@ -62,6 +63,13 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 ## 运行当前实验
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
+
+三层完整替换控制复用同一恢复实现，新增配置把 LayerNorm 也纳入公开替换。需要现有服务器上的父结果、原始预测和训练索引；教师未保护。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/block_restore_gate.py --config configs/block_restore_norm_gate.json --manifest outputs/2026-10-11/block_restore_norm_gate_cars/launch.json --output outputs/block_norm_check
+python experiments/block_restore_gate.py --validate --config configs/block_restore_norm_gate.json --manifest outputs/2026-10-11/block_restore_norm_gate_cars/launch.json --output outputs/block_norm_check
+```
 
 已知伙伴恢复预检需要历史校准索引及冻结依赖，来源可复用所保存的launch清单；它只检查两个单投影支持，不生成经过效用认证的保护模型。
 
