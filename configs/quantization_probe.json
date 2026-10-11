@@ -1,0 +1,22 @@
+{
+  "task": "DTD",
+  "layers": [9, 10, 11],
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "evaluation_tasks": ["MNIST", "SVHN", "DTD", "Cars"],
+  "betas": [0.2, 0.5],
+  "calibration_indices": "outputs/2026-10-10/task_profile/training_indices.json",
+  "confirmation_indices": "outputs/2026-10-11/path_subspace/training_indices.json",
+  "calibration_samples": 256,
+  "source_audit": "outputs/2026-10-11/matgptq_source_audit/source_audit.json",
+  "upstream_root": "external/MatGPTQ",
+  "upstream_commit": "86ee3eeae8555531e1e91978c8cbc0c8f74b4853",
+  "gptq": {"bitwidth": 3, "perchannel": true, "group_size": 128, "sym": false, "mse": false, "rel_damp": 0.01, "block_size": 128, "act_order": true},
+  "time_limit_seconds": 1800,
+  "role": "Single existing-method mechanism control, not a new protection method, full MatGPTQ reproduction, or novelty claim. Test whether irreversible task-conditioned full-weight compression escapes cheap public deletion at a useful standalone/fusion tradeoff. No bit, strength, rank or calibration search.",
+  "construction": "Unchanged pinned author GPTQ AST class and pure helpers, sequentially quantize up then down in each selected MLP using inputs from the already modified upstream release. Decode codes/scales/zero/permutation into ordinary FP32 matrices with original dimensions. Preserve every bias and all other weights. No gradients, labels, optimizer, future partner or additional response fitting. Quantization scales and column compensation are data dependent and must be declared.",
+  "data": "First 256 previously inspected DTD task-profile training selection images; 24 disjoint previously inspected path-subspace training confirmation images. Not unseen research data. Test images used only after release freeze.",
+  "attacks": "Matched public cross-span projection on original and compressed expert, using anchor only. Complete selected-MLP replacement includes all up/down weights and biases; original and compressed states must become bit identical. This is a broader support reset than the six edited matrices. Evaluate its real standalone and partner costs.",
+  "evaluation": "25 fresh full official evaluations: five states each with standalone DTD and eight-expert TA(0.2) on MNIST, SVHN, DTD and Cars. No eight-task mean or Table 6 claim. Save all predictions and exact paired counts. AGA and functional query recovery are not run in this mechanism-control stage; only expand if real fusion interference is meaningfully separated from native utility loss. No fixed 0.5 pp rejection threshold and no claim from local response ratio alone.",
+  "interpretation": "Irreversible code mapping discards continuous weights, but may expose useful function and task subspace. A native layer Hessian objective does not imply safety on the merged model. Input-span cleanup and functional transfer remain public counterexamples; no claim that quantization defeats either. A failed fixed control is preserved and is not a reason to scan bits."
+}
