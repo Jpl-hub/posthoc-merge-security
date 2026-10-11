@@ -2081,6 +2081,36 @@ def plot_response_cleanup(root: Path):
     save(fig, out, "response_cleanup")
 
 
+def plot_omission_recovery(root: Path):
+    rows = {r["id"]: r for r in json.loads((root / "results.json").read_bytes())}
+    svhn = {r["preset"]: r for r in json.loads((root / "svhn_results.json").read_bytes())}
+    assert json.loads((root / "validation.json").read_bytes())["status"] == "passed"
+    assert json.loads((root / "svhn_validation.json").read_bytes())["status"] == "passed"
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.0), layout="constrained", sharey=True)
+    presets = ["omitted", "original_query", "protected_query"]
+    for ax, task in zip(axes, ["MNIST", "SVHN"], strict=True):
+        selected = [svhn[p] if task == "SVHN" else rows[f"{p}/{task}"] for p in presets]
+        values = [100 * r["top1"] for r in selected]
+        bars = ax.bar(range(3), values, color=["#888888", COLORS[0], COLORS[1]], width=0.65)
+        ax.bar_label(bars, fmt="%.2f", fontsize=8, padding=3)
+        ax.set(
+            title=task + (" (target)" if task == "MNIST" else " (shared-head partner)"),
+            ylim=(0, 104),
+            xticks=range(3),
+            xticklabels=["Omit target", "Original\nqueries", "Protected\nqueries"],
+        )
+        ax.set_axisbelow(True)
+        ax.grid(axis="y", alpha=0.2)
+    axes[0].set_ylabel("Full official test accuracy (%)")
+    fig.supxlabel(
+        "7 expert vectors at 0.2; 256 queries; projection-only recovery. No protected tensor is merged.",
+        fontsize=8,
+    )
+    save(fig, out, "omission_recovery")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -2094,6 +2124,7 @@ if __name__ == "__main__":
     mode.add_argument("--path-subspace", action="store_true")
     mode.add_argument("--path-margin", action="store_true")
     mode.add_argument("--response-cleanup", action="store_true")
+    mode.add_argument("--omission-recovery", action="store_true")
     mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument(
         "--subspace-interference",
@@ -2130,7 +2161,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_response_cleanup
+        plot_omission_recovery
+        if args.omission_recovery
+        else plot_response_cleanup
         if args.response_cleanup
         else plot_path_margin
         if args.path_margin
