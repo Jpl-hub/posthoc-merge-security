@@ -105,6 +105,13 @@ def run(args):
         for m in (models[cfg["task"]], compressed)
     ]
     assert all(torch.equal(v, reset_states[1][k]) for k, v in reset_states[0].items())
+    reset_parent = Path("outputs/2026-10-11/path_subspace")
+    assert read(reset_parent / "validation.json")["status"] == "passed"
+    reset_reference = next(
+        r
+        for r in read(reset_parent / "results.json")
+        if r["id"] == "MNIST/original/support_reset/fusion/MNIST"
+    )
     save_json(
         out / "support_reset.json",
         dict(
@@ -112,8 +119,9 @@ def run(args):
             layers=cfg["layers"],
             calibration_queries=0,
             accuracy_reused_from="outputs/2026-10-11/path_subspace",
-            target_correct=8723,
-            target_n=10000,
+            target_correct=reset_reference["correct"],
+            target_n=reset_reference["n"],
+            source_results_sha256=digest(reset_parent / "results.json"),
         ),
     )
     save_json(out / "results.json", rows)
