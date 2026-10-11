@@ -1,0 +1,19 @@
+{
+  "target": "DTD",
+  "parent": "outputs/2026-10-11/path_subspace",
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "evaluation_tasks": ["SUN397", "Cars", "RESISC45", "SVHN", "GTSRB", "MNIST", "DTD"],
+  "previously_evaluated_tasks": ["MNIST", "DTD", "Cars"],
+  "head_groups": {
+    "original_preserved_heads": ["MNIST", "Cars"],
+    "original_plus_sun": ["MNIST", "Cars", "SUN397"],
+    "all_seven_partners": ["SUN397", "Cars", "RESISC45", "EuroSAT", "SVHN", "GTSRB", "MNIST"]
+  },
+  "rcond": 1e-10,
+  "time_limit_seconds": 1500,
+  "purpose": "Fill an actual evaluation gap: prior DTD finite-query recovery preserved only MNIST/Cars heads, with target fusion reported above 65%. Re-evaluate its already frozen projections on all seven available official tests, retaining original/protected direct and query matched controls. No new candidate, query, fit, coefficient or search.",
+  "attack_reuse": "Reuse validated parent DTD original/protected native-score recovery: 256 reused training teacher queries, zero labels/teacher hidden features, one fixed ridge fit each. Load its exact frozen restored expert projection and merge with coefficient .2. No fresh teacher access or fitting. Re-evaluated historical tasks must reproduce all original prediction arrays, not only counts.",
+  "geometry": "Stack class-score differences, not raw head rows, to account for common class shifts under zero-bias normalized heads. Measure null dimensions and projected DTD contrast rank for the declared public groups. Full contrast-span rank512 rules out any nonzero single global projection update that preserves every partner class-score difference for every hidden input; it does not prove classification or adaptive-query impossibility. Include EuroSAT public head in geometry without evaluating an invented EuroSAT split.",
+  "reporting": "28 fresh full evaluations plus paired counts; seven available tests of eight-expert TA(.2), no eight-task mean or Table6 claim. Partner losses are costs, not permission to call a failed protection successful. A missing-cost audit is not a new defense or revival of the failed path-subspace direction. Data and heavy raw predictions remain server-only."
+}
