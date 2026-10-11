@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import time
 from pathlib import Path
 
@@ -18,6 +19,99 @@ from path_margin import check_parent, solve_margin
 from path_subspace import apply, context, edits_for, read
 from score_recovery import head_inverse, recover
 from subspace_probe import make_loader, save_json
+
+
+@torch.no_grad()
+def calibration_linearity(release, head, images, geometry, saved):
+    release.cuda().eval()
+    after = features(release, images).double()
+    release.cpu()
+    before = saved["baseline"]["expert"].double()
+    predicted = geometry["derivatives"]["expert"].double() @ saved["coefficients"]
+    weight = head.weight.detach().double().cpu()
+    original_scores, actual_scores = before @ weight.T, after @ weight.T
+    linear_scores = (before + predicted) @ weight.T
+    winner = original_scores.argmax(-1)
+    mask = torch.nn.functional.one_hot(winner, num_classes=len(weight)).bool()
+
+    def margins(scores):
+        return (scores.gather(1, winner[:, None]) - scores)[~mask]
+
+    original = margins(original_scores)
+    return dict(
+        n=len(images),
+        predicted_feature_rms=float(predicted.square().sum().div(len(images)).sqrt()),
+        actual_feature_rms=float((after - before).square().sum().div(len(images)).sqrt()),
+        feature_prediction_relative_error=float(
+            (after - before - predicted).norm() / (after - before).norm()
+        ),
+        maximum_predicted_relative_margin_change=float(
+            ((margins(linear_scores) - original) / original).abs().max()
+        ),
+        maximum_actual_relative_margin_change=float(
+            ((margins(actual_scores) - original) / original).abs().max()
+        ),
+        predicted_pseudo_prediction_changes=int(linear_scores.argmax(-1).ne(winner).sum()),
+        actual_pseudo_prediction_changes=int(actual_scores.argmax(-1).ne(winner).sum()),
+        scope="Calibration diagnostic of the frozen release; no new construction or amplitude revision",
+    )
+
+
+@torch.no_grad()
+def check_partner_changes(
+    target, task, models, root, cfg, direct, recovered, head, dataset, raw, evidence
+):
+    changed = torch.where(direct.ne(recovered))[0]
+    before = merge_all(models, root, cfg["coefficient"])
+    protected = dict(models)
+    release = protected[target]
+    restored = copy.deepcopy(release).cpu().eval()
+    restored.model.visual.proj.copy_(evidence["restored_projection"])
+    protected[target] = restored
+    after = merge_all(protected, root, cfg["coefficient"])
+    delta = after.model.visual.proj.double() - before.model.visual.proj.double()
+    weight = head.weight.detach().double().cpu()
+    ideal_error = float((evidence["projection_delta"] @ weight.T).norm())
+    assert ideal_error < 1e-8
+    assert all(
+        torch.equal(v, before.state_dict()[k])
+        for k, v in after.state_dict().items()
+        if k != "model.visual.proj"
+    )
+    examples = []
+    for block in torch.unique(changed // 128).tolist():
+        ids = list(range(block * 128, min((block + 1) * 128, len(dataset))))
+        logits = []
+        for model, expected in [(before, direct), (after, recovered)]:
+            values = []
+            evaluate(model, head, make_loader(dataset, ids), "cuda", logit_sink=values.append)
+            scores = torch.cat(values)
+            assert torch.equal(scores.argmax(-1), expected[ids])
+            logits.append(scores)
+        for index in changed[(changed // 128).eq(block)].tolist():
+            local = index - block * 128
+            old, new = int(direct[index]), int(recovered[index])
+            a, b = [float(value[local, old] - value[local, new]) for value in logits]
+            assert a >= 0 and b <= 0
+            examples.append(
+                dict(
+                    index=index,
+                    before_class=old,
+                    after_class=new,
+                    ground_truth=int(
+                        raw[f"{target}/protected/direct/fusion/{task}"]["labels"][index]
+                    ),
+                    before_pair_margin=a,
+                    after_pair_margin=b,
+                )
+            )
+    return dict(
+        changed_predictions=len(changed),
+        ideal_unnormalized_partner_score_update_norm=ideal_error,
+        compiled_unnormalized_partner_score_update_matrix_norm=float((delta @ weight.T).norm()),
+        changed_examples_replayed_in_original_batch=examples,
+        scope="Exact FP64 null-space algebra does not imply byte-identical float32 compiled predictions",
+    )
 
 
 @torch.no_grad()
@@ -77,7 +171,7 @@ def validate(args):
         Path("external/secure-merge-attack/utils_attack_B32.py"), include_wrappers=True
     )
     assert author_hash == meta["original_author_aga_sha256"] == prior["original_author_aga_sha256"]
-    checks, prefixes, partner_changes = [], 0, {}
+    checks, prefixes, partner_changes, linearity, compilation = [], 0, {}, {}, {}
     for target in cfg["tasks"]:
         geometry = torch.load(
             parent / f"artifacts/{target}_geometry.pt", map_location="cpu", weights_only=True
@@ -124,6 +218,7 @@ def validate(args):
         assert edits.keys() == expected.keys() and all(
             torch.equal(v, expected[k]) for k, v in edits.items()
         )
+        linearity[target] = calibration_linearity(release, heads[target], x, geometry, saved)
         original_reset = reset(
             models[target], models["anchor"], sites(cfg["layers"][target]), "public_support"
         )
@@ -191,8 +286,20 @@ def validate(args):
             direct = raw[f"{target}/protected/direct/fusion/{task}"]["prediction"]
             recovered = raw[f"{target}/protected/readout/fusion/{task}"]["prediction"]
             changes = int(direct.ne(recovered).sum())
-            assert changes == 0
             partner_changes[f"{target}/{task}"] = changes
+            compilation[f"{target}/{task}"] = check_partner_changes(
+                target,
+                task,
+                dict(models, **{target: release}),
+                root,
+                cfg,
+                direct,
+                recovered,
+                heads[task],
+                data[task].test_dataset,
+                raw,
+                evidence,
+            )
         checks.append(
             dict(
                 target=target,
@@ -206,6 +313,8 @@ def validate(args):
         print("VALIDATED", target, flush=True)
         del cases, release, restored
     assert prefixes == 26
+    save_json(out / "linearity.json", linearity)
+    save_json(out / "compilation.json", compilation)
     save_json(
         out / "validation.json",
         dict(
