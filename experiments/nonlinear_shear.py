@@ -231,12 +231,15 @@ def screen(original, anchor, models, head, batches, cfg):
     rows, tensors = {}, {}
     for path, beta in [("expert", 1.0)] + [(str(b), b) for b in cfg["betas"]]:
         before = original if beta == 1 else rescale(original, anchor, beta)
+        before.cuda().eval()
         cached = {split: features(before, images) for split, images in batches.items()}
+        before.cpu()
         for split, value in cached.items():
             tensors[f"original/{path}/{split}"] = value
         for name, model in models.items():
             rows.setdefault(name, {})[path] = {}
             after = model if beta == 1 else rescale(model, anchor, beta)
+            after.cuda().eval()
             for split, images in batches.items():
                 baseline, value = cached[split], features(after, images)
                 weight = head.weight.detach().float().cpu()
@@ -253,6 +256,7 @@ def screen(original, anchor, models, head, batches, cfg):
                     labels_used=False,
                 )
                 tensors[f"{name}/{path}/{split}"] = value
+            after.cpu()
     return rows, tensors
 
 
