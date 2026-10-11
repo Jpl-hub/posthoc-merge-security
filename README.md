@@ -2,10 +2,11 @@
 
 对已微调专家施加发布前后处理，尽量保持原任务能力，检验对未经授权融合及自适应恢复的保护。完整报告性能与防御权衡，不以单个准确率阈值作为唯一淘汰条件；不进行额外梯度微调，校准数据与闭式拟合均明确记录。
 
-**目前没有有效新防御。**最新融合路径实验实际生成 MNIST／DTD 两份免微调权重，独立准确率均保持；MNIST 原版 AGA 后反而由 93.23% 提高到 93.63%，DTD 只下降 0.05 pp。输出 RMS 分离没有选出破坏分类的方向，公开替换没有新增删除成本；这一固定方向停止调强度。代码、真实结果与失败记录保留。
+**目前没有有效新防御。**最新分类间隔构造实际生成两份解析编辑权重：MNIST 原版 AGA 后降至 85.33%，但独立能力损失 10.73 pp；DTD 独立只损失 0.43 pp，AGA 后却仅下降 0.21 pp。一阶分类约束未保住大幅编辑后的 MNIST 功能，公开替换也没有新增删除成本。停止调整这两份方向，真实结果与失败记录保留。
 
 ## 当前结果
 
+- [分类间隔编辑](outputs/2026-10-11/path_margin/summary.md)：一次解析构造、两份实际权重、26 次新完整评价，明确复用 42 行冻结对照／状态恒等结果；原版 AGA、功能恢复与浮点核验均记录，仍未达到保护目标。[协议](outputs/2026-10-11/path_margin_protocol.md)与[公开回填反例](outputs/2026-10-11/mechanism_boundary.md)约束后续构造。
 - [融合路径敏感性候选](outputs/2026-10-11/path_subspace/summary.md)：48 个细粒度联合方向、β=0.2/0.5、两份真实发布权重、原版 AGA／参数替换／256 图恢复同条件对照；尚无有效防御。[构造协议](outputs/2026-10-11/path_subspace_protocol.md)记录数学、校准与 DTD 取样失败修订。
 - [共享数字 head 与输入子空间恢复](outputs/2026-10-11/input_score_recovery/summary.md)：固定补充攻击，完整 MNIST／SVHN／DTD／Cars 测试；校准保持没有泛化到 SVHN 测试，没有新防御。[机制检查](outputs/2026-10-11/mechanism_boundary.md)另排除可代数还原的激活分拆族。
 - [保持两项伙伴预测的功能恢复](outputs/2026-10-11/score_recovery/summary.md)：256 张图、一次闭式拟合，MNIST 87.23% → 96.27%、DTD 47.23% → 58.24%；各自另外两个伙伴完整逐图预测不变，尚无有效新防御。
@@ -53,6 +54,14 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 ## 运行当前实验
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
+
+分类间隔检验依赖已核验 `path_subspace` 的服务器原始张量。构造只使用目标伪标签与校准数据，一次解析求解后冻结权重；不额外梯度训练。公开回填反例是条件性数学分析，未称为已实现攻击。
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/path_margin.py --output outputs/margin_check
+python experiments/validate_path_margin.py --output outputs/margin_check
+python experiments/plot_results.py --path-margin --output outputs/margin_check
+```
 
 融合路径候选用目标专家与公开预训练构造，不额外微调；固定方向与幅度后再加载融合伙伴。默认生成两份候选并运行全部对照。重权重和逐图预测只在服务器，当前没有方法成功或创新声明。
 
