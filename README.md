@@ -4,6 +4,8 @@
 
 **目前没有有效新防御。**联合局部有损改写保留 MNIST 独立99.63%（原99.69%），AGA后融合降到64.93%；但公共局部替换＋256个硬标签原型已恢复94.93%，SVHN相对未保护直接融合损失1.96个百分点。原模型与发布模型的标签和恢复参数相同。连续分数恢复仍达96.88%，但SVHN代价17.87个百分点。Cars联合算子候选独立损失23.04个百分点，已停止。
 
+10月12日补查[最终投影的联合替换代价](outputs/2026-10-12/projection_dependency/summary.md)：在三层完整block之外加入投影替换，MNIST/Cars/DTD融合目标仅另下降0.41/0.95/0.69个百分点。独立删除代价不能代替融合恢复代价；没有新保护权重。另核查近期[SVC原文与作者源码](outputs/2026-10-12/svc_source_audit/notes.md)，只验证公式与协议差异，未运行完整方法。
+
 ## 当前结果
 
 - [硬标签原型恢复](outputs/2026-10-11/prototype_recovery_gate/summary.md)：复用固定作者分类原语，局部学生融合MNIST94.93%、SVHN72.4647%，单专家98.71%；五次新全测试加五条参数恒等的匹配别名。[全专家省略对照](outputs/2026-10-11/prototype_omission_gate/summary.md)零新增查询，融合MNIST91.04%、SVHN63.2299%，单专家仅21.31%；没有完整专家恢复或新防御。[条件性机制结论](outputs/2026-10-11/hard_label_boundary.md)与[协议](outputs/2026-10-11/prototype_recovery_protocol.md)明确适用范围。
@@ -64,6 +66,13 @@ git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
 ## 运行当前实验
 
 以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
+
+最终投影检验沿用历史选区与已审计原融合数组，无新校准或拟合。源码冻结于 `51cc05b`，需要服务器父实验的原始数组：
+
+```bash
+JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/public_restore_gate.py --projection-dependency --config configs/projection_dependency.json --manifest outputs/2026-10-12/projection_dependency/launch.json --output outputs/projection_dependency_check
+python experiments/public_restore_gate.py --projection-dependency --validate --config configs/projection_dependency.json --manifest outputs/2026-10-12/projection_dependency/launch.json --output outputs/projection_dependency_check
+```
 
 硬标签原型需要历史发布编辑、原始预测与256训练索引。作者只下载一个已固定的源文件，不运行训练入口：
 
