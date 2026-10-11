@@ -2033,6 +2033,54 @@ def plot_path_margin(root: Path):
     save(fig, out, "margin_recovery")
 
 
+def plot_response_cleanup(root: Path):
+    cfg = json.loads((root / "protocol.json").read_bytes())
+    rows = {r["id"]: r for r in json.loads((root / "results.json").read_bytes())}
+    assert json.loads((root / "validation.json").read_bytes())["status"] == "passed"
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    fig, axes = plt.subplots(1, 3, figsize=(10.5, 3.0), layout="constrained", sharey=True)
+    measures = [("cleanup", "standalone"), ("cleanup", "fusion"), ("cleanup_aga", "fusion")]
+    for ax, case in zip(axes, cfg["cases"], strict=True):
+        target, name = case["task"], case["name"]
+        for i, preset in enumerate(("original", "protected")):
+            selected = [rows[f"{name}/{preset}/{a}/{g}/{target}"] for a, g in measures]
+            for cleaned, style in ((False, "--"), (True, "-")):
+                values = [
+                    100 * r["top1"]
+                    if cleaned
+                    else 100 * r["baseline"]["correct"] / r["baseline"]["n"]
+                    for r in selected
+                ]
+                ax.plot(
+                    range(3),
+                    values,
+                    color=COLORS[i],
+                    ls=style,
+                    marker="o" if cleaned else None,
+                    ms=4,
+                    label=("Original" if i == 0 else "Released")
+                    + (" + cleanup" if cleaned else " (parent)"),
+                )
+        title = "MNIST four-layer" if name == "four_layer" else f"{target} margin candidate"
+        protocol = "2 experts, TA 0.5" if case["fusion"] == "two_task" else "8 experts, TA 0.2"
+        ax.set(
+            title=title + "\n" + protocol,
+            ylim=(0, 102),
+            xticks=range(3),
+            xticklabels=["Standalone", "Fusion", "Fusion + AGA"],
+        )
+        ax.tick_params(axis="x", labelsize=8)
+        ax.grid(axis="y", alpha=0.2)
+    axes[0].set_ylabel("Full official target accuracy (%)")
+    axes[0].legend(loc="lower left", fontsize=7)
+    fig.supxlabel(
+        "256 public training images; local response budget 1%. Dashed parent controls reused. No new defense.",
+        fontsize=8,
+    )
+    save(fig, out, "response_cleanup")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -2045,6 +2093,7 @@ if __name__ == "__main__":
     mode.add_argument("--input-score-recovery", action="store_true")
     mode.add_argument("--path-subspace", action="store_true")
     mode.add_argument("--path-margin", action="store_true")
+    mode.add_argument("--response-cleanup", action="store_true")
     mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument(
         "--subspace-interference",
@@ -2081,7 +2130,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_path_margin
+        plot_response_cleanup
+        if args.response_cleanup
+        else plot_path_margin
         if args.path_margin
         else plot_path_subspace
         if args.path_subspace
