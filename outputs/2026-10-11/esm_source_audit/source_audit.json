@@ -1,0 +1,73 @@
+{
+  "repository": "https://github.com/kiddo127/ESM",
+  "commit": "fc82fe768becf3437aa210f1651a01c20b2aef61",
+  "default_branch": "master",
+  "checked_utc": "2026-10-11T08:56:35.483790+00:00",
+  "body_code_link_verified_versions": [
+    "https://arxiv.org/html/2602.20208v2",
+    "https://arxiv.org/html/2606.19164v3"
+  ],
+  "files": {
+    "README.md": {
+      "sha256": "9e93c0f0f7e22aa7b6e9dd048ed1a76b5942722943889ae940b2e8da0204d2f7",
+      "bytes": 2270
+    },
+    "ESM-ViT/essential_subspace_decomposition.py": {
+      "sha256": "10cce55fe777fc78195cf3a950443f2416c4981597febcfe8f9a50b4f89a3804",
+      "bytes": 8657
+    },
+    "ESM-ViT/esm.py": {
+      "sha256": "0a9cf7a3a1c56f03196d170fc18d4c30b2f9be1b1293999f90ae282c409dbebf",
+      "bytes": 4305
+    }
+  },
+  "definitions": [
+    {
+      "file": "ESM-ViT/essential_subspace_decomposition.py",
+      "classes": [],
+      "functions": [
+        "_compute_esd",
+        "_make_esd_hook",
+        "_make_attn_esd_hook",
+        "_make_proj_esd_hook",
+        "esd"
+      ],
+      "imports": [
+        "import torch",
+        "import numpy as np",
+        "from src.models.task_vectors import NonLinearTaskVector",
+        "from src.utils.variables_and_paths import get_finetuned_path, get_zeroshot_path",
+        "from src.models.heads import get_classification_head",
+        "from src.models.modeling import ImageClassifier",
+        "from src.datasets.registry import get_dataset",
+        "from src.datasets.common import get_dataloader, maybe_dictionarize",
+        "from src.utils import utils",
+        "from torch.utils.data import DataLoader"
+      ]
+    },
+    {
+      "file": "ESM-ViT/esm.py",
+      "classes": [],
+      "functions": [
+        "esm"
+      ],
+      "imports": [
+        "import os",
+        "import torch",
+        "import numpy as np",
+        "from pprint import pprint",
+        "import hydra",
+        "import wandb",
+        "from omegaconf import DictConfig, OmegaConf",
+        "from src.eval.aggregation import create_task_vector_dict, create_task_vector_principal_direction",
+        "from src.eval.eval_utils import perform_eval_with_merged_vector",
+        "from src.utils.variables_and_paths import ALL_DATASETS, get_zeroshot_path",
+        "from essential_subspace_decomposition import esd"
+      ]
+    }
+  ],
+  "license_file_present": false,
+  "dependencies_installed": false,
+  "full_method_run": false,
+  "defense_claim": false
+}

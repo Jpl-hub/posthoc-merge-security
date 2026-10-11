@@ -49,3 +49,7 @@ MLP 实现用行归一化后的 cosine assignment；附录的原始欧氏 margin
 另外核查 MergeBarrier 与 MergeGuard 的 arXiv HTML 代码入口：尚未确认正文作者研究仓库，页尾维护链接不能算代码。保留已有相关工作范围核查，但本轮不将它们加入满足用户代码条件的精读成果。Sensitivity as a Shield 的直接 OpenReview 访问被验证页阻挡，未核实研究代码，不作方法成功或完整阅读的结论。
 
 [MatGPTQ v2，2026-09-30](https://arxiv.org/html/2602.03537v2)正文提供[作者代码](https://github.com/IST-DASLab/MatGPTQ)。核对 §3.2 的多位宽格点目标与 OBS 误差补偿，以及固定源码的原 GPTQ 核心：单次顺序量化不使用梯度训练。它与 Q-realign 的学习型 PTQ 不能混为一谈；多精度格式、压缩精度和推理速度不提供抗融合保证。随后仅复用其中原 GPTQ 核心完成一次固定 CLIP 有损表示控制：独立性能小幅变化、真实融合没有下降，[原始结果与复核](quantization_probe/summary.md)。没有复现完整多精度方法，也没有新防御结论；入口的恢复反例与门槛见[机制检查](quantization_gate.md)。
+
+[ESM，CVPR 2026 的 v2](https://arxiv.org/html/2602.20208v2)和[扩展 v3](https://arxiv.org/html/2606.19164v3)正文均提供[研究代码](https://github.com/kiddo127/ESM)。精读 §III-B、附录 A/B，并固定源码 fc82fe7，读取 3 文件共 15,232 字节。对输出增量 y=τx 的未中心化二阶矩取主方向 E，得到 τ̂=EEᵀτ；在同一分布二阶矩已知的条件下，平方输出误差等于被舍弃特征值之和。代理样本只给经验保证，不能推出测试分类保持或安全性。
+
+源码对 activation_diff 做未中心化 SVD，特征值按 n−1 缩放。静态 ESM 的极分解合并与动态 ESM++ 的专家路由分别记录；QKV 钩子不等于完整 QK／VO 算子复现，out_proj 钩子在该实现中被注释。样本少于特征维数时零特征值补基不能自动视为正交。未安装入口依赖、未运行完整方法，[源码核查](esm_source_audit/source_audit.json)。主要启示是按实际响应衡量任务信息；低能尾部可被丢弃这一事实同时构成防御的恢复风险，不能将 ESD 本身当创新。
