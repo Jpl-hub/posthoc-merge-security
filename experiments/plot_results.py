@@ -1988,6 +1988,51 @@ def plot_path_subspace(root: Path):
     save(fig, out, "path_response")
 
 
+def plot_path_margin(root: Path):
+    cfg = json.loads((root / "protocol.json").read_bytes())
+    rows = {r["id"]: r for r in json.loads((root / "results.json").read_bytes())}
+    assert json.loads((root / "validation.json").read_bytes())["status"] == "passed"
+    out = root / "figures"
+    out.mkdir(exist_ok=True)
+    measures = [
+        ("direct", "standalone"),
+        ("direct", "fusion"),
+        ("aga", "fusion"),
+        ("support_reset", "fusion"),
+        ("readout", "fusion"),
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(8, 3), layout="constrained", sharey=True)
+    for ax, target in zip(axes, cfg["tasks"], strict=True):
+        for index, preset in enumerate(("original", "protected")):
+            values = [
+                100 * rows[f"{target}/{preset}/{attack}/{group}/{target}"]["top1"]
+                for attack, group in measures
+            ]
+            ax.plot(
+                np.arange(len(values)),
+                values,
+                marker="o" if index == 0 else "s",
+                ms=4,
+                color=COLORS[index],
+                label="Unprotected" if index == 0 else "Margin candidate",
+            )
+        ax.set(
+            title=target,
+            ylim=(0, 102),
+            xticks=np.arange(len(measures)),
+            xticklabels=["Standalone", "Direct", "AGA", "Support\nreset", "Score\nrecovery"],
+        )
+        ax.tick_params(axis="x", labelsize=8)
+        ax.grid(axis="y", alpha=0.2)
+    axes[0].set_ylabel("Full official test accuracy (%)")
+    axes[1].legend(loc="lower left", fontsize=8)
+    fig.supxlabel(
+        "Eight experts, TA 0.2. Score recovery: 256 queries. Controls and exact reset results reused.",
+        fontsize=8,
+    )
+    save(fig, out, "margin_recovery")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default="outputs/2026-10-09")
@@ -1999,6 +2044,7 @@ if __name__ == "__main__":
     mode.add_argument("--score-recovery", action="store_true")
     mode.add_argument("--input-score-recovery", action="store_true")
     mode.add_argument("--path-subspace", action="store_true")
+    mode.add_argument("--path-margin", action="store_true")
     mode.add_argument("--subspace-recovery", action="store_true")
     mode.add_argument(
         "--subspace-interference",
@@ -2035,7 +2081,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     runner = (
-        plot_path_subspace
+        plot_path_margin
+        if args.path_margin
+        else plot_path_subspace
         if args.path_subspace
         else plot_input_score_recovery
         if args.input_score_recovery
