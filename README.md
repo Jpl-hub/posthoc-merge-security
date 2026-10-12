@@ -2,7 +2,7 @@
 
 研究已有 CLIP ViT-B/32 专家的发布前后处理：不增加梯度微调，不依赖未来融合伙伴，保留原任务计算，在补空间引入融合干扰。
 
-**当前使用 3090。尚无确认的可靠防御。** [研究主线与失败原因](notes/research.md)说明已有结果、保持条件和下一步判断。
+**输入补空间噪声保留 MNIST 99.69%，原版 AGA 后 SVHN 从 91.77% 降至 9.38%。公开清理仍能消除干扰。** 当前只用 3090；[机制与结果](notes/research.md)说明保持条件及恢复边界。
 
 ## 代码
 
@@ -24,6 +24,7 @@
 - `results/complement/replay/`：3090 迁移核验。
 - `results/qk_complement/`：固定 Q/K 候选，独立效用保持、直接干扰有效，但 AGA 恢复，已停止。
 - `results/input_complement/amplification/`：独立 MNIST 保持，AGA 后 SVHN 降 33.38 个百分点；公开补空间恢复完全消除效果。
+- `results/input_complement/noise/`：固定种子、同范数噪声对照；独立 MNIST 保持，AGA 后 SVHN 降至 9.38%，18 项计数独立复核通过；公开恢复仍有效。
 - `results/mnist/` 与 [旧组会报告](reports/2026-10-12/组会汇报.md)：内部压缩历史证据，不作为当前补空间主线。
 - `results/reproduction/`：已有 PaRaMS／AGA 基线记录；尚非完整 Table 6 复现。
 - `results/index.json`：证据路径与指纹；`results/history.csv`：失败记录索引。

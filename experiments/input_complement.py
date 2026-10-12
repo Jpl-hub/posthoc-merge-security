@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import shutil
 from pathlib import Path
 
 import torch
@@ -12,7 +13,7 @@ from clip_benchmark import checkpoint_loader, digest, evaluate, merge, paired_co
 from eight_task_benchmark import author_recover
 from mechanisms import load_author
 from subspace_probe import make_loader, save_json, split_training
-from torchvision.datasets import MNIST, SVHN
+from torchvision.datasets import DTD, MNIST, SVHN
 
 
 @torch.no_grad()
@@ -49,11 +50,12 @@ def construct(original, mode):
 
 
 @torch.no_grad()
-def public_reset(model, anchor, projector):
+def public_reset(model, anchor):
     """Public preprocessing determines the complement; no defender calibration."""
     result = copy.deepcopy(model).cpu().eval()
     current = result.model.visual.conv1.weight.double()
     base = anchor.model.visual.conv1.weight.double()
+    projector = color_basis(anchor)["projector"]
     removed = torch.einsum("ocij,cd->odij", current - base, projector)
     result.model.visual.conv1.weight.copy_((current - removed).float())
     return result
@@ -71,6 +73,8 @@ def run(args):
         construction="Target MNIST checkpoint and its public RGB preprocessing only; no future expert, input or test fitting.",
         edit="conv1 only. Amplification: 100 W C. Noise: one Gaussian R C, scaled to the same Frobenius norm as 100 W C. C annihilates grayscale slope and preprocessing offset.",
         mode=args.edit,
+        partner=args.partner,
+        release_reused=bool(args.release),
         comparison="One fixed-seed noise control tests learned versus random complement features; no seed, rank or strength search. Previous amplification results were observed.",
         calibration="256 MNIST training images verify the grayscale and FP32 preservation conditions; no fitting.",
         seed=20261012,
@@ -78,7 +82,7 @@ def run(args):
         attack="Full original author attention then MLP wrappers, all 12 layers, on both experts.",
         public_reset="Replace the analytically known input complement by public anchor, then full AGA. Apply identically to unprotected control.",
         boundary="Exact input complement cannot interfere with protected grayscale task under linear parameter merging. Measure colored partner separately; this is not protected-task collapse or general recovery resistance.",
-        scope="Two-task pilot. Prior MNIST and SVHN tests observed; not blind evaluation, novelty evidence or Table 6 reproduction.",
+        scope="Two-task pilot. Prior MNIST and SVHN tests observed; DTD reuses the already frozen release without reselection. Not novelty evidence or Table 6 reproduction.",
         stop="If standalone loss exceeds 2 pp, stop before fusion; do not tune this candidate.",
     )
     save_json(output / "protocol.json", protocol)
@@ -102,7 +106,22 @@ def run(args):
     anchor = load(str(root / "zeroshot.pt")).cpu().eval()
     original = load(str(root / "MNIST/finetuned.pt")).cpu().eval()
     head_m = load(str(root / "head_MNIST.pt"))
-    released, edit = construct(original, args.edit)
+    if args.release:
+        source = Path(args.release)
+        manifest = json.loads((source.parent.parent / "release_freeze.json").read_bytes())
+        assert digest(source) == manifest["release_sha256"]
+        assert (
+            manifest["checkpoint_sha256"]["MNIST/finetuned.pt"]
+            == checkpoint_hashes["MNIST/finetuned.pt"]
+        )
+        edit = torch.load(source, map_location="cpu")
+        assert edit["mode"] == args.edit
+        basis = color_basis(original)
+        assert all(torch.equal(edit[k], basis[k]) for k in ["mean", "std", "projector"])
+        released = copy.deepcopy(original).cpu().eval()
+        released.model.visual.conv1.weight.add_(edit["delta"].float())
+    else:
+        released, edit = construct(original, args.edit)
     training = MNIST(args.data, train=True, transform=original.val_preprocess)
     indices = split_training(training, dict(calibration=256), protocol["seed"])
     save_json(output / "training_indices.json", indices)
@@ -129,7 +148,10 @@ def run(args):
             exact_scope="Per-pixel span of grayscale slope and RGB normalization offset; conservative superset of grayscale inputs.",
         ),
     )
-    torch.save(edit, output / "artifacts/release.pt")
+    if args.release:
+        shutil.copyfile(args.release, output / "artifacts/release.pt")
+    else:
+        torch.save(edit, output / "artifacts/release.pt")
     save_json(
         output / "release_freeze.json",
         dict(
@@ -168,19 +190,23 @@ def run(args):
     }
     loss = 100 * (native["original"]["top1"] - native["released"]["top1"])
     if loss <= 2:
-        verify(["SVHN/finetuned.pt", "head_SVHN.pt"])
-        partner = load(str(root / "SVHN/finetuned.pt")).cpu().eval()
-        head_s = load(str(root / "head_SVHN.pt"))
-        loader_s = make_loader(SVHN(args.data, split="test", transform=original.val_preprocess))
+        verify([f"{args.partner}/finetuned.pt", f"head_{args.partner}.pt"])
+        partner = load(str(root / f"{args.partner}/finetuned.pt")).cpu().eval()
+        head_s = load(str(root / f"head_{args.partner}.pt"))
+        partner_data = (
+            SVHN(args.data, split="test", transform=original.val_preprocess)
+            if args.partner == "SVHN"
+            else DTD(args.data, split="test", partition=1, transform=original.val_preprocess)
+        )
+        assert len(partner_data) == {"SVHN": 26032, "DTD": 1880}[args.partner]
+        loader_s = make_loader(partner_data)
         recovered_partner = author_recover(partner, anchor, author)
         for name, model in [("original", original), ("released", released)]:
             for stage in ["direct", "AGA", "public_reset_AGA"]:
                 if stage == "direct":
                     tested = merge(anchor, model, partner, protocol["coefficient"])
                 else:
-                    source = (
-                        model if stage == "AGA" else public_reset(model, anchor, edit["projector"])
-                    )
+                    source = model if stage == "AGA" else public_reset(model, anchor)
                     attacked = author_recover(source, anchor, author)
                     assert torch.equal(
                         attacked.model.visual.conv1.weight, source.model.visual.conv1.weight
@@ -189,7 +215,7 @@ def run(args):
                     tested = merge(anchor, attacked, recovered_partner, protocol["coefficient"])
                     del attacked
                 record(tested, head_m, loader_m, name, stage, "MNIST")
-                record(tested, head_s, loader_s, name, stage, "SVHN")
+                record(tested, head_s, loader_s, name, stage, args.partner)
                 del tested
     save_json(
         output / "execution.json",
@@ -197,7 +223,7 @@ def run(args):
             completed=True,
             standalone_loss_pp=loss,
             fusion_run=loss <= 2,
-            new_candidates=1,
+            new_candidates=int(not args.release),
             optimizer_steps=0,
             parameter_search=False,
             gpu=torch.cuda.get_device_name(),
@@ -214,4 +240,8 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
     parser.add_argument("--edit", choices=["amplification", "noise"], default="noise")
+    parser.add_argument("--partner", choices=["SVHN", "DTD"], default="SVHN")
+    parser.add_argument(
+        "--release", help="Reuse a frozen edit package; do not construct another candidate."
+    )
     run(parser.parse_args())
