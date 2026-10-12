@@ -3,7 +3,7 @@
   "new_protected_weights": 0,
   "new_defense_candidates": 0,
   "gpu_jobs_started": 0,
-  "decision": "No candidate passes public-cleaning feasibility. Stop the analyzed V/O null-noise construction before selecting rank or amplitude.",
+  "decision": "No credible new ordinary-weight defense candidate. The input-complement recovery proof is conditional; output-side and approximate preservation are not excluded. Exact algebra examples are not CLIP results.",
   "algebra_validation": {
     "method": "Exact rational arithmetic on deterministic 2D affine operators; no checkpoints, data or measured accuracy. Sanity checks complement the symbolic derivation.",
     "passed": true,
@@ -175,8 +175,8 @@
     "PCA completion cost on unprotected weights does not establish removal of arbitrary noise by an independently estimated projector.",
     "No claim of innovation or standalone utility for an unconstructed V/O release."
   ],
-  "updated_utc": "2026-10-12T21:00:44.987937+00:00",
-  "document_sha256": "0cf84640f8884793310092e91f3e38b4357d2487ba6711164b5d639955ee46d9",
+  "updated_utc": "2026-10-12T23:54:21.343458+00:00",
+  "document_sha256": "108b5a5a92ed05a5932fc64f00bc870ae262976c57b37cc1493839acaf243687",
   "current_official_checkpoint_pins_match_historical": true,
   "complement_update_reanalysis": {
     "results": "results/complement_update_audit/results.json",
@@ -218,5 +218,58 @@
     "new_model_forwards": 0,
     "new_classification_results": 0,
     "decision": "Linear paired change fails complement-only parameter preservation or exposes a public kernel; not a new defense. General nonlinear MLP cancellation remains conditional."
+  },
+  "local_global_preservation_audit": {
+    "scope": "Own exact-rational illustrative square-activation network; not CLIP or a defense candidate",
+    "source_sha256": "1a47f71b336808cd2aaa7dd8e2b7dfa0186af38d6ff1fc740de7b56ce5ad6dfe",
+    "native_input_family": "x=(t,0); native output is 10*t^2 for original and release",
+    "input_projectors": {
+      "first": [
+        [
+          "1",
+          "0"
+        ],
+        [
+          "0",
+          "0"
+        ]
+      ],
+      "second": [
+        [
+          "81/97",
+          "36/97"
+        ],
+        [
+          "36/97",
+          "16/97"
+        ]
+      ]
+    },
+    "task_update_complement": "Both tau_i C_i equal zero exactly",
+    "edit_task_component": "Both E_i P_i equal zero exactly",
+    "public_completion": "Each Wprime_i P_i + W0_i C_i equals the original expert W_i exactly",
+    "merged_original_output_at_t1": "5219/776",
+    "merged_release_output_at_t1": "-190333/776",
+    "merged_output_difference": "-252",
+    "merged_restoration": "Exact original output after public completion",
+    "global_permutation_active_change": [
+      [
+        "-1",
+        "0"
+      ],
+      [
+        "1",
+        "0"
+      ]
+    ],
+    "permutation_novelty": "Known symmetry; illustrates preservation conditions, not a new candidate",
+    "all_checks_passed": true,
+    "new_CLIP_forwards": 0,
+    "new_protected_checkpoints": 0,
+    "new_classification_results": 0,
+    "limits": "No real utility guarantee; no all-complement impossibility; approximate alignment, finite calibration, floating-point arithmetic, output-side complements and only-final-output preservation require separate conditions",
+    "execution": "Same frozen source ran on local CPU and 3090 server CPU; exact rational checks passed, same source digest and reported rational values. No CUDA or independent model evaluation.",
+    "theory_scope": "Affine right-input complement edits plus mean/bias compensation. Exact per-operator response preservation exposes native intermediate spans; adding tau_i C_i=0 gives exact anchor completion to original parameters. Does not cover merely output-projected preservation, nonlinear functional nullspaces, finite-calibration generalization or approximate alignment.",
+    "candidate_status": "No new defense candidate or measured performance improvement"
   }
 }

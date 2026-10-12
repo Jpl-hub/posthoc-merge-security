@@ -8,13 +8,13 @@
   "server": "3090",
   "allow_4090": false,
   "status": "in_progress",
-  "stage": "ordinary_weight_local_vs_global_preservation",
+  "stage": "nonlinear_output_complement_preservation",
   "active_jobs": [],
   "breakthrough_verified": false,
   "new_protected_weights": 0,
-  "updated_utc": "2026-10-12T23:42:47.212766+00:00",
+  "updated_utc": "2026-10-12T23:56:27.511751+00:00",
   "goal_status": "Old unfinished usageLimited goal; create_goal rejected. Do not mark old research successful. Current-thread heartbeat is active.",
-  "next_action": "Return to ordinary-weight cross-module preservation, not another gated architecture. Resolve one boundary: local per-operator task preservation versus final task-output preservation. If a cancellation changes an intermediate representation, state whether every modified weight still preserves the original expert input subspace, and whether release-derived native spans give the attacker the same joint public cleaner. Produce at most one explicit relation or a precise reason none is feasible; no new gates, optimizer, compensation network, changed layer or noise scan. Before any GPU work identify useful target fusion computation lost by cleaning, reusing existing matched records first. No protection weights or new defense experiment until preservation and meaningful public-cleaning cost pass.",
+  "next_action": "Study only the output-side complement boundary not covered by exact right-input affine preservation: if Ph is retained but h changes, derive necessary conditions for P phi(h+C r)=P phi(h) through existing nonlinear operators, and state a public removal/completion route. This is analysis, not a new candidate or permission to edit the task space. Do not retry closed linear V/O, QuickGELU sign flip, input noise or Query supports; no added branches, optimizer or layer/rank/amplitude/seed search. Supply at most one explicit ordinary-weight relation if it exists. If none is credible, record why without manufacturing a mechanism. Only after native preservation passes, identify useful target fusion residual lost by cleanup using existing records or one frozen necessity diagnostic; no protection weights beforehand.",
   "constraints": [
     "No additional gradient fine-tuning",
     "No future partner in construction or selection",
@@ -159,6 +159,22 @@
       "new_protected_weights": 0,
       "new_classification_results": 0,
       "decision": "MINGLE requires learned gates and added low-rank experts. Its input-dependent mixture does not generally fold into one ordinary affine weight. Gradient null projection alone does not guarantee an Adam update, unprojected bias or changed upstream inputs preserve task computation. Record this scoped condition, not a new defense or a criticism of unreplicated paper accuracy."
+    },
+    {
+      "name": "local_vs_global_preservation_and_exact_anchor_recovery",
+      "analysis": "notes/mechanism_analysis.md#13",
+      "evidence": "results/mechanism_analysis.json",
+      "code": "results/literature_review/local_global_preservation_audit.py",
+      "source_parent": "42485e6b6a10035690142e48753940dd1043be4c",
+      "source_sha256": "1a47f71b336808cd2aaa7dd8e2b7dfa0186af38d6ff1fc740de7b56ce5ad6dfe",
+      "kind": "Conditional proof and exact-rational illustrative two-layer square network, not a CLIP candidate",
+      "execution": "local CPU and 3090 server CPU; no CUDA",
+      "exact_checks": "passed",
+      "new_CLIP_forwards": 0,
+      "new_protected_weights": 0,
+      "new_classification_results": 0,
+      "assumptions_verified_on_full_CLIP": false,
+      "decision": "Exact per-operator affine input preservation exposes unchanged native intermediate spans; with tau_i C_i=0 public completion returns original edited parameters, even though merges can be disturbed. Final-output or output-projected preservation is weaker and outside this proof. Approximate alignment requires actual residual utility and hybrid-model inputs; no real classifier certificate or universal impossibility."
     }
   ]
 }
