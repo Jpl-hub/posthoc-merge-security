@@ -199,7 +199,29 @@ $$
 
 旧 Q/K 发布改变了参数子空间，不是单纯可逆基变换；对它不能套用“相对原专家的小任务更新误差界”。Bias 也不在作者的权重拟合目标中。完整旧模型的 AGA 结果仍以原来测试为准：MNIST 融合 99.32% → 99.28%，尚未阻止使用。此次新增模型前向、保护权重、分类结果均为零。[冻结诊断与结果](../results/literature_review/aga_canonical_results.json)
 
-## 9. 本轮决定
+## 9. QuickGELU 恒等式不能直接跨残差补偿
+
+已核对实际 MNIST checkpoint，第 1 块确实使用 QuickGELU，Attention 与 MLP 分别调用不同的 LN1、LN2；二者权重和 bias 也不同。安装源码与 [open_clip 固定版本](https://github.com/mlfoundations/open_clip/blob/146fe70e20976dcb35912b8f94204fa842be2b00/src/open_clip/model.py)逐字节一致。此次只加载 CPU 模型检查结构，没有前向、保护权重或新准确率。[核验记录](../results/literature_review/nonlinear_preservation_results.json)
+
+令 $\phi(z)=z\sigma(1.702z)$。由 $\sigma(-z)=1-\sigma(z)$，有 $\phi(z)-\phi(-z)=z$。对隐藏神经元的对角选择投影 $S$，令 $D=I-2S$，则
+
+$$
+\phi(Dz)=\phi(z)-Sz.
+$$
+
+实际块的计算是 $y=x+\operatorname{Attn}(\operatorname{LN1}(x))$、$z=W_1\operatorname{LN2}(y)+b_1$、$o=y+W_2\phi(z)+b_2$。只翻转选中神经元的 $W_1,b_1$，输出会少掉
+
+$$
+W_2SW_1\operatorname{LN2}(y)+W_2Sb_1.
+$$
+
+Bias 最多补常数项。前面的 Attention 没有同一个 LN2 输入；修改它又会改变 $y$ 和 MLP 的输入，不能把上式直接加回去就声称函数保持。恒等式成立不等于现有普通权重能实现补偿。这一直接构造未通过保持检查，不增加补偿支路。
+
+若进一步要求第一矩阵保留输入任务空间 $P$，必须 $SW_1P=0$；还要保留任务均值的原预激活，则须 $S(W_1\mu+b_1)=0$。在精确仿射任务空间中，被翻转的神经元本来就为零；编辑重新落入第 1 节固定补空间清理的适用类。近似为零不能推成保持定理，仍须独立误差与清理代价验证。
+
+结论只关闭这种“选中神经元符号翻转、靠现有残差直接补差”的关系；没有证明所有非线性联合机制不可能，也不把它称作创新。尚未找到符合约束的候选。
+
+## 10. 本轮决定
 
 不生成保护权重，不启动 GPU 实验。现在没有一个同时通过保持条件、不同于旧机制及公开清理代价检查的可信新候选。
 

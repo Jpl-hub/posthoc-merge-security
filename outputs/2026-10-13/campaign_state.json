@@ -8,13 +8,13 @@
   "server": "3090",
   "allow_4090": false,
   "status": "in_progress",
-  "stage": "nonlinear_residual_preservation_review",
+  "stage": "context_dependent_score_preservation_review",
   "active_jobs": [],
   "breakthrough_verified": false,
   "new_protected_weights": 0,
-  "updated_utc": "2026-10-12T21:00:44.987937+00:00",
+  "updated_utc": "2026-10-12T21:17:53.887757+00:00",
   "goal_status": "Old unfinished usageLimited goal; create_goal rejected. Do not mark old research successful. Current-thread heartbeat is active.",
-  "next_action": "Check the exact QuickGELU odd-component identity phi(z)-phi(-z)=z against the pinned CLIP residual block ordering. Derive at most one ordinary-weight complement-only preservation relation using existing modules. Do not add a compensation branch/network or alter retained task computation. If required compensation crosses distinct LayerNorms, changes task-space parameters, reduces to global AGA-recoverable symmetry, or public zero-output deletion, reject before weights. Use source and archived evidence first; no rank/amplitude/layer/seed scan.",
+  "next_action": "Analyze one context-dependent Query-score nullspace at the already frozen block0/head0, rather than requiring a single output direction orthogonal to all Key contrasts. First derive the public affine score constraint and its closest-anchor cleaner with fixed Keys/upstream features. Determine whether this cleaner reaches the same state for original and release, and what useful target fusion computation it could remove. Use source and old target-training caches only; no partner selection, new weights, forwards, optimizer, or parameter scan. If it is just a broader observable nullspace with no demonstrated cleaning cost, close before a diagnostic. Do not reinterpret this as a successful defense or reopen the closed rank-one key-contrast candidate.",
   "constraints": [
     "No additional gradient fine-tuning",
     "No future partner in construction or selection",
@@ -73,6 +73,15 @@
       "new_model_forwards": 0,
       "new_classification_results": 0,
       "decision": "Linear paired change fails complement-only parameter preservation or exposes a public kernel; not a new defense. General nonlinear MLP cancellation remains conditional."
+    },
+    {
+      "name": "QuickGELU_sign_and_actual_residual_preservation",
+      "evidence": "results/literature_review/nonlinear_preservation_results.json",
+      "source_and_checkpoint_validation": "passed",
+      "new_model_forwards": 0,
+      "new_protected_weights": 0,
+      "new_classification_results": 0,
+      "decision": "Selected-neuron sign flip needs an LN2-dependent correction that the preceding Attention does not directly supply. Exact retained preactivation imposes zero selected task response and returns to fixed complement cleaning. This specific direct construction is closed; no universal nonlinear impossibility claim."
     }
   ]
 }
