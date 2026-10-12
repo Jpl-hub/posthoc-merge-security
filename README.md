@@ -1,275 +1,53 @@
-# Post-hoc Model Merging Security
+# posthoc-merge-security
 
-对已微调专家施加发布前后处理，尽量保持原任务能力，检验对未经授权融合及自适应恢复的保护。完整报告性能与防御权衡，不以单个准确率阈值作为唯一淘汰条件；不进行额外梯度微调，校准数据与闭式拟合均明确记录。
+已微调 CLIP ViT-B/32 专家的发布前后处理实验。目标是在不增加梯度微调、不依赖未来融合伙伴的条件下保持原任务能力，并干扰未经授权的参数融合。
 
-**目前没有有效新防御。**10月12日最新[Cars值响应路由](outputs/2026-10-12/value_conditioned_routing_eval/summary.md)保持独立77.66%→77.86%，直接融合/原版AGA仅下降0.037/0.050个百分点。公开单头Key替换恢复62.069%，原直接融合62.057%；0校准、0查询、0梯度。已停止，不调幅度/秩/层/头。前一[加权VO](outputs/2026-10-12/weighted_attention/summary.md)独立损失2.935个百分点，也已停止。
-
-[计算分解](outputs/2026-10-12/routing_response_audit/summary.md)证实：原生局部响应误差由校准0.292%变为确认6.921%，真实融合确认的分类间隔变化绝对比例中位仅1.179%，没有稳定下降方向。[机制复盘](outputs/2026-10-12/mechanism_review.md)区分输入能量、分类必要计算与参数恢复边界；不把这些有限反例当所有补空间防御不可能。
-
-此前：联合局部有损改写保留 MNIST 独立99.63%（原99.69%），AGA后融合降到64.93%；但公共局部替换＋256个硬标签原型已恢复94.93%，SVHN相对未保护直接融合损失1.96个百分点。原模型与发布模型的标签和恢复参数相同。连续分数恢复仍达96.88%，但SVHN代价17.87个百分点。Cars联合算子候选独立损失23.04个百分点，已停止。
-
-10月12日补查[最终投影的联合替换代价](outputs/2026-10-12/projection_dependency/summary.md)：在三层完整block之外加入投影替换，MNIST/Cars/DTD融合目标仅另下降0.41/0.95/0.69个百分点。独立删除代价不能代替融合恢复代价；没有新保护权重。另核查近期[SVC原文与作者源码](outputs/2026-10-12/svc_source_audit/notes.md)，只验证公式与协议差异，未运行完整方法。
+**当前研究已按用户要求暂停。没有确认可靠防御或论文级突破。**
 
 ## 当前结果
 
-- [有符号补空间与公开清理](outputs/2026-10-12/signed_complement/summary.md)：MNIST 独立损失0.01 pp，直接融合94.00%→91.91%，原版AGA93.23%→91.01%；PCA恢复93.48%（匹配对照93.92%），仍没有突破。原始计数、闭式系数、真实保护张量和预测前缀已独立复核；同一冻结规则在Cars原版AGA后仅下降0.1368 pp，已停止此方向族。
-- [最后一层CLS补空间匹配](outputs/2026-10-12/final_cls_matching/summary.md)：独立MNIST99.69%保持，3072个AGA匹配全部误导；直接融合仍94.00%，AGA后93.01%（原93.23%），未形成有效防御。相同层/样本的CLS与全部token几何、真实融合响应和逐图结果均复核。[第一版负结果](outputs/2026-10-12/complement_matching/summary.md)及[DDO源码核查](outputs/2026-10-12/ddo_source_audit/notes.md)保留；停止调参。
+只保留一个主要候选：[MNIST 局部 Attention／MLP 后处理组会汇报](reports/2026-10-12/组会汇报.md)。
 
-- [Cars局部不可逆斜投影](outputs/2026-10-12/oblique_recoding/summary.md)：独立损失0.0124个百分点，直接融合61.2486%（原62.0570%）；公开规范化已恢复61.9699%。中性折叠控制61.1615%，14行独立核验通过。不可逆参数损失未形成有效防御，停止此候选；未测原版AGA或伙伴性能。
-- [硬标签原型恢复](outputs/2026-10-11/prototype_recovery_gate/summary.md)：复用固定作者分类原语，局部学生融合MNIST94.93%、SVHN72.4647%，单专家98.71%；五次新全测试加五条参数恒等的匹配别名。[全专家省略对照](outputs/2026-10-11/prototype_omission_gate/summary.md)零新增查询，融合MNIST91.04%、SVHN63.2299%，单专家仅21.31%；没有完整专家恢复或新防御。[条件性机制结论](outputs/2026-10-11/hard_label_boundary.md)与[协议](outputs/2026-10-11/prototype_recovery_protocol.md)明确适用范围。
-- [完整三块替换与功能恢复](outputs/2026-10-11/block_restore_norm_gate_cars/summary.md)：补齐 Cars 9–11 层的 LayerNorm，三次闭式恢复仍达融合60.2413%（原62.0570%），没有显示额外恢复障碍；教师未保护。[不可逆重表示条件](outputs/2026-10-11/irreversible_factorization.md)限定后续构造。
-- [已知伙伴定向补空间的恢复检查](outputs/2026-10-11/partner_nullspace_gate/summary.md)：九次新全测试及独立复核。公开替换第0层V后，MNIST独立99.69%、融合MNIST99.37%、SVHN92.5054%；使用已知伙伴，仅为机制预检，没有合格保护候选或抗AGA成果。
-- [联合局部有损改写的完整恢复](outputs/2026-10-11/local_release_audit/summary.md)：真实MNIST发布权重、原版AGA、参数替换和256图恢复同条件对照，候选仍被恢复；伙伴损失明确报告。
-- [Cars联合算子改写失败](outputs/2026-10-11/operator_recoding_cars/summary.md)：独立77.6645%→54.6201%，已生成并复核真实权重；停止，不调秩或ridge。
-- [Cars中间层功能恢复控制](outputs/2026-10-11/block_restore_gate_cars/summary.md)：三次公开基底闭式恢复，独立74.0953%、融合60.2288%；访问强于类别分数查询，教师未保护，不能当防御结果。
-- [联合头有损表示](outputs/2026-10-11/head_collapse/summary.md)：三个 rank-128 → 64 算子，实际发布权重与全部同条件恢复已复核，仍无保护效果。公开替换的任务代价及适用边界明确记录；[协议](outputs/2026-10-11/head_collapse_protocol.md)与[首次接口失败](outputs/2026-10-11/head_collapse_setup_failure/summary.md)均保留。不把现有头压缩作为创新。
-- [整体省略专家后的功能恢复](outputs/2026-10-11/omission_recovery/summary.md)：没有合入 MNIST 专家参数，256 查询使目标恢复到 95.11%，同时 SVHN 降至 45.04%。原教师同条件控制、四项完整测试及实际伙伴代价均记录；不称整体融合恢复成功。
-- [响应压缩的功能恢复检验](outputs/2026-10-11/compression_probe/summary.md)：一个明确标注事后选择的压缩对照，查询与压缩校准不重叠；六次新完整评价、相同查询的原专家控制、完整支持替换和逐图伙伴核查。仍未达到保护目标。
-- [公开响应约束清理](outputs/2026-10-11/response_cleanup/summary.md)：固定闭式解与均值补偿，44 次新完整评价、44 条明确复用对照，清理后接作者原版 AGA。六份实际权重及 64 处局部求解均精确复核。[协议](outputs/2026-10-11/response_cleanup_protocol.md)记录条件与边界。
-- [分类间隔编辑](outputs/2026-10-11/path_margin/summary.md)：一次解析构造、两份实际权重、26 次新完整评价，明确复用 42 行冻结对照／状态恒等结果；原版 AGA、功能恢复与浮点核验均记录，仍未达到保护目标。[协议](outputs/2026-10-11/path_margin_protocol.md)与[公开回填反例](outputs/2026-10-11/mechanism_boundary.md)约束后续构造。
-- [融合路径敏感性候选](outputs/2026-10-11/path_subspace/summary.md)：48 个细粒度联合方向、β=0.2/0.5、两份真实发布权重、原版 AGA／参数替换／256 图恢复同条件对照；尚无有效防御。[构造协议](outputs/2026-10-11/path_subspace_protocol.md)记录数学、校准与 DTD 取样失败修订。
-- [共享数字 head 与输入子空间恢复](outputs/2026-10-11/input_score_recovery/summary.md)：固定补充攻击，完整 MNIST／SVHN／DTD／Cars 测试；校准保持没有泛化到 SVHN 测试，没有新防御。[机制检查](outputs/2026-10-11/mechanism_boundary.md)另排除可代数还原的激活分拆族。
-- [保持两项伙伴预测的功能恢复](outputs/2026-10-11/score_recovery/summary.md)：256 张图、一次闭式拟合，MNIST 87.23% → 96.27%、DTD 47.23% → 58.24%；各自另外两个伙伴完整逐图预测不变，尚无有效新防御。
-- [MNIST／DTD 局部任务删除](outputs/2026-10-11/local_erasure/summary.md)：两个固定点、七条恢复路径，无性能门槛；MNIST 原版 AGA 后下降 6.78 pp，重缩放恢复目标至 98.90% 并损失伙伴能力，未获得有效新防御。
-- [MNIST 主任务方向删除代价](outputs/2026-10-11/critical_subspace_mnist/summary.md)：细粒度联合删除仍便宜，固定方向族已停止；[近期代码论文精读](outputs/2026-10-11/reading_focus.md)核对 AGA、NUFILT 与 SLOA 的机制边界。
-- [丢弃专家的完整测试基线](outputs/2026-10-11/expert_omission/summary.md)：固定系数，分别将目标任务向量置零，并检查伙伴任务；用于明确当前准确率指标的防御空间，不是原版 AGA 或恢复原权重的结果。
-- [沿输入子空间删除更新](outputs/2026-10-11/subspace_recovery_cars/summary.md)：七个精确方向投影的任务代价为零；公开协方差规则只覆盖部分方向，保护后恢复未验证。
-- [Cars 细粒度预检](outputs/2026-10-11/fine_subspace_cars/summary.md)：独立确认响应分离，实际编辑支持替换的条件恢复下限为 61.67%，未进入保护构造。
-- [Cars 跨模块功能敏感性](outputs/2026-10-10/functional_contrast_cars/summary.md)：两个冻结幅度、三个完整测试集、原版 AGA 及公开替换同条件对照；24 方向族的校准一阶 RMS 对比上限约 1.0933 倍，未获得有效防御。
-- [MNIST／Cars／DTD 关键区域定位](outputs/2026-10-10/task_profile/summary.md)：Cars 9–11 层联合替换的独立损失 11.47 pp、八专家融合下降 6.20 pp；这是未保护模型的替换基线。
-- [Cars 局部响应迁移](outputs/2026-10-10/task_relocation_cars/summary.md)：只使用目标与公开预训练模型，首层逆解未收敛；无独立准确率、AGA 或防御成功结果。
-- [实际编辑支持的替换下限](outputs/2026-10-10/relocation_public_reset/summary.md)：V／Attention 输出／MLP 替换达到 60.11%；同支持保护相对当前原始融合最多下降 5.62 pp，未获得有效候选。
-- [10 月 11 日汇报](outputs/2026-10-11/report.md)与[讲稿](outputs/2026-10-11/talk.md)：10 月 10 日晚更新，围绕恢复漏洞和机制结论。
-- [目标专家任务定位](outputs/2026-10-10/task_support_mnist/summary.md)：仅 MNIST 选择，独立贡献不能替代融合恢复代价；未找到合格局部支持。
-- [四个完整 block 替换](outputs/2026-10-10/subspace_compensation_mnist_block_reset/summary.md)：同四块内、架构不变的编辑具有 96.34% 的条件恢复下限。
-- [LN 规范化＋FC 替换](outputs/2026-10-10/subspace_compensation_mnist_canonical_fc/summary.md)：公开消去精确缩放绑定，旧候选仍恢复至 99.25%。
-- [七任务 PaRaMS／作者 AGA](outputs/2026-10-10/eight_task/params_seven_protection/summary.md)：八专家参与融合，七个完整测试集；本配置未抵抗 AGA。EuroSAT 原划分及 AGA Table 6 仍未对齐。
-- [只恢复受保护专家的 AGA](outputs/2026-10-10/subspace_compensation_mnist_selected_aga/summary.md)：保持伙伴原样的完整测试对照。
-- [联合构造、推导与淘汰依据](outputs/2026-10-10/joint_transfer_notes.md)：冻结配置、全部已测攻击与无重拟合诊断。
-- [固定响应可表示性诊断](outputs/2026-10-10/response_transfer_probe/summary.md)：数值 LS 没有改善确认误差，公开符号可精确还原 Attention 输出。
-- [类别响应重编译](outputs/2026-10-10/class_response_recompile/summary.md)：一次闭式拟合，独立确认损失 6.75 pp，按冻结门槛停止。
-- [实验前必要条件](outputs/2026-10-10/search_constraints.md)：完整支持替换、分类头零空间及响应可表示性。
+| MNIST 准确率 | 原始专家对照 | 发布专家 |
+|---|---:|---:|
+| 独立运行 | 99.69% | 99.63% |
+| 直接融合 | 94.00% | 78.33% |
+| 作者原版 AGA 后融合 | 93.23% | 64.93% |
+| 公开替换＋256 次类别标签查询恢复 | 94.93% | 94.93% |
 
-## 环境与资源
+融合包含八个专家，Task Arithmetic 系数为 0.2。候选只用目标训练校准数据，包含三次闭式响应拟合，没有额外梯度微调。结果说明存在真实融合干扰；公开替换和有限查询恢复仍可消除保护效果。完整协议、伙伴任务代价和适用边界见报告。
 
-GPU 环境为 Python 3.12.3、PyTorch 2.3.0+cu121、RTX 4090 D 24 GB。依赖使用独立环境；先确认现有 CUDA PyTorch 可用。
+## 目录
+
+- `reports/2026-10-12/`：唯一主报告、结果图及其绘图代码。
+- `results/mnist/`：冻结构造、融合评测、类别标签恢复的轻量原始记录与复核证据。
+- `results/reproduction/`：已有七个任务的 PaRaMS／AGA 基线证据，不作为完整 Table 6 复现。
+- `experiments/`：三个候选与攻击入口，以及运行它们所需的共享模块。
+- `configs/`：所选候选、评测协议、源码与 checkpoint 指纹。
+- `results/index.json`：当前证据与原始路径的对应关系。
+- `results/history.csv`：历史记录索引；旧报告和失败入口已移出当前目录。
+- `results/cleanup.json`：清理范围与服务器归档位置。
+
+## 复核与复现
+
+主要入口分别为 `joint_lossy_recoding.py`、`local_release_audit.py`、`prototype_recovery_gate.py`。融合、数据集和 AGA 使用已有作者实现，源码版本固定在 `configs/sources.json`。
+
+历史实验必须按各自 `launch.json` 的 `source_commit` 恢复代码与协议：
+
+| 阶段 | 冻结代码版本 | 轻量证据 |
+|---|---|---|
+| 构造与独立效用 | `c67ceebce20fc98c747b13000cc5d1dee53d317e` | `results/mnist/construction/` |
+| 融合与恢复评测 | `65be298bb40ebc5382530479ad167d8de8535b3c` | `results/mnist/evaluation/` |
+| 类别标签查询恢复 | `8577d9a104b7cfe48cddf20f6113a41d4b514114` | `results/mnist/hard_label_recovery/` |
+
+清理后的目录删去了旧指纹清单引用的无关历史文件，因此整份冻结清单的复核应在对应 Git 版本中进行。原始协议和结果没有重写。原目录最后完整版本为 `75b61cf`，普通 Git 历史保留。
+
+模型、数据和原始预测只存放在已有 GPU 服务器。服务器项目目录为 `/root/autodl-tmp/merge_security_20261009`；旧输出已移至 `/root/autodl-tmp/research_archive/2026-10-12/raw_outputs`，所选结果及其必要父记录通过链接保留原路径。本地清理前快照及服务器代码快照也保存在该归档目录。
+
+绘图只读取保存的计数，不运行模型：
 
 ```bash
-python -m pip install numpy==1.26.4 scipy==1.13.1 open-clip-torch==2.0.2 gdown==5.2.0 huggingface_hub==0.24.7
-python -m pip install -r requirements-params.txt
-git clone https://github.com/krumpguo/secure-merge-attack.git external/secure-merge-attack
-git -C external/secure-merge-attack checkout fb61429f5e6f3517102d506697a150ac26abbdea
-git clone https://github.com/mlfoundations/task_vectors.git external/task_vectors
-git -C external/task_vectors checkout 826a64c67082fab0f40628233287948f0f8d7fa3
-git clone https://github.com/ISCT-W/PaRaMS.git external/PaRaMS
-git -C external/PaRaMS checkout 4159a9a8bf253088694154d944f4583db8eca60e
+python reports/2026-10-12/plot.py
 ```
 
-源码 pin 见 [configs/sources.json](configs/sources.json)。作者 AGA 函数体保持原样；同时保存原始字节和统一换行后的指纹。
-
-权重来自 [Task Arithmetic 官方仓库](https://github.com/mlfoundations/task_vectors#checkpoints)，17 个已取得文件的指纹见 [configs/checkpoints.json](configs/checkpoints.json)。默认目录为 `checkpoints/ViT-B-32/`、`data/`、`external/`；资源准备和缺项见[八任务状态](outputs/2026-10-09/eight_task/status.md)。
-
-数据、checkpoint、原始预测、完整日志及缓存只保存在服务器；Git 和本地只保留代码、协议、轻量计数、核验记录及图表。凭据与登录状态不进入仓库。
-
-## 运行当前实验
-
-以下命令在服务器执行。每次使用新的输出目录，避免覆盖已保存结果；环境变量固定运行平台、随机哈希及计算线程。保护、融合、恢复及评价均使用已有作者代码，额外攻击单列。
-
-最后一层CLS候选源码冻结于`b292a09`，依赖服务器保存的父实验原始预测与失败设置的发布权重；复核时使用同一源版本。没有新幅度或秩搜索：
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/complement_matching.py --config configs/final_cls_matching.json --manifest outputs/2026-10-12/final_cls_matching/launch.json --output outputs/final_cls_check
-python experiments/complement_matching.py --validate --config configs/final_cls_matching.json --manifest outputs/2026-10-12/final_cls_matching/launch.json --output outputs/final_cls_check
-```
-
-局部斜投影源码冻结于 `df6a130`，复用256张历史目标训练校准图，不使用标签或未来伙伴构造。需要父实验的原始数组及索引；新输出目录须不存在：
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/oblique_recoding.py --config configs/oblique_recoding.json --manifest outputs/2026-10-12/oblique_recoding/launch.json --output outputs/oblique_check
-python experiments/oblique_recoding.py --validate --config configs/oblique_recoding.json --manifest outputs/2026-10-12/oblique_recoding/launch.json --output outputs/oblique_check
-```
-
-最终投影检验沿用历史选区与已审计原融合数组，无新校准或拟合。源码冻结于 `51cc05b`，需要服务器父实验的原始数组：
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/public_restore_gate.py --projection-dependency --config configs/projection_dependency.json --manifest outputs/2026-10-12/projection_dependency/launch.json --output outputs/projection_dependency_check
-python experiments/public_restore_gate.py --projection-dependency --validate --config configs/projection_dependency.json --manifest outputs/2026-10-12/projection_dependency/launch.json --output outputs/projection_dependency_check
-```
-
-硬标签原型需要历史发布编辑、原始预测与256训练索引。作者只下载一个已固定的源文件，不运行训练入口：
-
-```bash
-mkdir -p external/nc_by_design/networks
-curl -fL https://raw.githubusercontent.com/pakoromilas/nc_by_design/4ee84352e42194b60cfa505f62ebc369942230c7/networks/resnet_big.py -o external/nc_by_design/networks/resnet_big.py
-cp outputs/2026-10-11/prototype_source_audit/source.json external/nc_by_design/source.json
-```
-
-局部实验源为 `8577d9a`，整体省略源为 `0907954`。核验历史结果应使用对应源码提交及轻量文件，并保留服务器上的父实验重文件；源码指纹会拒绝混用版本。整体省略入口复用已保存的原型实验标签，零新查询：
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/prototype_recovery_gate.py --config configs/prototype_omission_gate.json --manifest outputs/2026-10-11/prototype_omission_gate/launch.json --output outputs/prototype_omission_check
-python experiments/prototype_recovery_gate.py --validate --config configs/prototype_omission_gate.json --manifest outputs/2026-10-11/prototype_omission_gate/launch.json --output outputs/prototype_omission_check
-```
-
-三层完整替换控制复用同一恢复实现，新增配置把 LayerNorm 也纳入公开替换。需要现有服务器上的父结果、原始预测和训练索引；教师未保护。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/block_restore_gate.py --config configs/block_restore_norm_gate.json --manifest outputs/2026-10-11/block_restore_norm_gate_cars/launch.json --output outputs/block_norm_check
-python experiments/block_restore_gate.py --validate --config configs/block_restore_norm_gate.json --manifest outputs/2026-10-11/block_restore_norm_gate_cars/launch.json --output outputs/block_norm_check
-```
-
-已知伙伴恢复预检需要历史校准索引及冻结依赖，来源可复用所保存的launch清单；它只检查两个单投影支持，不生成经过效用认证的保护模型。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/partner_nullspace_gate.py --manifest outputs/2026-10-11/partner_nullspace_gate/launch.json --output outputs/partner_gate_check
-python experiments/partner_nullspace_gate.py --validate --manifest outputs/2026-10-11/partner_nullspace_gate/launch.json --output outputs/partner_gate_check
-```
-
-联合头构造只使用目标校准和既有目标层选择；发布编辑保存后再载入其他专家。校准驱动的 SVD 压缩明确标注，没有额外梯度或迭代微调。需要保留前序协议中的训练索引，复核和作图单独执行。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/head_collapse.py --output outputs/head_check
-python experiments/validate_head_collapse.py --output outputs/head_check
-python experiments/plot_results.py --head-collapse --output outputs/head_check
-```
-
-响应清理依赖三份已核验的服务器发布权重；是附加恢复诊断。压缩检验默认引用该父目录，修改自定义父路径时先固定配置，之后执行同条件查询对照。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/response_cleanup.py --output outputs/response_cleanup_check
-python experiments/validate_response_cleanup.py --output outputs/response_cleanup_check
-python experiments/plot_results.py --response-cleanup --output outputs/response_cleanup_check
-python experiments/compression_probe.py --output outputs/compression_check
-python experiments/compression_probe.py --validate --output outputs/compression_check
-python experiments/omission_recovery.py --output outputs/omission_check
-python experiments/omission_recovery.py --validate --output outputs/omission_check
-python experiments/omission_partner_cost.py --parent outputs/omission_check
-python experiments/plot_results.py --omission-recovery --output outputs/omission_check
-```
-
-分类间隔检验依赖已核验 `path_subspace` 的服务器原始张量。构造只使用目标伪标签与校准数据，一次解析求解后冻结权重；不额外梯度训练。精确子空间回填仍是条件性反例，实际响应预算清理不能被当成它对所有候选的成功证明。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/path_margin.py --output outputs/margin_check
-python experiments/validate_path_margin.py --output outputs/margin_check
-python experiments/plot_results.py --path-margin --output outputs/margin_check
-```
-
-融合路径候选用目标专家与公开预训练构造，不额外微调；固定方向与幅度后再加载融合伙伴。默认生成两份候选并运行全部对照。重权重和逐图预测只在服务器，当前没有方法成功或创新声明。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/path_subspace.py --output outputs/path_check
-python experiments/path_subspace.py --validate --output outputs/path_check
-python experiments/plot_results.py --path-subspace --output outputs/path_check
-```
-
-已公布运行的构造源冻结于 `e38bc26`，后续只修订核验函数和其入口。复核旧结果时用 `git show e38bc26:experiments/path_subspace.py > /tmp/path_subspace_e38bc26.py` 导出源，并给验证入口传 `--frozen-source /tmp/path_subspace_e38bc26.py`；验证器核对构造／运行函数的 AST 没有变化。
-
-局部任务删除使用两个运行前固定发布点；所有攻击均运行，无准确率淘汰门槛。重缩放和输出拟合单列于原版 AGA，三套完整测试不称八任务均值。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/local_erasure.py --output outputs/local_deletion_check
-python experiments/validate_results.py --local-erasure --output outputs/local_deletion_check
-python experiments/plot_results.py --local-erasure --output outputs/local_deletion_check
-```
-
-针对已冻结的局部删除，原生分数恢复单独运行。默认依赖父实验逐图预测和验证记录；在自定义父目录上复核时，修改 `configs/score_recovery.json` 的 `parent` 后先固定协议。只保持两个已测伙伴 head，未覆盖全部七个伙伴。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/score_recovery.py --output outputs/score_recovery_check
-python experiments/validate_results.py --score-recovery --output outputs/score_recovery_check
-python experiments/plot_results.py --score-recovery --output outputs/score_recovery_check
-```
-
-共享 MNIST／SVHN head 的补充检查复用上述两轮冻结结果。输入约束只保证校准图上的 SVHN 响应，必须查看完整测试代价；它是攻击诊断。验证入口复算原始张量，重文件仍只存服务器。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/input_score_recovery.py --output outputs/input_recovery_check
-python experiments/input_score_recovery.py --validate --output outputs/input_recovery_check
-python experiments/plot_results.py --input-score-recovery --output outputs/input_recovery_check
-```
-
-最新方向与替换代价的预检入口如下；两轮都没有构造保护模型。复核投影诊断需要服务器父实验的原始激活。丢弃专家检查使用完整官方测试，预处理图片只缓存在服务器内存。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/critical_subspace.py --output outputs/critical_check
-python experiments/validate_results.py --critical-subspace --output outputs/critical_check
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/fine_subspace.py --config configs/fine_subspace_cars.json --output outputs/fine_check
-python experiments/validate_results.py --fine-subspace --output outputs/fine_check
-python experiments/plot_results.py --fine-subspace --output outputs/fine_check
-python experiments/subspace_recovery.py --config configs/subspace_recovery_cars.json --output outputs/projection_check
-python experiments/validate_results.py --subspace-recovery --output outputs/projection_check
-python experiments/plot_results.py --subspace-recovery --output outputs/projection_check
-python experiments/expert_omission.py --config configs/expert_omission.json --output outputs/omission_check
-python experiments/validate_results.py --expert-omission --output outputs/omission_check
-```
-
-此前的跨模块敏感性构造已得到负结果，不继续调幅度。如下入口用于复核冻结协议。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/functional_contrast.py --config configs/functional_contrast_cars.json --output outputs/contrast_check
-python experiments/validate_results.py --functional-contrast --output outputs/contrast_check
-python experiments/plot_results.py --functional-contrast --output outputs/contrast_check
-```
-
-七任务对照：每次保护一个专家，八专家按固定 TA 系数 0.2 融合。PaRaMS 使用一轮独立置换组 assignment 和预先固定的 Attention 缩放。
-
-```bash
-JAX_PLATFORMS=cpu PYTHONHASHSEED=0 OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 python experiments/eight_task_benchmark.py --protection params --protection-checks MNIST DTD SVHN GTSRB RESISC45 Cars SUN397 --output outputs/params_check
-python experiments/validate_results.py --eight-protection --output outputs/params_check
-python experiments/plot_results.py --eight-protection --output outputs/params_check
-python experiments/build_report.py --eight-protection --output outputs/params_check
-```
-
-任务定位不生成保护，使用 MNIST 标签选择替换支持；伙伴在选择冻结后仅用于评价。训练确认结果不与官方测试混表。
-
-```bash
-python experiments/operator_diagnostics.py --task-support --config configs/task_support_mnist.json --output outputs/task_support
-python experiments/validate_results.py --task-support --output outputs/task_support
-python experiments/plot_results.py --task-support --output outputs/task_support
-```
-
-三任务定位与一次 Cars 响应迁移；迁移构造已经在逆解门槛停止。每次重跑构造使用新目录；最后一条核验命令需要服务器上的原始诊断张量。
-
-```bash
-python experiments/operator_diagnostics.py --task-profile --config configs/task_profile.json --output outputs/task_profile
-python experiments/validate_results.py --task-profile --output outputs/task_profile
-python experiments/task_relocation.py --config configs/task_relocation_cars.json --output outputs/cars_relocation
-python experiments/task_relocation.py --root-diagnostic --output outputs/cars_relocation
-python experiments/validate_results.py --task-relocation --output outputs/cars_relocation
-python experiments/public_reset.py --config configs/relocation_public_reset.json --output outputs/reset_floor
-python experiments/validate_results.py --public-reset --output outputs/reset_floor
-```
-
-旧四层候选的保存与完整测试入口；后续恢复复用冻结保护，不重新生成；AGA 只运行受保护专家。双任务系数为 0.5，与七任务结果分开报告。
-
-```bash
-python experiments/subspace_interference.py --config configs/subspace_compensation_mnist.json --output outputs/mnist_dev
-python experiments/validate_results.py --subspace-interference --output outputs/mnist_dev
-python experiments/subspace_interference.py --evaluate-saved outputs/mnist_dev --output outputs/mnist_test
-python experiments/validate_results.py --subspace-test --output outputs/mnist_test
-python experiments/subspace_interference.py --evaluate-saved outputs/mnist_dev --recovery-groups aga_selected --output outputs/mnist_selected_aga
-python experiments/validate_results.py --subspace-test --output outputs/mnist_selected_aga
-python experiments/subspace_interference.py --evaluate-saved outputs/mnist_dev --recovery-groups pretrained_block --output outputs/mnist_block_reset
-python experiments/validate_results.py --subspace-test --output outputs/mnist_block_reset
-python experiments/subspace_interference.py --evaluate-saved outputs/mnist_dev --recovery-groups canonical_fc --output outputs/mnist_canonical_fc
-python experiments/validate_results.py --subspace-test --output outputs/mnist_canonical_fc
-```
-
-`validation.json` 在服务器重新统计原始逐图预测、配对计数，并检查源码、参数及数据子集指纹。本地缺原始预测时不能声称完成同一核验。论文报告数字不记作本项目结果，训练开发子集不与官方 test 拼表。
-
-## 工程检查与研究记录
-
-```bash
-python -m ruff check experiments
-python -m ruff format --check experiments
-python -m compileall -q experiments
-```
-
-- [文献核对](outputs/2026-10-09/post_meeting/reading_update.md)：NUFILT、AGA、PaRaMS、MergeBarrier、MergeLock、GRAIL、ReACT 等。
-- [组会后要求与调整](outputs/2026-10-09/post_meeting/review.md)。
-- [旧候选机制及全部对照](outputs/2026-10-09/post_meeting/subspace_interference_notes.md)。
-- [恢复边界与额外功能攻击](outputs/2026-10-09/post_meeting/recovery_boundary_notes.md)。
-- [早期实验详细记录](outputs/2026-10-09/experiment_details.md)与[代码审计](outputs/2026-10-09/code_audit.md)。
-
-研究参考：[On the Vulnerability of Parameter-Level Defenses to Model Merging](https://arxiv.org/abs/2606.30360v1)。当前未宣称得到抗自适应恢复的新防御或完成论文八任务原表复现。
+使用已有 Python 3.12／Torch 2.3 服务器环境。未经重新授权，不启动探索或续跑。

@@ -1,9 +1,0 @@
-{
-  "parents": [
-    "outputs/2026-10-11/prototype_recovery_gate",
-    "outputs/2026-10-11/prototype_omission_gate"
-  ],
-  "scope": "One audit of the existing fixed 256-image attack. Use public MNIST training labels; no teacher or test labels for prototypes. Require exact labels and exact author prototypes before aliasing any previously validated test result. If equality fails, record it without claiming teacher-free recovery success or starting a search.",
-  "threat_model": "Public labeled target calibration is allowed for this stronger attack only. Distinct from the original AGA protocol. Partial-reset student keeps target parameters outside its reset support. Whole-omission student uses only public anchor and seven other experts. Feature arrays are reused from independently validated parents; no newly measured accuracy or new defense.",
-  "forbidden_claims": "No eight-task mean, universal impossibility, full partner preservation, complete native expert recovery, defense breakthrough, or novel classification primitive. Parent teacher queries occurred historically; replacing their labels with public data is a verified algorithmic audit, not a newly executed end-to-end teacher-free run."
-}

@@ -1,9 +1,0 @@
-{
-  "parent": "outputs/2026-10-11/operator_recoding_cars",
-  "nufilt_config": "configs/nufilt_alignment.json",
-  "rank": 32,
-  "covariance_cutoff": 1e-10,
-  "exploratory_native_loss_limit_pp": 2.0,
-  "additional_calibration_or_fitting": true,
-  "scope": "One context/output-weighted VO candidate. Reuse target-only Cars256 historical calibration and prior target-selected layers9-11. QK, MLP, LayerNorm, head and other tensors remain original. No gradient, decoder-response reconstruction, future partner, rank or strength sweep. Reuse head_collapse.factor on each head's actual attended inputs; minimize covariance-weighted outgoing response error at fixed rank32 using pinned author NUFILT SVD. Layers9/10 retain all consumed tokens; final11 uses CLS only. Calibrated closed-form low-rank approximation is explicit, not data-free. First measure native official8041 and historical disjoint2048 training confirmation with actual compiled weights; then separately freeze fusion/AGA/recovery only if utility is plausible. Reuses known compression primitives; no novelty or security claim."
-}
