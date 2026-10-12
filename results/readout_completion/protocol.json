@@ -1,0 +1,21 @@
+{
+  "question": "Does publicly completing the final MLP output complement remove useful target information in a real merger?",
+  "targets": [
+    "MNIST",
+    "DTD"
+  ],
+  "edited_site": "Final block (11) MLP c_proj weight and bias only",
+  "retained_space": "Span of mean axis and centered class readout after target ln_post gamma; exact numerator space, not an input PCA or the NUFILT theorem",
+  "completion": "Wc=P W+(I-P)W0; bc=P b+(I-P)b0; target head and public anchor only",
+  "limitation": "Preserves mean and centered class numerator; LayerNorm variance and its class-dependent beta offset can change classification. No exact accuracy guarantee.",
+  "calibration": "256 official training images check the equation; 256 disjoint training images confirm it. No data fitting or labels in the projector.",
+  "beta": 0.5,
+  "coefficient": 0.5,
+  "partner_load": "Only after both target projectors, completion weights and fingerprints are frozen",
+  "stop": "If completion preserves native and merged capability, stop this fixed public output-complement family before constructing noise; no rank or strength changes",
+  "attack_scope": "Public completion only, not AGA or functional reconstruction; a diagnostic of unprotected experts, not an attacked protected candidate",
+  "prior_test_observation": true,
+  "new_defense_candidates": 0,
+  "source_comparison": "Old final CLS candidate changed c_fc input-PCA complement. This measures c_proj OUTPUT complement defined by actual class contrasts; no old noise or matching objective is reused.",
+  "seed": 20261013
+}

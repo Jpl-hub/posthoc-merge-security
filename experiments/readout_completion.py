@@ -105,7 +105,13 @@ def run(args):
     root = Path(args.checkpoints)
     pins = json.loads(Path("configs/checkpoints.json").read_bytes())["files"]
     hashes = {}
-    for name in ["zeroshot.pt", "MNIST/finetuned.pt", "DTD/finetuned.pt", "head_MNIST.pt", "head_DTD.pt"]:
+    for name in [
+        "zeroshot.pt",
+        "MNIST/finetuned.pt",
+        "DTD/finetuned.pt",
+        "head_MNIST.pt",
+        "head_DTD.pt",
+    ]:
         hashes[name] = digest(root / name)
         assert hashes[name] == next(p["sha256"] for p in pins if p["path"] == "ViT-B-32/" + name)
     load = checkpoint_loader(Path(args.author_repo))
@@ -117,12 +123,20 @@ def run(args):
         spaces[task] = classifier_space(model, head)
         completed = complete(model, anchor, spaces[task]["projector"])
         torch.save(
-            dict(space=spaces[task], completed=completed.model.visual.transformer.resblocks[11].mlp.c_proj.state_dict()),
+            dict(
+                space=spaces[task],
+                completed=completed.model.visual.transformer.resblocks[11].mlp.c_proj.state_dict(),
+            ),
             output / f"artifacts/{task}.pt",
         )
-        train = (MNIST(args.data, train=True, transform=model.val_preprocess)
-                 if task == "MNIST" else DTD(args.data, split="train", partition=1, transform=model.val_preprocess))
-        indices[task] = split_training(train, dict(calibration=256, confirmation=256), protocol["seed"])
+        train = (
+            MNIST(args.data, train=True, transform=model.val_preprocess)
+            if task == "MNIST"
+            else DTD(args.data, split="train", partition=1, transform=model.val_preprocess)
+        )
+        indices[task] = split_training(
+            train, dict(calibration=256, confirmation=256), protocol["seed"]
+        )
         save_json(output / "training_indices.json", indices)
         details = []
         for split in ["calibration", "confirmation"]:
@@ -135,76 +149,119 @@ def run(args):
             observed = features @ (head.weight.double() - head.weight.double().mean(0)).T
             equation_error = float((predicted - observed).norm() / observed.norm())
             assert equation_error < 2e-5
-            details.append(dict(
-                split=split, n=len(before), equation_relative_error=equation_error,
-                numerator_relative_change=float(((after-before) @ matrix).norm() / (before @ matrix).norm()),
-                mean_max_change=float((after.mean(-1)-before.mean(-1)).abs().max()),
-                native_changed_predictions=int(((features @ head.weight.double().T).argmax(-1) != (changed @ head.weight.double().T).argmax(-1)).sum()),
-                pre_ln_relative_change=float((after-before).norm()/before.norm()),
-            ))
+            details.append(
+                dict(
+                    split=split,
+                    n=len(before),
+                    equation_relative_error=equation_error,
+                    numerator_relative_change=float(
+                        ((after - before) @ matrix).norm() / (before @ matrix).norm()
+                    ),
+                    mean_max_change=float((after.mean(-1) - before.mean(-1)).abs().max()),
+                    native_changed_predictions=int(
+                        (
+                            (features @ head.weight.double().T).argmax(-1)
+                            != (changed @ head.weight.double().T).argmax(-1)
+                        ).sum()
+                    ),
+                    pre_ln_relative_change=float((after - before).norm() / before.norm()),
+                )
+            )
         own = model.model.visual.transformer.resblocks[11].mlp.c_proj.weight.double()
         base = anchor.model.visual.transformer.resblocks[11].mlp.c_proj.weight.double()
-        c = torch.eye(len(own), dtype=torch.float64)-spaces[task]["projector"]
+        c = torch.eye(len(own), dtype=torch.float64) - spaces[task]["projector"]
         proxy = interpolate(model, anchor, protocol["beta"])
         proxy_space = classifier_space(proxy, head)
         evidence[task] = dict(
-            retained_rank=spaces[task]["rank"], complement_rank=len(c)-spaces[task]["rank"],
+            retained_rank=spaces[task]["rank"],
+            complement_rank=len(c) - spaces[task]["rank"],
             span_error=spaces[task]["span_error"],
-            removed_task_update_energy_fraction=float((c @ (own-base)).square().sum()/(own-base).square().sum()),
-            proxy_readout_complement_fraction=float((c @ proxy_space["matrix"]).norm()/proxy_space["matrix"].norm()),
+            removed_task_update_energy_fraction=float(
+                (c @ (own - base)).square().sum() / (own - base).square().sum()
+            ),
+            proxy_readout_complement_fraction=float(
+                (c @ proxy_space["matrix"]).norm() / proxy_space["matrix"].norm()
+            ),
             class_dependent_ln_offset_norm=float(spaces[task]["offset"].norm()),
             checks=details,
         )
         del model, completed, proxy, head
     save_json(output / "geometry.json", evidence)
-    save_json(output / "freeze.json", dict(
-        checkpoint_sha256=hashes, protocol_sha256=digest(output/"protocol.json"),
-        source_sha256={p.name:digest(p) for p in Path(__file__).parent.glob("*.py")},
-        artifacts_sha256={p.name:digest(p) for p in (output/"artifacts").glob("*.pt")},
-        future_partner_loaded=False,
-    ))
+    save_json(
+        output / "freeze.json",
+        dict(
+            checkpoint_sha256=hashes,
+            protocol_sha256=digest(output / "protocol.json"),
+            source_sha256={p.name: digest(p) for p in Path(__file__).parent.glob("*.py")},
+            artifacts_sha256={p.name: digest(p) for p in (output / "artifacts").glob("*.pt")},
+            future_partner_loaded=False,
+        ),
+    )
     print("FROZEN", json.dumps(evidence), flush=True)
     # Each completion was constructed independently before this shared pair is loaded.
-    models = {task:load(str(root/task/"finetuned.pt")).cpu().eval() for task in protocol["targets"]}
-    heads = {task:load(str(root/f"head_{task}.pt")).cpu().eval() for task in models}
-    tests = {task:(MNIST(args.data, train=False, transform=models[task].val_preprocess)
-                   if task=="MNIST" else DTD(args.data, split="test", partition=1, transform=models[task].val_preprocess)) for task in models}
+    models = {
+        task: load(str(root / task / "finetuned.pt")).cpu().eval() for task in protocol["targets"]
+    }
+    heads = {task: load(str(root / f"head_{task}.pt")).cpu().eval() for task in models}
+    tests = {
+        task: (
+            MNIST(args.data, train=False, transform=models[task].val_preprocess)
+            if task == "MNIST"
+            else DTD(args.data, split="test", partition=1, transform=models[task].val_preprocess)
+        )
+        for task in models
+    }
 
     def record(model, task, target, stage, preset):
-        chunks=[]
-        metric=evaluate(model, heads[task], make_loader(tests[task]), "cuda", lambda p,y:chunks.append((p,y)))
-        pred, labels=[torch.cat([v[i] for v in chunks]) for i in range(2)]
-        key="/".join([target,stage,preset,task])
-        predictions[key]=dict(prediction=pred,target=labels)
-        row=dict(target=target,stage=stage,preset=preset,dataset=task,**metric)
-        if preset=="completion":
-            before=predictions["/".join([target,stage,"original",task])]
-            assert torch.equal(labels,before["target"])
-            row["paired"]=paired_counts(before["prediction"].eq(labels),pred.eq(labels))
+        chunks = []
+        metric = evaluate(
+            model, heads[task], make_loader(tests[task]), "cuda", lambda p, y: chunks.append((p, y))
+        )
+        pred, labels = [torch.cat([v[i] for v in chunks]) for i in range(2)]
+        key = "/".join([target, stage, preset, task])
+        predictions[key] = dict(prediction=pred, target=labels)
+        row = dict(target=target, stage=stage, preset=preset, dataset=task, **metric)
+        if preset == "completion":
+            before = predictions["/".join([target, stage, "original", task])]
+            assert torch.equal(labels, before["target"])
+            row["paired"] = paired_counts(before["prediction"].eq(labels), pred.eq(labels))
         rows.append(row)
-        save_json(output/"results.json",rows)
-        torch.save(predictions,output/"artifacts/predictions.pt")
-        print("COMPLETION_RESULT",json.dumps(row),flush=True)
+        save_json(output / "results.json", rows)
+        torch.save(predictions, output / "artifacts/predictions.pt")
+        print("COMPLETION_RESULT", json.dumps(row), flush=True)
 
     for target in models:
-        partner=next(t for t in models if t!=target)
-        completed=complete(models[target],anchor,spaces[target]["projector"])
+        partner = next(t for t in models if t != target)
+        completed = complete(models[target], anchor, spaces[target]["projector"])
         saved = torch.load(output / f"artifacts/{target}.pt", map_location="cpu")
-        assert all(torch.equal(value, saved["completed"][key]) for key, value in
-                   completed.model.visual.transformer.resblocks[11].mlp.c_proj.state_dict().items())
-        for preset,model in [("original",models[target]),("completion",completed)]:
-            record(model,target,target,"standalone",preset)
-            merged=merge(anchor,model,models[partner],protocol["coefficient"])
-            for task in models: record(merged,task,target,"direct",preset)
+        assert all(
+            torch.equal(value, saved["completed"][key])
+            for key, value in completed.model.visual.transformer.resblocks[11]
+            .mlp.c_proj.state_dict()
+            .items()
+        )
+        for preset, model in [("original", models[target]), ("completion", completed)]:
+            record(model, target, target, "standalone", preset)
+            merged = merge(anchor, model, models[partner], protocol["coefficient"])
+            for task in models:
+                record(merged, task, target, "direct", preset)
             del merged
         del completed
-    save_json(output/"execution.json",dict(completed=True,gpu=torch.cuda.get_device_name(),new_defense_candidates=0,predictions_sha256=digest(output/"artifacts/predictions.pt")))
+    save_json(
+        output / "execution.json",
+        dict(
+            completed=True,
+            gpu=torch.cuda.get_device_name(),
+            new_defense_candidates=0,
+            predictions_sha256=digest(output / "artifacts/predictions.pt"),
+        ),
+    )
 
 
 if __name__ == "__main__":
-    parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output",required=True)
-    parser.add_argument("--checkpoints",default="checkpoints/ViT-B-32")
-    parser.add_argument("--author-repo",default="external/secure-merge-attack")
-    parser.add_argument("--data",default="data")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
+    parser.add_argument("--author-repo", default="external/secure-merge-attack")
+    parser.add_argument("--data", default="data")
     run(parser.parse_args())

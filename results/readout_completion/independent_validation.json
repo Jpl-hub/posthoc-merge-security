@@ -1,0 +1,104 @@
+{
+  "status": "passed",
+  "source_commit": "885848b",
+  "validator_sha256": "8b282069ef0e2449743771d6866cca8791d5df8e567d18eea37f8edb002006e2",
+  "new_defense_candidates": 0,
+  "rows_verified": 12,
+  "prefix_replays": 12,
+  "geometric_checks": [
+    {
+      "task": "MNIST",
+      "rank": 10,
+      "projector_error": 4.507106283574284e-15,
+      "equation_relative_error": 5.0452162213143665e-08,
+      "left_complement_identity_max_error": 7.511352650979575e-16,
+      "changed_tensors": [
+        "model.visual.transformer.resblocks.11.mlp.c_proj.weight",
+        "model.visual.transformer.resblocks.11.mlp.c_proj.bias"
+      ]
+    },
+    {
+      "task": "DTD",
+      "rank": 47,
+      "projector_error": 1.5270354086007504e-14,
+      "equation_relative_error": 8.126784235036104e-08,
+      "left_complement_identity_max_error": 1.9532986339498848e-15,
+      "changed_tensors": [
+        "model.visual.transformer.resblocks.11.mlp.c_proj.weight",
+        "model.visual.transformer.resblocks.11.mlp.c_proj.bias"
+      ]
+    }
+  ],
+  "recounts": [
+    {
+      "key": "MNIST/standalone/original/MNIST",
+      "correct": 9969,
+      "n": 10000
+    },
+    {
+      "key": "MNIST/direct/original/MNIST",
+      "correct": 9945,
+      "n": 10000
+    },
+    {
+      "key": "MNIST/direct/original/DTD",
+      "correct": 1303,
+      "n": 1880
+    },
+    {
+      "key": "MNIST/standalone/completion/MNIST",
+      "correct": 9969,
+      "n": 10000,
+      "prediction_mismatches": 0
+    },
+    {
+      "key": "MNIST/direct/completion/MNIST",
+      "correct": 9945,
+      "n": 10000,
+      "prediction_mismatches": 0
+    },
+    {
+      "key": "MNIST/direct/completion/DTD",
+      "correct": 1306,
+      "n": 1880,
+      "prediction_mismatches": 51
+    },
+    {
+      "key": "DTD/standalone/original/DTD",
+      "correct": 1493,
+      "n": 1880
+    },
+    {
+      "key": "DTD/direct/original/MNIST",
+      "correct": 9945,
+      "n": 10000
+    },
+    {
+      "key": "DTD/direct/original/DTD",
+      "correct": 1303,
+      "n": 1880
+    },
+    {
+      "key": "DTD/standalone/completion/DTD",
+      "correct": 1491,
+      "n": 1880,
+      "prediction_mismatches": 5
+    },
+    {
+      "key": "DTD/direct/completion/MNIST",
+      "correct": 9946,
+      "n": 10000,
+      "prediction_mismatches": 2
+    },
+    {
+      "key": "DTD/direct/completion/DTD",
+      "correct": 1303,
+      "n": 1880,
+      "prediction_mismatches": 5
+    }
+  ],
+  "official_DTD_partition": 1,
+  "official_DTD_test_sha256": "47e3ed1b45fbefab549bde8f817be9edbc745519c4fd2174de53181fadf8d43d",
+  "predictions_sha256": "71abd788d4ef8a03962ade173132062721e4ea73bbf707f2c15693c0189164db",
+  "scope": "Necessary-condition cost on unprotected experts, not measured recovery of a protected candidate; no full AGA or functional recovery measured"
+}
