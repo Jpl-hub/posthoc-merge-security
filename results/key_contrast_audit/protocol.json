@@ -1,0 +1,18 @@
+{
+  "question": "Does one frozen Attention head have a nonzero query-output complement invisible to native within-image key contrasts?",
+  "scope": "Necessary-condition audit, not a protection experiment or new algorithm",
+  "layer": 0,
+  "head": 0,
+  "selection": "First head in the already cached first block; no task or partner score selection",
+  "inputs": "Previously frozen 256 MNIST training examples, native and beta=0.5 target-to-anchor proxy activations",
+  "projection": "64-dimensional key-output within-image contrast covariance",
+  "exact_rank": "Eigenvalue tolerance = max(sample_count, head_dimension) * float64 epsilon * largest eigenvalue",
+  "approximate_retention": 0.9999,
+  "approximate_retention_basis": "Same fixed diagnostic retention as historical QK work, not fitted or scanned",
+  "completion": "Q_clean = P_K Q_expert + (I-P_K) Q_anchor, including query bias",
+  "new_protected_weights": 0,
+  "new_model_forwards": 0,
+  "device": "CPU only; cached linear algebra",
+  "stop": "A full-rank contrast space rules out the exact global complement at this one site. An approximate tail alone does not establish native preservation, useful cleaning cost or defense. Do not generate noise or scan other heads.",
+  "proxy_limitation": "The beta path is not a real partner fusion. No new classification or security claims can follow from its score responses."
+}

@@ -1,0 +1,28 @@
+{
+  "repository": "https://github.com/ml-postech/Trap2",
+  "commit": "ef65a26590d92fe07955c5621c08bb315484ff29",
+  "file": "training_scripts/8vision_training_full_trap2.py",
+  "source_sha256": "6fdf570e5286a525f5c274f8e60f42360f7150c72d90988297bc6a096fffc3ff",
+  "source_git_blob_sha": "6e3817b3c6d3e5c1457fc432c837cc7677d39916",
+  "bytes": 15993,
+  "source_markers": {
+    "optimizer_AdamW": [
+      121
+    ],
+    "scaled_parameter_formula": [
+      143
+    ],
+    "nominal_minus_offscale_loss": [
+      185
+    ],
+    "gradient_backward": [
+      187
+    ],
+    "optimizer_update": [
+      198
+    ]
+  },
+  "paper": "https://arxiv.org/html/2601.21898v2",
+  "scope": "Pinned official paper/source audit only; no execution, no training, no reproduction, no checkpoint download",
+  "decision": "Training-time method; cannot be adopted as our no-additional-finetuning constructor. Its scaling/transfer conditions should be used to audit mathematical sufficiency, not presented as a new posthoc idea."
+}
