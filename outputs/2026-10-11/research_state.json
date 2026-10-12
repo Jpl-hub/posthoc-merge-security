@@ -1,13 +1,13 @@
 {
   "status": "active",
-  "updated_utc": "2026-10-12T06:13:11.272706+00:00",
+  "updated_utc": "2026-10-12T06:49:50.022825+00:00",
   "automatic_nine_hour_campaign": false,
-  "basis": "User explicitly requested continuing research after asking about recovery terminology. Resume this turn only; canceled automatic continuation stays PAUSED.",
+  "basis": "Latest user explicitly asks to continue toward good effects. Existing canceled automations remain PAUSED.",
   "main_goal_unchanged": "No extra defender finetuning; unknown future fusion partner; preserve original expert ability and resist adaptive recovery.",
-  "current_scope": "Causal audit of final-MLP completion finished; actual observed drop persists in mixing residual, not functional-only intervention. No new release selected.",
-  "frozen_source_commit": "a9cde46791fe54cd92bf93335334288dcf8947d6",
+  "current_scope": "One fixed context/output-weighted VO candidate for Cars. Preserve QK/MLP/LN. Target256 calibration, existing weighted-rank primitive and pinned NUFILT SVD. No gradient, future partner, decoder reconstruction or sweep.",
+  "frozen_source_commit": "220449fcf68bbfad9c5a373af5e6c7109bc100ff",
   "active_server_job": null,
-  "next_action": "Stop last-MLP completion and its keep-count/scale/rank variants. A different construction must specify retained task computation, irreversible intervention, actual fusion-computation effect and public-restoration state before launch. Do not require nonzero matched full-support reset gap (algebraically impossible); judge the best attainable recovery accuracy and its actual target/partner costs. Existing final-MLP reset allows at most1.011pp suppression on this pool; three blocks+projection has6.489pp bound, neither is a defense result. No new eligible candidate selected; no active job or automatic continuation.",
+  "next_action": "Freeze weighted native utility and independently reconstruct actual context covariance and compiled operators; only if plausible freeze real fusion/AGA/public replacement follow-up.",
   "breakthrough_verified": false,
   "preliminary_result": {
     "target": "MNIST",
@@ -17,8 +17,8 @@
     "pca_fusion": 0.9348,
     "pca_matched_original": 0.9392
   },
-  "last_validated_result": "outputs/2026-10-12/linear_completion_causal/validation.json",
-  "conclusion": "No verified breakthrough. Final-MLP completion retains nativeDTD79.149 vs79.415 and lowers direct/AGA fusion to47.500/48.830 vs52.181/51.383, but public reset recovers51.170 identically for protected/matched control. New oracle causal audit: functional-only52.394/51.809; residual47.606/48.777. No new candidate or functional attack claim. Existing results preserved; automatic continuations stay canceled/PAUSED.",
+  "last_validated_result": "outputs/2026-10-12/operator_attention_ablation/validation.json",
+  "conclusion": "No verified breakthrough. Prior DTD effect erased by public reset; Cars Attention-only ablation loses5.136pp independently validated. Testing fixed context/output-weighted VO with QK/MLP/LN unchanged, no security claim.",
   "validated_results": {
     "partial_reset": "outputs/2026-10-11/prototype_recovery_gate/summary.md",
     "whole_omission": "outputs/2026-10-11/prototype_omission_gate/summary.md",
@@ -52,7 +52,8 @@
     "activation_regions": "outputs/2026-10-12/activation_regions/summary.md",
     "linear_completion": "outputs/2026-10-12/linear_completion/summary.md",
     "linear_completion_eval": "outputs/2026-10-12/linear_completion_eval/summary.md",
-    "linear_completion_causal": "outputs/2026-10-12/linear_completion_causal/summary.md"
+    "linear_completion_causal": "outputs/2026-10-12/linear_completion_causal/summary.md",
+    "operator_attention_ablation": "outputs/2026-10-12/operator_attention_ablation/summary.md"
   },
   "prepared_but_unrun": {
     "config": "configs/public_label_audit.json",
@@ -65,7 +66,7 @@
   },
   "setup_failure": "outputs/2026-10-12/final_cls_matching_setup_failure",
   "setup_repair": "Use identical16-image batches for structural equality; exact release tensors must match failed setup. No mathematical or parameter changes.",
-  "cycle_status": "completed",
+  "cycle_status": "preparing",
   "last_causal_audit": "outputs/2026-10-12/final_cls_matching/causal_audit.json",
   "last_token_geometry": "outputs/2026-10-12/final_cls_matching/token_comparison.json",
   "limited_continuation": {
@@ -118,5 +119,13 @@
     "aga_functional_only_dtd": 0.5180851063829788,
     "aga_mixing_residual_dtd": 0.4877659574468085,
     "conclusion": "No significant DTD suppression under transported functional-only edit; mixed-parameter residual retains suppression. Does not prove general functional recovery or purely coordinate error. Existing public-reset bound still closes final-MLP family."
+  },
+  "operator_attention_ablation": {
+    "native_original": 0.7766446959333416,
+    "native_protected": 0.7252829250093272,
+    "native_loss_pp": 5.136177092401443,
+    "status": "validated_native_failure",
+    "fusion_or_recovery_measured": false,
+    "source_commit": "220449fcf68bbfad9c5a373af5e6c7109bc100ff"
   }
 }

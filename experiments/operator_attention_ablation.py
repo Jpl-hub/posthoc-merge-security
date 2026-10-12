@@ -119,14 +119,14 @@ def reconstruct_attention(original, pcfg, frames):
 
 
 @torch.no_grad()
-def run(args):
+def run(args, loader=load_inputs):
     cfg, out = read(args.config), Path(args.output)
     out.mkdir(parents=True, exist_ok=False)
     artifacts = out / "artifacts"
     artifacts.mkdir()
     runtime()
     start = time.perf_counter()
-    pcfg, bundle, release, edits = load_inputs(cfg)
+    pcfg, bundle, release, edits = loader(cfg)
     _root, _load, fusion, models, head, data, indices, _images = bundle
     # The subset release is frozen before confirmation or test evaluation.
     torch.save(edits, artifacts / "release_edits.pt")
@@ -139,7 +139,7 @@ def run(args):
             parent_release_sha256=digest(Path(cfg["parent"]) / "artifacts/release_edits.pt"),
             edited_keys=sorted(edits),
             all_original_mlp_and_layernorm_tensors_preserved=True,
-            additional_calibration_or_fitting=False,
+            additional_calibration_or_fitting=cfg.get("additional_calibration_or_fitting", False),
             future_partner_used=False,
             gradient_steps=0,
             response_fits=0,
@@ -211,7 +211,7 @@ def run(args):
 
 
 @torch.no_grad()
-def validate(args):
+def validate(args, loader=load_inputs, reconstruct=reconstruct_attention, geometry_path=None):
     cfg, out = read(args.config), Path(args.output)
     runtime()
     meta = read(out / "metadata.json")
@@ -220,12 +220,11 @@ def validate(args):
         assert digest(name) == pin
     for name, pin in meta["raw_sha256"].items():
         assert digest(out / "artifacts" / name) == pin
-    pcfg, bundle, release, edits = load_inputs(cfg)
+    pcfg, bundle, release, edits = loader(cfg)
     _root, _load, _fusion, models, head, data, indices, _images = bundle
-    frames = torch.load(
-        Path(cfg["parent"]) / "artifacts/frames.pt", map_location="cpu", weights_only=True
-    )
-    rebuilt, algebra = reconstruct_attention(models["original"], pcfg, frames)
+    path = geometry_path or Path(cfg["parent"]) / "artifacts/frames.pt"
+    frames = torch.load(path, map_location="cpu", weights_only=True)
+    rebuilt, algebra = reconstruct(models["original"], pcfg, frames)
     error = max(float((edits[k] - v).abs().max()) for k, v in rebuilt.items())
     assert error < 2e-6
     raw = torch.load(out / "artifacts/predictions.pt", map_location="cpu", weights_only=True)
