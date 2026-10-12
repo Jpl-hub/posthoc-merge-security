@@ -1,0 +1,7 @@
+# DDO: relevant estimator-defense work, outside zero-gradient construction
+
+Paper: [Decoy Direction Optimization: A Post-Hoc Defense Against LLM Abliteration](https://arxiv.org/html/2609.16204v1),14 September2026. The paper body explicitly links its research [code](https://github.com/aashiqmuhamed/defending-against-abliteration). Source pin: `a26f23e0149a0050b822a4913a2a147f67553810`; three inspected files and hashes are in source.json. No LLM checkpoints downloaded, dependencies installed, training run, or full reproduction claimed.
+
+DDO preserves frozen base weights while optimizing small decoy parameters. Paper§3 explicitly uses gradient descent and Optuna; inspected optimizer.py has AdamW at line930 and backward calls at1114/1134/1171/1230. “No base-model finetuning” therefore does not mean no additional gradient optimization. We do not copy this construction under the present stricter constraint.
+
+The relevant lesson is to target the attacker's measured estimator with a defined margin, then test utility and attacks. Its overlap theorem is conditional on the contrast spectrum and orthogonality; it is not an AGA/Hungarian guarantee. surgery.py selects low-norm output columns and compiles the neuron edits. undo.py provides neuron detection and output-column removal heuristics. These reinforce the need to separate estimator corruption from recovery resistance. Our current cosine-margin probe has different weights, architecture, objective and closed-form construction; targeting an estimator itself is already established and is not a novelty claim.
