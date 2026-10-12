@@ -172,7 +172,10 @@ def run(args):
     indices = fresh_indices(cfg, "MNIST", len(train))
     save_json(out / "training_indices.json", indices)
     moments = collect_moments(
-        original, make_loader(train, indices["calibration"], 32), cfg["sites"]
+        original,
+        make_loader(train, indices["calibration"], 32),
+        cfg["sites"],
+        token_index=0 if cfg.get("token_scope") == "final_cls" else None,
     )
     decoy, coherent, certificate, construction = construct(original, anchor, moments, cfg)
     releases = {"original": original, "coherent": coherent, "decoy": decoy}
@@ -210,6 +213,28 @@ def run(args):
     confirm = torch.stack([train[i][0] for i in indices["confirmation"]])
     original.cuda()
     base_features = features(original, confirm)
+    if cfg.get("token_scope") == "final_cls":
+        assert cfg["sites"] == ["FC:11"]
+        assert len(original.model.visual.transformer.resblocks) == 12
+
+        def zero_final_patches(_module, _args, value):
+            modified = value.clone()
+            modified[1:] = 0
+            return modified
+
+        handle = original.model.visual.transformer.resblocks[11].mlp.register_forward_hook(
+            zero_final_patches
+        )
+        try:
+            erased = features(original, confirm[:16])
+        finally:
+            handle.remove()
+        assert torch.equal(erased, base_features[:16])
+        diagnostics["causal_check"] = dict(
+            final_mlp_patch_outputs_zeroed=True,
+            feature_bitwise_equal=True,
+            scope="16 disjoint training confirmation images; structural claim limited to final MLP",
+        )
     original.cpu()
     for name, model in releases.items():
         permutations[name], report = matching(model, anchor, author, cfg["sites"], certificate)
@@ -252,6 +277,19 @@ def run(args):
     tests = {t: cache(d) for t, d in data.items()}
     assert all(len(d.test_dataset) == fusion["expected_test_counts"][t] for t, d in data.items())
     states, rows, raw = {}, [], {}
+    prior = None
+    if cfg.get("baseline_parent"):
+        parent = Path(cfg["baseline_parent"])
+        prior_meta = read(parent / "metadata.json")
+        assert read(parent / "validation.json")["status"] == "passed"
+        assert prior_meta["checkpoint_sha256"] == expected
+        assert (
+            digest(parent / "artifacts/predictions.pt")
+            == prior_meta["raw_sha256"]["predictions.pt"]
+        )
+        prior = torch.load(
+            parent / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+        )
     for name, model in releases.items():
         for attack in ("direct", "aga"):
             states[f"{name}/{attack}"] = (
@@ -271,15 +309,23 @@ def run(args):
             *[("fusion", t, merged) for t in cfg["evaluation_tasks"]],
         ]:
             pred, labels = [], []
-            metric = evaluate(
-                measured,
-                heads[task],
-                tests[task],
-                "cuda",
-                prediction_sink=lambda p, y: (pred.append(p), labels.append(y)),
-            )
             name = f"{key}/{group}/{task}"
-            raw[name] = dict(prediction=torch.cat(pred), labels=torch.cat(labels))
+            reused = prior is not None and key.startswith("original/")
+            if reused:
+                raw[name] = prior[name]
+                y = truth(data[task], task)
+                assert torch.equal(raw[name]["labels"], y)
+                correct = int(raw[name]["prediction"].eq(y).sum())
+                metric = dict(correct=correct, n=len(y), top1=correct / len(y))
+            else:
+                metric = evaluate(
+                    measured,
+                    heads[task],
+                    tests[task],
+                    "cuda",
+                    prediction_sink=lambda p, y: (pred.append(p), labels.append(y)),
+                )
+                raw[name] = dict(prediction=torch.cat(pred), labels=torch.cat(labels))
             rows.append(
                 dict(
                     key=name,
@@ -287,6 +333,8 @@ def run(args):
                     attack=key.split("/")[1],
                     group=group,
                     dataset=task,
+                    reused=reused,
+                    baseline_parent=cfg.get("baseline_parent") if reused else None,
                     **metric,
                 )
             )
@@ -314,7 +362,8 @@ def run(args):
             raw_sha256={p.name: digest(p) for p in artifacts.iterdir()},
             calibration_samples=len(indices["calibration"]),
             confirmation_samples=len(confirm),
-            fresh_full_evaluations=len(rows),
+            fresh_full_evaluations=sum(not r["reused"] for r in rows),
+            reused_baselines=sum(r["reused"] for r in rows),
             evaluation_tasks=cfg["evaluation_tasks"],
             eight_experts_participate=True,
             eight_task_mean=False,

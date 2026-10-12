@@ -53,12 +53,16 @@ def site_parameters(model, site):
 
 
 @torch.no_grad()
-def collect_moments(model, loader, sites):
+def collect_moments(model, loader, sites, token_index=None):
     """Streaming centered moments of actual linear inputs, including all tokens."""
     sums, grams, counts = {}, {}, {}
     handles = []
 
     def capture(site, value):
+        if token_index is not None:
+            # CLIP normalization hooks return sequence, batch, channels.
+            assert value.ndim == 3
+            value = value[token_index]
         x = value.detach().reshape(-1, value.shape[-1]).double()
         if site not in sums:
             sums[site] = torch.zeros(x.shape[1], device=x.device, dtype=x.dtype)
