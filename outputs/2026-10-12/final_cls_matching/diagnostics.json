@@ -1,0 +1,48 @@
+{
+  "causal_check": {
+    "final_mlp_patch_outputs_zeroed": true,
+    "feature_bitwise_equal": true,
+    "batch_size": 16,
+    "unmatched_batch_max_error": 1.434236764907837e-07,
+    "scope": "16 disjoint training confirmation images; structural claim limited to final MLP"
+  },
+  "original": {
+    "matching": [
+      {
+        "site": "FC:11",
+        "changed_rows": 0,
+        "intended_decoy_rows": 3072,
+        "intended_decoy_matches": 0
+      }
+    ],
+    "confirmation_feature_rms": 0.0,
+    "mlp_only_feature_max_error": 1.434236764907837e-07,
+    "mlp_only_fp32_equivalence_within_2e_5": true
+  },
+  "coherent": {
+    "matching": [
+      {
+        "site": "FC:11",
+        "changed_rows": 0,
+        "intended_decoy_rows": 3072,
+        "intended_decoy_matches": 0
+      }
+    ],
+    "confirmation_feature_rms": 0.022451312009608242,
+    "mlp_only_feature_max_error": 2.703745849430561e-07,
+    "mlp_only_fp32_equivalence_within_2e_5": true
+  },
+  "decoy": {
+    "matching": [
+      {
+        "site": "FC:11",
+        "changed_rows": 3072,
+        "intended_decoy_rows": 3072,
+        "intended_decoy_matches": 3072
+      }
+    ],
+    "confirmation_feature_rms": 0.020685513023447902,
+    "mlp_only_feature_max_error": 1.8812716007232666e-07,
+    "mlp_only_fp32_equivalence_within_2e_5": true
+  }
+}

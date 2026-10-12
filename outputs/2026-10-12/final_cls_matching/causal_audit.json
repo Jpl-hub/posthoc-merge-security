@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "audit_source_sha256": "1a63664b30146fa2d187bdcf5d370b0568d044a85d2850fd9bfd3c751d7b2be2",
+  "independent_covariance_relative_error": 3.716309725900904e-16,
+  "independent_pca_rank": 505,
+  "independent_projector_frobenius_error": 1.0246544956321433e-10,
+  "large_final_patch_intervention_bitwise_equal": true,
+  "confirmation_images_disjoint_from_initial_causal_check": true,
+  "responses": [
+    {
+      "scope": "native/MNIST",
+      "training_images": 256,
+      "incoming_cls_bitwise_equal": true,
+      "preactivation_difference_relative_rms": 0.03819887123824976,
+      "predicted_preactivation_relative_error": 1.2481444182665333e-05,
+      "normalized_feature_difference_rms": 0.02068551302344752
+    },
+    {
+      "scope": "fusion/MNIST",
+      "training_images": 256,
+      "incoming_cls_bitwise_equal": true,
+      "preactivation_difference_relative_rms": 0.06492930249740005,
+      "predicted_preactivation_relative_error": 4.831753537829475e-06,
+      "normalized_feature_difference_rms": 0.0616099247275679
+    },
+    {
+      "scope": "fusion/SVHN",
+      "training_images": 256,
+      "incoming_cls_bitwise_equal": true,
+      "preactivation_difference_relative_rms": 0.08599214979128342,
+      "predicted_preactivation_relative_error": 3.6185937129217836e-06,
+      "normalized_feature_difference_rms": 0.07925522392548837
+    }
+  ],
+  "diagnostic_partner_training_images": 256,
+  "partners_used_only_after_release": true,
+  "no_candidate_changed": true,
+  "no_new_accuracy_measurements": true
+}
