@@ -304,7 +304,7 @@ def validate(args, input_loader=inputs, state_builder=None):
             status="passed",
             prediction_prefix_checks=checks,
             counts_labels_and_pairs=True,
-            reset_and_aga_then_reset_exact_state_aliases=True,
+            recorded_aliases_verified_by_exact_state=True,
             source_checkpoint_release_and_raw_hashes=True,
             original_author_aga_fresh_exact_state_replays=2,
             defense_success_claim=False,
