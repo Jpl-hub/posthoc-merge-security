@@ -1,14 +1,14 @@
 {
   "status": "ready_on_3090",
-  "updated_utc": "2026-10-12T21:17:53.887757+00:00",
+  "updated_utc": "2026-10-12T23:04:59.039138+00:00",
   "automatic_continuation": true,
   "server": "3090",
   "research_jobs": [],
   "basis": "User resumed research and authorized only the idle 3090; requested simple teacher-aligned mechanism and removal of redundant work.",
   "mainline": "Preserve task computation, edit complement only; target/public anchor/declared calibration; no future partner for construction or selection.",
   "breakthrough_verified": false,
-  "stage": "context_dependent_score_preservation_review",
-  "next_action": "Analyze one context-dependent Query-score nullspace at the already frozen block0/head0, rather than requiring a single output direction orthogonal to all Key contrasts. First derive the public affine score constraint and its closest-anchor cleaner with fixed Keys/upstream features. Determine whether this cleaner reaches the same state for original and release, and what useful target fusion computation it could remove. Use source and old target-training caches only; no partner selection, new weights, forwards, optimizer, or parameter scan. If it is just a broader observable nullspace with no demonstrated cleaning cost, close before a diagnostic. Do not reinterpret this as a successful defense or reopen the closed rank-one key-contrast candidate.",
+  "stage": "task_subspace_definition_literature_gate",
+  "next_action": "Do not repeat the closed block0/head0 Query-only family. Check the published ESM paper (Model Merging in the Essential Subspace, CVPR2026; arXiv2602.20208 and extension2606.19164) for a research-code URL in its actual body before an in-depth review, as requested by the user. The discovered official kiddo127/ESM repository alone is insufficient for that paper-link gate; current arXiv HTML has no identified body GitHub link. If qualified, pin the relevant ViT decomposition code and review feature-shift versus raw-activation task-space definitions and their preservation/public-cleaning conditions. Do not implement ESM as a defense, import all-partner calibration, launch new weights, or run layer/rank/strength scans. If the paper fails the gate, record that narrowly and continue with an eligible recent code-linked primary work. The objective remains one minimal credible complement-only mechanism, not another accuracy search.",
   "migration_verified": true,
   "basic_partner_interference_verified": true,
   "robust_defense_verified": false,
@@ -147,5 +147,48 @@
     "new_protected_weights": 0,
     "new_classification_results": 0,
     "decision": "Selected-neuron sign flip needs an LN2-dependent correction that the preceding Attention does not directly supply. Exact retained preactivation imposes zero selected task response and returns to fixed complement cleaning. This specific direct construction is closed; no universal nonlinear impossibility claim."
+  },
+  "context_dependent_score_review": {
+    "name": "context_dependent_Query_score_nullspace",
+    "evidence": "notes/mechanism_analysis.md#10",
+    "new_protected_weights": 0,
+    "new_classification_results": 0,
+    "decision": "A broader per-image score nullspace is possible despite full global Key-contrast rank. With fixed Keys/upstream inputs the public affine-nullspace cleaner maps exact edits to a common state; finite calibration and compute limitations are explicit. Functional score nullspace does not automatically satisfy retained-input parameter constraints. No noise constructed; one full-support Query replacement cost control is now frozen and running."
+  },
+  "Query_replacement_preflight": {
+    "name": "full_Query_support_replacement_cost_control",
+    "evidence": "results/query_replacement/",
+    "source_parent": "1796b43526f9692422d9d166242e4a5c9137c87b",
+    "independent_validation": "passed",
+    "site": "block0/head0 Query only",
+    "coefficient": 0.5,
+    "partner": "DTD",
+    "MNIST_native": {
+      "before_correct": 9969,
+      "after_correct": 9969,
+      "n": 10000
+    },
+    "MNIST_merged": {
+      "before_correct": 9945,
+      "after_correct": 9945,
+      "n": 10000
+    },
+    "DTD_native": {
+      "correct": 1493,
+      "n": 1880,
+      "unchanged_partner": true
+    },
+    "DTD_merged": {
+      "before_correct": 1303,
+      "after_correct": 1303,
+      "n": 1880
+    },
+    "prediction_mismatches": 0,
+    "evaluation_examples": 45640,
+    "fresh_replay_examples": 896,
+    "new_classification_rows": 7,
+    "new_protected_weights": 0,
+    "AGA_run": false,
+    "decision": "Complete public replacement preserves every native MNIST and merged MNIST/DTD prediction. Any release limited to this Query support maps to this same measured state. Close this support without noise; this does not exclude joint Q/K, other heads or other merge pools."
   }
 }
