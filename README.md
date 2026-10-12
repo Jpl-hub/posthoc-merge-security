@@ -8,6 +8,7 @@
 
 ## 当前结果
 
+- [有符号补空间与公开清理](outputs/2026-10-12/signed_complement/summary.md)：MNIST 独立损失0.01 pp，直接融合94.00%→91.91%，原版AGA93.23%→91.01%；PCA恢复93.48%（匹配对照93.92%），仍没有突破。原始计数、闭式系数、真实保护张量和预测前缀已独立复核；同一冻结规则的Cars验证进行中。
 - [最后一层CLS补空间匹配](outputs/2026-10-12/final_cls_matching/summary.md)：独立MNIST99.69%保持，3072个AGA匹配全部误导；直接融合仍94.00%，AGA后93.01%（原93.23%），未形成有效防御。相同层/样本的CLS与全部token几何、真实融合响应和逐图结果均复核。[第一版负结果](outputs/2026-10-12/complement_matching/summary.md)及[DDO源码核查](outputs/2026-10-12/ddo_source_audit/notes.md)保留；停止调参。
 
 - [Cars局部不可逆斜投影](outputs/2026-10-12/oblique_recoding/summary.md)：独立损失0.0124个百分点，直接融合61.2486%（原62.0570%）；公开规范化已恢复61.9699%。中性折叠控制61.1615%，14行独立核验通过。不可逆参数损失未形成有效防御，停止此候选；未测原版AGA或伙伴性能。
