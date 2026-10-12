@@ -15,3 +15,5 @@ NUFILT 的近似对齐也不能把低维数据流形直接等同于固定低秩�
 已完成最小线性联合关系与 AGA 求解信息的核对，见[机制分析第 7、8 节](../../notes/mechanism_analysis.md)。成对变换保持函数不等于两处参数都只改补空间；对一般 MLP 还必须检查非线性。
 
 `aga_canonical_protocol.json` 与 `aga_canonical_audit.py` 冻结了一个头的旧矩阵 CPU 核对，`aga_canonical_results.json` 保存实际数值及独立 SVD／增广最小二乘检查。没有新模型评测或防御。原脚本在服务器项目根目录运行：`OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4 /root/miniconda3/bin/python outputs/aga_canonical_audit/audit.py`。输入与日志只在服务器，输出已有结果时脚本拒绝覆盖。
+
+ESM v2 PDF 首页明确链接 `kiddo127/ESM`，符合文献筛选条件。固定源码、行号和范围见 `esd_source_receipt.json`。`esd_source_audit.py` 只从源码隔离执行 `_compute_esd`，复用已有训练输入缓存；NumPy 独立核对局部输出、谱和均值分解通过。运行：`OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4 /root/miniconda3/bin/python outputs/esd_source_audit/audit.py`。不执行全部 ESM，不生成保护权重或分类结果，不重新搜索已关闭的 Query 范围。理论含义及公开清理条件见[机制分析第 11 节](../../notes/mechanism_analysis.md)。
