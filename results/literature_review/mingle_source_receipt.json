@@ -1,0 +1,174 @@
+{
+  "repository": "zihuanqiu/MINGLE",
+  "commit": "6ebdafd80b99a8acd9dbb646e980a76b6b7c802b",
+  "paper": "https://papers.nips.cc/paper_files/paper/2025/file/d3a07e8ec40511778a757a30d1b83820-Paper-Conference.pdf",
+  "code_link_page": 1,
+  "paper_admission": "NeurIPS 2025 primary PDF explicitly links official repository on page 1",
+  "source_only": true,
+  "executed": false,
+  "full_method_reproduced": false,
+  "new_model_forwards": 0,
+  "new_protected_weights": 0,
+  "new_classification_results": 0,
+  "sources": [
+    {
+      "path": "fusion_bench/method/mingle/mingle.py",
+      "git_blob_sha": "2a345b2c98c495e4a286359608bf3c0367a130ab",
+      "sha256": "bd88180a1b20b50a9b37e54656b4bcf8f513557ca1db4b79efb1ead237b75ef3",
+      "bytes": 18446,
+      "url": "https://github.com/zihuanqiu/MINGLE/blob/6ebdafd80b99a8acd9dbb646e980a76b6b7c802b/fusion_bench/method/mingle/mingle.py",
+      "server_path": "external/MINGLE-review/fusion_bench/method/mingle/mingle.py",
+      "reviewed_functions": [
+        {
+          "class": "MINGLE",
+          "function": "__init__",
+          "lines": [
+            48,
+            61
+          ]
+        },
+        {
+          "class": "MINGLE",
+          "function": "run",
+          "lines": [
+            63,
+            163
+          ]
+        },
+        {
+          "class": "MINGLE",
+          "function": "subspace_from_loader",
+          "lines": [
+            173,
+            246
+          ]
+        },
+        {
+          "class": "MINGLE",
+          "function": "test_time_adaptation",
+          "lines": [
+            248,
+            356
+          ]
+        },
+        {
+          "class": "MINGLE",
+          "function": "construct_lora",
+          "lines": [
+            359,
+            382
+          ]
+        },
+        {
+          "class": "LoRA",
+          "function": "__init__",
+          "lines": [
+            470,
+            478
+          ]
+        },
+        {
+          "class": "LoRA",
+          "function": "forward",
+          "lines": [
+            484,
+            486
+          ]
+        }
+      ]
+    },
+    {
+      "path": "fusion_bench/method/mingle/utils.py",
+      "git_blob_sha": "84dca237961bb2e5dd86e4d7b086dd2860de0936",
+      "sha256": "feaef2cb710d345521d6a51de49e434e144be09d6d23111c92708ed802a67983",
+      "bytes": 2102,
+      "url": "https://github.com/zihuanqiu/MINGLE/blob/6ebdafd80b99a8acd9dbb646e980a76b6b7c802b/fusion_bench/method/mingle/utils.py",
+      "server_path": "external/MINGLE-review/fusion_bench/method/mingle/utils.py",
+      "reviewed_functions": []
+    },
+    {
+      "path": "fusion_bench/models/lora_moe.py",
+      "git_blob_sha": "06d367393b68e811f76306bdfe398d2398fbb029",
+      "sha256": "be7e08a910326c7818587f019a84d840bb7cbe3683a2bb45658669279711bda3",
+      "bytes": 8915,
+      "url": "https://github.com/zihuanqiu/MINGLE/blob/6ebdafd80b99a8acd9dbb646e980a76b6b7c802b/fusion_bench/models/lora_moe.py",
+      "server_path": "external/MINGLE-review/fusion_bench/models/lora_moe.py",
+      "reviewed_functions": [
+        {
+          "class": "Depth_1_Gate",
+          "function": "__init__",
+          "lines": [
+            40,
+            47
+          ]
+        },
+        {
+          "class": "Depth_1_Gate",
+          "function": "init_weight",
+          "lines": [
+            49,
+            54
+          ]
+        },
+        {
+          "class": "Depth_1_Gate",
+          "function": "forward",
+          "lines": [
+            56,
+            63
+          ]
+        },
+        {
+          "class": "LoRAMoE",
+          "function": "__init__",
+          "lines": [
+            104,
+            127
+          ]
+        },
+        {
+          "class": "LoRAMoE",
+          "function": "forward",
+          "lines": [
+            168,
+            184
+          ]
+        },
+        {
+          "class": "LoRAMoE",
+          "function": "project_gradient",
+          "lines": [
+            187,
+            234
+          ]
+        }
+      ]
+    }
+  ],
+  "observations": {
+    "extra_optimization": "MINGLE.test_time_adaptation constructs torch.optim.Adam, calls loss.backward(), optional project_gradient(), then optimizer.step(); gate weight and bias are trainable",
+    "subspace": "LoRAMoE inputs are flattened across examples/tokens; raw sum X.T@X is decomposed without centering; truncated bases are concatenated and QR-orthonormalized",
+    "soft_projection": "project_gradient returns G - (G @ U * lambda) @ U.T, i.e. G(I-U Lambda U.T); not G U Lambda U.T as displayed in primary paper Eq10 combined with Eq11",
+    "bias": "project_gradient returns rank-1 bias gradients unchanged because grad.dim()!=2",
+    "initialization": "Gate weights are normal(std=0.01), bias is init_lambda=0 at creation; not zero-initialized weight as paper Algorithm1",
+    "forward": "gate(hidden_states) is token-averaged, optionally batch-averaged; scalar per-expert gates form an input-dependent weight W0 + sum g_j(X) T_j",
+    "test_data": "test_time_adaptation uses the current task test dataset and select_seed_subset stratifies by labels; adaptation batches discard labels. This is not our train-calibration protocol",
+    "no_parameter_reprojection": "Reviewed adaptation loop projects gradients before Adam; no post-step constraint projection appears in that loop",
+    "limitation": "Static source review of three pinned files, not an execution, empirical criticism, complete dependency audit or model-merging defense reproduction"
+  },
+  "analytic_counterexample": {
+    "kind": "Own deterministic algebra illustration, not MINGLE execution or a CLIP experiment",
+    "basis": "u=(1,1,1)/sqrt(3)",
+    "gradient": [
+      2,
+      -1,
+      -1
+    ],
+    "hard_projected_gradient_dot_u": 0.0,
+    "eta": 0.0001,
+    "epsilon": 1e-08,
+    "SGD_first_update_dot_u": 0.0,
+    "bias_corrected_Adam_first_update_dot_u": 5.773502605293721e-05,
+    "claim": "A projected gradient can yield a non-null Adam parameter update; zero initialization, unchanged bias and features alone do not fix this. It does not refute the paper empirical results."
+  }
+}

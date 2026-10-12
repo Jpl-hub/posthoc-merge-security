@@ -8,13 +8,13 @@
   "server": "3090",
   "allow_4090": false,
   "status": "in_progress",
-  "stage": "functional_preservation_coupling_review",
+  "stage": "ordinary_weight_local_vs_global_preservation",
   "active_jobs": [],
   "breakthrough_verified": false,
   "new_protected_weights": 0,
-  "updated_utc": "2026-10-12T23:27:12.010941+00:00",
+  "updated_utc": "2026-10-12T23:42:47.212766+00:00",
   "goal_status": "Old unfinished usageLimited goal; create_goal rejected. Do not mark old research successful. Current-thread heartbeat is active.",
-  "next_action": "Review the task-preservation condition in MINGLE's Null-Space Constrained Gating, whose NeurIPS2025 primary PDF page1 explicitly links zihuanqiu/MINGLE (https://papers.nips.cc/paper_files/paper/2025/file/d3a07e8ec40511778a757a30d1b83820-Paper-Conference.pdf). Pin only relevant official source before making implementation claims. Determine whether its preservation/representation coupling provides any ordinary-weight complement-only relation different from fixed public projection, or requires learned gates, extra experts or adaptation. Do not implement its MoE/router or optimizer, call it a new defense, or reopen closed sites. Keep at most one explicit minimal candidate; if none passes native preservation and useful public-cleaning cost, say so and save the mathematical boundary rather than launch noise. ESM's raw local output-shift PCA and mean condition are now independently checked; no full ESM reproduction or protection candidate.",
+  "next_action": "Return to ordinary-weight cross-module preservation, not another gated architecture. Resolve one boundary: local per-operator task preservation versus final task-output preservation. If a cancellation changes an intermediate representation, state whether every modified weight still preserves the original expert input subspace, and whether release-derived native spans give the attacker the same joint public cleaner. Produce at most one explicit relation or a precise reason none is feasible; no new gates, optimizer, compensation network, changed layer or noise scan. Before any GPU work identify useful target fusion computation lost by cleaning, reusing existing matched records first. No protection weights or new defense experiment until preservation and meaningful public-cleaning cost pass.",
   "constraints": [
     "No additional gradient fine-tuning",
     "No future partner in construction or selection",
@@ -143,6 +143,22 @@
       "new_classification_results": 0,
       "full_ESM_reproduced": false,
       "decision": "Input activation, local task-update output shift and classification-effective computation are distinct. Source uses raw SVD with n-1 normalization; empirical component identity and nonzero-mean decomposition verified. Fixed output projection still has a public common-state cleaner under stated noise conditions. Do not rename output-complement noise as a new mechanism; no credible defense candidate."
+    },
+    {
+      "name": "MINGLE_pinned_source_and_gate_preservation_review",
+      "evidence": "results/literature_review/mingle_source_receipt.json",
+      "analysis": "notes/mechanism_analysis.md#12",
+      "commit": "6ebdafd80b99a8acd9dbb646e980a76b6b7c802b",
+      "paper_code_link_verified": true,
+      "source_files_reviewed": 3,
+      "source_hashes_verified": true,
+      "source_executed": false,
+      "full_method_reproduced": false,
+      "extra_optimization_required": true,
+      "new_model_forwards": 0,
+      "new_protected_weights": 0,
+      "new_classification_results": 0,
+      "decision": "MINGLE requires learned gates and added low-rank experts. Its input-dependent mixture does not generally fold into one ordinary affine weight. Gradient null projection alone does not guarantee an Adam update, unprojected bias or changed upstream inputs preserve task computation. Record this scoped condition, not a new defense or a criticism of unreplicated paper accuracy."
     }
   ]
 }
