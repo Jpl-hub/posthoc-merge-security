@@ -175,8 +175,8 @@
     "PCA completion cost on unprotected weights does not establish removal of arbitrary noise by an independently estimated projector.",
     "No claim of innovation or standalone utility for an unconstructed V/O release."
   ],
-  "updated_utc": "2026-10-12T19:26:00.334838+00:00",
-  "document_sha256": "7374d12f8393d86bf2ab8a9d0b9f886830a00766bd3bc29302ba4a14591791df",
+  "updated_utc": "2026-10-12T20:35:03.386219+00:00",
+  "document_sha256": "ebc2e30a507bbfb2caf0b0f0577398bb081848e0d3b1317614c68c3f10f61981",
   "current_official_checkpoint_pins_match_historical": true,
   "complement_update_reanalysis": {
     "results": "results/complement_update_audit/results.json",
@@ -186,5 +186,26 @@
     "new_model_forwards": 0,
     "new_protected_weights": 0,
     "interpretation": "Existing baseline complement response and original task-update complement response must be distinguished; the latter alone is removed by public anchor completion."
+  },
+  "conditional_theory_review": {
+    "name": "cross_module_curvature_and_linear_span_conditions",
+    "evidence": "notes/mechanism_analysis.md#5",
+    "new_protected_weights": 0,
+    "new_model_forwards": 0,
+    "decision": "Fixed public-projection edits still reach the same completed parameter state jointly. Trap2 loss bounds are conditional and do not survive this equality as a new defense guarantee. NUFILT alignment does not establish an exact 16-dimensional activation subspace. No credible new candidate.",
+    "Trap2": "https://arxiv.org/html/2601.21898v2",
+    "NUFILT": "https://arxiv.org/html/2509.21413v2#S3.SS4",
+    "geometry_source": "results/middle_completion/geometry.json",
+    "rank_16_energy": 0.7405034292430392,
+    "numerical_rank": 767,
+    "PCA_9999_rank": 755,
+    "classification_or_security_guarantee": false
+  },
+  "estimated_projection_review": {
+    "name": "estimated_projection_and_release_spectrum_boundary",
+    "evidence": "notes/mechanism_analysis.md#6",
+    "new_protected_weights": 0,
+    "new_model_forwards": 0,
+    "decision": "Exact local preservation exposes the native activation span from the release. For rank-k additive noise, truncating the top-k released-update right singular space bounds remaining noise by twice the original update spectral norm, independent of noise amplitude. This is an identification bound, not a successful classifier attack; shared useful output directions can make truncation costly."
   }
 }
