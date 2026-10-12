@@ -65,14 +65,14 @@ def save_changes(model, original, path):
 
 
 @torch.no_grad()
-def run(args):
+def run(args, input_loader=inputs, state_builder=None, parent_presets=None):
     cfg, out = read(args.config), Path(args.output)
     out.mkdir(parents=True, exist_ok=False)
     artifacts = out / "artifacts"
     artifacts.mkdir()
     runtime()
     start = time.perf_counter()
-    root, fusion, models, release, heads, data = inputs(cfg)
+    root, fusion, models, release, heads, data = input_loader(cfg)
     target, anchor = cfg["task"], models["anchor"]
     original = models[target]
     author, sha = load_author(
@@ -85,24 +85,37 @@ def run(args):
         Path(cfg["parent"]) / "artifacts/predictions.pt", map_location="cpu", weights_only=True
     )
     parent_rows = {r["key"]: r for r in read(Path(cfg["parent"]) / "results.json")}
+    baseline_raw, baseline_rows = {}, {}
+    if cfg.get("baseline_parent"):
+        prior = Path(cfg["baseline_parent"])
+        baseline_raw = torch.load(
+            prior / "artifacts/predictions.pt", map_location="cpu", weights_only=True
+        )
+        baseline_raw = {
+            key: dict(prediction=pred, labels=baseline_raw["labels"][key.rsplit("/", 1)[-1]])
+            for key, pred in baseline_raw["predictions"].items()
+        }
+        baseline_rows = {r["key"]: r for r in read(prior / "results.json")}
     loaders = {t: cache(d) for t, d in data.items()}
     for preset, teacher in [("original", original), ("protected", release)]:
         t0 = time.perf_counter()
         aga = author_recover(teacher, anchor, author)
         attack_times[preset] = time.perf_counter() - t0
         save_changes(aga, teacher, artifacts / f"{preset}_aga_edits.pt")
-        states = dict(
-            direct=teacher,
-            aga=aga,
-            reset=reset(teacher, anchor, cfg),
-            aga_reset=reset(aga, anchor, cfg),
+        states = (
+            state_builder(teacher, aga, anchor, cfg)
+            if state_builder is not None
+            else dict(
+                direct=teacher,
+                aga=aga,
+                reset=reset(teacher, anchor, cfg),
+                aga_reset=reset(aga, anchor, cfg),
+            )
         )
         for attack, model in states.items():
             if preset == "original":
                 original_states[attack] = model
-            equivalent = preset == "protected" and attack in {"reset", "aga_reset"}
-            if equivalent:
-                assert state_equal(model, original_states[attack])
+            equivalent = preset == "protected" and state_equal(model, original_states[attack])
             merged = None if equivalent else merge_all(dict(models, **{target: model}), root, 0.2)
             settings = [("standalone", target)] + [("fusion", t) for t in cfg["evaluation_tasks"]]
             for group, task in settings:
@@ -117,8 +130,23 @@ def run(args):
                         reused_exact_state=previous,
                     )
                     aliases[key] = previous
+                elif preset == "original" and attack in {"direct", "aga"} and baseline_raw:
+                    source = (
+                        f"original/{attack}/{'native' if group == 'standalone' else group}/{task}"
+                    )
+                    raw[key] = baseline_raw[source]
+                    row = dict(
+                        baseline_rows[source],
+                        key=key,
+                        preset=preset,
+                        attack=attack,
+                        group=group,
+                        dataset=task,
+                        reused_baseline_row=source,
+                    )
+                    row.pop("paired", None)
                 elif attack == "direct" and group == "standalone":
-                    source = f"{preset}/official_test"
+                    source = f"{(parent_presets or {}).get(preset, preset)}/official_test"
                     raw[key] = parent_raw[source]
                     row = dict(
                         parent_rows[source],
@@ -175,8 +203,16 @@ def run(args):
             evaluated_heads=cfg["evaluation_tasks"],
             eight_task_mean_reported=False,
             exact_table6_reproduction=False,
-            fresh_full_tests=16,
-            native_parent_rows=2,
+            fresh_full_tests=sum(
+                not any(
+                    k in r
+                    for k in ("reused_parent_row", "reused_exact_state", "reused_baseline_row")
+                )
+                for r in rows
+            ),
+            native_parent_rows=sum("reused_parent_row" in r for r in rows),
+            baseline_parent=cfg.get("baseline_parent"),
+            baseline_alias_rows=sum("reused_baseline_row" in r for r in rows),
             exact_state_alias_rows=len(aliases),
             reset_aliases=aliases,
             attack_gradient_updates=0,
@@ -189,7 +225,7 @@ def run(args):
 
 
 @torch.no_grad()
-def validate(args):
+def validate(args, input_loader=inputs, state_builder=None):
     cfg, out = read(args.config), Path(args.output)
     runtime()
     meta = read(out / "metadata.json")
@@ -198,7 +234,7 @@ def validate(args):
         assert digest(path) == pin
     for name, pin in meta["raw_sha256"].items():
         assert digest(out / "artifacts" / name) == pin
-    root, _, models, release, heads, data = inputs(cfg)
+    root, _, models, release, heads, data = input_loader(cfg)
     for path, pin in meta["checkpoint_sha256"].items():
         assert digest(root / path) == pin
     predictions = torch.load(
@@ -220,16 +256,20 @@ def validate(args):
         replay = author_recover(teacher, models["anchor"], author)
         assert state_equal(aga, replay)
         del replay
-        states = dict(
-            direct=teacher,
-            aga=aga,
-            reset=reset(teacher, models["anchor"], cfg),
-            aga_reset=reset(aga, models["anchor"], cfg),
+        states = (
+            state_builder(teacher, aga, models["anchor"], cfg)
+            if state_builder is not None
+            else dict(
+                direct=teacher,
+                aga=aga,
+                reset=reset(teacher, models["anchor"], cfg),
+                aga_reset=reset(aga, models["anchor"], cfg),
+            )
         )
         for attack, model in states.items():
             if preset == "original":
                 originals[attack] = model
-            elif attack in {"reset", "aga_reset"}:
+            elif any(f"protected/{attack}/" in key for key in meta["reset_aliases"]):
                 assert state_equal(model, originals[attack])
             merged = merge_all(dict(models, **{cfg["task"]: model}), root, cfg["coefficient"])
             for group, task in [("standalone", cfg["task"])] + [
@@ -257,7 +297,7 @@ def validate(args):
                     assert torch.equal(raw["prediction"], baseline["prediction"])
                 checks += 1
             del merged
-    assert checks == 24
+    assert checks == len(rows)
     save_json(
         out / "validation.json",
         dict(

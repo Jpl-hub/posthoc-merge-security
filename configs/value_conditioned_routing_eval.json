@@ -1,0 +1,13 @@
+{
+  "task": "Cars",
+  "layer": 11,
+  "head": 10,
+  "parent": "outputs/2026-10-12/value_conditioned_routing",
+  "release_sha256": "440270ecb4bbcd1409f916f896a735dbfa702019a8db19ded40696c2fd11b3c1",
+  "baseline_parent": "outputs/2026-10-12/signed_complement_cars",
+  "fusion_config": "configs/eight_tasks.json",
+  "coefficient": 0.2,
+  "evaluation_tasks": ["Cars", "MNIST"],
+  "attacks": ["direct", "aga", "reset", "aga_reset"],
+  "scope": "Keep actual release unchanged after native screening. Eight-expert upstreamTA.2, two official heads only; no eight-task mean/Table6 identity. Original authorAGA unchanged on original/protected. Public reset only substitutes finalhead10 Key64x768 from anchor, preserving all Q,V,O,otherhead and MLP/LN values; zero calibration, queries and gradients. Evaluate direct/AGA/Keyreset/AGAthenKeyreset with matched original controls and report native/target/partner costs. Reuse six independently verified original direct/AGA prediction rows with checkpoint,author,protocol and raw hashes; replay fresh prefixes. Alias protected/reset rows only when all model tensors identical. No stronger attack expansion or hyperparameter search; stop candidate if core effect weak or public recovery high. Historical test data explicitly observed before, no unseen-test claim."
+}
