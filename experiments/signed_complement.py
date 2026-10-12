@@ -266,6 +266,24 @@ def run(args):
             calibration_labels_used=True,
         ),
     )
+    if args.reuse_from_setup:
+        prior = Path(args.reuse_from_setup)
+        assert read(prior / "protocol.json") == cfg
+        assert read(prior / "training_indices.json") == {cfg["task"]: indices}
+        old = torch.load(
+            prior / "artifacts/release_edits.pt", map_location="cpu", weights_only=True
+        )
+        assert old.keys() == actual_edits.keys()
+        assert all(torch.equal(old[k], v) for k, v in actual_edits.items())
+        save_json(
+            out / "setup_identity.json",
+            dict(
+                parent=str(prior),
+                exact_release_tensor_equality=True,
+                old_release_sha256=digest(prior / "artifacts/release_edits.pt"),
+                old_construction_sha256=digest(prior / "artifacts/construction.pt"),
+            ),
+        )
     responses, raw = {}, {}
     for name, model in points.items():
         factor = 1.0 if name == "expert" else float(name.split("_")[1])
@@ -288,6 +306,7 @@ def run(args):
     del derivatives, moments, geo, points, holders
     # Candidate frozen. No proxy-confirmation or official test adjusts it.
     originals = {t: load(str(root / t / "finetuned.pt")).cpu().eval() for t in fusion["tasks"]}
+    originals["anchor"] = anchor
     heads = {t: load(str(root / f"head_{t}.pt")).cpu().eval() for t in cfg["evaluation_tasks"]}
     datasets = {cfg["task"]: data}
     loaders = {}
@@ -490,6 +509,7 @@ def main():
     parser.add_argument("--config", default="configs/signed_complement.json")
     parser.add_argument("--output", default="outputs/2026-10-12/signed_complement")
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument("--reuse-from-setup")
     args = parser.parse_args()
     validate(args) if args.validate else run(args)
 
