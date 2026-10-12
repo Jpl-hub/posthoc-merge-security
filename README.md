@@ -12,7 +12,7 @@
 | `experiments/clip_benchmark.py` | checkpoint、作者分类器、Task Arithmetic、AGA 与配对计数 |
 | `experiments/mechanisms.py` | 固定版本作者求解器加载与基础参数变换 |
 | `experiments/replay_complement.py` | 冻结补空间结果的迁移核验，不搜索新参数 |
-| `experiments/input_complement.py` | 一个固定的灰度输入补空间候选，含 AGA 与公开恢复；结果待验证 |
+| `experiments/input_complement.py` | 灰度输入补空间后处理；一次固定噪声对照，含 AGA 与公开恢复 |
 | `experiments/eight_task_benchmark.py` | 原论文八任务基线评测 |
 | `experiments/prepare_eight_task_data.py` | 官方数据与划分准备 |
 
@@ -23,6 +23,7 @@
 - `results/complement/reference/`：旧补空间构造的原始协议、选择过程和计数；未知伙伴约束的限制见研究说明。
 - `results/complement/replay/`：3090 迁移核验。
 - `results/qk_complement/`：固定 Q/K 候选，独立效用保持、直接干扰有效，但 AGA 恢复，已停止。
+- `results/input_complement/amplification/`：独立 MNIST 保持，AGA 后 SVHN 降 33.38 个百分点；公开补空间恢复完全消除效果。
 - `results/mnist/` 与 [旧组会报告](reports/2026-10-12/组会汇报.md)：内部压缩历史证据，不作为当前补空间主线。
 - `results/reproduction/`：已有 PaRaMS／AGA 基线记录；尚非完整 Table 6 复现。
 - `results/index.json`：证据路径与指纹；`results/history.csv`：失败记录索引。

@@ -31,13 +31,21 @@ def color_basis(model):
 
 
 @torch.no_grad()
-def construct(original):
+def construct(original, mode):
     basis = color_basis(original)
     weight = original.model.visual.conv1.weight.double()
-    delta = 100 * torch.einsum("ocij,cd->odij", weight, basis["projector"])
+    component = torch.einsum("ocij,cd->odij", weight, basis["projector"])
+    if mode == "amplification":
+        delta = 100 * component
+    else:
+        random = torch.randn(
+            weight.shape, dtype=torch.float64, generator=torch.Generator().manual_seed(20261012)
+        )
+        delta = torch.einsum("ocij,cd->odij", random, basis["projector"])
+        delta *= 100 * component.norm() / delta.norm()
     released = copy.deepcopy(original).cpu().eval()
     released.model.visual.conv1.weight.add_(delta.float())
-    return released, dict(**basis, delta=delta, multiplier=100)
+    return released, dict(**basis, delta=delta, multiplier=100, mode=mode, seed=20261012)
 
 
 @torch.no_grad()
@@ -61,7 +69,9 @@ def run(args):
     torch.backends.cudnn.allow_tf32 = False
     protocol = dict(
         construction="Target MNIST checkpoint and its public RGB preprocessing only; no future expert, input or test fitting.",
-        edit="conv1 only; Delta W = 100 W C, C annihilates grayscale slope and preprocessing offset. One fixed multiplier, no scan.",
+        edit="conv1 only. Amplification: 100 W C. Noise: one Gaussian R C, scaled to the same Frobenius norm as 100 W C. C annihilates grayscale slope and preprocessing offset.",
+        mode=args.edit,
+        comparison="One fixed-seed noise control tests learned versus random complement features; no seed, rank or strength search. Previous amplification results were observed.",
         calibration="256 MNIST training images verify the grayscale and FP32 preservation conditions; no fitting.",
         seed=20261012,
         coefficient=0.5,
@@ -92,7 +102,7 @@ def run(args):
     anchor = load(str(root / "zeroshot.pt")).cpu().eval()
     original = load(str(root / "MNIST/finetuned.pt")).cpu().eval()
     head_m = load(str(root / "head_MNIST.pt"))
-    released, edit = construct(original)
+    released, edit = construct(original, args.edit)
     training = MNIST(args.data, train=True, transform=original.val_preprocess)
     indices = split_training(training, dict(calibration=256), protocol["seed"])
     save_json(output / "training_indices.json", indices)
@@ -111,6 +121,8 @@ def run(args):
         dict(
             relative_calibration_patch_change=fraction,
             multiplier=100,
+            mode=args.edit,
+            delta_norm=float(actual_delta.norm()),
             projector_rank=1,
             patch_input_dimension=3072,
             preserved_linear_dimension=2048,
@@ -201,4 +213,5 @@ if __name__ == "__main__":
     parser.add_argument("--author-repo", default="external/secure-merge-attack")
     parser.add_argument("--checkpoints", default="checkpoints/ViT-B-32")
     parser.add_argument("--data", default="data")
+    parser.add_argument("--edit", choices=["amplification", "noise"], default="noise")
     run(parser.parse_args())
