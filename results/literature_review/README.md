@@ -11,3 +11,7 @@
 NUFILT 的近似对齐也不能把低维数据流形直接等同于固定低秩激活空间，更不能保证任意大的补空间噪声保持分类。已有 block 5 数据只支持近似截断，不支持该处存在大规模精确零空间。
 
 本轮没有可信的新权重构造。下一步核对投影仅能估计时的恢复边界：分别分析保持误差、清理误差和发布权重中的可识别方向；复用已有矩阵，不重跑已关闭的防御、不扫参数。
+
+已完成最小线性联合关系与 AGA 求解信息的核对，见[机制分析第 7、8 节](../../notes/mechanism_analysis.md)。成对变换保持函数不等于两处参数都只改补空间；对一般 MLP 还必须检查非线性。
+
+`aga_canonical_protocol.json` 与 `aga_canonical_audit.py` 冻结了一个头的旧矩阵 CPU 核对，`aga_canonical_results.json` 保存实际数值及独立 SVD／增广最小二乘检查。没有新模型评测或防御。原脚本在服务器项目根目录运行：`OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4 /root/miniconda3/bin/python outputs/aga_canonical_audit/audit.py`。输入与日志只在服务器，输出已有结果时脚本拒绝覆盖。

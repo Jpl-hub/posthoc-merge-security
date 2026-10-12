@@ -175,8 +175,8 @@
     "PCA completion cost on unprotected weights does not establish removal of arbitrary noise by an independently estimated projector.",
     "No claim of innovation or standalone utility for an unconstructed V/O release."
   ],
-  "updated_utc": "2026-10-12T20:35:03.386219+00:00",
-  "document_sha256": "ebc2e30a507bbfb2caf0b0f0577398bb081848e0d3b1317614c68c3f10f61981",
+  "updated_utc": "2026-10-12T21:00:44.987937+00:00",
+  "document_sha256": "0cf84640f8884793310092e91f3e38b4357d2487ba6711164b5d639955ee46d9",
   "current_official_checkpoint_pins_match_historical": true,
   "complement_update_reanalysis": {
     "results": "results/complement_update_audit/results.json",
@@ -207,5 +207,16 @@
     "new_protected_weights": 0,
     "new_model_forwards": 0,
     "decision": "Exact local preservation exposes the native activation span from the release. For rank-k additive noise, truncating the top-k released-update right singular space bounds remaining noise by twice the original update spectral norm, independent of noise amplitude. This is an identification bound, not a successful classifier attack; shared useful output directions can make truncation costly."
+  },
+  "minimal_coupled_preservation_review": {
+    "name": "minimal_linear_coupling_and_AGA_canonical_diagnostic",
+    "evidence": "results/literature_review/coupled_preservation_audit.json",
+    "matrix_diagnostic": "results/literature_review/aga_canonical_results.json",
+    "source_and_algebra_validation": "passed",
+    "site": "block0 head0 Q/K, existing original and archived release",
+    "new_protected_weights": 0,
+    "new_model_forwards": 0,
+    "new_classification_results": 0,
+    "decision": "Linear paired change fails complement-only parameter preservation or exposes a public kernel; not a new defense. General nonlinear MLP cancellation remains conditional."
   }
 }
