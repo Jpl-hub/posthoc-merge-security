@@ -1,13 +1,13 @@
 {
   "status": "active",
-  "updated_utc": "2026-10-12T06:49:50.022825+00:00",
+  "updated_utc": "2026-10-12T07:11:56.564815+00:00",
   "automatic_nine_hour_campaign": false,
   "basis": "Latest user explicitly asks to continue toward good effects. Existing canceled automations remain PAUSED.",
   "main_goal_unchanged": "No extra defender finetuning; unknown future fusion partner; preserve original expert ability and resist adaptive recovery.",
-  "current_scope": "One fixed context/output-weighted VO candidate for Cars. Preserve QK/MLP/LN. Target256 calibration, existing weighted-rank primitive and pinned NUFILT SVD. No gradient, future partner, decoder reconstruction or sweep.",
-  "frozen_source_commit": "220449fcf68bbfad9c5a373af5e6c7109bc100ff",
+  "current_scope": "Value-conditioned routing: one Key edit in active input span; softmax/Value output derivative null rather than input-null noise. Fixed target64, publicbeta.2, no partner, gradient or sweep.",
+  "frozen_source_commit": "ad038d83f50f44b66429870f81070a55bfb1f3e8",
   "active_server_job": null,
-  "next_action": "Freeze weighted native utility and independently reconstruct actual context covariance and compiled operators; only if plausible freeze real fusion/AGA/public replacement follow-up.",
+  "next_action": "Freeze/run native effect and independently check analytical softmax derivative/compiled Key. Stop failed weightedVO per latest user. No weightedVO attacks or rank rescue.",
   "breakthrough_verified": false,
   "preliminary_result": {
     "target": "MNIST",
@@ -17,7 +17,7 @@
     "pca_fusion": 0.9348,
     "pca_matched_original": 0.9392
   },
-  "last_validated_result": "outputs/2026-10-12/operator_attention_ablation/validation.json",
+  "last_validated_result": "outputs/2026-10-12/weighted_attention/validation.json",
   "conclusion": "No verified breakthrough. Prior DTD effect erased by public reset; Cars Attention-only ablation loses5.136pp independently validated. Testing fixed context/output-weighted VO with QK/MLP/LN unchanged, no security claim.",
   "validated_results": {
     "partial_reset": "outputs/2026-10-11/prototype_recovery_gate/summary.md",
@@ -53,7 +53,8 @@
     "linear_completion": "outputs/2026-10-12/linear_completion/summary.md",
     "linear_completion_eval": "outputs/2026-10-12/linear_completion_eval/summary.md",
     "linear_completion_causal": "outputs/2026-10-12/linear_completion_causal/summary.md",
-    "operator_attention_ablation": "outputs/2026-10-12/operator_attention_ablation/summary.md"
+    "operator_attention_ablation": "outputs/2026-10-12/operator_attention_ablation/summary.md",
+    "weighted_attention": "outputs/2026-10-12/weighted_attention/summary.md"
   },
   "prepared_but_unrun": {
     "config": "configs/public_label_audit.json",
@@ -127,5 +128,13 @@
     "status": "validated_native_failure",
     "fusion_or_recovery_measured": false,
     "source_commit": "220449fcf68bbfad9c5a373af5e6c7109bc100ff"
+  },
+  "weighted_attention": {
+    "native_original": 0.7766446959333416,
+    "native_release": 0.7472951125481905,
+    "native_loss_pp": 2.93495833851511,
+    "status": "validated_native_failure_stopped",
+    "fusion_aga_recovery_measured": false,
+    "release_sha256": "8ef752ffab63763f8220c9bb6ce7898706679e9764c3cb241256415f4a306b00"
   }
 }
