@@ -1,0 +1,125 @@
+{
+  "reviewed_utc": "2026-10-12T17:30:54.046305+00:00",
+  "AGA": {
+    "paper": "https://arxiv.org/html/2606.30360v1",
+    "paper_sections": [
+      "2.2",
+      "3.1",
+      "3.2"
+    ],
+    "source_commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "normalized_source_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "source_functions": [
+      "solve_permutation",
+      "attack_vit_mlp_only",
+      "solve_linear_transformation",
+      "attack_attention_headwise_precise",
+      "universal_attention_attack_params"
+    ],
+    "source_scope": "Attention and MLP; no conv1 references; existing experiment asserts conv1 unchanged after author recovery",
+    "defense_metric": "Equation 3: protected-task merged performance collapse; current partner collapse does not satisfy it"
+  },
+  "NUFILT": {
+    "paper": "https://arxiv.org/html/2509.21413v2",
+    "paper_sections": [
+      "Theorem 1",
+      "4.1",
+      "4.2"
+    ],
+    "source_commit": "4cd298fb7ea22bd4bcd343748fb4b8e3f9815324",
+    "svd_utils_sha256": "feaef2cb710d345521d6a51de49e434e144be09d6d23111c92708ed802a67983",
+    "main_source_sha256": "68381a159aa37b538f77225aa68f497272acb9f8d59f16600e4a494d7176af75",
+    "optimizer_lines": [
+      146,
+      170,
+      172
+    ],
+    "assumptions": "Low-rank task-vector decomposition, bounded error and spectral gap; approximate representation alignment, not a universal rank-16 or classification-preservation guarantee",
+    "reuse": "Historical pure SVD diagnostic only; current color projection is analytically derived from grayscale preprocessing; full NUFILT not reproduced"
+  },
+  "restricted_proof": {
+    "status": "algebraic identity",
+    "conditions": [
+      "Public fixed orthogonal projector P; C=I-P",
+      "Single linear-layer edit satisfying Wprime P=W P"
+    ],
+    "cleaner": "F(Z)=Z P+W0 C",
+    "identity": "F(Wprime)=F(W)",
+    "implication": "No choice of complement-only noise amplitude, seed, rank or distribution defeats this cleaner within these conditions",
+    "excluded_claim": "Not an impossibility theorem for all complement mechanisms",
+    "numerical_evidence": "results/input_complement/noise/independent_validation.json"
+  },
+  "input_fusion_boundary": {
+    "condition": "Only first linear input layer edited; target inputs satisfy DeltaW x=0; linear parameter merge; all downstream weights otherwise identical",
+    "identity": "Merged first-layer change is coefficient * DeltaW x = 0",
+    "implication": "Protected target computation remains unchanged in exact arithmetic for every partner; this construction cannot enforce Equation 3 protected-task collapse"
+  },
+  "new_candidates": 0,
+  "prediction_identity_check": {
+    "predictions_sha256": "f3d5a5fb9fc3b948679b5a536a46e12a1cf6e19744223467eeb774aaf9e77fb6",
+    "checks": {
+      "released/standalone/MNIST": {
+        "n": 10000,
+        "mismatches": 0
+      },
+      "released/direct/MNIST": {
+        "n": 10000,
+        "mismatches": 0
+      },
+      "released/direct/SVHN": {
+        "n": 26032,
+        "mismatches": 23429
+      },
+      "released/AGA_standalone/MNIST": {
+        "n": 10000,
+        "mismatches": 0
+      },
+      "released/AGA/MNIST": {
+        "n": 10000,
+        "mismatches": 0
+      },
+      "released/AGA/SVHN": {
+        "n": 26032,
+        "mismatches": 23562
+      },
+      "released/public_reset_AGA_standalone/MNIST": {
+        "n": 10000,
+        "mismatches": 0
+      },
+      "released/public_reset_AGA/MNIST": {
+        "n": 10000,
+        "mismatches": 0
+      },
+      "released/public_reset_AGA/SVHN": {
+        "n": 26032,
+        "mismatches": 0
+      }
+    }
+  },
+  "DTD_validation": {
+    "source_commit": "5f69984",
+    "status": "independently_verified",
+    "release_reused": true,
+    "new_candidates": 0,
+    "results": "results/input_complement/dtd/results.json",
+    "validation": "results/input_complement/dtd/independent_validation.json",
+    "public_reset_control_cost_pp": 0.10638297872339608
+  },
+  "existing_internal_cleanup_control": {
+    "source": "results/complement/reference/results.json",
+    "sha256": "b4b09c1f57525e72d72d3ef43058e03cca7d6bcf6bd56587ffb9bc161c2e3b23",
+    "rows": [
+      {
+        "group": "direct",
+        "correct": 9937,
+        "n": 10000
+      },
+      {
+        "group": "completion",
+        "correct": 9937,
+        "n": 10000
+      }
+    ],
+    "interpretation": "First-layer V complement completion kept unprotected merged MNIST at 99.37%; this previously chosen region had cheap public completion. Old protocol is not the current both-expert author-AGA protocol; do not pool results."
+  }
+}

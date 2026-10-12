@@ -4,6 +4,8 @@
 
 **输入补空间噪声保留 MNIST 99.69%，原版 AGA 后 SVHN 从 91.77% 降至 9.38%。公开清理仍能消除干扰。** 当前只用 3090；[机制与结果](notes/research.md)说明保持条件及恢复边界。
 
+同一份冻结权重迁移到 DTD：原版 AGA 后 68.78% → 12.55%；公开清理后恢复到 68.67%，与同条件对照逐样本相同。尚未阻止攻击者融合利用 MNIST 能力。
+
 ## 代码
 
 | 文件 | 用途 |
@@ -25,6 +27,8 @@
 - `results/qk_complement/`：固定 Q/K 候选，独立效用保持、直接干扰有效，但 AGA 恢复，已停止。
 - `results/input_complement/amplification/`：独立 MNIST 保持，AGA 后 SVHN 降 33.38 个百分点；公开补空间恢复完全消除效果。
 - `results/input_complement/noise/`：固定种子、同范数噪声对照；独立 MNIST 保持，AGA 后 SVHN 降至 9.38%，18 项计数独立复核通过；公开恢复仍有效。
+- `results/input_complement/dtd/`：冻结编辑包的迁移验证；20 项计数、官方测试划分和复用指纹核对通过，公开恢复仍有效。
+- `results/input_complement/mechanism_review.json`：AGA／NUFILT 核查、公开清理等式及旧控制结果。
 - `results/mnist/` 与 [旧组会报告](reports/2026-10-12/组会汇报.md)：内部压缩历史证据，不作为当前补空间主线。
 - `results/reproduction/`：已有 PaRaMS／AGA 基线记录；尚非完整 Table 6 复现。
 - `results/index.json`：证据路径与指纹；`results/history.csv`：失败记录索引。
