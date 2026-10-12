@@ -1,0 +1,46 @@
+{
+  "task": "Cars",
+  "seed": 20261025,
+  "sites": [
+    "v:9",
+    "up:9",
+    "v:10",
+    "up:10",
+    "v:11",
+    "up:11"
+  ],
+  "task_energy": 0.99,
+  "betas": [
+    0.2,
+    0.5
+  ],
+  "covariance_ridge_fraction": 0.001,
+  "margin_ridge_fraction": 0.001,
+  "finite_difference_step": 0.001,
+  "native_relative_margin_rms_budget": 0.1,
+  "maximum_matrix_relative_change": 0.25,
+  "calibration_samples": 256,
+  "confirmation_samples": 256,
+  "exclusions": [
+    "outputs/2026-10-10/task_profile/training_indices.json",
+    "outputs/2026-10-11/critical_subspace_mnist/training_indices.json",
+    "outputs/2026-10-11/path_subspace/training_indices.json",
+    "outputs/2026-10-12/complement_matching/training_indices.json",
+    "outputs/2026-10-12/final_cls_matching/training_indices.json",
+    "outputs/2026-10-11/fine_subspace_cars/training_indices.json"
+  ],
+  "mnist_exclusions": "outputs/2026-10-10/task_profile/excluded_mnist_indices.json",
+  "profile_parent": "outputs/2026-10-10/task_profile",
+  "fusion_config": "configs/eight_tasks.json",
+  "nufilt_config": "configs/nufilt_alignment.json",
+  "coefficient": 0.2,
+  "evaluation_tasks": [
+    "Cars",
+    "MNIST"
+  ],
+  "construction": "One contrast direction per site in the complement of the native all-token 99% input covariance span, excluding the exact affine LayerNorm null. Maximize beta-path input power relative to native power. Outgoing vector is the leading task-increment left singular vector, scaled by expert matrix Frobenius norm. Six joint coefficients use one closed signed-margin solve with native-margin metric and fixed caps. No scans or defender gradients.",
+  "margin": "Fixed non-label runner-up at each reference model; relative change divided by max(original signed margin,0.1*median positive margin). Reference-correct calibration samples only enter each objective. g averages signed beta derivatives, including beta chain scaling; c is negative inverse native-margin Gram times g, rescaled once to fixed caps.",
+  "calibration": "256 Cars training images and labels for construction;256 disjoint confirmations. Exclude indexed task-profile, fine-subspace and prior paths. No official test data or future partner access. Not a claim of unseen research data across all historical activities.",
+  "evaluation": "One transfer of the unchanged signed-complement rule and numerical budgets to the strongest standalone-dependent profiled target region: Cars9-11. No MNIST coefficient reuse or tuning, no rank/amplitude sweep. Full nativeCars/direct/originalAGA Cars and MNIST matched tests; eight expertsTA0.2. Two tasks measured, not Table6 exact.",
+  "limits": "PCA complement is only approximately low-sensitive on calibration, not a true task zero space. Signed local proxy objective does not guarantee real fusion damage or utility. Input contrast and task left singular vectors are existing linear algebra; no innovation claim. Public cleanup is necessary if protection appears. No reconstruction or universal attack-survival prerequisite."
+}
