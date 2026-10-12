@@ -16,7 +16,7 @@ from functional_contrast import features
 from path_subspace import context, read
 from query_partner_cost import runtime
 from scipy.linalg import eigh
-from subspace_probe import save_json, site_parameters
+from subspace_probe import collect_moments, fit_basis, make_loader, save_json, site_parameters
 from torchvision.datasets import MNIST, SVHN
 
 
@@ -157,8 +157,41 @@ def run(args):
     )
 
 
+@torch.no_grad()
+def compare_tokens(args):
+    """Compare token definitions at the same layer and on identical images."""
+    runtime()
+    out, cfg = Path(args.output), read(args.config)
+    assert read(out / "validation.json")["status"] == "passed"
+    root, load, _fusion, _models = context(cfg)
+    model = load(str(root / "MNIST/finetuned.pt")).cpu().eval()
+    data = MNIST("data", train=True, transform=model.val_preprocess, download=False)
+    indices = read(out / "training_indices.json")["calibration"]
+    moment = collect_moments(model, make_loader(data, indices, 32), ["FC:11"])["FC:11"]
+    _basis, stats = fit_basis(moment, cfg["task_energy"])
+    construction = read(out / "construction.json")[0]
+    save_json(
+        out / "token_comparison.json",
+        dict(
+            status="measured",
+            layer=11,
+            identical_training_images=len(indices),
+            retained_energy=cfg["task_energy"],
+            all_tokens=stats,
+            cls_pca_rank=construction["rank"],
+            cls_tokens=construction["tokens"],
+            cls_complement_excluding_ln_null=construction["actual_complement_rank"],
+            audit_source_sha256=digest(__file__),
+            no_candidate_changed=True,
+            scope="Geometry comparison; not a rank search, accuracy measurement or utility guarantee",
+        ),
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
     parser.add_argument("--output", required=True)
-    run(parser.parse_args())
+    parser.add_argument("--token-comparison", action="store_true")
+    arguments = parser.parse_args()
+    (compare_tokens if arguments.token_comparison else run)(arguments)
