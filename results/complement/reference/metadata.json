@@ -1,0 +1,19 @@
+{
+  "completed": true,
+  "total_seconds": 538.1446430538781,
+  "config_sha256": "c0c13a832728d904ec47c571d7c3984803709a5e537dfd9db9edac4fb4150ce4",
+  "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "experiment_source_sha256": "7bddf49bace49a70db3c279d221f3c69cda55a1f3fe3d8f48f064db1497320a2",
+  "training": "none",
+  "source": "official_TaskArithmetic_ViT-B-32_MNIST_and_SVHN",
+  "calibration": "Unlabelled MNIST training subset; all tokens, centered PCA. SVHN training subset is diagnostic only and never used to construct the random perturbation.",
+  "development": "Disjoint training subsets with labels; not held out from the original expert training. No official test samples for fitting or selection.",
+  "attack_visibility": "Independent MNIST training subset, no labels; attacker recomputes PCA from the released model. Public location and retained-energy rule, no defender basis, random matrix or original expert.",
+  "test_usage": "evaluation_only_after_development_selection",
+  "utility_budget_pp": 0.5,
+  "perturbation_other_protections": "none",
+  "evaluation_implementation": "author_ImageClassifier_get_logits",
+  "merge_implementation": "author_TaskVector_difference_and_sum",
+  "seed_count": 1,
+  "data_indices_sha256": "03885311ed48e79a08c4b9ecb6608c7ab3aaa8d341c6ac268cc71f02e98726b2"
+}

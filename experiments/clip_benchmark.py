@@ -20,6 +20,7 @@ from pathlib import Path
 
 import torch
 from mechanisms import PREFIX, load_author, protect_attention, relative, state_error
+from scipy.stats import binomtest
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST, SVHN
 
@@ -190,6 +191,19 @@ def evaluate(model, head, loader, device: str, prediction_sink=None, logit_sink=
     )
     classifier.cpu()
     return result
+
+
+def paired_counts(reference, correct):
+    lost = int((reference & ~correct).sum())
+    gained = int((~reference & correct).sum())
+    return dict(
+        both_correct=int((reference & correct).sum()),
+        lost=lost,
+        gained=gained,
+        both_wrong=int((~reference & ~correct).sum()),
+        loss_pp=100 * (lost - gained) / len(correct),
+        exact_mcnemar_p=float(binomtest(lost, lost + gained).pvalue) if lost + gained else 1.0,
+    )
 
 
 def run(args):

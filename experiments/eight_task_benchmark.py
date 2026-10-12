@@ -231,7 +231,7 @@ def author_recover(model, anchor, author):
 @torch.no_grad()
 def protection_checks(args, root, config, output):
     """Protect one expert at a time; retain all eight experts in every fusion."""
-    from operator_diagnostics import paired_counts
+    from clip_benchmark import paired_counts
 
     assert args.protection == "params" and config["coefficient"] == 0.2
     assert set(args.protection_checks) <= set(config["tasks"]) - {"EuroSAT"}
@@ -369,7 +369,7 @@ def protection_checks(args, root, config, output):
         source_sha256=digest(__file__),
         helpers_sha256={
             name: digest(Path(__file__).with_name(name))
-            for name in ["clip_benchmark.py", "mechanisms.py", "operator_diagnostics.py"]
+            for name in ["clip_benchmark.py", "mechanisms.py"]
         },
         protocol_sha256=digest(output / "protocol.json"),
         upstream_source_sha256={"PaRaMS": digest(source), "AGA": digest(attack_source)},
