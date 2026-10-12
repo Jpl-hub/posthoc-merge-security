@@ -12,6 +12,7 @@
 | `experiments/clip_benchmark.py` | checkpoint、作者分类器、Task Arithmetic、AGA 与配对计数 |
 | `experiments/mechanisms.py` | 固定版本作者求解器加载与基础参数变换 |
 | `experiments/replay_complement.py` | 冻结补空间结果的迁移核验，不搜索新参数 |
+| `experiments/qk_complement.py` | 一个固定的 Q/K 补空间候选；结果待验证，无调参入口 |
 | `experiments/eight_task_benchmark.py` | 原论文八任务基线评测 |
 | `experiments/prepare_eight_task_data.py` | 官方数据与划分准备 |
 

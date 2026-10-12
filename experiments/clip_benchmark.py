@@ -25,6 +25,14 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST, SVHN
 
 
+def digest(path):
+    h = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for block in iter(lambda: stream.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
 def checkpoint_loader(author_repo: Path):
     """Register the upstream pickle's legacy src.modeling name without editing it."""
     sys.path.insert(0, str(author_repo.resolve()))

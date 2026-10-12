@@ -8,23 +8,14 @@ from __future__ import annotations
 
 import argparse
 import copy
-import hashlib
 import json
 from pathlib import Path
 
 import torch
-from clip_benchmark import checkpoint_loader, evaluate, merge, paired_counts, recover
+from clip_benchmark import checkpoint_loader, digest, evaluate, merge, paired_counts, recover
 from mechanisms import load_author
 from subspace_probe import make_loader, perturb, save_json
 from torchvision.datasets import MNIST
-
-
-def digest(path):
-    h = hashlib.sha256()
-    with Path(path).open("rb") as stream:
-        for block in iter(lambda: stream.read(1 << 20), b""):
-            h.update(block)
-    return h.hexdigest()
 
 
 @torch.no_grad()
