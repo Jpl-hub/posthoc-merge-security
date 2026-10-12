@@ -8,6 +8,8 @@
 
 当前先做[机制与可行性分析](notes/mechanism_analysis.md)：固定公开投影的联合编辑仍可逐处清理，V/O 零空间噪声也有直接删除公式。尚无通过恢复代价检查的新候选，暂不生成保护权重。
 
+已有中间层数据的 CPU 复核进一步区分了基座计算与专家新增计算：后者在补空间的响应约为前者的 0.8%，而公开回填保留前者。这解释了该区域融合响应增加、清理代价却很小的现象；尚无抗恢复突破。
+
 ## 代码
 
 | 文件 | 用途 |
@@ -35,6 +37,7 @@
 - `results/input_complement/mechanism_review.json`：AGA／NUFILT 核查、公开清理等式及旧控制结果。
 - `results/readout_completion/`：公开回填的必要条件诊断。移除大量任务更新能量仍保留融合能力，已停止该固定输出补空间方向；[推导与结果](notes/recovery.md)。
 - `results/middle_completion/`：中间层补空间响应在融合后增大，但公开回填仍保留 MNIST 融合能力、DTD 只少判对 1 张；停止该固定区域，不生成噪声。[单次诊断](notes/middle_completion.md)。
+- `results/complement_update_audit/`：上述冻结矩阵与激活统计的 CPU 重算及独立核验；不增加模型前向、候选或准确率实验。
 - `results/mnist/` 与 [旧组会报告](reports/2026-10-12/组会汇报.md)：内部压缩历史证据，不作为当前补空间主线。
 - `results/reproduction/`：已有 PaRaMS／AGA 基线记录；尚非完整 Table 6 复现。
 - `results/index.json`：证据路径与指纹；`results/history.csv`：失败记录索引。

@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "method": "NumPy/SciPy covariance square-root factors and affine mean responses; independent of source Gram trace implementation.",
+  "input_fingerprints_verified": true,
+  "checkpoint_fingerprints_verified": true,
+  "result_sha256": "a1eba37d729a067433d81eb07403eb0ac20d4ae8c1830c016309e3cf57f03889",
+  "verifier_sha256": "0633c66b8b008637383bd43449f3a340d426359f85d4ecd535f2789b77eb94ce",
+  "device": "CPU only",
+  "new_model_forwards": 0,
+  "new_protected_weights": 0,
+  "checks": [
+    {
+      "basis": "defender",
+      "context": "MNIST/native",
+      "maximum_relative_error": 1.0898465390257561e-14
+    },
+    {
+      "basis": "defender",
+      "context": "MNIST/merged",
+      "maximum_relative_error": 8.049751846763983e-16
+    },
+    {
+      "basis": "defender",
+      "context": "DTD/native",
+      "maximum_relative_error": 2.529462456234207e-16
+    },
+    {
+      "basis": "defender",
+      "context": "DTD/merged",
+      "maximum_relative_error": 2.328237133839806e-16
+    },
+    {
+      "basis": "attacker",
+      "context": "MNIST/native",
+      "maximum_relative_error": 1.2342322158185684e-14
+    },
+    {
+      "basis": "attacker",
+      "context": "MNIST/merged",
+      "maximum_relative_error": 5.600441840293803e-16
+    },
+    {
+      "basis": "attacker",
+      "context": "DTD/native",
+      "maximum_relative_error": 2.8575543144356385e-16
+    },
+    {
+      "basis": "attacker",
+      "context": "DTD/merged",
+      "maximum_relative_error": 5.565122520531219e-16
+    }
+  ]
+}
