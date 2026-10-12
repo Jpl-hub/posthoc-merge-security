@@ -1,0 +1,145 @@
+{
+  "recovery_diagnostics": {
+    "raw_qk_edit_norm": 21839.4347180843,
+    "after_AGA_qk_difference_norm": 3.2745071399580437,
+    "scope": "Layer 0 mechanism probe only. Accuracy results used full 12-layer attention plus MLP wrappers on both experts.",
+    "native_MNIST": {
+      "centered_score_difference_rms": 0.9290202094277731,
+      "probability_l1": 0.6684272922563923
+    },
+    "fusion_MNIST": {
+      "centered_score_difference_rms": 0.5950724864398957,
+      "probability_l1": 0.47013870853511863
+    },
+    "fusion_SVHN": {
+      "centered_score_difference_rms": 0.799568871606925,
+      "probability_l1": 0.5206420517300608
+    }
+  },
+  "status": "passed",
+  "source_commit": "8d28525",
+  "validator_sha256": "53ddc3ba7feecdaeb0daa7966076f593fb80a881f3adf437d21983bb1760e6cc",
+  "recounts": [
+    {
+      "key": "original/confirmation/MNIST",
+      "correct": 255,
+      "n": 256
+    },
+    {
+      "key": "original/standalone/MNIST",
+      "correct": 9969,
+      "n": 10000
+    },
+    {
+      "key": "released/confirmation/MNIST",
+      "correct": 255,
+      "n": 256
+    },
+    {
+      "key": "released/standalone/MNIST",
+      "correct": 9969,
+      "n": 10000
+    },
+    {
+      "key": "original/direct/MNIST",
+      "correct": 9937,
+      "n": 10000
+    },
+    {
+      "key": "original/direct/SVHN",
+      "correct": 24079,
+      "n": 26032
+    },
+    {
+      "key": "original/AGA_standalone/MNIST",
+      "correct": 9968,
+      "n": 10000
+    },
+    {
+      "key": "original/AGA/MNIST",
+      "correct": 9932,
+      "n": 10000
+    },
+    {
+      "key": "original/AGA/SVHN",
+      "correct": 23890,
+      "n": 26032
+    },
+    {
+      "key": "released/direct/MNIST",
+      "correct": 7880,
+      "n": 10000
+    },
+    {
+      "key": "released/direct/SVHN",
+      "correct": 14304,
+      "n": 26032
+    },
+    {
+      "key": "released/AGA_standalone/MNIST",
+      "correct": 9964,
+      "n": 10000
+    },
+    {
+      "key": "released/AGA/MNIST",
+      "correct": 9928,
+      "n": 10000
+    },
+    {
+      "key": "released/AGA/SVHN",
+      "correct": 23922,
+      "n": 26032
+    }
+  ],
+  "exact_author_functions": [
+    "solve_permutation",
+    "solve_linear_transformation",
+    "attack_attention_headwise_precise",
+    "universal_attention_attack_params",
+    "attack_vit_mlp_only"
+  ],
+  "changed_tensors": [
+    "model.visual.transformer.resblocks.0.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.0.attn.in_proj_bias"
+  ],
+  "calibration_score_check": {
+    "score_rms": 1.4981578882647353,
+    "change_rms": 0.0741335037619604,
+    "probability_l1": 0.029985275859321384,
+    "formula_max_error": 8.998078432527479e-15,
+    "input_contrast_rms": 1.6947809262012158e-05
+  },
+  "generalized_ratio": 2253315127.180711,
+  "mechanism_probe": {
+    "native_MNIST": {
+      "score_rms": 1.4224212957440516,
+      "change_rms": 0.0805296400258361,
+      "probability_l1": 0.03186553249987837,
+      "formula_max_error": 8.964061589365746e-15,
+      "input_contrast_rms": 1.8414939804589968e-05
+    },
+    "proxy_MNIST": {
+      "score_rms": 1.7672400954042968,
+      "change_rms": 736762.7854653168,
+      "probability_l1": 1.9870132381512413,
+      "formula_max_error": 3.259629011154175e-09,
+      "input_contrast_rms": 0.796339016446403
+    },
+    "fusion_MNIST": {
+      "score_rms": 1.699671234658073,
+      "change_rms": 945702.5321960454,
+      "probability_l1": 1.9660573349137789,
+      "formula_max_error": 4.423782229423523e-09,
+      "input_contrast_rms": 0.8916516892261441
+    },
+    "fusion_SVHN": {
+      "score_rms": 2.7997921371362935,
+      "change_rms": 626881.3189747409,
+      "probability_l1": 1.9176535806623838,
+      "formula_max_error": 4.598405212163925e-09,
+      "input_contrast_rms": 0.776649423778533
+    }
+  },
+  "probe_scope": "First 64 official test inputs, diagnostic only; no fitting, candidate changes or claim of representative sampling.",
+  "release_artifact_sha256": "9f069e077f7b7c7ccef8a701b6ad892a7e4f176bfe7118728decf15b1a0d69b0"
+}
