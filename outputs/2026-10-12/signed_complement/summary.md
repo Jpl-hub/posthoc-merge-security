@@ -39,6 +39,6 @@
 - 12 行原始评估完整计数与配对核验，12 行 32 图预测前缀重跑；NumPy 重解系数最大误差 2.22e−16。六处实际 release 逐张量重建一致，18 列有限差分前缀精确复现。
 - 清理有九行新完整评估，三个公开替换别名在模型张量完全相同后才复用；全部十二行前缀重跑，独立 NumPy PCA 公式通过。
 - 初次运行遗漏 merger 的 anchor 参数，在真实测试开始前中断。失败文件保留于 `../signed_complement_setup_failure`；修复后 release 张量与中断版本完全相同，不是新候选。
-- 不增加 MNIST 强度。下一步用同一冻结规则，在此前独立任务依赖更强的 Cars 9–11 层检验清理代价是否随任务变化。它是跨任务核查，不是把既有线性代数当新机制。
+- 不增加 MNIST 强度。同一冻结规则已在 Cars 9–11 层完成跨任务核查：独立损失 0.1865 pp，原版 AGA 后融合仅下降 0.1368 pp，没有有效改善。见[Cars 结果](../signed_complement_cars/summary.md)。停止这一方向族；不把既有线性代数当新机制。
 
 证据：[原始计数](results.json)、[保护复核](validation.json)、[机制审计](mechanism_audit.json)、[公开清理](../signed_complement_cleanup/results.json)、[清理复核](../signed_complement_cleanup/validation.json)。

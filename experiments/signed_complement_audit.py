@@ -23,6 +23,170 @@ from signed_complement import aliases, margin_columns, margin_spec, response
 from subspace_probe import collect_moments, make_loader, save_json
 
 
+def transfer_statistics(reference, protected, proxy_reference, proxy_protected, labels, weight):
+    """Separate feature transport, rival changes and baseline margin on fixed rows."""
+    a, b, pa, pb = [
+        x.double().numpy() for x in (reference, protected, proxy_reference, proxy_protected)
+    ]
+    y, w = labels.numpy(), weight.double().numpy()
+    n, row = len(y), np.arange(len(y))
+
+    def margin_spec_numpy(f):
+        scores = f @ w.T
+        competitors = scores.copy()
+        competitors[row, y] = -np.inf
+        rival = competitors.argmax(1)
+        margin = scores[row, y] - scores[row, rival]
+        return rival, margin, scores.argmax(1) == y
+
+    rival, margin, correct = margin_spec_numpy(a)
+    prival, pmargin, pcorrect = margin_spec_numpy(pa)
+    after_correct = margin_spec_numpy(b)[2]
+    pafter_correct = margin_spec_numpy(pb)[2]
+    shared = correct & pcorrect
+    assert shared.any()
+    h, ph = w[y] - w[rival], w[y] - w[prival]
+    delta, pdelta = b - a, pb - pa
+    change = np.einsum("nf,nf->n", h, delta)
+    pchange = np.einsum("nf,nf->n", ph, pdelta)
+    # Exact decomposition uses unnormalized logits; no unequal denominators.
+    feature_term = np.einsum("nf,nf->n", h, delta - pdelta)
+    rival_term = np.einsum("nf,nf->n", h - ph, pdelta)
+    decomposition_error = float(np.max(np.abs(change - pchange - feature_term - rival_term)))
+    assert decomposition_error < 1e-10
+
+    def cosine(x, z):
+        return float(np.sum(x * z) / max(np.linalg.norm(x) * np.linalg.norm(z), 1e-30))
+
+    def crossing(m, dm, valid, final):
+        predicted = valid & (m + dm < 0)
+        lost = valid & ~final
+        return dict(
+            reference_correct=int(valid.sum()),
+            actual_lost=int(lost.sum()),
+            fixed_original_rival_crossings=int(predicted.sum()),
+            actual_losses_not_crossing_original_rival=int((lost & ~predicted).sum()),
+            sufficient_crossings_without_actual_loss=int((predicted & ~lost).sum()),
+        )
+
+    correlation = float(np.corrcoef(change[shared], pchange[shared])[0, 1])
+    assert np.isfinite(correlation)
+    return dict(
+        n=n,
+        shared_reference_correct=int(shared.sum()),
+        original_rival_agreement_fraction=float(np.mean(rival[shared] == prival[shared])),
+        feature_delta_cosine=cosine(delta[shared], pdelta[shared]),
+        feature_delta_norm_ratio=float(
+            np.linalg.norm(delta[shared]) / np.linalg.norm(pdelta[shared])
+        ),
+        signed_margin_change_correlation=correlation,
+        actual_to_proxy_original_margin_median_ratio=float(
+            np.median(margin[shared] / pmargin[shared])
+        ),
+        actual_mean_logit_margin_change=float(change[shared].mean()),
+        proxy_mean_logit_margin_change=float(pchange[shared].mean()),
+        difference_feature_transport_term=float(feature_term[shared].mean()),
+        difference_original_rival_term=float(rival_term[shared].mean()),
+        decomposition_max_error=decomposition_error,
+        actual_crossings=crossing(margin, change, correct, after_correct),
+        proxy_crossings=crossing(pmargin, pchange, pcorrect, pafter_correct),
+    )
+
+
+@torch.no_grad()
+def transfer_audit(args):
+    """Replay confirmation only; leave the release and all existing results intact."""
+    runtime()
+    out = Path(args.output)
+    cfg, meta = read(out / "protocol.json"), read(out / "metadata.json")
+    assert meta["completed"] and read(out / "validation.json")["status"] == "passed"
+    target = out / "proxy_transfer.json"
+    assert not target.exists() if not args.validate_transfer else target.exists()
+    for name, pin in meta["raw_sha256"].items():
+        assert digest(out / "artifacts" / name) == pin
+    saved = torch.load(out / "artifacts/construction.pt", map_location="cpu", weights_only=True)
+    raw = torch.load(out / "artifacts/responses.pt", map_location="cpu", weights_only=True)
+    root, load, _, models = context(cfg, all_tasks=True)
+    head = load(str(root / f"head_{cfg['task']}.pt")).cpu().eval()
+    release = copy.deepcopy(models[cfg["task"]])
+    edits = torch.load(out / "artifacts/release_edits.pt", map_location="cpu", weights_only=True)
+    for key, value in edits.items():
+        release.state_dict()[key].copy_(value)
+    from dataset.registry import get_dataset
+
+    data = get_dataset(
+        cfg["task"], models["anchor"].val_preprocess, "data", batch_size=128, num_workers=2
+    )
+    indices = read(out / "training_indices.json")[cfg["task"]]
+    assert not set(indices["confirmation"]).intersection(indices["calibration"])
+    used = indices["confirmation"][:32] if args.validate_transfer else indices["confirmation"]
+    x = torch.stack([data.train_dataset[i][0] for i in used])
+    labels = saved["labels"]["confirmation"]
+    observed = {}
+    for name, inputs in [
+        ("reference", models),
+        ("protected", dict(models, **{cfg["task"]: release})),
+    ]:
+        merged = merge_all(inputs, root, cfg["coefficient"])
+        merged.cuda()
+        observed[name] = features(merged, x)
+        del merged
+    artifact = out / "artifacts/proxy_transfer.pt"
+    if args.validate_transfer:
+        report = read(target)
+        assert digest(artifact) == report["raw_sha256"]
+        observed_saved = torch.load(artifact, map_location="cpu", weights_only=True)
+        assert all(torch.equal(observed[k], observed_saved[k][:32]) for k in observed)
+        observed = observed_saved
+    actual_response = response(observed["reference"], observed["protected"], labels, head)
+    assert (
+        actual_response == read(out / "mechanism_audit.json")["actual_fusion_confirmation_response"]
+    )
+    results = {}
+    for beta in cfg["betas"]:
+        proxy = raw[f"beta_{beta}/confirmation"]
+        results[str(beta)] = transfer_statistics(
+            observed["reference"],
+            observed["protected"],
+            proxy["before"],
+            proxy["after"],
+            labels,
+            head.weight,
+        )
+    if args.validate_transfer:
+        assert results == report["results"]
+        save_json(
+            out / "proxy_transfer_validation.json",
+            dict(
+                status="passed",
+                numpy_decomposition_recomputed=True,
+                fresh_fusion_feature_prefixes=2,
+                prefix_images=32,
+                results_sha256=digest(target),
+                raw_sha256=digest(artifact),
+            ),
+        )
+    else:
+        assert not artifact.exists()
+        torch.save(observed, artifact)
+        save_json(
+            target,
+            dict(
+                source_sha256=digest(__file__),
+                task=cfg["task"],
+                results=results,
+                raw_sha256=digest(artifact),
+                parent_metadata_sha256=digest(out / "metadata.json"),
+                confirmation_indices_sha256=digest(out / "training_indices.json"),
+                release_unchanged=True,
+                new_candidates=0,
+                test_images_used=False,
+                partner_access_only_after_release=True,
+                classification_response=actual_response,
+            ),
+        )
+
+
 @torch.no_grad()
 def run(args):
     runtime()
@@ -192,4 +356,8 @@ def run(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="outputs/2026-10-12/signed_complement")
-    run(parser.parse_args())
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--proxy-transfer", action="store_true")
+    mode.add_argument("--validate-transfer", action="store_true")
+    args = parser.parse_args()
+    transfer_audit(args) if args.proxy_transfer or args.validate_transfer else run(args)
