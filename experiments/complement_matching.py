@@ -192,6 +192,14 @@ def run(args):
             for part in ("weight", "bias")
         }
         assert set(edits) <= allowed
+        if cfg.get("setup_parent"):
+            prior_edits = torch.load(
+                Path(cfg["setup_parent"]) / f"artifacts/{name}_edits.pt",
+                map_location="cpu",
+                weights_only=True,
+            )
+            assert edits.keys() == prior_edits.keys()
+            assert all(torch.equal(w, prior_edits[k]) for k, w in edits.items())
         torch.save(edits, artifacts / f"{name}_edits.pt")
         freeze[name] = dict(sha256=digest(artifacts / f"{name}_edits.pt"), edited_keys=list(edits))
     torch.save(certificate, artifacts / "certificate.pt")
@@ -205,6 +213,8 @@ def run(args):
             labels_used=False,
             optimizer_steps=0,
             response_fits=0,
+            setup_parent=cfg.get("setup_parent"),
+            same_release_as_setup_failure=bool(cfg.get("setup_parent")),
         ),
     )
     author, author_sha = load_author("external/secure-merge-attack/utils_attack_B32.py", True)
@@ -216,6 +226,7 @@ def run(args):
     if cfg.get("token_scope") == "final_cls":
         assert cfg["sites"] == ["FC:11"]
         assert len(original.model.visual.transformer.resblocks) == 12
+        same_batch_reference = features(original, confirm[:16])
 
         def zero_final_patches(_module, _args, value):
             modified = value.clone()
@@ -229,10 +240,12 @@ def run(args):
             erased = features(original, confirm[:16])
         finally:
             handle.remove()
-        assert torch.equal(erased, base_features[:16])
+        assert torch.equal(erased, same_batch_reference)
         diagnostics["causal_check"] = dict(
             final_mlp_patch_outputs_zeroed=True,
             feature_bitwise_equal=True,
+            batch_size=16,
+            unmatched_batch_max_error=float((erased - base_features[:16]).abs().max()),
             scope="16 disjoint training confirmation images; structural claim limited to final MLP",
         )
     original.cpu()
