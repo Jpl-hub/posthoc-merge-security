@@ -1,0 +1,114 @@
+{
+  "passed": true,
+  "new_defense_candidates": 0,
+  "verifier_sha256": "4da66d5292c7e922ac8278433b03b0f4cdb6539201002dd6c9ed0b5742b769c4",
+  "source_frozen": "fda0a57",
+  "source_and_checkpoint_fingerprints": "passed",
+  "independent_moments_and_scipy_projectors": {
+    "defender": {
+      "mean_absolute_error": 0.0,
+      "covariance_relative_error": 0.0,
+      "independent_projector_error": 5.915236950161048e-12,
+      "weight_max_error": 2.2737367544323206e-13,
+      "bias_max_error": 0.0,
+      "changed_keys": [
+        "model.visual.transformer.resblocks.5.mlp.c_fc.weight",
+        "model.visual.transformer.resblocks.5.mlp.c_fc.bias"
+      ],
+      "retained_rank": 756
+    },
+    "attacker": {
+      "mean_absolute_error": 0.0,
+      "covariance_relative_error": 0.0,
+      "independent_projector_error": 8.014168440285701e-12,
+      "weight_max_error": 0.0,
+      "bias_max_error": 0.0,
+      "changed_keys": [
+        "model.visual.transformer.resblocks.5.mlp.c_fc.weight",
+        "model.visual.transformer.resblocks.5.mlp.c_fc.bias"
+      ],
+      "retained_rank": 756
+    }
+  },
+  "diagnostic_replay": {
+    "MNIST/native": {
+      "mean_error": 0.0,
+      "covariance_relative_error": 0.0,
+      "images": 256
+    },
+    "MNIST/merged": {
+      "mean_error": 0.0,
+      "covariance_relative_error": 0.0,
+      "images": 256
+    },
+    "DTD/native": {
+      "mean_error": 0.0,
+      "covariance_relative_error": 0.0,
+      "images": 256
+    },
+    "DTD/merged": {
+      "mean_error": 0.0,
+      "covariance_relative_error": 0.0,
+      "images": 256
+    }
+  },
+  "covariance_projection_formula": "passed",
+  "official_recounts_and_prediction_replays": [
+    {
+      "key": "original/native/MNIST",
+      "correct": 9969,
+      "n": 10000,
+      "fresh_prefix": 32
+    },
+    {
+      "key": "original/direct/MNIST",
+      "correct": 9945,
+      "n": 10000,
+      "fresh_prefix": 32
+    },
+    {
+      "key": "original/direct/DTD",
+      "correct": 1303,
+      "n": 1880,
+      "fresh_prefix": 32
+    },
+    {
+      "key": "defender/native/MNIST",
+      "correct": 9969,
+      "n": 10000,
+      "fresh_prefix": 32
+    },
+    {
+      "key": "defender/direct/MNIST",
+      "correct": 9945,
+      "n": 10000,
+      "fresh_prefix": 32
+    },
+    {
+      "key": "defender/direct/DTD",
+      "correct": 1302,
+      "n": 1880,
+      "fresh_prefix": 32
+    },
+    {
+      "key": "attacker/native/MNIST",
+      "correct": 9969,
+      "n": 10000,
+      "fresh_prefix": 32
+    },
+    {
+      "key": "attacker/direct/MNIST",
+      "correct": 9945,
+      "n": 10000,
+      "fresh_prefix": 32
+    },
+    {
+      "key": "attacker/direct/DTD",
+      "correct": 1302,
+      "n": 1880,
+      "fresh_prefix": 32
+    }
+  ],
+  "verifier_repair": "Initial validator forgot no_grad before numpy conversion; main experiment was unaffected. Failure log preserved separately.",
+  "limitation": "No protected candidate, no AGA evaluation, no claim about other layers or all adaptive attacks."
+}

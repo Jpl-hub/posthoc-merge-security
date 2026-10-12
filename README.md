@@ -16,6 +16,7 @@
 | `experiments/replay_complement.py` | 冻结补空间结果的迁移核验，不搜索新参数 |
 | `experiments/input_complement.py` | 灰度输入补空间后处理；一次固定噪声对照，含 AGA 与公开恢复 |
 | `experiments/readout_completion.py` | 最后 MLP 分类读出补空间的公开回填代价；不生成保护候选 |
+| `experiments/middle_completion.py` | 固定一个中间 MLP 输入补空间，测真实融合响应和两份公开 PCA 回填代价 |
 | `experiments/eight_task_benchmark.py` | 原论文八任务基线评测 |
 | `experiments/prepare_eight_task_data.py` | 官方数据与划分准备 |
 
@@ -31,6 +32,7 @@
 - `results/input_complement/dtd/`：冻结编辑包的迁移验证；20 项计数、官方测试划分和复用指纹核对通过，公开恢复仍有效。
 - `results/input_complement/mechanism_review.json`：AGA／NUFILT 核查、公开清理等式及旧控制结果。
 - `results/readout_completion/`：公开回填的必要条件诊断。移除大量任务更新能量仍保留融合能力，已停止该固定输出补空间方向；[推导与结果](notes/recovery.md)。
+- `results/middle_completion/`：中间层补空间响应在融合后增大，但公开回填仍保留 MNIST 融合能力、DTD 只少判对 1 张；停止该固定区域，不生成噪声。[单次诊断](notes/middle_completion.md)。
 - `results/mnist/` 与 [旧组会报告](reports/2026-10-12/组会汇报.md)：内部压缩历史证据，不作为当前补空间主线。
 - `results/reproduction/`：已有 PaRaMS／AGA 基线记录；尚非完整 Table 6 复现。
 - `results/index.json`：证据路径与指纹；`results/history.csv`：失败记录索引。
