@@ -200,7 +200,11 @@ def run(args):
         )
         assert len(partner_data) == {"SVHN": 26032, "DTD": 1880}[args.partner]
         loader_s = make_loader(partner_data)
+        record(partner, head_s, loader_s, "original", "partner_standalone", args.partner)
         recovered_partner = author_recover(partner, anchor, author)
+        record(
+            recovered_partner, head_s, loader_s, "original", "AGA_partner_standalone", args.partner
+        )
         for name, model in [("original", original), ("released", released)]:
             for stage in ["direct", "AGA", "public_reset_AGA"]:
                 if stage == "direct":
