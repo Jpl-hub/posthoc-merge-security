@@ -1,6 +1,6 @@
 {
   "status": "phase1_three_protected_tasks_verified",
-  "updated_utc": "2026-10-13T17:49:05.089000+00:00",
+  "updated_utc": "2026-10-13T17:52:23.423660+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -11,7 +11,7 @@
   "breakthrough_verified": true,
   "new_candidate": "configs/projection_bias_noise_svhn.json",
   "mechanism": "notes/projection_bias_noise.md",
-  "next_action": "Interpret the verified three-expert phase1 effect with its original AGA coverage and public kernel-removal limits. Preserve frozen releases; do not retune known tests or enter phase2/full attacks/new cleaners without user steering. Current verification and GitHub/server sync complete when final receipt exists.",
+  "next_action": "Three-task phase1 effects and matching controls fully verified and published. Retain releases and interpret scope: fixed-head collapse under original AGA, not public-recovery robustness. Continue only phase1 if further work is requested; no test retuning, phase2/full attack/cleaner expansion,4090 or evidence deletion.",
   "deferred": [
     "Parameter-distance optimization",
     "Broad attack/merge survey",
@@ -43,7 +43,7 @@
     "same_release": true,
     "release_sha256": "626ebf023274b642100afd259d4e1a7cc465b423554a96194f84308686ca34c0"
   },
-  "published_source_commit": "b12dc587d2fc4ffd14287d0cf9d40f1c781f99b9",
+  "published_source_commit": "c965ec6b995177e483fb1ec6fc6dd3eb42155bcc",
   "candidate_analysis": "notes/projection_bias_noise.md",
   "prior_candidate_preserved": true,
   "class_noise": {
@@ -212,7 +212,8 @@
     "published_source_commit": "79499581506a324fd3f983ce92330d4d63f5fc69",
     "fixed_head_metric_only": true,
     "extension_protocol": "configs/projection_bias_noise_svhn.json",
-    "fresh_calibration_reproduction": "results/projection_bias_noise/fresh_reproduction.json"
+    "fresh_calibration_reproduction": "results/projection_bias_noise/fresh_reproduction.json",
+    "extension_published_source_commit": "c965ec6b995177e483fb1ec6fc6dd3eb42155bcc"
   },
   "breakthrough_scope": "Phase1 only: same rule on protected MNIST/DTD/SVHN, fixed TA0.5 and original author AGA target output collapse, with unchanged native predictions. Not public-recovery robustness, task information destruction or paper readiness.",
   "rank_one_limitations": [
@@ -242,5 +243,7 @@
     "DTD_AGA_original": 68.77659574468085,
     "DTD_AGA_released": 68.88297872340425,
     "independent_validation": "passed"
-  }
+  },
+  "rank_one_published_source_commit": "b12dc587d2fc4ffd14287d0cf9d40f1c781f99b9",
+  "final_sync_receipt": "outputs/latest_sync_receipt.json on3090"
 }
