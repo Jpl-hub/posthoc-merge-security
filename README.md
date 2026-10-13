@@ -6,10 +6,12 @@
 
 **已有初步 MNIST 融合干扰，尚非完整防御。** 独立 99.69% → 99.64%；原版 AGA 后，SVHN 伙伴下 MNIST 99.32% → 91.15%，DTD 伙伴下 99.42% → 77.16%。两次使用同一保护权重，独立核验通过。
 
+最新一次类间噪声未改善：独立 99.68%，AGA 后融合 MNIST 99.32%。它扩大了输出方向覆盖，却降低了同预算下的融合响应；该候选已停止。[构造、真实结果与原因](notes/phase1_class_noise.md)。
+
 旧 RGB 输入噪声只干扰伙伴；旧 Q/K 噪声的直接干扰被 AGA 消除。[旧计数](results/previous_noise.json)仅作历史记录。
 
 - [构造与停止条件](notes/phase1.md)
-- `experiments/feature_noise.py`：一个末层 MLP 输入补空间噪声候选
+- `experiments/feature_noise.py`：末层 MLP 输入补空间噪声及冻结的类间结构对照
 - `experiments/replay_feature_noise.py`：同一发布权重的 DTD 迁移及预测核验
 - `experiments/clip_benchmark.py`：既有 checkpoint、评估、Task Arithmetic 和作者 AGA 入口
 - `experiments/mechanisms.py`：固定版本作者函数加载

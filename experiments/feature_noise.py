@@ -110,6 +110,97 @@ def construct(original, anchor, head, training, indices, cfg):
 
 
 @torch.no_grad()
+def construct_class_noise(original, anchor, head, training, indices, cfg):
+    """Minimum-norm class confusion, restricted to the frozen target complement."""
+    source = Path(cfg["basis_source"])
+    parent = json.loads((source / "execution.json").read_text())
+    assert json.loads((source / "independent_validation.json").read_text())["status"] == "passed"
+    assert digest(source / "artifacts/release.pt") == parent["release_sha256"] == cfg["basis_sha256"]
+    assert indices == json.loads((source / "training_indices.json").read_text())
+    saved = torch.load(source / "artifacts/release.pt", map_location="cpu")
+    basis, mean = saved["basis"], saved["mean"]
+    proxy = merge(anchor, original, anchor, cfg["proxy_beta"])
+    z_proxy, h_proxy = capture(proxy, make_loader(training, indices["fit"], 64))
+    assert torch.allclose(z_proxy, saved["proxy_hidden"], atol=1e-6, rtol=1e-5)
+    visual = proxy.model.visual
+    assert head.normalize and torch.count_nonzero(head.bias) == 0
+    contrast = head.weight.double() - head.weight.double().mean(0)
+    readout = visual.ln_post.weight.double()[:, None] * (visual.proj.double() @ contrast.T)
+    readout -= readout.mean(0)
+    values = torch.linalg.svdvals(readout)
+    assert int((values > values[0] * 1e-10).sum()) == len(contrast) - 1
+    weight_proxy = visual.transformer.resblocks[11].mlp.c_proj.weight.double()
+    component = weight_proxy - (weight_proxy @ basis) @ basis.T
+    mapping = torch.roll(torch.eye(len(contrast), dtype=torch.float64), shifts=1, dims=0)
+    desired = (mapping - torch.eye(len(contrast), dtype=torch.float64)) @ (readout.T @ component)
+    operator = torch.linalg.pinv(readout.T, atol=0.0, rtol=1e-10) @ desired
+    assert float((readout.T @ operator - desired).norm() / desired.norm()) < 1e-9
+    assert float((operator @ basis).norm() / operator.norm()) < 1e-8
+    responses = {name: (saved[key] - mean) @ operator.T for name, key in
+                 [("fit", "fit_hidden"), ("scale", "scale_hidden"), ("proxy_fit", "proxy_hidden")]}
+    rms = {name: float(value.square().sum(-1).mean().sqrt()) for name, value in responses.items()}
+    native_rms = max(rms["fit"], rms["scale"])
+    assert native_rms > 1e-12
+    residual_rms = min(float(saved[key].square().sum(-1).mean().sqrt())
+                       for key in ["fit_residual", "scale_residual"])
+    weight = original.model.visual.transformer.resblocks[11].mlp.c_proj.weight.double()
+    amplitude = min(cfg["native_residual_fraction"] * residual_rms / native_rms,
+                    cfg["weight_relative_cap"] * float(weight.norm()) / float(operator.norm()))
+    delta = amplitude * operator
+    bias_delta = -(delta @ mean)
+    released = copy.deepcopy(original).cpu().eval()
+    layer = released.model.visual.transformer.resblocks[11].mlp.c_proj
+    layer.weight.copy_((weight + delta).float())
+    layer.bias.copy_((layer.bias.double() + bias_delta).float())
+    actual = layer.weight.double() - weight
+    actual_span_error = float((actual @ basis).norm() / actual.norm())
+    assert actual_span_error < 1e-5
+    changed = {key for key, value in released.state_dict().items()
+               if not torch.equal(value, original.state_dict()[key])}
+    assert changed == {"model.visual.transformer.resblocks.11.mlp.c_proj." + part
+                       for part in ["weight", "bias"]}
+    artifact = dict(structure="class_confusion", basis_source=str(source), basis_sha256=cfg["basis_sha256"],
+                    mean=mean, amplitude=amplitude, operator=operator, delta=delta,
+                    bias_delta=bias_delta, released_weight=layer.weight.clone(),
+                    released_bias=layer.bias.clone(), proxy_raw=h_proxy,
+                    readout=readout, proxy_weight=weight_proxy, class_mapping=mapping)
+    geometry = dict(structure="class_confusion", task_input_rank=basis.shape[1], noise_rank_upper_bound=9,
+                    amplitude=amplitude, relative_weight_change=float(actual.norm() / weight.norm()),
+                    actual_fp32_span_error=actual_span_error,
+                    class_equation_error=float((readout.T @ operator - desired).norm() / desired.norm()),
+                    native_residual_fraction=amplitude * native_rms / residual_rms,
+                    proxy_residual_rms=cfg["proxy_beta"] * amplitude * rms["proxy_fit"],
+                    operator_response_rms=rms, response_units="CLS vector Euclidean RMS",
+                    same_input_space=True, same_response_budget=True, same_weight_cap=True,
+                    partner_used=False, labels_used_in_construction=False,
+                    optimizer_steps=0, response_fits=0)
+    # Diagnose actual finite normalization after the recipe and amplitude are fixed.
+    def scores(model, raw):
+        v = model.model.visual
+        centered = raw - raw.mean(-1, keepdim=True)
+        scale = (centered.square().mean(-1, keepdim=True) + v.ln_post.eps).sqrt()
+        normalized = centered / scale * v.ln_post.weight.double() + v.ln_post.bias.double()
+        feature = normalized @ v.proj.double()
+        feature /= feature.norm(dim=-1, keepdim=True)
+        return feature @ head.weight.double().T + head.bias.double()
+    diagnostics = []
+    for name, model, raw, response, sample_ids, factor in [
+        ("native_fit", original, saved["fit_residual"], responses["fit"], indices["fit"], 1),
+        ("native_scale", original, saved["scale_residual"], responses["scale"], indices["scale"], 1),
+        ("proxy_fit", proxy, h_proxy, responses["proxy_fit"], indices["fit"], cfg["proxy_beta"]),
+    ]:
+        labels = training.targets[sample_ids]
+        before, after = scores(model, raw), scores(model, raw + factor * amplitude * response)
+        diagnostics.append(dict(context=name, n=len(labels),
+            original_correct=int(before.argmax(-1).eq(labels).sum()),
+            changed_correct=int(after.argmax(-1).eq(labels).sum()),
+            selected_from_accuracy=False))
+    artifact["proxy_diagnostics"] = diagnostics
+    geometry["proxy_diagnostics"] = diagnostics
+    return released, artifact, geometry
+
+
+@torch.no_grad()
 def run(args):
     out = Path(args.output)
     out.mkdir(parents=True, exist_ok=False)
@@ -139,7 +230,8 @@ def run(args):
     training = MNIST(args.data, train=True, transform=original.val_preprocess)
     indices = split_training(training, cfg["calibration_sizes"], cfg["seed"])
     save_json(out / "training_indices.json", indices)
-    released, artifact, geometry = construct(original, anchor, head, training, indices, cfg)
+    builder = construct_class_noise if cfg.get("structure") == "class_confusion" else construct
+    released, artifact, geometry = builder(original, anchor, head, training, indices, cfg)
     torch.save(artifact, out / "artifacts/release.pt")
     save_json(out / "geometry.json", geometry)
     save_json(out / "release_freeze.json", dict(
@@ -190,16 +282,39 @@ def run(args):
             del fused
         author, author_sha = load_author(Path(args.author_repo) / "utils_attack_B32.py",True)
         assert author_sha == json.loads(Path("configs/sources.json").read_text())["AGA"]["sha256"]
-        attacked_partner = author_recover(partner,anchor,author)
+        reference = Path(cfg["AGA_reference"]) if cfg.get("AGA_reference") else None
+        reference_pins = None
+        if reference:
+            assert json.loads((reference / "independent_validation.json").read_text())["status"] == "passed"
+            old_hashes = json.loads((reference / "execution.json").read_text())["checkpoint_sha256"]
+            assert old_hashes == hashes
+            reference_pins = json.loads((reference / "AGA_states.json").read_text())
+
+        def recovered(model, name):
+            if reference and name != "released":
+                path = reference / f"artifacts/{name}_AGA.pt"
+                assert digest(path) == reference_pins[name]
+                result = copy.deepcopy(model).cpu().eval()
+                result.load_state_dict(torch.load(path, map_location="cpu"), strict=True)
+                return result
+            return author_recover(model, anchor, author)
+
+        attacked_partner = recovered(partner, "partner")
         for name, model in [("original",original),("released",released)]:
-            attacked = author_recover(model,anchor,author)
+            attacked = recovered(model, name)
             record(attacked,head,native,name,"AGA_standalone","MNIST")
-            torch.save(attacked.state_dict(),out / f"artifacts/{name}_AGA.pt")
+            if reference and name == "original":
+                (out / f"artifacts/{name}_AGA.pt").hardlink_to(reference / f"artifacts/{name}_AGA.pt")
+            else:
+                torch.save(attacked.state_dict(),out / f"artifacts/{name}_AGA.pt")
             fused = merge(anchor,attacked,attacked_partner,cfg["coefficient"])
             record(fused,head,native,name,"AGA","MNIST")
             record(fused,head_s,loader_s,name,"AGA","SVHN")
             del attacked, fused
-        torch.save(attacked_partner.state_dict(),out / "artifacts/partner_AGA.pt")
+        if reference:
+            (out / "artifacts/partner_AGA.pt").hardlink_to(reference / "artifacts/partner_AGA.pt")
+        else:
+            torch.save(attacked_partner.state_dict(),out / "artifacts/partner_AGA.pt")
     save_json(out / "execution.json", dict(
         completed=True, rows=len(rows), standalone_loss_pp=loss,
         fusion_run=loss <= cfg["standalone_loss_gate_pp"], new_candidates=1,
@@ -207,7 +322,9 @@ def run(args):
         release_sha256=digest(out / "artifacts/release.pt"), checkpoint_sha256=hashes,
         protocol_sha256=digest(args.protocol), runner_sha256=digest(__file__),
         optimizer_steps=0, parameter_search=False, public_cleaning_run=False,
-        gpu=torch.cuda.get_device_name(), source_commit=cfg["source_commit"]))
+        gpu=torch.cuda.get_device_name(), source_commit=cfg["source_commit"],
+        AGA_reference=str(reference) if loss <= cfg["standalone_loss_gate_pp"] and reference else None,
+        reused_AGA_models=["original", "partner"] if loss <= cfg["standalone_loss_gate_pp"] and reference else []))
 
 
 if __name__ == "__main__":
