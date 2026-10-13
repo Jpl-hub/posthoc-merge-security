@@ -1,0 +1,22 @@
+{
+  "paper": "https://arxiv.org/html/2608.05045v1",
+  "paper_code_link_verified": true,
+  "paper_code_link_location": "Abstract",
+  "repository": "OpenCausaLab/Gradient-Immunity",
+  "commit": "44fff6b43937d86529dbb7b93c6f00a9bb27d9ce",
+  "tree": "1eeb4cfdc1808725309fbc9623b62b99a16b4903",
+  "files": [{"path": "README.md", "sha256": "a147574fc88ef45c273f9bacc1d780a47ea90505ab59fb561529ab6485d9bbbe", "bytes": 4342}, {"path": "demos/protected_release_reference.py", "sha256": "38ed089ac1996f8a8f631df86cc2da005719fd8ccd1592c936007cc08f6e9143", "bytes": 4037, "symbols": {"make_protected_head": "49-64", "forward": "55-57", "gated_input_grad": "39-46"}}, {"path": "adaptive_attacks/a4a_module_swap.py", "sha256": "755077e509ce0d88494e44f8598e33ae665855dafce60a1b0cfa7b673f62243d", "bytes": 7904, "symbols": {"swap_dio_to_identity": "65-70", "harmful_sft": "94-122", "main": "125-172"}}, {"path": "adaptive_attacks/s1_entangle_lm_head.py", "sha256": "81ee3f360769a72355c796ae12f9792f3a86ef025cd5de6988270b79594e26d8", "bytes": 5477, "symbols": {"main": "75-148"}}],
+  "review": "Static source reading only; none executed",
+  "protected_release_assumption": "PPOW excludes deletion/bypass/replacement of protected component; hardware reference also hides output head",
+  "missing_core": "README states core USG modules and framework integration are not included in this repository",
+  "forward_reference": "ProtectedBlock.forward returns self.head(h); a separate gated_input_grad filters gradients by norm-ratio threshold",
+  "removal_reference": "swap_dio_to_identity replaces module forward with hidden_states passthrough; attack training and ASR not run here",
+  "entanglement_reference": "s1_entangle_lm_head uses AdamW, backward and optimizer.step to train output head; header says no GPU validation yet",
+  "our_inference": "On the differentiable non-degenerate domain where analytic inverse exactly undoes cubic map, ordinary total Jacobian is identity. A custom backward gate is distinct from that Jacobian. No claim at degenerate points or for assumed hardware confinement.",
+  "decision": "Not a complement-only ordinary-weight anti-merging candidate. Gradient-free AGA/replacement bypass the mechanism; do not add modules, train head or assume non-removability.",
+  "full_method_reproduced": false,
+  "source_executed": false,
+  "new_CLIP_forwards": 0,
+  "new_protected_weights": 0,
+  "new_classification_results": 0
+}
