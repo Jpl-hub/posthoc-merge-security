@@ -149,7 +149,7 @@ def holdout_loader(original,training,indices,cfg,target):
     pool=torch.tensor([i for i in range(len(training)) if i not in used])
     generator=torch.Generator().manual_seed(cfg["holdout_seed"])
     chosen=pool[torch.randperm(len(pool),generator=generator)[:cfg["holdout_n"]]].tolist()
-    return make_loader(training,chosen),dict(dataset="MNIST",split="train",n=len(chosen),
+    return make_loader(training,chosen),dict(dataset=target,split="train",n=len(chosen),
         indices=chosen,excluded_design_indices=True,seed=cfg["holdout_seed"],used_in_construction=False)
 
 

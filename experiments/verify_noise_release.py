@@ -68,8 +68,13 @@ def verify(out,probe_n):
     torch.set_num_threads(4);torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
     anchor=load(str(root/"zeroshot.pt")).cpu().eval();original=load(str(root/target/"finetuned.pt")).cpu().eval();head=load(str(root/f"head_{target}.pt")).cpu().eval()
     release=torch.load(out/"artifacts/release.pt",map_location="cpu");cal=torch.load(out/"artifacts/calibration.pt",map_location="cpu")
-    assert digest(cal["cache_path"])==cal["cache_sha256"]
-    cached=torch.load(cal["cache_path"],map_location="cpu");parent=cached
+    if "cache_path" in cal:
+        assert digest(cal["cache_path"])==cal["cache_sha256"]
+        cached=torch.load(cal["cache_path"],map_location="cpu")
+    else:
+        assert cfg["noise_family"]=="projection_bias" and cal["calibration_source"]=="fresh_target_training"
+        cached=cal
+    parent=cached
     if "reference" in cached:
         assert digest(cached["reference"]["path"])==cached["reference"]["sha256"]
         parent=torch.load(cached["reference"]["path"],map_location="cpu")

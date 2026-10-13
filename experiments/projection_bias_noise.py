@@ -11,22 +11,32 @@ from clip_benchmark import digest, merge
 from covariance_noise import run
 from decision_audit import classify
 from decision_noise import holdout_loader, parameters
+from feature_noise import capture
+from subspace_probe import make_loader
 
 
 @torch.no_grad()
 def construct(original, anchor, head, training, indices, cfg, target):
-    ref=Path(cfg["native_cache"][target])
-    meta=json.loads((ref/"execution.json").read_text())
-    assert json.loads((ref/"independent_validation.json").read_text())["status"]=="passed"
-    assert indices==json.loads((ref/"training_indices.json").read_text())
-    assert digest(ref/"artifacts/calibration.pt")==meta["calibration_sha256"]
-    cache=torch.load(ref/"artifacts/calibration.pt",map_location="cpu")
+    cache_ref=cfg.get("native_cache",{}).get(target)
+    cache_metadata={}
+    if cache_ref:
+        ref=Path(cache_ref)
+        meta=json.loads((ref/"execution.json").read_text())
+        assert json.loads((ref/"independent_validation.json").read_text())["status"]=="passed"
+        assert indices==json.loads((ref/"training_indices.json").read_text())
+        assert digest(ref/"artifacts/calibration.pt")==meta["calibration_sha256"]
+        cache=torch.load(ref/"artifacts/calibration.pt",map_location="cpu")
+        proxy_residual=cache["proxy_residual"]
+        cache_metadata=dict(cache_path=str(ref/"artifacts/calibration.pt"),cache_sha256=meta["calibration_sha256"])
     projection=original.model.visual.proj.double()
     u,s,_=torch.linalg.svd(projection,full_matrices=True)
     rank=int((s>s[0]*cfg["numerical_relative_tolerance"]).sum())
     assert rank==projection.shape[1] and projection.shape[0]>rank
     null=u[:,rank:]
     proxy=merge(anchor,original,anchor,cfg["proxy_beta"])
+    if not cache_ref:
+        _,proxy_residual=capture(proxy,make_loader(training,indices["fit"],64))
+        cache_metadata=dict(proxy_residual=proxy_residual,calibration_source="fresh_target_training")
     params=parameters(proxy,head)
     contrast=head.weight.double()-head.weight.double().mean(0)
     leakage=null.T@params["projection"]@contrast.T
@@ -45,7 +55,7 @@ def construct(original, anchor, head, training, indices, cfg, target):
     rivals=torch.arange(len(contrast))!=collapse_class
     gaps=class_bias[collapse_class]-class_bias[rivals]
     assert torch.all(gaps>1e-10),"No unique proxy class bias; stop rather than reseed"
-    _,features,_=classify(cache["proxy_residual"],params)
+    _,features,_=classify(proxy_residual,params)
     logits=features@head.weight.double().T
     required=(logits[:,rivals]-logits[:,collapse_class,None])/(cfg["proxy_beta"]*gaps)
     first_bound=max(0.,float(required.max()))
@@ -62,17 +72,16 @@ def construct(original, anchor, head, training, indices, cfg, target):
     after_params=params.copy()
     beta0=anchor.model.visual.ln_post.bias
     after_params["beta"]=(beta0+cfg["proxy_beta"]*(released.model.visual.ln_post.bias-beta0)).double()
-    protected_scores=classify(cache["proxy_residual"],after_params)[0]
+    protected_scores=classify(proxy_residual,after_params)[0]
     assert torch.all(protected_scores.argmax(1).eq(collapse_class))
-    labels_all=getattr(training,"targets",getattr(training,"_labels",None))
+    labels_all=getattr(training,"targets",getattr(training,"_labels",getattr(training,"labels",None)))
     labels=torch.tensor([int(labels_all[i]) for i in indices["fit"]])
-    before=classify(cache["proxy_residual"],params)[0].argmax(1)
+    before=classify(proxy_residual,params)[0].argmax(1)
     after=protected_scores.argmax(1)
     per_class=[dict(class_id=k,n=int(labels.eq(k).sum()),
         original_correct=int((before.eq(labels)&labels.eq(k)).sum()),
         protected_correct=int((after.eq(labels)&labels.eq(k)).sum())) for k in range(len(contrast))]
-    cal=dict(cache_path=str(ref/"artifacts/calibration.pt"),cache_sha256=meta["calibration_sha256"],
-             null_basis=null,projection_rank=rank,direction=direction,desired=desired,
+    cal=dict(**cache_metadata,null_basis=null,projection_rank=rank,direction=direction,desired=desired,
              requested_class=requested_class,collapse_class=collapse_class,class_bias=class_bias,
              first_bound=first_bound,amplitude=amplitude,delta=delta)
     geometry=dict(noise_family="projection_bias",edited_key=key,projection_rank=rank,

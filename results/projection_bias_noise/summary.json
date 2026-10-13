@@ -5,7 +5,8 @@
   "coefficient": 0.5,
   "protected_tasks": [
     "MNIST",
-    "DTD"
+    "DTD",
+    "SVHN"
   ],
   "noise_seed": 20261014,
   "optimizer_steps": 0,
@@ -410,15 +411,148 @@
           "1": 2095
         }
       }
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "metrics": [
+        {
+          "stage": "standalone",
+          "dataset": "SVHN",
+          "values": {
+            "original": {
+              "correct": 25371,
+              "n": 26032,
+              "top1": 0.9746081745543946
+            },
+            "released": {
+              "correct": 25371,
+              "n": 26032,
+              "top1": 0.9746081745543946
+            }
+          }
+        },
+        {
+          "stage": "direct",
+          "dataset": "SVHN",
+          "values": {
+            "original": {
+              "correct": 24079,
+              "n": 26032,
+              "top1": 0.9249769514443762
+            },
+            "released": {
+              "correct": 1744,
+              "n": 26032,
+              "top1": 0.06699446834665028
+            }
+          }
+        },
+        {
+          "stage": "direct",
+          "dataset": "MNIST",
+          "values": {
+            "original": {
+              "correct": 9937,
+              "n": 10000,
+              "top1": 0.9937
+            },
+            "released": {
+              "correct": 980,
+              "n": 10000,
+              "top1": 0.098
+            }
+          }
+        },
+        {
+          "stage": "AGA",
+          "dataset": "SVHN",
+          "values": {
+            "original": {
+              "correct": 23890,
+              "n": 26032,
+              "top1": 0.9177166564228642
+            },
+            "released": {
+              "correct": 1744,
+              "n": 26032,
+              "top1": 0.06699446834665028
+            }
+          }
+        },
+        {
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "values": {
+            "original": {
+              "correct": 9932,
+              "n": 10000,
+              "top1": 0.9932
+            },
+            "released": {
+              "correct": 980,
+              "n": 10000,
+              "top1": 0.098
+            }
+          }
+        },
+        {
+          "stage": "AGA_standalone",
+          "dataset": "SVHN",
+          "values": {
+            "original": {
+              "correct": 25348,
+              "n": 26032,
+              "top1": 0.9737246465888137
+            },
+            "released": {
+              "correct": 25348,
+              "n": 26032,
+              "top1": 0.9737246465888137
+            }
+          }
+        },
+        {
+          "stage": "partner_standalone",
+          "dataset": "MNIST",
+          "values": {
+            "original": {
+              "correct": 9969,
+              "n": 10000,
+              "top1": 0.9969
+            }
+          }
+        }
+      ],
+      "release_sha256": "454a5afcf23e9859c1c41fb39dbb0e4a46981802a6e2d4f93a081088044f4c29",
+      "predictions_sha256": "a7f4643d8723e13cc350df0e109a0b924abe99f75116ba468f33afcb91b87bf0",
+      "validation": "passed",
+      "fresh_predictions": 544,
+      "same_release_transfer": false,
+      "histograms": {
+        "released/direct/SVHN": {
+          "0": 26032
+        },
+        "released/direct/MNIST": {
+          "0": 10000
+        },
+        "released/AGA/SVHN": {
+          "0": 26032
+        },
+        "released/AGA/MNIST": {
+          "0": 10000
+        }
+      }
     }
   ],
-  "fresh_prediction_replays": 1504,
+  "fresh_prediction_replays": 2048,
   "scope_limitations": [
     "Only TA coefficient0.5 and original author AGA tested.",
     "AGA leaves final LN beta and visual projection unchanged; not evidence of undoing its covered transformations.",
     "Projection-null direction publicly identifiable; no current public-cleaning/replacement resistance claim.",
     "Architecture needs a nontrivial expert projection left kernel and proxy/partner projection mismatch.",
     "No ARF/Table6 baseline reproduction or paper-readiness claim.",
-    "Prior test results were observed; protection parameters frozen before this candidate\u2019s peer/test evaluation."
-  ]
+    "Prior test results were observed; protection parameters frozen before this candidate’s peer/test evaluation."
+  ],
+  "fresh_calibration_reproduction": "passed exact MNIST/DTD tensors/directions/amplitudes and proxy features; results/projection_bias_noise/fresh_reproduction.json"
 }

@@ -1,22 +1,21 @@
 {
-  "status": "phase1_strong_cross_task_effect_verified",
-  "updated_utc": "2026-10-13T17:04:43.760932+00:00",
+  "status": "phase1_three_protected_tasks_verified",
+  "updated_utc": "2026-10-13T17:49:05.089000+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 1,
-  "objective": "Target-neutral postprocessing noise in task complements: retain each expert standalone utility and suppress that protected task after merging and original AGA; assess MNIST and DTD as protected experts with the same algorithm.",
-  "stage": "native_preserving_target_collapse_verified",
+  "objective": "Target-neutral complement noise: retain existing expert native utility and suppress its fixed-head protected-task classification after TA0.5/original author AGA. Verified on protected MNIST, DTD and SVHN; phase1 only.",
+  "stage": "three_task_target_collapse_with_native_retention_verified",
   "research_jobs": [],
   "breakthrough_verified": true,
-  "new_candidate": "configs/projection_bias_noise.json",
+  "new_candidate": "configs/projection_bias_noise_svhn.json",
   "mechanism": "notes/projection_bias_noise.md",
-  "next_action": "Retain the exact verified projection-bias releases and all controls; continue only phase1 if further research is requested. Preserve explicit original AGA coverage and public projection-removal limitations. Do not retune from current test results, enter phase2, add recovery/attack algorithms, use4090 or delete evidence.",
+  "next_action": "Interpret the verified three-expert phase1 effect with its original AGA coverage and public kernel-removal limits. Preserve frozen releases; do not retune known tests or enter phase2/full attacks/new cleaners without user steering. Current verification and GitHub/server sync complete when final receipt exists.",
   "deferred": [
     "Parameter-distance optimization",
     "Broad attack/merge survey",
-    "Additional adaptive attacks",
-    "Additional protected tasks until this two-target check is interpreted"
+    "Additional adaptive attacks"
   ],
   "archive": "results/archive.json",
   "old_automation_status": "PAUSED",
@@ -162,7 +161,8 @@
     "same_algorithm": true,
     "protected_tasks": [
       "MNIST",
-      "DTD"
+      "DTD",
+      "SVHN"
     ],
     "summary": "results/projection_bias_noise/summary.json",
     "mechanism": "notes/projection_bias_noise.md",
@@ -197,13 +197,24 @@
         "validation": "passed",
         "fresh_predictions": 544,
         "same_release_transfer": false
+      },
+      {
+        "target": "SVHN",
+        "partner": "MNIST",
+        "release_sha256": "454a5afcf23e9859c1c41fb39dbb0e4a46981802a6e2d4f93a081088044f4c29",
+        "predictions_sha256": "a7f4643d8723e13cc350df0e109a0b924abe99f75116ba468f33afcb91b87bf0",
+        "validation": "passed",
+        "fresh_predictions": 544,
+        "same_release_transfer": false
       }
     ],
-    "fresh_prediction_replays": 1504,
+    "fresh_prediction_replays": 2048,
     "published_source_commit": "79499581506a324fd3f983ce92330d4d63f5fc69",
-    "fixed_head_metric_only": true
+    "fixed_head_metric_only": true,
+    "extension_protocol": "configs/projection_bias_noise_svhn.json",
+    "fresh_calibration_reproduction": "results/projection_bias_noise/fresh_reproduction.json"
   },
-  "breakthrough_scope": "Phase1 only: fixed TA0.5/original AGA target collapse with native retention on protected MNIST and DTD; same-release MNIST+DTD transfer passed. Not public-recovery robustness or paper readiness. Fixed-head classification metric; not proof that merged task information is destroyed.",
+  "breakthrough_scope": "Phase1 only: same rule on protected MNIST/DTD/SVHN, fixed TA0.5 and original author AGA target output collapse, with unchanged native predictions. Not public-recovery robustness, task information destruction or paper readiness.",
   "rank_one_limitations": [
     "Protected MNIST accuracy remains 91.15% with SVHN and 77.16% with DTD after AGA; not complete capability blocking.",
     "Only MNIST is protected; no cross-protected-task claim.",
@@ -216,7 +227,7 @@
     "Projection-null direction publicly identifiable; no current public-cleaning/replacement resistance claim.",
     "Architecture needs a nontrivial expert projection left kernel and proxy/partner projection mismatch.",
     "No ARF/Table6 baseline reproduction or paper-readiness claim.",
-    "Prior test results were observed; protection parameters frozen before this candidate\u2019s peer/test evaluation."
+    "Prior test results were observed; protection parameters frozen before this candidate’s peer/test evaluation."
   ],
   "decision_noise": {
     "status": "closed_no_target_drop_verified",
