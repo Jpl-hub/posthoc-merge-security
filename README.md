@@ -10,6 +10,8 @@
 
 已有中间层数据的 CPU 复核进一步区分了基座计算与专家新增计算：后者在补空间的响应约为前者的 0.8%，而公开回填保留前者。这解释了该区域融合响应增加、清理代价却很小的现象；尚无抗恢复突破。
 
+[末层 CLS Query 回填](notes/final_query_completion.md)也已停止：两份公开投影删除约 6% 的 Query 更新能量，MNIST 独立 99.69%、融合 99.45% 的预测全部不变，DTD 融合只少对 1 张。10 行计数及 1280 张复跑核验通过；这只是清理代价诊断，没有新保护模型或 AGA 结果。
+
 [AGA／ARF 核对](results/arf_review/README.md)明确了主指标和复现缺项；[Key 差异空间核验](results/key_contrast_audit/README.md)只复用训练缓存，没有生成保护权重。
 
 ## 代码
