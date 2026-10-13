@@ -1,23 +1,22 @@
 {
-  "status": "phase1_one_improvement_failed_verified",
-  "updated_utc": "2026-10-13T12:17:38.397283+00:00",
+  "status": "phase1_cross_task_noise_failed_verified",
+  "updated_utc": "2026-10-13T13:31:47.860746+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 1,
-  "objective": "Keep standalone MNIST utility; suppress protected MNIST capability after parameter merging using task-input-complement noise; test original author AGA.",
-  "stage": "one_candidate_closed_no_improvement",
+  "objective": "Target-neutral postprocessing noise in task complements: retain each expert standalone utility and suppress that protected task after merging and original AGA; assess MNIST and DTD as protected experts with the same algorithm.",
+  "stage": "same_algorithm_two_tasks_closed",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "configs/class_noise.json",
+  "new_candidate": "configs/covariance_noise.json",
   "mechanism": "notes/phase1.md",
-  "next_action": "Remain in phase 1. Report this verified failure before another candidate. The next necessary question is whether class-dependent target/public-anchor complement shifts retain low native and high proxy response on disjoint calibration data; cached fit statistics alone do not authorize new protected weights. No automatic scans, DTD on this failed release, phase 2, or new attacks.",
+  "next_action": "Stay in phase 1. Before another noise construction, establish held-out stability of the target input subspace and a decision-order criterion after final normalization. Do not use representation RMS or negative correlation as a capability-blocking claim. No task-specific retuning, broader task expansion, phase 2, other attacks, 4090, or cleanup.",
   "deferred": [
-    "Parameter-change enlargement",
+    "Parameter-distance optimization",
     "Broad attack/merge survey",
     "Additional adaptive attacks",
-    "Expert omission control",
-    "DTD until core candidate succeeds"
+    "Additional protected tasks until this two-target check is interpreted"
   ],
   "archive": "results/archive.json",
   "old_automation_status": "PAUSED",
@@ -52,10 +51,10 @@
     "No novelty or paper-readiness claim; empirical PCA preservation is approximate."
   ],
   "published_source_commit": "b12dc587d2fc4ffd14287d0cf9d40f1c781f99b9",
-  "candidate_analysis": "notes/phase1_class_noise.md",
+  "candidate_analysis": "notes/covariance_noise.md",
   "prior_candidate_preserved": true,
   "class_noise": {
-    "status": "closed_no_improvement",
+    "status": "closed_no_improvement; retained per cleanup cancellation",
     "published_source_commit": "327a5cf80ac60e58b48a71fd13422c266fd5282b",
     "independent_validation": "passed",
     "standalone_original": 99.69,
@@ -87,5 +86,57 @@
     "new_model_forwards": 0,
     "new_weights": false,
     "limitation": "Fit-only class directions; not independently confirmed on disjoint samples and not validated as predictors of actual partner merges."
+  },
+  "cleanup_cancelled_before_deletion": true,
+  "covariance_noise": {
+    "same_algorithm": true,
+    "protected_tasks": [
+      "DTD",
+      "MNIST"
+    ],
+    "results_initial": {
+      "DTD": {
+        "native_original_correct": 1493,
+        "native_released_correct": 1497,
+        "n": 1880,
+        "AGA_original_correct": 1293,
+        "AGA_released_correct": 1290
+      },
+      "MNIST": {
+        "native_original_correct": 9969,
+        "native_released_correct": 9966,
+        "n": 10000,
+        "AGA_original_correct": 9932,
+        "AGA_released_correct": 9894
+      }
+    },
+    "validity": "passed independent NumPy algebra, official per-class label recount, 1920 fresh replays per protected task and finite-response checks",
+    "status": "closed_weak_effect",
+    "no_parameter_search": true,
+    "public_cleaning_run": false,
+    "results": {
+      "DTD": {
+        "geometry": "results/covariance_noise/DTD/geometry.json",
+        "metrics": "results/covariance_noise/DTD/results.json",
+        "validation": "results/covariance_noise/DTD/independent_validation.json"
+      },
+      "MNIST": {
+        "geometry": "results/covariance_noise/MNIST/geometry.json",
+        "metrics": "results/covariance_noise/MNIST/results.json",
+        "validation": "results/covariance_noise/MNIST/independent_validation.json"
+      }
+    },
+    "limitations": [
+      "DTD native/proxy response separation is too small under the same budget.",
+      "MNIST representation anticorrelation persists after real merging, but target accuracy drops only 0.38pp after AGA.",
+      "Feature shrinkage is a possible explanation, not a verified unique cause; no direct per-example margin check.",
+      "Two protected tasks were tested with one rule, but neither supports an effective generic defense.",
+      "MNIST digit0 accounts for36 of38 net lost correct predictions; no whole-task capability blocking."
+    ],
+    "class_coverage": {
+      "MNIST_AGA_net_loss": 38,
+      "MNIST_digit0_net_loss": 36,
+      "interpretation": "Multiple whitened representation directions still do not imply distributed class disruption."
+    }
   }
 }

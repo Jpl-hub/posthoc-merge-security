@@ -1,0 +1,148 @@
+{
+  "status": "passed",
+  "target": "MNIST",
+  "partner": "SVHN",
+  "pca_subspace_error": 0.0,
+  "independent_math": "NumPy whitening, cross covariance, amplitude and explicit tensor merging",
+  "operator_error": 2.256034061723937e-15,
+  "alignment_error": 4.247491247610924e-12,
+  "span_error": 9.44951878702151e-13,
+  "recounts": [
+    {
+      "key": "original/confirmation/MNIST",
+      "correct": 1023,
+      "n": 1024,
+      "replay_n": 128
+    },
+    {
+      "key": "released/confirmation/MNIST",
+      "correct": 1023,
+      "n": 1024,
+      "replay_n": 128
+    },
+    {
+      "key": "original/standalone/MNIST",
+      "correct": 9969,
+      "n": 10000,
+      "replay_n": 128
+    },
+    {
+      "key": "released/standalone/MNIST",
+      "correct": 9966,
+      "n": 10000,
+      "replay_n": 128
+    },
+    {
+      "key": "original/partner_standalone/SVHN",
+      "correct": 25371,
+      "n": 26032,
+      "replay_n": 128
+    },
+    {
+      "key": "original/direct/MNIST",
+      "correct": 9937,
+      "n": 10000,
+      "replay_n": 128
+    },
+    {
+      "key": "original/direct/SVHN",
+      "correct": 24079,
+      "n": 26032,
+      "replay_n": 128
+    },
+    {
+      "key": "released/direct/MNIST",
+      "correct": 9925,
+      "n": 10000,
+      "replay_n": 128
+    },
+    {
+      "key": "released/direct/SVHN",
+      "correct": 23830,
+      "n": 26032,
+      "replay_n": 128
+    },
+    {
+      "key": "original/AGA_standalone/MNIST",
+      "correct": 9968,
+      "n": 10000,
+      "replay_n": 128
+    },
+    {
+      "key": "original/AGA/MNIST",
+      "correct": 9932,
+      "n": 10000,
+      "replay_n": 128
+    },
+    {
+      "key": "original/AGA/SVHN",
+      "correct": 23890,
+      "n": 26032,
+      "replay_n": 128
+    },
+    {
+      "key": "released/AGA_standalone/MNIST",
+      "correct": 9968,
+      "n": 10000,
+      "replay_n": 128
+    },
+    {
+      "key": "released/AGA/MNIST",
+      "correct": 9894,
+      "n": 10000,
+      "replay_n": 128
+    },
+    {
+      "key": "released/AGA/SVHN",
+      "correct": 23501,
+      "n": 26032,
+      "replay_n": 128
+    }
+  ],
+  "replayed_examples": 1920,
+  "finite_response": [
+    {
+      "context": "native",
+      "n": 128,
+      "relative_error": 3.350830755063145e-05,
+      "residual_response_rms": 0.12588915107941057,
+      "complement_input_rms": 0.24503736668047912,
+      "mean_response_norm": 0.007792999408775604,
+      "classification_span_centered_correlation": -0.07147453785365666
+    },
+    {
+      "context": "proxy",
+      "n": 128,
+      "relative_error": 1.0695797789103226e-06,
+      "residual_response_rms": 3.1508192316271457,
+      "complement_input_rms": 1.5595544166207316,
+      "mean_response_norm": 0.7106146176668277,
+      "classification_span_centered_correlation": -0.6938379150946781
+    },
+    {
+      "context": "direct",
+      "n": 128,
+      "relative_error": 2.1604777567280126e-06,
+      "residual_response_rms": 1.7402118394126436,
+      "complement_input_rms": 1.3390295436949604,
+      "mean_response_norm": 0.38953361054962554,
+      "classification_span_centered_correlation": -0.7004907326241393
+    },
+    {
+      "context": "AGA",
+      "n": 128,
+      "relative_error": 1.9337204188254e-06,
+      "residual_response_rms": 1.9178152913176563,
+      "complement_input_rms": 1.3862124190956948,
+      "mean_response_norm": 0.4229850209202332,
+      "classification_span_centered_correlation": -0.7067541230008196
+    }
+  ],
+  "AGA_noise_only_down_projection": true,
+  "verifier_sha256": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+  "raw_predictions_sha256": "c4e53c160f9196605e0d1e32f3e3cba72a29b8a16420da68d26ce54ec9c74fb0",
+  "release_sha256": "ce999beacaf78e12dea2cf994fe6f72e1b2f2e0d58f49766caa0c04b3abe1b8b",
+  "optimizer_steps": 0,
+  "new_candidates": 0,
+  "public_cleaning_run": false
+}
