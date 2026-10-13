@@ -1,0 +1,69 @@
+{
+  "source_commit": "3540c141a5503d2e6de6466a6767c06a59d140d3",
+  "cases": [
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "source": "outputs/covariance_noise_dtd",
+      "execution_sha256": "198615d52f922498f32cc034202d07cba53b48504debc556ce60a41e61286656"
+    },
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "source": "outputs/covariance_noise_mnist",
+      "execution_sha256": "2c8f7001a40033e29f19eb55a056fd77501efd49aeed757d1327a593aebf0ad9"
+    }
+  ],
+  "site": "block11/MLP/c_proj frozen weights; no new model protection",
+  "retained_energy": 0.9999,
+  "proxy_beta": 0.5,
+  "coefficient": 0.5,
+  "contexts": [
+    "native",
+    "proxy",
+    "direct",
+    "AGA"
+  ],
+  "probe_n": 64,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "best_reference": {
+    "release": "outputs/feature_noise/artifacts/release.pt",
+    "release_sha256": "626ebf023274b642100afd259d4e1a7cc465b423554a96194f84308686ca34c0",
+    "AGA": "outputs/feature_noise/artifacts/released_AGA.pt",
+    "AGA_sha256": "0787478ee6fb164ec3ed2569baaad82f1014c8a7b89fe907f860b8e86be9e12d",
+    "indices": "outputs/feature_noise/training_indices.json"
+  },
+  "source_sha256": {
+    "experiments/feature_noise.py": "c5c41afde9ecff2a79e434dd7f721397e3894687c489f3cc27858d5004d5d85f",
+    "experiments/covariance_noise.py": "be703e517564430a9ba7f73f1cdc7a54260a4308bc3f6ad4daf12ab8df506ce9",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "runner_sha256": "235050fcf117d6a7e8e8b2335cbb9a9c91fe1051b11e0551143c0421606fcf18",
+  "new_protection_weights": 0,
+  "optimizer_steps": 0,
+  "new_attacks": 0,
+  "parameter_search": false,
+  "test_set_used": false,
+  "calibration": "Reuse frozen mutually disjoint fit/scale/confirmation target training folds; confirmation is diagnostic and never changes existing release.",
+  "stop": "Interpret stability and finite class margins on both protected tasks before proposing a new noise rule. No layer/rank/amplitude/seed sweep, phase 2, additional attacks or 4090."
+}

@@ -1,17 +1,17 @@
 {
-  "status": "phase1_cross_task_noise_failed_verified",
-  "updated_utc": "2026-10-13T13:31:47.860746+00:00",
+  "status": "phase1_decision_audit_completed_verified",
+  "updated_utc": "2026-10-13T15:23:28.480033+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 1,
   "objective": "Target-neutral postprocessing noise in task complements: retain each expert standalone utility and suppress that protected task after merging and original AGA; assess MNIST and DTD as protected experts with the same algorithm.",
-  "stage": "same_algorithm_two_tasks_closed",
+  "stage": "decision_and_subspace_obstacles_verified",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "configs/covariance_noise.json",
-  "mechanism": "notes/phase1.md",
-  "next_action": "Stay in phase 1. Before another noise construction, establish held-out stability of the target input subspace and a decision-order criterion after final normalization. Do not use representation RMS or negative correlation as a capability-blocking claim. No task-specific retuning, broader task expansion, phase 2, other attacks, 4090, or cleanup.",
+  "new_candidate": null,
+  "mechanism": "notes/decision_audit.md",
+  "next_action": "Stay in phase 1. No new defense is yet justified. Next assess decision-margin-relevant target input subspaces across independent training folds, rather than raw 99.99% PCA energy alone. Require stable native utility and cross-class boundary disruption in a target/public-anchor proxy before freezing any new weight. Old confirmation folds are now diagnostic data, not fresh holdout. No same-noise amplification, layer/rank/seed sweep, new attacks, phase 2, 4090 or cleanup.",
   "deferred": [
     "Parameter-distance optimization",
     "Broad attack/merge survey",
@@ -139,5 +139,27 @@
       "interpretation": "Multiple whitened representation directions still do not imply distributed class disruption."
     },
     "published_source_commit": "6b69fc791c0b732326b0bd31640f615ba529323f"
+  },
+  "decision_audit": {
+    "status": "passed independent NumPy scores/spectra/certificates plus 768 actual model probes",
+    "new_protection_weights": 0,
+    "test_set_used": false,
+    "source_commit": "a3b64e4171694c4953f329857a167da64dffa7f4",
+    "mechanism": "notes/decision_audit.md",
+    "results": "results/decision_audit/results.json",
+    "margin_analysis": "results/decision_audit/margin_analysis.json",
+    "raw_sha256": "a5038c01f217b466b40f3fbbc2ebf2f89ecad8c99eef3df76debb7de832d28ae",
+    "key_findings": {
+      "DTD_fit_outside_percent": 0.00816243976539305,
+      "DTD_confirmation_outside_percent": 14.098267553657074,
+      "MNIST_cov_AGA_safe_radius_count": 814,
+      "MNIST_cov_AGA_n": 1024,
+      "DTD_cov_AGA_safe_radius_count": 503,
+      "DTD_cov_AGA_n": 626,
+      "MNIST_cov_proxy_net_correct_loss": 234,
+      "MNIST_cov_AGA_net_correct_loss": 8
+    },
+    "new_effective_candidate": false,
+    "limitation": "Training folds from original expert fine-tuning distribution; no new test efficacy claim, no general impossibility theorem. Existing best candidate remains unchanged."
   }
 }
