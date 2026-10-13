@@ -1,0 +1,89 @@
+{
+  "paper": "MASS: MoErging through Adaptive Subspace Selection",
+  "venue": "ICLR 2026",
+  "paper_url": "https://proceedings.iclr.cc/paper_files/paper/2026/file/21f1dd8ee699b699f95b589ddf78fa0c-Paper-Conference.pdf",
+  "paper_body_code_link_verified": true,
+  "code_link_location": "PDF first page, following abstract",
+  "repository": "crisostomi/mass",
+  "commit": "4b3ed643798a2d4367722e9eef41a8ea6d326a96",
+  "tree": "6a1d0c46051ac6aa32153e133c06aaa1b69be280",
+  "scope": "Static source review, not execution or reproduction; no protected weights or classification evaluation",
+  "source_executed": false,
+  "full_method_reproduced": false,
+  "source_files": [
+    {
+      "path": "src/mass/modules/projection_router.py",
+      "bytes": 9135,
+      "lines": 299,
+      "sha256": "e060fbe23bef46238cf34644bbf8bc0696afb36346404a5630b3273e9f43a910"
+    },
+    {
+      "path": "src/mass/pl_module/mass.py",
+      "bytes": 11659,
+      "lines": 373,
+      "sha256": "bbc9b6aaa3f4f7e92110ba42c3713d1844c5aed791bfb99a7bf1139a4d8dd8eb"
+    },
+    {
+      "path": "src/mass/task_vectors/task_singular_vectors.py",
+      "bytes": 14296,
+      "lines": 385,
+      "sha256": "364ba47e876ffa735532c9d6e33efc5cb5c4675a8c520406a6cd541ba4ca9618"
+    },
+    {
+      "path": "conf/nn/module/router/proj.yaml",
+      "bytes": 606,
+      "lines": 28,
+      "sha256": "6ee762c2d57d237abe66c108683ba2fb19dfb96a2bfeb83ae925a3a58ed53424"
+    },
+    {
+      "path": "conf/nn/module/mass.yaml",
+      "bytes": 619,
+      "lines": 33,
+      "sha256": "a8c6293aa3f0a44564220d2bd6f859deb6486a18bfa1b34094ede73939d54142"
+    },
+    {
+      "path": "src/mass/utils/routing_methods.py",
+      "bytes": 627,
+      "lines": 27,
+      "sha256": "ce721ba8f0822dbecdf53f2568ebc35507aab1cb72d00dc4fae42452d8f5c5c7"
+    },
+    {
+      "path": "src/mass/modules/router.py",
+      "bytes": 5905,
+      "lines": 182,
+      "sha256": "344ca5f40aced6fc67527e20456e6d86e6388ad9ea3371b9faf731f531834f05"
+    },
+    {
+      "path": "src/mass/utils/utils.py",
+      "bytes": 14010,
+      "lines": 452,
+      "sha256": "cf43307d5c03a08bd5d8b1a3e797fde99ab0eaf500d1130987c65dd498741d6a"
+    },
+    {
+      "path": "src/mass/scripts/evaluate_pipeline.py",
+      "bytes": 7309,
+      "lines": 250,
+      "sha256": "81eb2e9fdcad3ef3beaca021cc0df1e0757e540c95f920fa252f2b7e5f39bf0c"
+    }
+  ],
+  "source_locations": {
+    "projection_router.py": "84-97 SVD buffers and token selection; 126-143 encoder forward and negative residual",
+    "routing_methods.py": "10-27 orthogonal reconstruction and L2 distance; singular values passed but not used by this projector",
+    "router.py": "91-114 topk standardization and softmax; 128-153 task selection",
+    "task_singular_vectors.py": "122-142 SVD truncation; 193-236 SVD cache/compression",
+    "mass.py": "151-238 routed forward/classification; 244-294 task-combination model cache",
+    "utils.py": "256-275 hook input/output; 341-361 right singular vectors; 377-386 Attention/MLP mapping",
+    "evaluate_pipeline.py": "72 no_grad evaluation entry; 126-163 SVD and router construction",
+    "proj.yaml": "input hook, CLS token, L2, threshold 0.2, up to 3 tasks",
+    "mass.yaml": "default projection router, TSV aggregator, oracle_mode false; optimizer config not evidence of training in evaluation"
+  },
+  "paper_conclusions_used": "Projection optimality and conditional task selection; neither a finite weight-edit task-preservation nor a public-cleaning cost theorem",
+  "screened_not_selected": {
+    "SiM": "2606.22589v1 HTML body reviewed; no own research-code URL found in that body. This does not claim no repository exists."
+  },
+  "new_CLIP_forwards": 0,
+  "new_protected_weights": 0,
+  "new_classification_results": 0,
+  "analysis": "notes/mechanism_analysis.md#15",
+  "decision": "No finite ordinary-weight complement mechanism with useful cleanup cost found; no new diagnosis or implementation"
+}
