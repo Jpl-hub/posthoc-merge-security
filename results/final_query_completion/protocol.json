@@ -1,0 +1,35 @@
+{
+  "question": "Does public completion of final-block CLS Query erase useful protected-task fusion computation?",
+  "source_parent": "90cff0a030df4e1a9f4dc448ba2f9717a8bde34d",
+  "site": "block11 Query weight rows0:768 and matching bias; all heads",
+  "location_rule": "Last Attention is the final token-mixing operation. Classifier reads CLS only; no location or head performance selection.",
+  "distinction": "First-block Query replacement preserved all-token intermediate computation; this test retains only final CLS Query, since patch queries cannot affect the subsequent CLS classifier. The fixed public-cleaner equality still applies.",
+  "retained_energy": 0.9999,
+  "rank_rule": "Existing fixed PCA energy rule; retain LayerNorm affine-normal1/gamma as well. No rank sweep; 1024 CLS samples exceed768 dimensions.",
+  "calibration_sizes": {
+    "defender": 1024,
+    "attacker": 1024,
+    "confirmation": 512
+  },
+  "seed": 20261013,
+  "calibration": "Disjoint public MNIST training inputs; labels unused in PCA. Confirmation and test splits measure utility only. Earlier MNIST tests observed; not a fresh dataset generalization claim.",
+  "preservation": "E P=0, bias change=-E mu. If native final CLS belongs to mu+span(P), native CLS scores and classification remain exactly unchanged. PCA is approximate and unseen CLS residuals are not assumed zero.",
+  "completion": "D=(Q-Q0)(I-UU^T), Qc=Q-D, bc=b+Dmu. Key/Value/other parameters unchanged. Independent public PCA uses release-accessible unchanged prefix.",
+  "useful_computation": "Only target Query update tau_Q C applied to shifted merged CLS, dotted with within-image merged key contrasts, can make cleanup costly. Native low response or large parameter norms do not prove its value.",
+  "partner": "DTD",
+  "coefficient": 0.5,
+  "partner_use": "Load weights and reference test predictions only after target projection and both cleanup states freeze; no partner-based construction or selection.",
+  "baseline": "Reuse prior verified outputs/query_replacement original rows only after exact model/checkpoint fingerprints and raw prediction digest match. No repeated full baseline evaluations.",
+  "metrics": "Protected MNIST standalone and fusion are primary. Report DTD standalone and fusion as well, paired loss/gain and raw counts. No universal defense claim.",
+  "stop": "If completion retains useful MNIST fusion capability, close this one site without noise, AGA, other sites, or rank/amplitude/seed scans. Cleanup cost alone is necessary, never defense success; no fixed accuracy loss cutoff is the sole decision.",
+  "device": "Existing3090, FP32 inference and FP64 PCA, TF32 disabled. No4090.",
+  "new_protected_weights": 0,
+  "optimizer_steps": 0,
+  "AGA_run": false,
+  "open_clip_model_sha256": "cd1721053da93a0c85a2d9390d575910d5482bca0c092980e4469c760eb58029",
+  "source_sha256": {
+    "experiments/clip_benchmark.py": "da54eaee5f5fa80bc33d80c8822af842b3f311a88236410da3d71296e7751b5b",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8"
+  },
+  "runner_sha256": "6d13de4910c6100bab16d6a458505c6205f154d7d6d8ef8158036f14271397a0"
+}
