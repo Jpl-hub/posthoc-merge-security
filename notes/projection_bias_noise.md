@@ -91,3 +91,5 @@ NumPy 从原始检查点独立重建投影核、方向、幅度和 FP32 编辑�
 入口：`experiments/projection_bias_noise.py`。复核：`experiments/verify_noise_release.py`；同权重迁移及显式融合公式重放：`experiments/transfer_noise_release.py`。原始计数在 `results/projection_bias_noise/`。
 
 本轮只验证原版 AGA、固定融合系数和两个被保护专家；未验证公开清理、参数替换、其他融合算法或其他精度。原版 AGA 未覆盖该偏置，不能将此结果等同于已覆盖参数变换的抗逆向恢复，也不能宣称优于 ARF 或完成 Table 6 复现。下一阶段尚未展开。
+
+损害的是上述固定分类头的决策，未证明融合模型中的原任务信息消失或不可恢复。常量特征偏置这一结构及公开可识别的核空间均是后续安全评价的限制；本阶段没有据此新增攻击实验。
