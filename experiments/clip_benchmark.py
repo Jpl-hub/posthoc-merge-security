@@ -154,6 +154,22 @@ def recover(model, anchor, author, output: Path, skip_mlp_layers=()):
 
 
 @torch.no_grad()
+def author_recover(model, anchor, author):
+    """Call both unchanged author entry functions in the published order."""
+    result = copy.deepcopy(model).cpu().eval()
+    state = author["universal_attention_attack_params"](
+        defender_params=result.state_dict(),
+        anchor_params=anchor.state_dict(),
+        layer_indices=list(range(12)),
+        device="cuda",
+    )
+    assert set(state) == set(result.state_dict())
+    assert all(torch.isfinite(value).all() for value in state.values())
+    result.load_state_dict(state, strict=True)
+    return author["attack_vit_mlp_only"](result, anchor).cpu().eval()
+
+
+@torch.no_grad()
 def merge(anchor, left, right, coefficient: float):
     from task_vectors import TaskVector
 
