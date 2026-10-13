@@ -1,0 +1,73 @@
+{
+  "source_commit": "fbd1471cd9472424d6ce89c1e03672e4529fc87d",
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN"
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST"
+    }
+  ],
+  "algorithm": "Final LN beta noise in the full expert visual projection kernel; one analytic target-only proxy classification-collapse bound.",
+  "site": "Final LN beta only; visual projection and all other parameters unchanged",
+  "seed": 20261013,
+  "noise_seed": 20261014,
+  "holdout_seed": 20261015,
+  "holdout_n": 1024,
+  "maximum_calibration_group": 1024,
+  "numerical_relative_tolerance": 1e-10,
+  "proxy_beta": 0.5,
+  "coefficient": 0.5,
+  "standalone_loss_gate_pp": 0.5,
+  "test_counts": {
+    "MNIST": 10000,
+    "DTD": 1880,
+    "SVHN": 26032
+  },
+  "native_cache": {
+    "MNIST": "outputs/covariance_noise_mnist",
+    "DTD": "outputs/covariance_noise_dtd"
+  },
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "source_sha256": {
+    "experiments/decision_noise.py": "6a5dbf0fd2b367f3999a6dc31fa3bc4c1a852283179eafac42c969c3f321ccdf",
+    "experiments/decision_audit.py": "235050fcf117d6a7e8e8b2335cbb9a9c91fe1051b11e0551143c0421606fcf18",
+    "experiments/feature_noise.py": "c5c41afde9ecff2a79e434dd7f721397e3894687c489f3cc27858d5004d5d85f",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "configs/sources.json": "528346ab06c38cc4e34a8a4064d9721f3884a1c2738deef4ec0e94a7b2b88a3f",
+    "experiments/projection_bias_noise.py": "359879cd5c7857614c76c68011871dbbb80cdca31967c20a4b8568103d68a859"
+  },
+  "runner_sha256": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+  "construction_uses_partner": false,
+  "construction_uses_test": false,
+  "no_gradient_finetuning": true,
+  "parameter_search": false,
+  "public_cleaning_run": false,
+  "known_public_clearability": true,
+  "holdout": "MNIST fixed 1024 target train images outside all old fit/scale/confirmation indices; DTD official val1 1880. Neither changes the release.",
+  "stop": "Two protected experts, one seed and one analytic proxy class-collapse amplitude each. Exact native full-feature preservation in real arithmetic; stop on finite-precision native holdout loss >0.5pp. No amplitude, seed, layer or rank scan. Author AGA coverage limitation and known projection-cleanability explicitly retained.",
+  "noise_family": "projection_bias",
+  "bias_safety": 2.0
+}

@@ -138,7 +138,7 @@ def construct(original, anchor, head, training, indices, cfg, target):
 
 
 @torch.no_grad()
-def run(args):
+def run(args, constructor=None, holdout_loader=None):
     cfg = json.loads(Path(args.protocol).read_text())
     assert dict(target=args.target, partner=args.partner) in cfg["cases"]
     for path, pin in cfg["source_sha256"].items():
@@ -170,7 +170,8 @@ def run(args):
     sizes = {name: n for name in ["fit", "scale", "confirmation"]}
     indices = split_training(training, sizes, cfg["seed"])
     save_json(out / "training_indices.json", indices)
-    released, edits, calibration, geometry = construct(original, anchor, head, training, indices, cfg, args.target)
+    candidate_constructor = construct if constructor is None else constructor
+    released, edits, calibration, geometry = candidate_constructor(original, anchor, head, training, indices, cfg, args.target)
     torch.save(edits, out / "artifacts/release.pt")
     torch.save(calibration, out / "artifacts/calibration.pt")
     save_json(out / "geometry.json", geometry)
@@ -205,6 +206,23 @@ def run(args):
         return metrics
 
     confirmation = make_loader(training, indices["confirmation"])
+    if holdout_loader is not None:
+        holdout, holdout_metadata = holdout_loader(original, training, indices, cfg, args.target)
+        save_json(out / "holdout_protocol.json", holdout_metadata)
+        score = {name: record(model, head, holdout, name, "holdout", args.target)
+                 for name, model in [("original", original), ("released", released)]}
+        loss = 100 * (score["original"]["top1"] - score["released"]["top1"])
+        if loss > cfg["standalone_loss_gate_pp"]:
+            save_json(out / "execution.json", dict(completed=True, fusion_run=False,
+                stop="Frozen candidate failed the independent native holdout gate; no retuning",
+                holdout_loss_pp=loss, rows=len(rows), new_candidates=1, optimizer_steps=0,
+                release_sha256=digest(out / "artifacts/release.pt"),
+                calibration_sha256=digest(out / "artifacts/calibration.pt"),
+                predictions_sha256=digest(out / "artifacts/predictions.pt"),
+                protocol_sha256=digest(args.protocol), runner_sha256=digest(__file__),
+                checkpoint_sha256=hashes, source_commit=cfg["source_commit"],
+                parameter_search=False, public_cleaning_run=False, test_loaded=False))
+            return
     native = dataset(args.target, "data", original.val_preprocess)
     assert len(native) == cfg["test_counts"][args.target]
     loader = make_loader(native)

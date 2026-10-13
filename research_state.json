@@ -1,17 +1,17 @@
 {
-  "status": "phase1_decision_audit_completed_verified",
-  "updated_utc": "2026-10-13T15:23:28.480033+00:00",
+  "status": "phase1_strong_cross_task_effect_verified",
+  "updated_utc": "2026-10-13T17:04:43.760932+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 1,
   "objective": "Target-neutral postprocessing noise in task complements: retain each expert standalone utility and suppress that protected task after merging and original AGA; assess MNIST and DTD as protected experts with the same algorithm.",
-  "stage": "decision_and_subspace_obstacles_verified",
+  "stage": "native_preserving_target_collapse_verified",
   "research_jobs": [],
-  "breakthrough_verified": false,
-  "new_candidate": null,
-  "mechanism": "notes/decision_audit.md",
-  "next_action": "Stay in phase 1. No new defense is yet justified. Next assess decision-margin-relevant target input subspaces across independent training folds, rather than raw 99.99% PCA energy alone. Require stable native utility and cross-class boundary disruption in a target/public-anchor proxy before freezing any new weight. Old confirmation folds are now diagnostic data, not fresh holdout. No same-noise amplification, layer/rank/seed sweep, new attacks, phase 2, 4090 or cleanup.",
+  "breakthrough_verified": true,
+  "new_candidate": "configs/projection_bias_noise.json",
+  "mechanism": "notes/projection_bias_noise.md",
+  "next_action": "Retain the exact verified projection-bias releases and all controls; continue only phase1 if further research is requested. Preserve explicit original AGA coverage and public projection-removal limitations. Do not retune from current test results, enter phase2, add recovery/attack algorithms, use4090 or delete evidence.",
   "deferred": [
     "Parameter-distance optimization",
     "Broad attack/merge survey",
@@ -44,14 +44,8 @@
     "same_release": true,
     "release_sha256": "626ebf023274b642100afd259d4e1a7cc465b423554a96194f84308686ca34c0"
   },
-  "limitations": [
-    "Protected MNIST accuracy remains 91.15% with SVHN and 77.16% with DTD after AGA; not complete capability blocking.",
-    "Only MNIST is protected; no cross-protected-task claim.",
-    "Only author AGA tested on this candidate; no new public cleaner or other attack run.",
-    "No novelty or paper-readiness claim; empirical PCA preservation is approximate."
-  ],
   "published_source_commit": "b12dc587d2fc4ffd14287d0cf9d40f1c781f99b9",
-  "candidate_analysis": "notes/covariance_noise.md",
+  "candidate_analysis": "notes/projection_bias_noise.md",
   "prior_candidate_preserved": true,
   "class_noise": {
     "status": "closed_no_improvement; retained per cleanup cancellation",
@@ -162,5 +156,78 @@
     "new_effective_candidate": false,
     "limitation": "Training folds from original expert fine-tuning distribution; no new test efficacy claim, no general impossibility theorem. Existing best candidate remains unchanged.",
     "published_source_commit": "93b8c900abbe62b03cee2dae13be9a08b96e50c0"
+  },
+  "projection_bias_noise": {
+    "status": "verified_phase1_effect",
+    "same_algorithm": true,
+    "protected_tasks": [
+      "MNIST",
+      "DTD"
+    ],
+    "summary": "results/projection_bias_noise/summary.json",
+    "mechanism": "notes/projection_bias_noise.md",
+    "original_AGA_covers_LN_beta": false,
+    "new_public_cleaning_run": false,
+    "optimizer_steps": 0,
+    "noise_seed": 20261014,
+    "cases": [
+      {
+        "target": "MNIST",
+        "partner": "SVHN",
+        "release_sha256": "6c5c29354c85bea33dccb3ec60c3f89fcd05664c6281cd693a0129c6dde40e71",
+        "predictions_sha256": "f8ae4553c5c8666b09d1942ce9ed9a690a1ba53b7571c016215f1eec7b33b048",
+        "validation": "passed",
+        "fresh_predictions": 544,
+        "same_release_transfer": false
+      },
+      {
+        "target": "MNIST",
+        "partner": "DTD",
+        "release_sha256": "6c5c29354c85bea33dccb3ec60c3f89fcd05664c6281cd693a0129c6dde40e71",
+        "predictions_sha256": "196ac946273ed2865b550db02d152d25ca8306a6ae95cf0df799b4788e5c8593",
+        "validation": "passed",
+        "fresh_predictions": 416,
+        "same_release_transfer": true
+      },
+      {
+        "target": "DTD",
+        "partner": "MNIST",
+        "release_sha256": "0dfad6a9d8748a96f1403a77ce12728a829126b1a3cdd69ec2e7ada1248c1f5d",
+        "predictions_sha256": "c6ae80685e2d06da3e9198712d32acfe30fdb651e349c9c1dfb03b79bceacc17",
+        "validation": "passed",
+        "fresh_predictions": 544,
+        "same_release_transfer": false
+      }
+    ],
+    "fresh_prediction_replays": 1504
+  },
+  "breakthrough_scope": "Phase1 only: fixed TA0.5/original AGA target collapse with native retention on protected MNIST and DTD; same-release MNIST+DTD transfer passed. Not public-recovery robustness or paper readiness.",
+  "rank_one_limitations": [
+    "Protected MNIST accuracy remains 91.15% with SVHN and 77.16% with DTD after AGA; not complete capability blocking.",
+    "Only MNIST is protected; no cross-protected-task claim.",
+    "Only author AGA tested on this candidate; no new public cleaner or other attack run.",
+    "No novelty or paper-readiness claim; empirical PCA preservation is approximate."
+  ],
+  "limitations": [
+    "Only TA coefficient0.5 and original author AGA tested.",
+    "AGA leaves final LN beta and visual projection unchanged; not evidence of undoing its covered transformations.",
+    "Projection-null direction publicly identifiable; no current public-cleaning/replacement resistance claim.",
+    "Architecture needs a nontrivial expert projection left kernel and proxy/partner projection mismatch.",
+    "No ARF/Table6 baseline reproduction or paper-readiness claim.",
+    "Prior test results were observed; protection parameters frozen before this candidate\u2019s peer/test evaluation."
+  ],
+  "decision_noise": {
+    "status": "closed_no_target_drop_verified",
+    "results": "results/decision_noise/",
+    "same_algorithm": true,
+    "protected_tasks": [
+      "MNIST",
+      "DTD"
+    ],
+    "MNIST_AGA_original": 99.32,
+    "MNIST_AGA_released": 99.32,
+    "DTD_AGA_original": 68.77659574468085,
+    "DTD_AGA_released": 68.88297872340425,
+    "independent_validation": "passed"
   }
 }

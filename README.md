@@ -1,28 +1,26 @@
 # posthoc-merge-security
 
-对已微调 CLIP ViT-B/32 专家做免额外微调后处理：保留任务输入子空间，只在补空间加噪声。目标是保持独立能力，使参数融合后的**被保护任务本身**下降；同一算法须在不同任务专家上验证。
+对已微调 CLIP ViT-B/32 专家做免梯度微调后处理：保留任务空间计算，只在补空间加噪声，使参数融合后的**被保护任务自身**失效。当前只推进第一阶段，使用 3090。
 
-当前只做第一阶段：分别保护 DTD 与 MNIST，TA(0.5)、原作者 AGA。暂不新增公开清理、其它攻击或参数距离方案。仅使用 3090。
+**已有经过独立复核的阶段性效果。** 同一投影核偏置噪声算法分别保护 MNIST、DTD；独立预测逐张保持，原作者 AGA 后的目标分类输出塌缩为单一类别。
 
-**已有初步 MNIST 融合干扰，尚非完整防御。** 独立 99.69% → 99.64%；原版 AGA 后，SVHN 伙伴下 MNIST 99.32% → 91.15%，DTD 伙伴下 99.42% → 77.16%。两次使用同一保护权重，独立核验通过。
+| 被保护专家 | 伙伴 | 独立：原 → 保护 | AGA 后目标：原 → 保护 |
+|---|---|---:|---:|
+| MNIST | SVHN | 99.69% → 99.69% | 99.32% → 9.80% |
+| MNIST | DTD | 同一 MNIST 保护权重 | 99.42% → 9.80% |
+| DTD | MNIST | 79.41% → 79.41% | 68.78% → 2.13% |
 
-类间噪声未改善：独立 99.68%，AGA 后融合 MNIST 99.32%。它扩大了输出方向覆盖，却降低了同预算下的融合响应；该候选已停止。[构造、真实结果与原因](notes/phase1_class_noise.md)。
+只改最终 LN 的一个偏置向量。噪声满足 $v^\top B_e=0$，原专家完整视觉特征保持；融合投影 $B_f$ 改变后，$v^\top B_f$ 可能非零，产生类别偏置。没有 PCA 样本外保持假设、额外微调或伙伴参与构造。[数学机制、完整指标和边界](notes/projection_bias_noise.md)。
 
-同一交叉协方差噪声已验证两种被保护任务：AGA 后 DTD 68.78% → 68.62%，MNIST 99.32% → 98.94%，独立性能基本保持。效果不足，停止该候选；不能把表示负相关当作分类失效。[数学构造与跨任务结果](notes/covariance_noise.md)。
+**范围必须区分：** TA(0.5)、FP32、两个被保护专家和两种伙伴。原版 AGA 不修改最后 LN 偏置与视觉投影，因此这是该原版攻击后的融合干扰；尚无抗公开清理／参数替换的结论，不是 ARF/Table 6 复现。暂不进入参数距离优化、全面攻击实验或新增恢复攻击。
 
-已有权重的训练数据机制核查已完成，未生成新保护。DTD 拟合 PCA 在校准留出组仍留下 14.10% 激活能量；现有 AGA 融合噪声落在足以保持任何方向预测的残差半径内：MNIST 814/1024、DTD 503/626。基座代理的强判别破坏也未预测真实融合失效。不能继续只按响应 RMS 或负相关选噪声。[判别条件、复核数据与后续判断](notes/decision_audit.md)。这些是训练机制诊断，不是新测试准确率。
+- `experiments/projection_bias_noise.py`：当前保护构造
+- `configs/projection_bias_noise.json`：冻结算法、校准及源码指纹
+- `experiments/covariance_noise.py`：共享数据与匹配评测入口，默认历史算法保留
+- `experiments/verify_noise_release.py`：独立 NumPy 重建、官方标签及真实前向核验
+- `experiments/transfer_noise_release.py`：同权重更换伙伴与显式融合公式重放
+- `results/projection_bias_noise/`：完整轻量计数、逐类结果、协议与指纹
 
-旧 RGB 输入噪声只干扰伙伴；旧 Q/K 噪声的直接干扰被 AGA 消除。[旧计数](results/previous_noise.json)仅作历史记录。
+历史对照保留：原 MNIST 秩一噪声 AGA 后为 91.15%／77.16%（SVHN／DTD 伙伴）；[类间噪声](notes/phase1_class_noise.md)、[交叉协方差噪声](notes/covariance_noise.md)、[MLP 输出补空间噪声](notes/decision_noise.md)未改善。[判别与 PCA 稳定性分析](notes/decision_audit.md)解释此前限制。历史重放使用各自冻结源码包；不混用旧版本指纹与当前共享入口。
 
-- [构造与停止条件](notes/phase1.md)
-- `experiments/decision_audit.py`：冻结权重的 PCA 稳定性、有限分类间隔及独立 NumPy 核查
-- `experiments/covariance_noise.py`：同一补空间噪声规则的两种被保护任务验证
-- `experiments/verify_covariance_noise.py`：独立数学重算、官方标签及预测复核
-- `experiments/feature_noise.py`：末层 MLP 输入补空间噪声及冻结的类间结构对照
-- `experiments/replay_feature_noise.py`：同一发布权重的 DTD 迁移及预测核验
-- `experiments/clip_benchmark.py`：既有 checkpoint、评估、Task Arithmetic 和作者 AGA 入口
-- `experiments/mechanisms.py`：固定版本作者函数加载
-- `experiments/subspace_probe.py`：共享训练划分和数据加载
-- `configs/`：权重、源码及冻结配置
-
-旧入口、旧分析和重复副本已从当前目录删除；唯一证据在[服务器归档](results/archive.json)，原始预测和模型只存服务器。历史 Git 版本保留。服务器工程目录为 `/root/autodl-tmp/merge_security_20261009`。
+原始预测、保护权重、模型、数据及历史证据只存服务器 `/root/autodl-tmp/merge_security_20261009`；[归档索引](results/archive.json)。不写凭据，不大规模下载，不删除真实失败证据。
