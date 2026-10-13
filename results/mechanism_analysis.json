@@ -3,7 +3,7 @@
   "new_protected_weights": 0,
   "new_defense_candidates": 0,
   "gpu_jobs_started": 0,
-  "decision": "No credible new ordinary-weight defense candidate. The input-complement recovery proof is conditional; output-side and approximate preservation are not excluded. Exact algebra examples are not CLIP results.",
+  "decision": "No new defense. One frozen native MLP derivative diagnostic and independent replay completed. Its most permissive W1-only exact local kernel is empty numerically; its weakest approximate direction returns to old negative-neuron behavior. Approximate task-only preservation, finite edits and paired mechanisms are not ruled out.",
   "algebra_validation": {
     "method": "Exact rational arithmetic on deterministic 2D affine operators; no checkpoints, data or measured accuracy. Sanity checks complement the symbolic derivation.",
     "passed": true,
@@ -175,7 +175,7 @@
     "PCA completion cost on unprotected weights does not establish removal of arbitrary noise by an independently estimated projector.",
     "No claim of innovation or standalone utility for an unconstructed V/O release."
   ],
-  "updated_utc": "2026-10-12T23:54:21.343458+00:00",
+  "updated_utc": "2026-10-13T00:20:33.780536+00:00",
   "document_sha256": "108b5a5a92ed05a5932fc64f00bc870ae262976c57b37cc1493839acaf243687",
   "current_official_checkpoint_pins_match_historical": true,
   "complement_update_reanalysis": {
@@ -271,5 +271,27 @@
     "execution": "Same frozen source ran on local CPU and 3090 server CPU; exact rational checks passed, same source digest and reported rational values. No CUDA or independent model evaluation.",
     "theory_scope": "Affine right-input complement edits plus mean/bias compensation. Exact per-operator response preservation exposes native intermediate spans; adding tau_i C_i=0 gives exact anchor completion to original parameters. Does not cover merely output-projected preservation, nonlinear functional nullspaces, finite-calibration generalization or approximate alignment.",
     "candidate_status": "No new defense candidate or measured performance improvement"
+  },
+  "mlp_functional_null": {
+    "name": "native_MLP_common_functional_direction",
+    "evidence": "results/mlp_functional_null/",
+    "analysis": "notes/mlp_functional_null.md",
+    "source_parent": "2077391b752c32722d6ef75b66dba5949b2cb1c0",
+    "independent_validation": "passed",
+    "target": "MNIST",
+    "site": "block0 MLP c_fc output and unchanged c_proj",
+    "calibration_images": 512,
+    "replay_images": 512,
+    "classification_rows": 0,
+    "new_protected_weights": 0,
+    "partner_accessed": false,
+    "optimizer_used": false,
+    "AGA_run": false,
+    "joint_numerical_rank": 3072,
+    "hidden_dimension": 3072,
+    "smallest_over_largest": 2.5746988143941854e-07,
+    "weakest_direction_stable_negative_energy": 0.9999998632142468,
+    "confirmation_over_fit_local_response": 96.88705155973615,
+    "decision": "No exact common local null direction at this fixed site/input scalar; weakest approximate direction is concentrated on always-negative neurons. This is not a distinct finite posthoc mechanism, and no public cleanup utility cost has been established. Close this W1-only continuous direction diagnostic without protection or rank/layer scans. Full rank is not a classification or universal impossibility theorem."
   }
 }

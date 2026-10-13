@@ -1,0 +1,39 @@
+{
+  "question": "Does one constant hidden direction survive the native QuickGELU-to-c_proj derivative across fixed actual MNIST inputs?",
+  "scope": "Necessary local operator diagnostic, not a protection, classification experiment, or repetition of paired nonlinear shear",
+  "source_parent": "2077391b752c32722d6ef75b66dba5949b2cb1c0",
+  "site": "block0 MLP c_fc output and unchanged c_proj",
+  "family": "E1=v a^T with a=normalized mean native LN2 input; b1 and W2 unchanged. A valid output-complement candidate would additionally require P_z v=0 and bounded finite native error. Neither is assumed.",
+  "condition": "For exact local-output preservation along every sufficiently small alpha, t_s W2 diag(QuickGELUprime(z_s)) v=0 for every native context, t_s=a^T x_s. Inspect a permissive unconstrained v first, before any task-complement restriction.",
+  "seed": 20261013,
+  "calibration_sizes": {
+    "defender": 256,
+    "confirmation": 256
+  },
+  "tokens": [
+    0,
+    24
+  ],
+  "context_selection": "First three images in each declared training split; CLS and patch token24, six fit and six untouched confirmation contexts; no partner or test access.",
+  "batch_size": 64,
+  "checkpoint_sha256": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+  "open_clip_model_sha256": "cd1721053da93a0c85a2d9390d575910d5482bca0c092980e4469c760eb58029",
+  "dataset_sha256": {
+    "train-images-idx3-ubyte": "ba891046e6505d7aadcbbe25680a0738ad16aec93bde7f9b65e87a2fc25776db",
+    "train-labels-idx1-ubyte": "65a50cbbf4e906d70832878ad85ccda5333a97f0f4c3dd2ef09a8a9eef7101c5"
+  },
+  "source_sha256": {
+    "experiments/clip_benchmark.py": "da54eaee5f5fa80bc33d80c8822af842b3f311a88236410da3d71296e7751b5b",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae"
+  },
+  "runner_sha256": "17c7e2e5a326c20998bf418762b929c18c2ad6084f24b20ed349e7d05884bda1",
+  "device": "Existing RTX3090 only; FP32 model forwards, FP64 operator algebra, TF32 disabled",
+  "rank_reporting": "Report full singular spectrum extrema and fixed eps*max(shape)*smax tolerance; also report relative1e-8 numerical rank. Neither cutoff chooses a protection rank.",
+  "stable_regime": "Fixed-sign ReLU approximation requires W2 D v=0; report rank of columns for neurons positive on all fit and confirmation tokens. No margin fitting.",
+  "stop": "No weights regardless of rank. Full numerical rank only rules out an exact local infinitesimal null direction for this fixed input scalar/site, not approximate accuracy preservation, finite discrete equivalences, paired edits, or all complement methods. If weak directions are low-activity or confirmation responses grow, do not call them a new candidate. Public cleanup utility has not been established.",
+  "classification_metrics": "Not measured: target/partner native and fusion accuracies, AGA and cleanup. No defense efficacy claim permitted.",
+  "optimizer_used": false,
+  "partner_access": false,
+  "new_protected_weights": 0
+}
