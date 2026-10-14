@@ -2,6 +2,7 @@
 
 import argparse
 import copy
+import hashlib
 import json
 from pathlib import Path
 
@@ -23,7 +24,9 @@ def verify(output):
         assert digest(output/"artifacts"/file)==meta[key]
     assert digest("experiments/covariance_noise.py")==meta["runner_sha256"]
     for file,sha in cfg["source_sha256"].items():assert digest(file)==sha,file
-    assert digest("external/secure-merge-attack/utils_attack_B32.py")==json.loads(Path("configs/sources.json").read_text())["AGA"]["sha256"]
+    author=Path("external/secure-merge-attack/utils_attack_B32.py")
+    author_text_sha=hashlib.sha256(author.read_text(encoding="utf-8").encode()).hexdigest()
+    assert author_text_sha==json.loads(Path("configs/sources.json").read_text())["AGA"]["sha256"]
     freeze=json.loads((output/"release_freeze.json").read_text());assert not freeze["partner_loaded"] and not freeze["test_loaded"]
     assert not any(case["partner"] in k for k in freeze["checkpoint_sha256"])
     assert freeze["release_sha256"]==meta["release_sha256"]
@@ -84,6 +87,7 @@ def verify(output):
     result={"status":"passed","source_sha256":digest(__file__),"release_sha256":meta["release_sha256"],"predictions_sha256":meta["predictions_sha256"],
             "original_checkpoint_sha256":meta["checkpoint_sha256"],"official_count_rows":len(rows),"per_class_and_paired_counts":"passed",
             "explicit_TA_formula":True,"author_AGA_source_pin_verified":True,"fresh_prediction_instances":sum(c["replayed_predictions"] for c in checks),"checks":checks,
+            "author_AGA_text_sha256":author_text_sha,"author_AGA_raw_sha256":digest(author),"author_pin_encoding":"read_text UTF-8 with universal newline normalization; same as unchanged author loader",
             "construction_optimizer_steps":64,"evaluation_optimizer_steps":0,"new_candidates":0,"first_phase_changed":False}
     save_json(output/"independent_validation.json",result);print(json.dumps(result),flush=True)
 
