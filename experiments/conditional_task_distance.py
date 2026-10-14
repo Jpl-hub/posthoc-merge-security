@@ -86,10 +86,10 @@ class DistilledProblem:
         return float(difference.norm()/self.teacher_output.norm())
 
 
-def diagnose(target, cfg):
+def diagnose(target, cfg, problem_class=DistilledProblem):
     output = Path(cfg["output"]); output.mkdir(parents=True, exist_ok=False)
     torch.cuda.reset_peak_memory_stats(); started = time.monotonic()
-    coupled = DistilledProblem(target, cfg); p = coupled.problem
+    coupled = problem_class(target, cfg); p = coupled.problem
     ca = coupled.initial.clone().requires_grad_(True)
     theta = coupled.coefficients(ca); loss = coupled.stress(ca)
     gradient = torch.autograd.grad(loss, ca, retain_graph=True)[0]
@@ -123,7 +123,7 @@ def diagnose(target, cfg):
                 "native_residual": residual.detach().cpu(), "native_directional_derivative": derivative.detach().cpu(),
                 "conditional_A": ca.detach().cpu(), "conditional_direction_A": direction.detach().cpu(),
                 "ridge": float(coupled.ridge), "finite_thetas": finite_thetas}, artifact)
-    report = {"target": target, "coordinate_form": "matrix", "method": "conditional_block_distillation_angular_direction",
+    report = {"target": target, "coordinate_form": "matrix", "method": cfg.get("diagnostic_method", "conditional_block_distillation_angular_direction"),
               "optimization_variables": p.a_size, "resolved_publication_coefficients": len(theta),
               "new_release_weights": 0, "optimizer_updates": 0, "explicit_reverse_gradient_calls": 2,
               "coefficient_jvp_calls": 2, "native_jvp_calls": 1, "jvp_method": "reverse-over-reverse; two reverse passes each",
@@ -135,6 +135,7 @@ def diagnose(target, cfg):
               "baseline": baseline, "full_output_fit_relative_residual": coupled.fit_residual(ca), "finite_steps": rows,
               "direction_sha256": digest(artifact), "parent_diagnostic_sha256": p.parent_sha,
               "source_sha256": digest(__file__), "protocol_sha256": digest(cfg["protocol_path"]),
+              "primary_entrypoint_sha256": digest(cfg.get("entrypoint", __file__)),
               "checkpoint_sha256": p.hashes, "training_indices": p.cal["indices"],
               "confirmation_used": False, "future_partner_used": False, "test_used": False,
               "wall_seconds": time.monotonic()-started, "peak_gpu_bytes": torch.cuda.max_memory_allocated()}

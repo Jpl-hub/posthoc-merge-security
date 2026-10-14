@@ -1,17 +1,25 @@
 {
-  "status": "phase2_last_mlp_angular_family_closed",
-  "updated_utc": "2026-10-14T09:10:13.901692+00:00",
+  "status": "phase2_cross_module_task_direction",
+  "updated_utc": "2026-10-14T09:27:07.250144+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [],
+  "research_jobs": [
+    {
+      "target": "MNIST",
+      "protocol": "configs/cross_module_direction.json",
+      "output": "outputs/phase2_cross_module_direction_mnist",
+      "mode": "diagnostic_only",
+      "new_release_weights": 0
+    }
+  ],
   "breakthrough_verified": false,
   "new_candidate": "No new Phase2 release: both angular publication optimizations failed frozen confirmation; proxy prediction changes stayed1/512",
   "mechanism": "notes/phase2_angular.md",
-  "next_action": "No further optimization of the closed last-MLP configurations. Before new weights, diagnose whether a target-only upstream/downstream transformation offers stronger ordering change with out-of-fit task preservation; no layer/budget sweep.",
+  "next_action": "Capture exact last-Attention output inputs; verify analytic task-mode responses; inspect one task-only O-to-MLP conditional-distillation angular gradient before constructing weights.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -392,7 +400,7 @@
     "GPU_wall_seconds": 21.75419981731102,
     "independent_verification": "confirmed_constraint_failure; NumPy maximum0.6991894743756992"
   },
-  "github_sync_status": "connection_restored; verified remote main=c5f0a1a; verified research publication pending",
+  "github_sync_status": "verified main f1d0d7d4bc80c03a277158f817e6911f41c12123; next mechanism source not yet published",
   "angular_matrix_direction": {
     "status": "passed independent NumPy JVP; no added prediction changes",
     "gradient_norm": 11.665176516554135,
