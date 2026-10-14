@@ -123,7 +123,8 @@ class CrossProblem(Problem):
                 assert error<1e-3,(g,i,error)
                 checks.append({"group":g,"mode":i,"relative_error":error})
         chosen=imp["native"].argsort(descending=True)[:self.r]
-        o_basis={"u":u[:,chosen],"vh":vh[chosen],"s":s[chosen],"selected":chosen.cpu()}
+        cpu_chosen=chosen.cpu()
+        o_basis={"u":u[:,cpu_chosen],"vh":vh[cpu_chosen],"s":s[cpu_chosen],"selected":cpu_chosen}
         # B uses the previously frozen target-only task-singular basis, not a peer-selected basis.
         self.basis={"A":on_device(o_basis),"B":on_device(previous["basis"]["B"])}
         self.na,self.nb=self.p["O"].norm(),self.p["B"].norm()
