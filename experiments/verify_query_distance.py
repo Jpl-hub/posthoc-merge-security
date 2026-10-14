@@ -1,6 +1,7 @@
 """Independent NumPy attention, conditional publication solve and task derivatives."""
 
 import argparse
+import copy
 import json
 from pathlib import Path
 
@@ -9,12 +10,14 @@ import torch
 from scipy.special import expit,softmax
 
 from clip_benchmark import digest
+from covariance_noise import dataset
 from query_distance import query_parameters
 from subspace_probe import save_json
 from task_probe_distance import checked_models
 from verify_classification_completion import target_numpy
 from verify_cross_module import ln,ln_jvp
 from verify_probe_candidate import array,features
+from verify_covariance_noise import official_labels
 
 
 class Reconstruction:
@@ -105,5 +108,53 @@ def verify(output):
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
 
+def verify_game(output):
+    out=Path(output);r=json.loads((out/'results.json').read_text());assert digest(out/'candidate.pt')==r['candidate_sha256']
+    cal=torch.load(out/'candidate.pt',map_location='cpu');cfg=cal['protocol'];space=torch.load(out/'readout.pt',map_location='cpu')
+    _,expert,head,hashes=checked_models(r['target']);assert hashes==r['checkpoint_sha256']
+    raw=query_parameters(expert,head);p={k:array(v) if torch.is_tensor(v) else v for k,v in raw.items()};rec=Reconstruction(cal,cfg,p,space);rec.visual=expert.model.visual
+    theta=array(cal['theta']);eq,eb=rec.delta(theta)
+    for site,delta in [('Q',eq),('B',eb)]:np.testing.assert_allclose(delta,array(cal['release_deltas'][site]),atol=1e-8,rtol=1e-7)
+    reconstructed,_=rec.conditional(theta[:rec.size]);error=float(np.max(np.abs(reconstructed-theta)));assert error<1e-7
+    distance=float(np.sqrt(np.linalg.norm(eq)**2/rec.nq**2+np.linalg.norm(eb)**2/rec.nb**2));assert distance<=cfg['parameter_budget']*(1+1e-10)
+    constraints={};confirmation=None;routing=[]
+    for group in ['native','scale','confirmation']:
+        rho,_,_,pred=rec.group(group,theta);maximum=float(np.max(np.abs(rho)))
+        constraints[group]={'maximum_relative_margin_drift':maximum,'real_n':len(pred[0]),'changed_predictions':int((pred[0]!=pred[1]).sum())}
+        if group!='confirmation':assert maximum<=cfg['margin_fraction']*(1+1e-7)
+        else:confirmation=pred
+        cache=cal[group];x,k,v=[array(cache[key]) for key in ['q_input','keys','values']]
+        _,old=rec.attention(x,k,v);_,new=rec.attention(x,k,v,eq)
+        kl=np.sum(old*(np.log(np.maximum(old,1e-300))-np.log(np.maximum(new,1e-300))),axis=-1)
+        routing.append({'group':group,'mean_attention_KL':float(kl.mean()),'maximum_attention_KL':float(kl.max()),'maximum_probability_change':float(np.max(np.abs(new-old)))})
+    rho=constraints['confirmation']['maximum_relative_margin_drift'];assert abs(rho-r['confirmation']['worst_margin_drift'])<1e-7
+    assert (rho<=cfg['margin_fraction'])==r['confirmation_passed']
+    before,after=confirmation;np.testing.assert_array_equal(before,array(cal['confirmation_original_predictions']));np.testing.assert_array_equal(after,array(cal['confirmation_candidate_predictions']))
+    ids=cal['confirmation_indices'];labels=official_labels(r['target'],True)[ids];np.testing.assert_array_equal(labels,array(cal['confirmation_labels']))
+    for name,pred in [('original',before),('candidate',after)]:assert r['confirmation'][name+'_correct']==int((pred==labels).sum())
+    old=set(i for group in cal['indices'].values() for i in group);parent=torch.load(Path(cfg['margin_reference'])/(r['target']+'_diagnostic.pt'),map_location='cpu');old.update(parent['indices']['confirmation'])
+    assert len(set(ids))==len(ids) and not old.intersection(ids)
+    block=expert.model.visual.transformer.resblocks[11];d=block.attn.embed_dim
+    wk=block.attn.in_proj_weight[d:2*d].detach().cpu().double().numpy().reshape(p['heads'],p['head_dim'],d)
+    wq=p['Q'].reshape(p['heads'],p['head_dim'],d);qe=eq.reshape(p['heads'],p['head_dim'],d)
+    invariant=float(np.sqrt(sum(np.linalg.norm(qe[j].T@wk[j])**2 for j in range(p['heads'])))/np.sqrt(sum(np.linalg.norm(wq[j].T@wk[j])**2 for j in range(p['heads']))))
+    replays=[]
+    if rho<=cfg['margin_fraction']:
+        released=copy.deepcopy(expert);newblock=released.model.visual.transformer.resblocks[11]
+        with torch.no_grad():
+            newblock.attn.in_proj_weight[:d].copy_((block.attn.in_proj_weight[:d].double()+torch.from_numpy(eq)).float())
+            newblock.mlp.c_proj.weight.copy_((block.mlp.c_proj.weight.double()+torch.from_numpy(eb)).float())
+        training=dataset(r['target'],'data',expert.val_preprocess,True)
+        for start in range(0,min(128,len(ids)),32):
+            images=torch.stack([training[i][0] for i in ids[start:start+32]]).cuda()
+            for name,model,pred in [('original',expert,before),('candidate',released,after)]:
+                with torch.no_grad():model.cuda();head.cuda();actual=head(model(images)).argmax(1).cpu().numpy();model.cpu();head.cpu()
+                np.testing.assert_array_equal(actual,pred[start:start+len(images)]);replays.append({'model':name,'start':start,'n':len(images),'prediction_match':True})
+    result={'status':'passed' if rho<=cfg['margin_fraction'] else 'confirmed_constraint_failure','source_sha256':digest(__file__),'candidate_sha256':r['candidate_sha256'],'conditional_coefficient_maximum_error':error,'parameter_distance':distance,'Q_relative_distance':float(np.linalg.norm(eq)/rec.nq),'B_relative_distance':float(np.linalg.norm(eb)/rec.nb),'task_constraints':constraints,'attention_routing':routing,'QK_bilinear_relative_change':invariant,'fresh_replays':replays,'new_model_forwards':sum(x['n'] for x in replays),'new_release_weights':0,'future_partner_used':False,'test_used':False,'scope':'Task preservation and representation-change evidence; not true fusion or AGA protection'}
+    save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
+
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True);args=parser.parse_args();torch.set_num_threads(4);verify(args.output)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True);args=parser.parse_args();torch.set_num_threads(4)
+    if (Path(args.output)/'results.json').exists():verify_game(args.output)
+    else:verify(args.output)
