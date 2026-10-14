@@ -1,17 +1,24 @@
 {
-  "status": "phase2_last_mlp_angular_family_closed",
-  "updated_utc": "2026-10-14T09:10:13.901692+00:00",
+  "status": "phase2_functional_completion_direction",
+  "updated_utc": "2026-10-14T10:40:25.000585+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [],
+  "research_jobs": [
+    {
+      "target": "MNIST",
+      "protocol": "configs/functional_direction.json",
+      "output": "outputs/phase2_functional_direction_mnist",
+      "mode": "frozen_diagnostic"
+    }
+  ],
   "breakthrough_verified": false,
-  "new_candidate": "No new Phase2 release: both angular publication optimizations failed frozen confirmation; proxy prediction changes stayed1/512",
-  "mechanism": "notes/phase2_angular.md",
-  "next_action": "No further optimization of the closed last-MLP configurations. Before new weights, diagnose whether a target-only upstream/downstream transformation offers stronger ordering change with out-of-fit task preservation; no layer/budget sweep.",
+  "new_candidate": "No new effective Phase2 defense. Cross-module real TA/AGA negative; functional-completion diagnostic only.",
+  "mechanism": "notes/phase2_classification_completion.md",
+  "next_action": "Check uniform classification completion under unchanged budget and finite task probes; no release unless training and independent confirmation pass.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -228,7 +235,7 @@
     "Projection-null direction publicly identifiable; no current public-cleaning/replacement resistance claim.",
     "Architecture needs a nontrivial expert projection left kernel and proxy/partner projection mismatch.",
     "No ARF/Table6 baseline reproduction or paper-readiness claim.",
-    "Prior test results were observed; protection parameters frozen before this candidate’s peer/test evaluation."
+    "Prior test results were observed; protection parameters frozen before this candidate\u2019s peer/test evaluation."
   ],
   "decision_noise": {
     "status": "closed_no_target_drop_verified",
@@ -392,7 +399,7 @@
     "GPU_wall_seconds": 21.75419981731102,
     "independent_verification": "confirmed_constraint_failure; NumPy maximum0.6991894743756992"
   },
-  "github_sync_status": "connection_restored; verified remote main=c5f0a1a; verified research publication pending",
+  "github_sync_status": "verified main f1d0d7d4bc80c03a277158f817e6911f41c12123; next mechanism source not yet published",
   "angular_matrix_direction": {
     "status": "passed independent NumPy JVP; no added prediction changes",
     "gradient_norm": 11.665176516554135,
@@ -449,5 +456,84 @@
   "unverified_hypotheses_latest": [
     "Joint upstream/downstream publication transformations might offer stronger proxy ordering effects and more stable task preservation; not constructed or validated.",
     "Target-only anchor proxy improvement could transfer to true TA and AGA; no evidence from these failed candidates."
-  ]
+  ],
+  "cross_module_initial_execution": {
+    "status": "implementation_device_index_error_before_direction",
+    "execution_source_commit": "8e89338",
+    "original_output": "outputs/phase2_cross_module_direction_mnist",
+    "scientific_configuration_changed": false,
+    "new_release_weights": 0
+  },
+  "cross_module_direction": {
+    "status": "passed independent NumPy conditional solve, cache scores, task-SVD equations and native JVP",
+    "rank": 32,
+    "fit_scale_O_top32_overlap": 31,
+    "fit_selected_response_fraction": 0.9977545829031579,
+    "scale_selected_response_fraction": 0.9977431926729651,
+    "source_execution": "b8b5b69",
+    "new_release_weights": 0
+  },
+  "cross_module_game": {
+    "status": "passed independent finite task constraints plus256 fresh full CLIP confirmation replays",
+    "optimizer_updates": 64,
+    "selected_step": 62,
+    "O_relative_distance": 0.12072813218422336,
+    "B_relative_distance": 0.48518940370867375,
+    "parameter_distance": 0.49998403911711997,
+    "proxy_changes": 3,
+    "proxy_n": 512,
+    "confirmation_worst_margin_drift": 0.23935857376803424,
+    "confirmation_n": 512,
+    "confirmation_original_correct": 512,
+    "confirmation_candidate_correct": 512,
+    "candidate_sha256": "6736674970f0f2f1fad0c6d3358a7743a4771d49430ed7dab96baa4bb65e2443",
+    "formal_evaluation_completed": true,
+    "effective_defense_verified": false
+  },
+  "cross_module_real_evaluation": {
+    "status": "closed_no_effective_defense_independently_verified",
+    "source_execution_commit": "1d89246",
+    "summary": "results/cross_module_eval/summary.json",
+    "validation": "results/cross_module_eval/independent_validation.json",
+    "native_correct": [
+      9969,
+      9968,
+      10000
+    ],
+    "direct_target_correct": [
+      9937,
+      9932,
+      10000
+    ],
+    "AGA_target_correct": [
+      9932,
+      9930,
+      10000
+    ],
+    "AGA_peer_correct": [
+      23890,
+      23870,
+      26032
+    ],
+    "AGA_target_p": 0.8145294189453125,
+    "new_effective_defense": false,
+    "candidate_preserved": true
+  },
+  "minimum_full_B_direction": {
+    "status": "closed_no_budget_improvement_no_proxy_changes; independently_verified",
+    "proxy_changed": 0,
+    "native_training_critic": 0.011276691348519899,
+    "full_hidden_fit_residual": 0.0036921097357354295,
+    "optimizer_updates": 0,
+    "new_release_weights": 0,
+    "same_regularizer_and_budget": true
+  },
+  "class_margin_level_set": {
+    "ideal_verified": true,
+    "training_n": 1024,
+    "target_gap_scale": 0.75,
+    "relative_gap_drift": 0.25,
+    "uniform_transform_verified": false,
+    "new_release_weights": 0
+  }
 }

@@ -187,10 +187,11 @@ def direction_diagnostic(target, cfg):
     print(json.dumps({k: v for k, v in report.items() if k!="training_indices"}), flush=True)
 
 
-def fresh_confirmation(problem, cfg):
+def fresh_confirmation(problem, cfg, capture_function=None):
     """Only called after the sole training-selected point has been fixed."""
     import numpy as np
     excluded = set(i for group in problem.cal["indices"].values() for i in group)
+    excluded.update(getattr(problem, "prior_confirmation_indices", []))
     sources = {}
     # Only target-task metadata is inspected; no partner images or parameters.
     for folder in Path("outputs").iterdir():
@@ -213,7 +214,7 @@ def fresh_confirmation(problem, cfg):
     n = min(cfg["confirmation_n"], len(pool))
     assert n >= cfg.get("minimum_confirmation_n", 128), "Insufficient independent target-training confirmation data"
     indices = np.random.default_rng(cfg["confirmation_seed"]).choice(pool, n, replace=False).tolist()
-    cache = capture(problem.expert, training, indices)
+    cache = (capture_function or capture)(problem.expert, training, indices)
     labels = torch.tensor([int(training[i][1]) for i in indices])
     return cache, labels, {"indices": indices, "seed": cfg["confirmation_seed"],
                            "excluded_count": len(excluded), "excluded_metadata_sha256": sources,
