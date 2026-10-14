@@ -147,12 +147,7 @@ def analyze(target,cfg):
     for group in ["native","scale"]:
         data=on_device(cache[group]);h=data["h"]
         direct=angular_scores(scores(h,p))
-        if band_mode:
-            ideal,target_q,root_info=amplitude_target(h0,h,space,p,cfg["margin_fraction"],cfg["amplitude_bisection_steps"])
-            before=scores(h,p);after=scores(ideal,p);factor=root_info["target_raw_gap_scale"]
-            numerator_error=float(((after-after.mean(1,keepdim=True))-factor*(before-before.mean(1,keepdim=True))).abs().max())
-            variance_error=root_info["amplitude_root_error"]
-        elif raw_mode:
+        if raw_mode:
             t=h@space["L"]+sigma(h,p["eps"])*space["c"]
             raw_scores=t/t.norm(dim=1,keepdim=True)@p["head"].T
             analytic=angular_scores(raw_scores);numer=None
@@ -162,7 +157,12 @@ def analyze(target,cfg):
         identity=float((direct-analytic).abs().max());assert identity<1e-10
         rounding=h-final_hidden(data["r"],p)
         h0=rounding+final_hidden(data["r"]+data["o_input"]@eo.T,p)
-        if raw_mode:
+        if band_mode:
+            ideal,target_q,root_info=amplitude_target(h0,h,space,p,cfg["margin_fraction"],cfg["amplitude_bisection_steps"])
+            before=scores(h,p);after=scores(ideal,p);factor=root_info["target_raw_gap_scale"]
+            numerator_error=float(((after-after.mean(1,keepdim=True))-factor*(before-before.mean(1,keepdim=True))).abs().max())
+            variance_error=root_info["amplitude_root_error"]
+        elif raw_mode:
             ideal,target_q,root_info=raw_score_target(h0,h,space,p["eps"],cfg["fixed_point_iterations"])
             before=scores(h,p);after=scores(ideal,p)
             numerator_error=float(((after-after.mean(1,keepdim=True))-(before-before.mean(1,keepdim=True))).abs().max())
@@ -175,7 +175,7 @@ def analyze(target,cfg):
         direction_error=float((angular_scores(scores(ideal,p))-direct).abs().max())
         assert numerator_error<1e-10 and direction_error<1e-10 and variance_error<1e-10
         records.append({"group":group,"n":len(h),"direction_identity_maximum_error":identity,
-                        "ideal_numerator_relative_error":numerator_error,"ideal_direction_maximum_error":direction_error,
+                        "ideal_numerator_relative_error":numerator_error,"numerator_error_measure":"centered_score_maximum_absolute_error" if band_mode or raw_mode else "numerator_relative_Frobenius_error","ideal_direction_maximum_error":direction_error,
                         "ideal_sigma_error":variance_error,"ideal_raw_margin_drift":float(signed_residual(scores(h,p),scores(ideal,p)).abs().max()),
                         "ideal_hidden_relative_change":float((ideal-h).norm()/h.norm()),"required_Q_correction_rms":float(target_q.square().sum(1).mean().sqrt()),**root_info})
     artifact=out/"readout.pt";torch.save(space,artifact)
