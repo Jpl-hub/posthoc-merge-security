@@ -1,16 +1,23 @@
 {
-  "status": "phase2_functional_closed_no_effective_defense",
-  "updated_utc": "2026-10-14T12:24:57.226005+00:00",
+  "status": "phase2_query_task_mechanism_diagnostic",
+  "updated_utc": "2026-10-14T12:28:01.688856+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [],
+  "research_jobs": [
+    {
+      "target": "MNIST",
+      "protocol": "configs/query_direction.json",
+      "output": "outputs/phase2_query_direction_mnist",
+      "mode": "diagnostic_only"
+    }
+  ],
   "breakthrough_verified": false,
   "new_candidate": "No new effective Phase2 defense. Cross-module real TA/AGA negative; functional-completion diagnostic only.",
-  "mechanism": "notes/phase2_classification_completion.md",
+  "mechanism": "notes/phase2_query.md",
   "next_action": "Check one last-block Query mechanism, using target-only task-SVD response and conditional classification distillation; keep radius and task tolerance fixed.",
   "deferred": [
     "Combination with phase1 bias protection",
