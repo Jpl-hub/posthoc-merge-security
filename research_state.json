@@ -1,17 +1,25 @@
 {
-  "status": "phase2_constraints_verified_no_new_defense",
-  "updated_utc": "2026-10-14T05:27:22.241594+00:00",
+  "status": "phase2_angular_gradient_diagnostic",
+  "updated_utc": "2026-10-14T07:13:58.828285+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [],
+  "research_jobs": [
+    {
+      "target": "MNIST",
+      "script": "experiments/angular_distance.py",
+      "protocol": "configs/angular_direction.json",
+      "output": "outputs/phase2_angular_direction_mnist",
+      "new_weights": 0
+    }
+  ],
   "breakthrough_verified": false,
   "new_candidate": "No new release: publication-coefficient optimizations closed without proxy ordering improvement",
   "mechanism": "notes/phase2_projected_game.md",
-  "next_action": "Within phase2, derive centered-score direction invariant to positive affine changes; diagnose its training gradient against task-probe feasibility before freezing any new transform. Keep existing budget/site/rank; no future peer or test optimization.",
+  "next_action": "Check angular-score true gradient, affine invariance, task-probe native JVP and frozen finite steps on target training data. Only then define constrained optimization; no test/peer selection.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
