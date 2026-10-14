@@ -1,0 +1,178 @@
+{
+  "status": "protected_task_TA_and_author_AGA_effect_verified",
+  "release_sha256": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46",
+  "predictions_sha256": "50ff4fc88522b7531e58b8d65ad5142cfb9dc8b46d245cc0dd25a6189055682c",
+  "metrics": {
+    "standalone/MNIST": {
+      "original_correct": 9969,
+      "released_correct": 9971,
+      "n": 10000,
+      "original_accuracy_percent": 99.69,
+      "released_accuracy_percent": 99.71,
+      "changed_predictions": 10,
+      "paired": {
+        "both_correct": 9966,
+        "lost": 3,
+        "gained": 5,
+        "both_wrong": 26,
+        "loss_pp": -0.02,
+        "exact_mcnemar_p": 0.7265625
+      },
+      "class_net_losses": [
+        0,
+        -1,
+        -1,
+        0,
+        0,
+        -1,
+        1,
+        1,
+        0,
+        -1
+      ]
+    },
+    "direct/MNIST": {
+      "original_correct": 9937,
+      "released_correct": 7877,
+      "n": 10000,
+      "original_accuracy_percent": 99.37,
+      "released_accuracy_percent": 78.77,
+      "changed_predictions": 2125,
+      "paired": {
+        "both_correct": 7853,
+        "lost": 2084,
+        "gained": 24,
+        "both_wrong": 39,
+        "loss_pp": 20.6,
+        "exact_mcnemar_p": 0.0
+      },
+      "class_net_losses": [
+        127,
+        1132,
+        32,
+        5,
+        33,
+        -1,
+        -12,
+        748,
+        -2,
+        -2
+      ]
+    },
+    "direct/SVHN": {
+      "original_correct": 24079,
+      "released_correct": 16385,
+      "n": 26032,
+      "original_accuracy_percent": 92.49769514443761,
+      "released_accuracy_percent": 62.94176398279041,
+      "changed_predictions": 8959,
+      "paired": {
+        "both_correct": 16177,
+        "lost": 7902,
+        "gained": 208,
+        "both_wrong": 1745,
+        "loss_pp": 29.555931161647205,
+        "exact_mcnemar_p": 0.0
+      },
+      "class_net_losses": [
+        235,
+        4604,
+        443,
+        628,
+        524,
+        35,
+        -86,
+        1334,
+        -60,
+        37
+      ]
+    },
+    "AGA/MNIST": {
+      "original_correct": 9932,
+      "released_correct": 7785,
+      "n": 10000,
+      "original_accuracy_percent": 99.32,
+      "released_accuracy_percent": 77.85,
+      "changed_predictions": 2213,
+      "paired": {
+        "both_correct": 7763,
+        "lost": 2169,
+        "gained": 22,
+        "both_wrong": 46,
+        "loss_pp": 21.47,
+        "exact_mcnemar_p": 0.0
+      },
+      "class_net_losses": [
+        285,
+        1132,
+        64,
+        9,
+        35,
+        0,
+        -14,
+        637,
+        0,
+        -1
+      ]
+    },
+    "AGA/SVHN": {
+      "original_correct": 23890,
+      "released_correct": 15988,
+      "n": 26032,
+      "original_accuracy_percent": 91.77166564228642,
+      "released_accuracy_percent": 61.41671788567916,
+      "changed_predictions": 9310,
+      "paired": {
+        "both_correct": 15784,
+        "lost": 8106,
+        "gained": 204,
+        "both_wrong": 1938,
+        "loss_pp": 30.354947756607253,
+        "exact_mcnemar_p": 0.0
+      },
+      "class_net_losses": [
+        398,
+        4504,
+        645,
+        733,
+        514,
+        37,
+        -93,
+        1158,
+        -54,
+        60
+      ]
+    }
+  },
+  "task_macro_mean_percent": {
+    "direct": {
+      "original": 95.93384757221881,
+      "released": 70.85588199139521
+    },
+    "AGA": {
+      "original": 95.54583282114321,
+      "released": 69.63335894283958
+    }
+  },
+  "class_concentration": {
+    "AGA_total_MNIST_net_loss": 2147,
+    "classes_1_and_7_net_loss": 1769,
+    "fraction": 0.823940381928272
+  },
+  "validation": "17 official-label/per-class/paired records and272 full-model prediction replays passed",
+  "construction_cost": {
+    "screen_and_direction_seconds": 20.361270328052342,
+    "local_correction_seconds": 8.888441598042846,
+    "optimization_seconds": 84.27125195180997,
+    "explicit_reverse_calls": 64,
+    "analytic_task_Jacobian_calls": 83,
+    "nonlinear_correction_updates": 19
+  },
+  "limitations": [
+    "Only MNIST protected; SVHN is a partner, not a protected-task transfer.",
+    "Protected MNIST remains77.85% after AGA, with concentrated failures; not complete task blocking.",
+    "Public parameter replacement and other restoration robustness not yet verified.",
+    "No paper novelty or ARF/Table6 comparison claim.",
+    "Reported paired p=0 is numerical underflow; not a mathematically zero probability."
+  ]
+}
