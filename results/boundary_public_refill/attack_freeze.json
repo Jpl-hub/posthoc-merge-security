@@ -1,0 +1,26 @@
+{
+  "attack_inputs": [
+    "published model",
+    "public pretrained anchor",
+    "public method locations"
+  ],
+  "target": "MNIST",
+  "partner": "SVHN",
+  "known_method_locations": [
+    "model.visual.transformer.resblocks.11.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.11.mlp.c_proj.weight"
+  ],
+  "gradient_updates": 0,
+  "construction_training_images": 0,
+  "partner_loaded_before_attack_freeze": false,
+  "test_loaded_before_attack_freeze": false,
+  "clean_edits_sha256": "fee08c45d066daf1ee83cdb1811adb7a9d3f374fb2dec20501bd053b88b80118",
+  "defense_release_sha256": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46",
+  "cleaned_original_and_protected_exactly_equal": true,
+  "original_finetuned_used_by_attack_function": false,
+  "original_used_for_publication_assembly_and_matched_cost_control": true,
+  "removed_task_update_relative_norm": {
+    "model.visual.transformer.resblocks.11.attn.out_proj.weight": 0.021259406581521034,
+    "model.visual.transformer.resblocks.11.mlp.c_proj.weight": 0.015603714622557163
+  }
+}
