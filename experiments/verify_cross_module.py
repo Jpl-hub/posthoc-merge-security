@@ -31,8 +31,9 @@ def ln_jvp(value,direction,gamma,epsilon):
 def verify(output):
     output=Path(output);report=json.loads((output/"direction.json").read_text());meta=json.loads((output/"mechanism.json").read_text())
     assert digest(output/"direction.pt")==report["direction_sha256"]
-    assert digest(output/"calibration.pt")==meta["calibration_sha256"]
-    saved=torch.load(output/"direction.pt",map_location="cpu");cal=torch.load(output/"calibration.pt",map_location="cpu");cfg=saved["cfg"]
+    cache_path=output/"calibration.pt" if (output/"calibration.pt").exists() else Path(meta["cache_reference"])/"calibration.pt"
+    assert digest(cache_path)==meta["calibration_sha256"]
+    saved=torch.load(output/"direction.pt",map_location="cpu");cal=torch.load(cache_path,map_location="cpu");cfg=saved["cfg"]
     anchor,expert,head,hashes=checked_models(report["target"]);assert hashes==report["checkpoint_sha256"]
     raw=extended_parameters(expert,head);p={k:array(v) if torch.is_tensor(v) else v for k,v in raw.items()}
     rank=cfg["probe_rank"];size=rank**2
@@ -42,7 +43,10 @@ def verify(output):
     for basis in [uo.T,vo,vb]:np.testing.assert_allclose(basis@basis.T,np.eye(rank),atol=1e-9)
     normo,normb=np.linalg.norm(p["O"]),np.linalg.norm(p["B"])
     theta,direction=[array(saved[k]) for k in ["theta","direction"]]
-    def delta(coeff):return normo*uo@coeff[:size].reshape(rank,rank)@vo,normb*coeff[size:].reshape(p["B"].shape[0],rank)@vb
+    def delta(coeff):
+        eo=normo*uo@coeff[:size].reshape(rank,rank)@vo
+        eb=normb*coeff[size:].reshape(p["B"].shape) if cfg.get("full_B_completion") else normb*coeff[size:].reshape(p["B"].shape[0],rank)@vb
+        return eo,eb
     eo,eb=delta(theta);do,db=delta(direction)
     i=next((j for j,row in enumerate(report["finite_steps"]) if row["feasible"]),0)
     finite=report["finite_steps"][i];trial=array(saved["finite_thetas"][i]);to,tb=delta(trial)
@@ -54,12 +58,22 @@ def verify(output):
     rounding=teacher-realr-hidden(realr)@p["B"].T-p["b"]
     q0=hidden(realr)@vb.T;ridge=cfg["ridge_relative_floor"]*np.linalg.eigvalsh(q0.T@q0)[-1]
     assert abs(ridge-saved["ridge"])<1e-9
-    conditional=[]
+    conditional=[];comparisons=[]
     for coeff in [theta,trial]:
         o,b=delta(coeff);r=realr+realz@o.T;z=hidden(r);q=z@vb.T
         residual=teacher-rounding-r-z@p["B"].T-p["b"]
         kb=np.linalg.solve(q.T@q+ridge*np.eye(rank),q.T@residual).T
-        error=float(np.max(np.abs(kb/normb-coeff[size:].reshape(p["B"].shape[0],rank))));assert error<1e-7;conditional.append(error)
+        if cfg.get("full_B_completion"):
+            full=np.linalg.solve(z@z.T+ridge*np.eye(len(z)),residual).T@z
+            error=float(np.max(np.abs(full/normb-coeff[size:].reshape(p["B"].shape))))
+            restricted=kb@vb
+            of=float(np.linalg.norm(z@full.T-residual)**2+ridge*np.linalg.norm(full)**2)
+            ore=float(np.linalg.norm(z@restricted.T-residual)**2+ridge*np.linalg.norm(restricted)**2)
+            assert of<=ore*(1+1e-7)
+            comparisons.append({"O_relative_distance":float(np.linalg.norm(o)/normo),"full_B_relative_distance":float(np.linalg.norm(full)/normb),
+                                "restricted_B_relative_distance":float(np.linalg.norm(restricted)/normb),"full_regularized_objective":of,"restricted_regularized_objective":ore})
+        else:error=float(np.max(np.abs(kb/normb-coeff[size:].reshape(p["B"].shape[0],rank))))
+        assert error<1e-7;conditional.append(error)
     residuals,jvps,finite_max,cache_checks=[],[],[],[]
     for g in ["native","scale"]:
         z,r,h=[array(cal[g][k]) for k in ["o_input","r","h"]];n=cfg["probe_contexts"];count=2*rank
@@ -103,6 +117,7 @@ def verify(output):
             "native_residual_maximum_error":float(np.abs(res-array(saved["native_residual"])).max()),
             "finite_step":finite["step"],"finite_step_feasible":finite["feasible"],"finite_native_critic":max(finite_max),
             "cache_checks":cache_checks,"new_model_forwards":0,"new_release_weights":0,"test_used":False,"partner_used":False}
+    result["same_O_full_vs_restricted_B"]=comparisons
     save_json(output/"independent_validation.json",result);print(json.dumps(result),flush=True)
 
 
