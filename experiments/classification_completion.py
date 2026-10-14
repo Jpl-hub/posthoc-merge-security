@@ -47,35 +47,87 @@ def ideal_output(h0,teacher,space,epsilon):
     return h0+target@q.T,target,rho
 
 
+def feature_space(p,rtol=1e-10):
+    """Hidden directions whose projected feature change stays in the class subspace."""
+    contrast=p["head"]-p["head"].mean(0)
+    uc,sc,_=torch.linalg.svd(contrast.T,full_matrices=False)
+    rank=int((sc>sc[0]*rtol).sum());assert rank>0
+    uc=uc[:,:rank]
+    linear=p["gamma"][:,None]*p["projection"];linear=linear-linear.mean(0)
+    ul,sl,vl=torch.linalg.svd(linear,full_matrices=False)
+    assert int((sl>sl[0]*rtol).sum())==linear.shape[1]
+    s=(ul/sl[None,:])@(vl@uc)
+    q,r=torch.linalg.qr(s,mode="reduced")
+    error=float((s.T@linear-uc.T).abs().max());assert error<1e-8
+    bias=p["beta"]@p["projection"]
+    return {"L":linear,"c":bias,"U":uc,"S":s,"Q":q,"R":r}, {"rank":rank,"classes":len(contrast),"feature_map_condition":float(sl[0]/sl[-1]),"pure_feature_class_change_error":error}
+
+
+def raw_score_target(h0,teacher,space,epsilon,iterations=16):
+    linear,bias,u,s,r=[space[k] for k in ["L","c","U","S","R"]]
+    te=teacher@linear+sigma(teacher,epsilon)*bias
+    a=(te/te.norm(dim=1,keepdim=True))@u
+    complement=(1.-a.square().sum(1,keepdim=True)).clamp_min(0).sqrt();assert complement.min()>1e-8
+    g0=(h0@linear)@u;aux=h0@linear-g0@u.T
+    cg=bias@u;ca=bias-cg@u.T
+    centered_s=s-s.mean(0)
+    bound=((a@centered_s.T).norm(dim=1,keepdim=True)*ca.norm()/complement+(cg@centered_s.T).norm())/(h0.shape[1]**.5)
+    assert bound.max()<1.-1e-8,"Raw-score variance map is not certified contractive"
+    rho=sigma(h0,epsilon)
+    for _ in range(iterations):
+        length=(aux+rho*ca).norm(dim=1,keepdim=True)/complement
+        dg=length*a-g0-rho*cg
+        final=h0+dg@s.T
+        rho=sigma(final,epsilon)
+    # Re-evaluate the last output at the final scalar, so fixed-point error is explicit.
+    length=(aux+rho*ca).norm(dim=1,keepdim=True)/complement
+    dg=length*a-g0-rho*cg;final=h0+dg@s.T
+    return final,dg@r.T,{"contraction_bound_maximum":float(bound.max().detach()),
+                        "fixed_point_sigma_error":float((sigma(final,epsilon)-rho).abs().max().detach())}
+
+
 @torch.no_grad()
 def analyze(target,cfg):
     out=Path(cfg["output"]);out.mkdir(parents=True,exist_ok=False);start=time.monotonic()
     root=Path(cfg["cache_reference"]);assert digest(root/"calibration.pt")==cfg["calibration_sha256"]
     cache=torch.load(root/"calibration.pt",map_location="cpu")
     _,expert,head,hashes=checked_models(target);p=on_device(extended_parameters(expert,head))
-    space,geometry=readout(p,cfg["readout_relative_tolerance"])
+    raw_mode=cfg.get("preserve_centered_raw_scores",False)
+    space,geometry=(feature_space if raw_mode else readout)(p,cfg["readout_relative_tolerance"])
     basis=on_device(cache["basis_O"]);co=-cfg["parameter_budget"]*torch.diag(basis["s"])/basis["s"].norm()
     eo=p["O"].norm()*basis["u"]@co@basis["vh"]
     records=[]
     for group in ["native","scale"]:
         data=on_device(cache[group]);h=data["h"]
-        numer=h@space["M"]+sigma(h,p["eps"])*space["b"]
-        direct=angular_scores(scores(h,p));analytic=numer/numer.norm(dim=1,keepdim=True)
+        direct=angular_scores(scores(h,p))
+        if raw_mode:
+            t=h@space["L"]+sigma(h,p["eps"])*space["c"]
+            raw_scores=t/t.norm(dim=1,keepdim=True)@p["head"].T
+            analytic=angular_scores(raw_scores);numer=None
+        else:
+            numer=h@space["M"]+sigma(h,p["eps"])*space["b"]
+            analytic=numer/numer.norm(dim=1,keepdim=True)
         identity=float((direct-analytic).abs().max());assert identity<1e-10
         rounding=h-final_hidden(data["r"],p)
         h0=rounding+final_hidden(data["r"]+data["o_input"]@eo.T,p)
-        ideal,target_q,rho=ideal_output(h0,h,space,p["eps"])
-        changed_numer=ideal@space["M"]+sigma(ideal,p["eps"])*space["b"]
-        numerator_error=float((changed_numer-numer).norm()/numer.norm())
+        if raw_mode:
+            ideal,target_q,root_info=raw_score_target(h0,h,space,p["eps"],cfg["fixed_point_iterations"])
+            before=scores(h,p);after=scores(ideal,p)
+            numerator_error=float(((after-after.mean(1,keepdim=True))-(before-before.mean(1,keepdim=True))).abs().max())
+            variance_error=root_info["fixed_point_sigma_error"]
+        else:
+            ideal,target_q,rho=ideal_output(h0,h,space,p["eps"]);root_info={}
+            changed_numer=ideal@space["M"]+sigma(ideal,p["eps"])*space["b"]
+            numerator_error=float((changed_numer-numer).norm()/numer.norm())
+            variance_error=float((sigma(ideal,p["eps"])-rho).abs().max())
         direction_error=float((angular_scores(scores(ideal,p))-direct).abs().max())
-        variance_error=float((sigma(ideal,p["eps"])-rho).abs().max())
         assert numerator_error<1e-10 and direction_error<1e-10 and variance_error<1e-10
         records.append({"group":group,"n":len(h),"direction_identity_maximum_error":identity,
                         "ideal_numerator_relative_error":numerator_error,"ideal_direction_maximum_error":direction_error,
                         "ideal_sigma_error":variance_error,"ideal_raw_margin_drift":float(signed_residual(scores(h,p),scores(ideal,p)).abs().max()),
-                        "ideal_hidden_relative_change":float((ideal-h).norm()/h.norm()),"required_Q_correction_rms":float(target_q.square().sum(1).mean().sqrt())})
+                        "ideal_hidden_relative_change":float((ideal-h).norm()/h.norm()),"required_Q_correction_rms":float(target_q.square().sum(1).mean().sqrt()),**root_info})
     artifact=out/"readout.pt";torch.save(space,artifact)
-    report={"target":target,"status":"exact_level_set_identity_verified_only","geometry":geometry,"records":records,
+    report={"target":target,"status":"exact_raw_score_level_set_verified_only" if raw_mode else "exact_level_set_identity_verified_only","geometry":geometry,"records":records,
             "checkpoint_sha256":hashes,"readout_sha256":digest(artifact),"calibration_sha256":cfg["calibration_sha256"],
             "source_sha256":digest(__file__),"protocol_sha256":digest(cfg["protocol_path"]),
             "ideal_O_relative_distance":cfg["parameter_budget"],"uniform_B_completion_constructed":False,
