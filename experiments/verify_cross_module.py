@@ -275,7 +275,7 @@ def audit_generalization(output):
     rank=int((singular>tolerance).sum());span=vh[:rank]
     outside=eb-(eb@span.T)@span
     np.testing.assert_allclose(fit_hidden@outside.T,0.,atol=1e-7)
-    records=[]
+    records=[];confirmation_scores=None;confirmation_witness=None
     for group in ['native','scale','confirmation']:
         r,z,h=[array(cal[group][k]) for k in ['r','o_input','h']]
         rounding=h-r-hidden(r)@p['B'].T-p['b'];r1=r+z@eo.T;activation=hidden(r1)
@@ -289,7 +289,15 @@ def audit_generalization(output):
         winners=before.argmax(1);gap=before[i,winners[i]]-before[i,c]
         contribution=activation@outside.T;total=activation@eb.T
         energy_fraction=float(np.sum(contribution**2)/max(np.sum(total**2),1e-30))
+        runner=before.copy();runner[np.arange(len(before)),winners]=-np.inf
+        top_gap=before[np.arange(len(before)),winners]-runner.max(1)
+        class_counts=np.bincount(winners,minlength=before.shape[1])
+        probe_context_classes=np.bincount(winners[:cfg['probe_contexts']],minlength=before.shape[1])
+        five_vs_six=before[winners==5,5]-before[winners==5,6] if before.shape[1]==10 and report['target']=='MNIST' else np.array([])
         records.append({'group':group,'natural_n':len(r),'changed_predictions':int((before.argmax(1)!=after.argmax(1)).sum()),
+            'teacher_class_counts':class_counts.tolist(),'synthetic_probe_context_class_counts':probe_context_classes.tolist(),
+            'teacher_top_gap_minimum':float(top_gap.min()),'teacher_top_gap_median':float(np.median(top_gap)),
+            'diagnostic_five_vs_six_minimum':float(five_vs_six.min()) if len(five_vs_six) else None,
             'natural_maximum_margin_drift':float(np.abs(res).max()),'natural_violations':int((np.abs(res).max(1)>cfg['margin_fraction']).sum()),
             'worst_witness':{'offset':int(i),'original_class':int(winners[i]),'competitor':int(c),'signed_relative_change':float(res[i,c]),
                 'original_gap':float(gap),'candidate_gap':float(after[i,winners[i]]-after[i,c]),'positive_affine_scale':float(alpha[i]),'non_affine_relative_error':float(error[i]),
@@ -299,11 +307,34 @@ def audit_generalization(output):
             'non_affine_relative_error_median':float(np.median(error)),'B_outside_response_energy_fraction':energy_fraction,
             'O_only_maximum_margin_drift':float(np.abs(relative_drift(before,scores(upstream))).max()),
             'B_only_maximum_margin_drift':float(np.abs(relative_drift(before,scores(h+hidden(r)@eb.T))).max())})
+        if group=='confirmation':confirmation_scores=(before,after);confirmation_witness=(int(i),int(c),int(winners[i]))
+    # Two full-model forwards independently check the failed natural witness.
+    # This is a diagnostic in memory, not a release or a fusion evaluation.
+    offset,competitor,winner=confirmation_witness
+    training=dataset(report['target'],'data',expert.val_preprocess,True)
+    image,label=training[cal['confirmation_indices'][offset]]
+    assert label==int(array(cal['confirmation_labels'])[offset])
+    protected=copy.deepcopy(expert);block=protected.model.visual.transformer.resblocks[11]
+    with torch.no_grad():
+        block.attn.out_proj.weight.add_(torch.from_numpy(eo).float())
+        block.mlp.c_proj.weight.add_(torch.from_numpy(eb).float())
+    replay=[];full_scores=[]
+    for name,model,cached in [('original',expert,confirmation_scores[0]),('candidate',protected,confirmation_scores[1])]:
+        with torch.no_grad():
+            model.cuda().eval();head.cuda().eval();value=head(model(image[None].cuda())).cpu().double().numpy()[0]
+            model.cpu();head.cpu()
+        error=float(np.max(np.abs(value-cached[offset])))
+        assert error<5e-4 and int(value.argmax())==int(cached[offset].argmax())
+        full_scores.append(value);replay.append({'model':name,'n':1,'score_maximum_error':error,'prediction':int(value.argmax()),'official_label':int(label)})
+    original_gap=full_scores[0][winner]-full_scores[0][competitor]
+    candidate_gap=full_scores[1][winner]-full_scores[1][competitor]
+    replay_rho=float(abs(candidate_gap/original_gap-1.));assert replay_rho>cfg['margin_fraction']
     result={'status':'rejected_point_generalization_audit','source_sha256':digest(__file__),'candidate_sha256':digest(path),
         'natural_fit_instances':len(fit_hidden),'B_input_dimension':fit_hidden.shape[1],'fit_row_space_numerical_rank':rank,
         'numerical_rank_tolerance':float(tolerance),'B_parameter_outside_fit_row_space_fraction':float(np.linalg.norm(outside)**2/np.linalg.norm(eb)**2),
         'fit_null_response_maximum':float(np.abs(fit_hidden@outside.T).max()),'records':records,
-        'new_release_weights':0,'new_model_forwards':0,'new_gradient_calls':0,'test_used':False,'partner_used':False,
+        'new_release_weights':0,'new_model_forwards':2,'fresh_witness_replays':replay,'fresh_witness_margin_drift':replay_rho,
+        'new_gradient_calls':0,'test_used':False,'partner_used':False,
         'confirmation_use':'Diagnosis of a closed failed point only; never used to select or update this candidate.',
         'limitation':'Natural-input row-space audit does not include the finite synthetic probes or establish causation by itself.'}
     save_json(output/'generalization_audit.json',result);print(json.dumps(result),flush=True)
