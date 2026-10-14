@@ -1,0 +1,165 @@
+{
+  "target": "MNIST",
+  "method": "task_singular_query_routing_class_completion_primal_dual",
+  "optimization_variables": 1024,
+  "publication_coefficients": 28672,
+  "initial": {
+    "objective": -0.044788910434763296,
+    "angular_stress": -1.0447100712874828,
+    "parameter_distance": 0.4999802898246889,
+    "native_critic": 0.2570352702206648,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "changed_by_teacher_class": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "minimum_centered_score_norm": 2.056277557836028
+  },
+  "selected": {
+    "objective": 0.028621188661672625,
+    "angular_stress": -0.9713650897921123,
+    "parameter_distance": 0.4999965696016786,
+    "native_critic": 0.2616859879835846,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "changed_by_teacher_class": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "minimum_centered_score_norm": 2.2505359807255947
+  },
+  "selected_step": 64,
+  "optimizer_updates": 64,
+  "explicit_reverse_gradient_calls": 128,
+  "coefficient_jvp_calls": 64,
+  "jvp_method": "two internal reverse passes per JVP",
+  "dual_updates": 64,
+  "conditional_linear_solve_calls": 935,
+  "feasible_training_iterates": 65,
+  "temporarily_infeasible_optimization_iterates": 0,
+  "distance_retraction_bisections": 624,
+  "original_expert_parameters_updated": false,
+  "gold_labels_used_for_optimization": false,
+  "future_partner_used": false,
+  "test_used": false,
+  "new_release_weights": 0,
+  "full_output_fit_relative_residual": 0.6155114075008259,
+  "confirmation": {
+    "n": 512,
+    "original_correct": 512,
+    "candidate_correct": 512,
+    "changed_predictions": 0,
+    "worst_margin_drift": 0.7718964496997662
+  },
+  "confirmation_passed": false,
+  "candidate_sha256": "28cd6dbed0011e9e05c23349303da6e9ec298a6ce6b6a6966c7ce2a7713658ba",
+  "parent_diagnostic_sha256": "0e29552e071d68a79ec11cf0fa5de71a2e5ca6327eef4e5914d46231d09df16b",
+  "source_sha256": "522744658176643effb60e2ed549b3df0426ff0fdcf1d0b130cfe72b7a7c427e",
+  "protocol_sha256": "9cfa6578260ae9b1f00cb024a2b28cfa8f6dca87412d7ca51faa65af1aa15342",
+  "primary_entrypoint_sha256": "a434ec06c497f522fab5c3b67bd83d51a488711466795cc2dbcc5c74448e57b1",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "initialization_trials": [
+    {
+      "seed_fraction": 1.0,
+      "distance": 0.7969326880600509,
+      "native_critic": 0.25804769245148684,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.5,
+      "distance": 0.52187990959799,
+      "native_critic": 0.2573264598539964,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.25,
+      "distance": 0.3695648903101373,
+      "native_critic": 0.2635456061191287,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.37499999999999994,
+      "distance": 0.43220097478572733,
+      "native_critic": 0.2587955306701487,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.43749999999999994,
+      "distance": 0.4759117742359233,
+      "native_critic": 0.2572728353705558,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.46874999999999994,
+      "distance": 0.4988989260830822,
+      "native_critic": 0.25705467917948344,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.48437499999999994,
+      "distance": 0.5104198590216062,
+      "native_critic": 0.25693859373060257,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.47656249999999994,
+      "distance": 0.5046640727801661,
+      "native_critic": 0.25695669544791716,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.47265624999999994,
+      "distance": 0.5017822498302796,
+      "native_critic": 0.25700046285362493,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.47070312499999994,
+      "distance": 0.5003407181183134,
+      "native_critic": 0.2570285469116038,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.46972656249999994,
+      "distance": 0.49961984711112306,
+      "native_critic": 0.25704186860780776,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.47021484374999994,
+      "distance": 0.4999802898246889,
+      "native_critic": 0.2570352702206648,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.47045898437499994,
+      "distance": 0.5001605058922729,
+      "native_critic": 0.2570319240006842,
+      "feasible": false
+    }
+  ],
+  "wall_seconds": 278.02667646994814,
+  "peak_gpu_bytes": 10142606848,
+  "global_saddle_optimum_claim": false
+}

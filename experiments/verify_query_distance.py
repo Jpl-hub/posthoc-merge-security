@@ -120,7 +120,11 @@ def verify_game(output):
     constraints={};confirmation=None;routing=[]
     for group in ['native','scale','confirmation']:
         rho,_,_,pred=rec.group(group,theta);maximum=float(np.max(np.abs(rho)))
-        constraints[group]={'maximum_relative_margin_drift':maximum,'real_n':len(pred[0]),'changed_predictions':int((pred[0]!=pred[1]).sum())}
+        row,competitor=np.unravel_index(np.abs(rho).argmax(),(len(rho)//len(p['head']),len(p['head'])))
+        real_n=len(pred[0]);span=2*cfg['probe_rank']*cfg['probe_contexts']
+        domain='natural_input' if row<real_n else 'Query_input_probe' if row<real_n+span else 'B_input_probe'
+        local=row if row<real_n else (row-real_n if row<real_n+span else row-real_n-span)//(2*cfg['probe_rank'])
+        constraints[group]={'maximum_relative_margin_drift':maximum,'real_n':real_n,'changed_predictions':int((pred[0]!=pred[1]).sum()),'worst_domain':domain,'worst_context_offset':int(local),'worst_competitor_class':int(competitor),'signed_worst_relative_margin_change':float(rho.reshape(-1,len(p['head']))[row,competitor])}
         if group!='confirmation':assert maximum<=cfg['margin_fraction']*(1+1e-7)
         else:confirmation=pred
         cache=cal[group];x,k,v=[array(cache[key]) for key in ['q_input','keys','values']]
