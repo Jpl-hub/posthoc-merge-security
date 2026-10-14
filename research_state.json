@@ -1,17 +1,25 @@
 {
-  "status": "phase2_source_geometry_verified_no_new_release",
-  "updated_utc": "2026-10-14T18:04:17.540182+00:00",
+  "status": "phase2_mixed_compensation_diagnosis_prepared",
+  "updated_utc": "2026-10-14T19:04:21.764544+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "source_task_geometry_and_conditional_fusion_neighborhoods",
-  "research_jobs": [],
+  "research_jobs": [
+    {
+      "name": "mixed_compensation_audit",
+      "status": "prepared_not_started",
+      "gpu": "RTX 3090",
+      "protocol": "configs/mixed_compensation_audit.json",
+      "output": "outputs/phase2_mixed_compensation_audit"
+    }
+  ],
   "breakthrough_verified": false,
   "new_candidate": "No new release. Preserved O/Bnative99.71,TA78.77,AGA77.85. Intrinsic source chords of O/B and A/B change only1 and2/4096 target-training predictions. Deterministic class-balanced task-curvature directions remain task-feasible but yield0 midpoint flips; this finite path is closed without more budget or steps.",
   "mechanism": "notes/phase2_source_geometry.md",
-  "next_action": "Derive and first diagnose mixed derivatives of native compensation with respect to the allowed target/anchor representation change: determine whether an observable task-related representation set can turn cancellation into stable ordering changes, with an explicit conditional coverage assumption. Do not equate large curvature, parameter distance or a restricted dual bound with classification failure; do not resume these fixed directions.",
+  "next_action": "Execute the frozen target/anchor mixed-Jacobian audit; independently verify directional derivatives and finite class counts before judging a candidate. No new release optimization unless finite task-preserving classification evidence supports it.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
