@@ -49,8 +49,31 @@ def verify(output):
         return df@array(head.weight).T
 
     rr, jj, finite_max = [], [], []
-    feasible = next(x for x in report["finite_steps"] if x["feasible"])
-    trial = theta+feasible["step"]*direction; trial *= min(1., cfg["parameter_budget"]/np.linalg.norm(trial))
+    finite_index = next((i for i, x in enumerate(report["finite_steps"]) if x["feasible"]), 0)
+    feasible = report["finite_steps"][finite_index]
+    if "finite_thetas" in saved:
+        trial = array(saved["finite_thetas"][finite_index])
+    else:
+        trial = theta+feasible["step"]*direction
+        trial *= min(1., cfg["parameter_budget"]/np.linalg.norm(trial))
+    conditional_error = None
+    if "conditional_A" in saved:
+        inputs = np.concatenate([array(cal[k]["x"]) for k in ["native", "scale"]])
+        a0, b0, bias0 = [array(p[k]) for k in ["A", "B", "a"]]
+        pre0 = inputs@a0.T+bias0; z0 = pre0*expit(1.702*pre0)
+        q0 = z0@basis["B"]["vh"].T
+        ridge = cfg["ridge_relative_floor"]*np.linalg.eigvalsh(q0.T@q0)[-1]
+        assert abs(ridge-saved["ridge"]) < 1e-9
+        errors = []
+        for coeff in [theta, trial]:
+            delta_a, _ = changes(coeff)
+            pre = inputs@(a0+delta_a).T+bias0; z = pre*expit(1.702*pre)
+            q = z@basis["B"]["vh"].T
+            k = np.linalg.solve(q.T@q+ridge*np.eye(rank), q.T@(z0@b0.T-z@b0.T)).T
+            error = float(np.max(np.abs(k/norms["B"]-coeff[size:].reshape(b0.shape[0], rank))))
+            assert error < 1e-7
+            errors.append(error)
+        conditional_error = max(errors)
     tea, teb = changes(trial)
     for group in ["native", "scale"]:
         x, h = array(cal[group]["x"]), array(cal[group]["h"])
@@ -82,7 +105,8 @@ def verify(output):
     result = {"status": "passed", "source_sha256": digest(__file__), "direction_sha256": report["direction_sha256"],
               "native_signed_constraints": len(residual), "native_jvp_maximum_absolute_error": float(np.max(np.abs(jvp-array(saved["native_directional_derivative"])))),
               "residual_maximum_absolute_error": float(np.max(np.abs(residual-array(saved["native_residual"])))),
-              "finite_feasible_step": feasible["step"], "finite_native_critic": max(finite_max),
+              "finite_step": feasible["step"], "finite_step_feasible": feasible["feasible"],
+              "finite_native_critic": max(finite_max), "conditional_numpy_coefficient_error": conditional_error,
               "fresh_model_forwards": 0, "training_cache_only": True, "new_weights": 0}
     save_json(output/"independent_validation.json", result); print(json.dumps(result), flush=True)
 

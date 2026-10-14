@@ -7,7 +7,7 @@ from pathlib import Path
 
 import torch
 
-from angular_distance import Problem, angular_scores
+from angular_distance import Problem, fresh_confirmation, signed_residual
 from clip_benchmark import digest
 from subspace_probe import save_json
 from task_probe_distance import gelu
@@ -16,6 +16,7 @@ from task_probe_distance import gelu
 class DistilledProblem:
     def __init__(self, target, cfg):
         self.problem = Problem(target, cfg); p = self.problem
+        self.solve_calls = 0
         assert p.form == "matrix"
         counts = [len(p.cal[k]["x"]) for k in ["native", "scale"]]
         self.pre = torch.cat([n["pre"][:count] for n, count in zip(p.native, counts)])
@@ -38,6 +39,7 @@ class DistilledProblem:
         assert float(self.initial.norm()) > 0, "No nonzero feasible initialization in the fixed seed path"
 
     def coefficients(self, ca):
+        self.solve_calls += 1
         p = self.problem
         pre = self.pre+p.na*(self.inputs@ca.reshape(p.r, p.r).T)@p.basis["A"]["u"].T
         z = gelu(pre); q = z@p.basis["B"]["vh"].T
@@ -60,6 +62,20 @@ class DistilledProblem:
 
     def residuals(self, ca):
         return self.problem.residuals(self.coefficients(ca))
+
+    @torch.no_grad()
+    def retract_distance(self, ca):
+        """Return a verified point on the zero-to-trial ray, not a closest projection."""
+        p = self.problem
+        if float(self.coefficients(ca).norm()) <= p.radius: return ca, 0
+        low, high = 0., 1.
+        for _ in range(p.cfg["distance_retraction_steps"]):
+            mid = (low+high)/2
+            if float(self.coefficients(mid*ca).norm()) <= p.radius: low = mid
+            else: high = mid
+        result = low*ca
+        assert float(self.coefficients(result).norm()) <= p.radius
+        return result, p.cfg["distance_retraction_steps"]
 
     @torch.no_grad()
     def fit_residual(self, ca):
@@ -127,6 +143,83 @@ def diagnose(target, cfg):
     print(json.dumps({k:v for k,v in report.items() if k!="training_indices"}), flush=True)
 
 
+def optimize(target, cfg):
+    output = Path(cfg["output"]); output.mkdir(parents=True, exist_ok=False)
+    torch.cuda.reset_peak_memory_stats(); started = time.monotonic()
+    coupled = DistilledProblem(target, cfg); p = coupled.problem
+    ca = coupled.initial.clone().requires_grad_(True); limit = cfg["margin_fraction"]
+    initial = p.metrics(coupled.coefficients(ca)); best = (initial["objective"], ca.detach().clone(), 0)
+    dual, history, feasible_count = 0., [], 1
+    for step in range(cfg["optimization_steps"]):
+        theta = coupled.coefficients(ca)
+        residual = p.residuals(theta); witness = int(residual.abs().argmax())
+        primal = p.objective(theta)-dual*(residual[witness].abs()/limit-1.)
+        gradient = torch.autograd.grad(primal, ca, retain_graph=True)[0]
+        normal = torch.autograd.grad(theta.square().sum(), ca)[0]
+        # Remove only the outward component when the distance bound is active.
+        outward = gradient@normal
+        direction = gradient
+        if float(theta.norm()) >= p.radius*cfg["distance_boundary_fraction"] and float(outward)>0:
+            direction = gradient-outward/normal.square().sum().clamp_min(1e-20)*normal
+        _, physical = torch.autograd.functional.jvp(coupled.coefficients, ca, direction)
+        with torch.no_grad():
+            trial = ca+cfg["normalized_step"]*direction/physical.norm().clamp_min(1e-20)
+            trial, retraction_steps = coupled.retract_distance(trial)
+            trial_theta = coupled.coefficients(trial); metrics = p.metrics(trial_theta)
+            dual = max(0., dual+cfg["dual_step"]*(metrics["native_critic"]/limit-1.))
+            ca.copy_(trial)
+            feasible = metrics["native_critic"] <= limit and metrics["parameter_distance"] <= p.radius
+            if feasible:
+                feasible_count += 1
+                if metrics["objective"] > best[0]: best = (metrics["objective"], ca.detach().clone(), step+1)
+        history.append({"step": step+1, "dual_multiplier": dual, "native_witness_index": witness,
+                        "feasible": feasible, "gradient_norm": float(gradient.norm()),
+                        "physical_direction_norm_before_normalization": float(physical.norm()),
+                        "distance_retraction_bisections": retraction_steps, **metrics})
+        if (step+1)%8 == 0: print(json.dumps(history[-1]), flush=True)
+    ca = best[1]; theta = coupled.coefficients(ca).detach(); final = p.metrics(theta)
+    confirmation, labels, split = fresh_confirmation(p, cfg)
+    packed = p.prepare(confirmation, p.p, True)
+    with torch.no_grad():
+        after = p.predict(packed, p.p, theta)
+        confirmed_rho = float(signed_residual(packed["teacher"], after).abs().max())
+        before_real = packed["teacher"][:len(labels)].argmax(1).cpu()
+        after_real = after[:len(labels)].argmax(1).cpu()
+        ea = p.na*p.basis["A"]["u"]@ca.reshape(p.r,p.r)@p.basis["A"]["vh"]
+        eb = p.nb*theta[p.a_size:].reshape(p.p["B"].shape[0],p.r)@p.basis["B"]["vh"]
+    artifact = output/"candidate.pt"
+    torch.save({**p.cal, "theta": theta.cpu(), "release_deltas": {"A": ea.cpu(), "B": eb.cpu()},
+                "protocol": cfg, "confirmation": confirmation, "confirmation_indices": split["indices"],
+                "confirmation_labels": labels, "confirmation_original_predictions": before_real,
+                "confirmation_candidate_predictions": after_real, "parent_diagnostic_sha256": p.parent_sha}, artifact)
+    torch.cuda.synchronize()
+    fit_residual = coupled.fit_residual(ca)
+    result = {"target": target, "method": "conditional_composite_distillation_primal_dual",
+              "optimization_variables": p.a_size, "publication_coefficients": len(theta),
+              "initial": initial, "selected": final, "selected_step": best[2],
+              "optimizer_updates": cfg["optimization_steps"], "explicit_reverse_gradient_calls": 2*cfg["optimization_steps"],
+              "coefficient_jvp_calls": cfg["optimization_steps"], "jvp_method": "two internal reverse passes per JVP",
+              "dual_updates": cfg["optimization_steps"], "conditional_linear_solve_calls": coupled.solve_calls,
+              "feasible_training_iterates": feasible_count,
+              "temporarily_infeasible_optimization_iterates": sum(not r["feasible"] for r in history),
+              "distance_retraction_bisections": sum(r["distance_retraction_bisections"] for r in history),
+              "original_expert_parameters_updated": False, "gold_labels_used_for_optimization": False,
+              "future_partner_used": False, "test_used": False, "new_release_weights": 0,
+              "full_output_fit_relative_residual": fit_residual,
+              "confirmation": {"n": len(labels), "original_correct": int((before_real==labels).sum()),
+                               "candidate_correct": int((after_real==labels).sum()),
+                               "changed_predictions": int((before_real!=after_real).sum()), "worst_margin_drift": confirmed_rho},
+              "confirmation_passed": confirmed_rho <= limit,
+              "candidate_sha256": digest(artifact), "parent_diagnostic_sha256": p.parent_sha,
+              "source_sha256": digest(__file__), "protocol_sha256": digest(cfg["protocol_path"]),
+              "checkpoint_sha256": p.hashes, "initialization_trials": coupled.initialization_trials,
+              "wall_seconds": time.monotonic()-started, "peak_gpu_bytes": torch.cuda.max_memory_allocated(),
+              "global_saddle_optimum_claim": False}
+    save_json(output/"results.json", result); save_json(output/"history.json", history)
+    save_json(output/"confirmation_split.json", split); save_json(output/"protocol.json", cfg)
+    print(json.dumps(result), flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__); parser.add_argument("--target", required=True)
     parser.add_argument("--protocol", required=True); args = parser.parse_args()
@@ -134,4 +227,5 @@ if __name__ == "__main__":
     for f, pin in cfg["source_sha256"].items(): assert digest(f) == pin, f
     torch.set_num_threads(4); torch.backends.cuda.matmul.allow_tf32 = False; torch.backends.cudnn.allow_tf32 = False
     cfg["protocol_path"] = args.protocol
-    diagnose(args.target, cfg)
+    if cfg.get("mode") == "optimize": optimize(args.target, cfg)
+    else: diagnose(args.target, cfg)
