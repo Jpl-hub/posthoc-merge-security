@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "checks": [
+    {
+      "case": "O_B",
+      "mixed_jacobian_full_numpy_relative_error": 1.650858160785999e-10,
+      "four_corner_output_relative_errors": [
+        2.989454258640466e-08,
+        6.800732193895146e-07
+      ],
+      "projection_row_space_identity": "passed",
+      "projection_null_maximum": 2.4426949352118754e-10,
+      "linear_maxmin_primal": 2.2177449545843033,
+      "linear_maxmin_dual_upper": 2.2177638819967433,
+      "frozen_official_labels_and_class_counts": "passed",
+      "finite": {
+        "all_natural_and_all_frozen_singular_probes": [
+          {
+            "group": "native",
+            "natural_n": 4096,
+            "with_probes_n": 6656,
+            "worst_margin_drift": 0.2914214550237019,
+            "natural_changed": 0
+          },
+          {
+            "group": "scale",
+            "natural_n": 512,
+            "with_probes_n": 3072,
+            "worst_margin_drift": 0.07643825013714657,
+            "natural_changed": 0
+          }
+        ],
+        "proxy_changed": 0,
+        "distance": 0.0625
+      }
+    },
+    {
+      "case": "A_B",
+      "mixed_jacobian_full_numpy_relative_error": 1.3079494603443296e-10,
+      "four_corner_output_relative_errors": [
+        6.277688753053899e-08,
+        2.0572890585429533e-07
+      ],
+      "projection_row_space_identity": "passed",
+      "projection_null_maximum": 8.247524885263147e-10,
+      "linear_maxmin_primal": 2.1318906035823257,
+      "linear_maxmin_dual_upper": 2.131896882530725,
+      "frozen_official_labels_and_class_counts": "passed",
+      "finite": null
+    }
+  ],
+  "diagnostic_sha256": "861b8a31cb56b978ce4fb28c90905f508a231ad46bb01aa3a8c427fdbc5a3bc8",
+  "source_sha256": "9ed40107ee7f7699de45fc5cc67438dc0543e04e9b1e90950e1605af5e1052e9",
+  "wall_seconds": 14.547374758403748,
+  "new_release_weights": 0,
+  "new_full_model_forward_instances": 0,
+  "publication_updates": 0,
+  "partner_used": false,
+  "test_used": false,
+  "confirmation_used": false,
+  "scope": "NumPy normalized CLIP tail, all-coordinate analytic first Jacobians, mixed central differences, output four-corner differences, task projection identities, convex bounds and all finite natural/singular-probe constraints. Cached source/anchor models only; no true fusion or unknown-partner coverage claim."
+}

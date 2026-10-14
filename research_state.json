@@ -1,17 +1,17 @@
 {
-  "status": "phase2_source_geometry_verified_no_new_release",
-  "updated_utc": "2026-10-14T18:04:17.540182+00:00",
+  "status": "phase2_mixed_compensation_verified_no_new_release",
+  "updated_utc": "2026-10-14T19:13:16.213499+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "source_task_geometry_and_conditional_fusion_neighborhoods",
+  "stage": "mixed_derivatives_and_finite_compensation",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "No new release. Preserved O/Bnative99.71,TA78.77,AGA77.85. Intrinsic source chords of O/B and A/B change only1 and2/4096 target-training predictions. Deterministic class-balanced task-curvature directions remain task-feasible but yield0 midpoint flips; this finite path is closed without more budget or steps.",
-  "mechanism": "notes/phase2_source_geometry.md",
-  "next_action": "Derive and first diagnose mixed derivatives of native compensation with respect to the allowed target/anchor representation change: determine whether an observable task-related representation set can turn cancellation into stable ordering changes, with an explicit conditional coverage assumption. Do not equate large curvature, parameter distance or a restricted dual bound with classification failure; do not resume these fixed directions.",
+  "new_candidate": "No new release. A distinct source/anchor mixed-derivative maxmin direction is task-feasible at distance0.0625 but changes0/128 anchor-interpolation predictions. Preserved best O/B native99.71%,TA78.77%,authorAGA77.85%; A/B and phase1 unchanged.",
+  "mechanism": "notes/phase2_mixed_compensation.md",
+  "next_action": "Investigate finite task-preserving compensation with a verified classification-margin effect and an explicit environment direction-cone/remainder assumption. The source-origin mixed slope is insufficient and this fixed direction is closed. Do not enlarge budget, rank or iterations, assume unknown-peer coverage, or optimize a new release without finite mechanism evidence.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -441,14 +441,15 @@
     "simple_cleaning_or_inverse_evaluated": false
   },
   "verified_facts_latest": [
-    "Affine-invariant angular objective gradient removes common shift and positive scaling; true centered difference and independent native JVP passed.",
-    "Conditional c_proj solve increases local native feasibility without changing layer,rank,budget; all65 training iterates satisfy constraints.",
-    "Selected conditional point still changes1/512 proxy predictions;430 are certified unchanged by angular-gap bound.",
-    "Both angular optimization confirmation predictions are unchanged but frozen worst-probe budgets fail; no new release or formal peer/test evaluation."
+    "Mixed environment/parameter Jacobians reconstruct the known source/anchor Jacobian secant: 7-point relative errors below2.6e-7, independently verified in NumPy.",
+    "Projected mixed slopes differ from the old proxy gradient (cosines0.788,0.794), but this is not a defense efficacy result.",
+    "Frozen O/B and A/B finite publication effects are not predicted by parameter-first-order models; class-vector relative errors1.727 and1.180, with three class sign disagreements each.",
+    "One new O/B class-maxmin mixed direction, from the expert origin, passes all9728 frozen natural/probe constraints at distance0.0625 and worst drift0.29142; anchor-interpolation prediction changes0/128. This fixed direction is closed.",
+    "Existing complete O/B result remains independent99.71%,TA78.77%,authorAGA77.85%; no new full evaluation or cross-protected-task claim."
   ],
   "unverified_hypotheses_latest": [
-    "Joint upstream/downstream publication transformations might offer stronger proxy ordering effects and more stable task preservation; not constructed or validated.",
-    "Target-only anchor proxy improvement could transfer to true TA and AGA; no evidence from these failed candidates."
+    "A finite nonlinear compensation mechanism might have a stable classification effect over a justified directional environment set; no candidate or such coverage has been established.",
+    "A target/anchor secant may represent some future merge shifts, but target-only information does not determine their sign, size or remainder. Symmetric sets cannot give uniformly positive first-order harm."
   ],
   "cross_module_initial_execution": {
     "status": "implementation_device_index_error_before_direction",
@@ -1071,7 +1072,7 @@
     "inference": "Adding only the author-canonical anchor proxy does not provide a substantially different local ordering direction. No new robust environment construction has been established."
   },
   "latest_scope": {
-    "guidance": "User Oct15 Phase2 coupling/task-subspace instructions",
+    "guidance": "User Oct15 mixed-derivative compensation, justified representation sets and fixed0.5-budget instructions",
     "public_refill_role": "Known-location white-box structure deletion diagnosis, separate from authorAGA, not the sole optimization objective or a proof that earlier TA/AGA effects are invalid.",
     "old_candidates": "All original artifacts, predictions and phase1 tag preserved.",
     "MNIST_evaluation": "Iterative research; previously observed test set is not a fresh blind test."
@@ -1132,13 +1133,95 @@
   "github_sync": {
     "status": "verified",
     "transport": "GitHub plugin",
-    "last_verified_remote_commit": "2c405b857be1d7f44a5160d02f7fa41fc2e7694a",
-    "last_verified_local_commit": "2fd33565f7f793e66c9cb2f41ee30c7f814ac773",
-    "last_verified_canonical_tree": "8744884a5359dc07857328a6b20bc7f9a418f091",
+    "last_verified_remote_commit": "f1581051077e736f26bdfc9d9f95e34236e006a0",
+    "last_verified_local_commit": "a3af6454ccecaf3983d9d8f40687dc2a23b5125d",
+    "last_verified_canonical_tree": "175d84473e9d8afeca11a9c8f8d8a7c327eb47e3",
     "failures": [],
     "local_commits_preserved": true,
     "claim_uploaded": true,
     "verification_receipt": "outputs/latest_github_sync_receipt.json",
     "durability": "The verified research snapshot is on GitHub. The receipt records the final local/remote revision pair after metadata synchronization; heavy artifacts remain on the 3090."
+  },
+  "phase2_mixed_compensation": {
+    "status": "verified_mixed_mechanism_distinct_direction_closed_no_classification_effect",
+    "target": "MNIST",
+    "cases": [
+      {
+        "case": "O_B",
+        "n": 128,
+        "mixed_fd_relative_error": 4.789602171760233e-11,
+        "integrated_mixed_relative_errors": [
+          0.0010829749972280356,
+          2.541067789507394e-07
+        ],
+        "projected_mixed_to_proxy_gradient_cosine": 0.7881416697409842,
+        "projected_mixed_retained_fraction": 0.6306914952932998,
+        "frozen_mixed_linear_vs_exact_class_error": 1.7268807590231265,
+        "linear_maxmin_primal": 2.217744954584304,
+        "linear_maxmin_dual_upper": 2.217763881996744,
+        "finite": {
+          "trials": [
+            {
+              "step": 0.5,
+              "task_worst_margin_drift": 27.60955805866862
+            },
+            {
+              "step": 0.25,
+              "task_worst_margin_drift": 5.967582230005526
+            },
+            {
+              "step": 0.125,
+              "task_worst_margin_drift": 1.279501438085966
+            }
+          ],
+          "selected": {
+            "distance": 0.06249999999999999,
+            "task_worst_margin_drift": 0.2914214543381161,
+            "natural_n": 4096,
+            "natural_prediction_changes": 0,
+            "proxy_n": 128,
+            "proxy_changed": 0,
+            "proxy_changed_by_native_class": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "role": "One new mixed-derivative direction from the origin; task-only finite feasibility, no publication optimization."
+        }
+      },
+      {
+        "case": "A_B",
+        "n": 128,
+        "mixed_fd_relative_error": 4.6057102751576765e-11,
+        "integrated_mixed_relative_errors": [
+          0.0010923509798937093,
+          2.502598899862848e-07
+        ],
+        "projected_mixed_to_proxy_gradient_cosine": 0.7943569767073347,
+        "projected_mixed_retained_fraction": 0.6184396293817542,
+        "frozen_mixed_linear_vs_exact_class_error": 1.1804708272903515,
+        "linear_maxmin_primal": 2.1318906035823257,
+        "linear_maxmin_dual_upper": 2.1318968825307247,
+        "finite": null
+      }
+    ],
+    "unknown_partner_coverage_proved": false,
+    "publication_optimization_steps": 0,
+    "new_release_weights": 0,
+    "new_full_model_forward_instances": 0,
+    "partner_used": false,
+    "test_used": false,
+    "confirmation_used": false,
+    "results": "results/mixed_compensation_audit/results.json",
+    "validation": "results/mixed_compensation_audit/independent_validation.json",
+    "source_freeze": "results/mixed_compensation_audit/source_freeze.json"
   }
 }
