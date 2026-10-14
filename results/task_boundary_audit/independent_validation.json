@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "source_sha256": "52d0cecffa00e26c8582d947aa21608ec748b34d21b51f72618609446390c58e",
+  "diagnostic_sha256": "2f4045ff665c925769b5980ef10827df0394e47b47939046f5a554d914231df5",
+  "checks": [
+    {
+      "group": "boundary",
+      "context_margin_jvp_fd_maximum_error": 1.012439732051007e-08,
+      "projection_direction_maximum_error": 7.807990365371609e-15,
+      "proxy_directional_fd_error": 2.2609025762676538e-10
+    },
+    {
+      "group": "class_balanced",
+      "context_margin_jvp_fd_maximum_error": 5.81803154264815e-10,
+      "projection_direction_maximum_error": 1.2967057982926633e-14,
+      "proxy_directional_fd_error": 1.5915713191816394e-10
+    },
+    {
+      "group": "old_contexts",
+      "context_margin_jvp_fd_maximum_error": 5.997820018421862e-10,
+      "projection_direction_maximum_error": 2.6117996654306808e-14,
+      "proxy_directional_fd_error": 2.4710544721529004e-10
+    }
+  ],
+  "proxy_random_direction_fd_error": 1.1141015887616845e-10,
+  "critical_context_selection_reproduced": true,
+  "calibration_metadata_hashes_verified": true,
+  "new_model_forwards": 0,
+  "new_weights": 0,
+  "test_used": false,
+  "partner_used": false,
+  "scope": "Independent NumPy nonlinear forward finite differences, null projection and teacher-only selection; not efficacy or full test evaluation."
+}
