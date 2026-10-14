@@ -1,21 +1,21 @@
 {
-  "status": "phase1_three_protected_tasks_verified",
-  "updated_utc": "2026-10-13T17:52:23.423660+00:00",
+  "status": "phase2_resumed",
+  "updated_utc": "2026-10-14T03:14:12.137723+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
-  "phase": 1,
-  "objective": "Target-neutral complement noise: retain existing expert native utility and suppress its fixed-head protected-task classification after TA0.5/original author AGA. Verified on protected MNIST, DTD and SVHN; phase1 only.",
-  "stage": "three_task_target_collapse_with_native_retention_verified",
+  "phase": 2,
+  "objective": "Phase2: maximize bounded parameter displacement from each native expert while constraining real task-singular-probe responses and teacher features, target-only construction; diagnose then one local constrained candidate,3090 only.",
+  "stage": "cross_module_probe_constraint_diagnosis",
   "research_jobs": [],
-  "breakthrough_verified": true,
-  "new_candidate": "configs/projection_bias_noise_svhn.json",
-  "mechanism": "notes/projection_bias_noise.md",
-  "next_action": "Three-task phase1 effects and matching controls fully verified and published. Retain releases and interpret scope: fixed-head collapse under original AGA, not public-recovery robustness. Continue only phase1 if further work is requested; no test retuning, phase2/full attack/cleaner expansion,4090 or evidence deletion.",
+  "breakthrough_verified": false,
+  "new_candidate": null,
+  "mechanism": "notes/phase2_distance.md",
+  "next_action": "First publish preserved round1 results; then audit whether separate c_fc probe constraint prevents task-preserving cross-module compensation. Target-only caches, no new release or peer/test selection.",
   "deferred": [
-    "Parameter-distance optimization",
-    "Broad attack/merge survey",
-    "Additional adaptive attacks"
+    "Combination with phase1 bias protection",
+    "Broad attack survey",
+    "Additional adaptive recovery attacks"
   ],
   "archive": "results/archive.json",
   "old_automation_status": "PAUSED",
@@ -215,7 +215,7 @@
     "fresh_calibration_reproduction": "results/projection_bias_noise/fresh_reproduction.json",
     "extension_published_source_commit": "c965ec6b995177e483fb1ec6fc6dd3eb42155bcc"
   },
-  "breakthrough_scope": "Phase1 only: same rule on protected MNIST/DTD/SVHN, fixed TA0.5 and original author AGA target output collapse, with unchanged native predictions. Not public-recovery robustness, task information destruction or paper readiness.",
+  "breakthrough_scope": "Phase1 frozen and preserved; phase2 round1 retains standalone accuracy but has no effective merged-task drop.",
   "rank_one_limitations": [
     "Protected MNIST accuracy remains 91.15% with SVHN and 77.16% with DTD after AGA; not complete capability blocking.",
     "Only MNIST is protected; no cross-protected-task claim.",
@@ -245,5 +245,28 @@
     "independent_validation": "passed"
   },
   "rank_one_published_source_commit": "b12dc587d2fc4ffd14287d0cf9d40f1c781f99b9",
-  "final_sync_receipt": "outputs/latest_sync_receipt.json on3090"
+  "final_sync_receipt": "outputs/latest_sync_receipt.json on3090",
+  "phase1_frozen": {
+    "commit": "68ef7da9f167cb6ebf46827d19120822dd45e9a7",
+    "git_tag": "phase1-final-20261014",
+    "manifest": "results/phase1_freeze.json",
+    "do_not_overwrite": true
+  },
+  "phase1_effect_verified": true,
+  "phase2_effect_verified": false,
+  "pause_reason": null,
+  "phase2_round1": {
+    "status": "closed_no_defense_effect",
+    "summary": "results/phase2_matrix/summary.json",
+    "analysis": "notes/phase2_results.md",
+    "independent_validation": "passed for all3 tasks;1632 fresh prediction instances",
+    "optimizer_steps": 0,
+    "gradient_parameter_updates": 0,
+    "new_recovery_attacks": 0
+  },
+  "publication_pending": {
+    "public_head": "68ef7da9f167cb6ebf46827d19120822dd45e9a7",
+    "local_result_commit": "0f982af78c9c7f76579b9060356d58c4452fab3d",
+    "reason": "User requested immediate shutdown; resume lightweight GitHub publication when next opened. Results and raw experiment evidence already saved."
+  }
 }

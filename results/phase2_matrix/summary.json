@@ -1,0 +1,793 @@
+{
+  "status": "closed_no_defense_effect",
+  "scope": "Phase2 round1: local constrained task-singular-probe distance, no phase1 bias combination",
+  "same_algorithm": true,
+  "targets": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "metrics": [
+        {
+          "preset": "original",
+          "stage": "holdout",
+          "dataset": "MNIST",
+          "correct": 1024,
+          "n": 1024,
+          "top1": 1.0
+        },
+        {
+          "preset": "released",
+          "stage": "holdout",
+          "dataset": "MNIST",
+          "correct": 1024,
+          "n": 1024,
+          "top1": 1.0,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 1024,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 0,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "confirmation",
+          "dataset": "MNIST",
+          "correct": 511,
+          "n": 512,
+          "top1": 0.998046875
+        },
+        {
+          "preset": "released",
+          "stage": "confirmation",
+          "dataset": "MNIST",
+          "correct": 511,
+          "n": 512,
+          "top1": 0.998046875,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 511,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 1,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "standalone",
+          "dataset": "MNIST",
+          "correct": 9969,
+          "n": 10000,
+          "top1": 0.9969
+        },
+        {
+          "preset": "released",
+          "stage": "standalone",
+          "dataset": "MNIST",
+          "correct": 9969,
+          "n": 10000,
+          "top1": 0.9969,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9969,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 31,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "partner_standalone",
+          "dataset": "SVHN",
+          "correct": 25371,
+          "n": 26032,
+          "top1": 0.9746081745543946
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9937,
+          "n": 10000,
+          "top1": 0.9937
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "SVHN",
+          "correct": 24079,
+          "n": 26032,
+          "top1": 0.9249769514443762
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9937,
+          "n": 10000,
+          "top1": 0.9937,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9937,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 63,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "SVHN",
+          "correct": 24078,
+          "n": 26032,
+          "top1": 0.9249385371850031,
+          "changed_predictions": 12,
+          "paired": {
+            "both_correct": 24074,
+            "lost": 5,
+            "gained": 4,
+            "both_wrong": 1949,
+            "loss_pp": 0.0038414259373079286,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "AGA_standalone",
+          "dataset": "MNIST",
+          "correct": 9968,
+          "n": 10000,
+          "top1": 0.9968
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9932,
+          "n": 10000,
+          "top1": 0.9932
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "SVHN",
+          "correct": 23890,
+          "n": 26032,
+          "top1": 0.9177166564228642
+        },
+        {
+          "preset": "released",
+          "stage": "AGA_standalone",
+          "dataset": "MNIST",
+          "correct": 9968,
+          "n": 10000,
+          "top1": 0.9968,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9968,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 32,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9932,
+          "n": 10000,
+          "top1": 0.9932,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9932,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 68,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "SVHN",
+          "correct": 23891,
+          "n": 26032,
+          "top1": 0.9177550706822373,
+          "changed_predictions": 18,
+          "paired": {
+            "both_correct": 23884,
+            "lost": 6,
+            "gained": 7,
+            "both_wrong": 2135,
+            "loss_pp": -0.0038414259373079286,
+            "exact_mcnemar_p": 1.0
+          }
+        }
+      ],
+      "geometry": {
+        "method": "bounded_task_singular_probe_distance",
+        "coordinate_form": "matrix",
+        "variable_dimension": 2048,
+        "coefficient_distance": 0.04363102074720634,
+        "parameter_budget": 0.5,
+        "native_response_budget": 0.01,
+        "native_feature_rms": 0.0031057790550200895,
+        "native_probe_rms": {
+          "A": 0.002140894770218227,
+          "B": 0.009259438701588223
+        },
+        "native_fit_teacher_changed": 0,
+        "proxy_feature_rms": 0.00489223399558749,
+        "proxy_teacher_changed": 0,
+        "proxy_visible_dimension": 875,
+        "native_curvature": 0.05242767605483362,
+        "neuron_scaling_explained_fraction": 0.0006020785817188116,
+        "scalar_solver_evaluations": 13,
+        "layer_relative_distance": {
+          "A": 0.0053980637158705415,
+          "B": 0.04329580672031128
+        },
+        "absolute_parameter_distance": 0.9575857120825326,
+        "task_vector_relative_distance": 1.3723774159333364,
+        "optimizer_steps": 0,
+        "gradient_parameter_updates": 0,
+        "labels_used": false,
+        "partner_used": false,
+        "local_linearized_solver": true,
+        "global_optimum_claim": false,
+        "phase1_bias_used": false,
+        "parameter_search": false,
+        "edited_keys": [
+          "model.visual.transformer.resblocks.11.mlp.c_fc.weight",
+          "model.visual.transformer.resblocks.11.mlp.c_proj.weight"
+        ],
+        "full_model_relative_distance": 0.0027971567815289057
+      },
+      "validation_status": "passed",
+      "fresh_prediction_replays": 544,
+      "release_sha256": "b03f1294cc0b41e2ff83c8c605eb650dddffa6085071a9f914a1992b0f231351",
+      "raw_predictions_sha256": "145227d55b5e003776b72b862ea38dc8b3e7c74b200e56f8c4bc5e3d0b43f67b",
+      "uniform_chance_percent": 10.0
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "metrics": [
+        {
+          "preset": "original",
+          "stage": "holdout",
+          "dataset": "DTD",
+          "correct": 1834,
+          "n": 1880,
+          "top1": 0.975531914893617
+        },
+        {
+          "preset": "released",
+          "stage": "holdout",
+          "dataset": "DTD",
+          "correct": 1834,
+          "n": 1880,
+          "top1": 0.975531914893617,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 1834,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 46,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "confirmation",
+          "dataset": "DTD",
+          "correct": 497,
+          "n": 512,
+          "top1": 0.970703125
+        },
+        {
+          "preset": "released",
+          "stage": "confirmation",
+          "dataset": "DTD",
+          "correct": 497,
+          "n": 512,
+          "top1": 0.970703125,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 497,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 15,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "standalone",
+          "dataset": "DTD",
+          "correct": 1493,
+          "n": 1880,
+          "top1": 0.7941489361702128
+        },
+        {
+          "preset": "released",
+          "stage": "standalone",
+          "dataset": "DTD",
+          "correct": 1493,
+          "n": 1880,
+          "top1": 0.7941489361702128,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 1493,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 387,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "partner_standalone",
+          "dataset": "MNIST",
+          "correct": 9969,
+          "n": 10000,
+          "top1": 0.9969
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "DTD",
+          "correct": 1303,
+          "n": 1880,
+          "top1": 0.6930851063829787
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9945,
+          "n": 10000,
+          "top1": 0.9945
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "DTD",
+          "correct": 1302,
+          "n": 1880,
+          "top1": 0.6925531914893617,
+          "changed_predictions": 2,
+          "paired": {
+            "both_correct": 1302,
+            "lost": 1,
+            "gained": 0,
+            "both_wrong": 577,
+            "loss_pp": 0.05319148936170213,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9945,
+          "n": 10000,
+          "top1": 0.9945,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9945,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 55,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "AGA_standalone",
+          "dataset": "DTD",
+          "correct": 1490,
+          "n": 1880,
+          "top1": 0.7925531914893617
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "DTD",
+          "correct": 1293,
+          "n": 1880,
+          "top1": 0.6877659574468085
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9942,
+          "n": 10000,
+          "top1": 0.9942
+        },
+        {
+          "preset": "released",
+          "stage": "AGA_standalone",
+          "dataset": "DTD",
+          "correct": 1490,
+          "n": 1880,
+          "top1": 0.7925531914893617,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 1490,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 390,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "DTD",
+          "correct": 1293,
+          "n": 1880,
+          "top1": 0.6877659574468085,
+          "changed_predictions": 1,
+          "paired": {
+            "both_correct": 1293,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 587,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9942,
+          "n": 10000,
+          "top1": 0.9942,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9942,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 58,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        }
+      ],
+      "geometry": {
+        "method": "bounded_task_singular_probe_distance",
+        "coordinate_form": "matrix",
+        "variable_dimension": 2048,
+        "coefficient_distance": 0.003269567944482059,
+        "parameter_budget": 0.5,
+        "native_response_budget": 0.01,
+        "native_feature_rms": 0.0035163714296161676,
+        "native_probe_rms": {
+          "A": 0.008320497907410932,
+          "B": 0.004286396932011837
+        },
+        "native_fit_teacher_changed": 0,
+        "proxy_feature_rms": 0.0036115162367776348,
+        "proxy_teacher_changed": 0,
+        "proxy_visible_dimension": 33,
+        "native_curvature": 9.345338723742733,
+        "neuron_scaling_explained_fraction": 0.0007666840830120642,
+        "scalar_solver_evaluations": 13,
+        "layer_relative_distance": {
+          "A": 0.0031111836013601574,
+          "B": 0.0010052915707456575
+        },
+        "absolute_parameter_distance": 0.07192022725905496,
+        "task_vector_relative_distance": 0.11856815321735868,
+        "optimizer_steps": 0,
+        "gradient_parameter_updates": 0,
+        "labels_used": false,
+        "partner_used": false,
+        "local_linearized_solver": true,
+        "global_optimum_claim": false,
+        "phase1_bias_used": false,
+        "parameter_search": false,
+        "edited_keys": [
+          "model.visual.transformer.resblocks.11.mlp.c_fc.weight",
+          "model.visual.transformer.resblocks.11.mlp.c_proj.weight"
+        ],
+        "full_model_relative_distance": 0.0002100702045047098
+      },
+      "validation_status": "passed",
+      "fresh_prediction_replays": 544,
+      "release_sha256": "acc5843342855a3d4f617976966368a34eba76ec26e77a8297543e18f5ba42f2",
+      "raw_predictions_sha256": "fec2eee4f22a8b13c19e08763e33180659f10092b3838fae3670476c73a4e6f0",
+      "uniform_chance_percent": 2.127659574468085
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "metrics": [
+        {
+          "preset": "original",
+          "stage": "holdout",
+          "dataset": "SVHN",
+          "correct": 1007,
+          "n": 1024,
+          "top1": 0.9833984375
+        },
+        {
+          "preset": "released",
+          "stage": "holdout",
+          "dataset": "SVHN",
+          "correct": 1007,
+          "n": 1024,
+          "top1": 0.9833984375,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 1007,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 17,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "confirmation",
+          "dataset": "SVHN",
+          "correct": 504,
+          "n": 512,
+          "top1": 0.984375
+        },
+        {
+          "preset": "released",
+          "stage": "confirmation",
+          "dataset": "SVHN",
+          "correct": 504,
+          "n": 512,
+          "top1": 0.984375,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 504,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 8,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "standalone",
+          "dataset": "SVHN",
+          "correct": 25371,
+          "n": 26032,
+          "top1": 0.9746081745543946
+        },
+        {
+          "preset": "released",
+          "stage": "standalone",
+          "dataset": "SVHN",
+          "correct": 25371,
+          "n": 26032,
+          "top1": 0.9746081745543946,
+          "changed_predictions": 1,
+          "paired": {
+            "both_correct": 25371,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 661,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "partner_standalone",
+          "dataset": "MNIST",
+          "correct": 9969,
+          "n": 10000,
+          "top1": 0.9969
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "SVHN",
+          "correct": 24079,
+          "n": 26032,
+          "top1": 0.9249769514443762
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9937,
+          "n": 10000,
+          "top1": 0.9937
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "SVHN",
+          "correct": 24079,
+          "n": 26032,
+          "top1": 0.9249769514443762,
+          "changed_predictions": 2,
+          "paired": {
+            "both_correct": 24078,
+            "lost": 1,
+            "gained": 1,
+            "both_wrong": 1952,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9937,
+          "n": 10000,
+          "top1": 0.9937,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9937,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 63,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "AGA_standalone",
+          "dataset": "SVHN",
+          "correct": 25348,
+          "n": 26032,
+          "top1": 0.9737246465888137
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "SVHN",
+          "correct": 23890,
+          "n": 26032,
+          "top1": 0.9177166564228642
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9932,
+          "n": 10000,
+          "top1": 0.9932
+        },
+        {
+          "preset": "released",
+          "stage": "AGA_standalone",
+          "dataset": "SVHN",
+          "correct": 25349,
+          "n": 26032,
+          "top1": 0.9737630608481869,
+          "changed_predictions": 2,
+          "paired": {
+            "both_correct": 25348,
+            "lost": 0,
+            "gained": 1,
+            "both_wrong": 683,
+            "loss_pp": -0.0038414259373079286,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "SVHN",
+          "correct": 23890,
+          "n": 26032,
+          "top1": 0.9177166564228642,
+          "changed_predictions": 2,
+          "paired": {
+            "both_correct": 23889,
+            "lost": 1,
+            "gained": 1,
+            "both_wrong": 2141,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9932,
+          "n": 10000,
+          "top1": 0.9932,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9932,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 68,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        }
+      ],
+      "geometry": {
+        "method": "bounded_task_singular_probe_distance",
+        "coordinate_form": "matrix",
+        "variable_dimension": 2048,
+        "coefficient_distance": 0.023971323833078265,
+        "parameter_budget": 0.5,
+        "native_response_budget": 0.01,
+        "native_feature_rms": 0.002584609028795254,
+        "native_probe_rms": {
+          "A": 0.002113552129933754,
+          "B": 0.009422656352590413
+        },
+        "native_fit_teacher_changed": 0,
+        "proxy_feature_rms": 0.003412234110978631,
+        "proxy_teacher_changed": 0,
+        "proxy_visible_dimension": 557,
+        "native_curvature": 0.17402673096183785,
+        "neuron_scaling_explained_fraction": 0.0006758120314589587,
+        "scalar_solver_evaluations": 1,
+        "layer_relative_distance": {
+          "A": 0.0019443804024423487,
+          "B": 0.023892336661802332
+        },
+        "absolute_parameter_distance": 0.5260767382381727,
+        "task_vector_relative_distance": 0.7958711116985451,
+        "optimizer_steps": 0,
+        "gradient_parameter_updates": 0,
+        "labels_used": false,
+        "partner_used": false,
+        "local_linearized_solver": true,
+        "global_optimum_claim": false,
+        "phase1_bias_used": false,
+        "parameter_search": false,
+        "edited_keys": [
+          "model.visual.transformer.resblocks.11.mlp.c_fc.weight",
+          "model.visual.transformer.resblocks.11.mlp.c_proj.weight"
+        ],
+        "full_model_relative_distance": 0.0015366677758221485
+      },
+      "validation_status": "passed",
+      "fresh_prediction_replays": 544,
+      "release_sha256": "a6571bb9c54f11637c5806ddec25a6603e970986e0eb007aaf8b1562f84098b9",
+      "raw_predictions_sha256": "ba2b93fdb3762b2dc125d6e68a6758a3b953981f09c5e8600f5c9cc81c4a2a7a",
+      "uniform_chance_percent": 10.0
+    }
+  ],
+  "fresh_prediction_replays": 1632,
+  "construction_data": "Target training images only: disjoint fit/scale/confirmation folds,512 each; singular sensitivity diagnostic fit128/confirmation128. No partner parameters or test labels used in construction.",
+  "fusion": "Task Arithmetic coefficient0.5, FP32; original author AGA; matched unprotected controls",
+  "optimizer_steps": 0,
+  "gradient_parameter_updates": 0,
+  "public_cleaning_run": false,
+  "decision_audit": "results/phase2_matrix/decision_audit.json",
+  "source_protocol_commit": "8169563bc478b620c3618279805ee508d428fba9",
+  "server_source_archive": "outputs/phase2_matrix_source.zip",
+  "source_archive_sha256": "ee4a5f8fd6f3570c63bca4489b482b7fad2299333e1196e6a81b41f340e450c6",
+  "limitation": "A local linearized candidate, not a global min-max optimum or general impossibility result. Parameter-distance gains alone did not damage real merged classification.",
+  "paused_by_user": true
+}
