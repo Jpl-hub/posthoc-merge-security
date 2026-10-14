@@ -40,3 +40,5 @@ python experiments/verify_noise_release.py --output outputs/my_svhn_run --probe-
 ```
 
 原始预测、保护权重、模型、数据及历史证据只存服务器 `/root/autodl-tmp/merge_security_20261009`；[归档索引](results/archive.json)。不写凭据，不大规模下载，不删除真实失败证据。
+
+**本轮机制复盘：** 冻结模型的分支拆分支持“原专家中补偿、融合后补偿失配”的解释。新MLP A/B可行路径通过独立确认与真实评估，MNIST独立99.65%、TA91.07%、AGA79.20%，未超过已保留O/B的AGA77.85%，因此关闭该固定候选。原／保护AGA的MLP排列一致；目标专家规范化代理的可行梯度与普通代理余弦0.993，也未解决迁移差距。公开回填与原版AGA分开报告，不作为唯一优化目标。[机制、对照、成本与下一步](notes/phase2_coupling.md)。

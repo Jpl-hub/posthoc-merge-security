@@ -40,7 +40,7 @@ def verify(output):
     point=torch.load(source/"candidate.pt",map_location="cpu")
     edits=torch.load(output/"artifacts/release.pt",map_location="cpu");protected=copy.deepcopy(own)
     prefix="model.visual.transformer.resblocks.11."
-    keys={"O":prefix+"attn.out_proj.weight","B":prefix+"mlp.c_proj.weight"};assert set(edits)==set(keys.values())
+    keys=cfg.get("publication_keys",{"O":prefix+"attn.out_proj.weight","B":prefix+"mlp.c_proj.weight"});assert set(edits)==set(keys.values())
     for site,key in keys.items():
         expected=(own.state_dict()[key].double()+point["release_deltas"][site]).float()
         assert torch.equal(expected,edits[key]);protected.state_dict()[key].copy_(edits[key])
