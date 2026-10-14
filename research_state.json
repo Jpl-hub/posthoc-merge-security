@@ -1,6 +1,6 @@
 {
-  "status": "phase2_task_boundary_diagnosis_preregistered",
-  "updated_utc": "2026-10-14T14:36:00.448695+00:00",
+  "status": "phase2_boundary_curvature_game_preregistered",
+  "updated_utc": "2026-10-14T15:00:35.921697+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -10,15 +10,15 @@
   "research_jobs": [
     {
       "target": "MNIST",
-      "protocol": "configs/task_boundary_audit.json",
-      "output": "outputs/phase2_task_boundary_mnist",
-      "mode": "original_expert_boundary_geometry_only"
+      "protocol": "configs/boundary_game.json",
+      "output": "outputs/phase2_boundary_game_mnist",
+      "mode": "one_frozen_task_levelset_publication_optimization"
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No effective Phase2 defense. Latest free joint point closed after independent preservation failure; no release or true fusion/AGA run.",
   "mechanism": "notes/phase2_boundary.md",
-  "next_action": "Run the frozen unused-target-training coverage diagnosis and independently check its gradients and nonlinear feasibility before considering one new protection mechanism.",
+  "next_action": "Verify the frozen nonlinear task-level-set optimization on a fresh target-training confirmation split. No true fusion or AGA before independent preservation passes.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -726,7 +726,7 @@
     "new_release_weights": 0
   },
   "task_boundary_diagnosis": {
-    "status": "preregistered",
+    "status": "independently_verified",
     "screen_n": 4096,
     "contexts_per_predicted_class": 2,
     "previous_confirmation_excluded": true,
@@ -734,6 +734,23 @@
     "parameter_updates": 0,
     "new_release_weights": 0,
     "peer_or_test_used": false,
-    "selection_rule": "Teacher-only within-class lowest top-two gaps; fixed common rule."
+    "selection_rule": "Teacher-only within-class lowest top-two gaps; fixed common rule.",
+    "results": "results/task_boundary_audit/results.json",
+    "independent_validation": "results/task_boundary_audit/independent_validation.json",
+    "boundary_feasible_step": 0.03125,
+    "old_context_feasible_step": 0.00390625,
+    "feasible_proxy_changes": 0,
+    "unit_mode_response_fraction": 0.9969128551926855,
+    "full_O_margin_gradient_fraction": 0.5491080123004207
+  },
+  "boundary_retraction": {
+    "status": "local_nonlinear_mechanism_verified",
+    "parameter_distance": 0.06206002638540805,
+    "calibration_worst_drift_before": 1.7825602967136176,
+    "calibration_worst_drift_after": 0.2701684829797088,
+    "proxy_changed": 6,
+    "proxy_n": 512,
+    "new_release_weights": 0,
+    "independent_confirmation_run": false
   }
 }
