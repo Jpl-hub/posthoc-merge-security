@@ -1,6 +1,6 @@
 {
-  "status": "phase2_constraints_verified_no_new_defense",
-  "updated_utc": "2026-10-14T05:27:22.241594+00:00",
+  "status": "phase2_last_mlp_angular_family_closed",
+  "updated_utc": "2026-10-14T09:10:13.901692+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -9,9 +9,9 @@
   "stage": "score_ordering_and_task_probe_feasibility",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "No new release: publication-coefficient optimizations closed without proxy ordering improvement",
-  "mechanism": "notes/phase2_projected_game.md",
-  "next_action": "Within phase2, derive centered-score direction invariant to positive affine changes; diagnose its training gradient against task-probe feasibility before freezing any new transform. Keep existing budget/site/rank; no future peer or test optimization.",
+  "new_candidate": "No new Phase2 release: both angular publication optimizations failed frozen confirmation; proxy prediction changes stayed1/512",
+  "mechanism": "notes/phase2_angular.md",
+  "next_action": "No further optimization of the closed last-MLP configurations. Before new weights, diagnose whether a target-only upstream/downstream transformation offers stronger ordering change with out-of-fit task preservation; no layer/budget sweep.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -215,7 +215,7 @@
     "fresh_calibration_reproduction": "results/projection_bias_noise/fresh_reproduction.json",
     "extension_published_source_commit": "c965ec6b995177e483fb1ec6fc6dd3eb42155bcc"
   },
-  "breakthrough_scope": "Phase1 frozen; phase2 completed real three-expert margin-ray evaluations without effective defense. Target-only publication optimization diagnostics did not improve proxy classification; last confirmation budget failed.",
+  "breakthrough_scope": "Phase1 frozen. Phase2 latest angular diagnostics/conditional distillation demonstrate local feasible ordering gradients, but no effective defense and no general impossibility result.",
   "rank_one_limitations": [
     "Protected MNIST accuracy remains 91.15% with SVHN and 77.16% with DTD after AGA; not complete capability blocking.",
     "Only MNIST is protected; no cross-protected-task claim.",
@@ -365,5 +365,89 @@
     "new_release_weights": 0,
     "formal_fusion_evaluation_run": false,
     "score_audit": "results/projected_game_retraction/MNIST_score_audit.json"
-  }
+  },
+  "angular_direction": {
+    "status": "passed independent NumPy native JVP",
+    "gradient_norm": 11.54032268959874,
+    "linear_step_bound": 0.0020369394628172756,
+    "finite_feasible_step": 0.00125,
+    "finite_native_critic": 0.37189304791660993,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "new_release_weights": 0,
+    "directional_difference_relative_error": 2.6936299210115717e-10
+  },
+  "angular_primal_dual_ray": {
+    "status": "closed_no_proxy_improvement_failed_confirmation",
+    "gradient_updates": 64,
+    "dual_updates": 64,
+    "feasible_training_iterates": 17,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "fresh_confirmation_n": 512,
+    "fresh_confirmation_original_correct": 512,
+    "fresh_confirmation_candidate_correct": 512,
+    "confirmation_worst_margin_drift": 0.6991894743756952,
+    "new_release_weights": 0,
+    "GPU_wall_seconds": 21.75419981731102,
+    "independent_verification": "confirmed_constraint_failure; NumPy maximum0.6991894743756992"
+  },
+  "github_sync_status": "connection_restored; verified remote main=c5f0a1a; verified research publication pending",
+  "angular_matrix_direction": {
+    "status": "passed independent NumPy JVP; no added prediction changes",
+    "gradient_norm": 11.665176516554135,
+    "linear_feasible_step_bound": 0.0020532202304940246,
+    "finite_feasible_step": 0.00125,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "new_release_weights": 0
+  },
+  "conditional_direction": {
+    "status": "passed independent NumPy conditional solve, native JVP and finite nonlinear feasibility",
+    "source_freeze": "results/conditional_direction/source_freeze.json",
+    "linear_native_step_bound": 1.0684315648665055,
+    "finite_feasible_step": 0.005,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "new_release_weights": 0,
+    "scope": "linear native bound excludes finite parameter distance; no claim of large-step feasibility"
+  },
+  "conditional_game": {
+    "status": "closed_no_proxy_improvement_failed_confirmation",
+    "results": "results/conditional_game/results.json",
+    "independent_validation": "results/conditional_game/independent_validation.json",
+    "score_audit": "results/conditional_game/score_direction_audit.json",
+    "source_freeze": "results/conditional_game/source_freeze.json",
+    "optimizer_updates": 64,
+    "explicit_reverse_gradient_calls": 128,
+    "coefficient_jvp_calls": 64,
+    "dual_updates": 64,
+    "conditional_linear_solve_calls": 1292,
+    "feasible_training_iterates": 65,
+    "parameter_distance": 0.4999970438248539,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "fresh_confirmation_original_correct": 511,
+    "fresh_confirmation_candidate_correct": 511,
+    "fresh_confirmation_n": 512,
+    "confirmation_worst_margin_drift": 0.6512164395826461,
+    "fixed_confirmation_limit": 0.5,
+    "independent_verification": "confirmed_constraint_failure",
+    "certified_same_proxy_predictions": 430,
+    "GPU_wall_seconds": 40.24540921812877,
+    "new_release_weights": 0,
+    "formal_test_TA_AGA_evaluation": false,
+    "different_protected_tasks_evaluated_this_round": false,
+    "simple_cleaning_or_inverse_evaluated": false
+  },
+  "verified_facts_latest": [
+    "Affine-invariant angular objective gradient removes common shift and positive scaling; true centered difference and independent native JVP passed.",
+    "Conditional c_proj solve increases local native feasibility without changing layer,rank,budget; all65 training iterates satisfy constraints.",
+    "Selected conditional point still changes1/512 proxy predictions;430 are certified unchanged by angular-gap bound.",
+    "Both angular optimization confirmation predictions are unchanged but frozen worst-probe budgets fail; no new release or formal peer/test evaluation."
+  ],
+  "unverified_hypotheses_latest": [
+    "Joint upstream/downstream publication transformations might offer stronger proxy ordering effects and more stable task preservation; not constructed or validated.",
+    "Target-only anchor proxy improvement could transfer to true TA and AGA; no evidence from these failed candidates."
+  ]
 }
