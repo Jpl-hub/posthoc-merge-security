@@ -1,24 +1,17 @@
 {
-  "status": "phase2_functional_game_confirmation_passed_pending_real_replay",
-  "updated_utc": "2026-10-14T10:40:25.000585+00:00",
+  "status": "phase2_functional_closed_no_effective_defense",
+  "updated_utc": "2026-10-14T12:24:57.226005+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [
-    {
-      "target": "MNIST",
-      "protocol": "configs/functional_game.json",
-      "output": "outputs/phase2_functional_game_mnist",
-      "mode": "fixed_64_publication_steps"
-    }
-  ],
+  "research_jobs": [],
   "breakthrough_verified": false,
   "new_candidate": "No new effective Phase2 defense. Cross-module real TA/AGA negative; functional-completion diagnostic only.",
   "mechanism": "notes/phase2_classification_completion.md",
-  "next_action": "Independent NumPy point reconstruction plus256 real full-model confirmation replays, then one frozen MNIST/SVHN TA/AGA evaluation if all pass.",
+  "next_action": "Check one last-block Query mechanism, using target-only task-SVD response and conditional classification distillation; keep radius and task tolerance fixed.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -574,5 +567,40 @@
     "candidate_correct": 512,
     "confirmation_worst_margin_drift": 0.4215604361352412,
     "effective_defense_verified": false
+  },
+  "functional_real_evaluation": {
+    "status": "independently_verified_no_effective_defense",
+    "target": "MNIST",
+    "partner": "SVHN",
+    "native_correct": [
+      9969,
+      9968,
+      10000
+    ],
+    "direct_target_correct": [
+      9937,
+      9918,
+      10000
+    ],
+    "AGA_target_correct": [
+      9932,
+      9923,
+      10000
+    ],
+    "direct_peer_correct": [
+      24079,
+      23073,
+      26032
+    ],
+    "AGA_peer_correct": [
+      23890,
+      23130,
+      26032
+    ],
+    "AGA_target_exact_mcnemar_p": 0.10775214433670044,
+    "release_sha256": "f38e04be07b7bf84a4815bef9c1429fdc346b5cf745597c66d88e722c639160e",
+    "predictions_sha256": "d69f413ed740cbe633302b273adbdc9fe1150cee75c512d43dc8faedde501982",
+    "no_parameter_changes_after_freeze": true,
+    "DTD_transfer_run": false
   }
 }
