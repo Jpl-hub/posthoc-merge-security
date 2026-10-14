@@ -63,6 +63,11 @@ class DistilledProblem:
     def residuals(self, ca):
         return self.problem.residuals(self.coefficients(ca))
 
+    def publication_deltas(self, ca, theta):
+        p = self.problem
+        return {"A": p.na*p.basis["A"]["u"]@ca.reshape(p.r,p.r)@p.basis["A"]["vh"],
+                "B": p.nb*theta[p.a_size:].reshape(p.p["B"].shape[0],p.r)@p.basis["B"]["vh"]}
+
     @torch.no_grad()
     def retract_distance(self, ca):
         """Return a verified point on the zero-to-trial ray, not a closest projection."""
@@ -144,10 +149,10 @@ def diagnose(target, cfg, problem_class=DistilledProblem):
     print(json.dumps({k:v for k,v in report.items() if k!="training_indices"}), flush=True)
 
 
-def optimize(target, cfg):
+def optimize(target, cfg, problem_class=DistilledProblem):
     output = Path(cfg["output"]); output.mkdir(parents=True, exist_ok=False)
     torch.cuda.reset_peak_memory_stats(); started = time.monotonic()
-    coupled = DistilledProblem(target, cfg); p = coupled.problem
+    coupled = problem_class(target, cfg); p = coupled.problem
     ca = coupled.initial.clone().requires_grad_(True); limit = cfg["margin_fraction"]
     initial = p.metrics(coupled.coefficients(ca)); best = (initial["objective"], ca.detach().clone(), 0)
     dual, history, feasible_count = 0., [], 1
@@ -179,23 +184,22 @@ def optimize(target, cfg):
                         "distance_retraction_bisections": retraction_steps, **metrics})
         if (step+1)%8 == 0: print(json.dumps(history[-1]), flush=True)
     ca = best[1]; theta = coupled.coefficients(ca).detach(); final = p.metrics(theta)
-    confirmation, labels, split = fresh_confirmation(p, cfg)
+    confirmation, labels, split = fresh_confirmation(p, cfg, capture_function=getattr(coupled, "confirmation_capture", None))
     packed = p.prepare(confirmation, p.p, True)
     with torch.no_grad():
         after = p.predict(packed, p.p, theta)
         confirmed_rho = float(signed_residual(packed["teacher"], after).abs().max())
         before_real = packed["teacher"][:len(labels)].argmax(1).cpu()
         after_real = after[:len(labels)].argmax(1).cpu()
-        ea = p.na*p.basis["A"]["u"]@ca.reshape(p.r,p.r)@p.basis["A"]["vh"]
-        eb = p.nb*theta[p.a_size:].reshape(p.p["B"].shape[0],p.r)@p.basis["B"]["vh"]
+        deltas = coupled.publication_deltas(ca, theta)
     artifact = output/"candidate.pt"
-    torch.save({**p.cal, "theta": theta.cpu(), "release_deltas": {"A": ea.cpu(), "B": eb.cpu()},
+    torch.save({**p.cal, "theta": theta.cpu(), "release_deltas": {k:v.cpu() for k,v in deltas.items()},
                 "protocol": cfg, "confirmation": confirmation, "confirmation_indices": split["indices"],
                 "confirmation_labels": labels, "confirmation_original_predictions": before_real,
                 "confirmation_candidate_predictions": after_real, "parent_diagnostic_sha256": p.parent_sha}, artifact)
     torch.cuda.synchronize()
     fit_residual = coupled.fit_residual(ca)
-    result = {"target": target, "method": "conditional_composite_distillation_primal_dual",
+    result = {"target": target, "method": cfg.get("optimization_method", "conditional_composite_distillation_primal_dual"),
               "optimization_variables": p.a_size, "publication_coefficients": len(theta),
               "initial": initial, "selected": final, "selected_step": best[2],
               "optimizer_updates": cfg["optimization_steps"], "explicit_reverse_gradient_calls": 2*cfg["optimization_steps"],
@@ -213,6 +217,7 @@ def optimize(target, cfg):
               "confirmation_passed": confirmed_rho <= limit,
               "candidate_sha256": digest(artifact), "parent_diagnostic_sha256": p.parent_sha,
               "source_sha256": digest(__file__), "protocol_sha256": digest(cfg["protocol_path"]),
+              "primary_entrypoint_sha256": digest(cfg.get("entrypoint", __file__)),
               "checkpoint_sha256": p.hashes, "initialization_trials": coupled.initialization_trials,
               "wall_seconds": time.monotonic()-started, "peak_gpu_bytes": torch.cuda.max_memory_allocated(),
               "global_saddle_optimum_claim": False}

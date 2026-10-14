@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 from angular_distance import Problem, angular_scores
 from clip_benchmark import digest, merge
-from conditional_task_distance import DistilledProblem, diagnose
+from conditional_task_distance import DistilledProblem, diagnose, optimize
 from covariance_noise import dataset
 from probe_distance_candidate import on_device
 from probe_margin_distance import scores
@@ -90,6 +90,17 @@ class CrossProblem(Problem):
         previous=torch.load(parent,map_location="cpu")
         self.anchor,self.expert,self.head,self.hashes=checked_models(target)
         self.p_cpu=extended_parameters(self.expert,self.head);self.p=on_device(self.p_cpu)
+        self.prior_confirmation_indices=previous["indices"]["confirmation"]
+        if cfg.get("cache_reference"):
+            root=Path(cfg["cache_reference"]);meta=json.loads((root/"mechanism.json").read_text())
+            assert digest(root/"calibration.pt")==cfg["calibration_sha256"]==meta["calibration_sha256"]
+            assert meta["checkpoint_sha256"]==self.hashes and meta["parent_sha256"]==self.parent_sha
+            cache=torch.load(root/"calibration.pt",map_location="cpu")
+            proxy=merge(self.anchor,self.expert,self.anchor,cfg["proxy_beta"])
+            self.pp=on_device(extended_parameters(proxy,self.head));del proxy
+            self.complete(cache,cache["basis_O"],cache["basis_B"],cache["indices"])
+            save_json(Path(cfg["output"])/"mechanism.json",{"target":target,"cache_reference":str(root),"calibration_sha256":meta["calibration_sha256"],"checkpoint_sha256":self.hashes,"new_cache_model_forwards":0})
+            return
         training=dataset(target,"data",self.expert.val_preprocess,True)
         indices={k:previous["indices"][k] for k in ["fit","scale"]}
         cache={g:capture_attention(self.expert,training,indices[k]) for g,k in [("native","fit"),("scale","scale")]}
@@ -126,15 +137,7 @@ class CrossProblem(Problem):
         cpu_chosen=chosen.cpu()
         o_basis={"u":u[:,cpu_chosen],"vh":vh[cpu_chosen],"s":s[cpu_chosen],"selected":cpu_chosen}
         # B uses the previously frozen target-only task-singular basis, not a peer-selected basis.
-        self.basis={"A":on_device(o_basis),"B":on_device(previous["basis"]["B"])}
-        self.na,self.nb=self.p["O"].norm(),self.p["B"].norm()
-        self.cal={**cache,"indices":indices,"basis_O":o_basis,"basis_B":previous["basis"]["B"]}
-        self.native=[self.prepare(cache[g],self.p,True) for g in ["native","scale"]]
-        self.proxy=self.prepare(cache["proxy"],self.pp,False)
-        teacher=self.proxy["teacher"];self.winner=teacher.argmax(1);self.rows=torch.arange(len(teacher),device="cuda")
-        counts=torch.bincount(self.winner,minlength=teacher.shape[1]);self.weights=1./counts[self.winner].double()/int((counts>0).sum())
-        self.unit=self.gap(angular_scores(teacher)).median().detach();assert self.unit>0
-        self.initial=-cfg["parameter_budget"]*torch.diag(self.basis["A"]["s"])/self.basis["A"]["s"].norm()
+        self.complete(cache,o_basis,previous["basis"]["B"],indices)
         summary={"target":target,"site":"block11 attn.out_proj and mlp.c_proj","selection_rule":"class-balanced unit-Frobenius normalized-score sensitivity, target training only",
                  "selected_O_modes":chosen.cpu().tolist(),"fit_selected_response_fraction":float(imp["native"][chosen].sum()/imp["native"].sum()),
                  "scale_selected_response_fraction":float(imp["scale"][chosen].sum()/imp["scale"].sum()),
@@ -143,6 +146,17 @@ class CrossProblem(Problem):
                  "new_weights":0,"partner_used":False,"test_used":False,"training_indices":indices}
         folder=Path(cfg["output"]);torch.save(self.cal,folder/"calibration.pt")
         summary["calibration_sha256"]=digest(folder/"calibration.pt");save_json(folder/"mechanism.json",summary)
+
+    def complete(self,cache,o_basis,b_basis,indices):
+        self.basis={"A":on_device(o_basis),"B":on_device(b_basis)}
+        self.na,self.nb=self.p["O"].norm(),self.p["B"].norm()
+        self.cal={**cache,"indices":indices,"basis_O":o_basis,"basis_B":b_basis}
+        self.native=[self.prepare(cache[g],self.p,True) for g in ["native","scale"]]
+        self.proxy=self.prepare(cache["proxy"],self.pp,False)
+        teacher=self.proxy["teacher"];self.winner=teacher.argmax(1);self.rows=torch.arange(len(teacher),device="cuda")
+        counts=torch.bincount(self.winner,minlength=teacher.shape[1]);self.weights=1./counts[self.winner].double()/int((counts>0).sum())
+        self.unit=self.gap(angular_scores(teacher)).median().detach();assert self.unit>0
+        self.initial=-self.cfg["parameter_budget"]*torch.diag(self.basis["A"]["s"])/self.basis["A"]["s"].norm()
 
     @torch.no_grad()
     def prepare(self,cache_cpu,p,probes):
@@ -175,6 +189,7 @@ class CrossProblem(Problem):
 
 
 class CrossCoupled(DistilledProblem):
+    confirmation_capture=staticmethod(capture_attention)
     def __init__(self,target,cfg):
         self.problem=CrossProblem(target,cfg);p=self.problem;self.solve_calls=0
         self.real={k:torch.cat([p.native[i][k][:len(p.cal[g]["r"])] for i,g in enumerate(["native","scale"])]) for k in ["r","task_input","rounding"]}
@@ -205,6 +220,11 @@ class CrossCoupled(DistilledProblem):
         k=torch.linalg.solve(q.T@q+self.ridge*self.eye,q.T@(self.teacher-base)).T
         return torch.cat([co.flatten(),(k/p.nb).flatten()])
 
+    def publication_deltas(self,co,theta):
+        p=self.problem
+        return {"O":p.na*p.basis["A"]["u"]@co.reshape(p.r,p.r)@p.basis["A"]["vh"],
+                "B":p.nb*theta[p.a_size:].reshape(p.p["B"].shape[0],p.r)@p.basis["B"]["vh"]}
+
     @torch.no_grad()
     def fit_residual(self,co):
         p=self.problem;z,base=self.state(co);theta=self.coefficients(co)
@@ -217,4 +237,5 @@ if __name__=="__main__":
     args=parser.parse_args();cfg=json.loads(Path(args.protocol).read_text());cfg["protocol_path"]=args.protocol
     for f,pin in cfg["source_sha256"].items():assert digest(f)==pin,f
     torch.set_num_threads(4);torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
-    diagnose(args.target,cfg,problem_class=CrossCoupled)
+    if cfg.get("mode")=="optimize":optimize(args.target,cfg,problem_class=CrossCoupled)
+    else:diagnose(args.target,cfg,problem_class=CrossCoupled)

@@ -1,6 +1,6 @@
 {
-  "status": "phase2_cross_module_task_direction",
-  "updated_utc": "2026-10-14T09:27:07.250144+00:00",
+  "status": "phase2_cross_module_publication_game",
+  "updated_utc": "2026-10-14T09:39:46.693877+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -10,16 +10,16 @@
   "research_jobs": [
     {
       "target": "MNIST",
-      "protocol": "configs/cross_module_direction.json",
-      "output": "outputs/phase2_cross_module_direction_mnist_fixed",
-      "mode": "diagnostic_only",
+      "protocol": "configs/cross_module_game.json",
+      "output": "outputs/phase2_cross_module_game_mnist",
+      "optimizer_updates": 64,
       "new_release_weights": 0
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No new Phase2 release: both angular publication optimizations failed frozen confirmation; proxy prediction changes stayed1/512",
   "mechanism": "notes/phase2_angular.md",
-  "next_action": "Capture exact last-Attention output inputs; verify analytic task-mode responses; inspect one task-only O-to-MLP conditional-distillation angular gradient before constructing weights.",
+  "next_action": "One frozen64-step O-to-MLP publication optimization; use a fresh target-training confirmation including worst O/B singular probes. Fail any constraint before formal release/TA/AGA.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -463,6 +463,15 @@
     "execution_source_commit": "8e89338",
     "original_output": "outputs/phase2_cross_module_direction_mnist",
     "scientific_configuration_changed": false,
+    "new_release_weights": 0
+  },
+  "cross_module_direction": {
+    "status": "passed independent NumPy conditional solve, cache scores, task-SVD equations and native JVP",
+    "rank": 32,
+    "fit_scale_O_top32_overlap": 31,
+    "fit_selected_response_fraction": 0.9977545829031579,
+    "scale_selected_response_fraction": 0.9977431926729651,
+    "source_execution": "b8b5b69",
     "new_release_weights": 0
   }
 }
