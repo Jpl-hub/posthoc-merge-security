@@ -1,0 +1,745 @@
+{
+  "status": "closed_no_defense_effect",
+  "same_algorithm": true,
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "metrics": [
+        {
+          "preset": "original",
+          "stage": "holdout",
+          "dataset": "MNIST",
+          "correct": 1022,
+          "n": 1024
+        },
+        {
+          "preset": "released",
+          "stage": "holdout",
+          "dataset": "MNIST",
+          "correct": 1022,
+          "n": 1024,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 1022,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 2,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "confirmation",
+          "dataset": "MNIST",
+          "correct": 511,
+          "n": 512
+        },
+        {
+          "preset": "released",
+          "stage": "confirmation",
+          "dataset": "MNIST",
+          "correct": 511,
+          "n": 512,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 511,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 1,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "standalone",
+          "dataset": "MNIST",
+          "correct": 9969,
+          "n": 10000
+        },
+        {
+          "preset": "released",
+          "stage": "standalone",
+          "dataset": "MNIST",
+          "correct": 9969,
+          "n": 10000,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9969,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 31,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "partner_standalone",
+          "dataset": "SVHN",
+          "correct": 25371,
+          "n": 26032
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9937,
+          "n": 10000
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "SVHN",
+          "correct": 24079,
+          "n": 26032
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9937,
+          "n": 10000,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9937,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 63,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "SVHN",
+          "correct": 24082,
+          "n": 26032,
+          "changed_predictions": 17,
+          "paired": {
+            "both_correct": 24073,
+            "lost": 6,
+            "gained": 9,
+            "both_wrong": 1944,
+            "loss_pp": -0.011524277811923786,
+            "exact_mcnemar_p": 0.6072387695312499
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "AGA_standalone",
+          "dataset": "MNIST",
+          "correct": 9968,
+          "n": 10000
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9932,
+          "n": 10000
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "SVHN",
+          "correct": 23890,
+          "n": 26032
+        },
+        {
+          "preset": "released",
+          "stage": "AGA_standalone",
+          "dataset": "MNIST",
+          "correct": 9969,
+          "n": 10000,
+          "changed_predictions": 1,
+          "paired": {
+            "both_correct": 9968,
+            "lost": 0,
+            "gained": 1,
+            "both_wrong": 31,
+            "loss_pp": -0.01,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9933,
+          "n": 10000,
+          "changed_predictions": 1,
+          "paired": {
+            "both_correct": 9932,
+            "lost": 0,
+            "gained": 1,
+            "both_wrong": 67,
+            "loss_pp": -0.01,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "SVHN",
+          "correct": 23895,
+          "n": 26032,
+          "changed_predictions": 25,
+          "paired": {
+            "both_correct": 23883,
+            "lost": 7,
+            "gained": 12,
+            "both_wrong": 2130,
+            "loss_pp": -0.019207129686539644,
+            "exact_mcnemar_p": 0.359283447265625
+          }
+        }
+      ],
+      "parameter_distance": 0.0470339594011647,
+      "global_parameter_relative_distance": 0.0030160011582806073,
+      "span_diagnostic": {
+        "upstream_energy": 2924368.3201130545,
+        "restricted_residual_fraction": 0.5884791016678862,
+        "full_output_residual_fraction": 0.003427665335297665,
+        "ridge": 0.02275873943191323,
+        "gram_condition": 81587.29871116827
+      },
+      "diagnostics": {
+        "native_fit": {
+          "feature_loss": 3.979776903688636e-05,
+          "probe_loss": 3.0790500491163726e-05,
+          "combined_loss": 7.058826952805009e-05,
+          "n": 512,
+          "changed_predictions": 0,
+          "score_rms": 0.01288808397152729,
+          "certified_unchanged": 512,
+          "gap_median": 8.362349040096872
+        },
+        "native_scale": {
+          "feature_loss": 5.723277081589237e-05,
+          "probe_loss": 4.1558110174113374e-05,
+          "combined_loss": 9.879088099000574e-05,
+          "n": 512,
+          "changed_predictions": 0,
+          "score_rms": 0.014698221023406073,
+          "certified_unchanged": 512,
+          "gap_median": 8.365348175411231
+        },
+        "proxy_fit": {
+          "feature_loss": 0.0009814261848553056,
+          "probe_loss": 0.0006947047476366825,
+          "combined_loss": 0.0016761309324919882,
+          "n": 512,
+          "changed_predictions": 1,
+          "score_rms": 0.0965922410149436,
+          "certified_unchanged": 511,
+          "gap_median": 5.668427530208407
+        }
+      },
+      "native_preprobe_rms": 0.21755703735156762,
+      "gauge_fraction": 0.006184061194470622,
+      "fresh_predictions": 160,
+      "release_sha256": "42a57eee750adc524dbda9f8dfda03838f76af4662506f9104e946e8646242cc",
+      "raw_predictions_sha256": "b3a3ce37fb8042edf762e11ccc6bee7a426898124b14f8f6c6c7911a23691236"
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "metrics": [
+        {
+          "preset": "original",
+          "stage": "holdout",
+          "dataset": "DTD",
+          "correct": 1834,
+          "n": 1880
+        },
+        {
+          "preset": "released",
+          "stage": "holdout",
+          "dataset": "DTD",
+          "correct": 1834,
+          "n": 1880,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 1834,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 46,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "confirmation",
+          "dataset": "DTD",
+          "correct": 497,
+          "n": 512
+        },
+        {
+          "preset": "released",
+          "stage": "confirmation",
+          "dataset": "DTD",
+          "correct": 497,
+          "n": 512,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 497,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 15,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "standalone",
+          "dataset": "DTD",
+          "correct": 1493,
+          "n": 1880
+        },
+        {
+          "preset": "released",
+          "stage": "standalone",
+          "dataset": "DTD",
+          "correct": 1493,
+          "n": 1880,
+          "changed_predictions": 1,
+          "paired": {
+            "both_correct": 1493,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 387,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "partner_standalone",
+          "dataset": "MNIST",
+          "correct": 9969,
+          "n": 10000
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "DTD",
+          "correct": 1303,
+          "n": 1880
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9945,
+          "n": 10000
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "DTD",
+          "correct": 1305,
+          "n": 1880,
+          "changed_predictions": 2,
+          "paired": {
+            "both_correct": 1303,
+            "lost": 0,
+            "gained": 2,
+            "both_wrong": 575,
+            "loss_pp": -0.10638297872340426,
+            "exact_mcnemar_p": 0.5
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9945,
+          "n": 10000,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9945,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 55,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "AGA_standalone",
+          "dataset": "DTD",
+          "correct": 1490,
+          "n": 1880
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "DTD",
+          "correct": 1293,
+          "n": 1880
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9942,
+          "n": 10000
+        },
+        {
+          "preset": "released",
+          "stage": "AGA_standalone",
+          "dataset": "DTD",
+          "correct": 1491,
+          "n": 1880,
+          "changed_predictions": 2,
+          "paired": {
+            "both_correct": 1490,
+            "lost": 0,
+            "gained": 1,
+            "both_wrong": 389,
+            "loss_pp": -0.05319148936170213,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "DTD",
+          "correct": 1294,
+          "n": 1880,
+          "changed_predictions": 1,
+          "paired": {
+            "both_correct": 1293,
+            "lost": 0,
+            "gained": 1,
+            "both_wrong": 586,
+            "loss_pp": -0.05319148936170213,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9942,
+          "n": 10000,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9942,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 58,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        }
+      ],
+      "parameter_distance": 0.004667730592656285,
+      "global_parameter_relative_distance": 0.00029934577497737146,
+      "span_diagnostic": {
+        "upstream_energy": 938378.9709518334,
+        "restricted_residual_fraction": 0.7592883556907538,
+        "full_output_residual_fraction": 0.17629817781165016,
+        "ridge": 0.015803085989391594,
+        "gram_condition": 658.0103098493917
+      },
+      "diagnostics": {
+        "native_fit": {
+          "feature_loss": 4.898298338962207e-05,
+          "probe_loss": 3.4874854222911e-05,
+          "combined_loss": 8.385783761253308e-05,
+          "n": 512,
+          "changed_predictions": 0,
+          "score_rms": 0.076305406751776,
+          "certified_unchanged": 512,
+          "gap_median": 11.811119226013203
+        },
+        "native_scale": {
+          "feature_loss": 5.404746305761465e-05,
+          "probe_loss": 3.8561049443442585e-05,
+          "combined_loss": 9.260851250105724e-05,
+          "n": 512,
+          "changed_predictions": 0,
+          "score_rms": 0.07873105672725116,
+          "certified_unchanged": 512,
+          "gap_median": 11.77665500313537
+        },
+        "proxy_fit": {
+          "feature_loss": 1.144581382881425e-05,
+          "probe_loss": 1.0794206690666788e-05,
+          "combined_loss": 2.2240020519481036e-05,
+          "n": 512,
+          "changed_predictions": 1,
+          "score_rms": 0.03973864466516843,
+          "certified_unchanged": 509,
+          "gap_median": 4.910000389900592
+        }
+      },
+      "native_preprobe_rms": 0.02389235440020283,
+      "gauge_fraction": 0.009229424620534207,
+      "fresh_predictions": 160,
+      "release_sha256": "7cfaeb1afc18f55a8e978e58d81a969d0f1488fc101b3d12c4594340e8e47a0f",
+      "raw_predictions_sha256": "c623d8a56cb5d04b4467c86cb05eb10abb2791d17807ff3bf97ffa3fd3e689b7"
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "metrics": [
+        {
+          "preset": "original",
+          "stage": "holdout",
+          "dataset": "SVHN",
+          "correct": 1009,
+          "n": 1024
+        },
+        {
+          "preset": "released",
+          "stage": "holdout",
+          "dataset": "SVHN",
+          "correct": 1009,
+          "n": 1024,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 1009,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 15,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "confirmation",
+          "dataset": "SVHN",
+          "correct": 504,
+          "n": 512
+        },
+        {
+          "preset": "released",
+          "stage": "confirmation",
+          "dataset": "SVHN",
+          "correct": 504,
+          "n": 512,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 504,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 8,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "standalone",
+          "dataset": "SVHN",
+          "correct": 25371,
+          "n": 26032
+        },
+        {
+          "preset": "released",
+          "stage": "standalone",
+          "dataset": "SVHN",
+          "correct": 25372,
+          "n": 26032,
+          "changed_predictions": 2,
+          "paired": {
+            "both_correct": 25371,
+            "lost": 0,
+            "gained": 1,
+            "both_wrong": 660,
+            "loss_pp": -0.0038414259373079286,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "partner_standalone",
+          "dataset": "MNIST",
+          "correct": 9969,
+          "n": 10000
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "SVHN",
+          "correct": 24079,
+          "n": 26032
+        },
+        {
+          "preset": "original",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9937,
+          "n": 10000
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "SVHN",
+          "correct": 24077,
+          "n": 26032,
+          "changed_predictions": 5,
+          "paired": {
+            "both_correct": 24076,
+            "lost": 3,
+            "gained": 1,
+            "both_wrong": 1952,
+            "loss_pp": 0.007682851874615857,
+            "exact_mcnemar_p": 0.625
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "direct",
+          "dataset": "MNIST",
+          "correct": 9937,
+          "n": 10000,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9937,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 63,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        {
+          "preset": "original",
+          "stage": "AGA_standalone",
+          "dataset": "SVHN",
+          "correct": 25348,
+          "n": 26032
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "SVHN",
+          "correct": 23890,
+          "n": 26032
+        },
+        {
+          "preset": "original",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9932,
+          "n": 10000
+        },
+        {
+          "preset": "released",
+          "stage": "AGA_standalone",
+          "dataset": "SVHN",
+          "correct": 25351,
+          "n": 26032,
+          "changed_predictions": 5,
+          "paired": {
+            "both_correct": 25347,
+            "lost": 1,
+            "gained": 4,
+            "both_wrong": 680,
+            "loss_pp": -0.011524277811923786,
+            "exact_mcnemar_p": 0.375
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "SVHN",
+          "correct": 23892,
+          "n": 26032,
+          "changed_predictions": 6,
+          "paired": {
+            "both_correct": 23889,
+            "lost": 1,
+            "gained": 3,
+            "both_wrong": 2139,
+            "loss_pp": -0.007682851874615857,
+            "exact_mcnemar_p": 0.625
+          }
+        },
+        {
+          "preset": "released",
+          "stage": "AGA",
+          "dataset": "MNIST",
+          "correct": 9932,
+          "n": 10000,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9932,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 68,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        }
+      ],
+      "parameter_distance": 0.022867817084655385,
+      "global_parameter_relative_distance": 0.0014662899373824576,
+      "span_diagnostic": {
+        "upstream_energy": 3015470.799311162,
+        "restricted_residual_fraction": 0.5928431084341396,
+        "full_output_residual_fraction": 0.012713776463520109,
+        "ridge": 0.025122443650230055,
+        "gram_condition": 18246.943067199452
+      },
+      "diagnostics": {
+        "native_fit": {
+          "feature_loss": 3.3399495054014556e-05,
+          "probe_loss": 4.026438358236301e-05,
+          "combined_loss": 7.366387863637757e-05,
+          "n": 512,
+          "changed_predictions": 0,
+          "score_rms": 0.011713056655114892,
+          "certified_unchanged": 512,
+          "gap_median": 6.370153663831977
+        },
+        "native_scale": {
+          "feature_loss": 4.3357062846867574e-05,
+          "probe_loss": 5.495499818384853e-05,
+          "combined_loss": 9.83120610307161e-05,
+          "n": 512,
+          "changed_predictions": 0,
+          "score_rms": 0.01407560403545411,
+          "certified_unchanged": 512,
+          "gap_median": 6.317803594719663
+        },
+        "proxy_fit": {
+          "feature_loss": 0.00010750908863863533,
+          "probe_loss": 8.765690784523253e-05,
+          "combined_loss": 0.00019516599648386788,
+          "n": 512,
+          "changed_predictions": 1,
+          "score_rms": 0.01990360907807685,
+          "certified_unchanged": 509,
+          "gap_median": 4.187202488596117
+        }
+      },
+      "native_preprobe_rms": 0.11774707843409289,
+      "gauge_fraction": 0.006663357856496864,
+      "fresh_predictions": 160,
+      "release_sha256": "e3d6a5fd64aa4247d274face223f41800973712d2d1a6e9681bb94d6eb6d4997",
+      "raw_predictions_sha256": "f2afce2cc22949fd76293c73d1afbcc7f0843a2dba4a3100d1bf5e672891edde"
+    }
+  ],
+  "fresh_prediction_instances": 480,
+  "construction": "Target-only task-SVD ray and closed-form composite teacher fit. Fit/scale512 each used for construction; labels/peer/test not used. No gradient parameter updates.",
+  "source_protocol_commit": "5289dbe99583c789533946cf61f2800f12c4c3b5",
+  "archive_sha256": "f6e8c4dc8a70c971cc10d06af140e16b77902ca11413b90215ee55c8f2b8cf70",
+  "server_archive": "outputs/phase2_compensation_source.zip",
+  "server_raw_output_prefix": "outputs/svd_compensation_",
+  "original_AGA": true,
+  "public_cleaning": false,
+  "phase1_preserved": true,
+  "next_question": "Does constraining full visual features and raw singular-coordinate activations preserve more than the task needs? Define task-SVD probe response preservation in classification/margin units before another candidate; do not increase budgets using peer/test results."
+}
