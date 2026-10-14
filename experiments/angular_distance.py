@@ -162,7 +162,8 @@ def direction_diagnostic(target, cfg):
     torch.cuda.synchronize()
     report = {"target": target, "coordinate_form": problem.form, "parameter_variables": len(theta),
               "status": "diagnostic_only", "new_release_weights": 0, "optimizer_updates": 0,
-              "reverse_gradient_calls": 2, "native_jvp_calls": 1,
+              "explicit_reverse_gradient_calls": 2, "native_jvp_calls": 1,
+              "native_jvp_method": "torch.autograd.functional.jvp; two reverse-mode passes",
               "gradient_norm": float(gradient.norm()), "tangent_gradient_norm_fraction": norm_fraction,
               "score_gradient_constant_maximum": float(score_gradient.sum(1).abs().max()),
               "score_gradient_radial_relative_maximum": float(relative_radial.max()),
@@ -176,6 +177,11 @@ def direction_diagnostic(target, cfg):
               "wall_seconds": time.monotonic()-started, "peak_gpu_bytes": torch.cuda.max_memory_allocated()}
     assert invariance < 1e-10 and float(relative_radial.max()) < 1e-10
     assert report["directional_relative_error"] < 1e-3
+    path = output/"direction.pt"
+    torch.save({"theta": theta.detach().cpu(), "direction": direction.detach().cpu(),
+                "gradient": gradient.detach().cpu(), "native_residual": residual.detach().cpu(),
+                "native_directional_derivative": derivative.detach().cpu(), "cfg": cfg}, path)
+    report["direction_sha256"] = digest(path)
     save_json(output/"direction.json", report)
     print(json.dumps({k: v for k, v in report.items() if k!="training_indices"}), flush=True)
 
