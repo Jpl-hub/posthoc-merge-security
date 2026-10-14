@@ -104,6 +104,69 @@ def verify(output):
     save_json(output/"independent_validation.json",result);print(json.dumps(result),flush=True)
 
 
+def verify_game(output):
+    output=Path(output);report=json.loads((output/"results.json").read_text());path=output/"candidate.pt"
+    assert digest(path)==report["candidate_sha256"]
+    cal=torch.load(path,map_location="cpu");cfg=cal["protocol"]
+    _,expert,head,hashes=checked_models(report["target"]);assert hashes==report["checkpoint_sha256"]
+    pp=extended_parameters(expert,head);p={k:array(v) if torch.is_tensor(v) else v for k,v in pp.items()}
+    rnk=cfg["probe_rank"];sz=rnk**2;theta=array(cal["theta"])
+    uo,vo=[array(cal["basis_O"][k]) for k in ["u","vh"]];vb=array(cal["basis_B"]["vh"])
+    eo=np.linalg.norm(p["O"])*uo@theta[:sz].reshape(rnk,rnk)@vo
+    eb=np.linalg.norm(p["B"])*theta[sz:].reshape(p["B"].shape[0],rnk)@vb
+    for site,delta in [("O",eo),("B",eb)]:np.testing.assert_allclose(delta,array(cal["release_deltas"][site]),atol=1e-8,rtol=1e-7)
+    distance=float(np.sqrt(np.linalg.norm(eo)**2/np.linalg.norm(p["O"])**2+np.linalg.norm(eb)**2/np.linalg.norm(p["B"])**2))
+    assert distance<=cfg["parameter_budget"]*(1+1e-12) and abs(distance-report["selected"]["parameter_distance"])<1e-8
+    def hidden(r):
+        pre=ln(r,p["gamma2"],p["beta2"],p["eps2"])@p["A"].T+p["a"]
+        return pre*expit(1.702*pre)
+    r=np.concatenate([array(cal[g]["r"]) for g in ["native","scale"]]);z=np.concatenate([array(cal[g]["o_input"]) for g in ["native","scale"]])
+    h=np.concatenate([array(cal[g]["h"]) for g in ["native","scale"]]);c=h-r-hidden(r)@p["B"].T-p["b"]
+    q0=hidden(r)@vb.T;ridge=cfg["ridge_relative_floor"]*np.linalg.eigvalsh(q0.T@q0)[-1]
+    r1=r+z@eo.T;hh=hidden(r1);q=hh@vb.T
+    kb=np.linalg.solve(q.T@q+ridge*np.eye(rnk),q.T@(h-c-r1-hh@p["B"].T-p["b"])).T
+    coefficient_error=float(np.max(np.abs(kb/np.linalg.norm(p["B"])-theta[sz:].reshape(p["B"].shape[0],rnk))));assert coefficient_error<1e-7
+    groups={};confirmed=None
+    for g in ["native","scale","confirmation"]:
+        r,z,h=[array(cal[g][k]) for k in ["r","o_input","h"]];n=cfg["probe_contexts"];count=2*rnk
+        c=h-r-hidden(r)@p["B"].T-p["b"]
+        so=(cfg["finite_step"]*np.array([-1.,1.])[:,None,None]*np.sqrt(np.mean((z@vo.T)**2,0))[None,:,None]*vo[None,:,:]).reshape(count,-1)
+        sb=(cfg["finite_step"]*np.array([-1.,1.])[:,None,None]*np.sqrt(np.mean((hidden(r)@vb.T)**2,0))[None,:,None]*vb[None,:,:]).reshape(count,-1)
+        rr=np.concatenate([r,(r[:n,None,:]+(so@p["O"].T)[None,:,:]).reshape(-1,r.shape[1]),np.repeat(r[:n],count,axis=0)])
+        zz=np.concatenate([z,(z[:n,None,:]+so[None,:,:]).reshape(-1,z.shape[1]),np.repeat(z[:n],count,axis=0)])
+        cc=np.concatenate([c,np.repeat(c[:n],count,axis=0),np.repeat(c[:n],count,axis=0)])
+        off=np.concatenate([np.zeros((len(r)+n*count,p["B"].shape[1])),np.tile(sb,(n,1))])
+        def full(o,b):
+            r1=rr+zz@o.T;return cc+r1+(hidden(r1)+off)@(p["B"]+b).T+p["b"]
+        before=features(full(np.zeros_like(eo),np.zeros_like(eb)),expert.model.visual)@p["head"].T
+        after=features(full(eo,eb),expert.model.visual)@p["head"].T
+        winner=before.argmax(1);rows=np.arange(len(before));gap=before[rows,winner,None]-before;gap[rows,winner]=1.
+        ds=after-before;drift=np.abs((ds[rows,winner,None]-ds)/np.maximum(gap,1e-12));drift[rows,winner]=0.
+        maximum=float(drift.max());changed=int((before[:len(r)].argmax(1)!=after[:len(r)].argmax(1)).sum())
+        groups[g]={"maximum_margin_drift":maximum,"real_n":len(r),"probe_instances":2*n*count,"changed_real_predictions":changed}
+        if g!="confirmation":assert maximum<=cfg["margin_fraction"]*(1+1e-6)
+        else:confirmed=(before[:len(r)].argmax(1),after[:len(r)].argmax(1))
+    limit=cfg["margin_fraction"];rho=groups["confirmation"]["maximum_margin_drift"]
+    assert abs(rho-report["confirmation"]["worst_margin_drift"])<1e-6
+    assert (rho<=limit)==report["confirmation_passed"]
+    labels=array(cal["confirmation_labels"]);before,after=confirmed
+    np.testing.assert_array_equal(before,array(cal["confirmation_original_predictions"]))
+    np.testing.assert_array_equal(after,array(cal["confirmation_candidate_predictions"]))
+    counts={"n":len(labels),"original_correct":int((before==labels).sum()),"candidate_correct":int((after==labels).sum()),"changed_predictions":int((before!=after).sum())}
+    for key,value in counts.items():assert report["confirmation"][key]==value
+    indices=cal["confirmation_indices"];old=set(i for group in cal["indices"].values() for i in group)
+    parent=torch.load(Path(cfg["margin_reference"])/(report["target"]+"_diagnostic.pt"),map_location="cpu")
+    old.update(parent["indices"]["confirmation"])
+    assert not set(indices).intersection(old) and len(set(indices))==len(indices)
+    result={"status":"passed" if rho<=limit else "confirmed_constraint_failure","source_sha256":digest(__file__),
+            "candidate_sha256":digest(path),"parameter_distance":distance,"O_relative_distance":float(np.linalg.norm(eo)/np.linalg.norm(p["O"])),
+            "B_relative_distance":float(np.linalg.norm(eb)/np.linalg.norm(p["B"])),"conditional_coefficient_error":coefficient_error,
+            "task_constraints":groups,"confirmation_counts":counts,"new_release_weights":0,"new_model_forwards":0,"test_used":False,"partner_used":False}
+    save_json(output/"independent_validation.json",result);print(json.dumps(result),flush=True)
+
+
 if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--output",required=True)
-    args=parser.parse_args();torch.set_num_threads(4);verify(args.output)
+    args=parser.parse_args();torch.set_num_threads(4)
+    if (Path(args.output)/"results.json").exists():verify_game(args.output)
+    else:verify(args.output)
