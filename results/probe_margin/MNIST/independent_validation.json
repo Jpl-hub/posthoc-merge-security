@@ -1,0 +1,233 @@
+{
+  "status": "passed",
+  "verifier_sha256": "125ba0b9e44ad36eee99489ee1c0192ebae39c33bc005f161368603a3785a8d7",
+  "coefficient_distance": 0.4999599549536244,
+  "native_constraint_rule": "custom task-probe constraint",
+  "nonlinear_native_losses": {
+    "native": {
+      "maximum_margin_drift": 0.1744280551818943,
+      "n": 512,
+      "probe_instances": 2048
+    },
+    "scale": {
+      "maximum_margin_drift": 0.2463756103935116,
+      "n": 512,
+      "probe_instances": 2048
+    },
+    "confirmation": {
+      "maximum_margin_drift": 0.20989855415619377,
+      "n": 128,
+      "probe_instances": 2048
+    },
+    "actual_teacher_probe_checks": [
+      {
+        "group": "native",
+        "site": "A",
+        "direction_and_sign": 0,
+        "n": 4,
+        "max_score_error": 6.4902445622294636e-06
+      },
+      {
+        "group": "native",
+        "site": "A",
+        "direction_and_sign": 31,
+        "n": 4,
+        "max_score_error": 5.753722566836927e-06
+      },
+      {
+        "group": "native",
+        "site": "A",
+        "direction_and_sign": 32,
+        "n": 4,
+        "max_score_error": 5.03018944186806e-06
+      },
+      {
+        "group": "native",
+        "site": "A",
+        "direction_and_sign": 63,
+        "n": 4,
+        "max_score_error": 4.815608101615965e-06
+      },
+      {
+        "group": "native",
+        "site": "B",
+        "direction_and_sign": 0,
+        "n": 4,
+        "max_score_error": 4.424278444048468e-06
+      },
+      {
+        "group": "native",
+        "site": "B",
+        "direction_and_sign": 31,
+        "n": 4,
+        "max_score_error": 4.793264299252087e-06
+      },
+      {
+        "group": "native",
+        "site": "B",
+        "direction_and_sign": 32,
+        "n": 4,
+        "max_score_error": 3.4363331700149047e-06
+      },
+      {
+        "group": "native",
+        "site": "B",
+        "direction_and_sign": 63,
+        "n": 4,
+        "max_score_error": 4.561652119150494e-06
+      },
+      {
+        "group": "scale",
+        "site": "A",
+        "direction_and_sign": 0,
+        "n": 4,
+        "max_score_error": 5.287035337531165e-06
+      },
+      {
+        "group": "scale",
+        "site": "A",
+        "direction_and_sign": 31,
+        "n": 4,
+        "max_score_error": 3.223416449316119e-06
+      },
+      {
+        "group": "scale",
+        "site": "A",
+        "direction_and_sign": 32,
+        "n": 4,
+        "max_score_error": 4.907354766103822e-06
+      },
+      {
+        "group": "scale",
+        "site": "A",
+        "direction_and_sign": 63,
+        "n": 4,
+        "max_score_error": 4.116204280535385e-06
+      },
+      {
+        "group": "scale",
+        "site": "B",
+        "direction_and_sign": 0,
+        "n": 4,
+        "max_score_error": 6.377728926310056e-06
+      },
+      {
+        "group": "scale",
+        "site": "B",
+        "direction_and_sign": 31,
+        "n": 4,
+        "max_score_error": 7.871720196561682e-06
+      },
+      {
+        "group": "scale",
+        "site": "B",
+        "direction_and_sign": 32,
+        "n": 4,
+        "max_score_error": 3.421612920107009e-06
+      },
+      {
+        "group": "scale",
+        "site": "B",
+        "direction_and_sign": 63,
+        "n": 4,
+        "max_score_error": 4.207134470135543e-06
+      }
+    ],
+    "actual_teacher_probe_instances": 64,
+    "probe_validator_sha256": "77cbdb8bf76aaf774c846c18a922acce344f0ded2dc88fdff4418fa51ba21a30"
+  },
+  "official_counts": [
+    {
+      "key": "original/holdout/MNIST",
+      "correct": 1024,
+      "n": 1024
+    },
+    {
+      "key": "released/holdout/MNIST",
+      "correct": 1024,
+      "n": 1024
+    },
+    {
+      "key": "original/confirmation/MNIST",
+      "correct": 511,
+      "n": 512
+    },
+    {
+      "key": "released/confirmation/MNIST",
+      "correct": 511,
+      "n": 512
+    },
+    {
+      "key": "original/standalone/MNIST",
+      "correct": 9969,
+      "n": 10000
+    },
+    {
+      "key": "released/standalone/MNIST",
+      "correct": 9969,
+      "n": 10000
+    },
+    {
+      "key": "original/partner_standalone/SVHN",
+      "correct": 25371,
+      "n": 26032
+    },
+    {
+      "key": "original/direct/MNIST",
+      "correct": 9937,
+      "n": 10000
+    },
+    {
+      "key": "original/direct/SVHN",
+      "correct": 24079,
+      "n": 26032
+    },
+    {
+      "key": "released/direct/MNIST",
+      "correct": 9937,
+      "n": 10000
+    },
+    {
+      "key": "released/direct/SVHN",
+      "correct": 24101,
+      "n": 26032
+    },
+    {
+      "key": "original/AGA_standalone/MNIST",
+      "correct": 9968,
+      "n": 10000
+    },
+    {
+      "key": "original/AGA/MNIST",
+      "correct": 9932,
+      "n": 10000
+    },
+    {
+      "key": "original/AGA/SVHN",
+      "correct": 23890,
+      "n": 26032
+    },
+    {
+      "key": "released/AGA_standalone/MNIST",
+      "correct": 9967,
+      "n": 10000
+    },
+    {
+      "key": "released/AGA/MNIST",
+      "correct": 9935,
+      "n": 10000
+    },
+    {
+      "key": "released/AGA/SVHN",
+      "correct": 23939,
+      "n": 26032
+    }
+  ],
+  "fresh_predictions": 160,
+  "full_model_relative_distance": 0.032075881440096335,
+  "explicit_merge_formula": true,
+  "new_attacks": 0,
+  "new_release_weights": 0,
+  "release_sha256": "53d21773878435b6d6765e8aad868f8e24ec3fe71e55b706ad02228128534665",
+  "raw_predictions_sha256": "55602f7c44f61424a5e936a2d0d9d092988f8418fd202d5b89fb86614568c9ec"
+}

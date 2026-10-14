@@ -17,7 +17,7 @@ from verify_probe_candidate import PREFIX, array, explicit_merge, features
 
 
 @torch.no_grad()
-def verify(output, probe_n):
+def verify(output, probe_n, native_constraint=None):
     out = Path(output); cfg = json.loads((out/"protocol.json").read_text())
     meta = json.loads((out/"execution.json").read_text()); case = json.loads((out/"case.json").read_text())
     assert meta["completed"] and meta["optimizer_steps"] == 0
@@ -31,7 +31,8 @@ def verify(output, probe_n):
     anchor = load(str(root/"zeroshot.pt")).cpu().eval(); expert = load(str(root/target/"finetuned.pt")).cpu().eval()
     head = load(str(root/f"head_{target}.pt")).cpu().eval(); cal = torch.load(out/"artifacts/calibration.pt", map_location="cpu")
     release = torch.load(out/"artifacts/release.pt", map_location="cpu")
-    reference = Path(cfg["matrix_references"][target]); assert digest(reference/"artifacts/calibration.pt") == cal["source_cache_sha256"]
+    references = cfg.get("compensation_references", cfg["matrix_references"])
+    reference = Path(references[target]); assert digest(reference/"artifacts/calibration.pt") == cal["source_cache_sha256"]
     old = torch.load(reference/"artifacts/calibration.pt", map_location="cpu")
     probe_path = Path(cfg["probe_references"][target])/"artifacts/probes.pt"
     assert digest(probe_path) == cal["probe_sha256"]
@@ -56,8 +57,8 @@ def verify(output, probe_n):
         np.testing.assert_allclose((w+e).astype(np.float32), release[PREFIX+suffix].numpy(), rtol=2e-7, atol=2e-8)
     distance = np.sqrt(np.sum(ea*ea)/np.sum(a*a)+np.sum(eb*eb)/np.sum(b*b))
     assert distance <= cfg["parameter_budget"]+1e-10
-    residuals = {}
-    for group in ["native", "scale"]:
+    residuals = native_constraint(expert, head, cal, cfg, ea, eb) if native_constraint else {}
+    for group in ([] if native_constraint else ["native", "scale"]):
         cache = cal[group]; x, h = array(cache["x"]), array(cache["h"])
         pre = x@a.T+array(block.c_fc.bias); zz = pre*expit(1.702*pre)
         pre_new = x@(a+ea).T+array(block.c_fc.bias); zn = pre_new*expit(1.702*pre_new)
@@ -112,6 +113,7 @@ def verify(output, probe_n):
     actual_distance = sum(float((release[PREFIX+suffix].double()-w.double()).square().sum()) for suffix, w in [("c_fc.weight", block.c_fc.weight), ("c_proj.weight", block.c_proj.weight)]) ** .5
     model_norm = sum(float(v.double().square().sum()) for v in expert.state_dict().values() if v.is_floating_point()) ** .5
     report = {"status": "passed", "verifier_sha256": digest(__file__), "coefficient_distance": float(distance),
+              "native_constraint_rule": "custom task-probe constraint" if native_constraint else "full-feature and raw probe RMS",
               "nonlinear_native_losses": residuals, "official_counts": checks, "fresh_predictions": fresh,
               "full_model_relative_distance": actual_distance/model_norm, "explicit_merge_formula": True,
               "new_attacks": 0, "new_release_weights": 0, "release_sha256": meta["release_sha256"],

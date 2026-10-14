@@ -1,0 +1,102 @@
+{
+  "stage": 2,
+  "site": "block11 MLP: fixed task-SVD c_fc ray and optimized c_proj task-singular-input coefficients",
+  "targets": [
+    "MNIST",
+    "DTD",
+    "SVHN"
+  ],
+  "seed": 20261014,
+  "diagnostic_n": 128,
+  "probe_rank": 32,
+  "finite_step": 0.01,
+  "maximum_calibration_group": 512,
+  "parameter_budget": 0.5,
+  "proxy_beta": 0.5,
+  "scalar_solver_limit": 12,
+  "no_future_partner": true,
+  "no_test_selection": true,
+  "source_sha256": {
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "configs/sources.json": "528346ab06c38cc4e34a8a4064d9721f3884a1c2738deef4ec0e94a7b2b88a3f",
+    "experiments/probe_distance_candidate.py": "95b48cecd125e48a2467f298da5e144b9d23b7490f6efe78cedf579a23a5b6bf",
+    "experiments/decision_noise.py": "2244500fed6e019bfd6a51c79246a5aa4a3c4b679b29f218d42ebc8ed0fc7219",
+    "experiments/decision_audit.py": "235050fcf117d6a7e8e8b2335cbb9a9c91fe1051b11e0551143c0421606fcf18",
+    "experiments/svd_compensation.py": "b99bd4126d8968128007dbab114362805b4058c2ad9171a4ead10dfb074666e0",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/projected_distance_game.py": "d61375ebfae74f3ff707ab2166066615d48dada368515acca74b1e4e353752d7"
+  },
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "test_counts": {
+    "MNIST": 10000,
+    "DTD": 1880,
+    "SVHN": 26032
+  },
+  "coefficient": 0.5,
+  "holdout_seed": 20261017,
+  "holdout_n": 1024,
+  "standalone_loss_gate_pp": 0.5,
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN"
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST"
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST"
+    }
+  ],
+  "diagnostic_output": "outputs/phase2_projected_game",
+  "probe_references": {
+    "MNIST": "outputs/phase2_probe_mnist",
+    "DTD": "outputs/phase2_probe_dtd",
+    "SVHN": "outputs/phase2_probe_svhn"
+  },
+  "maximum_scaling_explanation": 0.1,
+  "runner_sha256": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+  "source_commit": "6e7f9ab9bb98bcdb7866a7c71ae0741cd9378863",
+  "description": "64 projected publication-variable gradient attempts; maximize bounded physical distance plus target-only anchor-interpolation ordering stress, subject to native real-input and task-SVD-probe margin constraints. Original expert frozen; no labels, future partner or test selection.",
+  "method": "projected_publication_distance_game",
+  "matrix_references": {
+    "MNIST": "outputs/probe_matrix_mnist",
+    "DTD": "outputs/probe_matrix_dtd",
+    "SVHN": "outputs/probe_matrix_svhn"
+  },
+  "ridge_relative_floor": 1e-06,
+  "margin_fraction": 0.5,
+  "probe_contexts": 16,
+  "compensation_references": {
+    "MNIST": "outputs/svd_compensation_mnist",
+    "DTD": "outputs/svd_compensation_dtd",
+    "SVHN": "outputs/svd_compensation_svhn"
+  },
+  "margin_reference": "outputs/phase2_margin_diagnostic",
+  "optimization_steps": 64,
+  "backtracking_steps": 8,
+  "normalized_step": 0.005,
+  "active_fraction": 0.8
+}

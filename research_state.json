@@ -1,17 +1,17 @@
 {
-  "status": "phase2_round2_verified_closed",
-  "updated_utc": "2026-10-14T03:49:45.449682+00:00",
+  "status": "phase2_constraints_verified_no_new_defense",
+  "updated_utc": "2026-10-14T05:27:22.241594+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
-  "objective": "Phase2: maximize bounded parameter displacement from each native expert while constraining real task-singular-probe responses and teacher features, target-only construction; diagnose then one local constrained candidate,3090 only.",
-  "stage": "classification_aware_probe_modeling",
+  "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
+  "stage": "score_ordering_and_task_probe_feasibility",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": null,
-  "mechanism": "notes/phase2_compensation.md",
-  "next_action": "Derive a training-only margin-relative distillation constraint for task-SVD probes; assess task-specific classifier response rather than requiring every raw intermediate activation and full visual feature to remain within an arbitrary1% tolerance. Keep current ray-compensation candidate closed; no peer/test parameter selection.",
+  "new_candidate": "No new release: publication-coefficient optimizations closed without proxy ordering improvement",
+  "mechanism": "notes/phase2_projected_game.md",
+  "next_action": "Within phase2, derive centered-score direction invariant to positive affine changes; diagnose its training gradient against task-probe feasibility before freezing any new transform. Keep existing budget/site/rank; no future peer or test optimization.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -215,7 +215,7 @@
     "fresh_calibration_reproduction": "results/projection_bias_noise/fresh_reproduction.json",
     "extension_published_source_commit": "c965ec6b995177e483fb1ec6fc6dd3eb42155bcc"
   },
-  "breakthrough_scope": "Phase1 frozen and preserved; phase2 round1 retains standalone accuracy but has no effective merged-task drop.",
+  "breakthrough_scope": "Phase1 frozen; phase2 completed real three-expert margin-ray evaluations without effective defense. Target-only publication optimization diagnostics did not improve proxy classification; last confirmation budget failed.",
   "rank_one_limitations": [
     "Protected MNIST accuracy remains 91.15% with SVHN and 77.16% with DTD after AGA; not complete capability blocking.",
     "Only MNIST is protected; no cross-protected-task claim.",
@@ -250,7 +250,8 @@
     "commit": "68ef7da9f167cb6ebf46827d19120822dd45e9a7",
     "git_tag": "phase1-final-20261014",
     "manifest": "results/phase1_freeze.json",
-    "do_not_overwrite": true
+    "do_not_overwrite": true,
+    "latest_four_release_hash_check": "2026-10-14: unchanged;3090 data volume16/50GB used"
   },
   "phase1_effect_verified": true,
   "phase2_effect_verified": false,
@@ -278,5 +279,91 @@
     "same_algorithm": true,
     "new_recovery_attacks": 0,
     "optimizer_steps": 0
+  },
+  "phase2_round3_probe_validation": {
+    "status": "passed3 tasks",
+    "numpy_constraints": true,
+    "actual_teacher_probe_instances": 192,
+    "new_release_before_gate": false
+  },
+  "phase2_round3": {
+    "status": "closed_no_defense_effect",
+    "results": "results/probe_margin/",
+    "source_protocol_commit": "36246d738c9d0a879069091b5269f1493fa9682d",
+    "validation": "passed3 experts;480 matched full predictions plus192 actual task-probe instances",
+    "native_correct": {
+      "MNIST": [
+        9969,
+        9969,
+        10000
+      ],
+      "DTD": [
+        1493,
+        1495,
+        1880
+      ],
+      "SVHN": [
+        25371,
+        25375,
+        26032
+      ]
+    },
+    "AGA_target_correct": {
+      "MNIST": [
+        9932,
+        9935,
+        10000
+      ],
+      "DTD": [
+        1293,
+        1294,
+        1880
+      ],
+      "SVHN": [
+        23890,
+        23886,
+        26032
+      ]
+    },
+    "max_distance_native_preserved": true,
+    "protected_fusion_failed": true
+  },
+  "phase2_round4": {
+    "status": "closed_no_proxy_classification_improvement",
+    "optimizer_attempts": 64,
+    "accepted_updates": 9,
+    "proxy_changed_before": 1,
+    "proxy_changed_after": 1,
+    "proxy_n": 512,
+    "new_release_weights": 0,
+    "independent_task_probe_validation": "passed NumPy and64 actual teacher probe instances",
+    "local_solver_audit": "31 active witnesses; simultaneous tangent admits feasible ascent while single-witness frozen backtracking fails"
+  },
+  "phase2_round5": {
+    "status": "closed_no_proxy_classification_improvement",
+    "accepted_updates": 19,
+    "ascent_attempts": 64,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "parameter_distance": 0.5,
+    "new_release_weights": 0,
+    "confirmation_margin_drift": 0.49586671347208827,
+    "task_probe_validation": "passed NumPy and64 actual teacher probes",
+    "local_obstacle": "curved native feasible boundary; finite straight-tangent backtracking cannot continue"
+  },
+  "phase2_round6": {
+    "status": "closed_no_proxy_improvement_and_failed_confirmation_budget",
+    "source_freeze": "results/projected_game_retraction/source_freeze.json",
+    "ascent_attempts": 64,
+    "accepted_updates": 17,
+    "corrective_gradient_evaluations": 3290,
+    "parameter_distance": 0.5,
+    "proxy_changed_initial": 1,
+    "proxy_changed_final": 1,
+    "proxy_n": 512,
+    "independent_numpy_confirmation_maximum": 0.5164691350314551,
+    "new_release_weights": 0,
+    "formal_fusion_evaluation_run": false,
+    "score_audit": "results/projected_game_retraction/MNIST_score_audit.json"
   }
 }
