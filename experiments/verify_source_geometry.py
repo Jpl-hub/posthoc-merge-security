@@ -40,7 +40,23 @@ def verify(output):
         h=1e-3;first=(hidden(h)-hidden(-h))/(2*h);second=(hidden(h)-2*h0+hidden(-h))/(h*h)
         first_error=float(np.linalg.norm(first-data['first_derivative'].numpy())/np.linalg.norm(first))
         second_error=float(np.linalg.norm(second-data['second_derivative'].numpy())/np.linalg.norm(second))
-        assert first_error<1e-3 and second_error<1e-3
+        assert first_error<1e-3
+        if 'O' in d:
+            centered=cache['r']-cache['r'].mean(1,keepdims=True)
+            dr=cache['o_input']@d['O'].T;dc=dr-dr.mean(1,keepdims=True)
+            sd=np.sqrt(np.mean(centered**2,1,keepdims=True)+p['eps2'])
+            a=np.mean(centered*dc,1,keepdims=True);b=np.mean(dc**2,1,keepdims=True)
+            xp=(dc/sd-centered*a/sd**3)*p['gamma2']
+            xpp=(-2*dc*a/sd**3-centered*b/sd**3+3*centered*a*a/sd**5)*p['gamma2']
+            dp=xp@p['A'].T;ddp=xpp@p['A'].T
+        else:
+            dp=x@d['A'].T;ddp=np.zeros_like(dp)
+        sig=expit(1.702*pre);gp=sig+1.702*pre*sig*(1-sig)
+        gpp=3.404*sig*(1-sig)+1.702**2*pre*sig*(1-sig)*(1-2*sig)
+        exact_second=(gpp*dp*dp+gp*ddp)@p['B'].T+2*(gp*dp)@d['B'].T
+        analytic_error=float(np.linalg.norm(second-exact_second)/np.linalg.norm(second));assert analytic_error<1e-3
+        chord=hm-.5*(h0+h1)
+        corrected_chord_error=float(np.linalg.norm(chord+exact_second/8)/np.linalg.norm(chord))
         m=p['gamma'][:,None]*(p['projection']@p['head'].T);m-=m.mean(0,keepdims=True)
         bias=p['beta']@p['projection']@p['head'].T;dim=h0.shape[1]
         centered=h0-h0.mean(1,keepdims=True);centered_m=hm-hm.mean(1,keepdims=True)
@@ -75,9 +91,14 @@ def verify(output):
             assert np.min(gaps0[i,others]-l0[i,others]*rad-q[i,others]*rad*rad)>-1e-8
         checks.append({'case':rec['case'],'midpoint_changed':rec['source_midpoint_changed'],
             'first_derivative_relative_fd_error':first_error,'second_derivative_relative_fd_error':second_error,
+            'original_autograd_second_derivative_valid':second_error<1e-3,
+            'analytic_second_derivative_relative_fd_error':analytic_error,
+            'corrected_quadratic_chord_relative_error':corrected_chord_error,
             'exact_readout_sorting':'passed','conditional_radius_roots':'passed','nonzero_joint_radius_count':len(nonzero),
             'strict_radius_inequality_required':True})
-    result={'status':'passed','checks':checks,'source_sha256':digest(__file__),'diagnostic_sha256':digest(path),
+    result={'status':'passed_forward_and_certificates_with_corrected_analytic_curvature','checks':checks,'source_sha256':digest(__file__),'diagnostic_sha256':digest(path),
+        'initial_verifier_failure_preserved':'outputs/phase2_source_geometry_verify.log; source commit613a805',
+        'correction':'Original O/B LayerNorm automatic second derivative disagrees with independent finite difference by2.75%; exact analytic derivative replaces it for curvature interpretation. Frozen weights, forward scores and original diagnostic file are unchanged. No error tolerance was relaxed.',
         'new_full_model_forward_instances':0,'new_release_weights':0,'publication_updates':0,'test_used':False,'partner_used':False,
         'scope':'Independent NumPy nonlinear source tails, official train labels, directional Hessian finite differences and analytic neighborhood certificate roots. No assertion that unknown peer fusions lie inside the certified neighborhoods.'}
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
