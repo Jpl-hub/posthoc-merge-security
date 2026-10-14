@@ -91,6 +91,8 @@ class CrossProblem(Problem):
         self.anchor,self.expert,self.head,self.hashes=checked_models(target)
         self.p_cpu=extended_parameters(self.expert,self.head);self.p=on_device(self.p_cpu)
         self.b_width=self.p["B"].shape[1] if cfg.get("full_B_completion") else self.r
+        self.b_rows=self.p["B"].shape[0]
+        self.output_basis=None
         self.prior_confirmation_indices=previous["indices"]["confirmation"]
         if cfg.get("cache_reference"):
             root=Path(cfg["cache_reference"]);meta=json.loads((root/"mechanism.json").read_text())
@@ -152,6 +154,11 @@ class CrossProblem(Problem):
         self.basis={"A":on_device(o_basis),"B":on_device(b_basis)}
         self.na,self.nb=self.p["O"].norm(),self.p["B"].norm()
         self.cal={**cache,"indices":indices,"basis_O":o_basis,"basis_B":b_basis}
+        if self.cfg.get("class_output_completion"):
+            from classification_completion import readout
+            self.class_space,self.class_geometry=readout(self.p,self.cfg["readout_relative_tolerance"])
+            self.output_basis=self.class_space["Q"];self.b_rows=self.output_basis.shape[1]
+            self.cal["output_basis"]=self.output_basis.cpu()
         self.native=[self.prepare(cache[g],self.p,True) for g in ["native","scale"]]
         self.proxy=self.prepare(cache["proxy"],self.pp,False)
         teacher=self.proxy["teacher"];self.winner=teacher.argmax(1);self.rows=torch.arange(len(teacher),device="cuda")
@@ -178,15 +185,17 @@ class CrossProblem(Problem):
             offset.extend([torch.zeros((n*count,p["B"].shape[1]),dtype=torch.float64,device="cuda"),sb.repeat(n,1)])
         packed={"r":torch.cat(rr),"o_input":torch.cat(zz),"rounding":torch.cat(cc),"b_offset":torch.cat(offset)}
         packed["task_input"]=packed["o_input"]@self.basis["A"]["vh"].T
-        packed["teacher"]=self.predict(packed,p,torch.zeros(self.a_size+p["B"].shape[0]*self.b_width,device="cuda",dtype=torch.float64))
+        packed["teacher"]=self.predict(packed,p,torch.zeros(self.a_size+self.b_rows*self.b_width,device="cuda",dtype=torch.float64))
         return packed
 
     def predict(self,packed,p,theta,factor=1.):
-        co=theta[:self.a_size].reshape(self.r,self.r);cb=theta[self.a_size:].reshape(p["B"].shape[0],self.b_width)
+        co=theta[:self.a_size].reshape(self.r,self.r);cb=theta[self.a_size:].reshape(self.b_rows,self.b_width)
         rr=packed["r"]+factor*self.na*(packed["task_input"]@co.T)@self.basis["A"]["u"].T
         hidden=gelu(normalized_input(rr,p)@p["A"].T+p["a"])+packed["b_offset"]
         incoming=hidden if self.cfg.get("full_B_completion") else hidden@self.basis["B"]["vh"].T
-        h=packed["rounding"]+rr+hidden@p["B"].T+p["b"]+factor*self.nb*incoming@cb.T
+        change=incoming@cb.T
+        if self.output_basis is not None:change=change@self.output_basis.T
+        h=packed["rounding"]+rr+hidden@p["B"].T+p["b"]+factor*self.nb*change
         return scores(h,p)
 
 
