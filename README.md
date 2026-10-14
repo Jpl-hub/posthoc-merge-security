@@ -17,6 +17,8 @@
 
 分类充分统计补偿已完成真实MNIST/SVHN验证：独立99.69%→99.68%，TA99.37%→99.18%，AGA99.32%→99.23%，仍无有效保护。Query单侧取权候选改变了实际Attention计算，但独立确认间隔变化0.772超过0.5门槛，关闭且未发布。[最新机制结论与参数化边界](notes/phase2_mechanism_checkpoint.md)、[分类补偿](notes/phase2_classification_completion.md)、[Query诊断](notes/phase2_query.md)。
 
+自由联合发布变量的新诊断提高了代理分类覆盖：54/512→111/512改判，涉及8类；但新确认集间隔变化0.725超过原0.5约束。完整模型重放确认失败，停止发布，未运行真实融合或AGA。低间隔输入上的补偿保持是当前障碍，不能把代理改善称为防御突破。[联合优化、失败见证与代价](notes/phase2_joint_class.md)。
+
 - `experiments/projection_bias_noise.py`：当前保护构造
 - `configs/projection_bias_noise_svhn.json`：当前直接采集训练图的冻结协议；[SVHN 迁移结果](notes/projection_bias_noise_svhn.md)
 - `configs/projection_bias_noise.json`：MNIST/DTD 原始协议，重放须使用 `7949958` 源码或服务器冻结包
