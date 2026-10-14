@@ -1,17 +1,17 @@
 {
-  "status": "phase2_effect_preserved_ffn_closed_proxy_transport_unresolved",
-  "updated_utc": "2026-10-14T17:03:14.481125+00:00",
+  "status": "phase2_source_geometry_verified_no_new_release",
+  "updated_utc": "2026-10-14T18:04:17.540182+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "task_functional_coupling_and_proxy_transport",
+  "stage": "source_task_geometry_and_conditional_fusion_neighborhoods",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "Preserved best O/B:MNISTnative99.71,TA78.77,AGA77.85. New target-only FFN A/B confirmed but weaker:99.65/91.07/79.20; closed without increasing budget or steps. Recovery robustness remains unresolved.",
-  "mechanism": "notes/phase2_coupling.md",
-  "next_action": "Before further publication optimization, determine whether target-expert and public-anchor training responses justify a nontrivial set of fusion representation changes and a task-feasible sorting direction stable across it. Ordinary and author-canonical proxy tangent gradients are nearly identical; do not merely add that second proxy, repeat old refill, or extend this fixed FFN point.",
+  "new_candidate": "No new release. Preserved O/Bnative99.71,TA78.77,AGA77.85. Intrinsic source chords of O/B and A/B change only1 and2/4096 target-training predictions. Deterministic class-balanced task-curvature directions remain task-feasible but yield0 midpoint flips; this finite path is closed without more budget or steps.",
+  "mechanism": "notes/phase2_source_geometry.md",
+  "next_action": "Derive and first diagnose mixed derivatives of native compensation with respect to the allowed target/anchor representation change: determine whether an observable task-related representation set can turn cancellation into stable ordering changes, with an explicit conditional coverage assumption. Do not equate large curvature, parameter distance or a restricted dual bound with classification failure; do not resume these fixed directions.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1075,5 +1075,71 @@
     "public_refill_role": "Known-location white-box structure deletion diagnosis, separate from authorAGA, not the sole optimization objective or a proof that earlier TA/AGA effects are invalid.",
     "old_candidates": "All original artifacts, predictions and phase1 tag preserved.",
     "MNIST_evaluation": "Iterative research; previously observed test set is not a fresh blind test."
+  },
+  "phase2_source_geometry": {
+    "status": "verified_conditional_neighborhoods_insufficient_for_current_points",
+    "target": "MNIST",
+    "natural_train_n": 4096,
+    "O_B_source_midpoint_changed": 1,
+    "A_B_source_midpoint_changed": 2,
+    "O_B_positive_joint_radius_count": 1,
+    "A_B_positive_joint_radius_count": 2,
+    "new_full_model_forward_instances": 768,
+    "unknown_partner_coverage_proved": false,
+    "publication_updates": 0,
+    "new_release_weights": 0,
+    "results": "results/source_geometry_audit/results.json",
+    "validation": "results/source_geometry_audit/independent_validation.json",
+    "curvature_correction": {
+      "original_O_B_autograd_relative_error": 0.027519820679515535,
+      "analytic_relative_fd_error": 2.951181682815228e-07,
+      "old_artifact_preserved": true,
+      "initial_failed_verifier_preserved": true,
+      "task_weights_and_TA_AGA_results_unchanged": true
+    }
+  },
+  "phase2_curvature_game": {
+    "status": "restricted_geometric_class_direction_closed_no_classification_breakage",
+    "fixed_geometric_dimension": 16,
+    "publication_coefficient_dimension": 28672,
+    "original_coefficient_probe_rank": 32,
+    "parameter_budget": 0.5,
+    "task_budget": 0.5,
+    "Hessian_vector_calls": 17,
+    "mean_direction_curvature": 203.63983383545118,
+    "mean_direction_largest_class_contribution": "class5",
+    "mean_direction_finite_distance": 0.007131657148928475,
+    "mean_direction_midpoint_changed": 0,
+    "class_game_dual_solver_converged": false,
+    "class_game_dual_solver_steps": 64,
+    "restricted_spectral_upper_bound": 22.920803288204517,
+    "unit_direction_worst_class_curvature": 8.597326944080592,
+    "finite_class_direction_distance": 0.02926964516415947,
+    "finite_class_direction_task_drift": 0.03349963164479211,
+    "finite_class_direction_midpoint_changed": 0,
+    "publication_optimization_steps": 0,
+    "new_release_weights": 0,
+    "new_proxy_models": 0,
+    "partner_used": false,
+    "test_used": false,
+    "scope": "One deterministic16-dimensional Krylov span and two distinct curvature criteria; not a global/full-space impossibility result. Restricted average-curvature bound is not a classification accuracy bound.",
+    "results": [
+      "results/tangent_curvature_audit/results.json",
+      "results/class_curvature_game/results.json",
+      "results/curvature_direction_check/results.json"
+    ]
+  },
+  "github_sync": {
+    "status": "pending_connection_unavailable",
+    "last_verified_remote_commit": "2494442025f8c9eb62d8ba515c156119be73fa3e",
+    "last_verified_local_commit": "f67f1885b89a612650c4b12026a90fee080117a2",
+    "failures": [
+      "GitHub connector tools removed from active session; provider lookup reports installation/connection needed.",
+      "Local nativeGit443 connection refused.",
+      "Server read-only nativeGit remote query timed out after20seconds."
+    ],
+    "local_commits_preserved": true,
+    "claim_uploaded": false,
+    "durability": "Local Git commits and frozen server source archives retained; current mirror revision is recorded separately in outputs/latest_sync_receipt.json."
   }
 }
