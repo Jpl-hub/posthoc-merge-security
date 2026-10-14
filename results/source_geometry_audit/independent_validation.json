@@ -1,0 +1,41 @@
+{
+  "status": "passed_forward_and_certificates_with_corrected_analytic_curvature",
+  "checks": [
+    {
+      "case": "O_B",
+      "midpoint_changed": 1,
+      "first_derivative_relative_fd_error": 4.1665093598017913e-07,
+      "second_derivative_relative_fd_error": 0.027519820679515535,
+      "original_autograd_second_derivative_valid": false,
+      "analytic_second_derivative_relative_fd_error": 2.951181682815228e-07,
+      "corrected_quadratic_chord_relative_error": 0.5185034952625978,
+      "exact_readout_sorting": "passed",
+      "conditional_radius_roots": "passed",
+      "nonzero_joint_radius_count": 1,
+      "strict_radius_inequality_required": true
+    },
+    {
+      "case": "A_B",
+      "midpoint_changed": 2,
+      "first_derivative_relative_fd_error": 1.0179858765396043e-06,
+      "second_derivative_relative_fd_error": 9.237123502536814e-07,
+      "original_autograd_second_derivative_valid": true,
+      "analytic_second_derivative_relative_fd_error": 9.237123502566847e-07,
+      "corrected_quadratic_chord_relative_error": 0.9899614441868552,
+      "exact_readout_sorting": "passed",
+      "conditional_radius_roots": "passed",
+      "nonzero_joint_radius_count": 2,
+      "strict_radius_inequality_required": true
+    }
+  ],
+  "source_sha256": "0bca9cbf21c756f8513c6ffd856645f35ae26e4da53df7f2eeb71d99bd05d3f9",
+  "diagnostic_sha256": "fd793cd3f599de46795ab753abd326393d228b96ca1f63d73a7bf72c35b27a27",
+  "initial_verifier_failure_preserved": "outputs/phase2_source_geometry_verify.log; source commit613a805",
+  "correction": "Original O/B LayerNorm automatic second derivative disagrees with independent finite difference by2.75%; exact analytic derivative replaces it for curvature interpretation. Frozen weights, forward scores and original diagnostic file are unchanged. No error tolerance was relaxed.",
+  "new_full_model_forward_instances": 0,
+  "new_release_weights": 0,
+  "publication_updates": 0,
+  "test_used": false,
+  "partner_used": false,
+  "scope": "Independent NumPy nonlinear source tails, official train labels, directional Hessian finite differences and analytic neighborhood certificate roots. No assertion that unknown peer fusions lie inside the certified neighborhoods."
+}

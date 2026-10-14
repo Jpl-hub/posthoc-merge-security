@@ -1,0 +1,37 @@
+{
+  "target": "MNIST",
+  "output": "outputs/phase2_source_geometry_audit",
+  "coefficient": 0.5,
+  "parameter_budget_unchanged": 0.5,
+  "task_budget_unchanged": 0.5,
+  "replay_n": 128,
+  "cases": [
+    {
+      "name": "O_B",
+      "point": "outputs/phase2_boundary_game_mnist/candidate.pt",
+      "sha256": "e0ee5e5eeb170d550401724dfe0a8c6ff39273afdde79f46a207a4370b2398a4"
+    },
+    {
+      "name": "A_B",
+      "point": "outputs/phase2_ffn_game_mnist/candidate.pt",
+      "sha256": "1c5ffd5e9e16b44a104dcc29825dbd2cac1a8a2cd534b1d203f5b18815732f3b"
+    }
+  ],
+  "source_sha256": {
+    "experiments/source_geometry_audit.py": "684f10250aec874caca7caee3d36838f944a4066886e7551ebc2846ce8a50789",
+    "experiments/angular_distance.py": "9cff17f80aa43f22edbd3f2fa00bf6553391e71f91aa69f0c48bb754a055a65a",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/cross_module_distance.py": "74fcf77f10c37dcc989017e9f6462a47490e6b656dd3f3364c7448084c048c19",
+    "experiments/probe_distance_candidate.py": "95b48cecd125e48a2467f298da5e144b9d23b7490f6efe78cedf579a23a5b6bf",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "configs/sources.json": "528346ab06c38cc4e34a8a4064d9721f3884a1c2738deef4ec0e94a7b2b88a3f"
+  },
+  "entrypoint": "experiments/source_geometry_audit.py",
+  "description": "One read-only intrinsic source chord diagnosis of two frozen points. No future peer, no tests, no new proxy selection, no publishing or optimization. Class-radius bounds are computed, not tuned.",
+  "protocol_path": "configs/source_geometry_audit.json"
+}
