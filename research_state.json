@@ -1,17 +1,25 @@
 {
-  "status": "phase2_minimum_completion_preanalysis",
-  "updated_utc": "2026-10-14T10:11:38.228577+00:00",
+  "status": "phase2_minimum_completion_direction",
+  "updated_utc": "2026-10-14T10:14:09.614514+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [],
+  "research_jobs": [
+    {
+      "target": "MNIST",
+      "protocol": "configs/minimum_completion_direction.json",
+      "output": "outputs/phase2_minimum_completion_direction_mnist",
+      "mode": "diagnostic_only",
+      "new_release_weights": 0
+    }
+  ],
   "breakthrough_verified": false,
   "new_candidate": "No new Phase2 release: both angular publication optimizations failed frozen confirmation; proxy prediction changes stayed1/512",
   "mechanism": "notes/phase2_angular.md",
-  "next_action": "Diagnose once the mathematically minimum full-B ridge completion with the same target-only O cache, probes, absolute regularizer and distance budget; no rank or budget sweep.",
+  "next_action": "Check one full-B minimum ridge completion with unchanged physical budget, task probes and absolute regularizer; independently verify before any publication optimization.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",

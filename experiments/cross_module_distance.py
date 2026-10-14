@@ -90,6 +90,7 @@ class CrossProblem(Problem):
         previous=torch.load(parent,map_location="cpu")
         self.anchor,self.expert,self.head,self.hashes=checked_models(target)
         self.p_cpu=extended_parameters(self.expert,self.head);self.p=on_device(self.p_cpu)
+        self.b_width=self.p["B"].shape[1] if cfg.get("full_B_completion") else self.r
         self.prior_confirmation_indices=previous["indices"]["confirmation"]
         if cfg.get("cache_reference"):
             root=Path(cfg["cache_reference"]);meta=json.loads((root/"mechanism.json").read_text())
@@ -177,14 +178,15 @@ class CrossProblem(Problem):
             offset.extend([torch.zeros((n*count,p["B"].shape[1]),dtype=torch.float64,device="cuda"),sb.repeat(n,1)])
         packed={"r":torch.cat(rr),"o_input":torch.cat(zz),"rounding":torch.cat(cc),"b_offset":torch.cat(offset)}
         packed["task_input"]=packed["o_input"]@self.basis["A"]["vh"].T
-        packed["teacher"]=self.predict(packed,p,torch.zeros(self.a_size+p["B"].shape[0]*self.r,device="cuda",dtype=torch.float64))
+        packed["teacher"]=self.predict(packed,p,torch.zeros(self.a_size+p["B"].shape[0]*self.b_width,device="cuda",dtype=torch.float64))
         return packed
 
     def predict(self,packed,p,theta,factor=1.):
-        co=theta[:self.a_size].reshape(self.r,self.r);cb=theta[self.a_size:].reshape(p["B"].shape[0],self.r)
+        co=theta[:self.a_size].reshape(self.r,self.r);cb=theta[self.a_size:].reshape(p["B"].shape[0],self.b_width)
         rr=packed["r"]+factor*self.na*(packed["task_input"]@co.T)@self.basis["A"]["u"].T
         hidden=gelu(normalized_input(rr,p)@p["A"].T+p["a"])+packed["b_offset"]
-        h=packed["rounding"]+rr+hidden@p["B"].T+p["b"]+factor*self.nb*(hidden@self.basis["B"]["vh"].T)@cb.T
+        incoming=hidden if self.cfg.get("full_B_completion") else hidden@self.basis["B"]["vh"].T
+        h=packed["rounding"]+rr+hidden@p["B"].T+p["b"]+factor*self.nb*incoming@cb.T
         return scores(h,p)
 
 
