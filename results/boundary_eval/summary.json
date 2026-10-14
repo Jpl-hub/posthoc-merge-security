@@ -57,7 +57,8 @@
         748,
         -2,
         -2
-      ]
+      ],
+      "exact_mcnemar_log10_p": -578.3420609587359
     },
     "direct/SVHN": {
       "original_correct": 24079,
@@ -85,7 +86,8 @@
         1334,
         -60,
         37
-      ]
+      ],
+      "exact_mcnemar_log10_p": -2022.5093271466212
     },
     "AGA/MNIST": {
       "original_correct": 9932,
@@ -113,7 +115,8 @@
         637,
         0,
         -1
-      ]
+      ],
+      "exact_mcnemar_log10_p": -606.853840168478
     },
     "AGA/SVHN": {
       "original_correct": 23890,
@@ -141,7 +144,8 @@
         1158,
         -54,
         60
-      ]
+      ],
+      "exact_mcnemar_log10_p": -2086.862193848921
     }
   },
   "task_macro_mean_percent": {
@@ -171,7 +175,7 @@
   "limitations": [
     "Only MNIST protected; SVHN is a partner, not a protected-task transfer.",
     "Protected MNIST remains77.85% after AGA, with concentrated failures; not complete task blocking.",
-    "Public parameter replacement and other restoration robustness not yet verified.",
+    "Public replacement restores MNIST AGA to99.31% with low original task-update removal cost; no robust recovery defense.",
     "No paper novelty or ARF/Table6 comparison claim.",
     "Reported paired p=0 is numerical underflow; not a mathematically zero probability."
   ]

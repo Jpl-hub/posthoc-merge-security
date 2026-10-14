@@ -1,0 +1,51 @@
+{
+  "status": "public_replacement_recovers_with_low_matched_cost",
+  "metrics": {
+    "standalone/MNIST": {
+      "correct": 9967,
+      "n": 10000,
+      "accuracy_percent": 99.67,
+      "loss_vs_matched_original_pp": 0.02,
+      "changed_from_matched_original": 4
+    },
+    "direct/MNIST": {
+      "correct": 9935,
+      "n": 10000,
+      "accuracy_percent": 99.35000000000001,
+      "loss_vs_matched_original_pp": 0.02,
+      "changed_from_matched_original": 2
+    },
+    "direct/SVHN": {
+      "correct": 24065,
+      "n": 26032,
+      "accuracy_percent": 92.4439151813153,
+      "loss_vs_matched_original_pp": 0.053779963122311,
+      "changed_from_matched_original": 135
+    },
+    "AGA/MNIST": {
+      "correct": 9931,
+      "n": 10000,
+      "accuracy_percent": 99.31,
+      "loss_vs_matched_original_pp": 0.01,
+      "changed_from_matched_original": 3
+    },
+    "AGA/SVHN": {
+      "correct": 23874,
+      "n": 26032,
+      "accuracy_percent": 91.71020282728949,
+      "loss_vs_matched_original_pp": 0.06146281499692686,
+      "changed_from_matched_original": 141
+    }
+  },
+  "gradient_updates": 0,
+  "construction_training_images": 0,
+  "matched_models_exactly_equal": true,
+  "fresh_full_model_prediction_replays": 80,
+  "wall_seconds": 94.41013924172148,
+  "removed_task_update_relative_norm": {
+    "model.visual.transformer.resblocks.11.attn.out_proj.weight": 0.021259406581521034,
+    "model.visual.transformer.resblocks.11.mlp.c_proj.weight": 0.015603714622557163
+  },
+  "threat_model": "Attacker knows published method locations and public anchor; uses no original fine-tuned weights inside the refill transformation, no partner or data in construction.",
+  "candidate_retuned": false
+}

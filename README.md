@@ -19,6 +19,8 @@
 
 自由联合发布变量的新诊断提高了代理分类覆盖：54/512→111/512改判，涉及8类；但新确认集间隔变化0.725超过原0.5约束。完整模型重放确认失败，停止发布，未运行真实融合或AGA。低间隔输入上的补偿保持是当前障碍，不能把代理改善称为防御突破。[联合优化、失败见证与代价](notes/phase2_joint_class.md)。
 
+**最新第二阶段：** 统一低间隔校准与非线性任务可行路径优化通过独立保持。MNIST独立99.69%→99.71%，真实TA99.37%→78.77%，原版AGA99.32%→77.85%；但公开回填两个修改矩阵后恢复至99.31%，清理独立代价仅0.02个百分点。该发布点冻结，固定双矩阵路线因低成本恢复关闭；没有抗恢复、跨被保护任务或论文成熟性结论。[机制、真实效果、匹配恢复与代价](notes/phase2_boundary.md)。
+
 - `experiments/projection_bias_noise.py`：当前保护构造
 - `configs/projection_bias_noise_svhn.json`：当前直接采集训练图的冻结协议；[SVHN 迁移结果](notes/projection_bias_noise_svhn.md)
 - `configs/projection_bias_noise.json`：MNIST/DTD 原始协议，重放须使用 `7949958` 源码或服务器冻结包

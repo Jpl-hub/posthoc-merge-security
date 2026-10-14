@@ -1,23 +1,17 @@
 {
-  "status": "phase2_boundary_true_effect_verified_public_refill_preregistered",
-  "updated_utc": "2026-10-14T15:22:02.080044+00:00",
+  "status": "phase2_boundary_effect_verified_closed_low_cost_public_recovery",
+  "updated_utc": "2026-10-14T15:34:24.971274+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [
-    {
-      "protocol": "configs/boundary_public_refill.json",
-      "output": "outputs/boundary_public_refill",
-      "mode": "one_public_anchor_replacement_check_after_defense_freeze"
-    }
-  ],
+  "stage": "restoration_cost_and_task_essential_regions",
+  "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "New Phase2 candidate preserves standalone utility and reduces protected MNIST by21.47pp after authorAGA; class concentration and public recovery remain unresolved.",
+  "new_candidate": "Frozen Phase2 task-level-set candidate: native99.71%, authorAGA MNIST77.85%; public two-matrix refill restores99.31%. Stronger original-AGA effect but not restoration-robust defense.",
   "mechanism": "notes/phase2_boundary.md",
-  "next_action": "Evaluate one low-cost public-anchor replacement with exact matched original/protected cleaning control. Never change this release from recovery/test observations. If recovery is cheap, close this fixed region before cross-task expansion.",
+  "next_action": "Before any new release, identify one task-essential modification region using target-only task singular responses and matched original-expert public-refill cost. Stop regions with negligible task-update removal cost; do not increase this candidate budget/iterations or expand weak restoration behavior to other protected tasks.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -221,7 +215,7 @@
     "fresh_calibration_reproduction": "results/projection_bias_noise/fresh_reproduction.json",
     "extension_published_source_commit": "c965ec6b995177e483fb1ec6fc6dd3eb42155bcc"
   },
-  "breakthrough_scope": "Phase1 frozen. Phase2 latest angular diagnostics/conditional distillation demonstrate local feasible ordering gradients, but no effective defense and no general impossibility result.",
+  "breakthrough_scope": "Phase1 frozen. Phase2 task-boundary and nonlinear functional publication has verified21.47pp MNIST authorAGA degradation with preserved standalone utility, but public two-matrix replacement restores99.31%; no restoration-robust or cross-protected-task breakthrough.",
   "rank_one_limitations": [
     "Protected MNIST accuracy remains 91.15% with SVHN and 77.16% with DTD after AGA; not complete capability blocking.",
     "Only MNIST is protected; no cross-protected-task claim.",
@@ -644,8 +638,8 @@
     "reason": "Frozen0.5 task bound exceeded on a natural confirmation input. No threshold relaxation, re-selection, or additional iterations."
   },
   "phase1_integrity_recheck": {
-    "status": "all4 releases and original source ZIP unchanged",
-    "date_utc": "2026-10-14T12:50:14.135674+00:00",
+    "status": "all4 releases and original source ZIP unchanged after this Phase2 run",
+    "date_utc": "2026-10-14T15:34:24.980271+00:00",
     "source_archive_sha256": "602dd96dea9786e68bbfe74c3ae2e5eaf1a053382fb6f9637ea21a05c772b5ae"
   },
   "joint_coverage_diagnosis": {
@@ -740,7 +734,8 @@
     "old_context_feasible_step": 0.00390625,
     "feasible_proxy_changes": 0,
     "unit_mode_response_fraction": 0.9969128551926855,
-    "full_O_margin_gradient_fraction": 0.5491080123004207
+    "full_O_margin_gradient_fraction": 0.5491080123004207,
+    "split_independence_audit": "results/task_boundary_audit/split_independence_audit.json"
   },
   "boundary_retraction": {
     "status": "local_nonlinear_mechanism_verified",
@@ -753,7 +748,7 @@
     "independent_confirmation_run": false
   },
   "boundary_game": {
-    "status": "confirmation_and_independent_reconstruction_passed",
+    "status": "frozen_after_true_effect_and_low_cost_public_recovery",
     "candidate_sha256": "e0ee5e5eeb170d550401724dfe0a8c6ff39273afdde79f46a207a4370b2398a4",
     "optimizer_outer_updates": 64,
     "explicit_reverse_gradient_calls": 64,
@@ -783,7 +778,8 @@
     "new_release_weights": 1,
     "true_fusion_effect_verified": true,
     "test_used_for_construction": false,
-    "partner_used_for_construction": false
+    "partner_used_for_construction": false,
+    "cross_protected_task_transfer_run": false
   },
   "boundary_true_eval": {
     "status": "protected_task_TA_and_author_AGA_effect_verified",
@@ -844,7 +840,8 @@
           748,
           -2,
           -2
-        ]
+        ],
+        "exact_mcnemar_log10_p": -578.3420609587359
       },
       "direct/SVHN": {
         "original_correct": 24079,
@@ -872,7 +869,8 @@
           1334,
           -60,
           37
-        ]
+        ],
+        "exact_mcnemar_log10_p": -2022.5093271466212
       },
       "AGA/MNIST": {
         "original_correct": 9932,
@@ -900,7 +898,8 @@
           637,
           0,
           -1
-        ]
+        ],
+        "exact_mcnemar_log10_p": -606.853840168478
       },
       "AGA/SVHN": {
         "original_correct": 23890,
@@ -928,7 +927,8 @@
           1158,
           -54,
           60
-        ]
+        ],
+        "exact_mcnemar_log10_p": -2086.862193848921
       }
     },
     "task_macro_mean_percent": {
@@ -958,9 +958,60 @@
     "limitations": [
       "Only MNIST protected; SVHN is a partner, not a protected-task transfer.",
       "Protected MNIST remains77.85% after AGA, with concentrated failures; not complete task blocking.",
-      "Public parameter replacement and other restoration robustness not yet verified.",
+      "Public replacement restores MNIST AGA to99.31% with low original task-update removal cost; no robust recovery defense.",
       "No paper novelty or ARF/Table6 comparison claim.",
       "Reported paired p=0 is numerical underflow; not a mathematically zero probability."
     ]
+  },
+  "boundary_public_refill": {
+    "status": "public_replacement_recovers_with_low_matched_cost",
+    "metrics": {
+      "standalone/MNIST": {
+        "correct": 9967,
+        "n": 10000,
+        "accuracy_percent": 99.67,
+        "loss_vs_matched_original_pp": 0.02,
+        "changed_from_matched_original": 4
+      },
+      "direct/MNIST": {
+        "correct": 9935,
+        "n": 10000,
+        "accuracy_percent": 99.35000000000001,
+        "loss_vs_matched_original_pp": 0.02,
+        "changed_from_matched_original": 2
+      },
+      "direct/SVHN": {
+        "correct": 24065,
+        "n": 26032,
+        "accuracy_percent": 92.4439151813153,
+        "loss_vs_matched_original_pp": 0.053779963122311,
+        "changed_from_matched_original": 135
+      },
+      "AGA/MNIST": {
+        "correct": 9931,
+        "n": 10000,
+        "accuracy_percent": 99.31,
+        "loss_vs_matched_original_pp": 0.01,
+        "changed_from_matched_original": 3
+      },
+      "AGA/SVHN": {
+        "correct": 23874,
+        "n": 26032,
+        "accuracy_percent": 91.71020282728949,
+        "loss_vs_matched_original_pp": 0.06146281499692686,
+        "changed_from_matched_original": 141
+      }
+    },
+    "gradient_updates": 0,
+    "construction_training_images": 0,
+    "matched_models_exactly_equal": true,
+    "fresh_full_model_prediction_replays": 80,
+    "wall_seconds": 94.41013924172148,
+    "removed_task_update_relative_norm": {
+      "model.visual.transformer.resblocks.11.attn.out_proj.weight": 0.021259406581521034,
+      "model.visual.transformer.resblocks.11.mlp.c_proj.weight": 0.015603714622557163
+    },
+    "threat_model": "Attacker knows published method locations and public anchor; uses no original fine-tuned weights inside the refill transformation, no partner or data in construction.",
+    "candidate_retuned": false
   }
 }
