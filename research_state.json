@@ -1,6 +1,6 @@
 {
-  "status": "phase2_angular_matrix_direction_diagnostic",
-  "updated_utc": "2026-10-14T08:01:13.532721+00:00",
+  "status": "phase2_conditional_angular_direction",
+  "updated_utc": "2026-10-14T08:36:38.476369+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -10,15 +10,15 @@
   "research_jobs": [
     {
       "target": "MNIST",
-      "protocol": "configs/angular_matrix_direction.json",
-      "output": "outputs/phase2_angular_matrix_direction_mnist",
+      "protocol": "configs/conditional_task_direction.json",
+      "output": "outputs/phase2_conditional_direction_mnist",
       "new_release_weights": 0
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No new release: publication-coefficient optimizations closed without proxy ordering improvement",
   "mechanism": "notes/phase2_projected_game.md",
-  "next_action": "Compare expanded task-SVD A matrix at identical starting weights and budget using invariant-score gradient, native JVP and finite nonlinear steps. Do not retune old ray or confirmation constraint.",
+  "next_action": "Diagnose true angular gradient through conditional c_proj distillation; compare native JVP and nonlinear finite feasibility before any gradient optimization or release.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -398,5 +398,14 @@
     "new_release_weights": 0,
     "GPU_wall_seconds": 21.75419981731102
   },
-  "github_sync_status": "pending: GitHub plugin installed but tools unavailable; native Git443 refused and server Git unauthenticated"
+  "github_sync_status": "pending: GitHub plugin installed but tools unavailable; native Git443 refused and server Git unauthenticated",
+  "angular_matrix_direction": {
+    "status": "diagnosed_no_single_step_classification_gain",
+    "gradient_norm": 11.665176516554135,
+    "linear_feasible_step_bound": 0.0020532202304940246,
+    "finite_feasible_step": 0.00125,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "new_release_weights": 0
+  }
 }
