@@ -47,12 +47,15 @@ def verify(output):
     proxy_before=predict(data['proxy'],pp,zero);winner=proxy_before.argmax(1);rows=np.arange(len(winner));others=proxy_before.copy();others[rows,winner]=-np.inf;competitor=others.argmax(1)
     counts=np.bincount(winner,minlength=proxy_before.shape[1]);weights=1./counts[winner]/int((counts>0).sum())
     angular=lambda s:(s-s.mean(1,keepdims=True))/np.linalg.norm(s-s.mean(1,keepdims=True),axis=1,keepdims=True)
-    a=angular(proxy_before);unit=np.median(a[rows,winner]-a[rows,competitor])
+    a=angular(proxy_before)
+    # torch.median uses the lower middle order statistic for an even sample.
+    # Reproduce that frozen definition rather than NumPy's averaged median.
+    unit=np.sort(a[rows,winner]-a[rows,competitor])[(len(a)-1)//2]
     def objective(theta):
         s=angular(predict(data['proxy'],pp,theta,cfg['proxy_beta']));others=s.copy();others[rows,winner]=-np.inf
         return -np.sum(weights*np.maximum(s[rows,winner]-others.max(1),0))/unit
     step=cfg['derivative_step'];slope=(objective(step*random)-objective(-step*random))/(2*step)
-    assert abs(slope-gradient@random)<1e-6
+    assert abs(slope-gradient@random)<1e-6,(slope,float(gradient@random),float(unit))
     checks=[]
     old=torch.load(Path(cfg['cache_reference'])/'calibration.pt',map_location='cpu')
     for record in report['records']:
