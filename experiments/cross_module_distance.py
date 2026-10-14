@@ -37,14 +37,15 @@ def capture_attention(model,training,indices):
     """Observe the exact MHA pre-output input; never invert an attention matrix."""
     block=model.model.visual.transformer.resblocks[11]
     assert not block.attn.batch_first
-    groups={k:[] for k in ["o_input","r","h","actual"]}; active={}
+    groups={k:[] for k in ["o_input","attn_output","r","h","actual"]}; active={}
     old_linear=F.linear
     def record_linear(value,weight,bias=None):
         if weight.data_ptr()==active["o_pointer"]:
             active["calls"]+=1
             groups["o_input"].append(value.reshape(-1,active["batch"],value.shape[-1])[0].detach().cpu())
         return old_linear(value,weight,bias)
-    hooks=[block.ln_2.register_forward_pre_hook(lambda _m,args:groups["r"].append(args[0][0].detach().cpu())),
+    hooks=[block.attn.register_forward_hook(lambda _m,_args,out:groups["attn_output"].append(out[0][0].detach().cpu())),
+           block.ln_2.register_forward_pre_hook(lambda _m,args:groups["r"].append(args[0][0].detach().cpu())),
            model.model.visual.ln_post.register_forward_pre_hook(lambda _m,args:groups["h"].append(args[0].detach().cpu()))]
     try:
         model.cuda().eval();active["o_pointer"]=block.attn.out_proj.weight.data_ptr();F.linear=record_linear
@@ -94,6 +95,14 @@ class CrossProblem(Problem):
         cache={g:capture_attention(self.expert,training,indices[k]) for g,k in [("native","fit"),("scale","scale")]}
         proxy=merge(self.anchor,self.expert,self.anchor,cfg["proxy_beta"])
         self.pp=on_device(extended_parameters(proxy,self.head));cache["proxy"]=capture_attention(proxy,training,indices["fit"]);del proxy
+        cache_checks=[]
+        for g in ["native","scale","proxy"]:
+            item=on_device(cache[g]);p=self.pp if g=="proxy" else self.p
+            attention_error=float((item["o_input"]@p["O"].T+p["ob"]-item["attn_output"]).abs().max())
+            actual=(item["actual"]/item["actual"].norm(dim=1,keepdim=True))@p["head"].T
+            score_error=float((scores(item["h"],p)-actual).abs().max())
+            assert attention_error<5e-4 and score_error<5e-4,(g,attention_error,score_error)
+            cache_checks.append({"group":g,"n":len(item["h"]),"attention_output_maximum_error":attention_error,"zero_transform_score_maximum_error":score_error})
         p0=extended_parameters(self.anchor,self.head);task=self.p_cpu["O"]-p0["O"]
         u,s,vh=torch.linalg.svd(task,full_matrices=False)
         mode={"u":u.cuda(),"s":s.cuda(),"vh":vh.cuda()};imp={};checks=[]
@@ -129,7 +138,7 @@ class CrossProblem(Problem):
                  "selected_O_modes":chosen.cpu().tolist(),"fit_selected_response_fraction":float(imp["native"][chosen].sum()/imp["native"].sum()),
                  "scale_selected_response_fraction":float(imp["scale"][chosen].sum()/imp["scale"].sum()),
                  "fit_scale_top32_overlap":len(set(chosen.cpu().tolist())&set(imp["scale"].argsort(descending=True)[:self.r].cpu().tolist())),
-                 "analytic_response_checks":checks,"checkpoint_sha256":self.hashes,"parent_sha256":self.parent_sha,
+                 "analytic_response_checks":checks,"real_cache_checks":cache_checks,"checkpoint_sha256":self.hashes,"parent_sha256":self.parent_sha,
                  "new_weights":0,"partner_used":False,"test_used":False,"training_indices":indices}
         folder=Path(cfg["output"]);torch.save(self.cal,folder/"calibration.pt")
         summary["calibration_sha256"]=digest(folder/"calibration.pt");save_json(folder/"mechanism.json",summary)
