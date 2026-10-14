@@ -1,0 +1,268 @@
+{
+  "status": "target_anchor_mixed_compensation_diagnosis",
+  "target": "MNIST",
+  "records": [
+    {
+      "case": "O_B",
+      "n": 128,
+      "teacher_class_counts": [
+        17,
+        16,
+        14,
+        6,
+        10,
+        18,
+        11,
+        12,
+        12,
+        12
+      ],
+      "task_row_rank": 360,
+      "mixed_fd_relative_error": 4.789602171760233e-11,
+      "component_norms": {
+        "upstream": 51.45480066649412,
+        "local_operator": 23.406791851796175,
+        "readout": 12.34395202453666
+      },
+      "quadrature_orders": [
+        3,
+        7
+      ],
+      "integrated_mixed_relative_errors": [
+        0.0010829749972280356,
+        2.541067789507394e-07
+      ],
+      "source_mixed_to_finite_secant_cosine": 0.8718132314122118,
+      "projected_mixed_to_proxy_gradient_cosine": 0.7881416697409842,
+      "projected_mixed_retained_fraction": 0.6306914952932998,
+      "projected_mixed_task_null_max": 2.4634516648802673e-10,
+      "linear_maxmin_primal": 2.217744954584304,
+      "linear_maxmin_dual_upper": 2.217763881996744,
+      "dual_solver_success": true,
+      "dual_solver_message": "Optimization terminated successfully",
+      "frozen_mixed_linear_vs_exact_class_error": 1.7268807590231265,
+      "frozen_class_exact_harm": [
+        1.0419809889768588,
+        0.8066894975006725,
+        0.6560943388799612,
+        -0.06524460044415664,
+        0.5423201950400831,
+        0.37619258133882344,
+        0.32450570094254083,
+        0.4434354252457468,
+        0.2628109835343334,
+        0.5568576605079618
+      ],
+      "frozen_class_linear_harm": [
+        2.0964032089700315,
+        -0.5381810879750333,
+        -0.09469269252546786,
+        -1.5949478357146285,
+        0.9932686686609201,
+        0.5717826127967478,
+        0.7747165197397952,
+        -0.9714123762942459,
+        0.8073227443789228,
+        1.6696106804179787
+      ],
+      "frozen_counts": [
+        {
+          "environment": "native",
+          "n": 128,
+          "original_correct": 127,
+          "changed": 0,
+          "changed_by_native_class": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "environment": "anchor_interpolation",
+          "n": 128,
+          "original_correct": 127,
+          "changed": 87,
+          "changed_by_native_class": [
+            17,
+            16,
+            13,
+            6,
+            10,
+            1,
+            0,
+            12,
+            0,
+            12
+          ]
+        }
+      ],
+      "finite": {
+        "trials": [
+          {
+            "step": 0.5,
+            "task_worst_margin_drift": 27.60955805866862
+          },
+          {
+            "step": 0.25,
+            "task_worst_margin_drift": 5.967582230005526
+          },
+          {
+            "step": 0.125,
+            "task_worst_margin_drift": 1.279501438085966
+          }
+        ],
+        "selected": {
+          "distance": 0.06249999999999999,
+          "task_worst_margin_drift": 0.2914214543381161,
+          "natural_n": 4096,
+          "natural_prediction_changes": 0,
+          "proxy_n": 128,
+          "proxy_changed": 0,
+          "proxy_changed_by_native_class": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "role": "One new mixed-derivative direction from the origin; task-only finite feasibility, no publication optimization."
+      }
+    },
+    {
+      "case": "A_B",
+      "n": 128,
+      "teacher_class_counts": [
+        17,
+        16,
+        14,
+        6,
+        10,
+        18,
+        11,
+        12,
+        12,
+        12
+      ],
+      "task_row_rank": 360,
+      "mixed_fd_relative_error": 4.6057102751576765e-11,
+      "component_norms": {
+        "upstream": 50.466086528396126,
+        "local_operator": 22.778115415750246,
+        "readout": 10.250813081030627
+      },
+      "quadrature_orders": [
+        3,
+        7
+      ],
+      "integrated_mixed_relative_errors": [
+        0.0010923509798937093,
+        2.502598899862848e-07
+      ],
+      "source_mixed_to_finite_secant_cosine": 0.8650495995129966,
+      "projected_mixed_to_proxy_gradient_cosine": 0.7943569767073347,
+      "projected_mixed_retained_fraction": 0.6184396293817542,
+      "projected_mixed_task_null_max": 8.242801996516391e-10,
+      "linear_maxmin_primal": 2.1318906035823257,
+      "linear_maxmin_dual_upper": 2.1318968825307247,
+      "dual_solver_success": true,
+      "dual_solver_message": "Optimization terminated successfully",
+      "frozen_mixed_linear_vs_exact_class_error": 1.1804708272903515,
+      "frozen_class_exact_harm": [
+        1.215458597280917,
+        0.8081630143065022,
+        0.6510886783352252,
+        0.04909414820763784,
+        0.5221138397324118,
+        0.2836135596183108,
+        0.46380212003550636,
+        0.2440048836993606,
+        0.3301589552461467,
+        0.6091871012514738
+      ],
+      "frozen_class_linear_harm": [
+        2.0373700672938195,
+        -0.026485952312290548,
+        0.11349597319683374,
+        -1.0394527010765415,
+        0.9550388410661655,
+        0.5185800577253629,
+        1.1599154938389482,
+        -0.7151134912853486,
+        0.7809200742077214,
+        1.249687361044585
+      ],
+      "frozen_counts": [
+        {
+          "environment": "native",
+          "n": 128,
+          "original_correct": 127,
+          "changed": 0,
+          "changed_by_native_class": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "environment": "anchor_interpolation",
+          "n": 128,
+          "original_correct": 127,
+          "changed": 89,
+          "changed_by_native_class": [
+            17,
+            16,
+            14,
+            6,
+            10,
+            0,
+            0,
+            12,
+            2,
+            12
+          ]
+        }
+      ],
+      "finite": null
+    }
+  ],
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "diagnostic_sha256": "861b8a31cb56b978ce4fb28c90905f508a231ad46bb01aa3a8c427fdbc5a3bc8",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "source_sha256": "04c9c155504592b6cda3a6d8163b0d6156e66e7f284a54088f2bc8aee5e7ed2b",
+  "protocol_sha256": "6e9061c082426f634f1c8858600bcb06fcaf0717e560e1c1ce4154c93b062bb9",
+  "read_only_mixed_JVP_calls": 26,
+  "new_full_model_forward_instances": 0,
+  "publication_optimization_steps": 0,
+  "new_release_weights": 0,
+  "partner_used": false,
+  "test_used": false,
+  "confirmation_used": false,
+  "wall_seconds": 9.588731427211314,
+  "peak_gpu_bytes": 1676226560,
+  "limitation": "One observable target/anchor secant, not coverage of unknown peers. Intermediate tail environments are an integration path, not independently selected model proxies. A symmetric uncertainty set cannot force uniformly signed first-order harm."
+}
