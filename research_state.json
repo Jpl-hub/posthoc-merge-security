@@ -1,6 +1,6 @@
 {
-  "status": "phase2_cross_module_publication_game",
-  "updated_utc": "2026-10-14T09:39:46.693877+00:00",
+  "status": "phase2_cross_module_real_evaluation",
+  "updated_utc": "2026-10-14T09:52:19.278116+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -10,16 +10,16 @@
   "research_jobs": [
     {
       "target": "MNIST",
-      "protocol": "configs/cross_module_game.json",
-      "output": "outputs/phase2_cross_module_game_mnist",
-      "optimizer_updates": 64,
-      "new_release_weights": 0
+      "partner": "SVHN",
+      "protocol": "configs/cross_module_eval.json",
+      "output": "outputs/cross_module_mnist",
+      "mode": "frozen_point_native_TA_AGA"
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No new Phase2 release: both angular publication optimizations failed frozen confirmation; proxy prediction changes stayed1/512",
   "mechanism": "notes/phase2_angular.md",
-  "next_action": "One frozen64-step O-to-MLP publication optimization; use a fresh target-training confirmation including worst O/B singular probes. Fail any constraint before formal release/TA/AGA.",
+  "next_action": "Generate the frozen release before peer/test access, evaluate original/released native, target+peer TA and author AGA, then independently verify predictions and fingerprints. No retuning.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -473,5 +473,22 @@
     "scale_selected_response_fraction": 0.9977431926729651,
     "source_execution": "b8b5b69",
     "new_release_weights": 0
+  },
+  "cross_module_game": {
+    "status": "passed independent finite task constraints plus256 fresh full CLIP confirmation replays",
+    "optimizer_updates": 64,
+    "selected_step": 62,
+    "O_relative_distance": 0.12072813218422336,
+    "B_relative_distance": 0.48518940370867375,
+    "parameter_distance": 0.49998403911711997,
+    "proxy_changes": 3,
+    "proxy_n": 512,
+    "confirmation_worst_margin_drift": 0.23935857376803424,
+    "confirmation_n": 512,
+    "confirmation_original_correct": 512,
+    "confirmation_candidate_correct": 512,
+    "candidate_sha256": "6736674970f0f2f1fad0c6d3358a7743a4771d49430ed7dab96baa4bb65e2443",
+    "formal_evaluation_completed": false,
+    "effective_defense_verified": false
   }
 }
