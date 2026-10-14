@@ -70,6 +70,15 @@ class QueryProblem(Problem):
         previous=torch.load(parent,map_location='cpu');self.prior_confirmation_indices=previous['indices']['confirmation']
         self.anchor,self.expert,self.head,self.hashes=checked_models(target);self.p_cpu=query_parameters(self.expert,self.head);self.p=on_device(self.p_cpu)
         assert torch.equal(self.p_cpu['B'],previous['parameter_reference']['B'])
+        if cfg.get('cache_reference'):
+            root=Path(cfg['cache_reference']);meta=json.loads((root/'mechanism.json').read_text())
+            assert digest(root/'calibration.pt')==cfg['calibration_sha256']==meta['calibration_sha256']
+            assert meta['checkpoint_sha256']==self.hashes and meta['parent_sha256']==self.parent_sha
+            cache=torch.load(root/'calibration.pt',map_location='cpu')
+            proxy=merge(self.anchor,self.expert,self.anchor,cfg['proxy_beta']);self.pp=on_device(query_parameters(proxy,self.head));del proxy
+            self.complete(cache,cache['basis_Q'],cache['basis_B'],cache['indices'])
+            save_json(Path(cfg['output'])/'mechanism.json',{'target':target,'cache_reference':str(root),'calibration_sha256':cfg['calibration_sha256'],'checkpoint_sha256':self.hashes,'new_model_forwards':0})
+            return
         training=dataset(target,'data',self.expert.val_preprocess,True);indices={k:previous['indices'][k] for k in ['fit','scale']}
         cache={g:capture_query(self.expert,training,indices[k]) for g,k in [('native','fit'),('scale','scale')]}
         proxy=merge(self.anchor,self.expert,self.anchor,cfg['proxy_beta']);self.pp=on_device(query_parameters(proxy,self.head))
@@ -101,19 +110,22 @@ class QueryProblem(Problem):
                     error=float((measured-response[:,:,i]).norm()/response[:,:,i].norm().clamp_min(1e-20));assert error<1e-3
                     fd.append({'group':group,'mode':i,'relative_error':error})
         chosen=importance['native'].argsort(descending=True)[:self.r].cpu();basis={'u':u[:,chosen],'s':s[chosen],'vh':vh[chosen],'selected':chosen}
-        self.basis={'A':on_device(basis),'B':on_device(previous['basis']['B'])};self.na,self.nb=self.p['Q'].norm(),self.p['B'].norm()
-        self.class_space,self.class_geometry=readout(self.p,cfg['readout_relative_tolerance']);self.output_basis=self.class_space['Q'];self.b_rows=self.output_basis.shape[1];self.b_width=self.p['B'].shape[1]
-        self.cal={**cache,'indices':indices,'basis_Q':basis,'basis_B':previous['basis']['B'],'output_basis':self.output_basis.cpu()}
+        self.complete(cache,basis,previous['basis']['B'],indices)
+        out=Path(cfg['output']);torch.save(self.cal,out/'calibration.pt')
+        save_json(out/'mechanism.json',{'target':target,'site':'block11 Query weight and class-output B completion','calibration_sha256':digest(out/'calibration.pt'),'checkpoint_sha256':self.hashes,'parent_sha256':self.parent_sha,'cache_checks':checks,'selection_read_only_gradient_calls':2*self.proxy['teacher'].shape[1],
+                 'selected_query_modes':chosen.tolist(),'fit_response_fraction':float(importance['native'][chosen.cuda()].sum()/importance['native'].sum()),'scale_response_fraction':float(importance['scale'][chosen.cuda()].sum()/importance['scale'].sum()),
+                 'fit_scale_top32_overlap':len(set(chosen.tolist())&set(importance['scale'].argsort(descending=True)[:self.r].cpu().tolist())),
+                 'unit_mode_derivative_checks':fd,'target_training_forward_instances':3*len(indices['fit']),'future_partner_used':False,'test_used':False,'new_weights':0})
+
+    def complete(self,cache,basis,b_basis,indices):
+        self.basis={'A':on_device(basis),'B':on_device(b_basis)};self.na,self.nb=self.p['Q'].norm(),self.p['B'].norm()
+        self.class_space,self.class_geometry=readout(self.p,self.cfg['readout_relative_tolerance']);self.output_basis=self.class_space['Q'];self.b_rows=self.output_basis.shape[1];self.b_width=self.p['B'].shape[1]
+        self.cal={**cache,'indices':indices,'basis_Q':basis,'basis_B':b_basis,'output_basis':self.output_basis.cpu()}
         self.native=[self.prepare(cache[g],self.p,True) for g in ['native','scale']];self.proxy=self.prepare(cache['proxy'],self.pp,False)
         teacher=self.proxy['teacher'];self.winner=teacher.argmax(1);self.rows=torch.arange(len(teacher),device='cuda')
         counts=torch.bincount(self.winner,minlength=teacher.shape[1]);self.weights=1./counts[self.winner].double()/int((counts>0).sum())
         self.unit=self.gap(angular_scores(teacher)).median().detach();assert self.unit>0
-        self.initial=-cfg['parameter_budget']*torch.diag(self.basis['A']['s'])/self.basis['A']['s'].norm()
-        out=Path(cfg['output']);torch.save(self.cal,out/'calibration.pt')
-        save_json(out/'mechanism.json',{'target':target,'site':'block11 Query weight and class-output B completion','calibration_sha256':digest(out/'calibration.pt'),'checkpoint_sha256':self.hashes,'parent_sha256':self.parent_sha,'cache_checks':checks,'selection_read_only_gradient_calls':2*teacher.shape[1],
-                 'selected_query_modes':chosen.tolist(),'fit_response_fraction':float(importance['native'][chosen.cuda()].sum()/importance['native'].sum()),'scale_response_fraction':float(importance['scale'][chosen.cuda()].sum()/importance['scale'].sum()),
-                 'fit_scale_top32_overlap':len(set(chosen.tolist())&set(importance['scale'].argsort(descending=True)[:self.r].cpu().tolist())),
-                 'unit_mode_derivative_checks':fd,'target_training_forward_instances':3*len(indices['fit']),'future_partner_used':False,'test_used':False,'new_weights':0})
+        self.initial=-self.cfg['parameter_budget']*torch.diag(self.basis['A']['s'])/self.basis['A']['s'].norm()
 
     @torch.no_grad()
     def prepare(self,cache_cpu,p,probes):

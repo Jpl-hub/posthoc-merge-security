@@ -1,6 +1,6 @@
 {
-  "status": "phase2_query_task_mechanism_diagnostic",
-  "updated_utc": "2026-10-14T12:28:01.688856+00:00",
+  "status": "phase2_query_fixed_publication_optimization",
+  "updated_utc": "2026-10-14T12:34:29.732542+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -10,9 +10,9 @@
   "research_jobs": [
     {
       "target": "MNIST",
-      "protocol": "configs/query_direction.json",
-      "output": "outputs/phase2_query_direction_mnist",
-      "mode": "diagnostic_only"
+      "protocol": "configs/query_game.json",
+      "output": "outputs/phase2_query_game_mnist",
+      "mode": "frozen64steps"
     }
   ],
   "breakthrough_verified": false,
@@ -609,5 +609,16 @@
     "predictions_sha256": "d69f413ed740cbe633302b273adbdc9fe1150cee75c512d43dc8faedde501982",
     "no_parameter_changes_after_freeze": true,
     "DTD_transfer_run": false
+  },
+  "query_direction": {
+    "status": "independently_verified",
+    "raw_probe_critic": 0.2570352702206648,
+    "distance": 0.4999802898246889,
+    "proxy_changes": 1,
+    "proxy_n": 512,
+    "gradient_FD_error": 5.338143327585403e-07,
+    "native_JVP_error": 9.592863677888863e-11,
+    "fit_scale_selected_overlap": 32,
+    "effective_defense_verified": false
   }
 }
