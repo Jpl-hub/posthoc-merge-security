@@ -86,13 +86,60 @@ def raw_score_target(h0,teacher,space,epsilon,iterations=16):
                         "fixed_point_sigma_error":float((sigma(final,epsilon)-rho).abs().max().detach())}
 
 
+def amplitude_target(h0,teacher,space,p,margin_fraction,steps=40):
+    """Solve a positive class amplitude inside the original raw-margin tolerance."""
+    q,v,w,a=[space[k] for k in ["Q","v","w","a"]]
+    linear=p["gamma"][:,None]*p["projection"];linear=linear-linear.mean(0)
+    bias=p["beta"]@p["projection"]
+    se=sigma(teacher,p["eps"]);te=teacher@linear+se*bias;teacher_norm=te.norm(dim=1,keepdim=True)
+    aux=h0-(h0@q)@q.T;task=(teacher@q)@q.T+se*w
+    auxc=aux-aux.mean(1,keepdim=True);tc=task-task.mean(1,keepdim=True);wc=w-w.mean()
+    base=auxc.square().mean(1,keepdim=True)+p["eps"]
+    task_norm=tc.square().mean(1,keepdim=True);cross=(tc*wc).mean(1,keepdim=True)
+    asym_rho=((cross.square()+a*task_norm).sqrt()-cross)/a
+    asym_t=task@linear+asym_rho*(bias-w@linear)
+    asym_alpha=teacher_norm/asym_t.norm(dim=1,keepdim=True)
+    target=1.-margin_fraction/2.
+    assert asym_alpha.min()>target+1e-8,"Specified raw-margin level cannot be certified in this class plane"
+    def family(c):
+        disc=(c.square()*cross.square()+a*(base+c.square()*task_norm)).sqrt()
+        rho=(base+c.square()*task_norm)/(disc+c*cross)
+        h=aux+c*task-rho*w;t=h@linear+rho*bias
+        alpha=c*teacher_norm/t.norm(dim=1,keepdim=True)
+        dr=(c*(cross.square()+a*task_norm)/disc-cross)/a
+        dt=task@linear+dr*(bias-w@linear)
+        derivative=teacher_norm/t.norm(dim=1,keepdim=True)*(1.-c*(t*dt).sum(1,keepdim=True)/t.square().sum(1,keepdim=True))
+        return h,alpha,derivative,rho
+    with torch.no_grad():
+        low=torch.zeros_like(teacher_norm);high=torch.ones_like(low)
+        for _ in range(16):
+            insufficient=family(high)[1]<target
+            if not insufficient.any():break
+            high=torch.where(insufficient,2*high,high)
+        assert (family(high)[1]>=target).all(),"Positive amplitude bracket failed"
+        for _ in range(steps):
+            mid=(low+high)/2;below=family(mid)[1]<target
+            low=torch.where(below,mid,low);high=torch.where(below,high,mid)
+        numerical=(low+high)/2
+    _,alpha,derivative,_=family(numerical)
+    assert derivative.abs().min()>1e-8,"Ill-conditioned amplitude root"
+    # Attach the implicit first derivative; the numerical root is not a learned per-image parameter.
+    c=numerical-(alpha-target)/derivative.detach()
+    h,actual,_,rho=family(c)
+    correction=(c*teacher-h0)@q+(c*se-rho)*v
+    assert (h-(h0+correction@q.T)).abs().max()<1e-8
+    return h,correction,{"target_raw_gap_scale":target,"amplitude_minimum":float(c.min().detach()),
+                         "amplitude_maximum":float(c.max().detach()),"asymptotic_gap_scale_minimum":float(asym_alpha.min().detach()),
+                         "amplitude_root_error":float((actual-target).abs().max().detach()),"root_derivative_minimum":float(derivative.abs().min().detach())}
+
+
 @torch.no_grad()
 def analyze(target,cfg):
     out=Path(cfg["output"]);out.mkdir(parents=True,exist_ok=False);start=time.monotonic()
     root=Path(cfg["cache_reference"]);assert digest(root/"calibration.pt")==cfg["calibration_sha256"]
     cache=torch.load(root/"calibration.pt",map_location="cpu")
     _,expert,head,hashes=checked_models(target);p=on_device(extended_parameters(expert,head))
-    raw_mode=cfg.get("preserve_centered_raw_scores",False)
+    raw_mode=cfg.get("preserve_centered_raw_scores",False);band_mode=cfg.get("preserve_raw_margin_band",False)
     space,geometry=(feature_space if raw_mode else readout)(p,cfg["readout_relative_tolerance"])
     basis=on_device(cache["basis_O"]);co=-cfg["parameter_budget"]*torch.diag(basis["s"])/basis["s"].norm()
     eo=p["O"].norm()*basis["u"]@co@basis["vh"]
@@ -100,7 +147,12 @@ def analyze(target,cfg):
     for group in ["native","scale"]:
         data=on_device(cache[group]);h=data["h"]
         direct=angular_scores(scores(h,p))
-        if raw_mode:
+        if band_mode:
+            ideal,target_q,root_info=amplitude_target(h0,h,space,p,cfg["margin_fraction"],cfg["amplitude_bisection_steps"])
+            before=scores(h,p);after=scores(ideal,p);factor=root_info["target_raw_gap_scale"]
+            numerator_error=float(((after-after.mean(1,keepdim=True))-factor*(before-before.mean(1,keepdim=True))).abs().max())
+            variance_error=root_info["amplitude_root_error"]
+        elif raw_mode:
             t=h@space["L"]+sigma(h,p["eps"])*space["c"]
             raw_scores=t/t.norm(dim=1,keepdim=True)@p["head"].T
             analytic=angular_scores(raw_scores);numer=None
@@ -127,7 +179,7 @@ def analyze(target,cfg):
                         "ideal_sigma_error":variance_error,"ideal_raw_margin_drift":float(signed_residual(scores(h,p),scores(ideal,p)).abs().max()),
                         "ideal_hidden_relative_change":float((ideal-h).norm()/h.norm()),"required_Q_correction_rms":float(target_q.square().sum(1).mean().sqrt()),**root_info})
     artifact=out/"readout.pt";torch.save(space,artifact)
-    report={"target":target,"status":"exact_raw_score_level_set_verified_only" if raw_mode else "exact_level_set_identity_verified_only","geometry":geometry,"records":records,
+    report={"target":target,"status":"controlled_raw_margin_level_set_verified_only" if band_mode else "exact_raw_score_level_set_verified_only" if raw_mode else "exact_level_set_identity_verified_only","geometry":geometry,"records":records,
             "checkpoint_sha256":hashes,"readout_sha256":digest(artifact),"calibration_sha256":cfg["calibration_sha256"],
             "source_sha256":digest(__file__),"protocol_sha256":digest(cfg["protocol_path"]),
             "ideal_O_relative_distance":cfg["parameter_budget"],"uniform_B_completion_constructed":False,
