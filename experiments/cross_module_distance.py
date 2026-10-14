@@ -200,10 +200,12 @@ class CrossProblem(Problem):
 
 
 class CrossCoupled(DistilledProblem):
+    problem_class=CrossProblem
+    real_fields=("r","task_input","rounding")
     confirmation_capture=staticmethod(capture_attention)
     def __init__(self,target,cfg):
-        self.problem=CrossProblem(target,cfg);p=self.problem;self.solve_calls=0
-        self.real={k:torch.cat([p.native[i][k][:len(p.cal[g]["r"])] for i,g in enumerate(["native","scale"])]) for k in ["r","task_input","rounding"]}
+        self.problem=self.problem_class(target,cfg);p=self.problem;self.solve_calls=0
+        self.real={k:torch.cat([p.native[i][k][:len(p.cal[g]["r"])] for i,g in enumerate(["native","scale"])]) for k in self.real_fields}
         self.teacher=torch.cat([on_device(p.cal[g])["h"] for g in ["native","scale"]])
         hidden=gelu(normalized_input(self.real["r"],p.p)@p.p["A"].T+p.p["a"]);q=hidden@p.basis["B"]["vh"].T
         self.ridge=cfg["ridge_relative_floor"]*torch.linalg.eigvalsh(q.T@q)[-1].detach();self.eye=torch.eye(p.r,dtype=torch.float64,device="cuda")

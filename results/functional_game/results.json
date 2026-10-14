@@ -1,0 +1,165 @@
+{
+  "target": "MNIST",
+  "method": "classification_level_set_publication_primal_dual",
+  "optimization_variables": 1024,
+  "publication_coefficients": 28672,
+  "initial": {
+    "objective": 0.11076761192247853,
+    "angular_stress": -0.8889315326322125,
+    "parameter_distance": 0.49992478048069666,
+    "native_critic": 0.26294108033313723,
+    "proxy_changed": 0,
+    "proxy_n": 512,
+    "changed_by_teacher_class": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "minimum_centered_score_norm": 1.2769460700163866
+  },
+  "selected": {
+    "objective": 0.33095282652730174,
+    "angular_stress": -0.6690410280934276,
+    "parameter_distance": 0.49999846365282197,
+    "native_critic": 0.25961088905852775,
+    "proxy_changed": 54,
+    "proxy_n": 512,
+    "changed_by_teacher_class": [
+      0,
+      0,
+      1,
+      53,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "minimum_centered_score_norm": 1.8733771987119616
+  },
+  "selected_step": 64,
+  "optimizer_updates": 64,
+  "explicit_reverse_gradient_calls": 128,
+  "coefficient_jvp_calls": 64,
+  "jvp_method": "two internal reverse passes per JVP",
+  "dual_updates": 64,
+  "conditional_linear_solve_calls": 1122,
+  "feasible_training_iterates": 65,
+  "temporarily_infeasible_optimization_iterates": 0,
+  "distance_retraction_bisections": 800,
+  "original_expert_parameters_updated": false,
+  "gold_labels_used_for_optimization": false,
+  "future_partner_used": false,
+  "test_used": false,
+  "new_release_weights": 0,
+  "full_output_fit_relative_residual": 0.6422368635771043,
+  "confirmation": {
+    "n": 512,
+    "original_correct": 512,
+    "candidate_correct": 512,
+    "changed_predictions": 0,
+    "worst_margin_drift": 0.4215604361352412
+  },
+  "confirmation_passed": true,
+  "candidate_sha256": "0e717e70af1bd46205d7c2829f70131e4852fee259ec76b3b09520104cee7228",
+  "parent_diagnostic_sha256": "0e29552e071d68a79ec11cf0fa5de71a2e5ca6327eef4e5914d46231d09df16b",
+  "source_sha256": "522744658176643effb60e2ed549b3df0426ff0fdcf1d0b130cfe72b7a7c427e",
+  "protocol_sha256": "1290cebac171ce43dd70e2da313d129b5220682e2bfa2eb60490993d247cdb07",
+  "primary_entrypoint_sha256": "795c4e0a17d742260035940ede3bd587313724c52ef052c9f170d1debd4af066",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "initialization_trials": [
+    {
+      "seed_fraction": 1.0,
+      "distance": 3.3745869522221326,
+      "native_critic": 0.28025884697763875,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.5,
+      "distance": 0.9500475314316017,
+      "native_critic": 0.27235626944087615,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.25,
+      "distance": 0.36822736617925844,
+      "native_critic": 0.25865005062628693,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.375,
+      "distance": 0.5976675055183119,
+      "native_critic": 0.2662019128922489,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.3125,
+      "distance": 0.46405669410858963,
+      "native_critic": 0.26144727196938367,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.34375,
+      "distance": 0.5269831264967808,
+      "native_critic": 0.2639518318732036,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.328125,
+      "distance": 0.49448146485681227,
+      "native_critic": 0.26272627514197855,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.3359375,
+      "distance": 0.510483375011904,
+      "native_critic": 0.26334651960958294,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.33203125,
+      "distance": 0.5024190063805724,
+      "native_critic": 0.2630381760963777,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.33007812499999994,
+      "distance": 0.4984342217152904,
+      "native_critic": 0.2628826584658522,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.3310546875,
+      "distance": 0.5004226312251222,
+      "native_critic": 0.26296052701190287,
+      "feasible": false
+    },
+    {
+      "seed_fraction": 0.33056640625,
+      "distance": 0.49942742822063946,
+      "native_critic": 0.2629216199830921,
+      "feasible": true
+    },
+    {
+      "seed_fraction": 0.330810546875,
+      "distance": 0.49992478048069666,
+      "native_critic": 0.26294108033313723,
+      "feasible": true
+    }
+  ],
+  "wall_seconds": 299.04416355583817,
+  "peak_gpu_bytes": 1552616960,
+  "global_saddle_optimum_claim": false
+}

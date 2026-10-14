@@ -1,6 +1,6 @@
 {
-  "status": "phase2_functional_completion_direction",
-  "updated_utc": "2026-10-14T10:40:25.000585+00:00",
+  "status": "phase2_query_task_mechanism_diagnostic",
+  "updated_utc": "2026-10-14T12:28:01.688856+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -10,15 +10,15 @@
   "research_jobs": [
     {
       "target": "MNIST",
-      "protocol": "configs/functional_direction.json",
-      "output": "outputs/phase2_functional_direction_mnist",
-      "mode": "frozen_diagnostic"
+      "protocol": "configs/query_direction.json",
+      "output": "outputs/phase2_query_direction_mnist",
+      "mode": "diagnostic_only"
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No new effective Phase2 defense. Cross-module real TA/AGA negative; functional-completion diagnostic only.",
-  "mechanism": "notes/phase2_classification_completion.md",
-  "next_action": "Check uniform classification completion under unchanged budget and finite task probes; no release unless training and independent confirmation pass.",
+  "mechanism": "notes/phase2_query.md",
+  "next_action": "Check one last-block Query mechanism, using target-only task-SVD response and conditional classification distillation; keep radius and task tolerance fixed.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -535,5 +535,79 @@
     "relative_gap_drift": 0.25,
     "uniform_transform_verified": false,
     "new_release_weights": 0
+  },
+  "functional_direction": {
+    "status": "independently_verified",
+    "native_critic": 0.26294108033313723,
+    "parameter_distance": 0.49992478048069666,
+    "proxy_changed": 0,
+    "proxy_n": 512,
+    "gradient_fd_relative_error": 2.658763462335822e-07,
+    "coefficient_verification_error": 3.7184144652258055e-13,
+    "native_JVP_error": 1.4093123369696148e-10,
+    "new_release_weights": 0
+  },
+  "functional_game": {
+    "candidate_sha256": "0e717e70af1bd46205d7c2829f70131e4852fee259ec76b3b09520104cee7228",
+    "selected_step": 64,
+    "updates": 64,
+    "gradient_calls": 128,
+    "coefficient_jvp_calls": 64,
+    "parameter_distance": 0.49999846365282197,
+    "native_training_critic": 0.25961088905852775,
+    "proxy_changed": 54,
+    "proxy_n": 512,
+    "proxy_changed_by_class": [
+      0,
+      0,
+      1,
+      53,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "confirmation_n": 512,
+    "original_correct": 512,
+    "candidate_correct": 512,
+    "confirmation_worst_margin_drift": 0.4215604361352412,
+    "effective_defense_verified": false
+  },
+  "functional_real_evaluation": {
+    "status": "independently_verified_no_effective_defense",
+    "target": "MNIST",
+    "partner": "SVHN",
+    "native_correct": [
+      9969,
+      9968,
+      10000
+    ],
+    "direct_target_correct": [
+      9937,
+      9918,
+      10000
+    ],
+    "AGA_target_correct": [
+      9932,
+      9923,
+      10000
+    ],
+    "direct_peer_correct": [
+      24079,
+      23073,
+      26032
+    ],
+    "AGA_peer_correct": [
+      23890,
+      23130,
+      26032
+    ],
+    "AGA_target_exact_mcnemar_p": 0.10775214433670044,
+    "release_sha256": "f38e04be07b7bf84a4815bef9c1429fdc346b5cf745597c66d88e722c639160e",
+    "predictions_sha256": "d69f413ed740cbe633302b273adbdc9fe1150cee75c512d43dc8faedde501982",
+    "no_parameter_changes_after_freeze": true,
+    "DTD_transfer_run": false
   }
 }

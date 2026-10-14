@@ -42,10 +42,15 @@ def verify(output):
     np.testing.assert_allclose(task@vo.T,uo*array(cal["basis_O"]["s"]),atol=1e-9,rtol=1e-7)
     for basis in [uo.T,vo,vb]:np.testing.assert_allclose(basis@basis.T,np.eye(rank),atol=1e-9)
     normo,normb=np.linalg.norm(p["O"]),np.linalg.norm(p["B"])
+    class_space=None
+    if cfg.get("class_output_completion"):
+        class_space=torch.load(output/'readout.pt',map_location='cpu')
+        oq=array(class_space['Q']);np.testing.assert_allclose(oq.T@oq,np.eye(oq.shape[1]),atol=1e-10)
     theta,direction=[array(saved[k]) for k in ["theta","direction"]]
     def delta(coeff):
         eo=normo*uo@coeff[:size].reshape(rank,rank)@vo
-        eb=normb*coeff[size:].reshape(p["B"].shape) if cfg.get("full_B_completion") else normb*coeff[size:].reshape(p["B"].shape[0],rank)@vb
+        if class_space is not None:eb=normb*oq@coeff[size:].reshape(oq.shape[1],p['B'].shape[1])
+        else:eb=normb*coeff[size:].reshape(p["B"].shape) if cfg.get("full_B_completion") else normb*coeff[size:].reshape(p["B"].shape[0],rank)@vb
         return eo,eb
     eo,eb=delta(theta);do,db=delta(direction)
     i=next((j for j,row in enumerate(report["finite_steps"]) if row["feasible"]),0)
@@ -63,7 +68,16 @@ def verify(output):
         o,b=delta(coeff);r=realr+realz@o.T;z=hidden(r);q=z@vb.T
         residual=teacher-rounding-r-z@p["B"].T-p["b"]
         kb=np.linalg.solve(q.T@q+ridge*np.eye(rank),q.T@residual).T
-        if cfg.get("full_B_completion"):
+        if class_space is not None:
+            from verify_classification_completion import target_numpy
+            linear=p['gamma'][:,None]*p['projection'];linear=linear-linear.mean(0);bias=p['beta']@p['projection']
+            w=array(class_space['w']);a=1.-np.mean((w-w.mean())**2)
+            base=teacher-residual
+            ideal,_,_=target_numpy(base,teacher,oq,w,a,linear,bias,p['eps'],1.-cfg['margin_fraction']/2.)
+            projected=(ideal-base)@oq
+            full=np.linalg.solve(z@z.T+ridge*np.eye(len(z)),projected).T@z
+            error=float(np.max(np.abs(full/normb-coeff[size:].reshape(oq.shape[1],p['B'].shape[1]))))
+        elif cfg.get("full_B_completion"):
             full=np.linalg.solve(z@z.T+ridge*np.eye(len(z)),residual).T@z
             error=float(np.max(np.abs(full/normb-coeff[size:].reshape(p["B"].shape))))
             restricted=kb@vb
@@ -130,7 +144,10 @@ def verify_game(output):
     rnk=cfg["probe_rank"];sz=rnk**2;theta=array(cal["theta"])
     uo,vo=[array(cal["basis_O"][k]) for k in ["u","vh"]];vb=array(cal["basis_B"]["vh"])
     eo=np.linalg.norm(p["O"])*uo@theta[:sz].reshape(rnk,rnk)@vo
-    eb=np.linalg.norm(p["B"])*theta[sz:].reshape(p["B"].shape[0],rnk)@vb
+    if cfg.get('class_output_completion'):
+        oq=array(cal['output_basis']);np.testing.assert_allclose(oq.T@oq,np.eye(oq.shape[1]),atol=1e-10)
+        eb=np.linalg.norm(p['B'])*oq@theta[sz:].reshape(oq.shape[1],p['B'].shape[1])
+    else:eb=np.linalg.norm(p["B"])*theta[sz:].reshape(p["B"].shape[0],rnk)@vb
     for site,delta in [("O",eo),("B",eb)]:np.testing.assert_allclose(delta,array(cal["release_deltas"][site]),atol=1e-8,rtol=1e-7)
     distance=float(np.sqrt(np.linalg.norm(eo)**2/np.linalg.norm(p["O"])**2+np.linalg.norm(eb)**2/np.linalg.norm(p["B"])**2))
     assert distance<=cfg["parameter_budget"]*(1+1e-12) and abs(distance-report["selected"]["parameter_distance"])<1e-8
@@ -141,8 +158,19 @@ def verify_game(output):
     h=np.concatenate([array(cal[g]["h"]) for g in ["native","scale"]]);c=h-r-hidden(r)@p["B"].T-p["b"]
     q0=hidden(r)@vb.T;ridge=cfg["ridge_relative_floor"]*np.linalg.eigvalsh(q0.T@q0)[-1]
     r1=r+z@eo.T;hh=hidden(r1);q=hh@vb.T
-    kb=np.linalg.solve(q.T@q+ridge*np.eye(rnk),q.T@(h-c-r1-hh@p["B"].T-p["b"])).T
-    coefficient_error=float(np.max(np.abs(kb/np.linalg.norm(p["B"])-theta[sz:].reshape(p["B"].shape[0],rnk))));assert coefficient_error<1e-7
+    if cfg.get('class_output_completion'):
+        from verify_classification_completion import target_numpy
+        space=torch.load(output/'readout.pt',map_location='cpu')
+        np.testing.assert_allclose(oq,array(space['Q']),atol=1e-12)
+        linear=p['gamma'][:,None]*p['projection'];linear=linear-linear.mean(0);bias=p['beta']@p['projection']
+        w=array(space['w']);a=1.-np.mean((w-w.mean())**2);base=c+r1+hh@p['B'].T+p['b']
+        ideal,_,_=target_numpy(base,h,oq,w,a,linear,bias,p['eps'],1.-cfg['margin_fraction']/2.)
+        kb=np.linalg.solve(hh@hh.T+ridge*np.eye(len(hh)),(ideal-base)@oq).T@hh
+        coefficient_error=float(np.max(np.abs(kb/np.linalg.norm(p['B'])-theta[sz:].reshape(oq.shape[1],p['B'].shape[1]))))
+    else:
+        kb=np.linalg.solve(q.T@q+ridge*np.eye(rnk),q.T@(h-c-r1-hh@p["B"].T-p["b"])).T
+        coefficient_error=float(np.max(np.abs(kb/np.linalg.norm(p["B"])-theta[sz:].reshape(p["B"].shape[0],rnk))))
+    assert coefficient_error<1e-7
     groups={};confirmed=None
     for g in ["native","scale","confirmation"]:
         r,z,h=[array(cal[g][k]) for k in ["r","o_input","h"]];n=cfg["probe_contexts"];count=2*rnk
