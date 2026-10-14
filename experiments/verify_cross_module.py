@@ -174,7 +174,11 @@ def verify_game(output):
     h=np.concatenate([array(cal[g]["h"]) for g in ["native","scale"]]);c=h-r-hidden(r)@p["B"].T-p["b"]
     q0=hidden(r)@vb.T;ridge=cfg["ridge_relative_floor"]*np.linalg.eigvalsh(q0.T@q0)[-1]
     r1=r+z@eo.T;hh=hidden(r1);q=hh@vb.T
-    if cfg.get('class_output_completion'):
+    if cfg.get('direct_free_class_variables'):
+        coefficient_error=None
+        space=torch.load(output/'readout.pt',map_location='cpu')
+        np.testing.assert_allclose(oq,array(space['Q']),atol=1e-12)
+    elif cfg.get('class_output_completion'):
         from verify_classification_completion import target_numpy
         space=torch.load(output/'readout.pt',map_location='cpu')
         np.testing.assert_allclose(oq,array(space['Q']),atol=1e-12)
@@ -186,7 +190,7 @@ def verify_game(output):
     else:
         kb=np.linalg.solve(q.T@q+ridge*np.eye(rnk),q.T@(h-c-r1-hh@p["B"].T-p["b"])).T
         coefficient_error=float(np.max(np.abs(kb/np.linalg.norm(p["B"])-theta[sz:].reshape(p["B"].shape[0],rnk))))
-    assert coefficient_error<1e-7
+    assert coefficient_error is None or coefficient_error<1e-7
     groups={};confirmed=None
     for g in ["native","scale","confirmation"]:
         r,z,h=[array(cal[g][k]) for k in ["r","o_input","h"]];n=cfg["probe_contexts"];count=2*rnk
@@ -239,13 +243,77 @@ def verify_game(output):
             "B_relative_distance":float(np.linalg.norm(eb)/np.linalg.norm(p["B"])),"conditional_coefficient_error":coefficient_error,
             "task_constraints":groups,"confirmation_counts":counts,"new_release_weights":0,
             "new_model_forwards":sum(row["n"] for row in fresh),"fresh_replays":fresh,"test_used":False,"partner_used":False}
+    result['B_is_conditionally_eliminated']=not cfg.get('direct_free_class_variables',False)
     save_json(output/"independent_validation.json",result);print(json.dumps(result),flush=True)
 
 
+def audit_generalization(output):
+    """Read-only diagnosis of a rejected point; no candidate selection or update."""
+    output=Path(output);report=json.loads((output/'results.json').read_text())
+    path=output/'candidate.pt';assert digest(path)==report['candidate_sha256']
+    cal=torch.load(path,map_location='cpu');cfg=cal['protocol']
+    assert cfg.get('direct_free_class_variables') and not report['confirmation_passed']
+    _,expert,head,hashes=checked_models(report['target']);assert hashes==report['checkpoint_sha256']
+    p={k:array(v) if torch.is_tensor(v) else v for k,v in extended_parameters(expert,head).items()}
+    eo,eb=[array(cal['release_deltas'][k]) for k in ['O','B']]
+    def hidden(r):
+        pre=ln(r,p['gamma2'],p['beta2'],p['eps2'])@p['A'].T+p['a']
+        return pre*expit(1.702*pre)
+    def scores(h):return features(h,expert.model.visual)@p['head'].T
+    def relative_drift(before,after):
+        winner=before.argmax(1);rows=np.arange(len(before))
+        gap=before[rows,winner,None]-before;gap[rows,winner]=1.
+        ds=after-before;res=(ds[rows,winner,None]-ds)/np.maximum(gap,1e-12);res[rows,winner]=0.
+        return res
+    # Exact numerical row space of the two natural fitting groups, not a PCA
+    # energy cutoff or a new protection subspace. The rejected point stays fixed.
+    fit_r=np.concatenate([array(cal[g]['r']) for g in ['native','scale']])
+    fit_z=np.concatenate([array(cal[g]['o_input']) for g in ['native','scale']])
+    fit_hidden=hidden(fit_r+fit_z@eo.T)
+    _,singular,vh=np.linalg.svd(fit_hidden,full_matrices=False)
+    tolerance=np.finfo(np.float64).eps*max(fit_hidden.shape)*singular[0]
+    rank=int((singular>tolerance).sum());span=vh[:rank]
+    outside=eb-(eb@span.T)@span
+    np.testing.assert_allclose(fit_hidden@outside.T,0.,atol=1e-7)
+    records=[]
+    for group in ['native','scale','confirmation']:
+        r,z,h=[array(cal[group][k]) for k in ['r','o_input','h']]
+        rounding=h-r-hidden(r)@p['B'].T-p['b'];r1=r+z@eo.T;activation=hidden(r1)
+        before=scores(h);upstream=rounding+r1+activation@p['B'].T+p['b'];after=scores(upstream+activation@eb.T)
+        res=relative_drift(before,after);i,c=np.unravel_index(np.abs(res).argmax(),res.shape)
+        assert np.max(np.abs(res))<=report['confirmation']['worst_margin_drift']+1e-7 or group!='confirmation'
+        centered=lambda s:s-s.mean(1,keepdims=True)
+        original,changed=centered(before),centered(after)
+        alpha=np.sum(original*changed,1)/np.sum(original**2,1)
+        error=np.linalg.norm(changed-alpha[:,None]*original,axis=1)/np.linalg.norm(original,axis=1)
+        winners=before.argmax(1);gap=before[i,winners[i]]-before[i,c]
+        contribution=activation@outside.T;total=activation@eb.T
+        energy_fraction=float(np.sum(contribution**2)/max(np.sum(total**2),1e-30))
+        records.append({'group':group,'natural_n':len(r),'changed_predictions':int((before.argmax(1)!=after.argmax(1)).sum()),
+            'natural_maximum_margin_drift':float(np.abs(res).max()),'natural_violations':int((np.abs(res).max(1)>cfg['margin_fraction']).sum()),
+            'worst_witness':{'offset':int(i),'original_class':int(winners[i]),'competitor':int(c),'signed_relative_change':float(res[i,c]),
+                'original_gap':float(gap),'candidate_gap':float(after[i,winners[i]]-after[i,c]),'positive_affine_scale':float(alpha[i]),'non_affine_relative_error':float(error[i]),
+                'activation_outside_fit_row_space_fraction':float(np.linalg.norm(activation[i]-(activation[i]@span.T)@span)**2/np.linalg.norm(activation[i])**2),
+                'B_outside_response_fraction':float(np.linalg.norm(contribution[i])**2/max(np.linalg.norm(total[i])**2,1e-30))},
+            'positive_affine_scale_minimum':float(alpha.min()),'positive_affine_scale_median':float(np.median(alpha)),
+            'non_affine_relative_error_median':float(np.median(error)),'B_outside_response_energy_fraction':energy_fraction,
+            'O_only_maximum_margin_drift':float(np.abs(relative_drift(before,scores(upstream))).max()),
+            'B_only_maximum_margin_drift':float(np.abs(relative_drift(before,scores(h+hidden(r)@eb.T))).max())})
+    result={'status':'rejected_point_generalization_audit','source_sha256':digest(__file__),'candidate_sha256':digest(path),
+        'natural_fit_instances':len(fit_hidden),'B_input_dimension':fit_hidden.shape[1],'fit_row_space_numerical_rank':rank,
+        'numerical_rank_tolerance':float(tolerance),'B_parameter_outside_fit_row_space_fraction':float(np.linalg.norm(outside)**2/np.linalg.norm(eb)**2),
+        'fit_null_response_maximum':float(np.abs(fit_hidden@outside.T).max()),'records':records,
+        'new_release_weights':0,'new_model_forwards':0,'new_gradient_calls':0,'test_used':False,'partner_used':False,
+        'confirmation_use':'Diagnosis of a closed failed point only; never used to select or update this candidate.',
+        'limitation':'Natural-input row-space audit does not include the finite synthetic probes or establish causation by itself.'}
+    save_json(output/'generalization_audit.json',result);print(json.dumps(result),flush=True)
+
+
 if __name__=="__main__":
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--output",required=True)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--output",required=True);parser.add_argument('--generalization-audit',action='store_true')
     args=parser.parse_args();torch.set_num_threads(4)
-    if (Path(args.output)/'direction_comparison.json').exists():
+    if args.generalization_audit:audit_generalization(args.output)
+    elif (Path(args.output)/'direction_comparison.json').exists():
         report=json.loads((Path(args.output)/'direction_comparison.json').read_text())
         validations=[verify(args.output,row['direction']) for row in report['records']]
         save_json(Path(args.output)/'independent_validation.json',{'status':'passed','source_sha256':digest(__file__),'direction_artifact_sha256':report['directions_sha256'],'checks':validations,'new_weights':0,'test_used':False,'future_partner_used':False})
