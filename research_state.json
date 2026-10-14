@@ -1,6 +1,6 @@
 {
-  "status": "phase2_boundary_curvature_game_preregistered",
-  "updated_utc": "2026-10-14T15:00:35.921697+00:00",
+  "status": "phase2_boundary_candidate_confirmation_passed_real_eval_frozen",
+  "updated_utc": "2026-10-14T15:07:05.146350+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -10,15 +10,16 @@
   "research_jobs": [
     {
       "target": "MNIST",
-      "protocol": "configs/boundary_game.json",
-      "output": "outputs/phase2_boundary_game_mnist",
-      "mode": "one_frozen_task_levelset_publication_optimization"
+      "partner": "SVHN",
+      "protocol": "configs/boundary_eval.json",
+      "output": "outputs/boundary_mnist",
+      "mode": "frozen_true_TA_and_author_AGA"
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No effective Phase2 defense. Latest free joint point closed after independent preservation failure; no release or true fusion/AGA run.",
   "mechanism": "notes/phase2_boundary.md",
-  "next_action": "Verify the frozen nonlinear task-level-set optimization on a fresh target-training confirmation split. No true fusion or AGA before independent preservation passes.",
+  "next_action": "Complete one frozen true MNIST/SVHN TA and author AGA evaluation, independently recount official labels and replay original predictions. Proxy367/512 is not an efficacy claim.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -752,5 +753,38 @@
     "proxy_n": 512,
     "new_release_weights": 0,
     "independent_confirmation_run": false
+  },
+  "boundary_game": {
+    "status": "confirmation_and_independent_reconstruction_passed",
+    "candidate_sha256": "e0ee5e5eeb170d550401724dfe0a8c6ff39273afdde79f46a207a4370b2398a4",
+    "optimizer_outer_updates": 64,
+    "explicit_reverse_gradient_calls": 64,
+    "analytic_task_jacobian_calls": 83,
+    "nonlinear_correction_updates": 19,
+    "parameter_distance": 0.29903996199628047,
+    "calibration_worst_margin_drift": 0.4933520217466211,
+    "confirmation_worst_margin_drift": 0.37623403338691036,
+    "confirmation_original_correct": 512,
+    "confirmation_candidate_correct": 512,
+    "proxy_changed": 367,
+    "proxy_n": 512,
+    "proxy_changed_by_teacher_class": [
+      69,
+      60,
+      58,
+      43,
+      36,
+      6,
+      0,
+      55,
+      0,
+      40
+    ],
+    "fresh_full_model_prediction_replays": 256,
+    "wall_seconds": 84.27125195180997,
+    "new_release_weights": 0,
+    "true_fusion_effect_verified": false,
+    "test_used_for_construction": false,
+    "partner_used_for_construction": false
   }
 }
