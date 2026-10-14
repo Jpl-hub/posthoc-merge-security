@@ -8,11 +8,12 @@ from pathlib import Path
 import torch
 
 from clip_benchmark import digest, merge
+from covariance_noise import dataset
 from probe_distance_candidate import on_device
 from probe_margin_distance import scores, task_probes
 from projected_distance_game import pack
 from subspace_probe import save_json
-from task_probe_distance import checked_models, gelu, parameters
+from task_probe_distance import capture, checked_models, gelu, parameters
 
 
 def angular_scores(s):
@@ -186,6 +187,111 @@ def direction_diagnostic(target, cfg):
     print(json.dumps({k: v for k, v in report.items() if k!="training_indices"}), flush=True)
 
 
+def fresh_confirmation(problem, cfg):
+    """Only called after the sole training-selected point has been fixed."""
+    import numpy as np
+    excluded = set(i for group in problem.cal["indices"].values() for i in group)
+    sources = {}
+    # Only target-task metadata is inspected; no partner images or parameters.
+    for folder in Path("outputs").iterdir():
+        if not folder.is_dir(): continue
+        case = folder/"case.json"
+        own = folder.name.endswith("_"+problem.target.lower())
+        if case.exists(): own = json.loads(case.read_text()).get("target") == problem.target
+        if not own: continue
+        for name in ["training_indices.json", "holdout_protocol.json"]:
+            path = folder/name
+            if not path.exists(): continue
+            data = json.loads(path.read_text())
+            groups = [data["indices"]] if name == "holdout_protocol.json" else list(data.values())
+            for group in groups:
+                if isinstance(group, list): excluded.update(group)
+            sources[str(path)] = digest(path)
+    training = dataset(problem.target, "data", problem.expert.val_preprocess, True)
+    pool = sorted(set(range(len(training)))-excluded)
+    indices = np.random.default_rng(cfg["confirmation_seed"]).choice(pool, cfg["confirmation_n"], replace=False).tolist()
+    cache = capture(problem.expert, training, indices)
+    labels = torch.tensor([int(training[i][1]) for i in indices])
+    return cache, labels, {"indices": indices, "seed": cfg["confirmation_seed"],
+                           "excluded_count": len(excluded), "excluded_metadata_sha256": sources,
+                           "used_for_optimization": False, "split": "target_train"}
+
+
+def optimize(target, cfg):
+    output = Path(cfg["output"]); output.mkdir(parents=True, exist_ok=False)
+    torch.cuda.reset_peak_memory_stats(); started = time.monotonic()
+    problem = Problem(target, cfg)
+    theta = problem.initial.clone().requires_grad_(True)
+    floor = float(theta.norm()); limit = cfg["margin_fraction"]
+    initial = problem.metrics(theta); assert initial["native_critic"] <= limit
+    best = (initial["objective"], theta.detach().clone(), 0)
+    dual = 0.; history = []; feasible_count = 1
+    for step in range(cfg["optimization_steps"]):
+        residual = problem.residuals(theta)
+        witness = int(residual.abs().argmax()); rho = residual[witness].abs()
+        functional = problem.objective(theta)
+        # Inner finite probe adversary is exact; multiplier performs projected descent.
+        primal = functional-dual*(rho/limit-1.)
+        gradient = torch.autograd.grad(primal, theta)[0]
+        with torch.no_grad():
+            trial = theta+cfg["normalized_step"]*gradient/gradient.norm().clamp_min(1e-20)
+            norm = float(trial.norm()); trial *= min(problem.radius, max(floor, norm))/norm
+            metrics = problem.metrics(trial)
+            dual = max(0., dual+cfg["dual_step"]*(metrics["native_critic"]/limit-1.))
+            theta.copy_(trial)
+            feasible = metrics["native_critic"] <= limit and metrics["parameter_distance"] <= problem.radius*(1+1e-12)
+            if feasible:
+                feasible_count += 1
+                if metrics["objective"] > best[0]: best = (metrics["objective"], theta.detach().clone(), step+1)
+        history.append({"step": step+1, "dual_multiplier": dual, "native_witness_index": witness,
+                        "native_witness_signed_value": float(residual[witness]), "feasible": feasible,
+                        "gradient_norm": float(gradient.norm()), **metrics})
+        if (step+1)%8 == 0: print(json.dumps(history[-1]), flush=True)
+    theta = best[1]; final = problem.metrics(theta)
+    # Confirmation never chooses the point and is not used to restart optimization.
+    confirmation, labels, split = fresh_confirmation(problem, cfg)
+    packed = problem.prepare(confirmation, problem.p, True)
+    with torch.no_grad():
+        after = problem.predict(packed, problem.p, theta)
+        confirmed_rho = float(signed_residual(packed["teacher"], after).abs().max())
+        before_real = packed["teacher"][:len(labels)].argmax(1).cpu()
+        after_real = after[:len(labels)].argmax(1).cpu()
+        cb = theta[problem.a_size:].reshape(problem.p["B"].shape[0], problem.r)
+        ea = (theta[0]*problem.na*problem.ray if problem.form == "ray" else
+              problem.na*problem.basis["A"]["u"]@theta[:problem.a_size].reshape(problem.r, problem.r)@problem.basis["A"]["vh"])
+        eb = problem.nb*cb@problem.basis["B"]["vh"]
+        numerator = (ea*problem.p["A"]).sum(1)-(eb*problem.p["B"]).sum(0)
+        denominator = problem.p["A"].square().sum(1)+problem.p["B"].square().sum(0)
+        gauge = float((numerator.square()/denominator.clamp_min(1e-20)).sum()/(ea.square().sum()+eb.square().sum()))
+    artifact = output/"candidate.pt"
+    torch.save({**problem.cal, "theta": theta.cpu(), "release_deltas": {"A": ea.cpu(), "B": eb.cpu()},
+                "protocol": cfg, "confirmation": confirmation, "confirmation_indices": split["indices"],
+                "confirmation_labels": labels, "confirmation_original_predictions": before_real,
+                "confirmation_candidate_predictions": after_real, "parent_diagnostic_sha256": problem.parent_sha}, artifact)
+    torch.cuda.synchronize()
+    result = {"target": target, "coordinate_form": problem.form, "parameter_variables": len(theta),
+              "method": "angular_primal_dual_publication_transform", "initial": initial, "selected": final,
+              "selected_step": best[2], "feasible_training_iterates": feasible_count,
+              "optimizer_updates": cfg["optimization_steps"], "reverse_gradient_calls": cfg["optimization_steps"],
+              "dual_updates": cfg["optimization_steps"], "exact_worst_probe_evaluations_for_updates": cfg["optimization_steps"],
+              "temporarily_infeasible_optimization_iterates": sum(not r["feasible"] for r in history),
+              "original_expert_parameters_updated": False, "gold_labels_used_for_optimization": False,
+              "new_release_weights": 0, "future_partner_used": False, "test_used": False,
+              "parameter_distance_floor": floor, "parameter_distance_budget": problem.radius,
+              "confirmation": {"n": len(labels), "original_correct": int((before_real==labels).sum()),
+                               "candidate_correct": int((after_real==labels).sum()),
+                               "changed_predictions": int((before_real!=after_real).sum()), "worst_margin_drift": confirmed_rho},
+              "confirmation_passed": confirmed_rho <= limit, "neuron_scaling_explanation": gauge,
+              "candidate_sha256": digest(artifact), "parent_diagnostic_sha256": problem.parent_sha,
+              "source_sha256": digest(__file__), "protocol_sha256": digest(cfg["protocol_path"]),
+              "checkpoint_sha256": problem.hashes, "probe_matrix_certificate": problem.provenance,
+              "wall_seconds": time.monotonic()-started, "peak_gpu_bytes": torch.cuda.max_memory_allocated(),
+              "global_saddle_optimum_claim": False}
+    save_json(output/"results.json", result); save_json(output/"history.json", history)
+    save_json(output/"confirmation_split.json", split); save_json(output/"protocol.json", cfg)
+    print(json.dumps(result), flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__); parser.add_argument("--target", required=True)
     parser.add_argument("--protocol", required=True); args = parser.parse_args()
@@ -193,4 +299,5 @@ if __name__ == "__main__":
     for f, pin in cfg["source_sha256"].items(): assert digest(f) == pin, f
     torch.set_num_threads(4); torch.backends.cuda.matmul.allow_tf32 = False; torch.backends.cudnn.allow_tf32 = False
     cfg["protocol_path"] = args.protocol
-    direction_diagnostic(args.target, cfg)
+    if cfg.get("mode") == "optimize": optimize(args.target, cfg)
+    else: direction_diagnostic(args.target, cfg)
