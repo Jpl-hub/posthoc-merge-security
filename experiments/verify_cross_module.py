@@ -28,12 +28,19 @@ def ln_jvp(value,direction,gamma,epsilon):
     return (dc/sd-centered*np.mean(centered*dc,-1,keepdims=True)/sd**3)*gamma
 
 
-def verify(output):
-    output=Path(output);report=json.loads((output/"direction.json").read_text());meta=json.loads((output/"mechanism.json").read_text())
-    assert digest(output/"direction.pt")==report["direction_sha256"]
+def verify(output,comparison_name=None):
+    output=Path(output);meta=json.loads((output/"mechanism.json").read_text())
+    if comparison_name is None:
+        report=json.loads((output/"direction.json").read_text());assert digest(output/"direction.pt")==report["direction_sha256"]
+        saved=torch.load(output/"direction.pt",map_location="cpu")
+    else:
+        common=json.loads((output/'direction_comparison.json').read_text());assert digest(output/'directions.pt')==common['directions_sha256']
+        bundle=torch.load(output/'directions.pt',map_location='cpu');record=next(row for row in common['records'] if row['direction']==comparison_name)
+        saved={**bundle['directions'][comparison_name],'theta':bundle['theta'],'cfg':bundle['cfg'],'ridge':common['ridge']}
+        report={'target':common['target'],'checkpoint_sha256':common['checkpoint_sha256'],'finite_steps':record['finite_steps'],'direction_sha256':common['directions_sha256']}
     cache_path=output/"calibration.pt" if (output/"calibration.pt").exists() else Path(meta["cache_reference"])/"calibration.pt"
     assert digest(cache_path)==meta["calibration_sha256"]
-    saved=torch.load(output/"direction.pt",map_location="cpu");cal=torch.load(cache_path,map_location="cpu");cfg=saved["cfg"]
+    cal=torch.load(cache_path,map_location="cpu");cfg=saved["cfg"]
     anchor,expert,head,hashes=checked_models(report["target"]);assert hashes==report["checkpoint_sha256"]
     raw=extended_parameters(expert,head);p={k:array(v) if torch.is_tensor(v) else v for k,v in raw.items()}
     rank=cfg["probe_rank"];size=rank**2
@@ -64,7 +71,11 @@ def verify(output):
     q0=hidden(realr)@vb.T;ridge=cfg["ridge_relative_floor"]*np.linalg.eigvalsh(q0.T@q0)[-1]
     assert abs(ridge-saved["ridge"])<1e-9
     conditional=[];comparisons=[]
-    for coeff in [theta,trial]:
+    for coefficient_index,coeff in enumerate([theta,trial]):
+        if coefficient_index==1 and cfg.get('direct_free_class_variables'):
+            # A free joint point does not obey the old conditional B equation.
+            # Its actual operator, finite scores and task derivatives are checked below.
+            continue
         o,b=delta(coeff);r=realr+realz@o.T;z=hidden(r);q=z@vb.T
         residual=teacher-rounding-r-z@p["B"].T-p["b"]
         kb=np.linalg.solve(q.T@q+ridge*np.eye(rank),q.T@residual).T
@@ -132,7 +143,12 @@ def verify(output):
             "finite_step":finite["step"],"finite_step_feasible":finite["feasible"],"finite_native_critic":max(finite_max),
             "cache_checks":cache_checks,"new_model_forwards":0,"new_release_weights":0,"test_used":False,"partner_used":False}
     result["same_O_full_vs_restricted_B"]=comparisons
-    save_json(output/"independent_validation.json",result);print(json.dumps(result),flush=True)
+    result['coefficient_check_scope']='conditional reference point only; finite joint variables checked as independent operators' if cfg.get('direct_free_class_variables') else 'both conditional reference and finite trial'
+    if comparison_name is not None:
+        result['comparison_direction']=comparison_name
+        save_json(output/('independent_'+comparison_name+'.json'),result)
+    else:save_json(output/"independent_validation.json",result)
+    print(json.dumps(result),flush=True);return result
 
 
 def verify_game(output):
@@ -229,5 +245,9 @@ def verify_game(output):
 if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--output",required=True)
     args=parser.parse_args();torch.set_num_threads(4)
-    if (Path(args.output)/"results.json").exists():verify_game(args.output)
+    if (Path(args.output)/'direction_comparison.json').exists():
+        report=json.loads((Path(args.output)/'direction_comparison.json').read_text())
+        validations=[verify(args.output,row['direction']) for row in report['records']]
+        save_json(Path(args.output)/'independent_validation.json',{'status':'passed','source_sha256':digest(__file__),'direction_artifact_sha256':report['directions_sha256'],'checks':validations,'new_weights':0,'test_used':False,'future_partner_used':False})
+    elif (Path(args.output)/"results.json").exists():verify_game(args.output)
     else:verify(args.output)
