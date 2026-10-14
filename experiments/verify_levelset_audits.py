@@ -139,7 +139,8 @@ def game(out,data,report):
     labels=official_labels(report['target'],True)[indices]
     np.testing.assert_array_equal(labels,array(data['confirmation_labels']))
     protected=copy.deepcopy(expert);block=protected.model.visual.transformer.resblocks[11].mlp
-    block.c_fc.weight.data.add_(torch.from_numpy(ea).to(block.c_fc.weight.dtype));block.c_proj.weight.data.add_(torch.from_numpy(eb).to(block.c_proj.weight.dtype))
+    block.c_fc.weight.data.copy_((block.c_fc.weight.double()+torch.from_numpy(ea)).to(block.c_fc.weight.dtype))
+    block.c_proj.weight.data.copy_((block.c_proj.weight.double()+torch.from_numpy(eb)).to(block.c_proj.weight.dtype))
     training=dataset(report['target'],'data',expert.val_preprocess,True);replays=0
     for model,expected in [(expert,data['confirmation_original_predictions']),(protected,data['confirmation_candidate_predictions'])]:
         model.cuda().eval();pred=[]
@@ -160,5 +161,5 @@ if __name__=='__main__':
     expected=report['candidate_sha256'] if args.kind=='game' else report['diagnostic_sha256'];assert digest(path)==expected
     data=torch.load(path,map_location='cpu');result={'coupling':coupling,'ffn':ffn,'game':game}[args.kind](out,data,report)
     save_json(out/'independent_validation.json',{'status':'passed',**result,'diagnostic_sha256':digest(path),'source_sha256':digest(__file__),
-        'publication_updates':0,'new_release_weights':0,'new_model_forwards':0,'test_used':False})
+        'publication_updates':0,'new_release_weights':0,'new_model_forwards':result.get('fresh_full_model_prediction_instances',0),'test_used':False})
     print(json.dumps(result),flush=True)
