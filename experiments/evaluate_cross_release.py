@@ -35,9 +35,13 @@ def construct(original,anchor,head,training,indices,cfg,target):
     actual={key for key,value in released.state_dict().items() if not torch.equal(value,original.state_dict()[key])}
     assert actual==set(keys.values())
     reference={"path":str(root/"candidate.pt"),"sha256":meta["candidate_sha256"]}
+    updates=meta.get("optimizer_updates",meta.get("accepted_updates"))
+    assert updates is not None
     geometry={"method":meta["method"],"publication_point":reference,"parameter_distance":distance,
-              "selected_step":meta["selected_step"],"construction_optimizer_updates":meta["optimizer_updates"],
-              "explicit_reverse_gradient_calls":meta["explicit_reverse_gradient_calls"],"coefficient_jvp_calls":meta["coefficient_jvp_calls"],
+              "selected_step":meta["selected_step"],"construction_optimizer_updates":updates,
+              "explicit_reverse_gradient_calls":meta["explicit_reverse_gradient_calls"],"coefficient_jvp_calls":meta.get("coefficient_jvp_calls",0),
+              "analytic_task_jacobian_calls":meta.get("analytic_task_jacobian_calls",0),
+              "nonlinear_correction_updates":meta.get("nonlinear_correction_updates",0),
               "construction_GPU_seconds":meta["wall_seconds"],"task_confirmation":meta["confirmation"],
               "original_checkpoint_parameters_updated":False,"future_partner_used_for_construction":False,"test_used_for_construction":False}
     return released,edits,{"reference":reference},geometry
@@ -57,8 +61,10 @@ if __name__=="__main__":
     run(args,constructor=construct,holdout_loader=holdout)
     out=Path(args.output);meta=json.loads((out/"execution.json").read_text())
     point=json.loads((Path(cfg["publication_point"])/"results.json").read_text())
-    meta.update(evaluation_optimizer_steps=0,construction_optimizer_steps=point["optimizer_updates"],
-                optimizer_steps=point["optimizer_updates"],original_expert_parameters_updated=False,
+    updates=point.get("optimizer_updates",point.get("accepted_updates"))
+    meta.update(evaluation_optimizer_steps=0,construction_optimizer_steps=updates,
+                optimizer_steps=updates,construction_nonlinear_correction_updates=point.get("nonlinear_correction_updates",0),
+                construction_analytic_task_jacobian_calls=point.get("analytic_task_jacobian_calls",0),original_expert_parameters_updated=False,
                 publication_parameter_optimization=True,test_parameter_selection=False,
                 primary_entrypoint_sha256=digest(__file__),construction_point_sha256=point["candidate_sha256"])
     save_json(out/"execution.json",meta)

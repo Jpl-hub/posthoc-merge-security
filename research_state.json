@@ -1,17 +1,23 @@
 {
-  "status": "phase2_joint_coverage_closed_failed_confirmation",
-  "updated_utc": "2026-10-14T13:50:31.890928+00:00",
+  "status": "phase2_boundary_true_effect_verified_public_refill_preregistered",
+  "updated_utc": "2026-10-14T15:22:02.080044+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [],
+  "research_jobs": [
+    {
+      "protocol": "configs/boundary_public_refill.json",
+      "output": "outputs/boundary_public_refill",
+      "mode": "one_public_anchor_replacement_check_after_defense_freeze"
+    }
+  ],
   "breakthrough_verified": false,
-  "new_candidate": "No effective Phase2 defense. Latest free joint point closed after independent preservation failure; no release or true fusion/AGA run.",
-  "mechanism": "notes/phase2_joint_class.md",
-  "next_action": "Preregister a target-only teacher-margin coverage diagnosis across classes, excluding all prior confirmation indices. Check whether task probe contexts cover small native margins; do not update or release the rejected point.",
+  "new_candidate": "New Phase2 candidate preserves standalone utility and reduces protected MNIST by21.47pp after authorAGA; class concentration and public recovery remain unresolved.",
+  "mechanism": "notes/phase2_boundary.md",
+  "next_action": "Evaluate one low-cost public-anchor replacement with exact matched original/protected cleaning control. Never change this release from recovery/test observations. If recovery is cheap, close this fixed region before cross-task expansion.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -254,7 +260,7 @@
     "latest_four_release_hash_check": "2026-10-14: unchanged;3090 data volume16/50GB used"
   },
   "phase1_effect_verified": true,
-  "phase2_effect_verified": false,
+  "phase2_effect_verified": true,
   "pause_reason": null,
   "phase2_round1": {
     "status": "closed_no_defense_effect",
@@ -717,5 +723,244 @@
     "test_used": false,
     "partner_used": false,
     "new_release_weights": 0
+  },
+  "task_boundary_diagnosis": {
+    "status": "independently_verified",
+    "screen_n": 4096,
+    "contexts_per_predicted_class": 2,
+    "previous_confirmation_excluded": true,
+    "old_candidate_loaded": false,
+    "parameter_updates": 0,
+    "new_release_weights": 0,
+    "peer_or_test_used": false,
+    "selection_rule": "Teacher-only within-class lowest top-two gaps; fixed common rule.",
+    "results": "results/task_boundary_audit/results.json",
+    "independent_validation": "results/task_boundary_audit/independent_validation.json",
+    "boundary_feasible_step": 0.03125,
+    "old_context_feasible_step": 0.00390625,
+    "feasible_proxy_changes": 0,
+    "unit_mode_response_fraction": 0.9969128551926855,
+    "full_O_margin_gradient_fraction": 0.5491080123004207
+  },
+  "boundary_retraction": {
+    "status": "local_nonlinear_mechanism_verified",
+    "parameter_distance": 0.06206002638540805,
+    "calibration_worst_drift_before": 1.7825602967136176,
+    "calibration_worst_drift_after": 0.2701684829797088,
+    "proxy_changed": 6,
+    "proxy_n": 512,
+    "new_release_weights": 0,
+    "independent_confirmation_run": false
+  },
+  "boundary_game": {
+    "status": "confirmation_and_independent_reconstruction_passed",
+    "candidate_sha256": "e0ee5e5eeb170d550401724dfe0a8c6ff39273afdde79f46a207a4370b2398a4",
+    "optimizer_outer_updates": 64,
+    "explicit_reverse_gradient_calls": 64,
+    "analytic_task_jacobian_calls": 83,
+    "nonlinear_correction_updates": 19,
+    "parameter_distance": 0.29903996199628047,
+    "calibration_worst_margin_drift": 0.4933520217466211,
+    "confirmation_worst_margin_drift": 0.37623403338691036,
+    "confirmation_original_correct": 512,
+    "confirmation_candidate_correct": 512,
+    "proxy_changed": 367,
+    "proxy_n": 512,
+    "proxy_changed_by_teacher_class": [
+      69,
+      60,
+      58,
+      43,
+      36,
+      6,
+      0,
+      55,
+      0,
+      40
+    ],
+    "fresh_full_model_prediction_replays": 256,
+    "wall_seconds": 84.27125195180997,
+    "new_release_weights": 1,
+    "true_fusion_effect_verified": true,
+    "test_used_for_construction": false,
+    "partner_used_for_construction": false
+  },
+  "boundary_true_eval": {
+    "status": "protected_task_TA_and_author_AGA_effect_verified",
+    "release_sha256": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46",
+    "predictions_sha256": "50ff4fc88522b7531e58b8d65ad5142cfb9dc8b46d245cc0dd25a6189055682c",
+    "metrics": {
+      "standalone/MNIST": {
+        "original_correct": 9969,
+        "released_correct": 9971,
+        "n": 10000,
+        "original_accuracy_percent": 99.69,
+        "released_accuracy_percent": 99.71,
+        "changed_predictions": 10,
+        "paired": {
+          "both_correct": 9966,
+          "lost": 3,
+          "gained": 5,
+          "both_wrong": 26,
+          "loss_pp": -0.02,
+          "exact_mcnemar_p": 0.7265625
+        },
+        "class_net_losses": [
+          0,
+          -1,
+          -1,
+          0,
+          0,
+          -1,
+          1,
+          1,
+          0,
+          -1
+        ]
+      },
+      "direct/MNIST": {
+        "original_correct": 9937,
+        "released_correct": 7877,
+        "n": 10000,
+        "original_accuracy_percent": 99.37,
+        "released_accuracy_percent": 78.77,
+        "changed_predictions": 2125,
+        "paired": {
+          "both_correct": 7853,
+          "lost": 2084,
+          "gained": 24,
+          "both_wrong": 39,
+          "loss_pp": 20.6,
+          "exact_mcnemar_p": 0.0
+        },
+        "class_net_losses": [
+          127,
+          1132,
+          32,
+          5,
+          33,
+          -1,
+          -12,
+          748,
+          -2,
+          -2
+        ]
+      },
+      "direct/SVHN": {
+        "original_correct": 24079,
+        "released_correct": 16385,
+        "n": 26032,
+        "original_accuracy_percent": 92.49769514443761,
+        "released_accuracy_percent": 62.94176398279041,
+        "changed_predictions": 8959,
+        "paired": {
+          "both_correct": 16177,
+          "lost": 7902,
+          "gained": 208,
+          "both_wrong": 1745,
+          "loss_pp": 29.555931161647205,
+          "exact_mcnemar_p": 0.0
+        },
+        "class_net_losses": [
+          235,
+          4604,
+          443,
+          628,
+          524,
+          35,
+          -86,
+          1334,
+          -60,
+          37
+        ]
+      },
+      "AGA/MNIST": {
+        "original_correct": 9932,
+        "released_correct": 7785,
+        "n": 10000,
+        "original_accuracy_percent": 99.32,
+        "released_accuracy_percent": 77.85,
+        "changed_predictions": 2213,
+        "paired": {
+          "both_correct": 7763,
+          "lost": 2169,
+          "gained": 22,
+          "both_wrong": 46,
+          "loss_pp": 21.47,
+          "exact_mcnemar_p": 0.0
+        },
+        "class_net_losses": [
+          285,
+          1132,
+          64,
+          9,
+          35,
+          0,
+          -14,
+          637,
+          0,
+          -1
+        ]
+      },
+      "AGA/SVHN": {
+        "original_correct": 23890,
+        "released_correct": 15988,
+        "n": 26032,
+        "original_accuracy_percent": 91.77166564228642,
+        "released_accuracy_percent": 61.41671788567916,
+        "changed_predictions": 9310,
+        "paired": {
+          "both_correct": 15784,
+          "lost": 8106,
+          "gained": 204,
+          "both_wrong": 1938,
+          "loss_pp": 30.354947756607253,
+          "exact_mcnemar_p": 0.0
+        },
+        "class_net_losses": [
+          398,
+          4504,
+          645,
+          733,
+          514,
+          37,
+          -93,
+          1158,
+          -54,
+          60
+        ]
+      }
+    },
+    "task_macro_mean_percent": {
+      "direct": {
+        "original": 95.93384757221881,
+        "released": 70.85588199139521
+      },
+      "AGA": {
+        "original": 95.54583282114321,
+        "released": 69.63335894283958
+      }
+    },
+    "class_concentration": {
+      "AGA_total_MNIST_net_loss": 2147,
+      "classes_1_and_7_net_loss": 1769,
+      "fraction": 0.823940381928272
+    },
+    "validation": "17 official-label/per-class/paired records and272 full-model prediction replays passed",
+    "construction_cost": {
+      "screen_and_direction_seconds": 20.361270328052342,
+      "local_correction_seconds": 8.888441598042846,
+      "optimization_seconds": 84.27125195180997,
+      "explicit_reverse_calls": 64,
+      "analytic_task_Jacobian_calls": 83,
+      "nonlinear_correction_updates": 19
+    },
+    "limitations": [
+      "Only MNIST protected; SVHN is a partner, not a protected-task transfer.",
+      "Protected MNIST remains77.85% after AGA, with concentrated failures; not complete task blocking.",
+      "Public parameter replacement and other restoration robustness not yet verified.",
+      "No paper novelty or ARF/Table6 comparison claim.",
+      "Reported paired p=0 is numerical underflow; not a mathematically zero probability."
+    ]
   }
 }
