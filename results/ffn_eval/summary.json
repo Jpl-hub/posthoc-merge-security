@@ -1,0 +1,190 @@
+{
+  "status": "verified_effect_not_better_than_preserved_phase2_baseline",
+  "target": "MNIST",
+  "partner": "SVHN",
+  "interpretation": "An iterative MNIST benchmark. Frozen target-only construction and confirmation passed, but no new best defense; close this fixed FFN point without further budget or steps.",
+  "metrics": [
+    {
+      "stage": "standalone",
+      "task": "MNIST",
+      "n": 10000,
+      "original_correct": 9969,
+      "released_correct": 9965,
+      "original_accuracy_percent": 99.69,
+      "released_accuracy_percent": 99.65,
+      "changed_predictions": 13,
+      "paired": {
+        "both_correct": 9961,
+        "lost": 8,
+        "gained": 4,
+        "both_wrong": 27,
+        "loss_pp": 0.04,
+        "exact_mcnemar_p": 0.3876953125
+      },
+      "per_class_net_correct_loss": [
+        1,
+        -2,
+        2,
+        0,
+        1,
+        -1,
+        1,
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "stage": "direct",
+      "task": "MNIST",
+      "n": 10000,
+      "original_correct": 9937,
+      "released_correct": 9107,
+      "original_accuracy_percent": 99.37,
+      "released_accuracy_percent": 91.07,
+      "changed_predictions": 894,
+      "paired": {
+        "both_correct": 9084,
+        "lost": 853,
+        "gained": 23,
+        "both_wrong": 40,
+        "loss_pp": 8.3,
+        "exact_mcnemar_p": 5.612781957507352e-219
+      },
+      "per_class_net_correct_loss": [
+        369,
+        308,
+        31,
+        50,
+        9,
+        -4,
+        -12,
+        76,
+        1,
+        2
+      ]
+    },
+    {
+      "stage": "direct",
+      "task": "SVHN",
+      "n": 26032,
+      "original_correct": 24079,
+      "released_correct": 20164,
+      "original_accuracy_percent": 92.49769514443761,
+      "released_accuracy_percent": 77.45851259987707,
+      "changed_predictions": 5281,
+      "paired": {
+        "both_correct": 19848,
+        "lost": 4231,
+        "gained": 316,
+        "both_wrong": 1637,
+        "loss_pp": 15.039182544560541,
+        "exact_mcnemar_p": 0.0
+      },
+      "per_class_net_correct_loss": [
+        506,
+        1976,
+        285,
+        852,
+        176,
+        -37,
+        -134,
+        288,
+        -15,
+        18
+      ],
+      "exact_mcnemar_log10_p": -871.7882660696991
+    },
+    {
+      "stage": "AGA",
+      "task": "MNIST",
+      "n": 10000,
+      "original_correct": 9932,
+      "released_correct": 7920,
+      "original_accuracy_percent": 99.32,
+      "released_accuracy_percent": 79.2,
+      "changed_predictions": 2079,
+      "paired": {
+        "both_correct": 7897,
+        "lost": 2035,
+        "gained": 23,
+        "both_wrong": 45,
+        "loss_pp": 20.12,
+        "exact_mcnemar_p": 0.0
+      },
+      "per_class_net_correct_loss": [
+        735,
+        672,
+        40,
+        414,
+        16,
+        -5,
+        -14,
+        145,
+        4,
+        5
+      ],
+      "exact_mcnemar_log10_p": -565.4706060632494
+    },
+    {
+      "stage": "AGA",
+      "task": "SVHN",
+      "n": 26032,
+      "original_correct": 23890,
+      "released_correct": 18181,
+      "original_accuracy_percent": 91.77166564228642,
+      "released_accuracy_percent": 69.84096496619546,
+      "changed_predictions": 7288,
+      "paired": {
+        "both_correct": 17830,
+        "lost": 6060,
+        "gained": 351,
+        "both_wrong": 1791,
+        "loss_pp": 21.930700676090964,
+        "exact_mcnemar_p": 0.0
+      },
+      "per_class_net_correct_loss": [
+        935,
+        2553,
+        332,
+        1404,
+        277,
+        -45,
+        -163,
+        348,
+        2,
+        66
+      ],
+      "exact_mcnemar_log10_p": -1340.2217340510695
+    }
+  ],
+  "candidate_sha256": "1c5ffd5e9e16b44a104dcc29825dbd2cac1a8a2cd534b1d203f5b18815732f3b",
+  "release_sha256": "45c51b0fc6d532bbddf2f240c8daaafee6ea2d7058a31b0bf7caafbaa23849d8",
+  "predictions_sha256": "d6fd7dc727e34e436629115b2b35380b88c04759f5b4caca3d290558c178f3f5",
+  "AGA_edits_sha256": "72869d49cc9089a7b461d3fa6c2d0ea218ab27a89e2b64ac6d67dfb4b7f8f0d0",
+  "parameter_distance": 0.3641388538299167,
+  "calibration_worst_margin_drift": 0.46174152666109564,
+  "confirmation_worst_margin_drift": 0.463577347551481,
+  "optimizer_cost": {
+    "wall_seconds": 92.3668148717843,
+    "peak_gpu_bytes": 1420483584,
+    "explicit_reverse_gradient_calls": 64,
+    "analytic_task_jacobian_calls": 86,
+    "nonlinear_correction_updates": 22
+  },
+  "public_refill_repeated": false,
+  "new_recovery_attack": false,
+  "cross_protected_task_validation": false,
+  "first_phase_unchanged": true,
+  "robustness_claim": false,
+  "baseline_comparison": {
+    "O_B_native": 99.71,
+    "O_B_TA_MNIST": 78.77,
+    "O_B_AGA_MNIST": 77.85,
+    "FFN_AGA_MNIST": 79.2,
+    "AGA_target_improvement_pp": -1.35
+  },
+  "direct_two_task_macro_average_percent": 84.26425629993852,
+  "AGA_two_task_macro_average_percent": 74.52048248309774,
+  "AGA_target_top3_net_loss_fraction": 0.9050695825049702
+}
