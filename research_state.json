@@ -1,25 +1,17 @@
 {
-  "status": "phase2_cross_module_real_evaluation",
-  "updated_utc": "2026-10-14T09:52:19.278116+00:00",
+  "status": "phase2_minimum_completion_preanalysis",
+  "updated_utc": "2026-10-14T10:11:38.228577+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [
-    {
-      "target": "MNIST",
-      "partner": "SVHN",
-      "protocol": "configs/cross_module_eval.json",
-      "output": "outputs/cross_module_mnist",
-      "mode": "frozen_point_native_TA_AGA"
-    }
-  ],
+  "research_jobs": [],
   "breakthrough_verified": false,
   "new_candidate": "No new Phase2 release: both angular publication optimizations failed frozen confirmation; proxy prediction changes stayed1/512",
   "mechanism": "notes/phase2_angular.md",
-  "next_action": "Generate the frozen release before peer/test access, evaluate original/released native, target+peer TA and author AGA, then independently verify predictions and fingerprints. No retuning.",
+  "next_action": "Diagnose once the mathematically minimum full-B ridge completion with the same target-only O cache, probes, absolute regularizer and distance budget; no rank or budget sweep.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -490,5 +482,34 @@
     "candidate_sha256": "6736674970f0f2f1fad0c6d3358a7743a4771d49430ed7dab96baa4bb65e2443",
     "formal_evaluation_completed": false,
     "effective_defense_verified": false
+  },
+  "cross_module_real_evaluation": {
+    "status": "closed_no_effective_defense_independently_verified",
+    "source_execution_commit": "1d89246",
+    "summary": "results/cross_module_eval/summary.json",
+    "validation": "results/cross_module_eval/independent_validation.json",
+    "native_correct": [
+      9969,
+      9968,
+      10000
+    ],
+    "direct_target_correct": [
+      9937,
+      9932,
+      10000
+    ],
+    "AGA_target_correct": [
+      9932,
+      9930,
+      10000
+    ],
+    "AGA_peer_correct": [
+      23890,
+      23870,
+      26032
+    ],
+    "AGA_target_p": 0.8145294189453125,
+    "new_effective_defense": false,
+    "candidate_preserved": true
   }
 }
