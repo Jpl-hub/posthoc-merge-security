@@ -1,6 +1,7 @@
 """Independent NumPy reconstruction of Attention-to-MLP publication diagnostics."""
 
 import argparse
+import copy
 import json
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from scipy.special import expit
 
 from clip_benchmark import digest
 from cross_module_distance import extended_parameters
+from covariance_noise import dataset
 from subspace_probe import save_json
 from task_probe_distance import checked_models
 from verify_probe_candidate import array, features
@@ -158,10 +160,26 @@ def verify_game(output):
     parent=torch.load(Path(cfg["margin_reference"])/(report["target"]+"_diagnostic.pt"),map_location="cpu")
     old.update(parent["indices"]["confirmation"])
     assert not set(indices).intersection(old) and len(set(indices))==len(indices)
+    fresh=[]
+    if rho<=limit:
+        protected=copy.deepcopy(expert);block=protected.model.visual.transformer.resblocks[11]
+        with torch.no_grad():
+            block.attn.out_proj.weight.add_(torch.from_numpy(eo).float())
+            block.mlp.c_proj.weight.add_(torch.from_numpy(eb).float())
+        training=dataset(report["target"],"data",expert.val_preprocess,True)
+        for start in range(0,min(128,len(indices)),32):
+            images=torch.stack([training[i][0] for i in indices[start:start+32]]).cuda()
+            for name,model,pred in [("original",expert,before),("candidate",protected,after)]:
+                with torch.no_grad():
+                    model.cuda();head.cuda();actual=head(model(images)).argmax(1).cpu().numpy()
+                    model.cpu();head.cpu()
+                assert np.array_equal(actual,pred[start:start+len(images)])
+                fresh.append({"model":name,"offset":start,"n":len(images),"prediction_match":True})
     result={"status":"passed" if rho<=limit else "confirmed_constraint_failure","source_sha256":digest(__file__),
             "candidate_sha256":digest(path),"parameter_distance":distance,"O_relative_distance":float(np.linalg.norm(eo)/np.linalg.norm(p["O"])),
             "B_relative_distance":float(np.linalg.norm(eb)/np.linalg.norm(p["B"])),"conditional_coefficient_error":coefficient_error,
-            "task_constraints":groups,"confirmation_counts":counts,"new_release_weights":0,"new_model_forwards":0,"test_used":False,"partner_used":False}
+            "task_constraints":groups,"confirmation_counts":counts,"new_release_weights":0,
+            "new_model_forwards":sum(row["n"] for row in fresh),"fresh_replays":fresh,"test_used":False,"partner_used":False}
     save_json(output/"independent_validation.json",result);print(json.dumps(result),flush=True)
 
 
