@@ -13,7 +13,7 @@
 
 只改最终 LN 的一个偏置向量。噪声满足 $v^\top B_e=0$，原专家完整视觉特征保持；融合投影 $B_f$ 改变后，$v^\top B_f$ 可能非零，产生类别偏置。没有 PCA 样本外保持假设、额外微调或伙伴参与构造。[数学机制、完整指标和边界](notes/projection_bias_noise.md)。
 
-**范围必须区分：** TA(0.5)、FP32、三个被保护专家。原版 AGA 不修改最后 LN 偏置与视觉投影，因此这是该原版攻击后的融合干扰；尚无抗公开清理／参数替换的结论，也未证明任务信息不可恢复，不是 ARF/Table 6 复现。第一阶段结果作为冻结对照保留。第二阶段首轮及任务向量蒸馏补偿均保持独立能力，但真实融合和 AGA 后没有有效的目标准确率下降；[补偿构造、真实结果和约束问题](notes/phase2_compensation.md)、[结果与机制结论](notes/phase2_results.md)、[数学建模](notes/phase2_distance.md)。随后有限任务探针候选在三个专家上也没有有效下降：MNIST、DTD、SVHN 的 AGA 后准确率分别为99.35%、68.83%、91.76%。[有限探针机制与结果](notes/phase2_margin_probes.md)。当前发布系数优化采用目标训练数据和公开基座，属于有梯度的后处理，不是零梯度构造；[优化变量、约束及求解诊断](notes/phase2_projected_game.md)。未开展全面攻击实验或新增恢复攻击。
+**范围必须区分：** TA(0.5)、FP32、三个被保护专家。原版 AGA 不修改最后 LN 偏置与视觉投影，因此这是该原版攻击后的融合干扰；尚无抗公开清理／参数替换的结论，也未证明任务信息不可恢复，不是 ARF/Table 6 复现。第一阶段结果作为冻结对照保留。第二阶段首轮及任务向量蒸馏补偿均保持独立能力，但真实融合和 AGA 后没有有效的目标准确率下降；[补偿构造、真实结果和约束问题](notes/phase2_compensation.md)、[结果与机制结论](notes/phase2_results.md)、[数学建模](notes/phase2_distance.md)。随后有限任务探针候选在三个专家上也没有有效下降：MNIST、DTD、SVHN 的 AGA 后准确率分别为99.35%、68.83%、91.76%。[有限探针机制与结果](notes/phase2_margin_probes.md)。当前发布系数优化采用目标训练数据和公开基座，属于有梯度的后处理，不是零梯度构造；[优化变量、约束及求解诊断](notes/phase2_projected_game.md)。新的去中心化归一化分数优化与解析复合蒸馏，仍只改判1/512；独立确认最坏探针变化0.699/0.651超过冻结的0.5预算，没有新release或完整融合评估。[排序梯度、可行性、分类边界证据](notes/phase2_angular.md)。未开展全面攻击实验或新增恢复攻击。
 
 - `experiments/projection_bias_noise.py`：当前保护构造
 - `configs/projection_bias_noise_svhn.json`：当前直接采集训练图的冻结协议；[SVHN 迁移结果](notes/projection_bias_noise_svhn.md)

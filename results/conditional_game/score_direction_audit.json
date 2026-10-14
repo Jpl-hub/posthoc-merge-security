@@ -1,0 +1,92 @@
+{
+  "target": "MNIST",
+  "source_sha256": "584b9e91f19fcd94d32ead14bf7a6105d7435d68cb834aa337398c1cff4c1389",
+  "candidate_sha256": "4d036ad449baa4bbe2026bd365a11d75320741dd10e3097401bb0d2cd3bfddb5",
+  "raw_sha256": "f114acf05a6283afd3c4788fc6e644706bd6b4d9d4f870fe873f0afa82768d68",
+  "class_balance_counts": [
+    41,
+    58,
+    54,
+    56,
+    47,
+    44,
+    63,
+    50,
+    58,
+    41
+  ],
+  "results": {
+    "initial": {
+      "angular_stress": -1.1518971115925325,
+      "prediction_changes": 1,
+      "changed_by_teacher_class": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cosine_to_teacher_median": 0.9920205736537371,
+      "positive_affine_fit_scale_median": 0.8744408155997903,
+      "negative_affine_fit_scales": 0,
+      "non_affine_score_rms": 0.43242443067460956,
+      "score_direction_change_p10_median_p90": [
+        0.06928514341684511,
+        0.12632808104812276,
+        0.2986525384517946
+      ],
+      "relative_angular_gap_loss_p10_median_p90": [
+        -0.2722382857655304,
+        -0.13134503570332584,
+        -0.022727654237515885
+      ],
+      "remaining_positive_teacher_gaps": 511,
+      "certified_same_prediction": 464,
+      "n": 512
+    },
+    "selected": {
+      "angular_stress": -0.9576056908574426,
+      "prediction_changes": 1,
+      "changed_by_teacher_class": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cosine_to_teacher_median": 0.9727937760303336,
+      "positive_affine_fit_scale_median": 0.8530716269674163,
+      "negative_affine_fit_scales": 0,
+      "non_affine_score_rms": 0.7275181251233086,
+      "score_direction_change_p10_median_p90": [
+        0.13272567689278322,
+        0.2332647451865727,
+        0.35362995162076616
+      ],
+      "relative_angular_gap_loss_p10_median_p90": [
+        -0.10804070332102925,
+        0.05220441394714004,
+        0.24787001921774643
+      ],
+      "remaining_positive_teacher_gaps": 511,
+      "certified_same_prediction": 430,
+      "n": 512
+    }
+  },
+  "only_cached_target_train_and_public_anchor": true,
+  "fresh_model_forwards": 0,
+  "test_used": false,
+  "future_partner_used": false,
+  "new_release_weights": 0,
+  "certificate": "teacher angular gap > sqrt(2)*score direction change; sufficient per-sample condition"
+}
