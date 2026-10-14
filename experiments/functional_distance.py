@@ -10,9 +10,16 @@ from classification_completion import amplitude_target
 from clip_benchmark import digest
 from conditional_task_distance import diagnose, optimize
 from cross_module_distance import CrossCoupled
+from subspace_probe import save_json
 
 
 class ClassCompletion(CrossCoupled):
+    def __init__(self,target,cfg):
+        super().__init__(target,cfg)
+        out=Path(cfg['output']);path=out/'readout.pt'
+        torch.save({k:v.cpu() if torch.is_tensor(v) else v for k,v in self.problem.class_space.items()},path)
+        save_json(out/'class_geometry.json',self.problem.class_geometry|{'readout_sha256':digest(path),'source_sha256':digest(__file__),'target_raw_gap_scale':1.-cfg['margin_fraction']/2.})
+
     def coefficients(self,co):
         self.solve_calls+=1;p=self.problem;z,base=self.state(co)
         _,target,root=amplitude_target(base,self.teacher,p.class_space,p.p,p.cfg['margin_fraction'],p.cfg['amplitude_bisection_steps'])

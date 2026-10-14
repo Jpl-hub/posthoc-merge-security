@@ -42,10 +42,15 @@ def verify(output):
     np.testing.assert_allclose(task@vo.T,uo*array(cal["basis_O"]["s"]),atol=1e-9,rtol=1e-7)
     for basis in [uo.T,vo,vb]:np.testing.assert_allclose(basis@basis.T,np.eye(rank),atol=1e-9)
     normo,normb=np.linalg.norm(p["O"]),np.linalg.norm(p["B"])
+    class_space=None
+    if cfg.get("class_output_completion"):
+        class_space=torch.load(output/'readout.pt',map_location='cpu')
+        oq=array(class_space['Q']);np.testing.assert_allclose(oq.T@oq,np.eye(oq.shape[1]),atol=1e-10)
     theta,direction=[array(saved[k]) for k in ["theta","direction"]]
     def delta(coeff):
         eo=normo*uo@coeff[:size].reshape(rank,rank)@vo
-        eb=normb*coeff[size:].reshape(p["B"].shape) if cfg.get("full_B_completion") else normb*coeff[size:].reshape(p["B"].shape[0],rank)@vb
+        if class_space is not None:eb=normb*oq@coeff[size:].reshape(oq.shape[1],p['B'].shape[1])
+        else:eb=normb*coeff[size:].reshape(p["B"].shape) if cfg.get("full_B_completion") else normb*coeff[size:].reshape(p["B"].shape[0],rank)@vb
         return eo,eb
     eo,eb=delta(theta);do,db=delta(direction)
     i=next((j for j,row in enumerate(report["finite_steps"]) if row["feasible"]),0)
@@ -63,7 +68,16 @@ def verify(output):
         o,b=delta(coeff);r=realr+realz@o.T;z=hidden(r);q=z@vb.T
         residual=teacher-rounding-r-z@p["B"].T-p["b"]
         kb=np.linalg.solve(q.T@q+ridge*np.eye(rank),q.T@residual).T
-        if cfg.get("full_B_completion"):
+        if class_space is not None:
+            from verify_classification_completion import target_numpy
+            linear=p['gamma'][:,None]*p['projection'];linear=linear-linear.mean(0);bias=p['beta']@p['projection']
+            w=array(class_space['w']);a=1.-np.mean((w-w.mean())**2)
+            base=teacher-residual
+            ideal,_,_=target_numpy(base,teacher,oq,w,a,linear,bias,p['eps'],1.-cfg['margin_fraction']/2.)
+            projected=(ideal-base)@oq
+            full=np.linalg.solve(z@z.T+ridge*np.eye(len(z)),projected).T@z
+            error=float(np.max(np.abs(full/normb-coeff[size:].reshape(oq.shape[1],p['B'].shape[1]))))
+        elif cfg.get("full_B_completion"):
             full=np.linalg.solve(z@z.T+ridge*np.eye(len(z)),residual).T@z
             error=float(np.max(np.abs(full/normb-coeff[size:].reshape(p["B"].shape))))
             restricted=kb@vb

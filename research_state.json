@@ -1,5 +1,5 @@
 {
-  "status": "phase2_functional_completion_direction",
+  "status": "phase2_functional_publication_optimization",
   "updated_utc": "2026-10-14T10:40:25.000585+00:00",
   "automatic_continuation": false,
   "server": "3090",
@@ -10,9 +10,9 @@
   "research_jobs": [
     {
       "target": "MNIST",
-      "protocol": "configs/functional_direction.json",
-      "output": "outputs/phase2_functional_direction_mnist",
-      "mode": "frozen_diagnostic"
+      "protocol": "configs/functional_game.json",
+      "output": "outputs/phase2_functional_game_mnist",
+      "mode": "fixed_64_publication_steps"
     }
   ],
   "breakthrough_verified": false,
@@ -534,6 +534,17 @@
     "target_gap_scale": 0.75,
     "relative_gap_drift": 0.25,
     "uniform_transform_verified": false,
+    "new_release_weights": 0
+  },
+  "functional_direction": {
+    "status": "independently_verified",
+    "native_critic": 0.26294108033313723,
+    "parameter_distance": 0.49992478048069666,
+    "proxy_changed": 0,
+    "proxy_n": 512,
+    "gradient_fd_relative_error": 2.658763462335822e-07,
+    "coefficient_verification_error": 3.7184144652258055e-13,
+    "native_JVP_error": 1.4093123369696148e-10,
     "new_release_weights": 0
   }
 }
