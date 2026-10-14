@@ -90,11 +90,75 @@ def ffn(out,data,report):
         'scope':'Independent native natural-data NumPy response, random-direction JVP and orthogonal publication distance. This verifier does not certify the full synthetic probe envelope or proxy transfer.'}
 
 
+def game(out,data,report):
+    import copy
+    from cross_module_distance import extended_parameters
+    from covariance_noise import dataset
+    from subspace_probe import make_loader
+    from task_probe_distance import checked_models
+    anchor,expert,head,pins=checked_models(report['target']);assert pins==report['checkpoint_sha256']
+    p=convert(extended_parameters(expert,head));p0=convert(extended_parameters(anchor,head))
+    basis={s:convert(data['basis_'+s]) for s in ['A','B']};u,v=basis['A']['u'],basis['A']['vh'];q=array(data['output_basis'])
+    rank=len(v);size=rank**2;theta=array(data['theta']);ea=np.linalg.norm(p['A'])*u@theta[:size].reshape(rank,rank)@v
+    eb=np.linalg.norm(p['B'])*q@theta[size:].reshape(q.shape[1],p['B'].shape[1])
+    np.testing.assert_allclose(ea,array(data['release_deltas']['A']),atol=1e-10);np.testing.assert_allclose(eb,array(data['release_deltas']['B']),atol=1e-10)
+    for a in [u.T,v,q.T]:np.testing.assert_allclose(a@a.T,np.eye(len(a)),atol=1e-10)
+    task=p['A']-p0['A'];np.testing.assert_allclose(task@v.T,u*basis['A']['s'],atol=1e-9,rtol=1e-7)
+    distance=float(np.sqrt((np.linalg.norm(ea)/np.linalg.norm(p['A']))**2+(np.linalg.norm(eb)/np.linalg.norm(p['B']))**2))
+    assert abs(distance-report['selected']['parameter_distance'])<1e-10 and distance<=.5
+    cfg=data['protocol'];n=cfg['contexts_per_class']*p['head'].shape[0];checks=[]
+    for name in ['native','scale','confirmation']:
+        c=convert(data[name]);x=ln(c['r'],p['gamma2'],p['beta2'],p['eps2']);pre=x@p['A'].T+p['a'];z=pre*expit(1.702*pre)
+        base=c['h']-z@p['B'].T
+        sa,sb=[] , []
+        shifts=[]
+        for value,vv in [(x,v),(z,basis['B']['vh'])]:
+            rms=np.sqrt(np.mean((value@vv.T)**2,axis=0))
+            shifts.append((cfg['finite_step']*np.array([-1.,1.])[:,None,None]*rms[None,:,None]*vv[None,:,:]).reshape(2*rank,-1))
+        sa,sb=shifts;count=len(sa)
+        xx=np.concatenate([x,(x[:n,None,:]+sa[None,:,:]).reshape(-1,x.shape[1]),np.repeat(x[:n],count,axis=0)])
+        bb=np.concatenate([base,np.repeat(base[:n],count,axis=0),np.repeat(base[:n],count,axis=0)])
+        off=np.concatenate([np.zeros_like(z),np.zeros((n*count,z.shape[1])),np.tile(sb,(n,1))])
+        before_pre=xx@p['A'].T+p['a'];before_z=before_pre*expit(1.702*before_pre)+off
+        after_pre=xx@(p['A']+ea).T+p['a'];after_z=after_pre*expit(1.702*after_pre)+off
+        before=raw_scores(bb+before_z@p['B'].T,p);after=raw_scores(bb+after_z@(p['B']+eb).T,p)
+        rho=float(np.abs(residual(before,after)).max());expected=report['confirmation']['worst_margin_drift'] if name=='confirmation' else None
+        if expected is not None:assert abs(rho-expected)<1e-7
+        assert rho<=.5
+        np.testing.assert_array_equal(before.argmax(1),after.argmax(1))
+        checks.append({'group':name,'natural_n':len(x),'natural_plus_synthetic_n':len(xx),'worst_margin_drift':rho})
+    assert abs(max(c['worst_margin_drift'] for c in checks[:2])-report['selected']['native_critic'])<1e-7
+    indices=data['confirmation_indices'];assert len(indices)==len(set(indices))==512
+    audit=json.loads(Path(cfg['index_audit']).read_text());excluded=set(i for group in data['indices'].values() for i in group)
+    for row in audit['records']:
+        path=Path(row['path']);group=row['group']
+        obj=json.loads(path.read_text()) if path.suffix=='.json' else torch.load(path,map_location='cpu')['indices']
+        excluded.update(obj[group])
+    for path in cfg['extra_confirmation_exclusions']:excluded.update(json.loads(Path(path).read_text())['indices'])
+    assert not set(indices)&excluded
+    labels=official_labels(report['target'],True)[indices]
+    np.testing.assert_array_equal(labels,array(data['confirmation_labels']))
+    protected=copy.deepcopy(expert);block=protected.model.visual.transformer.resblocks[11].mlp
+    block.c_fc.weight.data.add_(torch.from_numpy(ea).to(block.c_fc.weight.dtype));block.c_proj.weight.data.add_(torch.from_numpy(eb).to(block.c_proj.weight.dtype))
+    training=dataset(report['target'],'data',expert.val_preprocess,True);replays=0
+    for model,expected in [(expert,data['confirmation_original_predictions']),(protected,data['confirmation_candidate_predictions'])]:
+        model.cuda().eval();pred=[]
+        with torch.no_grad():
+            for images,_ in make_loader(training,indices[:128],64):
+                f=model(images.cuda());f=f/f.norm(dim=1,keepdim=True);pred.append((f@head.weight.cuda().T).argmax(1).cpu())
+        np.testing.assert_array_equal(torch.cat(pred).numpy(),expected[:128].numpy());model.cpu();replays+=128
+    return {'checks':checks,'parameter_reconstruction':'passed','task_singular_equation':'passed','parameter_distance':distance,
+        'fresh_confirmation_disjoint_against_registered_history':True,'fresh_full_model_prediction_instances':replays,
+        'scope':'Independent NumPy all-natural and all-finite-probe constraints, weight distance, target history exclusion and256 complete CLIP prediction replays. No true merging efficacy claim.'}
+
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--kind',choices=['coupling','ffn'],required=True);parser.add_argument('--output',required=True);args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--kind',choices=['coupling','ffn','game'],required=True);parser.add_argument('--output',required=True);args=parser.parse_args()
     torch.set_num_threads(4)
-    out=Path(args.output);report=json.loads((out/'results.json').read_text());path=out/'diagnostic.pt';assert digest(path)==report['diagnostic_sha256']
-    data=torch.load(path,map_location='cpu');result=(coupling if args.kind=='coupling' else ffn)(out,data,report)
+    torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
+    out=Path(args.output);report=json.loads((out/'results.json').read_text());path=out/('candidate.pt' if args.kind=='game' else 'diagnostic.pt')
+    expected=report['candidate_sha256'] if args.kind=='game' else report['diagnostic_sha256'];assert digest(path)==expected
+    data=torch.load(path,map_location='cpu');result={'coupling':coupling,'ffn':ffn,'game':game}[args.kind](out,data,report)
     save_json(out/'independent_validation.json',{'status':'passed',**result,'diagnostic_sha256':digest(path),'source_sha256':digest(__file__),
         'publication_updates':0,'new_release_weights':0,'new_model_forwards':0,'test_used':False})
     print(json.dumps(result),flush=True)

@@ -23,7 +23,8 @@ def construct(original,anchor,head,training,indices,cfg,target):
     for model in [original,anchor,head]:
         for parameter in model.parameters():parameter.requires_grad_(False)
     released=copy.deepcopy(original);prefix="model.visual.transformer.resblocks.11."
-    keys={"O":prefix+"attn.out_proj.weight","B":prefix+"mlp.c_proj.weight"}
+    keys=cfg.get("publication_keys",{"O":prefix+"attn.out_proj.weight","B":prefix+"mlp.c_proj.weight"})
+    assert set(keys)==set(cal["release_deltas"])
     edits={}
     for site,key in keys.items():
         weight=original.state_dict()[key];delta=cal["release_deltas"][site]
