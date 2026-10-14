@@ -1,6 +1,6 @@
 {
-  "status": "phase2_angular_primal_dual_running",
-  "updated_utc": "2026-10-14T07:28:18.473733+00:00",
+  "status": "phase2_angular_matrix_direction_diagnostic",
+  "updated_utc": "2026-10-14T08:01:13.532721+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -10,16 +10,15 @@
   "research_jobs": [
     {
       "target": "MNIST",
-      "script": "experiments/angular_distance.py",
-      "protocol": "configs/angular_primal_dual.json",
-      "output": "outputs/phase2_angular_primal_dual_mnist",
-      "gradient_updates": 64
+      "protocol": "configs/angular_matrix_direction.json",
+      "output": "outputs/phase2_angular_matrix_direction_mnist",
+      "new_release_weights": 0
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No new release: publication-coefficient optimizations closed without proxy ordering improvement",
   "mechanism": "notes/phase2_projected_game.md",
-  "next_action": "Complete one affine-invariant primal-dual publication optimization with exact worst-task-probe adversary; check fresh512 target-training confirmation once before generating a release.",
+  "next_action": "Compare expanded task-SVD A matrix at identical starting weights and budget using invariant-score gradient, native JVP and finite nonlinear steps. Do not retune old ray or confirmation constraint.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -384,5 +383,20 @@
     "proxy_n": 512,
     "new_release_weights": 0,
     "directional_difference_relative_error": 2.6936299210115717e-10
-  }
+  },
+  "angular_primal_dual_ray": {
+    "status": "closed_no_proxy_improvement_failed_confirmation",
+    "gradient_updates": 64,
+    "dual_updates": 64,
+    "feasible_training_iterates": 17,
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "fresh_confirmation_n": 512,
+    "fresh_confirmation_original_correct": 512,
+    "fresh_confirmation_candidate_correct": 512,
+    "confirmation_worst_margin_drift": 0.6991894743756952,
+    "new_release_weights": 0,
+    "GPU_wall_seconds": 21.75419981731102
+  },
+  "github_sync_status": "pending: GitHub plugin installed but tools unavailable; native Git443 refused and server Git unauthenticated"
 }

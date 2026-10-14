@@ -199,17 +199,20 @@ def fresh_confirmation(problem, cfg):
         own = folder.name.endswith("_"+problem.target.lower())
         if case.exists(): own = json.loads(case.read_text()).get("target") == problem.target
         if not own: continue
-        for name in ["training_indices.json", "holdout_protocol.json"]:
+        for name in ["training_indices.json", "holdout_protocol.json", "confirmation_split.json"]:
             path = folder/name
             if not path.exists(): continue
             data = json.loads(path.read_text())
-            groups = [data["indices"]] if name == "holdout_protocol.json" else list(data.values())
+            if name == "holdout_protocol.json" and data.get("split") != "train": continue
+            groups = list(data.values()) if name == "training_indices.json" else [data["indices"]]
             for group in groups:
                 if isinstance(group, list): excluded.update(group)
             sources[str(path)] = digest(path)
     training = dataset(problem.target, "data", problem.expert.val_preprocess, True)
     pool = sorted(set(range(len(training)))-excluded)
-    indices = np.random.default_rng(cfg["confirmation_seed"]).choice(pool, cfg["confirmation_n"], replace=False).tolist()
+    n = min(cfg["confirmation_n"], len(pool))
+    assert n >= cfg.get("minimum_confirmation_n", 128), "Insufficient independent target-training confirmation data"
+    indices = np.random.default_rng(cfg["confirmation_seed"]).choice(pool, n, replace=False).tolist()
     cache = capture(problem.expert, training, indices)
     labels = torch.tensor([int(training[i][1]) for i in indices])
     return cache, labels, {"indices": indices, "seed": cfg["confirmation_seed"],
