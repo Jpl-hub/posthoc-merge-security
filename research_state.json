@@ -1,17 +1,25 @@
 {
-  "status": "phase2_boundary_effect_verified_closed_low_cost_public_recovery",
-  "updated_utc": "2026-10-14T15:34:24.971274+00:00",
+  "status": "phase2_ffn_confirmed_true_evaluation_running",
+  "updated_utc": "2026-10-14T16:49:10.663229+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "restoration_cost_and_task_essential_regions",
-  "research_jobs": [],
+  "stage": "task_functional_coupling_and_FFN_transport",
+  "research_jobs": [
+    {
+      "gpu": "3090",
+      "entrypoint": "experiments/evaluate_cross_release.py",
+      "protocol": "configs/ffn_eval.json",
+      "output": "outputs/ffn_mnist",
+      "publication_point_sha256": "1c5ffd5e9e16b44a104dcc29825dbd2cac1a8a2cd534b1d203f5b18815732f3b"
+    }
+  ],
   "breakthrough_verified": false,
-  "new_candidate": "Frozen Phase2 task-level-set candidate: native99.71%, authorAGA MNIST77.85%; public two-matrix refill restores99.31%. Stronger original-AGA effect but not restoration-robust defense.",
-  "mechanism": "notes/phase2_boundary.md",
-  "next_action": "Before any new release, identify one task-essential modification region using target-only task singular responses and matched original-expert public-refill cost. Stop regions with negligible task-update removal cost; do not increase this candidate budget/iterations or expand weak restoration behavior to other protected tasks.",
+  "new_candidate": "One frozen FFN A/B task-level-set point. Confirmation512/512 preserved, worstdrift0.46358, distance0.36414; true TA/AGA running, no improved defense claimed.",
+  "mechanism": "notes/phase2_coupling.md",
+  "next_action": "Finish unchanged TA0.5 and authorAGA, independently recount predictions; compare to preserved O/B baseline. Do not repeat old refill or tune the frozen point.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -228,7 +236,7 @@
     "Projection-null direction publicly identifiable; no current public-cleaning/replacement resistance claim.",
     "Architecture needs a nontrivial expert projection left kernel and proxy/partner projection mismatch.",
     "No ARF/Table6 baseline reproduction or paper-readiness claim.",
-    "Prior test results were observed; protection parameters frozen before this candidate\u2019s peer/test evaluation."
+    "Prior test results were observed; protection parameters frozen before this candidate’s peer/test evaluation."
   ],
   "decision_noise": {
     "status": "closed_no_target_drop_verified",
@@ -1013,5 +1021,30 @@
     },
     "threat_model": "Attacker knows published method locations and public anchor; uses no original fine-tuned weights inside the refill transformation, no partner or data in construction.",
     "candidate_retuned": false
+  },
+  "phase2_coupling_audit": {
+    "status": "passed independent NumPy exact cross-term, feature direction and official target class counts",
+    "results": "results/frozen_coupling_audit/results.json",
+    "validation": "results/frozen_coupling_audit/independent_validation.json",
+    "interpretation": "Native joint correction restores single-B flips; actualAGA B-only95 vsjoint118/512. Proxy transport gap remains. Retrospective only; peer results not used in new parameter construction."
+  },
+  "phase2_ffn_candidate": {
+    "status": "confirmed_pending_true_evaluation",
+    "target": "MNIST",
+    "distance": 0.3641388538299167,
+    "calibration_worst_margin_drift": 0.46174152666109564,
+    "confirmation_worst_margin_drift": 0.463577347551481,
+    "confirmation_original_correct": 512,
+    "confirmation_released_correct": 512,
+    "candidate_sha256": "1c5ffd5e9e16b44a104dcc29825dbd2cac1a8a2cd534b1d203f5b18815732f3b",
+    "construction_cost_seconds": 92.3668148717843,
+    "reverse_gradient_calls": 64,
+    "analytic_task_jacobian_calls": 86,
+    "nonlinear_correction_updates": 22,
+    "test_selection": false,
+    "future_partner_used_for_construction": false,
+    "training_only_A_replacement_changed": 0,
+    "results": "results/ffn_game/results.json",
+    "no_robustness_claim": true
   }
 }

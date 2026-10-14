@@ -1,0 +1,77 @@
+{
+  "target": "MNIST",
+  "method": "FFN_task_functional_levelset_with_nonlinear_correction",
+  "initial": {
+    "objective": -0.6253565602433049,
+    "angular_stress": -0.6789122102354941,
+    "parameter_distance": 0.1157104684030244,
+    "native_critic": 0.3464492276531613,
+    "proxy_changed": 68,
+    "proxy_n": 512,
+    "changed_by_teacher_class": [
+      24,
+      0,
+      1,
+      43,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "minimum_centered_score_norm": 6.344656303950494
+  },
+  "selected": {
+    "objective": 0.459732978633071,
+    "angular_stress": -0.07065544084119073,
+    "parameter_distance": 0.3641388538299167,
+    "native_critic": 0.46174152666109564,
+    "proxy_changed": 368,
+    "proxy_n": 512,
+    "changed_by_teacher_class": [
+      69,
+      60,
+      64,
+      43,
+      35,
+      0,
+      0,
+      55,
+      2,
+      40
+    ],
+    "minimum_centered_score_norm": 9.683037655111216
+  },
+  "selected_step": 64,
+  "planned_optimization_steps": 64,
+  "accepted_updates": 64,
+  "explicit_reverse_gradient_calls": 64,
+  "analytic_task_jacobian_calls": 86,
+  "nonlinear_correction_updates": 22,
+  "stop_reasons": [],
+  "training_point_sha256_before_confirmation": "34d4832c42b618bbbc860b40f43b788f1403558d524be029e863325ef5ae020d",
+  "confirmation": {
+    "n": 512,
+    "original_correct": 512,
+    "candidate_correct": 512,
+    "changed_predictions": 0,
+    "worst_margin_drift": 0.463577347551481
+  },
+  "confirmation_passed": true,
+  "candidate_sha256": "1c5ffd5e9e16b44a104dcc29825dbd2cac1a8a2cd534b1d203f5b18815732f3b",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "source_sha256": "66afe0cf5e836fcf23e1bca6a40b31e7398992709e22e1a8e469729233a5fdfe",
+  "protocol_sha256": "cf1efbd104537f0d46f66dc542be4dc6cfa87c4b64790615702d6a7821ac313a",
+  "wall_seconds": 92.3668148717843,
+  "peak_gpu_bytes": 1420483584,
+  "original_expert_updated": false,
+  "partner_used": false,
+  "test_used": false,
+  "new_release_weights": 0,
+  "scope": "Finite target-training task game, not a global robust saddle. No formal TA/AGA until independent confirmation and verification pass."
+}
