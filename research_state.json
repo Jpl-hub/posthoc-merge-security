@@ -1,24 +1,17 @@
 {
-  "status": "phase2_query_task_mechanism_diagnostic",
-  "updated_utc": "2026-10-14T12:28:01.688856+00:00",
+  "status": "phase2_joint_coverage_closed_failed_confirmation",
+  "updated_utc": "2026-10-14T13:50:31.890928+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "score_ordering_and_task_probe_feasibility",
-  "research_jobs": [
-    {
-      "target": "MNIST",
-      "protocol": "configs/query_direction.json",
-      "output": "outputs/phase2_query_direction_mnist",
-      "mode": "diagnostic_only"
-    }
-  ],
+  "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "No new effective Phase2 defense. Cross-module real TA/AGA negative; functional-completion diagnostic only.",
-  "mechanism": "notes/phase2_query.md",
-  "next_action": "Check one last-block Query mechanism, using target-only task-SVD response and conditional classification distillation; keep radius and task tolerance fixed.",
+  "new_candidate": "No effective Phase2 defense. Latest free joint point closed after independent preservation failure; no release or true fusion/AGA run.",
+  "mechanism": "notes/phase2_joint_class.md",
+  "next_action": "Preregister a target-only teacher-margin coverage diagnosis across classes, excluding all prior confirmation indices. Check whether task probe contexts cover small native margins; do not update or release the rejected point.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -399,7 +392,7 @@
     "GPU_wall_seconds": 21.75419981731102,
     "independent_verification": "confirmed_constraint_failure; NumPy maximum0.6991894743756992"
   },
-  "github_sync_status": "verified main f1d0d7d4bc80c03a277158f817e6911f41c12123; next mechanism source not yet published",
+  "github_sync_status": "Connector available; exact remote/local canonical-tree mapping and verified file readbacks recorded separately in outputs/latest_github_sync_receipt.json after publication.",
   "angular_matrix_direction": {
     "status": "passed independent NumPy JVP; no added prediction changes",
     "gradient_norm": 11.665176516554135,
@@ -609,5 +602,120 @@
     "predictions_sha256": "d69f413ed740cbe633302b273adbdc9fe1150cee75c512d43dc8faedde501982",
     "no_parameter_changes_after_freeze": true,
     "DTD_transfer_run": false
+  },
+  "query_direction": {
+    "status": "independently_verified",
+    "raw_probe_critic": 0.2570352702206648,
+    "distance": 0.4999802898246889,
+    "proxy_changes": 1,
+    "proxy_n": 512,
+    "gradient_FD_error": 5.338143327585403e-07,
+    "native_JVP_error": 9.592863677888863e-11,
+    "fit_scale_selected_overlap": 32,
+    "effective_defense_verified": false
+  },
+  "query_game": {
+    "status": "independently_confirmed_constraint_failure",
+    "candidate_sha256": "28cd6dbed0011e9e05c23349303da6e9ec298a6ce6b6a6966c7ce2a7713658ba",
+    "selected_step": 64,
+    "optimization_steps": 64,
+    "wall_seconds": 278.02667646994814,
+    "peak_gpu_bytes": 10142606848,
+    "parameter_distance": 0.49999656960167854,
+    "Q_relative_distance": 0.2390367501703506,
+    "B_relative_distance": 0.439156010640232,
+    "training_worst_margin_drift": 0.2616859879835846,
+    "confirmation_worst_margin_drift": 0.7718964496997662,
+    "confirmation_original_correct": 512,
+    "confirmation_candidate_correct": 512,
+    "failed_domain": "natural_input",
+    "proxy_changed": 1,
+    "proxy_n": 512,
+    "QK_bilinear_relative_change": 0.2384082203530102,
+    "native_mean_attention_KL": 1.5428608785841231,
+    "release_generated": false,
+    "true_fusion_or_AGA_run": false,
+    "reason": "Frozen0.5 task bound exceeded on a natural confirmation input. No threshold relaxation, re-selection, or additional iterations."
+  },
+  "phase1_integrity_recheck": {
+    "status": "all4 releases and original source ZIP unchanged",
+    "date_utc": "2026-10-14T12:50:14.135674+00:00",
+    "source_archive_sha256": "602dd96dea9786e68bbfe74c3ae2e5eaf1a053382fb6f9637ea21a05c772b5ae"
+  },
+  "joint_coverage_diagnosis": {
+    "new_weights": 0,
+    "free_unit_slope": 13.969719219353028,
+    "conditional_unit_slope": 0.802035024047942,
+    "free_finite_step": 0.005,
+    "free_native_margin_drift": 0.43221207792076105,
+    "proxy_changes": [
+      54,
+      58,
+      512
+    ],
+    "rank_objective": "Stop enlarging margins for already crossed predictions; same class-balanced teacher weights."
+  },
+  "joint_coverage_game": {
+    "status": "closed_independently_confirmed_constraint_failure",
+    "results": "results/joint_coverage_game/results.json",
+    "independent_validation": "results/joint_coverage_game/independent_validation.json",
+    "candidate_sha256": "67121806a5c79b5beb232b254eb666b75fa3d8d64bf38bbbdf1a1c017592d995",
+    "selected_step": 63,
+    "optimization_steps": 64,
+    "explicit_release_gradient_calls": 64,
+    "original_expert_updated": false,
+    "parameter_distance": 0.49999846365282197,
+    "training_worst_margin_drift": 0.4915717976920313,
+    "confirmation_worst_margin_drift": 0.7250413506057587,
+    "confirmation_counts": {
+      "n": 512,
+      "original_correct": 512,
+      "candidate_correct": 512,
+      "changed_predictions": 0
+    },
+    "proxy_changed": 111,
+    "proxy_n": 512,
+    "proxy_changed_by_teacher_class": [
+      9,
+      11,
+      2,
+      56,
+      9,
+      6,
+      0,
+      16,
+      0,
+      2
+    ],
+    "wall_seconds": 32.1571484641172,
+    "peak_gpu_bytes": 1014750720,
+    "release_generated": false,
+    "true_fusion_or_AGA_run": false,
+    "threshold_relaxed": false,
+    "new_iterate_selected_after_confirmation": false
+  },
+  "joint_generalization_audit": {
+    "status": "two_complete_model_witness_replays_confirm_failure",
+    "results": "results/joint_coverage_game/generalization_audit.json",
+    "confirmation_natural_violations": 1,
+    "worst_witness": {
+      "offset": 243,
+      "original_class": 5,
+      "competitor": 6,
+      "signed_relative_change": -0.7250413506057551,
+      "original_gap": 3.2890984273499395,
+      "candidate_gap": 0.904366061308874,
+      "positive_affine_scale": 0.8745117833951095,
+      "non_affine_relative_error": 0.32610316902849307,
+      "activation_outside_fit_row_space_fraction": 0.0045006194335525315,
+      "B_outside_response_fraction": 7.276045038296237e-05
+    },
+    "fresh_witness_margin_drift": 0.7250392337796863,
+    "B_parameter_outside_fit_space_fraction": 0.07695713160714249,
+    "confirmation_B_outside_response_energy_fraction": 8.254311624314116e-06,
+    "conclusion": "Natural low-margin witness lacks fitted class-pair gap coverage. Unseen linear input space has negligible B response energy here; not established as principal cause. No general impossibility claim.",
+    "test_used": false,
+    "partner_used": false,
+    "new_release_weights": 0
   }
 }

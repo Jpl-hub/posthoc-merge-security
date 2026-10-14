@@ -73,6 +73,27 @@ def verify(output):
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
 
+def audit_raw_failure(output):
+    out=Path(output);cfg=json.loads(Path('configs/raw_score_level_set.json').read_text())
+    path=Path(cfg['cache_reference'])/'calibration.pt';assert digest(path)==cfg['calibration_sha256'];cache=torch.load(path,map_location='cpu')
+    _,expert,head,hashes=checked_models('MNIST');p0=extended_parameters(expert,head);p={k:array(v) if torch.is_tensor(v) else v for k,v in p0.items()}
+    assert head.bias is None or bool(torch.all(head.bias==0))
+    contrast=p['head']-p['head'].mean(0);uc,sc,_=np.linalg.svd(contrast.T,full_matrices=False);rank=int((sc>sc[0]*cfg['readout_relative_tolerance']).sum());uc=uc[:,:rank]
+    linear=p['gamma'][:,None]*p['projection'];linear-=linear.mean(0);ul,sl,vl=np.linalg.svd(linear,full_matrices=False)
+    s=(ul/sl[None,:])@(vl@uc);bias=p['beta']@p['projection'];cg=bias@uc;ca=bias-cg@uc.T;cs=s-s.mean(0)
+    rows=[]
+    for group in ['native','scale']:
+        h=array(cache[group]['h']);sd=np.sqrt(np.mean((h-h.mean(1,keepdims=True))**2,1,keepdims=True)+p['eps']);t=h@linear+sd*bias
+        a=(t/np.linalg.norm(t,axis=1,keepdims=True))@uc;mass=np.sum(a*a,1,keepdims=True);complement=np.sqrt(np.maximum(1.-mass,0));assert complement.min()>1e-8
+        bound=(np.linalg.norm(a@cs.T,axis=1,keepdims=True)*np.linalg.norm(ca)/complement+np.linalg.norm(cg@cs.T))/np.sqrt(h.shape[1])
+        rows.append({'group':group,'n':len(h),'contraction_bound_maximum':float(bound.max()),'contraction_bound_median':float(np.median(bound)),'teacher_class_feature_energy_fraction_median':float(np.median(mass))})
+    assert max(row['contraction_bound_maximum'] for row in rows)>1.
+    result={'status':'confirmed_failure_of_preregistered_sufficient_condition','source_sha256':digest(__file__),'calibration_sha256':digest(path),'checkpoint_sha256':hashes,'feature_map_condition':float(sl[0]/sl[-1]),'class_feature_rank':rank,'pure_feature_class_change_error':float(np.max(np.abs(s.T@linear-uc.T))),'records':rows,'new_weights':0,'new_model_forwards':0,'test_used':False,'partner_used':False,'limitation':'Failure of this contraction certificate is not a proof that every raw-score equation is insoluble.'}
+    save_json(out/'failure_audit.json',result);print(json.dumps(result),flush=True)
+
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True)
-    args=parser.parse_args();torch.set_num_threads(4);verify(args.output)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True);parser.add_argument('--raw-failure',action='store_true')
+    args=parser.parse_args();torch.set_num_threads(4)
+    if args.raw_failure:audit_raw_failure(args.output)
+    else:verify(args.output)

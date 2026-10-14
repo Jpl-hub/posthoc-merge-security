@@ -15,6 +15,10 @@
 
 **范围必须区分：** TA(0.5)、FP32、三个被保护专家。原版 AGA 不修改最后 LN 偏置与视觉投影，因此这是该原版攻击后的融合干扰；尚无抗公开清理／参数替换的结论，也未证明任务信息不可恢复，不是 ARF/Table 6 复现。第一阶段结果作为冻结对照保留。第二阶段首轮及任务向量蒸馏补偿均保持独立能力，但真实融合和 AGA 后没有有效的目标准确率下降；[补偿构造、真实结果和约束问题](notes/phase2_compensation.md)、[结果与机制结论](notes/phase2_results.md)、[数学建模](notes/phase2_distance.md)。随后有限任务探针候选在三个专家上也没有有效下降：MNIST、DTD、SVHN 的 AGA 后准确率分别为99.35%、68.83%、91.76%。[有限探针机制与结果](notes/phase2_margin_probes.md)。当前发布系数优化采用目标训练数据和公开基座，属于有梯度的后处理，不是零梯度构造；[优化变量、约束及求解诊断](notes/phase2_projected_game.md)。新的去中心化归一化分数优化与解析复合蒸馏，仍只改判1/512；独立确认最坏探针变化0.699/0.651超过冻结的0.5预算，没有新release或完整融合评估。[排序梯度、可行性、分类边界证据](notes/phase2_angular.md)。最后Attention与MLP的跨模块候选通过了独立训练确认，但真实MNIST＋SVHN的AGA目标准确率99.32%→99.30%，配对p=0.815，仍未构成有效防御。[跨模块推导、完整目标/伙伴指标与代价](notes/phase2_cross_module.md)。未开展全面攻击实验或新增恢复攻击。
 
+分类充分统计补偿已完成真实MNIST/SVHN验证：独立99.69%→99.68%，TA99.37%→99.18%，AGA99.32%→99.23%，仍无有效保护。Query单侧取权候选改变了实际Attention计算，但独立确认间隔变化0.772超过0.5门槛，关闭且未发布。[最新机制结论与参数化边界](notes/phase2_mechanism_checkpoint.md)、[分类补偿](notes/phase2_classification_completion.md)、[Query诊断](notes/phase2_query.md)。
+
+自由联合发布变量的新诊断提高了代理分类覆盖：54/512→111/512改判，涉及8类；但新确认集间隔变化0.725超过原0.5约束。完整模型重放确认失败，停止发布，未运行真实融合或AGA。低间隔输入上的补偿保持是当前障碍，不能把代理改善称为防御突破。[联合优化、失败见证与代价](notes/phase2_joint_class.md)。
+
 - `experiments/projection_bias_noise.py`：当前保护构造
 - `configs/projection_bias_noise_svhn.json`：当前直接采集训练图的冻结协议；[SVHN 迁移结果](notes/projection_bias_noise_svhn.md)
 - `configs/projection_bias_noise.json`：MNIST/DTD 原始协议，重放须使用 `7949958` 源码或服务器冻结包
