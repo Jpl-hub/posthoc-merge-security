@@ -1,0 +1,53 @@
+{
+  "target": "MNIST",
+  "output": "outputs/phase2_environment_witness_mnist",
+  "cache": "outputs/phase2_attention_cascade_cache/calibration.pt",
+  "inputs": {
+    "outputs/phase2_attention_cascade_cache/calibration.pt": "aaf492c814b1b8baca7b8146824e0502ab1419171ed8b26c09a15c6dab4f91dd",
+    "outputs/phase2_boundary_game_mnist/candidate.pt": "e0ee5e5eeb170d550401724dfe0a8c6ff39273afdde79f46a207a4370b2398a4",
+    "outputs/phase2_joint_exchange_mnist/training_point.pt": "723a2d8c4e3f1e41904729b1b78fd0193e6487f0c4a0cc192d9c825f788f98bb"
+  },
+  "cases": [
+    {
+      "name": "O_B",
+      "format": "O_B",
+      "point": "outputs/phase2_boundary_game_mnist/candidate.pt"
+    },
+    {
+      "name": "joint_trust",
+      "format": "release_deltas",
+      "point": "outputs/phase2_joint_exchange_mnist/training_point.pt"
+    }
+  ],
+  "coefficient": 0.5,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "baseline_budget": 0.5,
+  "per_class": 4,
+  "steps": 8,
+  "backtracks": 6,
+  "trust_fraction": 0.25,
+  "restored_gap": 0.01,
+  "acceptance_ratio": 0.1,
+  "derivative_step": 1e-05,
+  "derivative_tolerance": 1e-05,
+  "entrypoint": "experiments/finite_environment_witness.py",
+  "description": "ONE frozen source-only conditional representation-tube falsification, two preserved publication points. Natural source/public-anchor block inputs define an identified task-retreat coordinate. Adversary varies the orthogonal full-token state, keeps baseline margin drift<=.5, norm<=observed source-retreat length and seeks to restore original class under JOINT released parameters. No future peer, random models, publication updates, candidate selection, confirmation, test or recovery attack. The tube is an explicit conditional interface set, NOT a partner distribution or a reachability claim. Failed inner solves are inconclusive. Fixed8-step/6-backtrack nonlinear acceptance, no repeats or enlarged search.",
+  "source_sha256": {
+    "experiments/finite_environment_witness.py": "a07c7d470e01366fba97850d9015a771d7323f07bd8abc6ccb7665f1731b927c",
+    "experiments/verify_environment_witness.py": "9a4a278410432af4b29c695e85e60b2739800c0b52efeebc42b0a7e511fdb165",
+    "experiments/attention_cascade.py": "868fc15bd7628f412557af8afc19807a06ad9cacbeed4e1d126108f4f4654593",
+    "experiments/angular_distance.py": "9cff17f80aa43f22edbd3f2fa00bf6553391e71f91aa69f0c48bb754a055a65a",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/probe_distance_candidate.py": "95b48cecd125e48a2467f298da5e144b9d23b7490f6efe78cedf579a23a5b6bf",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "experiments/verify_cascade.py": "977e726182822c823c5eaef906a58f6dd4179156cc51100211bfab266c894ed5",
+    "experiments/verify_levelset_audits.py": "7d51baf85314d0529b06cac0177f87cc3b7a2495bd92279db6025c5f96a003c0",
+    "experiments/verify_cross_module.py": "ae228c53514e9fa43d25c751935e96e70b86a2d218d2d9f14810dea0be33e1c3",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/cross_module_distance.py": "74fcf77f10c37dcc989017e9f6462a47490e6b656dd3f3364c7448084c048c19",
+    "experiments/task_boundary_audit.py": "d90956a382d8f0a2d2be46bf914e6a86567705c8c7acdab750d12ec3f09bcfdd"
+  }
+}
