@@ -1,6 +1,6 @@
 {
-  "status": "phase2_temperature_compensation_protocol_frozen",
-  "updated_utc": "2026-10-15T05:00:56.288690+00:00",
+  "status": "phase2_temperature_margin_compensation_protocol_frozen",
+  "updated_utc": "2026-10-15T05:02:51.641609+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -1389,7 +1389,7 @@
     "partner_used": false
   },
   "phase2_temperature_compensation": {
-    "status": "protocol_frozen_before_execution",
+    "status": "exact_score_setup_contraction_failed_margin_target_frozen",
     "protocol": "configs/temperature_compensation.json",
     "mechanism": "notes/phase2_temperature_compensation.md",
     "parameter_budget": 0.5,
@@ -1399,7 +1399,11 @@
     "partner_used": false,
     "test_used": false,
     "new_release_weights": 0,
-    "true_TA_AGA_run": false
+    "true_TA_AGA_run": false,
+    "failed_setup_source_commit": "bb73ae9",
+    "failed_setup_log": "outputs/phase2_temperature_compensation.log",
+    "current_protocol": "configs/temperature_margin_compensation.json",
+    "reason": "Raw-score fixed-point contraction sufficient condition fails; no coefficient or task score evaluated before this failure. Switch to original allowed0.75 centered-score target, not relaxed task gate."
   },
   "screening_correction": {
     "source_midpoint_failure_is_universal_necessary_condition": false,

@@ -12,7 +12,7 @@ from scipy.optimize import LinearConstraint, minimize
 from angular_distance import angular_scores, signed_residual
 from attention_cascade import norm, parameters, suffix
 from boundary_game import risk_first
-from classification_completion import feature_space, raw_score_target
+from classification_completion import amplitude_target, feature_space, raw_score_target, readout
 from clip_benchmark import digest
 from probe_distance_candidate import on_device
 from probe_margin_distance import scores
@@ -138,7 +138,10 @@ def metric(data, p, q, k, cfg):
 
 @torch.no_grad()
 def spectral_fit(data, p, space, cfg):
-    _, target, info=raw_score_target(data['base'], data['teacher_hidden'], space, p['eps'])
+    if cfg.get('distillation_target')=='centered_raw_margin_band':
+        _, target, info=amplitude_target(data['base'], data['teacher_hidden'], space, p, cfg['task_budget'])
+    else:
+        _, target, info=raw_score_target(data['base'], data['teacher_hidden'], space, p['eps'])
     teacher=data['teacher']; y=teacher.argmax(1); rows=torch.arange(len(y), device='cuda')
     gaps=teacher[rows, y, None]-teacher; gaps[rows, y]=torch.inf
     weight=gaps.min(1).values.reciprocal().square(); weight/=weight.mean()
@@ -206,7 +209,8 @@ def construct(cfg):
     cal=torch.load(Path(cfg['cache_reference'])/'calibration.pt', map_location='cpu')
     anchor, expert, head, hashes=checked_models(cfg['target']); p=on_device(cal['parameters']); pa=on_device(parameters(anchor, head))
     assert torch.equal(parameters(expert, head)['W'], cal['parameters']['W'])
-    basis, selection=task_basis(cal, p, pa, cfg); space, geometry=feature_space(p)
+    basis, selection=task_basis(cal, p, pa, cfg)
+    space, geometry=(readout if cfg.get('distillation_target')=='centered_raw_margin_band' else feature_space)(p)
     data, ids, cache=paired_inputs(cal, p, basis, cfg); q=space['Q']
     k, fit=spectral_fit(data, p, space, cfg); initial=metric(data, p, q, k, cfg)
     print(json.dumps(dict(stage='finite_spectral_distillation', initial=initial, fit=fit)), flush=True)
