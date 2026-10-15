@@ -103,8 +103,22 @@ def verify(cfg):
             index=[e['name'] for e in envs].index(critic['environment']);e=envs[index];base=angular(e['teacher']);new=angular(vals[index]);i=critic['sample'];y=int(e['teacher'][i].argmax());j=critic['competitor'];oth=base[i].copy();oth[y]=-np.inf;fixed.append(1-(new[i,y]-new[i,j])/(base[i,y]-oth.max()))
         switching.append(dict(step=trial['step'],source_feasible=trial['metrics']['source_feasible'],predicted_improvement=trial['prediction'],actual_improvement=trial['actual'],
             frozen_critic_minimum_improvement=float(min(fixed)-np.min(jac['q'])),reordered_full_quantile_improvement=trial['actual']))
+    gradient_errors=[];distance_gradient_errors=[]
+    for saved in [d['jacobians'][0],d['jacobians'][-1]]:
+        step=1e-5;fixed_values=[];distances=[]
+        for sign in [-1,1]:
+            t=saved['t']+sign*step*saved['direction'];dt,kt,_,_,_,_,_=complete(t);vals=env_forward(dt,Q@kt.T@V);crit=[]
+            distances.append(float(t@t+np.sum(kt*kt)/nb**2))
+            for cc in saved['critics']:
+                ix=[e['name'] for e in envs].index(cc['environment']);e=envs[ix];a=angular(e['teacher']);b=angular(vals[ix]);i=cc['sample'];y=int(e['teacher'][i].argmax());j=cc['competitor'];o=a[i].copy();o[y]=-np.inf
+                crit.append(1-(b[i,y]-b[i,j])/(a[i,y]-o.max()))
+            fixed_values.append(np.array(crit))
+        fd=(fixed_values[1]-fixed_values[0])/(2*step);err=float(np.abs(fd-saved['G']@saved['direction']).max());gradient_errors.append(err)
+        derr=abs((distances[1]-distances[0])/(2*step)-saved['distance_gradient']@saved['direction']);distance_gradient_errors.append(float(derr))
+        assert err<1e-5 and derr<1e-5,(err,derr)
     result=dict(status='passed_closed_mechanism' if not rep['mechanism_supported'] else 'passed_mechanism_requires_fresh_confirmation',mechanism_supported=rep['mechanism_supported'],source=source,parameter_distance=float(distance),environment=reports,
         maximum_numpy_score_error=float(max(errors)),trial_points_independently_reconstructed=len(d['trace']),all_trial_compensators_verified=True,last_trust_proposals=switching,
+        frozen_critic_implicit_gradient_fd_errors=gradient_errors,distance_implicit_gradient_fd_errors=distance_gradient_errors,
         source_natural_original_correct=int((teacher[:len(ids)].argmax(1)==official_labels(cfg['target'],True)[ids]).sum()),source_natural_protected_correct=int((sa[:len(ids)].argmax(1)==official_labels(cfg['target'],True)[ids]).sum()),
         source_completion_basis='Original nonunique Torch SVD coordinate orientation only, column projector independently verified; all completion, solve and finite responses are independent NumPy.',
         diagnostic_sha256=rep['diagnostic_sha256'],geometry_sha256=rep['geometry_sha256'],source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
