@@ -30,7 +30,8 @@ def path_pack(endpoints,t,p):
 class HermiteChart:
     def __init__(self,params,basis,endpoints,roots,space,cfg):
         self.p,self.basis,self.endpoints,self.roots,self.space,self.cfg=params,basis,endpoints,roots,space,cfg
-        self.rank=cfg['probe_rank'];self.na=params['O'].norm();self.nb=params['B'].norm();self.q=space['Q']
+        self.rank=cfg['probe_rank'];self.na=params['O'].norm();self.nb=params['B'].norm()
+        self.q=torch.eye(params['B'].shape[0],device=params['B'].device,dtype=params['B'].dtype) if cfg.get('completion_target')=='hidden' else space['Q']
 
     def delta_O(self,c):return self.na*self.basis['u']@c@self.basis['vh']
 
@@ -38,7 +39,8 @@ class HermiteChart:
         a=path_pack(self.endpoints,t,self.p);r=a['r']+a['o_input']@self.delta_O(c).T
         z=gelu(normalized_input(r,self.p)@self.p['A'].T+self.p['a'])
         h0=a['rounding']+r+z@self.p['B'].T+self.p['b']
-        _,target,_=raw_score_target(h0,a['teacher_h'],self.space,self.p['eps'],self.cfg['fixed_point_iterations'])
+        if self.cfg.get('completion_target')=='hidden':target=a['teacher_h']-h0
+        else:_,target,_=raw_score_target(h0,a['teacher_h'],self.space,self.p['eps'],self.cfg['fixed_point_iterations'])
         return z,target/self.nb
 
     def factors(self,c,derivatives=True,create_graph=False):
@@ -118,13 +120,17 @@ def prepare_data(cfg):
 
 
 def load_chart(cfg):
-    saved=torch.load(Path(cfg['output'])/'calibration.pt',map_location='cpu');p=on_device(saved['parameters'])
+    path=Path(cfg.get('calibration_reference',str(Path(cfg['output'])/'calibration.pt')))
+    if cfg.get('calibration_sha256'):assert digest(path)==cfg['calibration_sha256']
+    saved=torch.load(path,map_location='cpu');p=on_device(saved['parameters'])
     chart=HermiteChart(p,on_device(saved['bases']['O']),on_device(saved['endpoints']),saved['roots'].cuda(),on_device(saved['space']),cfg)
     return saved,chart
 
 
 def diagnose(cfg):
-    start=time.monotonic();out=Path(cfg['output']);saved,chart=load_chart(cfg);p=chart.p
+    start=time.monotonic();out=Path(cfg['output'])
+    if cfg.get('calibration_reference'):out.mkdir(parents=True,exist_ok=False)
+    saved,chart=load_chart(cfg);p=chart.p;calibration=Path(cfg.get('calibration_reference',str(out/'calibration.pt')))
     c=-cfg['mechanism_O_distance']*torch.diag(chart.basis['s'])/chart.basis['s'].norm();records=[];raw=on_device(saved['cache']);raw['rounding']=raw['h']-final_hidden(raw['r'],p)
     before=scores(raw['h'],p);pairs=saved['pairs'].cuda();ar=torch.arange(len(pairs),device='cuda');snap={}
     for name,kind in [('uncompensated',None),('value_only',False),('value_and_derivative',True)]:
@@ -158,14 +164,15 @@ def diagnose(cfg):
     supported=supported and near<=far/cfg['minimum_relative_decay']
     # Pointwise finite decay is reported, never advertised as an interval
     # curvature certificate or unseen-input/unknown-peer coverage.
-    torch.save(dict(records=snap,teacher=before.cpu(),calibration_sha256=digest(out/'calibration.pt')),out/'mechanism.pt')
+    torch.save(dict(records=snap,teacher=before.cpu(),calibration_sha256=digest(calibration)),out/'mechanism.pt')
     result=dict(status='boundary_Hermite_chart_numerically_supported' if supported else 'closed_boundary_Hermite_chart_failed',
         mechanism_supported=supported,near_far_relative_error_ratio=near/max(far,1e-20),records=records,new_release_weights=0,original_expert_updates=0,
         independent_confirmation_run=False,true_TA_run=False,author_AGA_run=False,peer_used=False,test_used=False,
-        exposed_confirmation_values_used=False,calibration_sha256=digest(out/'calibration.pt'),mechanism_sha256=digest(out/'mechanism.pt'),
+        exposed_confirmation_values_used=False,calibration_sha256=digest(calibration),mechanism_sha256=digest(out/'mechanism.pt'),
         source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
         limitation='Hermite matching on20 target-training activation chords, not a uniform bound transverse to chords or future-peer coverage. One fixed finite seed is mechanism-only and not a releasable candidate. No amplitude/path/rank sweep.')
-    save_json(out/'mechanism.json',result);print(json.dumps(result),flush=True)
+    save_json(out/'mechanism.json',result);save_json(out/'protocol.json',cfg)
+    save_json(out/'training_indices.json',{'fit':saved['indices']});print(json.dumps(result),flush=True)
 
 
 if __name__=='__main__':
