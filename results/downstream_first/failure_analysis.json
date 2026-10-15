@@ -1,0 +1,73 @@
+{
+  "status": "verified_source_only_restoration_failure_attribution",
+  "target": "MNIST",
+  "groups": [
+    {
+      "group": "fit_natural",
+      "n": 4096,
+      "worst": 3.4873867223849455,
+      "changed": 2,
+      "violating_inputs": 481,
+      "violating_pairs": 493,
+      "total_competitor_pairs": 36864
+    },
+    {
+      "group": "scale_natural",
+      "n": 512,
+      "worst": 0.6090620901440118,
+      "changed": 0,
+      "violating_inputs": 66,
+      "violating_pairs": 67,
+      "total_competitor_pairs": 4608
+    },
+    {
+      "group": "A_task_SVD",
+      "n": 2560,
+      "worst": 3.568876045840628,
+      "changed": 128,
+      "violating_inputs": 512,
+      "violating_pairs": 960,
+      "total_competitor_pairs": 23040
+    },
+    {
+      "group": "B_task_SVD",
+      "n": 2560,
+      "worst": 3.5288613601062337,
+      "changed": 128,
+      "violating_inputs": 512,
+      "violating_pairs": 960,
+      "total_competitor_pairs": 23040
+    }
+  ],
+  "worst_witness": {
+    "task_row": 5284,
+    "source_train_index": 52210,
+    "teacher_class": 5,
+    "competitor_class": 4,
+    "original_gap": 0.1313845106336089,
+    "joint_gap": -0.33751052216117117,
+    "relative_drift": 3.568876045840628,
+    "natural_input": false
+  },
+  "final_step_linear_vs_finite": {
+    "linear_worst_on_active_pairs": 0.0016242151103419145,
+    "finite_worst_on_active_pairs": 27.279103860065277,
+    "finite_linear_disagreement": 27.279102944678904,
+    "upstream_proposal_distance": 0.2887311061296828,
+    "preallocated_upstream_radius": 0.35355339059327373,
+    "active_inputs": 96,
+    "nonlinear_full_step_global_worst": 27.27910386006525,
+    "accepted_step_fraction": 0.0625,
+    "linear_regularizer": 0.0
+  },
+  "source_task_passed": false,
+  "new_release_weights": 0,
+  "new_model_forwards": 0,
+  "new_parameter_updates": 0,
+  "partner_used": false,
+  "test_used": false,
+  "diagnostic_sha256": "8d258df321bfb66841104e63975ef75d3fdf780f22fe61d48d7ebbd70d61d248",
+  "source_sha256": "7b033952ece919a41f138f20b37ee910980a18802585a580db246e81996e2fef",
+  "wall_seconds": 1.555756710935384,
+  "conclusion": "The downstream branch has finite multiclass effect, but the fixed shared upstream repair fails its task gate. Local least-squares stationarity does not certify finite restoration. No claim that the admissible function class is globally infeasible, nor that more iterations or budget would solve transfer."
+}
