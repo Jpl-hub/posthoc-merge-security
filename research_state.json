@@ -1,5 +1,5 @@
 {
-  "status": "phase2_temperature_true_eval_verified_no_improvement",
+  "status": "phase2_finite_gelu_scaling_protocol_frozen",
   "updated_utc": "2026-10-15T05:23:27.095286+00:00",
   "automatic_continuation": false,
   "server": "3090",
@@ -11,7 +11,7 @@
   "breakthrough_verified": false,
   "new_candidate": "One source-only fixed Q/K-temperature plus finite B-distillation release passed source, independent confirmation and full-model replays, but trueTA MNIST99.36 and authorAGA99.32 show no defense. Preserve this negative point and the better O/B99.71/78.77/77.85. No new best candidate.",
   "mechanism": "notes/phase2_temperature_compensation.md",
-  "next_action": "Temperature branch is closed after trueTA/authorAGA, not proxy filtering. Do not increase gain, ranks, budgets or steps. Further research needs a justified finite task-preserving transformation whose compensation mismatch crosses multiclass margins, rather than score shrinkage or attention entropy. No credible next frozen candidate currently; unknown-partner coverage is unproved. Keep old automatic loops paused.",
+  "next_action": "Run sole source-only finite QuickGELU scaling mask, independently verify every finite task/probe input, then fresh confirmation and trueTA/authorAGA only if task-feasible. No midpoint/proxy prediction gate, no refitting after confirmation.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1444,5 +1444,16 @@
     "public_base_proxy_failure_is_universal_necessary_condition": false,
     "reason": "Frozen O/B point retains source midpoint predictions yet disrupts realTA/AGA. Prior negative proxy results establish only lack of proxy signal, not impossibility under true partners.",
     "old_finite_methods_not_restarted": true
+  },
+  "phase2_finite_gelu_scaling": {
+    "status": "protocol_frozen_not_run",
+    "protocol": "configs/finite_gelu_scaling.json",
+    "mechanism": "notes/phase2_gelu_scaling.md",
+    "parameter_budget": 0.5,
+    "task_budget": 0.5,
+    "new_release_weights": 0,
+    "true_TA_AGA_run": false,
+    "unknown_peer_coverage_proved": false,
+    "scale_canonicalization_risk": true
   }
 }
