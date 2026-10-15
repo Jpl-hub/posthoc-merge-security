@@ -1,0 +1,58 @@
+{
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "test_counts": {
+    "MNIST": 10000,
+    "DTD": 1880,
+    "SVHN": 26032
+  },
+  "coefficient": 0.5,
+  "maximum_calibration_group": 512,
+  "standalone_loss_gate_pp": 0.5,
+  "seed": 20261014,
+  "publication_point": "outputs/phase2_finite_gelu_scaling",
+  "parameter_budget": 0.5,
+  "confirmation_seed": 20261020,
+  "runner_sha256": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+  "source_commit": "da25b93a294f95f4e35db31ed4150dd377de0cc6",
+  "source_sha256": {
+    "experiments/evaluate_cross_release.py": "4b5770e46c9a4228e7c1d57c1e8abc39a440cee4467c2b09a46153a0ef5fbf33",
+    "experiments/verify_cross_evaluation.py": "511ab35218a3467b04219a15f60d3371d6db6811763e54cdc1ee3cfc7395569b",
+    "experiments/finite_gelu_scaling.py": "d2791c2a241ab65d55ceae91665691815e936e3bdd552ef34c1429cf55c76352",
+    "experiments/confirm_gelu_scaling.py": "fadb4713357a7a1e6aa84538ea20d69841e9e4bffad1e9308d7ffc7aee1921fb",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "configs/sources.json": "528346ab06c38cc4e34a8a4064d9721f3884a1c2738deef4ec0e94a7b2b88a3f"
+  },
+  "description": "One frozen source-only positive neuron scaling subset, formal0.5 distance, independent all9728 task checks and fresh512 target-train confirmation. Evaluate trueTA0.5 and unchanged authorAGA once; no midpoint gate or test parameter selection. No new attacks.",
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN"
+    }
+  ],
+  "candidate_sha256": "b997737618995bf3c89cf0ab2d0684a0228b2f1521c314d5958dc608b18fc63e",
+  "construction_optimizer_steps": 0,
+  "publication_keys": {
+    "A": "model.visual.transformer.resblocks.11.mlp.c_fc.weight",
+    "a": "model.visual.transformer.resblocks.11.mlp.c_fc.bias",
+    "B": "model.visual.transformer.resblocks.11.mlp.c_proj.weight"
+  }
+}

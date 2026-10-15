@@ -1,6 +1,6 @@
 {
-  "status": "phase2_finite_gelu_scaling_source_verified",
-  "updated_utc": "2026-10-15T05:43:49.177064+00:00",
+  "status": "phase2_finite_gelu_scaling_true_eval_next",
+  "updated_utc": "2026-10-15T05:44:50.490387+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -11,7 +11,7 @@
   "breakthrough_verified": false,
   "new_candidate": "One source-only fixed Q/K-temperature plus finite B-distillation release passed source, independent confirmation and full-model replays, but trueTA MNIST99.36 and authorAGA99.32 show no defense. Preserve this negative point and the better O/B99.71/78.77/77.85. No new best candidate.",
   "mechanism": "notes/phase2_temperature_compensation.md",
-  "next_action": "Fresh train confirmation of sole gain mask, then trueTA/authorAGA irrespective of midpoint prediction count. No mask/gain updates.",
+  "next_action": "Evaluate sole verified frozen scaling candidate under trueTA0.5/authorAGA, then independent official prediction recount and full-model replay. No mask/gain changes.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1446,12 +1446,12 @@
     "old_finite_methods_not_restarted": true
   },
   "phase2_finite_gelu_scaling": {
-    "status": "source_verified_fresh_confirmation_next",
+    "status": "fresh_confirmation_passed_true_eval_next",
     "protocol": "configs/finite_gelu_scaling.json",
     "mechanism": "notes/phase2_gelu_scaling.md",
     "parameter_budget": 0.5,
     "task_budget": 0.5,
-    "new_release_weights": 0,
+    "new_release_weights": 1,
     "true_TA_AGA_run": false,
     "unknown_peer_coverage_proved": false,
     "scale_canonicalization_risk": true,
@@ -1463,6 +1463,43 @@
     "natural_n": 4608,
     "source_midpoint_changes": 1,
     "source_midpoint_not_a_gate": true,
-    "source_commit": "abf34fc8a295fac123cc3cb026cfcc8f4eecacaa"
+    "source_commit": "abf34fc8a295fac123cc3cb026cfcc8f4eecacaa",
+    "confirmation_validation": {
+      "status": "passed",
+      "confirmation_passed": true,
+      "target": "MNIST",
+      "natural_n": 512,
+      "all_task_inputs": 3072,
+      "parameter_distance": 0.49999999999999994,
+      "worst_margin_drift": 0.011966807114847567,
+      "numpy_worst_margin_drift": 0.011966807114847723,
+      "natural_changes": 0,
+      "original_correct": 512,
+      "released_correct": 512,
+      "full_model_replay": {
+        "original": {
+          "n": 512,
+          "correct": 512,
+          "all_predictions_match": true
+        },
+        "released": {
+          "n": 512,
+          "correct": 512,
+          "all_predictions_match": true
+        }
+      },
+      "new_model_forwards": 1536,
+      "confirmation_sha256": "6f1d94183d4b3e2f28fd778f09be08dd6edbc494aef497c4a1beb6f25c6881a3",
+      "point_sha256": "769686b7bb8da4bdebc41102ee920809aaa1517025643cc1644a4af343de7f66",
+      "source_sha256": "fadb4713357a7a1e6aa84538ea20d69841e9e4bffad1e9308d7ffc7aee1921fb",
+      "wall_seconds": 17.678992143832147,
+      "partner_used": false,
+      "test_used": false,
+      "selected_after_confirmation": false,
+      "original_expert_updates": 0,
+      "candidate_sha256": "b997737618995bf3c89cf0ab2d0684a0228b2f1521c314d5958dc608b18fc63e"
+    },
+    "candidate_sha256": "b997737618995bf3c89cf0ab2d0684a0228b2f1521c314d5958dc608b18fc63e",
+    "true_evaluation_protocol": "configs/gelu_scaling_real_eval.json"
   }
 }
