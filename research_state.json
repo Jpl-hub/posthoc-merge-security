@@ -1,15 +1,23 @@
 {
-  "status": "phase2_temperature_margin_compensation_protocol_frozen",
-  "updated_utc": "2026-10-15T05:02:51.641609+00:00",
+  "status": "phase2_temperature_finite_point_verified_confirmation_running",
+  "updated_utc": "2026-10-15T05:07:48.711948+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
   "stage": "two_structured_finite_method_families_closed_after_verification",
-  "research_jobs": [],
+  "research_jobs": [
+    {
+      "server": "3090",
+      "stage": "fresh_task_confirmation",
+      "output": "outputs/phase2_temperature_margin_mnist",
+      "log": "outputs/phase2_temperature_confirmation.log",
+      "protocol": "configs/temperature_margin_compensation.json"
+    }
+  ],
   "breakthrough_verified": false,
-  "new_candidate": "One fixed same-sign Q/K temperature change plus finite source-only feature-subspace B distillation. No new validated release yet.",
+  "new_candidate": "Sole temperature/distillation point has passed9728-input independent NumPy source validation. Distance0.5, task0.4538,4608 natural predictions preserved. Fresh confirmation running; no trueTA/AGA yet.",
   "mechanism": "notes/phase2_attention_cascade.md",
   "next_action": "Run one frozen temperature construction, independently verify source constraints. Source midpoint/public anchor flips are not universal gates; if task confirmation passes, evaluate trueTA/authorAGA once. No old solver/ray or parameter budget expansion.",
   "deferred": [
@@ -1389,7 +1397,7 @@
     "partner_used": false
   },
   "phase2_temperature_compensation": {
-    "status": "exact_score_setup_contraction_failed_margin_target_frozen",
+    "status": "source_validation_passed_confirmation_running",
     "protocol": "configs/temperature_compensation.json",
     "mechanism": "notes/phase2_temperature_compensation.md",
     "parameter_budget": 0.5,
@@ -1403,7 +1411,12 @@
     "failed_setup_source_commit": "bb73ae9",
     "failed_setup_log": "outputs/phase2_temperature_compensation.log",
     "current_protocol": "configs/temperature_margin_compensation.json",
-    "reason": "Raw-score fixed-point contraction sufficient condition fails; no coefficient or task score evaluated before this failure. Switch to original allowed0.75 centered-score target, not relaxed task gate."
+    "reason": "Raw-score fixed-point contraction sufficient condition fails; no coefficient or task score evaluated before this failure. Switch to original allowed0.75 centered-score target, not relaxed task gate.",
+    "training_point_sha256": "b6429fe8d7b8810dbdca03763b712b009c29f37de930d1a7e2abd58f8f29a383",
+    "source_distance": 0.49999999993794,
+    "source_worst_margin_drift": 0.45379899714482785,
+    "native_prediction_changes": 0,
+    "B_only_prediction_changes": 0
   },
   "screening_correction": {
     "source_midpoint_failure_is_universal_necessary_condition": false,
