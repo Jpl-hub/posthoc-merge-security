@@ -55,8 +55,8 @@ def audit(cfg):
         members = (teacher == c).nonzero().flatten(); assert len(members) >= cfg['images_per_class']
         chosen.extend(members[id_tensor[members].argsort(stable=True)[:cfg['images_per_class']]].tolist())
     take = torch.tensor(chosen, device='cuda'); u = n0/n0.norm(dim=1, keepdim=True)
-    weight = 1./torch.bincount(teacher, minlength=classes)[teacher]/classes
-    tangent = torch.eye(classes, device='cuda')-torch.einsum('n,ni,nj->ij', weight, u, u)
+    weight = 1./torch.bincount(teacher, minlength=classes)[teacher].double()/classes
+    tangent = torch.eye(classes, device='cuda', dtype=u.dtype)-torch.einsum('n,ni,nj->ij', weight, u, u)
     eig, v = torch.linalg.eigh(tangent); tangent_sqrt = (v*eig.clamp_min(0).sqrt())@v.T
     original_out = suffix(H, p)[0]; records = {}; saved = {}
     mapping = {'attn.in_proj_weight': 'W', 'attn.in_proj_bias': 'w', 'attn.out_proj.weight': 'O', 'attn.out_proj.bias': 'ob',
