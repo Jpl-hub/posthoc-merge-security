@@ -2,7 +2,9 @@
 
 import argparse
 import copy
+import hashlib
 import json
+import time
 from pathlib import Path
 
 import numpy as np
@@ -17,10 +19,13 @@ from verify_probe_candidate import explicit_merge
 
 @torch.no_grad()
 def verify(output):
-    out=Path(output);cfg=json.loads((out/'protocol.json').read_text());meta=json.loads((out/'execution.json').read_text());case=json.loads((out/'case.json').read_text())
+    started=time.monotonic();out=Path(output);cfg=json.loads((out/'protocol.json').read_text());meta=json.loads((out/'execution.json').read_text());case=json.loads((out/'case.json').read_text())
     assert meta['completed'] and meta['fusion_run'] and meta['evaluation_optimizer_steps']==0
     for file,key in [('release.pt','release_sha256'),('calibration.pt','calibration_sha256'),('predictions.pt','predictions_sha256'),('released_AGA_edits.pt','AGA_edits_sha256')]:assert digest(out/'artifacts'/file)==meta[key]
     for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
+    author=Path('external/secure-merge-attack/utils_attack_B32.py')
+    author_pin=hashlib.sha256(author.read_text(encoding='utf-8').encode()).hexdigest()
+    assert author_pin==json.loads(Path('configs/sources.json').read_text())['AGA']['sha256']
     freeze=json.loads((out/'release_freeze.json').read_text());assert not freeze['partner_loaded'] and not freeze['test_loaded']
     target,peer=case['target'],case['partner'];assert not any(peer in k for k in freeze['checkpoint_sha256'])
     root=Path('checkpoints/ViT-B-32');load=checkpoint_loader(Path('external/secure-merge-attack'))
@@ -70,7 +75,8 @@ def verify(output):
         checks.append(dict(key=key,official_n=len(y),replayed_predictions=len(chosen),prediction_match=True))
     result=dict(status='passed',source_sha256=digest(__file__),release_sha256=meta['release_sha256'],predictions_sha256=meta['predictions_sha256'],
                 official_count_rows=len(rows),per_class_and_paired_counts='passed',explicit_TA_formula=True,finite_weight_reconstruction_maximum_error=error,
-                fresh_prediction_instances=sum(c['replayed_predictions'] for c in checks),checks=checks,new_candidates=0,evaluation_optimizer_steps=0,first_phase_changed=False)
+                fresh_prediction_instances=sum(c['replayed_predictions'] for c in checks),checks=checks,new_candidates=0,evaluation_optimizer_steps=0,first_phase_changed=False,
+                author_AGA_text_sha256=author_pin,wall_seconds=time.monotonic()-started)
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
 
