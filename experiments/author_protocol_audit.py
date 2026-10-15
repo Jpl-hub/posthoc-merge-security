@@ -108,7 +108,10 @@ def run(protocol, output):
         text = log.getvalue(); (out / f"AGA_{preset}.log").write_text(text)
         assert not any(x in text for x in ["Skipping", "Warning:", "Error", "[Error]"])
         assert all(f"Attacking Layer {i}..." in text for i in range(12))
-        assert all(f"Block {i}: MLP alignment applied." in text for i in range(12))
+        assert len(model.model.visual.transformer.resblocks) == 12
+        # The unchanged author loop visits every block but logs only i % 4 == 0.
+        assert all(f"Block {i}: MLP alignment applied." in text for i in [0, 4, 8])
+        assert ">>> MLP-only attack completed." in text
         record(attacked[preset], "MNIST", preset, "AGA_standalone")
         # Matches the public entrypoint: the peer is vanilla, never attacked here.
         fused = merge(anchor, attacked[preset], peer, .5)
