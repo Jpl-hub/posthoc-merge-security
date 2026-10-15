@@ -1,0 +1,80 @@
+{
+  "experiment": "official_scaling_only_ablation_budget_bound",
+  "date": "2026-10-16",
+  "official_commit": "4159a9a8bf253088694154d944f4583db8eca60e",
+  "official_source": "external/PaRaMS/src/PaRaMS/PaRaMS_algorithm.py",
+  "official_source_sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60",
+  "author_call": {
+    "num_layers": 12,
+    "enable_permutation": false,
+    "enable_scaling": true,
+    "perm_config": null,
+    "scaling_config": {
+      "scaling_type": "diagonal",
+      "scale_min": 0.9230769230769231,
+      "scale_max": 1.0769230769230769,
+      "mode": "uniform"
+    },
+    "rng_seed": 0
+  },
+  "effective_defaults": {
+    "enable_permutation": false,
+    "scaling_type": "diagonal",
+    "scale_min": 0.9230769230769231,
+    "scale_max": 1.0769230769230769,
+    "mode": "uniform"
+  },
+  "target": "MNIST",
+  "partner": "SVHN",
+  "coefficient": 0.5,
+  "attack_scopes": [
+    "target-only",
+    "both"
+  ],
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "out_of_budget_policy": "Original author reference is still measured and explicitly kept separate from budget-feasible candidates; do not clip/interpolate or retune.",
+  "evaluation_selection": false,
+  "new_defense_methods": 0,
+  "original_expert_frozen": true,
+  "use_4090": false,
+  "source_sha256": {
+    "experiments/params_scaling_reference.py": "2a71f0e639c59f809a16496a659295b424ce52e0c30c3b7f0b2d49ed1f1d8f27",
+    "experiments/params_reference.py": "1648c9f6d5f9a652abd7d254b23594dcc2f2e7dba78cda6fd967345e22e039d6",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "reference_variant": "scaling_only",
+  "output": "outputs/phase2_params_scaling_20261016",
+  "epsilon": 0.07692307692307693,
+  "justification": "Official optional-module ablation. For36 changed tensors, every element scales by alpha or1/alpha, so D<=6epsilon/(1-epsilon)=.5. Epsilon determined only by budget and architecture, not measurements. This is not full PaRaMS or a new defense method.",
+  "confirmation_n": 512,
+  "confirmation_seed": 2026101602,
+  "probe_rank": 32,
+  "AGA_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "evaluation_source_sha256": {
+    "experiments/params_reference_eval.py": "17dcf5bc2a06681b2b1a8cf9885f7002cc85300869811e040374966829dd86fc",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  }
+}

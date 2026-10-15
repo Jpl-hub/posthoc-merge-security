@@ -1,0 +1,339 @@
+{
+  "date": "2026-10-16",
+  "status": "verified_same_checkpoints_fusion_and_attack_scopes_budget_roles_separated",
+  "target": "MNIST",
+  "partner": "SVHN",
+  "coefficient": 0.5,
+  "official_PaRaMS_commit": "4159a9a8bf253088694154d944f4583db8eca60e",
+  "rows": [
+    {
+      "method": "full_author_default",
+      "distance_matrices": 30.425078630495594,
+      "distance_tensors": 47.25730241545482,
+      "AGA_distance_matrices": 0.0011655201550722538,
+      "within_budget": false,
+      "release_sha256": "5a7bca84cc9a40528f16676b617ef06823197b5ce2242e132fd3f5d18413b706",
+      "stages": {
+        "confirmation/MNIST": {
+          "original_correct": 511,
+          "released_correct": 511,
+          "n": 512,
+          "original_percent": 99.8046875,
+          "released_percent": 99.8046875,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 511,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 1,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "standalone/MNIST": {
+          "original_correct": 9969,
+          "released_correct": 9969,
+          "n": 10000,
+          "original_percent": 99.69,
+          "released_percent": 99.69,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9969,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 31,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "direct/MNIST": {
+          "original_correct": 9937,
+          "released_correct": 892,
+          "n": 10000,
+          "original_percent": 99.37,
+          "released_percent": 8.92,
+          "changed_predictions": 9113,
+          "paired": {
+            "both_correct": 884,
+            "lost": 9053,
+            "gained": 8,
+            "both_wrong": 55,
+            "loss_pp": 90.45,
+            "exact_mcnemar_p": 0.0
+          }
+        },
+        "direct/SVHN": {
+          "original_correct": 24079,
+          "released_correct": 2383,
+          "n": 26032,
+          "original_percent": 92.49769514443761,
+          "released_percent": 9.154118008604794,
+          "changed_predictions": 23483,
+          "paired": {
+            "both_correct": 2304,
+            "lost": 21775,
+            "gained": 79,
+            "both_wrong": 1874,
+            "loss_pp": 83.34357713583282,
+            "exact_mcnemar_p": 0.0
+          }
+        },
+        "AGA_standalone/MNIST": {
+          "original_correct": 9968,
+          "released_correct": 9968,
+          "n": 10000,
+          "original_percent": 99.68,
+          "released_percent": 99.68,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9968,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 32,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "AGA_target_only/MNIST": {
+          "original_correct": 9930,
+          "released_correct": 9930,
+          "n": 10000,
+          "original_percent": 99.3,
+          "released_percent": 99.3,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9930,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 70,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "AGA_target_only/SVHN": {
+          "original_correct": 24153,
+          "released_correct": 24155,
+          "n": 26032,
+          "original_percent": 92.7819606637984,
+          "released_percent": 92.78964351567302,
+          "changed_predictions": 2,
+          "paired": {
+            "both_correct": 24153,
+            "lost": 0,
+            "gained": 2,
+            "both_wrong": 1877,
+            "loss_pp": -0.007682851874615857,
+            "exact_mcnemar_p": 0.5
+          }
+        },
+        "AGA_both/MNIST": {
+          "original_correct": 9932,
+          "released_correct": 9932,
+          "n": 10000,
+          "original_percent": 99.32,
+          "released_percent": 99.32,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9932,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 68,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "AGA_both/SVHN": {
+          "original_correct": 23890,
+          "released_correct": 23890,
+          "n": 26032,
+          "original_percent": 91.77166564228642,
+          "released_percent": 91.77166564228642,
+          "changed_predictions": 1,
+          "paired": {
+            "both_correct": 23890,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 2142,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        }
+      }
+    },
+    {
+      "method": "official_scaling_only_ablation",
+      "distance_matrices": 0.21796587179060253,
+      "distance_tensors": 0.264848494353629,
+      "AGA_distance_matrices": 4.317256436679704e-06,
+      "within_budget": true,
+      "release_sha256": "233551908105783739ec10f2a606935b43bde529b870cbf620760414cf9f0c82",
+      "stages": {
+        "confirmation/MNIST": {
+          "original_correct": 512,
+          "released_correct": 512,
+          "n": 512,
+          "original_percent": 100.0,
+          "released_percent": 100.0,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 512,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 0,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "standalone/MNIST": {
+          "original_correct": 9969,
+          "released_correct": 9969,
+          "n": 10000,
+          "original_percent": 99.69,
+          "released_percent": 99.69,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9969,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 31,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "direct/MNIST": {
+          "original_correct": 9937,
+          "released_correct": 9937,
+          "n": 10000,
+          "original_percent": 99.37,
+          "released_percent": 99.37,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9937,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 63,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "direct/SVHN": {
+          "original_correct": 24079,
+          "released_correct": 24081,
+          "n": 26032,
+          "original_percent": 92.49769514443761,
+          "released_percent": 92.50537799631223,
+          "changed_predictions": 3,
+          "paired": {
+            "both_correct": 24079,
+            "lost": 0,
+            "gained": 2,
+            "both_wrong": 1951,
+            "loss_pp": -0.007682851874615857,
+            "exact_mcnemar_p": 0.5
+          }
+        },
+        "AGA_standalone/MNIST": {
+          "original_correct": 9968,
+          "released_correct": 9968,
+          "n": 10000,
+          "original_percent": 99.68,
+          "released_percent": 99.68,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9968,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 32,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "AGA_target_only/MNIST": {
+          "original_correct": 9930,
+          "released_correct": 9930,
+          "n": 10000,
+          "original_percent": 99.3,
+          "released_percent": 99.3,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9930,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 70,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "AGA_target_only/SVHN": {
+          "original_correct": 24153,
+          "released_correct": 24153,
+          "n": 26032,
+          "original_percent": 92.7819606637984,
+          "released_percent": 92.7819606637984,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 24153,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 1879,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "AGA_both/MNIST": {
+          "original_correct": 9932,
+          "released_correct": 9932,
+          "n": 10000,
+          "original_percent": 99.32,
+          "released_percent": 99.32,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 9932,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 68,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        },
+        "AGA_both/SVHN": {
+          "original_correct": 23890,
+          "released_correct": 23890,
+          "n": 26032,
+          "original_percent": 91.77166564228642,
+          "released_percent": 91.77166564228642,
+          "changed_predictions": 0,
+          "paired": {
+            "both_correct": 23890,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 2142,
+            "loss_pp": 0.0,
+            "exact_mcnemar_p": 1.0
+          }
+        }
+      }
+    },
+    {
+      "method": "frozen_OB",
+      "distance_matrices": 0.29903996194927307,
+      "AGA_distance_matrices": 0.28877089448753224,
+      "within_budget": true,
+      "native_MNIST": 99.71,
+      "TA_MNIST": 78.77,
+      "TA_SVHN": 62.94176398279041,
+      "AGA_target_only_MNIST": 79.53,
+      "AGA_target_only_SVHN": 65.81899200983405,
+      "AGA_both_MNIST": 77.85,
+      "AGA_both_SVHN": 61.41671788567916
+    }
+  ],
+  "details": {
+    "full_author_default": "results/params_reference/summary.json",
+    "official_scaling_only_ablation": "results/params_scaling_reference/summary.json",
+    "OB_target_only": "results/author_protocol_audit/summary.json",
+    "OB_both": "results/boundary_eval/summary.json"
+  },
+  "same_budget_full_PaRaMS_claim": false,
+  "original_method_breakthrough": false
+}
