@@ -141,20 +141,48 @@ def run(cfg):
     out=Path(cfg['output']);out.mkdir(parents=True,exist_ok=False);start=time.monotonic()
     torch.cuda.reset_peak_memory_stats();p=SharedGame(cfg)
     theta=p.zero.clone();state=p.evaluate(theta);initial=state['metrics'];history=[];snapshots=[];accepted=0
-    radius=cfg['trust_initial'];reason='fixed_trial_cap';gradients=0;fd_max=0.;jacobians=0;autograd_error=None
-    for trial in range(cfg['maximum_trials']):
+    radius=cfg['trust_initial'];reason='fixed_trial_cap';gradients=0;fd_max=0.;jacobians=0;autograd_error=None;direct_checks=0
+    resumed=0
+    if cfg.get('resume_diagnostic'):
+        previous=torch.load(cfg['resume_diagnostic'],map_location='cpu')
+        parent=Path(cfg['resume_diagnostic']).parent
+        prior=json.loads((parent/'results.json').read_text())
+        validation=json.loads((parent/'independent_validation.json').read_text());assert validation['status']=='passed'
+        assert prior['diagnostic_sha256']==cfg['inputs'][cfg['resume_diagnostic']]
+        for key in ['inputs','protected_point','probe_rank','contexts_per_class','finite_step','coefficient',
+                    'parameter_budget','task_budget','margin_temperature','class_temperature','maximum_trials']:
+            if key!='inputs':assert previous['cfg'][key]==cfg[key],key
+        theta=previous['theta'].cuda();state=p.evaluate(theta);initial=prior['initial']
+        assert state['metrics']==prior['final']
+        history=json.loads((parent/'history.json').read_text());snapshots=previous['snapshots']
+        accepted=prior['accepted_environment_updates'];gradients=prior['explicit_environment_gradient_calls']
+        jacobians=prior['analytic_jacobian_calls'];fd_max=prior['maximum_objective_fd_error']
+        autograd_error=prior['full_shared_gradient_autograd_relative_error'];direct_checks=prior['additional_direct_environment_autograd_checks']
+        last=history[-1];radius=last['trust_radius']
+        if last['accepted'] and last['agreement_ratio']>=cfg['expansion_ratio']:radius=min(cfg['trust_maximum'],radius*2.)
+        elif not last['accepted']:radius*=.5
+        resumed=len(history)
+    for trial in range(resumed,cfg['maximum_trials']):
         j,r,u,s,vh,locations=p.constraints(theta,state);jacobians+=1
         protected,jp=p.predict(p.p.proxy,p.modified,theta,True);jacobians+=1
         with torch.enable_grad():value,losses,score_grad=p.objective(protected,True)
         g=torch.einsum('nc,ncd->d',score_grad,jp);gradients+=1
-        if trial == 0:
+        if trial == resumed:
             with torch.enable_grad():
                 leaf=theta.detach().clone().requires_grad_(True)
                 check=p.objective(p.predict(p.p.proxy,p.modified,leaf))[0]
                 direct=torch.autograd.grad(check,leaf)[0]
-            autograd_error=float((g-direct).norm()/direct.norm().clamp_min(1e-30))
-            assert autograd_error<cfg['gradient_tolerance'],autograd_error
-        tangent=g-vh.T@(vh@g);normal=-vh.T@((u.T@r)/s)
+            check_error=float((g-direct).norm()/direct.norm().clamp_min(1e-30))
+            autograd_error=max(autograd_error or 0.,check_error);direct_checks+=1
+            assert check_error<cfg['gradient_tolerance'],check_error
+        tangent=g-vh.T@(vh@g)
+        # The task is an INEQUALITY, not r=0. At a feasible point its minimum
+        # normal correction is zero. Forcing a feasible residual back to zero
+        # can oppose the true objective and stall despite an available tangent.
+        target=r-r.clamp(-cfg['task_budget'],cfg['task_budget']) if cfg.get('inequality_feasibility_normal',False) else r
+        normal=-vh.T@((u.T@target)/s)
+        legacy_normal=-vh.T@((u.T@r)/s)
+        legacy_normal*=min(1.,cfg['normal_fraction']*radius/max(float(legacy_normal.norm()),1e-30))
         retained=float(tangent.norm()/g.norm().clamp_min(1e-30))
         if tangent.norm()<1e-15:reason='no_projected_shared_direction';break
         normal*=min(1.,cfg['normal_fraction']*radius/max(float(normal.norm()),1e-30))
@@ -176,7 +204,8 @@ def run(cfg):
             and linear<=cfg['task_budget'] and actual>1e-12 and ratio>=cfg['acceptance_ratio'])
         record=dict(trial=trial+1,accepted=bool(ok),before=state['metrics'],proposal=m,predicted_gain=pred,
                     actual_gain=actual,agreement_ratio=ratio,active_linear_worst=linear,trust_radius=radius,
-                    shared_tangent_retained_fraction=retained,active_rank=len(s),active_task_rows=len(j),fd_error=error,locations=locations)
+                    shared_tangent_retained_fraction=retained,active_rank=len(s),active_task_rows=len(j),fd_error=error,locations=locations,
+                    normal_target_maximum=float(target.abs().max()),legacy_zero_residual_normal_gradient_dot=float(g@legacy_normal))
         history.append(record);snapshots.append(dict(theta=theta.cpu(),step=step.cpu(),gradient=g.cpu(),
             tangent_retained_fraction=retained,source=proposal['source'].cpu(),baseline=proposal['baseline'].cpu(),
             protected=proposal['protected'].cpu(),active_residual=r.cpu(),active_Jstep=(j@step).cpu(),
@@ -198,8 +227,10 @@ def run(cfg):
         stop_reason=reason,trials=len(history),accepted_environment_updates=accepted,
         source_natural_n=p.p.natural_n,source_all_task_inputs=len(p.nt),reference_n=len(p.bt),
         explicit_environment_gradient_calls=gradients,analytic_jacobian_calls=jacobians,
-        additional_direct_environment_autograd_checks=1 if autograd_error is not None else 0,
+        additional_direct_environment_autograd_checks=direct_checks,
         full_shared_gradient_autograd_relative_error=autograd_error,
+        resumed_existing_proposals=resumed,total_proposal_cap=cfg['maximum_trials'],
+        inequality_feasibility_normal=cfg.get('inequality_feasibility_normal',False),
         publication_parameter_updates=0,original_expert_updates=0,new_release_weights=0,
         parameter_budget=cfg['parameter_budget'],task_budget=cfg['task_budget'],
         diagnostic_sha256=digest(artifact),source_sha256=digest(__file__),protocol_sha256=digest(cfg['protocol_path']),
