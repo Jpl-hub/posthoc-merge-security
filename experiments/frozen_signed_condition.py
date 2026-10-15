@@ -74,8 +74,8 @@ def counterexample(author):
         result=torch.cat([src[:,j:j+1]@author['solve_linear_transformation'](src[:,j:j+1],ref[:,j:j+1]) for j in range(2)],dim=1)
         error=max(error,float(np.max(abs(result.numpy()-floats(aligned(mat))))))
     assert error<1e-6
-    uu,ss,vh=np.linalg.svd(floats(ae)-c*floats(ae),full_matrices=False)
-    svd_error=float(abs((floats(ae)-c*floats(ae))@vh.T-uu*ss).max())
+    uu,ss,vh=np.linalg.svd((1-float(c))*floats(ae),full_matrices=False)
+    svd_error=float(abs(((1-float(c))*floats(ae))@vh.T-uu*ss).max())
     functional_probe_error=float(abs(floats(product(br,ar))@vh.T-floats(f)@vh.T).max())
     return dict(task_SVD_matrix_shape=[3,2],task_SVD_right_probe_shape=list(vh.shape),task_SVD_identity_error=svd_error,task_SVD_functional_probe_error=functional_probe_error,official_column_solver_calls=10,status='exact_finite_counterexample_verified',dimension=dict(input=2,hidden=3,classes=2),
                 source_parameter_distance=float(dist)**.5,source_squared_distance_exact=str(dist),

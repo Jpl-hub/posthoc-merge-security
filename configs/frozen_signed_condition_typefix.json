@@ -1,7 +1,7 @@
 {
   "experiment": "frozen_source_finite_signed_condition_and_exact_counterexample",
   "date": "2026-10-16",
-  "output": "outputs/phase2_frozen_signed_condition_run2",
+  "output": "outputs/phase2_frozen_signed_condition_run3",
   "target": "MNIST",
   "n": 512,
   "source_indices": "outputs/phase2_head_commutator_mnist/source_split.json",
@@ -43,7 +43,7 @@
     }
   ],
   "source_sha256": {
-    "experiments/frozen_signed_condition.py": "beeb9d705d54b20c234f3a50a3f362052dde13ce9ade41c01daada165812b81f",
+    "experiments/frozen_signed_condition.py": "8c53d53564a26b211032473aa70d21606ae5bae1d76bdedb65e576a539fb62bc",
     "experiments/attention_cascade.py": "868fc15bd7628f412557af8afc19807a06ad9cacbeed4e1d126108f4f4654593",
     "experiments/compare_finite_protection.py": "c48bc93752c87f85cf985dac2e61fcec702ed56f7eff5c18dcec7a1422acb4e2",
     "experiments/finite_compensation_transport.py": "d485a69bef0a3f6043f3bd3c73902f109fca3c2d084e12542888ed5d9264a03d",
@@ -73,5 +73,5 @@
     ]
   },
   "scope": "One retrospective source-only finite structural test plus exact logical counterexample. No new release, no repaired closed method, no unknown-peer distribution claim.",
-  "implementation_repair": "Only convert the exact rational anchor scale to a float for Torch interoperability; no scientific or selection rule changes. Initial failure before model/data loading preserved."
+  "implementation_repair": "Convert exact rational constants to float at Torch and NumPy SVD boundaries only. Both failed runs before actual model/data loading retained. Scientific coefficients, source indices, cases and rules unchanged."
 }
