@@ -70,7 +70,7 @@ def counterexample(author):
             rows.append(dict(partner=name,column_alignment=attack,correct=correct,n=2,margin=[float(z) for z in margins],unprotected_correct=2))
             exact.append(dict(partner=name,column_alignment=attack,after=[[str(z) for z in row] for row in after],formula_verified=True,margin=[str(z) for z in margins]))
     for mat in [ae,ar]+[p for _,p in families]:
-        src=torch.tensor(floats(mat),dtype=torch.float32);ref=c*torch.tensor(floats(ae),dtype=torch.float32)
+        src=torch.tensor(floats(mat),dtype=torch.float32);ref=float(c)*torch.tensor(floats(ae),dtype=torch.float32)
         result=torch.cat([src[:,j:j+1]@author['solve_linear_transformation'](src[:,j:j+1],ref[:,j:j+1]) for j in range(2)],dim=1)
         error=max(error,float(np.max(abs(result.numpy()-floats(aligned(mat))))))
     assert error<1e-6
