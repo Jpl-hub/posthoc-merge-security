@@ -103,5 +103,38 @@ def verify(cfg):
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
 
+def verify_completion(cfg):
+    start=time.monotonic();out=Path(cfg['completion_output']);meta=json.loads((out/'results.json').read_text());cache_root=Path(cfg['cache_output'])
+    cm=json.loads((cache_root/'results.json').read_text());assert digest(cache_root/'calibration.pt')==cm['calibration_sha256']
+    assert digest(out/'point.pt')==meta['point_sha256']==meta['first_proxy_observation_after_point_sha256']
+    assert not meta['construction_proxy_used'];point=torch.load(out/'point.pt',map_location='cpu');cal=torch.load(cache_root/'calibration.pt',map_location='cpu')
+    p,pp,basis=convert(cal['parameters']),convert(cal['proxy_parameters']),convert(cal['basis']);q=cal['output_basis'].numpy();theta=point['theta'].numpy();size=len(basis['vh'])**2
+    ray=(-np.diag(basis['s'])/np.linalg.norm(basis['s'])).ravel()
+    np.testing.assert_allclose(theta[:size],point['upstream_amplitude']*ray,atol=1e-12,rtol=1e-12)
+    native,n,ids=packed_native(cal,p,basis,cfg);zero=np.zeros_like(theta)
+    before=batches(native,p,basis,q,zero,size=cfg['batch_size']);after=batches(native,p,basis,q,theta,size=cfg['batch_size'])
+    worst=float(np.abs(residual(before,after)).max());changed=after[:n].argmax(1)!=before[:n].argmax(1)
+    assert worst<=cfg['task_budget'] and np.linalg.norm(theta)<=cfg['parameter_budget']
+    assert abs(worst-meta['selected']['native_critic'])<1e-6 and int(changed.sum())==meta['selected']['natural_changes']
+    # Source parameter midpoint is a finite chord check, not another model
+    # environment or an optimization criterion. It tests a possible barrier
+    # before invoking any unknown-partner assumption.
+    natural={**native,**{key:native[key][:n] for key in ['take','shift','offset']}}
+    midpoint=batches(natural,p,basis,q,theta,.5,cfg['batch_size']);mid_changed=midpoint.argmax(1)!=before[:n].argmax(1)
+    pc=convert(cal['proxy']);proxy=dict(cache=pc,up_map=basis['vh']@pp['D'].T,take=np.arange(len(pc['H'])),shift=np.zeros((len(pc['H']),len(basis['vh']))),offset=np.zeros((len(pc['H']),p['B'].shape[1])))
+    pb=batches(proxy,pp,basis,q,zero,size=cfg['batch_size']);pa=batches(proxy,pp,basis,q,theta,.5,cfg['batch_size']);py=pb.argmax(1);pcg=pa.argmax(1)!=py
+    assert int(pcg.sum())==meta['selected']['proxy_changed'] and np.bincount(py[pcg],minlength=len(p['head'])).tolist()==meta['selected']['changed_by_teacher_class']
+    labels=official_labels(cfg['target'],True);yy=labels[ids];plabels=labels[cal['indices']['proxy']]
+    torch.save(dict(native_original=torch.tensor(before),native_changed=torch.tensor(after),native_ids=ids,source_midpoint=torch.tensor(midpoint),proxy_original=torch.tensor(pb),proxy_changed=torch.tensor(pa),proxy_ids=cal['indices']['proxy']),out/'verified_predictions.pt')
+    result=dict(status='passed',target=cfg['target'],parameter_distance=float(np.linalg.norm(theta)),all_task_inputs=len(before),worst_margin_drift=worst,natural_n=n,natural_prediction_changes=int(changed.sum()),
+                native_original_correct=int((before[:n].argmax(1)==yy).sum()),native_released_correct=int((after[:n].argmax(1)==yy).sum()),
+                source_midpoint_changed=int(mid_changed.sum()),source_midpoint_changed_by_class=np.bincount(before[:n].argmax(1)[mid_changed],minlength=len(p['head'])).tolist(),
+                proxy_original_correct=int((py==plabels).sum()),proxy_released_correct=int((pa.argmax(1)==plabels).sum()),proxy_changed=int(pcg.sum()),
+                point_sha256=meta['point_sha256'],predictions_sha256=digest(out/'verified_predictions.pt'),source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
+                new_release_weights=0,test_used=False,partner_used=False,confirmation_used=False,scope='Independent all-token NumPy natural/SVD responses, finite source chord, exact locked upstream ray and official counts. No test or future peer used; no true fusion claim.')
+    save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
+
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol',required=True);args=ap.parse_args();cfg=json.loads(Path(args.protocol).read_text());verify(cfg)
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol',required=True);ap.add_argument('--completion',action='store_true');args=ap.parse_args();cfg=json.loads(Path(args.protocol).read_text())
+    (verify_completion if args.completion else verify)(cfg)
