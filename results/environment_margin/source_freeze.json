@@ -1,0 +1,34 @@
+{
+  "construction_source_commit": "41a400f63224b251fa467b31fed6c1b72a5db819",
+  "construction_archive": "outputs/phase2_environment_source_41a400f.tar.gz",
+  "construction_archive_sha256": "5af1ca0cc529f34db67bab3f83d747abb3a94cbbea017279c423df0d73c7e961",
+  "shared_prefix_source_commit": "6ebeee2",
+  "command": "python experiments/finite_environment_witness.py --protocol configs/finite_environment_witness.json",
+  "verification_command": "python experiments/verify_environment_witness.py --protocol configs/finite_environment_witness.json",
+  "shared_prefix_command": "python experiments/shared_prefix_witness.py --protocol configs/shared_prefix_witness.json",
+  "artifacts": {
+    "construction.log": "da496e92472f776f6aae04d105a7be9361dab6959530215204cde0237639b9ef",
+    "diagnostic.pt": "32634d13dc45fc19771eb858ad42cd2a8edd922927577bb4a901519d54760e3d",
+    "diagnostic_source.py": "a07c7d470e01366fba97850d9015a771d7323f07bd8abc6ccb7665f1731b927c",
+    "frozen_protocol.json": "713205198ca430ed20370c560ae7417b31442d47ee8a6b900b0efdcf893e7a50",
+    "independent_validation.json": "8b7b87f8e001798de6ab3ad8bc912037cadee3cb969034b74a62db27c6f14a4e",
+    "initial_conversion_failure.log": "c49fcb649044cc8a8fa4800ea22e0fe392525bbdf338a94d1d5412cdc509cfa8",
+    "protocol.json": "a28e8c4d6ffe4a93bc0daeb6e5b25f64286bdc233fad0fb733e95ddeeb135669",
+    "results.json": "382244eb168708ae860160f14dd9b362ccb4d60282e0eeca8a5aea898df6d6d3",
+    "selection.json": "a773f1c70c0b5cfe6bba46615db7e43252cb597c3ba19a2656795cd63c690141",
+    "shared_prefix.json": "f0d711ca679ad3eea5246c9b82a9b54cf8a2cf9b5e2b25d420ddd38789204007",
+    "shared_prefix.log": "8b6d6ec44aa841da179b2df938438778616f59872d33d48990410e78f93ac221",
+    "shared_prefix.pt": "c16ded18f6e1cefe77958b6e23a6ae8cd3c638753db5489072dbdae3296ca422",
+    "shared_prefix_protocol.json": "02f194614448d04d77a81551e69a4aafd963df9a6748269c9411f8ce78c4776a",
+    "shared_prefix_source.py": "7ad21c2255aec3d23b39890ecdb82c8773fe9f7e7558f17f51983e25fadb0493",
+    "stopping_target_tie_failure.log": "80040df5cffe32ea14fb3c20922da4baf12a4669f82523a0e61b1f79d479cb03",
+    "verification.log": "4fdbfb865d5b5358f1e99be51d1a5c3b246171f3f58895ad47623ba973d0aa2e",
+    "verification_source.py": "525a11d84f34eac03bbc20f928e98eb84a4f1e6ebff20da5c13ed93fc595b604"
+  },
+  "construction_rerun": false,
+  "verification_repairs": [
+    "Use recursive conversion for nested dictionaries/lists; preserve failed log.",
+    "Report positive-margin class restoration separately from four ULP ties at the optional0.01 stopping target; preserve originalTorch26 and NumPy24 counts. No acceptance criterion or weights changed."
+  ],
+  "heavy_files_server_only": true
+}
