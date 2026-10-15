@@ -1,17 +1,17 @@
 {
-  "status": "phase2_finite_gelu_scaling_true_eval_verified_no_improvement",
-  "updated_utc": "2026-10-15T05:51:05.136368+00:00",
+  "status": "phase2_finite_comparison_verified_no_transferable_new_candidate",
+  "updated_utc": "2026-10-15T06:37:36.434066+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "finite_QuickGELU_scaling_true_transfer_verified_closed",
+  "stage": "matched_finite_margin_mechanism_verified",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "One finite QuickGELU paired scaling mask passed all task checks, fresh confirmation and full trueTA/authorAGA. MNIST independent99.69,TA99.36,AGA99.30: no meaningful improvement. Point and failure evidence preserved; oldO/B99.71/78.77/77.85 remains best.",
-  "mechanism": "notes/phase2_gelu_scaling.md",
-  "next_action": "Close this fixed scaling family without gain/mask/budget/seed sweeps or cross-task extension. Next justified research must connect finite task-preserving compensation to sign-controlled multiclass ranking under explicit representation/readout mismatch bounds; a large parameter distance or a surviving gauge is insufficient. No credible next frozen candidate or running experiment currently. Old loops remain paused.",
+  "new_candidate": "No new weights or efficacy experiment. Four frozen methods compared on matched512 target-training images; exact finite transport and source-only probe exclusions verified. OldO/B remains independent99.71/TA78.77/AGA77.85.",
+  "mechanism": "notes/phase2_finite_comparison.md",
+  "next_action": "Do not rerun closed temperature/scaling or enlarge budgets/probes. Investigate a structured finite compensation construction with class-balanced actual latent margin crossings and a justified directional representation-mismatch condition. Both source task-SVD and classifier-weighted single-RMS probes fail to predict existing O/B efficacy, so neither supplies a credible optimization/coverage set. No next frozen candidate or running job; no old loops resumed.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1132,9 +1132,9 @@
   "github_sync": {
     "status": "final_snapshot_awaits_receipt",
     "transport": "GitHub plugin",
-    "last_verified_remote_commit": "f837d882abf603465d289de9b6b11a979fd0bf9d",
-    "last_verified_local_commit": "a0adae9aabf79f82ef62de46ba87129674c757d6",
-    "last_verified_canonical_tree": "ba3eed0f24b308377308c9bb573c27817db5d971",
+    "last_verified_remote_commit": "327496441503f1462416461c9990c0633a4701c5",
+    "last_verified_local_commit": "adda88437af785df978dde1a7b694e8c071e74a0",
+    "last_verified_canonical_tree": "b25e3b8d6efd9eecee8802792826f18d576ff476",
     "verification_receipt": "outputs/latest_github_sync_receipt.json",
     "durability": "Last verified prior revision above; exact final remote/local pair and whole-tree readback recorded in ignored receipt after publication, avoiding commit self-reference."
   },
@@ -1289,17 +1289,18 @@
     "scope": "One analytic scalar at the unchanged joint budget, no channel/amplitude sweep. Exact structure-based preservation, not a new task-subspace discovery or recovery defense."
   },
   "latest_verified_facts": [
-    "One finite positive neuron-scaling mask constructed with a target-only class-simplex adversary and separate-tensor distance0.5; no future-peer/test or proxy construction.",
-    "Source all9728 inputs satisfy margin drift0.117417, all4608 natural predictions unchanged. Independent NumPy reconstruction passes.",
-    "Fresh512 target-train images all correctly classified before/after, all3072 natural/probe max drift0.011967; independent NumPy and full FP32 original/release replay pass.",
-    "Real MNIST independent99.69->99.69,TA99.37->99.36,AGA99.32->99.30. AGA changes6,lost4,gained2,pairedp0.6875; no material defense.",
-    "Unchanged authorAGA preserves all three transformed A/a/B tensors exactly under the same MLP permutation. Retained scales5.66-9.67 do not imply classification failure.",
-    "SVHN standalone25371/26032;TA24079->24191,AGA23890->24004. Companion improves slightly, not a defense result.",
-    "All17 official groups, per-class/paired counts, explicitTA and272 full-model replays verified. Old O/B and A/B and Phase1 preserved. No new cleanup attack or cross-protected-task run."
+    "Matched512 target-training images, four frozen publication points, source/trueTA/trueAGA: all12 finite records and40960 signed source-A-task probes reconstructed independently in NumPy.",
+    "O/B and A/B source B-alone cause60 and31 changes; joint source models0. Temperature/scaling B-alone0. This is a mechanism contrast, not a universal necessity or sufficient transfer rule.",
+    "Exact finite six-term transport avoids activation pseudoinverses; maximum independent error7.28e-14. TrueAGA classifier-weighted activation mean margin-harm is0.755/0.868/-0.153/0.029 forO/B,A/B,temperature,scaling.",
+    "Source class concentration remains: O/B B-alone56/60 changes are class1; A/B25/31. Average source B margin harm ranks failed temperature above effectiveO/B, so mean-loss magnitude is not a decision success metric.",
+    "All four frozen points have0 both-sign failures under5120 original-source task-A singular probe pairs. These probes fail to reproduce the known effective point, not a gate that rejects its real result.",
+    "A second source-only classifier-weighted complement probe uses all9 numerical nonzero directions at one source RMS. All1440 signed pairs per method stay teacher-stable and protected-stable; independent NumPy confirms. No enlarged amplitude or candidate search.",
+    "One functional-probe setup precision bug was caught before completed records: implicitfloat32 reciprocal weights. Corrected tofloat64 without changing tolerances, data, rank or amplitude; original source/log preserved.",
+    "No new candidate, test input, recovery attack, parameter optimization or phase1 change. O/B99.71/78.77/77.85 and all frozen successful/failed artifacts preserved."
   ],
   "latest_unverified_hypotheses": [
-    "A finite task-preserving cross-module transform might create sign-controlled multiclass damage beyond radial/gauge changes, but no next valid construction is currently established.",
-    "Unknown-peer input/readout mismatch bounds and cross-task robustness remain unproved. This point does not establish a universal impossibility."
+    "In finite cross-module compensation, class-balanced latent non-order-preserving branch action may be a useful source-only construction target if joint task restoration remains feasible; no such new solution exists yet.",
+    "A justified joint directional representation mismatch set or a structure-independent transfer mechanism is still missing. Neither tested source-single-mode family covers observed real shifts. Known-peer terms cannot supply a future construction target."
   ],
   "phase2_attention_cascade": {
     "status": "all_finite_constructions_verified_closed_no_multiclass_effect",
@@ -1524,5 +1525,49 @@
     "public_cleaning_run": false,
     "cross_protected_task_run": false,
     "post_test_parameter_selection": false
+  },
+  "phase2_finite_response_comparison": {
+    "status": "independently_verified_mechanism_and_negative_probe_evidence",
+    "protocol": "configs/finite_response_comparison.json",
+    "new_candidates": 0,
+    "new_release_weights": 0,
+    "task_budget": 0.5,
+    "parameter_budget": 0.5,
+    "peer_records_for_construction": false,
+    "hypothesis": "Effective points may hide a classification-changing B branch by source-specific nonlinear compensation, with greater finite non-order-preserving response to signed task-feature shifts than ineffective gauge/radial changes. Not a necessary or sufficient defense theorem.",
+    "results": "results/finite_response_comparison/summary.json",
+    "validation": "results/finite_response_comparison/independent_validation.json",
+    "source_freeze": "results/finite_response_comparison/source_freeze.json",
+    "source_B_only_changed": {
+      "O_B": 60,
+      "A_B": 31,
+      "temperature": 0,
+      "scaling": 0
+    },
+    "true_AGA_matched_changed": {
+      "O_B": 118,
+      "A_B": 111,
+      "temperature": 1,
+      "scaling": 0
+    },
+    "exact_finite_transport_error": 7.283063041541027e-14,
+    "source_task_SVD_both_sign_flips_all_methods": 0,
+    "partner_used_retrospectively": true,
+    "new_full_model_forward_instances": 1152
+  },
+  "phase2_functional_compensation_probe": {
+    "status": "source_only_independently_verified_negative",
+    "protocol": "configs/functional_compensation_probe_float64.json",
+    "source_freeze": "results/functional_compensation_probe/source_freeze.json",
+    "results": "results/functional_compensation_probe/results.json",
+    "initial_precision_failure_preserved": true,
+    "rank_per_method": 9,
+    "stable_signed_pairs_per_method": 1440,
+    "either_or_both_sign_changes_all_methods": 0,
+    "new_release_weights": 0,
+    "new_candidates": 0,
+    "partner_used": false,
+    "test_used": false,
+    "new_full_model_forward_instances": 0
   }
 }

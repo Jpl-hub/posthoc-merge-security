@@ -1,0 +1,28 @@
+{
+  "execution": {
+    "source_commit": "80e5aa71d5f01994f731c6eb0d4d0f6e450eff73",
+    "server_path": "outputs/phase2_finite_response_comparison/source.zip",
+    "sha256": "f335a2787f3d6f9e91cb6fb8420161c3eca57744337a0f65c623a8c03009a86a"
+  },
+  "verification": {
+    "source_commit": "29fee09a0e0af03d8d7190fb0cf153abda66d787",
+    "server_path": "outputs/phase2_finite_response_comparison/verification_source.zip",
+    "sha256": "17f9cf9479e612372426d6fec5dd540b4a0b4d0141e7cc833a01e392e91c801d"
+  },
+  "diagnostic": {
+    "server_path": "outputs/phase2_finite_response_comparison/diagnostic.pt",
+    "sha256": "fa1734054771faa6b8591bc352cd1a063b034e7b60d3e95a6125620eddc492bb"
+  },
+  "independent_validation_sha256": "526f7101d010989ad2eb5f57d9cc49ab28b3b268a0b1bd4c1e8e50b484788a42",
+  "source_only_results_sha256": "ef92cbeca4aa4e5f6d4f6a46e950316ffd1e58b1e7b76788b4a22697a551c124",
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "new_release_weights": 0,
+  "new_candidates": 0,
+  "test_used": false,
+  "partner_role": "Retrospective frozen-model interpretation only, excluded from new construction.",
+  "commands": [
+    "python experiments/compare_finite_protection.py --protocol configs/finite_response_comparison.json",
+    "python experiments/verify_finite_comparison.py --output outputs/phase2_finite_response_comparison"
+  ]
+}

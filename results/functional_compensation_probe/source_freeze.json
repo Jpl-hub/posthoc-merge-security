@@ -1,0 +1,35 @@
+{
+  "execution": {
+    "source_commit": "547caab8feb44adf4d9bbf5ebda8f80489209848",
+    "server_path": "outputs/phase2_functional_compensation_probe_float64/source.zip",
+    "sha256": "d337c271f1960c0980ed77974e636fa723977af4e1896b3796463e33718967d3"
+  },
+  "initial_precision_failure": {
+    "source_commit": "3a65f6ffec2579ec22328674b686f78af74a8887",
+    "server_path": "outputs/phase2_functional_compensation_probe/source.zip",
+    "sha256": "ae45c2f901c91f8b06f19d7fbc23228a04374feff5bedc7a8cd47b5aa6d4381a"
+  },
+  "diagnostic": {
+    "server_path": "outputs/phase2_functional_compensation_probe_float64/diagnostic.pt",
+    "sha256": "dc143b40e369422b0d8c58213d2fd8da5638b9e0ffaf06d722b9e97b8b233e6f"
+  },
+  "failure_log_sha256": "4cb7a16e8fa93f72da696855962a4dd7126340973ce8a4b3fac1d676586cddab",
+  "results_sha256": "81d9d30272b81a5c1b85daf89d47a91aed83d56c79f62d0f04489a4da5f7c6e6",
+  "new_candidates": 0,
+  "new_release_weights": 0,
+  "new_full_model_forward_instances": 0,
+  "partner_used": false,
+  "test_used": false,
+  "source_inputs_only": [
+    "outputs/phase2_attention_cascade_cache/calibration.pt",
+    "outputs/phase2_ffn_levelset_diagnosis/diagnostic.pt",
+    "outputs/phase2_task_boundary_mnist/diagnostic.pt",
+    "outputs/boundary_mnist/artifacts/release.pt",
+    "outputs/ffn_mnist/artifacts/release.pt",
+    "outputs/phase2_temperature_eval_mnist_svhn/artifacts/release.pt",
+    "outputs/phase2_gelu_scaling_eval_mnist_svhn/artifacts/release.pt",
+    "outputs/phase2_boundary_game_mnist/candidate.pt"
+  ],
+  "command": "python experiments/functional_compensation_probe.py --protocol configs/functional_compensation_probe_float64.json",
+  "numerical_correction": "Explicit double class weights, unchanged inputs, amplitude, rank rule and tolerances. Failed prior source preserved."
+}

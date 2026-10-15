@@ -1,0 +1,73 @@
+{
+  "target": "MNIST",
+  "partner": "SVHN",
+  "output": "outputs/phase2_finite_response_comparison",
+  "n": 512,
+  "matched_reference": "outputs/frozen_coupling_audit/diagnostic.pt",
+  "source_prefix": "outputs/phase2_attention_cascade_cache/calibration.pt",
+  "basis_reference": "outputs/phase2_ffn_levelset_diagnosis/diagnostic.pt",
+  "boundary_reference": "outputs/phase2_task_boundary_mnist/diagnostic.pt",
+  "peer_checkpoint": "checkpoints/ViT-B-32/SVHN/finetuned.pt",
+  "original_aga": "outputs/feature_noise/artifacts/original_AGA.pt",
+  "peer_aga": "outputs/feature_noise/artifacts/partner_AGA.pt",
+  "inputs": {
+    "outputs/frozen_coupling_audit/diagnostic.pt": "9c09fdb4d167d96c38ac68813d03e291171a6b0ab581b33c7fe00ce3f7c3ef86",
+    "outputs/phase2_attention_cascade_cache/calibration.pt": "aaf492c814b1b8baca7b8146824e0502ab1419171ed8b26c09a15c6dab4f91dd",
+    "outputs/phase2_ffn_levelset_diagnosis/diagnostic.pt": "18a824e537e4c83ea0d9ab7c20f3bd657744aeede98211b412f4345eb85ee184",
+    "outputs/phase2_task_boundary_mnist/diagnostic.pt": "2f4045ff665c925769b5980ef10827df0394e47b47939046f5a554d914231df5",
+    "checkpoints/ViT-B-32/SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+    "outputs/feature_noise/artifacts/original_AGA.pt": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+    "outputs/feature_noise/artifacts/partner_AGA.pt": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+    "outputs/boundary_mnist/artifacts/release.pt": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46",
+    "outputs/boundary_mnist/artifacts/released_AGA_edits.pt": "178a5266abc457c0b443ba82a392e7d37dd0e4308661a1e56d214104241b415b",
+    "outputs/ffn_mnist/artifacts/release.pt": "45c51b0fc6d532bbddf2f240c8daaafee6ea2d7058a31b0bf7caafbaa23849d8",
+    "outputs/ffn_mnist/artifacts/released_AGA_edits.pt": "72869d49cc9089a7b461d3fa6c2d0ea218ab27a89e2b64ac6d67dfb4b7f8f0d0",
+    "outputs/phase2_temperature_eval_mnist_svhn/artifacts/release.pt": "b9308cc38ca960830ed9f8cc9be8ccf581674c4f891a09b27267de22195cf579",
+    "outputs/phase2_temperature_eval_mnist_svhn/artifacts/released_AGA_edits.pt": "3b8e797ee2d3dc5f822d0ec2103570b2679d1b1db96fbcd1f8a99b5796fcece5",
+    "outputs/phase2_gelu_scaling_eval_mnist_svhn/artifacts/release.pt": "59e3400af00ec6842de5227c5439df0f2727477f83dad9f011072792944bcaff",
+    "outputs/phase2_gelu_scaling_eval_mnist_svhn/artifacts/released_AGA_edits.pt": "411a697df45a7d980c2443c916bf7d1cda28e576d17f471b3edaa31989d34c76"
+  },
+  "cases": [
+    {
+      "name": "O_B",
+      "release": "outputs/boundary_mnist/artifacts/release.pt",
+      "AGA_edits": "outputs/boundary_mnist/artifacts/released_AGA_edits.pt"
+    },
+    {
+      "name": "A_B",
+      "release": "outputs/ffn_mnist/artifacts/release.pt",
+      "AGA_edits": "outputs/ffn_mnist/artifacts/released_AGA_edits.pt"
+    },
+    {
+      "name": "temperature",
+      "release": "outputs/phase2_temperature_eval_mnist_svhn/artifacts/release.pt",
+      "AGA_edits": "outputs/phase2_temperature_eval_mnist_svhn/artifacts/released_AGA_edits.pt"
+    },
+    {
+      "name": "scaling",
+      "release": "outputs/phase2_gelu_scaling_eval_mnist_svhn/artifacts/release.pt",
+      "AGA_edits": "outputs/phase2_gelu_scaling_eval_mnist_svhn/artifacts/released_AGA_edits.pt"
+    }
+  ],
+  "coefficient": 0.5,
+  "probe_images_per_class": 16,
+  "probe_amplitude": 1.0,
+  "probe_batch_images": 16,
+  "replay_n": 16,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "new_candidates_allowed": false,
+  "information_boundary": "Retrospective four frozen methods, matched target-training images, no tests or optimization. Source-only signed task-SVD probe result hashed before peer loading; no response is a release acceptance gate or unknown-peer coverage claim.",
+  "source_sha256": {
+    "experiments/compare_finite_protection.py": "c48bc93752c87f85cf985dac2e61fcec702ed56f7eff5c18dcec7a1422acb4e2",
+    "experiments/attention_cascade.py": "868fc15bd7628f412557af8afc19807a06ad9cacbeed4e1d126108f4f4654593",
+    "experiments/finite_compensation_transport.py": "d485a69bef0a3f6043f3bd3c73902f109fca3c2d084e12542888ed5d9264a03d",
+    "experiments/angular_distance.py": "9cff17f80aa43f22edbd3f2fa00bf6553391e71f91aa69f0c48bb754a055a65a",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "configs/sources.json": "528346ab06c38cc4e34a8a4064d9721f3884a1c2738deef4ec0e94a7b2b88a3f"
+  },
+  "protocol_path": "configs/finite_response_comparison.json"
+}

@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "/root/autodl-tmp/merge_security_20261009/experiments/functional_compensation_probe.py", line 115, in <module>
+    initialize(); audit(cfg)
+                  ^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/functional_compensation_probe.py", line 84, in audit
+    np.testing.assert_allclose(gn, tangent.cpu().numpy(), atol=1e-10, rtol=1e-10)
+  File "/root/miniconda3/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 1504, in assert_allclose
+    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
+  File "/root/miniconda3/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/numpy/testing/_private/utils.py", line 797, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Not equal to tolerance rtol=1e-10, atol=1e-10
+
+Mismatched elements: 88 / 100 (88%)
+Max absolute difference: 9.55673829e-09
+Max relative difference: 1.439184e-06
+ x: array([[ 8.869171e-01, -1.215459e-02, -6.003777e-03,  2.894944e-02,
+         3.139935e-02,  4.319658e-02,  7.364388e-03,  4.535294e-02,
+         3.871973e-03, -2.889342e-02],...
+ y: array([[ 8.869171e-01, -1.215459e-02, -6.003777e-03,  2.894944e-02,
+         3.139935e-02,  4.319658e-02,  7.364388e-03,  4.535294e-02,
+         3.871973e-03, -2.889342e-02],...
