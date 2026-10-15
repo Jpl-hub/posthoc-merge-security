@@ -60,6 +60,12 @@ def verify(output):
         assert int((after.argmax(1)==labels).sum())==record['native']['released_correct']
         assert abs(np.abs(residual(before,after)).max()-record['native']['task_worst_margin_drift'])<1e-7
         assert np.linalg.norm(theta)<=cfg['parameter_budget'] and record['native']['task_worst_margin_drift']<=cfg['task_budget']
+        n0=h0@me+sd(h0,p)*be
+        gain_change=np.sum(source_delta*n0,1,keepdims=True)/np.sum(n0*n0,1,keepdims=True)
+        radial=gain_change*n0;angular=source_delta-radial
+        source_scale=dict(positive_numerator_gain_quantiles=np.quantile(1+gain_change,[0,.5,1.]).tolist(),
+                          angular_residual_fraction=float(np.linalg.norm(angular)/np.linalg.norm(source_delta)),
+                          interpretation='Positive source numerator gain preserves ordering, but its transported finite effect need not be collinear. Orthogonal decomposition is response geometry, not a new transform.')
         ge=q.T@me;decoder=np.linalg.pinv(ge,rcond=cfg['readout_rtol'])
         np.testing.assert_allclose(q@ge,me,atol=1e-9,rtol=1e-9)
         # An independent QR proves the saved full-rank transport rows lie in
@@ -94,12 +100,17 @@ def verify(output):
             labels=gold[previous['indices']]
             assert int((y==labels).sum())==rec['original_correct'] and int((sa.argmax(1)==labels).sum())==rec['released_correct']
             for key,value in harms.items():np.testing.assert_allclose(value,entry['harm'][key].numpy(),atol=1e-6,rtol=1e-6)
+            radial_term=cfg['coefficient']*l@radial@cross
+            angular_term=cfg['coefficient']*l@angular@cross
+            np.testing.assert_allclose(radial_term+angular_term,terms['transported_native_residual'],atol=1e-8,rtol=1e-8)
+            residual_harm={key:float(np.mean(-(value[rows,y]-value[rows,winner])/gap))
+                           for key,value in [('native_radial_gain',radial_term),('native_angular_residual',angular_term)]}
             for row in rec['per_class']:
                 mask=y==row['label'];assert int(mask.sum())==row['n'] and int(changed[mask].sum())==row['changed']
                 for key,value in harms.items():
                     if mask.any():assert abs(float(value[mask].mean())-row['mean_harm'][key])<1e-6
-            env_checks.append(dict(environment=bits,minimum_norm_row_space_relative_error=minimum_norm_error,finite_identity_maximum_error=identity_error,changed=int(changed.sum()),classification_and_per_class_counts='passed'))
-        checks.append(dict(case=case['name'],source_qr_minimum_abs_diagonal=diagonal,environments=env_checks))
+            env_checks.append(dict(environment=bits,minimum_norm_row_space_relative_error=minimum_norm_error,finite_identity_maximum_error=identity_error,changed=int(changed.sum()),transported_residual_harm_split=residual_harm,classification_and_per_class_counts='passed'))
+        checks.append(dict(case=case['name'],source_qr_minimum_abs_diagonal=diagonal,source_response_scale=source_scale,environments=env_checks))
     result=dict(status='passed',checks=checks,diagnostic_sha256=report['diagnostic_sha256'],source_sha256=digest(__file__),
                 wall_seconds=time.monotonic()-start,publication_updates=0,new_model_forward_instances=0,
                 scope='Independent NumPy full finite native and hybrid responses, QR minimum-norm check, four-term identities, exact margin-crossing and official-label class recount. No unseen-data, unknown-peer or new release claim.')
