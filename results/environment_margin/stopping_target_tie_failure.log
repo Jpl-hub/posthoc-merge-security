@@ -1,0 +1,12 @@
+{"case": "O_B", "step": 0, "trials_verified": 1}
+{"case": "O_B", "step": 1, "trials_verified": 2}
+{"case": "O_B", "step": 2, "trials_verified": 3}
+{"case": "O_B", "step": 3, "trials_verified": 4}
+{"case": "O_B", "step": 4, "trials_verified": 10}
+Traceback (most recent call last):
+  File "/root/autodl-tmp/merge_security_20261009/experiments/verify_environment_witness.py", line 114, in <module>
+    verify(json.loads(Path(args.protocol).read_text()))
+  File "/root/autodl-tmp/merge_security_20261009/experiments/verify_environment_witness.py", line 95, in verify
+    assert int(initial_changed.sum()) == expected['initially_changed'] and int(restored.sum()) == expected['restored']
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
