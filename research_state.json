@@ -1,17 +1,17 @@
 {
-  "status": "phase2_finite_gelu_scaling_true_eval_verified_no_improvement",
-  "updated_utc": "2026-10-15T05:51:05.136368+00:00",
+  "status": "phase2_matched_finite_comparison_protocol_frozen",
+  "updated_utc": "2026-10-15T06:21:33.147033+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "finite_QuickGELU_scaling_true_transfer_verified_closed",
+  "stage": "finite_response_success_failure_comparison",
   "research_jobs": [],
   "breakthrough_verified": false,
   "new_candidate": "One finite QuickGELU paired scaling mask passed all task checks, fresh confirmation and full trueTA/authorAGA. MNIST independent99.69,TA99.36,AGA99.30: no meaningful improvement. Point and failure evidence preserved; oldO/B99.71/78.77/77.85 remains best.",
   "mechanism": "notes/phase2_gelu_scaling.md",
-  "next_action": "Close this fixed scaling family without gain/mask/budget/seed sweeps or cross-task extension. Next justified research must connect finite task-preserving compensation to sign-controlled multiclass ranking under explicit representation/readout mismatch bounds; a large parameter distance or a surviving gauge is insufficient. No credible next frozen candidate or running experiment currently. Old loops remain paused.",
+  "next_action": "One matched comparison of four frozen methods, source-only signed task-SVD commutators first, then retrospective real-environment finite margin decomposition. No release/parameter optimization or test images. Independently reconstruct all results.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1524,5 +1524,15 @@
     "public_cleaning_run": false,
     "cross_protected_task_run": false,
     "post_test_parameter_selection": false
+  },
+  "phase2_finite_response_comparison": {
+    "status": "protocol_frozen_not_run",
+    "protocol": "configs/finite_response_comparison.json",
+    "new_candidates": 0,
+    "new_release_weights": 0,
+    "task_budget": 0.5,
+    "parameter_budget": 0.5,
+    "peer_records_for_construction": false,
+    "hypothesis": "Effective points may hide a classification-changing B branch by source-specific nonlinear compensation, with greater finite non-order-preserving response to signed task-feature shifts than ineffective gauge/radial changes. Not a necessary or sufficient defense theorem."
   }
 }
