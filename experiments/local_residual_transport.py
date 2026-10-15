@@ -61,14 +61,19 @@ def metric(before,after,n):
 
 @torch.no_grad()
 def run(cfg):
-    start=time.monotonic();out=Path(cfg['output']);out.mkdir(parents=True,exist_ok=False)
+    start=time.monotonic();out=Path(cfg['output']);out.mkdir(parents=True,exist_ok=True)
+    assert not (out/'diagnostic.pt').exists() and not (out/'results.json').exists(),'no replay after responses'
     for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
     assert '3090' in torch.cuda.get_device_name();torch.cuda.reset_peak_memory_stats()
     anchor,expert,head,pins=checked_models(cfg['target']); p=on_device(extended_parameters(expert,head));p0=on_device(extended_parameters(anchor,head))
     train=dataset(cfg['target'],'data',expert.val_preprocess,True); excluded=set(cfg['extra_excluded_indices'])
     for path in cfg['extra_index_exclusions']:
         excluded.update(json.loads(Path(path).read_text())['indices'])
-    split=unused(train,excluded,cfg|dict(confirmation_n=cfg['fit_n']+cfg['scale_n'],confirmation_seed=cfg['construction_seed']))
+    splitfile=out/'construction_split.json'
+    if splitfile.exists():
+        assert (out/'failed_dtype_protocol.json').exists(),'only the recorded pre-response dtype repair may resume'
+        split=json.loads(splitfile.read_text());assert split['seed']==cfg['construction_seed'] and len(split['indices'])==cfg['fit_n']+cfg['scale_n']
+    else:split=unused(train,excluded,cfg|dict(confirmation_n=cfg['fit_n']+cfg['scale_n'],confirmation_seed=cfg['construction_seed']))
     split.update(used_for_optimization=True,role='construction only, never independent confirmation')
     ids={'fit':split['indices'][:cfg['fit_n']],'scale':split['indices'][cfg['fit_n']:]}
     save_json(out/'construction_split.json',split);save_json(out/'training_indices.json',ids);save_json(out/'protocol.json',cfg)
@@ -142,7 +147,7 @@ def verify(folder):
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');args=ap.parse_args();initialize();torch.set_default_dtype(torch.float64)
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');args=ap.parse_args();initialize()
     if args.verify:verify(args.verify)
     else:
         cfg=json.loads(Path(args.protocol).read_text());cfg['protocol_path']=args.protocol;run(cfg)
