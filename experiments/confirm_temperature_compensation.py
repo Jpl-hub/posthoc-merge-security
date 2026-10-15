@@ -14,6 +14,7 @@ from attention_cascade import parameters
 from boundary_game import risk_first
 from clip_benchmark import digest
 from covariance_noise import dataset
+from mechanisms import load_author
 from probe_distance_candidate import on_device
 from subspace_probe import make_loader, save_json
 from task_probe_distance import checked_models, initialize
@@ -82,6 +83,14 @@ def confirm(cfg):
     before=data['teacher'].argmax(1).cpu();after=predict(data,p,q,k).argmax(1).cpu();labels=torch.tensor([int(training[i][1]) for i in ids])
     release=copy.deepcopy(expert);changed=edits(expert,point)
     for key,value in changed.items():release.state_dict()[key].copy_(value)
+    author,pin=load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))
+    assert pin==json.loads(Path('configs/sources.json').read_text())['AGA']['sha256']
+    recovered0=author['attack_attention_headwise_precise'](expert.state_dict(),anchor.state_dict(),11,num_heads=12,device='cuda')
+    recovered1=author['attack_attention_headwise_precise'](release.state_dict(),anchor.state_dict(),11,num_heads=12,device='cuda')
+    key='model.visual.transformer.resblocks.11.attn.in_proj_weight';width=expert.state_dict()[key].shape[1]
+    recovery_error=float((recovered1[key][:2*width].double()-recovered0[key][:2*width].double()).norm()/recovered0[key][:2*width].double().norm())
+    bkey=key.replace('weight','bias')
+    recovery_bias_error=float((recovered1[bkey][:2*width].double()-recovered0[bkey][:2*width].double()).abs().max())
     checks={};replay_n=len(ids)
     for name,model,expected in [('original',expert,before),('released',release,after)]:
         values=[];model.cuda().eval();head.cuda().eval()
@@ -94,6 +103,7 @@ def confirm(cfg):
     result=dict(status='passed' if passed else 'failed_task_confirmation',confirmation_passed=passed,target=cfg['target'],**metrics,
                 original_correct=int((before[:len(ids)]==labels).sum()),released_correct=int((after[:len(ids)]==labels).sum()),
                 full_model_replay=checks,new_model_forward_instances=3*len(ids),training_point_sha256=report['training_point_sha256'],
+                author_AGA_source_QK_relative_difference=recovery_error,author_AGA_source_QK_bias_maximum_difference=recovery_bias_error,
                 confirmation_sha256=digest(out/'confirmation.pt'),release_sha256=digest(out/'release_edits.pt') if passed else None,
                 source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,new_release_weights=1 if passed else 0,
                 partner_used=False,test_used=False,selected_after_confirmation=False,original_expert_updates=0,
