@@ -1,0 +1,87 @@
+{
+  "model": "ViT-B-32",
+  "coefficient": 0.2,
+  "tasks": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "EuroSAT",
+    "SVHN",
+    "GTSRB",
+    "MNIST",
+    "DTD"
+  ],
+  "expected_test_counts": {
+    "SUN397": 19850,
+    "Cars": 8041,
+    "RESISC45": 6300,
+    "EuroSAT": 2700,
+    "SVHN": 26032,
+    "GTSRB": 12630,
+    "MNIST": 10000,
+    "DTD": 1880
+  },
+  "data_provider": "author_dataset_registry",
+  "note": "Eight tasks and TA coefficient 0.2 follow the pinned AGA author code. Official Task Arithmetic checkpoints are not independently verified as the paper authors' exact experimental files; Table 6 agreement remains unresolved.",
+  "evaluation_tasks": [
+    "MNIST",
+    "DTD",
+    "SVHN",
+    "GTSRB",
+    "RESISC45",
+    "Cars",
+    "SUN397"
+  ],
+  "protection": "official_PaRaMS",
+  "params_max_iter": 1,
+  "seed": 20261009,
+  "protection_scope": "one expert at a time",
+  "attack_scope": "author universal_attention_attack_params followed by attack_vit_mlp_only on that expert only",
+  "missing_evaluation_task": "EuroSAT",
+  "table6_reproduction": false,
+  "data_selection": "fixed official test splits; no calibration or tuning on tests",
+  "sources": {
+    "AGA": {
+      "repository": "https://github.com/krumpguo/secure-merge-attack",
+      "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+      "file": "utils_attack_B32.py",
+      "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+    },
+    "TaskArithmetic": {
+      "repository": "https://github.com/mlfoundations/task_vectors",
+      "commit": "826a64c67082fab0f40628233287948f0f8d7fa3"
+    },
+    "PaRaMS": {
+      "repository": "https://github.com/ISCT-W/PaRaMS",
+      "commit": "4159a9a8bf253088694154d944f4583db8eca60e",
+      "file": "src/PaRaMS/PaRaMS_algorithm.py",
+      "sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60"
+    },
+    "MergeLock": {
+      "repository": "https://github.com/hetailang/Merge-Lock",
+      "commit": "f01aea9d7dddf626b6b6536d2a73894feb833fb2",
+      "status": "README only; protection implementation unavailable"
+    },
+    "RotationSymmetry": {
+      "repository": "https://github.com/zhengzaiyi/RotationSymmetry",
+      "commit": "b89d081429d6e6351f3449d60df5562dfa146664",
+      "file": "vit-fusion/otfusion/pi_utils.py",
+      "sha256": "4b92e3ab36e101a850fb0040d17195d97c013c2f9413cd539fb303ec30754c54"
+    },
+    "NUFILT": {
+      "repository": "https://github.com/zihuanqiu/NUFILT",
+      "commit": "4cd298fb7ea22bd4bcd343748fb4b8e3f9815324",
+      "file": "fusion_bench/method/nufilt/utils.py",
+      "sha256": "feaef2cb710d345521d6a51de49e434e144be09d6d23111c92708ed802a67983",
+      "status": "reuse pure SVD functions for a subspace diagnostic; full filtering/LoRA method not reproduced"
+    },
+    "PLeaS": {
+      "repository": "https://github.com/SewoongLab/PLeaS-Merging",
+      "commit": "55b35eeda860e82dea47613cd2e248345a37a06f",
+      "file": "pleas/methods/pleas_merging.py",
+      "sha256": "be79f44e4ad4f1e7418c5f8db8d20665448242404a9aede17e38d276674990de",
+      "paper": "https://arxiv.org/abs/2407.02447v2",
+      "status": "paper/source audit; public optimizer uses Adam; shared closed-form probe is not a full PLeaS reproduction"
+    }
+  }
+}
