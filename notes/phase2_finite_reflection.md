@@ -38,3 +38,13 @@ $$\sum_jm_j\left[-\delta z_j B_j^\top(M_y-M_k)+|\delta z_j|\|CB_j\|\,|b_y-b_k|/\
 [PaRaMS](https://openaccess.thecvf.com/content/ICCV2025/html/Junhao_Disrupting_Model_Merging_A_Parameter-Level_Defense_Without_Sacrificing_Accuracy_ICCV_2025_paper.html)的MLP排列是全局函数对称性；本构造通常改变每个神经元的函数，靠数据上有限响应的补偿保持任务。[MergeBarrier](https://arxiv.org/html/2511.10712v1)更换FFN的多项式表示，此处没有结构替换。[AGA／ARF](https://arxiv.org/html/2606.30360v1)仍是冻结后的攻击／微调防御对照，不宣称复现ARF。
 
 若子集和P泄露，反射可直接逆转；攻击者也可能从锚点估计这些结构。原版AGA能否恢复、公开估计能否清理都未验证。单纯出现中点失效或较大参数距离不构成安全或新颖性证明。
+
+## 唯一构造结果
+
+预算放宽为分数变量、忽略任务保持约束后，128张固定训练图片中只有27张可能跨过中点分类边界，其中17张属于数字0；这是本构造在该切片上的必要条件界，不是完整测试集或未知伙伴的上界。
+
+一次MILP选择2,982个神经元，参数距离0.4031，返回相对间隙0.202%；最坏类别的线性有限读出损害仅0.0173，不能冒充实际分类破坏。完整非线性重算得到：4,608张自然训练图片的保护端点和参数中点均0改判；全部9,728个自然／奇异输入的最坏任务间隔变化**0.9267>0.5**。因此明确关闭，不生成发布权重、独立确认或真实TA／AGA。
+
+独立NumPy直接按$A'$重建，而非复用有限响应公式，并用分数背包的对偶界核验上界；核验通过。初次核验发现人工探针的0.01先在float32中形成，而验证器使用float64，造成最大$2.9\times10^{-9}$分数差；已按冻结运算次序重建，原日志和源码保留，未放宽任何验收容差。
+
+这个结果否定了该固定任务子空间反射子集，不能推成所有非线性反射均无效。它再次说明，较大参数距离、局部任务更新方向和松弛目标的优化精度，都不能替代实际有限分类间隔跨越。[构造](../results/finite_neuron_reflection/results.json)、[独立核验](../results/finite_neuron_reflection/independent_validation.json)、[源码指纹](../results/finite_neuron_reflection/source_freeze.json)。

@@ -1,6 +1,6 @@
 {
-  "status": "phase2_attention_cascade_slab_construction_running",
-  "updated_utc": "2026-10-15T04:14:25.268859+00:00",
+  "status": "phase2_retained_task_witness_completion_running",
+  "updated_utc": "2026-10-15T04:32:37.136769+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -9,19 +9,19 @@
   "stage": "input_conditioned_attention_mediated_finite_compensation",
   "research_jobs": [
     {
-      "stage": "source_only_margin_slab_continuation",
       "server": "3090",
-      "pid": 3675,
-      "protocol": "configs/attention_cascade_slab.json",
-      "log": "outputs/phase2_cascade_slab.log",
-      "output": "outputs/phase2_attention_cascade_slab",
-      "execution_source_commit": "3c99fda16b237b377802b6f765e428ffe503fe98"
+      "pid": 4469,
+      "stage": "retained_witness_slab",
+      "protocol": "configs/attention_cascade_retained.json",
+      "log": "outputs/phase2_cascade_retained.log",
+      "output": "outputs/phase2_attention_cascade_retained",
+      "execution_source_commit": "c82d46a252b22e09cb428306f4293c7d76329da7"
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No new release. Exact finite task/activation transport independently verified. One exact LN2/A conjugacy at distance0.5 preserves the source but changes0/512 fixed-anchor predictions and is publicly invertible; closed. Preserved best O/B native99.71%,TA78.77%,authorAGA77.85%.",
   "mechanism": "notes/phase2_attention_cascade.md",
-  "next_action": "Check existing3090 pid3675/log for the single frozen source-only slab construction; do not overlap or relaunch. After final coefficient hash, independently verify full natural/SVD responses and source midpoint. Only an actual multiclass signal plus independent confirmation can enter trueTA/authorAGA.",
+  "next_action": "Check the single current3090 retained-witness completion pid4469 and its log; do not relaunch or overlap. On completion verify its finite source point independently. Only after actual multiclass signal plus fresh independent task confirmation may trueTA/authorAGA run. All earlier cascade variants and the finite reflection subset are closed and preserved.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1344,6 +1344,29 @@
     "slab_hypothesis": "Equality-to-zero repair is stronger than the unchanged0.5 task-margin band. Solve the explicit finite local convex slab and parameter ball, with0.45 inner slack and full finite0.5 acceptance; no new budget, layer, rank, test or proxy selection.",
     "new_release_weights": 0,
     "true_TA_AGA_run": false,
+    "test_used": false,
+    "partner_used": false,
+    "slab_status": "verified_source_and_midpoint_no_classification_effect_closed",
+    "slab_distance": 0.03151360548557082,
+    "slab_worst_drift": 0.4768355924063629,
+    "slab_proxy_changes": 0,
+    "slab_validation": "results/attention_cascade_slab/independent_validation.json",
+    "retained_status": "running_same_budgets_and_solver_step_caps; keep earlier source violations instead of discarding them"
+  },
+  "phase2_finite_neuron_reflection": {
+    "status": "independently_verified_closed",
+    "selected_neurons": 2982,
+    "distance": 0.4030879959245356,
+    "task_worst_drift": 0.9267059699993223,
+    "task_gate_passed": false,
+    "source_midpoint_changed": 0,
+    "natural_n": 4608,
+    "fractional_bound_possible": 27,
+    "fractional_bound_n": 128,
+    "results": "results/finite_neuron_reflection/results.json",
+    "validation": "results/finite_neuron_reflection/independent_validation.json",
+    "source_freeze": "results/finite_neuron_reflection/source_freeze.json",
+    "new_release_weights": 0,
     "test_used": false,
     "partner_used": false
   }
