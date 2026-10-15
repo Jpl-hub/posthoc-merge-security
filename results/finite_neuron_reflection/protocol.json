@@ -1,0 +1,37 @@
+{
+  "target": "MNIST",
+  "output": "outputs/phase2_finite_neuron_reflection",
+  "mixed_diagnostic": "outputs/phase2_mixed_compensation_audit/diagnostic.pt",
+  "basis_diagnostic": "outputs/phase2_ffn_levelset_diagnosis/diagnostic.pt",
+  "boundary_diagnostic": "outputs/phase2_task_boundary_mnist/diagnostic.pt",
+  "old_calibration": "outputs/phase2_cross_module_direction_mnist_fixed/calibration.pt",
+  "inputs": {
+    "outputs/phase2_mixed_compensation_audit/diagnostic.pt": "861b8a31cb56b978ce4fb28c90905f508a231ad46bb01aa3a8c427fdbc5a3bc8",
+    "outputs/phase2_ffn_levelset_diagnosis/diagnostic.pt": "18a824e537e4c83ea0d9ab7c20f3bd657744aeede98211b412f4345eb85ee184",
+    "outputs/phase2_task_boundary_mnist/diagnostic.pt": "2f4045ff665c925769b5980ef10827df0394e47b47939046f5a554d914231df5",
+    "outputs/phase2_cross_module_direction_mnist_fixed/calibration.pt": "166a77ce5c47058c53e23c8a7e775943fdc864451f40ce4e0a80c7fca486df75"
+  },
+  "contexts_per_class": 2,
+  "finite_step": 0.01,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "generator_margin_fraction": 0.25,
+  "bound_n": 128,
+  "objective_n": 512,
+  "minimum_finite_changes": 2,
+  "minimum_changed_classes": 2,
+  "solver_seconds": 60.0,
+  "solver_node_limit": 1000,
+  "solver_gap": 0.01,
+  "entrypoint": "experiments/finite_neuron_reflection.py",
+  "source_sha256": {
+    "experiments/finite_neuron_reflection.py": "533213bf7e9f99d807d27c11e60d4b4b8001911392d28fcacb5e392a6aac8aa2",
+    "experiments/finite_compensation_transport.py": "d485a69bef0a3f6043f3bd3c73902f109fca3c2d084e12542888ed5d9264a03d",
+    "experiments/mixed_compensation_audit.py": "04c9c155504592b6cda3a6d8163b0d6156e66e7f284a54088f2bc8aee5e7ed2b",
+    "experiments/task_boundary_audit.py": "d90956a382d8f0a2d2be46bf914e6a86567705c8c7acdab750d12ec3f09bcfdd",
+    "experiments/boundary_game.py": "79a2d9c48e3ef4865ee50af43c7faa6c8f8168e27666dd8d9a00f7f49f0c4707",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41"
+  },
+  "description": "One selective neuron task-input reflection. Exact finite endpoint/midpoint activation responses; fractional knapsack exclusion bound then at most one binary class-maxmin construction. Source-only, unchanged0.5 budgets and frozen32-dimensional task-SVD probe basis. Full finite natural/probe validation, no test/peer or score-tuned mask search.",
+  "protocol_path": "configs/finite_neuron_reflection.json"
+}

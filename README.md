@@ -48,3 +48,5 @@ python experiments/verify_noise_release.py --output outputs/my_svhn_run --probe-
 **混合响应核验：** 目标/基座混合Jacobian确有不同于旧代理的方向，但有限任务约束下的新方向仍为0/128代理改判；已有发布点的一阶响应近似误差超过100%。未生成新保护模型，不继续放大该方向。[推导、有限实验与独立复核](notes/phase2_mixed_compensation.md)。
 
 **有限补偿诊断：** 精确分解分类间隔后，仅替换上游表示即可使冻结O/B、A/B在已知128张训练切片上分别改判72、76次；不是新保护结果。原任务激活满列秩且条件数约7万，有限分数方向残差的传递缺少未知环境保证。另一个解析LN/MLP共轭变换用满0.5距离仍为0/512代理改判，并可公开逆转，已关闭。没有新release或更强TA/AGA；[有限恒等式、核验和边界](notes/phase2_finite_transport.md)。
+
+**有限新构造：** 跨块Attention补偿与任务子空间神经元反射已实现并核验。前者最终任务约束0.493、距离0.0662，但固定基座代理0/512改判；后者距离0.4031，任务约束0.9267超出0.5且参数中点0改判。两类均未生成新发布模型或真实TA／AGA结果，未超过已保留O/B。求解器修正、失败记录与源码包完整保留；[跨块机制及有限约束](notes/phase2_attention_cascade.md)、[反射构造及分类作用上界](notes/phase2_finite_reflection.md)。

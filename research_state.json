@@ -1,17 +1,17 @@
 {
-  "status": "phase2_finite_transport_verified_no_new_release",
-  "updated_utc": "2026-10-15T03:05:37.693206+00:00",
+  "status": "phase2_new_finite_methods_verified_no_new_release",
+  "updated_utc": "2026-10-15T04:44:04.381203+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "finite_nonlinear_compensation_transport",
+  "stage": "two_structured_finite_method_families_closed_after_verification",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "No new release. Exact finite task/activation transport independently verified. One exact LN2/A conjugacy at distance0.5 preserves the source but changes0/512 fixed-anchor predictions and is publicly invertible; closed. Preserved best O/B native99.71%,TA78.77%,authorAGA77.85%.",
-  "mechanism": "notes/phase2_finite_transport.md",
-  "next_action": "Find a structurally input-conditioned finite compensation mechanism with actual multi-class margin crossing over an explicitly justified representation direction cone, controlling transported source angular residuals and normalization. No credible candidate yet. Do not enlarge old O/B or A/B budgets/steps, reuse origin curvature directions, scan channel scaling, or treat empirical transport coefficients as coverage of unknown peers.",
+  "new_candidate": "No new release. Attention-mediated finite compensation satisfies the source gate at the last verified point but changes0/512 anchor predictions. Finite task-subspace neuron reflection violates source gate0.9267>0.5 and changes0/4608 source-midpoint predictions. Existing best O/B true results unchanged.",
+  "mechanism": "notes/phase2_attention_cascade.md",
+  "next_action": "Both new finite method families are closed under their frozen protocols. No credible next release candidate has passed necessary conditions. Further work requires an actual finite task-feasible path with multiclass negative margins, not larger budgets, more iterations on this ray, or arbitrary proxy selection. Unknown-partner coverage remains conditional; do not resume automatic loops.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1130,16 +1130,18 @@
     ]
   },
   "github_sync": {
-    "status": "verified",
+    "status": "final_snapshot_pending_publication",
     "transport": "GitHub plugin",
-    "last_verified_remote_commit": "8bee38ce87993c8b64c523c6320e44548f5f7a52",
-    "last_verified_local_commit": "ea3457f8e68c354ca41f8390a86baed19bb75c90",
-    "last_verified_canonical_tree": "68fded9821e1a34bc8c363142eb819274203793c",
-    "failures": [],
+    "last_verified_remote_commit": "851506e030b3b11b1cee3ed22f2ad6fb7625ec4d",
+    "last_verified_local_commit": "0bb991570211355c991b77d3c6ee80c80dad0f61",
+    "last_verified_canonical_tree": "e17a3da774a4d305a3addf82dbc32b7e0647fd62",
+    "failures": [
+      "Transient create_tree transport error; remote main checked unchanged."
+    ],
     "local_commits_preserved": true,
-    "claim_uploaded": true,
+    "claim_uploaded": false,
     "verification_receipt": "outputs/latest_github_sync_receipt.json",
-    "durability": "Previous verified revision recorded here; final local/remote commit pair and complete canonical-tree verification are recorded in outputs/latest_github_sync_receipt.json after this research snapshot is synchronized. Heavy artifacts remain on3090."
+    "durability": "This field records the last verified revision before this snapshot. Final exact remote/local commits and canonical tree are recorded in the ignored receipt after publication; no circular commit self-reference."
   },
   "phase2_mixed_compensation": {
     "status": "verified_mixed_mechanism_distinct_direction_closed_no_classification_effect",
@@ -1292,14 +1294,98 @@
     "scope": "One analytic scalar at the unchanged joint budget, no channel/amplitude sweep. Exact structure-based preservation, not a new task-subspace discovery or recovery defense."
   },
   "latest_verified_facts": [
-    "Finite task/anchor transport identities, QR minimum-norm rows and per-class exact margin crossings independently verified.",
-    "Source native activations full column rank3072 with condition about7e4; no empirical exact input nullspace for either frozen point.",
-    "Upstream-only known endpoint intervention causes72/128 O/B and76/128 A/B flips; local/readout-only causes0. Hybrid corners are not physical fused models.",
-    "Transported finite source angular residual matters; not explainable by positive score scaling alone. Coefficients give no unknown-partner coverage.",
-    "One exact LN2/A normalization conjugacy at joint distance0.5 gives0/512 anchor flips, is publicly invertible and is closed.",
-    "Best true O/B independent99.71,TA78.77,authorAGA77.85 remains unchanged; no new defense weights or true attack results."
+    "Two distinct structured finite families implemented on3090 using only source expert/base/source training data: cross-block attention compensation and task-subspace neuron reflection.",
+    "Cascade source inputs9728 include4608 natural images. Last exact-identity verified point has distance0.0661886 and max task-margin drift0.493067<=0.5; original/released4605 correct and0 natural prediction changes.",
+    "Cascade final source-parameter midpoint changes1/4608 (class9 only); public-base proxy changes0/512. Current-worst mandatory oracle returns bitwise identical coefficients. No finite multiclass signal.",
+    "Reflection selects2982 neurons at distance0.403088; actual task-margin drift0.926706>0.5. Endpoint and source midpoint both0/4608 prediction changes. Independently reconstructed NumPy failure verified.",
+    "Reflection fractional distance-budget upper bound allows at most27/128 sampled inputs to cross,17 are class0; bound is for this fixed source-midpoint family and slice only, not all mergers.",
+    "No new release, fresh confirmation, realTA, authorAGA or cross-target evaluation for these failed candidates. Historical success is not updated by proxy diagnostics.",
+    "Frozen O/B remains MNIST independent99.71%,TA78.77%,authorAGA77.85%; O/B and A/B candidate SHA256 independently rechecked unchanged.",
+    "Phase1 tag and artifacts retained. No4090 access or automatic loop resumed."
   ],
   "latest_unverified_hypotheses": [
-    "A task-preserving finite nonconjugate compensation may admit a class-margin lower bound over a justified environment direction cone. No such candidate or coverage has been established."
-  ]
+    "A different finite task-preserving nonconjugate path might produce multiclass negative margins; no such new path is established. Current frozen rays failing locally do not prove global impossibility.",
+    "No construction-only environment set has established unknown-partner coverage or cross-protected-task generality."
+  ],
+  "phase2_attention_cascade": {
+    "status": "all_finite_constructions_verified_closed_no_multiclass_effect",
+    "target": "MNIST",
+    "position": "block10 mlp.c_proj -> block11 softmax attention -> block11 mlp.c_proj",
+    "frozen_prior_weights_unchanged": true,
+    "protocols": [
+      "configs/attention_cascade.json",
+      "configs/attention_cascade_completion.json",
+      "configs/attention_cascade_slab.json",
+      "configs/attention_cascade_retained.json",
+      "configs/attention_cascade_oracle.json"
+    ],
+    "free_retraction": {
+      "status": "closed_no_finite_multiclass_signal",
+      "distance": 0.11352041572928791,
+      "task_critic": 0.36232010458358455,
+      "proxy_changed": 0,
+      "proxy_n": 512,
+      "independent_validation": "results/attention_cascade_diagnosis/independent_validation.json"
+    },
+    "fixed_upstream_equality": {
+      "status": "closed_completion_solver_failed_at_next_distance",
+      "distance": 0.10573649401928929,
+      "upstream_distance": 0.03125,
+      "task_critic": 0.44142646757234877,
+      "proxy_changed": 0,
+      "proxy_n": 512,
+      "source_midpoint_changed": 0,
+      "natural_n": 4608,
+      "independent_validation": "results/attention_cascade_completion/independent_validation.json"
+    },
+    "slab_hypothesis": "Equality-to-zero repair is stronger than the unchanged0.5 task-margin band. Solve the explicit finite local convex slab and parameter ball, with0.45 inner slack and full finite0.5 acceptance; no new budget, layer, rank, test or proxy selection.",
+    "new_release_weights": 0,
+    "true_TA_AGA_run": false,
+    "test_used": false,
+    "partner_used": false,
+    "slab_status": "verified_source_and_midpoint_no_classification_effect_closed",
+    "slab_distance": 0.03151360548557082,
+    "slab_worst_drift": 0.4768355924063629,
+    "slab_proxy_changes": 0,
+    "slab_validation": "results/attention_cascade_slab/independent_validation.json",
+    "retained_status": "closed_after_current_worst_oracle_correction",
+    "retained_distance": 0.06618856432054585,
+    "retained_task_worst_drift": 0.4930670909911338,
+    "retained_source_midpoint_changed": 1,
+    "retained_proxy_changed": 0,
+    "retained_validation": "results/attention_cascade_retained/independent_validation.json",
+    "oracle_status": "closed_slab_cascade_no_multiclass_fusion_effect",
+    "oracle_result": "results/attention_cascade_oracle/results.json",
+    "oracle_validation": "results/attention_cascade_oracle/independent_validation.json",
+    "oracle_source_freeze": "results/attention_cascade_oracle/source_freeze.json",
+    "oracle_parameter_distance": 0.06618856432054585,
+    "oracle_worst_drift": 0.4930670909911338,
+    "oracle_proxy_changed": 0,
+    "oracle_source_midpoint_changed": 1,
+    "oracle_exactly_same_verified_coefficients": true,
+    "oracle_new_independent_response_runs": 0,
+    "oracle_jacobians_total": 17,
+    "oracle_corrections_total": 16,
+    "oracle_resume_wall_seconds": 107.73641358083114,
+    "confirmation_used": false,
+    "cross_target_validation_run": false,
+    "scope": "Finite local solver failures and no class crossing, not a global infeasibility proof. No partner or test data used for construction. Analytical VJPs/Jacobians and transform optimization are not zero-gradient defense."
+  },
+  "phase2_finite_neuron_reflection": {
+    "status": "independently_verified_closed",
+    "selected_neurons": 2982,
+    "distance": 0.4030879959245356,
+    "task_worst_drift": 0.9267059699993223,
+    "task_gate_passed": false,
+    "source_midpoint_changed": 0,
+    "natural_n": 4608,
+    "fractional_bound_possible": 27,
+    "fractional_bound_n": 128,
+    "results": "results/finite_neuron_reflection/results.json",
+    "validation": "results/finite_neuron_reflection/independent_validation.json",
+    "source_freeze": "results/finite_neuron_reflection/source_freeze.json",
+    "new_release_weights": 0,
+    "test_used": false,
+    "partner_used": false
+  }
 }
