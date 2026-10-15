@@ -18,7 +18,7 @@ from verify_cross_module import ln
 from verify_levelset_audits import convert, raw_scores, residual
 
 
-def hidden(h, p, gain, shift, off, rounding, db):
+def hidden(h, p, gain, shift, off, rounding, db, with_gate=False):
     n, length, width=h.shape;heads=p['heads'];dim=width//heads
     x=ln(h, p['gamma1'], p['beta1'], p['eps1']);x[:, 0]+=shift
     # Reconstruct the released matrices and biases, rather than scaling logits.
@@ -31,7 +31,8 @@ def hidden(h, p, gain, shift, off, rounding, db):
     r=h[:, 0]+np.einsum('nht,nhtd->nhd', prob, v).reshape(n, width)@p['O'].T+p['ob']
     pre=ln(r, p['gamma2'], p['beta2'], p['eps2'])@p['A'].T+p['a']
     z=pre*expit(1.702*pre)+off
-    return rounding+r+z@(p['B']+db).T+p['b']
+    output=rounding+r+z@(p['B']+db).T+p['b']
+    return (output,z) if with_gate else output
 
 
 def verify(cfg):
@@ -55,16 +56,17 @@ def verify(cfg):
         parts.append((np.sum((t*w)**2)+np.sum((t*b)**2))/(np.sum(w*w)+np.sum(b*b)))
     distance=float(np.sqrt(sum(parts)+(np.linalg.norm(db)/np.linalg.norm(p['B']))**2))
     assert abs(distance-report['selected']['distance'])<1e-10
-    before=[];after=[];score_error=0.;hidden_error=0.
+    before=[];after=[];solo=[];score_error=0.;hidden_error=0.
     for start0 in range(0, len(data['take']), cfg['batch_size']):
         rows=data['take'][start0:start0+cfg['batch_size']];s=data['shifts'][start0:start0+len(rows)];off=data['offsets'][start0:start0+len(rows)]
         h=hh[rows].astype(np.float64);rnd=rounding[rows]
-        b=hidden(h,p,1.,s,off,rnd,np.zeros_like(db));a=hidden(h,p,1.+t,s,off,rnd,db)
+        b,z=hidden(h,p,1.,s,off,rnd,np.zeros_like(db),with_gate=True);a=hidden(h,p,1.+t,s,off,rnd,db)
         bs=raw_scores(b,p);as_=raw_scores(a,p)
         score_error=max(score_error,float(np.abs(bs-data['teacher'][start0:start0+len(rows)]).max()))
         hidden_error=max(hidden_error,float(np.abs(b-data['teacher_hidden'][start0:start0+len(rows)]).max()))
         np.testing.assert_allclose(as_,raw_scores(data['base'][start0:start0+len(rows)]+np.linalg.norm(p['B'])*(data['z'][start0:start0+len(rows)]@k.T)@q.T,p),atol=1e-9,rtol=1e-9)
         before.append(bs);after.append(as_)
+        if start0<data['natural_n']:solo.append(raw_scores(b+z@db.T,p)[:min(len(rows),data['natural_n']-start0)])
     before=np.concatenate(before);after=np.concatenate(after);drift=float(np.abs(residual(before,after)).max());n=data['natural_n']
     assert score_error<1e-9 and hidden_error<1e-8
     assert abs(drift-report['selected']['worst_margin_drift'])<1e-6
@@ -75,11 +77,13 @@ def verify(cfg):
     labels=official_labels(cfg['target'],True)[ids]
     old=int((before[:n].argmax(1)==labels).sum());new=int((after[:n].argmax(1)==labels).sum())
     assert old==report['original_correct'] and new==report['released_correct']
+    solo=np.concatenate(solo);solo_changed=solo.argmax(1)!=before[:n].argmax(1)
+    assert int(solo_changed.sum())==report['B_only_changed']
     passed=drift<=cfg['task_budget'] and distance<=cfg['parameter_budget'];assert passed==report['task_gate_passed']
     torch.save(dict(before=torch.tensor(before),after=torch.tensor(after),indices=ids),root/'independent_predictions.pt')
     result=dict(status='passed_task_calibration' if passed else 'passed_failure_verification',target=cfg['target'],all_task_inputs=len(before),natural_n=n,
                 parameter_distance=distance,worst_margin_drift=drift,natural_prediction_changes=int(changed.sum()),changed_by_class=by,
-                original_correct=old,released_correct=new,score_error=score_error,hidden_error=hidden_error,point_sha256=report['training_point_sha256'],
+                original_correct=old,released_correct=new,B_only_changed=int(solo_changed.sum()),score_error=score_error,hidden_error=hidden_error,point_sha256=report['training_point_sha256'],
                 predictions_sha256=digest(root/'independent_predictions.pt'),source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
                 new_release_weights=0,partner_used=False,test_used=False,confirmation_used=False,
                 scope='Independent NumPy all-token attention from explicitly transformed Q/K weights+biases, QuickGELU, LayerNorm, CLIP score normalization, every frozen natural/SVD input and official labels. No source-midpoint/proxy rejection rule.')
