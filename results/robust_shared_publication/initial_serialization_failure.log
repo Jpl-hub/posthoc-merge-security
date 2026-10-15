@@ -1,0 +1,53 @@
+{"trial": 1, "accepted": true, "source_worst": 0.49330028273370063, "distance": 0.2995042680951237}
+{"trial": 2, "accepted": true, "source_worst": 0.49307934658492764, "distance": 0.3007423689645051}
+{"trial": 3, "accepted": true, "source_worst": 0.4913046514337874, "distance": 0.3043242433940763}
+{"trial": 4, "accepted": true, "source_worst": 0.4847246923726969, "distance": 0.3082815884925771}
+{"trial": 5, "accepted": true, "source_worst": 0.4829705394507491, "distance": 0.3124591598219014}
+{"trial": 6, "accepted": true, "source_worst": 0.4805614386774348, "distance": 0.31648262172449926}
+{"trial": 7, "accepted": true, "source_worst": 0.4803779457872514, "distance": 0.32075536760519413}
+{"trial": 8, "accepted": true, "source_worst": 0.47966396449752363, "distance": 0.32519995499714577}
+{"trial": 9, "accepted": true, "source_worst": 0.4796098235086509, "distance": 0.32979639933985955}
+{"trial": 10, "accepted": true, "source_worst": 0.47691570018850066, "distance": 0.33460772040715114}
+{"trial": 11, "accepted": false, "source_worst": 0.4849639509156342, "distance": 0.339535731378675}
+{"trial": 12, "accepted": true, "source_worst": 0.47848818403366167, "distance": 0.3369323666842664}
+{"trial": 13, "accepted": true, "source_worst": 0.4784751797119464, "distance": 0.3391443747999616}
+{"trial": 14, "accepted": true, "source_worst": 0.4783985710733576, "distance": 0.3415342875011279}
+{"trial": 15, "accepted": true, "source_worst": 0.4783090741390138, "distance": 0.3439874074633593}
+{"trial": 16, "accepted": true, "source_worst": 0.4783146146718146, "distance": 0.34634094290504214}
+{"trial": 17, "accepted": true, "source_worst": 0.4849373536944514, "distance": 0.34864842897968473}
+{"trial": 18, "accepted": true, "source_worst": 0.484796108653414, "distance": 0.3517022911701411}
+{"trial": 19, "accepted": true, "source_worst": 0.4853170814510524, "distance": 0.3548003544831434}
+{"trial": 20, "accepted": true, "source_worst": 0.4851607527431335, "distance": 0.3570250231910421}
+{"trial": 21, "accepted": true, "source_worst": 0.48579844363527835, "distance": 0.35933748516064723}
+{"trial": 22, "accepted": true, "source_worst": 0.4857282457077239, "distance": 0.36261082684117035}
+{"trial": 23, "accepted": false, "source_worst": 0.48838352475717284, "distance": 0.36989371662508136}
+{"trial": 24, "accepted": false, "source_worst": 0.48638488127419416, "distance": 0.36613383710137554}
+Traceback (most recent call last):
+  File "/root/autodl-tmp/merge_security_20261009/experiments/verify_robust_shared_publication.py", line 118, in <module>
+    verify(json.loads(Path(args.protocol).read_text()))
+  File "/root/autodl-tmp/merge_security_20261009/experiments/verify_robust_shared_publication.py", line 113, in verify
+    save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/subspace_probe.py", line 19, in save_json
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False), encoding="utf-8")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/root/miniconda3/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/root/miniconda3/lib/python3.12/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/root/miniconda3/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/root/miniconda3/lib/python3.12/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type int64 is not JSON serializable

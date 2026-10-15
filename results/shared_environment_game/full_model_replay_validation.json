@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "records": [
+    {
+      "model": "source_plus_shared",
+      "n": 32,
+      "maximum_FP32_score_error": 1.0601142809596453e-05,
+      "all_predictions_match": true
+    },
+    {
+      "model": "reference_plus_shared",
+      "n": 32,
+      "maximum_FP32_score_error": 1.2832073018387291e-05,
+      "all_predictions_match": true
+    },
+    {
+      "model": "protected_reference_plus_shared",
+      "n": 32,
+      "maximum_FP32_score_error": 1.631512109767641e-05,
+      "all_predictions_match": true
+    }
+  ],
+  "new_full_model_forwards": 96,
+  "cache_tolerance": 0.0005,
+  "actual_shared_parameter_distance": 0.16681839395200965,
+  "diagnostic_sha256": "1eb655659e45131ef69d7afbc91b9c1d5b326dd52db7bd09061697eef75436a0",
+  "predictions_sha256": "af6476aacfdca0aa877426efe19704ac791a564656322e4516ac961788538ea2",
+  "source_sha256": "0b5b6f9b389f7a0766378e5641108c691be213c31d1db58a63f1ab7d54fb40e9",
+  "wall_seconds": 8.722082412801683,
+  "peer_used": false,
+  "test_used": false,
+  "new_release_weights": 0,
+  "interpretation": "The SAME B10 edit is instantiated in three complete models on fixed32 target-training images. Source, public-reference and original-O/B protected-reference predictions match finite cached calculations. This validates realizability, not coverage of trained unknown peers or new protection efficacy."
+}
