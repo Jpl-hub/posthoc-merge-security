@@ -1,0 +1,15 @@
+{
+  "original_protocol": "protocol.json",
+  "original_protocol_sha256": "31219ca4f3af6177f870203ea17602b6bb3ef8515c4dbe11104c786216f94fc3",
+  "construction_commit": "0087582a131f11283db6ff48588bdd0f5ac011cd",
+  "verification_commit": "b8e6842984557188608220c2ac80f84d7e4c8562",
+  "verification_change": "JSON serialization cast only; unchanged numerical verifier, point, objective, data or budget.",
+  "commands": [
+    "python experiments/robust_shared_publication.py --protocol configs/robust_shared_publication.json # construct in0087582 archive, fresh output path",
+    "python experiments/verify_robust_shared_publication.py --protocol configs/robust_shared_publication.json # b8e6842 verifier",
+    "python experiments/confirm_robust_shared_publication.py --protocol configs/robust_shared_publication.json # b8e6842, sole confirmation",
+    "python experiments/audit_robust_shared_failure.py --protocol configs/robust_shared_publication.json #27a8ba2 read-only"
+  ],
+  "rerun_performed": false,
+  "failed_candidate_must_not_be_repaired_from_confirmation": true
+}
