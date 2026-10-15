@@ -1,0 +1,23 @@
+Traceback (most recent call last):
+  File "/root/autodl-tmp/merge_security_20261009/experiments/confirm_temperature_compensation.py", line 119, in <module>
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol',required=True);args=ap.parse_args();initialize();confirm(json.loads(Path(args.protocol).read_text()))
+                                                                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/confirm_temperature_compensation.py", line 84, in confirm
+    cache['rounding']=torch.cat(rounding);cache,ids,n=risk_first(cache,split['indices'],cfg['contexts_per_class'],p)
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/boundary_game.py", line 20, in risk_first
+    s=scores(on_device(cache)['h'],params);winner=s.argmax(1);rows=torch.arange(len(s),device='cuda');others=s.clone();others[rows,winner]=-torch.inf
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/probe_margin_distance.py", line 19, in scores
+    return tail(h, params)[1] @ params["head"].T
+           ^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/task_probe_distance.py", line 70, in tail
+    normalized=F.layer_norm(h,(h.shape[-1],),p["gamma"],p["beta"],p["eps"])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/nn/functional.py", line 2573, in layer_norm
+    return torch.layer_norm(input, normalized_shape, weight, bias, eps, torch.backends.cudnn.enabled)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: expected scalar type Float but found Double

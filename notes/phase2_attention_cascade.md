@@ -101,3 +101,7 @@ $$\min_y\tfrac12\|y\|^2,\quad |r+U\Sigma y|\le0.45,\quad t^2+\|K+V^\top y\|^2\le
 下一研究问题是寻找任务可行路径与多类别负间隔之间的实际交集，而不是继续放大该射线。现阶段没有已通过必要条件的新候选，也没有未知伙伴覆盖结论。另一个独立的[有限神经元反射构造](phase2_finite_reflection.md)同样失败：距离0.4031但任务变化0.9267超限，中点0改判。两者均不能替代保留的O/B真实融合结果。
 
 [冻结协议和原始结果](../results/attention_cascade_oracle/results.json)、[精确同一性与独立核验引用](../results/attention_cascade_oracle/independent_validation.json)、[源码与重文件指纹](../results/attention_cascade_oracle/source_freeze.json)。
+
+## 后续评价范围订正
+
+源参数中点和基座代理改判不是一般防御的必要条件。上述跨块构造因当时的代理筛选关闭，**没有实际TA／AGA结果，不能将代理0改判写成真实融合已被证明无效**。历史数值和协议原样保留，分支不重启。下一轮[温度与蒸馏补偿](phase2_temperature_compensation.md)改为任务保持与独立确认通过后直接完成一次真实TA／AGA，不再设统一代理改判门槛。

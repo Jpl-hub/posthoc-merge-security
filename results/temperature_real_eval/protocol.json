@@ -1,0 +1,52 @@
+{
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "test_counts": {
+    "MNIST": 10000,
+    "DTD": 1880,
+    "SVHN": 26032
+  },
+  "coefficient": 0.5,
+  "maximum_calibration_group": 512,
+  "standalone_loss_gate_pp": 0.5,
+  "seed": 20261014,
+  "publication_point": "outputs/phase2_temperature_margin_mnist",
+  "training_point_sha256": "b6429fe8d7b8810dbdca03763b712b009c29f37de930d1a7e2abd58f8f29a383",
+  "release_edits_sha256": "338becd585f4e1d9f9efecc1c4d8ca7c286a7e7e3ee5cdbcd626b89b0251464c",
+  "parameter_budget": 0.5,
+  "confirmation_seed": 20261019,
+  "runner_sha256": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+  "source_commit": "ee8abaacc7195d03a783cec7165b7829f34fa638",
+  "source_sha256": {
+    "experiments/evaluate_temperature_release.py": "4c8aaf8ad3ee236ae63455333a93328ef63889305b060017a47c0d66a7327cb4",
+    "experiments/confirm_temperature_compensation.py": "e7384b08036cbd75e31d2a0fbd1b8c9cf843d8b169ce5ccddf89da3412432600",
+    "experiments/temperature_compensation.py": "21d705a5e791679859224fbcd401bbf1f9bf7fcc1dc1791dbe1de9647c327225",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "configs/sources.json": "528346ab06c38cc4e34a8a4064d9721f3884a1c2738deef4ec0e94a7b2b88a3f"
+  },
+  "description": "One source-only fixed-gain finite distillation point. Source and fresh confirmation passed; evaluate trueTA0.5 and pinned authorAGA once irrespective of source midpoint/public-base predictions. No test selection, no new attacks.",
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN"
+    }
+  ]
+}
