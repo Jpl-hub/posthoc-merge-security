@@ -15,6 +15,7 @@
 | [Trap²，ICML 2026](https://arxiv.org/html/2601.21898v2)，[官方仓库](https://github.com/ml-postech/Trap2) | 训练期 | 学习任务更新，压低原尺度损失、提高偏离尺度的任务损失 | 将缩放当融合代理并对抗优化也已有先例。官方完整微调入口直接更新模型参数；不得移植后称冻结专家后处理。仅论文及源码阅读，未运行 |
 | [Generalized LMC，NeurIPS 2025](https://arxiv.org/html/2506.22712v1)，[官方实现](https://github.com/alexandertheus/Generalized-LMC-for-Transformers) | 对齐研究，非保护 | 统一排列、半排列、正交／可逆变换及近似对称性 | 换基、跨头混合与近似函数保持不能因换个名字而成为原创。此处只作机制边界对照，未复现 |
 | [RegMean，ICLR 2023](https://arxiv.org/abs/2212.09849)，[官方示例](https://github.com/bloomberg/dataless-model-merging/blob/main/regmean_demo.ipynb) | 融合，非保护 | 用输入Gram统计最小化线性层预测差异，求闭式融合 | 激活重建／最小二乘补偿本身已有来源。与保护目标不同；这里只核对思想及示例，未运行基线 |
+| [ESM，CVPR 2026](https://arxiv.org/html/2602.20208v1)，[官方实现](https://github.com/kiddo127/ESM) | 融合，非保护 | 对真实输入下的任务输出位移做SVD，选择最小化线性输出重建误差的子空间 | 激活加权的任务SVD已有直接先例；平均线性重建误差不保证最坏归一化分类间隔保持。仅阅读，未复现 |
 
 “未定位”限定于此次检查的版本和可访问来源，不表示代码永远不存在。所读版本不自动等同最新修订；后续若出现改变机制或实验结论的版本，需重新审查。搜索不是原创性的完备证明。
 
@@ -30,6 +31,21 @@
 | [MergeLock `f01aea9`](https://github.com/hetailang/Merge-Lock/tree/f01aea9d7dddf626b6b6536d2a73894feb833fb2) | 完整树检查 | 仅README；不能声称作者算法已运行 |
 
 Trap²的[固定完整微调入口](https://github.com/ml-postech/Trap2/blob/ef65a26590d92fe07955c5621c08bb315484ff29/training_scripts/8vision_training_full_trap2.py)中，AdamW接收`model.parameters()`；`make_scaled_params`计算`w0 + alpha*(p-w0)`，随后对原尺度CE减去缩放CE反传。固定提交`ef65a26`、Git blob为`6e3817b3c6d3e5c1457fc432c837cc7677d39916`，仅核对源码，未运行训练。此公式也不能仅加上硬约束就宣称全新思想。
+
+ESM固定提交[`d60b506`](https://github.com/kiddo127/ESM/blob/d60b50683fd5089578ad69b7c847e2c47025f73c/ESM-ViT/essential_subspace_decomposition.py)，文件Git blob为`bea60fa42a06408b8e8b6ec7291cbaee9cee9c13`。它对$X\Delta W^\top$直接做未减均值的SVD；当前Attention O投影代码被注释，不能把说明文字当全部矩阵均已实现。当前仓库含后续ESM++，此固定文件核对不冒充原论文完整复现。其`Val`数据注册的`test_dataset`字段须先核对划分含义；本项目不能照抄该字段作为合法训练数据证明。
+
+## 损失界与保持条件的核验
+
+Trap²附录A.2的正曲率条件给出损失下界；A.4还需要真实伙伴差向量沿整段路径的积分曲率条件。源专家的尺度敏感性不自动验证未知伙伴的这些条件。这里不否定原文的条件定理，也不将其改写为准确率保证。
+
+预先固定的[解析核验](../experiments/verify_prior_conditions.py)与[结果](../results/author_protocol_audit/prior_conditions.json)给出两个边界：
+
+- 取二分类间隔$m(u)=2-(1-u)^2$，$u\in[1/2,1]$。CE在$u=1$导数为零，整段曲率至少$2/(1+e^2)>0$；从1到1/2损失增加0.033296，大于0.029801下界，但间隔始终不小于7/4，零改判。单位特征和固定线性头可以实现这些分数。这是“损失界不推出改判”的反例，不是CLIP参数候选。
+- 取原间隔$g(x,y)=x$、扰动$\delta g=\frac1{100}\prod_{i=1}^{20}((y-i)/(-i))^2$。在20条完整直线$y=i$上，值、法向导数和一阶切向导数均保持；未见点$(-1/200,0)$却由负间隔变为正间隔。这否定有限路径检验的普遍充分性，不声称该多项式已被预算内CLIP参数实现。
+
+保持预算在低间隔区域尤其严格。若连续邻域内处处要求$|g_r-g_e|\le\varepsilon|g_e|$、$\varepsilon<1$，由连续性，原决策边界上必须有$g_r-g_e=0$。在可微且$\nabla g_e\ne0$的正则边界附近，用$g_e$作局部坐标，Hadamard引理给出$g_r-g_e=g_e h$，且$|h|\le\varepsilon$。有限样本、路径或SVD探针不证明此因式关系。此结论解释低间隔泛化的困难；不把连续域证书追加入现有有限验收协议，也不允许事后删去教师误判。
+
+两项核验只用符号代数和精确有理数，无模型、图片或梯度，服务器耗时0.671秒。源码先于执行冻结在`a73032c`；结果不是新防御效果。下一候选仍必须直接检验完整有符号间隔，而不是以曲率、平均重建或有限路径保持替代。
 
 ## 具体研究缺口
 
