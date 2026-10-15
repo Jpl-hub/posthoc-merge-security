@@ -43,6 +43,10 @@ def verify(cfg):
     assert digest(Path(cfg['cache_reference'])/'calibration.pt')==cfg['cache_sha256']
     point=torch.load(root/'training_point.pt', map_location='cpu');diagnostic=torch.load(root/'diagnostic.pt', map_location='cpu')
     cal=torch.load(Path(cfg['cache_reference'])/'calibration.pt', map_location='cpu');data=convert(diagnostic['native']);p=convert(diagnostic['parameters'])
+    # The generic numeric converter intentionally casts tensor values to
+    # double. Index arrays must retain their original integer semantics.
+    data['take']=diagnostic['native']['take'].numpy()
+    assert np.issubdtype(data['take'].dtype,np.integer)
     ids=diagnostic['indices'];lookup={i:(g,j) for g,key in [('native','fit'),('scale','scale')] for j,i in enumerate(cal['indices'][key])}
     hh=np.stack([cal[lookup[i][0]]['H'][lookup[i][1]].numpy() for i in ids])
     rounding=np.stack([cal[lookup[i][0]]['rounding'][lookup[i][1]].numpy() for i in ids])
