@@ -1,0 +1,48 @@
+{
+  "experiment": "frozen_target_only_AGA_protocol_audit",
+  "source_commit_before_registration": "4c7af21db4b22d55ee55c00251b1104b7810699d",
+  "target": "MNIST",
+  "partner": "SVHN",
+  "coefficient": 0.5,
+  "attack_scope": "original author functions on target only; vanilla peer, per pinned public entrypoint. Paper defense-agnostic all-model statement is a distinct scope; historical both-attacked results retained.",
+  "release": {
+    "path": "outputs/boundary_mnist/artifacts/release.pt",
+    "sha256": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46"
+  },
+  "allowed_keys": [
+    "model.visual.transformer.resblocks.11.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.11.mlp.c_proj.weight"
+  ],
+  "prior_confirmation": "outputs/phase2_boundary_game_mnist/independent_validation.json",
+  "AGA_original_reference": {
+    "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+    "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607"
+  },
+  "AGA_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "test_counts": {
+    "MNIST": 10000,
+    "SVHN": 26032
+  },
+  "parameter_budget": 0.5,
+  "task_preservation_budget": 0.5,
+  "task_preservation": "reuse frozen O/B passed construction/independent confirmation; no new selection or confirmation exposure",
+  "wall_limit_seconds": 900,
+  "new_candidates": 0,
+  "optimization_steps": 0,
+  "hyperparameter_selection": false,
+  "test_status": "historically exposed official tests; fixed-weight protocol comparison, not fresh blind test",
+  "PaRaMS_status": "archived eight-task one-pass results are separate, not a matched two-task/budget baseline",
+  "acceptance": "report all counts without retuning; verification must recount official labels and replay explicit TA formula",
+  "source_sha256": {
+    "experiments/author_protocol_audit.py": "dfb3026c5e10ec976e42da728f7b4164aa2ceabfd4ea88b3661b0bc0838aa673",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/verify_probe_candidate.py": "f91b7f1dcb7dcd19144b0b7ac711dd557b1a0ce1bb51809a047e53f0c7f8cdf9",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "registration_commit": "62a9006",
+  "harness_correction": "Author MLP entry logs every fourth block, although its fixed loop visits all12. Correct log assertion only; preserve failed first attempt, no defense or thresholds changed."
+}
