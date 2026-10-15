@@ -1,0 +1,521 @@
+{
+  "target": "MNIST",
+  "method": "bounded_classifier_eversion_then_upstream_nonlinear_task_retraction",
+  "status": "closed_upstream_compensation_infeasible_under_fixed_protocol",
+  "source_task_passed": false,
+  "downstream_task_stats": {
+    "n": 4608,
+    "original_correct": 4605,
+    "transformed_correct": 21,
+    "changed": 4588,
+    "per_teacher_class": [
+      {
+        "teacher_class": 0,
+        "n": 509,
+        "changed": 509,
+        "changed_fraction": 0.9999999999999999
+      },
+      {
+        "teacher_class": 1,
+        "n": 517,
+        "changed": 505,
+        "changed_fraction": 0.97678916827853
+      },
+      {
+        "teacher_class": 2,
+        "n": 440,
+        "changed": 438,
+        "changed_fraction": 0.9954545454545454
+      },
+      {
+        "teacher_class": 3,
+        "n": 471,
+        "changed": 471,
+        "changed_fraction": 1.0
+      },
+      {
+        "teacher_class": 4,
+        "n": 415,
+        "changed": 415,
+        "changed_fraction": 1.0
+      },
+      {
+        "teacher_class": 5,
+        "n": 444,
+        "changed": 444,
+        "changed_fraction": 1.0
+      },
+      {
+        "teacher_class": 6,
+        "n": 435,
+        "changed": 435,
+        "changed_fraction": 1.0
+      },
+      {
+        "teacher_class": 7,
+        "n": 475,
+        "changed": 470,
+        "changed_fraction": 0.9894736842105263
+      },
+      {
+        "teacher_class": 8,
+        "n": 462,
+        "changed": 461,
+        "changed_fraction": 0.9978354978354979
+      },
+      {
+        "teacher_class": 9,
+        "n": 440,
+        "changed": 440,
+        "changed_fraction": 1.0
+      }
+    ]
+  },
+  "joint_task_stats": {
+    "n": 4608,
+    "original_correct": 4605,
+    "transformed_correct": 4603,
+    "changed": 2,
+    "per_teacher_class": [
+      {
+        "teacher_class": 0,
+        "n": 509,
+        "changed": 0,
+        "changed_fraction": 0.0
+      },
+      {
+        "teacher_class": 1,
+        "n": 517,
+        "changed": 0,
+        "changed_fraction": 0.0
+      },
+      {
+        "teacher_class": 2,
+        "n": 440,
+        "changed": 0,
+        "changed_fraction": 0.0
+      },
+      {
+        "teacher_class": 3,
+        "n": 471,
+        "changed": 0,
+        "changed_fraction": 0.0
+      },
+      {
+        "teacher_class": 4,
+        "n": 415,
+        "changed": 0,
+        "changed_fraction": 0.0
+      },
+      {
+        "teacher_class": 5,
+        "n": 444,
+        "changed": 1,
+        "changed_fraction": 0.0022522522522522522
+      },
+      {
+        "teacher_class": 6,
+        "n": 435,
+        "changed": 0,
+        "changed_fraction": 0.0
+      },
+      {
+        "teacher_class": 7,
+        "n": 475,
+        "changed": 0,
+        "changed_fraction": 0.0
+      },
+      {
+        "teacher_class": 8,
+        "n": 462,
+        "changed": 0,
+        "changed_fraction": 0.0
+      },
+      {
+        "teacher_class": 9,
+        "n": 440,
+        "changed": 1,
+        "changed_fraction": 0.0022727272727272726
+      }
+    ]
+  },
+  "downstream_harmed_classes": 10,
+  "downstream_gate_passed": true,
+  "initial": {
+    "worst_margin_drift": 22.887174529727695,
+    "parameter_distance": 0.35355339059327373,
+    "upstream_distance": 0.0,
+    "natural_changes": 4588
+  },
+  "final": {
+    "worst_margin_drift": 3.568876045840628,
+    "parameter_distance": 0.38202514325821857,
+    "upstream_distance": 0.14471769097612927,
+    "natural_changes": 2
+  },
+  "geometry": {
+    "rank": 9,
+    "classes": 10,
+    "G_squared_condition": 42.34466090450425,
+    "bias_row_space_relative_error": 1.1960195120998011e-15,
+    "quadratic_a": 0.9963029146615561
+  },
+  "downstream_solver": {
+    "mu": 1.0251850827297877,
+    "rank": 3072,
+    "radius": 0.35355339059327373,
+    "boundary": true
+  },
+  "task_SVD_provenance": {
+    "A": {
+      "rank": 32,
+      "task_SVD_equation_error": 2.5585757779183e-13
+    },
+    "B": {
+      "rank": 32,
+      "task_SVD_equation_error": 7.567101937877061e-15
+    }
+  },
+  "training_fit_n": 4096,
+  "natural_n": 4608,
+  "all_task_inputs": 9728,
+  "history": [
+    {
+      "iteration": 1,
+      "active_inputs": 50,
+      "task_rows": 450,
+      "response_rank": 414,
+      "proposal_upstream_distance": 0.283439478394835,
+      "mu": 0.0,
+      "before": {
+        "worst_margin_drift": 22.887174529727695,
+        "parameter_distance": 0.35355339059327373,
+        "upstream_distance": 0.0,
+        "natural_changes": 4588
+      },
+      "trials": [
+        {
+          "fraction": 1.0,
+          "worst_margin_drift": 19.01938108147512,
+          "parameter_distance": 0.45314229322888866,
+          "upstream_distance": 0.283439478394835,
+          "natural_changes": 3975
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "iteration": 2,
+      "active_inputs": 59,
+      "task_rows": 531,
+      "response_rank": 484,
+      "proposal_upstream_distance": 0.3535533905932698,
+      "mu": 2.9546401483324884,
+      "before": {
+        "worst_margin_drift": 19.01938108147512,
+        "parameter_distance": 0.45314229322888866,
+        "upstream_distance": 0.283439478394835,
+        "natural_changes": 3975
+      },
+      "trials": [
+        {
+          "fraction": 1.0,
+          "worst_margin_drift": 6.356841073852464,
+          "parameter_distance": 0.49999999999999717,
+          "upstream_distance": 0.3535533905932698,
+          "natural_changes": 2704
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "iteration": 3,
+      "active_inputs": 67,
+      "task_rows": 603,
+      "response_rank": 529,
+      "proposal_upstream_distance": 0.35355339056198976,
+      "mu": 0.0006737832137841502,
+      "before": {
+        "worst_margin_drift": 6.356841073852464,
+        "parameter_distance": 0.49999999999999717,
+        "upstream_distance": 0.3535533905932698,
+        "natural_changes": 2704
+      },
+      "trials": [
+        {
+          "fraction": 1.0,
+          "worst_margin_drift": 30.337923035387522,
+          "parameter_distance": 0.49999999997787886,
+          "upstream_distance": 0.35355339056198976,
+          "natural_changes": 2360
+        },
+        {
+          "fraction": 0.5,
+          "worst_margin_drift": 5.420430501383212,
+          "parameter_distance": 0.44017081005591446,
+          "upstream_distance": 0.26220286425834466,
+          "natural_changes": 917
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "iteration": 4,
+      "active_inputs": 73,
+      "task_rows": 657,
+      "response_rank": 574,
+      "proposal_upstream_distance": 0.2507911920733387,
+      "mu": 0.0,
+      "before": {
+        "worst_margin_drift": 5.420430501383212,
+        "parameter_distance": 0.44017081005591446,
+        "upstream_distance": 0.26220286425834466,
+        "natural_changes": 917
+      },
+      "trials": [
+        {
+          "fraction": 1.0,
+          "worst_margin_drift": 12.352547114335875,
+          "parameter_distance": 0.4334699782240591,
+          "upstream_distance": 0.2507911920733387,
+          "natural_changes": 2496
+        },
+        {
+          "fraction": 0.5,
+          "worst_margin_drift": 6.460200354749356,
+          "parameter_distance": 0.395973310211474,
+          "upstream_distance": 0.1783111393038367,
+          "natural_changes": 2
+        },
+        {
+          "fraction": 0.25,
+          "worst_margin_drift": 4.723359594027707,
+          "parameter_distance": 0.40836931484461264,
+          "upstream_distance": 0.2043660864885815,
+          "natural_changes": 9
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "iteration": 5,
+      "active_inputs": 83,
+      "task_rows": 747,
+      "response_rank": 653,
+      "proposal_upstream_distance": 0.15136638699485072,
+      "mu": 0.0,
+      "before": {
+        "worst_margin_drift": 4.723359594027707,
+        "parameter_distance": 0.40836931484461264,
+        "upstream_distance": 0.2043660864885815,
+        "natural_changes": 9
+      },
+      "trials": [
+        {
+          "fraction": 1.0,
+          "worst_margin_drift": 19.311351928355776,
+          "parameter_distance": 0.3845930097023019,
+          "upstream_distance": 0.15136638699485072,
+          "natural_changes": 2815
+        },
+        {
+          "fraction": 0.5,
+          "worst_margin_drift": 5.183534403519136,
+          "parameter_distance": 0.37726912780821886,
+          "upstream_distance": 0.13165103416674775,
+          "natural_changes": 2
+        },
+        {
+          "fraction": 0.25,
+          "worst_margin_drift": 3.793312591165736,
+          "parameter_distance": 0.3883260031196638,
+          "upstream_distance": 0.16061470884975998,
+          "natural_changes": 2
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "iteration": 6,
+      "active_inputs": 90,
+      "task_rows": 810,
+      "response_rank": 689,
+      "proposal_upstream_distance": 0.28561208605598687,
+      "mu": 0.0,
+      "before": {
+        "worst_margin_drift": 3.793312591165736,
+        "parameter_distance": 0.3883260031196638,
+        "upstream_distance": 0.16061470884975998,
+        "natural_changes": 2
+      },
+      "trials": [
+        {
+          "fraction": 1.0,
+          "worst_margin_drift": 32.16914678344285,
+          "parameter_distance": 0.4545044154914806,
+          "upstream_distance": 0.28561208605598687,
+          "natural_changes": 2257
+        },
+        {
+          "fraction": 0.5,
+          "worst_margin_drift": 14.942742878037368,
+          "parameter_distance": 0.40091665767976686,
+          "upstream_distance": 0.1890348285504959,
+          "natural_changes": 53
+        },
+        {
+          "fraction": 0.25,
+          "worst_margin_drift": 7.044833085815335,
+          "parameter_distance": 0.3889444029720249,
+          "upstream_distance": 0.16210412889024423,
+          "natural_changes": 4
+        },
+        {
+          "fraction": 0.125,
+          "worst_margin_drift": 4.460780813431668,
+          "parameter_distance": 0.38718916231461614,
+          "upstream_distance": 0.15784627779550015,
+          "natural_changes": 2
+        },
+        {
+          "fraction": 0.0625,
+          "worst_margin_drift": 3.8450732926835296,
+          "parameter_distance": 0.3873961457566369,
+          "upstream_distance": 0.15835331934347785,
+          "natural_changes": 2
+        },
+        {
+          "fraction": 0.03125,
+          "worst_margin_drift": 3.7475157336483362,
+          "parameter_distance": 0.38777094546351876,
+          "upstream_distance": 0.15926803240346527,
+          "natural_changes": 2
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "iteration": 7,
+      "active_inputs": 92,
+      "task_rows": 828,
+      "response_rank": 693,
+      "proposal_upstream_distance": 0.1389792488042632,
+      "mu": 0.0,
+      "before": {
+        "worst_margin_drift": 3.7475157336483362,
+        "parameter_distance": 0.38777094546351876,
+        "upstream_distance": 0.15926803240346527,
+        "natural_changes": 2
+      },
+      "trials": [
+        {
+          "fraction": 1.0,
+          "worst_margin_drift": 27.349969953642496,
+          "parameter_distance": 0.3798884462552096,
+          "upstream_distance": 0.1389792488042632,
+          "natural_changes": 1880
+        },
+        {
+          "fraction": 0.5,
+          "worst_margin_drift": 9.278198483065232,
+          "parameter_distance": 0.372502828284413,
+          "upstream_distance": 0.11729602329101732,
+          "natural_changes": 4
+        },
+        {
+          "fraction": 0.25,
+          "worst_margin_drift": 4.502967644501386,
+          "parameter_distance": 0.3773814100678082,
+          "upstream_distance": 0.13197245418937703,
+          "natural_changes": 2
+        },
+        {
+          "fraction": 0.125,
+          "worst_margin_drift": 3.6238247424150662,
+          "parameter_distance": 0.38190982792829026,
+          "upstream_distance": 0.1444130072680999,
+          "natural_changes": 2
+        }
+      ],
+      "accepted": true
+    },
+    {
+      "iteration": 8,
+      "active_inputs": 96,
+      "task_rows": 864,
+      "response_rank": 720,
+      "proposal_upstream_distance": 0.2887311061296828,
+      "mu": 0.0,
+      "before": {
+        "worst_margin_drift": 3.6238247424150662,
+        "parameter_distance": 0.38190982792829026,
+        "upstream_distance": 0.1444130072680999,
+        "natural_changes": 2
+      },
+      "trials": [
+        {
+          "fraction": 1.0,
+          "worst_margin_drift": 27.27910386006525,
+          "parameter_distance": 0.4564708661534382,
+          "upstream_distance": 0.2887311061296828,
+          "natural_changes": 1882
+        },
+        {
+          "fraction": 0.5,
+          "worst_margin_drift": 11.88966610733502,
+          "parameter_distance": 0.40101966709013886,
+          "upstream_distance": 0.1892531991620903,
+          "natural_changes": 9
+        },
+        {
+          "fraction": 0.25,
+          "worst_margin_drift": 5.481132451088092,
+          "parameter_distance": 0.38634510782399806,
+          "upstream_distance": 0.15576438084342872,
+          "natural_changes": 2
+        },
+        {
+          "fraction": 0.125,
+          "worst_margin_drift": 3.8786219690329844,
+          "parameter_distance": 0.3828060590313297,
+          "upstream_distance": 0.1467667497463165,
+          "natural_changes": 2
+        },
+        {
+          "fraction": 0.0625,
+          "worst_margin_drift": 3.568876045840628,
+          "parameter_distance": 0.38202514325821857,
+          "upstream_distance": 0.14471769097612927,
+          "natural_changes": 2
+        }
+      ],
+      "accepted": true
+    }
+  ],
+  "analytic_derivative_maximum_error": 8.604637535825077e-08,
+  "original_expert_updates": 0,
+  "publication_correction_updates": 8,
+  "analytic_jacobian_calls": 8,
+  "reverse_autograd_calls": 0,
+  "downstream_linear_solve_calls": 1,
+  "new_full_model_forwards": 0,
+  "new_release_weights": 0,
+  "partner_used": false,
+  "test_used": false,
+  "confirmation_used": false,
+  "midpoint_or_proxy_used": false,
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "source_sha256": "8c2ce05a28dc8e7b714b669bac68a0e339e812bdf47747523f1429e7ecdf2d21",
+  "protocol_sha256": "0326920ea8091ba430c3b9e52ca646e550b22cac7158d2dcc2c333ab98a3a9f1",
+  "wall_seconds": 11.052721909247339,
+  "peak_gpu_bytes": 2130069504,
+  "limitation": "A single constructive source-only feasibility point; finite restoration failure does not prove nonexistence. Source B crossings are a route-specific design goal, not a universal or sufficient fusion condition. No unknown-peer coverage theorem and no true attack evaluation unless all preservation checks pass.",
+  "downstream_point_sha256": "dac2c4a0e87bf04109c33798fc7172d792af73b2a142b1198fbc5d32f9e02d87",
+  "point_sha256": "f3decdb3b694f013f63f420477ad3c319a980243c07ad59ed740688df6af541b",
+  "diagnostic_sha256": "8d258df321bfb66841104e63975ef75d3fdf780f22fe61d48d7ebbd70d61d248",
+  "predictions_sha256": "bae02ea874abd6bd77515c903943f9e84fc899c29c11c35f902d4f96f16f60dd"
+}

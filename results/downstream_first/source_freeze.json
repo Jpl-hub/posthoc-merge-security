@@ -1,0 +1,45 @@
+{
+  "construction_source_commit": "6809972b2e465b3a7d3f95452fbb01011d989320",
+  "construction_archive": "outputs/phase2_downstream_first_mnist/construction_source_6809972.zip",
+  "construction_archive_sha256": "c666396481dde5e6b4a3f311388350199717039f57ba76f8febb21b9b8f8f54f",
+  "protocol_sha256": "0326920ea8091ba430c3b9e52ca646e550b22cac7158d2dcc2c333ab98a3a9f1",
+  "entrypoint": "experiments/downstream_first_compensation.py",
+  "entrypoint_sha256": "8c2ce05a28dc8e7b714b669bac68a0e339e812bdf47747523f1429e7ecdf2d21",
+  "command": "python experiments/downstream_first_compensation.py --protocol configs/downstream_first_compensation.json",
+  "verification_command": "python experiments/verify_downstream_first.py --protocol configs/downstream_first_compensation.json",
+  "failure_audit_command": "python experiments/audit_downstream_restoration.py --protocol configs/downstream_first_compensation.json",
+  "point_published": false,
+  "new_candidates": 0,
+  "old_weight_hashes_verified": {
+    "outputs/phase2_boundary_game_mnist/candidate.pt": "e0ee5e5eeb170d550401724dfe0a8c6ff39273afdde79f46a207a4370b2398a4",
+    "outputs/phase2_ffn_game_mnist/candidate.pt": "1c5ffd5e9e16b44a104dcc29825dbd2cac1a8a2cd534b1d203f5b18815732f3b",
+    "outputs/phase2_temperature_margin_mnist/training_point.pt": "b6429fe8d7b8810dbdca03763b712b009c29f37de930d1a7e2abd58f8f29a383",
+    "outputs/phase2_finite_gelu_scaling/candidate.pt": "b997737618995bf3c89cf0ab2d0684a0228b2f1521c314d5958dc608b18fc63e"
+  },
+  "artifacts": {
+    "construction.log": "5917d88d4101cdcc89805d7671747011870886d77a8bb84e86f21a9826584157",
+    "construction_source_6809972.zip": "c666396481dde5e6b4a3f311388350199717039f57ba76f8febb21b9b8f8f54f",
+    "diagnostic.pt": "8d258df321bfb66841104e63975ef75d3fdf780f22fe61d48d7ebbd70d61d248",
+    "downstream_point.pt": "dac2c4a0e87bf04109c33798fc7172d792af73b2a142b1198fbc5d32f9e02d87",
+    "failure_analysis.json": "b33556339dc15ade46a50e9410783eb003bccec462fa6888ce6bcaecaa58d52d",
+    "failure_analysis.log": "dce4b129aa642da8b9d531efbef55a309064817c9995eec41732f2bac0f914e4",
+    "independent_validation.json": "30d126467bc567415f55e083a7f778e8b733654f62f1aae94a786b4c339b8c57",
+    "independent_verification.log": "79c3a905916e692d91322b95950b0d028a05d8644b6d7ee00882b07ecd24baba",
+    "initial_verifier.log": "99c1a79d0cb93bf6ff3d11f70549a0da733de24cd49a674e1d1a5fb6564956e1",
+    "initial_verifier.py": "b860b888d9b7d14bcf0087699d6c14462097f7e2a23780a205063a8c8606f37f",
+    "point.pt": "f3decdb3b694f013f63f420477ad3c319a980243c07ad59ed740688df6af541b",
+    "predictions.pt": "bae02ea874abd6bd77515c903943f9e84fc899c29c11c35f902d4f96f16f60dd",
+    "protocol.json": "97107a2927221e8f75da475420a0a1850ecf6cca48b7e69919008975011f2f73",
+    "results.json": "2a59fec23a4e2c7a58ae14e11fdef0603dbf5696fcb6a0705d0f0f111778832b",
+    "training_indices.json": "a49ebb1927a2987bb25af03a09b6656085df6124a391bd29c4b755a96ac57c2c",
+    "verified_failure_audit.py": "7b033952ece919a41f138f20b37ee910980a18802585a580db246e81996e2fef",
+    "verified_verifier.py": "4f03cf7463937b0c4536c0126787be02a2a97db5042787bb709de02d7f96c6ea"
+  },
+  "initial_verifier_setup_failure": {
+    "reason": "The reused conversion helper converted only the top-level dictionary. Nested parameters remained Torch tensors; NumPy LayerNorm stopped before any validation result.",
+    "source": "initial_verifier.py",
+    "log": "initial_verifier.log",
+    "fixed": "Recursive NumPy conversion only; construction weights, data, budgets and acceptance tolerances unchanged."
+  },
+  "timestamp_utc": "2026-10-15T07:22:41.411885+00:00"
+}
