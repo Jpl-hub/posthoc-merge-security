@@ -85,4 +85,57 @@ No novelty, robust protection or paper-ready result is established before actual
 
 ## Results
 
-Pending the one frozen run and independent verification.
+**The one fixed mechanism is independently falsified. No release, fresh confirmation, true TA or authorAGA was run. Old O/B remains99.71% independent,78.77% TA,77.85% AGA.**
+
+|Check|Verified result|
+|---|---:|
+|Edited tensor|Last MLP input bias only; A/B unchanged|
+|Normalized edited-tensor distance|.4999994999≤.5|
+|Raw Euclidean displacement / original bias norm|12.30661 /24.61324|
+|Source4096 natural plus2560 task probes|0/6656 changed; worst relative drift.1703500|
+|New multi-class normal/tangent probes|0/1280 changed; worst drift.1704066|
+|Complete public .5 interpolation|**0/512 changed**, all10 classes unchanged|
+|Source-reference all-pair maximum numerator damage|**.0745751**, crossing requires>1|
+|Constant-linear class-game dual upper|2.57e−16, independently recounted|
+|Continuous32D task balls certified|0/20; sufficient bound inconclusive|
+|Exact kernel error / FP32 materialization error|7.83e−14 /2.19e−8 per unit bias|
+
+The distance metric is the unchanged sum of squared **per-edited-tensor** relative displacements, here one bias tensor. Comparing its.5 directly with old O/B's.299 does not compare whole-model Euclidean distances or defense strengths. This prototype has no functionally empty linear effect in the source, but QuickGELU's even response is real; independent finite checks, not the norm, determine its relevance.
+
+Full source/actual-environment normalized scores, every class, signed crossing excess, projected task matrix, FP32 bias, class dual weights, all1280 neighborhood responses and sufficient bounds are retained. Independent NumPy used a row-Gram kernel projector and9x9 eigenproblem rather than the original output-matrix SVD. Maximum finite score error5.68e−14, score-Jacobian error1.69e−14, directional finite-difference error8.23e−10. Original Torch frame **orientation** was replayed as input data, while its orthogonality,9-dimensional functional normal space,23-dimensional tangent space and finite responses were independently checked; no claim of an independent orientation algorithm.
+
+Original/prototype32 full-model predictions match. Construction16.26s, independent verification15.02s, peak allocation2.169GB on3090; no gradient or parameter optimization updates, no optimization restart. A verifier interface error (NumPy suffix returns activations rather than a context dictionary) was fixed only in the verifier; original failure log/commit589c043 are retained. The primary direction and its scores were not rerun or altered. The unmeasured failed verification/reporting overhead is not included in those timed subtotals.
+
+Index-only audit excludes12,621 registered independent confirmation/holdout indices: zero source or reference overlap. Generic historical calibration-evaluation overlaps are also zero. The direction itself depends only on original/public weights; source training responses generate diagnostics/probes, never a replacement direction. New confirmation samples were not drawn. Phase1, frozen O/B and all previous Gap-Jet artifacts are hash-verified unchanged.
+
+### Why norm-maximal leakage fails here
+
+Let N be the exact class-ranking numerator. For each original teacher y and competitor j,
+
+$$\delta N_y-\delta N_j=(\ell_y-\ell_j)+(v_y-v_j)+\delta\sigma(b_y-b_j).$$
+
+The relative signed sum must exceed1 in the adverse direction to cross. At the frozen joint-worst competitor in each of512 reference inputs, mean contributions were linear−.01067, even+.01923, variance+.0000933. Linear and even signs oppose in88.67% of inputs. Maximum **joint** damage is only.07458; no component norm implies crossing. The decomposition identity error is5.10e−14. These are post-freeze source attributions and never used to choose a sign, coefficient or new point.
+
+At the actual source, the corresponding all-pair maximum damage is.09926 and original predictions remain intact. Output-kernel membership makes the source **linear** part vanish, but does not provide the directional nonlinear amplification needed for this protection mechanism.
+
+### Exact obstruction for a constant linear leakage
+
+The numeric class dual has a symbolic explanation. For class c, define positive a_cj as the class-average inverse teacher/runner-up numerator gap when runner-up is j. Let a_c=sum_j a_cj and T_cj=a_cj/a_c. Every row of T sums to1. The average linear-damage row is a common right linear map applied to
+
+$$a_cigl(M_c-\sum_jT_{cj}M_jigr).$$
+
+A finite row-stochastic T has a stationary distribution q≥0. Taking pi_c proportional to q_c/a_c gives
+
+$$\sum_c\pi_c a_c(M_c-\sum_jT_{cj}M_j)=0.$$
+
+Therefore the max-over-d/min-over-class value for this **constant linear component** is exactly0 (d=0 attains0). A norm-maximal d cannot make every class's average runner-up gap strictly worse. This does not forbid damage to a subset of classes, and does not apply to input-dependent even or variance terms. The actual no-crossing result for the sole nonlinear point is separate empirical evidence, not a theorem that every bias translation or post-hoc defense fails.
+
+### Why finite neighborhood success is not a certificate
+
+All20 contexts have9 independent class normals and23 task-coordinate tangents, and all1280 signed-frame points satisfy the finite task criterion. The uniform bound proves nonzero variance and feature denominator on every radius.01 ball; nevertheless its worst-case Hessian remainder cannot certify the.5 relative-gap budget on any of them. At these centers the hidden displacement bound is1.06048 and the maximal bound on feature-change/norm is.42424. The bound is sufficient and conservative; 0/20 certificates is **not**20 task violations. The radius was not reduced and no samples were added to manufacture a pass.
+
+## Next hypothesis, not a launched method
+
+A common constant shift has the class-cycle obstruction above. An input-conditioned linear escape would instead have E x with B_e E=0, for example E=P_N C V_A in task-SVD coordinates. Its shared-environment linear term is lambda B_f E x/2; class-conditioned x statistics prevent the previous stationary-distribution cancellation from applying automatically. The nonlinear source term remains [e(z+E x)-e(z)]B_e^T and may still make preservation impossible.
+
+Before proposing optimization, the required evidence is a **finite shared-matrix** class-adversary separation with adverse sign and adequate margin, together with an actual multi-class task-neighborhood error bound. A projected gradient or positive singular value would not suffice. This is a new unverified hypothesis, not permission to rescale the closed bias point, mechanically swap sites, assume unknown-partner coverage, or invoke the old O/B/A-B optimizers. No input-conditioned matrix, fresh confirmation or real fusion result is claimed here.
