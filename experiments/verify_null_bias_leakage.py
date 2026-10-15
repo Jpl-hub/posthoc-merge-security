@@ -79,8 +79,9 @@ def verify(cfg):
     zpre=ln(r,p['gamma2'],p['beta2'],p['eps2'])@p['A'].T+p['a'];h=ro+r+(phi(zpre)+offset)@B.T+p['b'];source_before=raw_scores(h,p);source_after=raw_scores(h+(phi(zpre+d)-phi(zpre))@B.T,p)
     errors=[np.abs(source_before-data['source']['before']).max(),np.abs(source_after-data['source']['after']).max()];stats=score_stats(source_before,source_after)
     assert stats['changed']==rep['source']['changed'] and abs(stats['worst']-rep['source']['worst_task_drift'])<1e-8
-    pe=env['proxy_parameters'];he,context=suffix(env['proxy']['H'].astype(np.float64),pe);he+=env['proxy']['rounding']
-    ze=ln(context['r'],pe['gamma2'],pe['beta2'],pe['eps2'])@pe['A'].T+pe['a'];de=cfg['coefficient']*d
+    pe=env['proxy_parameters'];he,z_env=suffix(env['proxy']['H'].astype(np.float64),pe)
+    r_env=he-z_env@pe['B'].T-pe['b'];he+=env['proxy']['rounding']
+    ze=ln(r_env,pe['gamma2'],pe['beta2'],pe['eps2'])@pe['A'].T+pe['a'];de=cfg['coefficient']*d
     linear=.5*de@pe['B'].T;even=phi(ze+de)-.5*(ze+de)-phi(ze)+.5*ze;dhe=linear+even@pe['B'].T
     envbefore=raw_scores(he,pe);envafter=raw_scores(he+dhe,pe);errors +=[np.abs(envbefore-data['environment']['before']).max(),np.abs(envafter-data['environment']['after']).max()]
     es=score_stats(envbefore,envafter);assert es['changed']==rep['environment']['changed'] and abs(es['worst']-rep['environment']['worst_task_drift'])<1e-8
