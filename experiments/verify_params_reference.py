@@ -45,7 +45,8 @@ def verify(output):
         perm=sim.argmax(1).cpu().numpy();assert len(np.unique(perm))==len(perm)
         for name,expected in [("c_fc.weight",arr(b.mlp.c_fc.weight)[perm]),("c_fc.bias",arr(b.mlp.c_fc.bias)[perm]),("c_proj.weight",arr(b.mlp.c_proj.weight)[:,perm])]:
             np.testing.assert_array_equal(arr(p.mlp.state_dict()[name]),expected)
-        alpha=arr(.05+(20.-.05)*torch.rand(768,generator=generator));inverse=np.float32(1.)/alpha
+        low=cfg["effective_defaults"]["scale_min"];high=cfg["effective_defaults"]["scale_max"]
+        alpha=arr(low+(high-low)*torch.rand(768,generator=generator));inverse=np.float32(1.)/alpha
         w=arr(b.attn.in_proj_weight);bias=arr(b.attn.in_proj_bias)
         expected=np.concatenate([w[:768]*alpha[:,None],w[768:1536]*inverse[:,None],w[1536:]*alpha[:,None]])
         expected_bias=np.concatenate([bias[:768]*alpha,bias[768:1536]*inverse,bias[1536:]*alpha])
@@ -62,7 +63,9 @@ def verify(output):
     matrix_distance=sum(matrix_squares)**.5;mlp_lower=sum(mlp_squares)**.5
     assert abs(matrix_distance-freeze["parameter_distance_matrices"])<1e-9
     assert abs(mlp_lower-freeze["MLP_matrices_distance_lower_bound"])<1e-9
-    assert mlp_lower>.5
+    if cfg.get("reference_variant")=="scaling_only":
+        assert mlp_lower==0 and freeze["parameter_distance_all_changed_tensors"]<=.5
+    else:assert mlp_lower>.5
     # Frozen O/B source-only control. No old confirmation values or peer output
     # is used to construct or select any defense in this comparison.
     ob_path=Path("outputs/boundary_mnist/artifacts/release.pt")
