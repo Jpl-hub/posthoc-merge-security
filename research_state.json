@@ -1,17 +1,17 @@
 {
-  "status": "phase2_temperature_true_eval_verified_no_improvement",
-  "updated_utc": "2026-10-15T05:23:27.095286+00:00",
+  "status": "phase2_finite_gelu_scaling_true_eval_verified_no_improvement",
+  "updated_utc": "2026-10-15T05:51:05.136368+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "finite_temperature_distillation_real_transfer_verified_closed",
+  "stage": "finite_QuickGELU_scaling_true_transfer_verified_closed",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "One source-only fixed Q/K-temperature plus finite B-distillation release passed source, independent confirmation and full-model replays, but trueTA MNIST99.36 and authorAGA99.32 show no defense. Preserve this negative point and the better O/B99.71/78.77/77.85. No new best candidate.",
-  "mechanism": "notes/phase2_temperature_compensation.md",
-  "next_action": "Temperature branch is closed after trueTA/authorAGA, not proxy filtering. Do not increase gain, ranks, budgets or steps. Further research needs a justified finite task-preserving transformation whose compensation mismatch crosses multiclass margins, rather than score shrinkage or attention entropy. No credible next frozen candidate currently; unknown-partner coverage is unproved. Keep old automatic loops paused.",
+  "new_candidate": "One finite QuickGELU paired scaling mask passed all task checks, fresh confirmation and full trueTA/authorAGA. MNIST independent99.69,TA99.36,AGA99.30: no meaningful improvement. Point and failure evidence preserved; oldO/B99.71/78.77/77.85 remains best.",
+  "mechanism": "notes/phase2_gelu_scaling.md",
+  "next_action": "Close this fixed scaling family without gain/mask/budget/seed sweeps or cross-task extension. Next justified research must connect finite task-preserving compensation to sign-controlled multiclass ranking under explicit representation/readout mismatch bounds; a large parameter distance or a surviving gauge is insufficient. No credible next frozen candidate or running experiment currently. Old loops remain paused.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1132,9 +1132,9 @@
   "github_sync": {
     "status": "final_snapshot_awaits_receipt",
     "transport": "GitHub plugin",
-    "last_verified_remote_commit": "fe33467b04031c9bcb5b767a5388525251537fe7",
-    "last_verified_local_commit": "fadef6c7343d1db674320930d3121921caaa3594",
-    "last_verified_canonical_tree": "cb84d461f81c90d6682814bacf2557cc828c2dee",
+    "last_verified_remote_commit": "f837d882abf603465d289de9b6b11a979fd0bf9d",
+    "last_verified_local_commit": "a0adae9aabf79f82ef62de46ba87129674c757d6",
+    "last_verified_canonical_tree": "ba3eed0f24b308377308c9bb573c27817db5d971",
     "verification_receipt": "outputs/latest_github_sync_receipt.json",
     "durability": "Last verified prior revision above; exact final remote/local pair and whole-tree readback recorded in ignored receipt after publication, avoiding commit self-reference."
   },
@@ -1289,19 +1289,17 @@
     "scope": "One analytic scalar at the unchanged joint budget, no channel/amplitude sweep. Exact structure-based preservation, not a new task-subspace discovery or recovery defense."
   },
   "latest_verified_facts": [
-    "One fixed same-sign Q/K gain1.25 plus source-only finite B distillation constructed and evaluated under realTA/authorAGA, independent of proxy prediction gates.",
-    "Source9,728-input max task drift0.453799 at formal distance0.499999999938; all4,608 natural predictions preserved. Fresh512 confirmation max drift0.398982, original/protected510 correct, exact full-model replays.",
-    "Pinned authorAGA removes Q/K gain: source recovered protected/unprotected difference6.99e-8; B compensation remains with unchanged MLP permutation. This alone is not sufficient for class collapse.",
-    "MNIST real independent99.69->99.68,TA99.37->99.36,authorAGA99.32->99.32. AGA4 changes,lost2,gained2,pairedp1. No improvement.",
-    "SVHN peer standalone97.46,TA92.50->92.61,AGA91.77->91.74. Target and peer, raw per-class predictions and matched counts independently verified.",
-    "All17 official prediction groups and272 full-model replays verified. No post-test parameter changes or cross-protected-task extension.",
-    "Source B-only radial scale median0.7745,transverse residual relative median0.0483,zero finite margin crossings; attention entropy change is not a classification effect.",
-    "Previously frozen cascade0-proxy changes does not prove realTA/AGA failure. Proxy/source-midpoint class collapse is not a universal necessary condition.",
-    "Best O/B independent99.71,TA78.77,AGA77.85 and A/B artifacts rehashed unchanged; Phase1 remains frozen."
+    "One finite positive neuron-scaling mask constructed with a target-only class-simplex adversary and separate-tensor distance0.5; no future-peer/test or proxy construction.",
+    "Source all9728 inputs satisfy margin drift0.117417, all4608 natural predictions unchanged. Independent NumPy reconstruction passes.",
+    "Fresh512 target-train images all correctly classified before/after, all3072 natural/probe max drift0.011967; independent NumPy and full FP32 original/release replay pass.",
+    "Real MNIST independent99.69->99.69,TA99.37->99.36,AGA99.32->99.30. AGA changes6,lost4,gained2,pairedp0.6875; no material defense.",
+    "Unchanged authorAGA preserves all three transformed A/a/B tensors exactly under the same MLP permutation. Retained scales5.66-9.67 do not imply classification failure.",
+    "SVHN standalone25371/26032;TA24079->24191,AGA23890->24004. Companion improves slightly, not a defense result.",
+    "All17 official groups, per-class/paired counts, explicitTA and272 full-model replays verified. Old O/B and A/B and Phase1 preserved. No new cleanup attack or cross-protected-task run."
   ],
   "latest_unverified_hypotheses": [
-    "A different task-preserving finite transform might create sufficiently large non-order-preserving compensation under justified non-source environments. No new such candidate is established.",
-    "Unknown-peer representation/readout coverage and cross-protected-task generality remain unproved; no universal impossibility inferred."
+    "A finite task-preserving cross-module transform might create sign-controlled multiclass damage beyond radial/gauge changes, but no next valid construction is currently established.",
+    "Unknown-peer input/readout mismatch bounds and cross-task robustness remain unproved. This point does not establish a universal impossibility."
   ],
   "phase2_attention_cascade": {
     "status": "all_finite_constructions_verified_closed_no_multiclass_effect",
@@ -1444,5 +1442,87 @@
     "public_base_proxy_failure_is_universal_necessary_condition": false,
     "reason": "Frozen O/B point retains source midpoint predictions yet disrupts realTA/AGA. Prior negative proxy results establish only lack of proxy signal, not impossibility under true partners.",
     "old_finite_methods_not_restarted": true
+  },
+  "phase2_finite_gelu_scaling": {
+    "status": "independently_verified_true_transfer_negative_closed",
+    "protocol": "configs/finite_gelu_scaling.json",
+    "mechanism": "notes/phase2_gelu_scaling.md",
+    "parameter_budget": 0.5,
+    "task_budget": 0.5,
+    "new_release_weights": 1,
+    "true_TA_AGA_run": true,
+    "unknown_peer_coverage_proved": false,
+    "scale_canonicalization_risk": true,
+    "point_sha256": "769686b7bb8da4bdebc41102ee920809aaa1517025643cc1644a4af343de7f66",
+    "parameter_distance": 0.49999999999999994,
+    "task_worst_margin_drift": 0.11741731510609,
+    "natural_changes": 0,
+    "all_task_inputs": 9728,
+    "natural_n": 4608,
+    "source_midpoint_changes": 1,
+    "source_midpoint_not_a_gate": true,
+    "source_commit": "abf34fc8a295fac123cc3cb026cfcc8f4eecacaa",
+    "confirmation_validation": {
+      "status": "passed",
+      "confirmation_passed": true,
+      "target": "MNIST",
+      "natural_n": 512,
+      "all_task_inputs": 3072,
+      "parameter_distance": 0.49999999999999994,
+      "worst_margin_drift": 0.011966807114847567,
+      "numpy_worst_margin_drift": 0.011966807114847723,
+      "natural_changes": 0,
+      "original_correct": 512,
+      "released_correct": 512,
+      "full_model_replay": {
+        "original": {
+          "n": 512,
+          "correct": 512,
+          "all_predictions_match": true
+        },
+        "released": {
+          "n": 512,
+          "correct": 512,
+          "all_predictions_match": true
+        }
+      },
+      "new_model_forwards": 1536,
+      "confirmation_sha256": "6f1d94183d4b3e2f28fd778f09be08dd6edbc494aef497c4a1beb6f25c6881a3",
+      "point_sha256": "769686b7bb8da4bdebc41102ee920809aaa1517025643cc1644a4af343de7f66",
+      "source_sha256": "fadb4713357a7a1e6aa84538ea20d69841e9e4bffad1e9308d7ffc7aee1921fb",
+      "wall_seconds": 17.678992143832147,
+      "partner_used": false,
+      "test_used": false,
+      "selected_after_confirmation": false,
+      "original_expert_updates": 0,
+      "candidate_sha256": "b997737618995bf3c89cf0ab2d0684a0228b2f1521c314d5958dc608b18fc63e"
+    },
+    "candidate_sha256": "b997737618995bf3c89cf0ab2d0684a0228b2f1521c314d5958dc608b18fc63e",
+    "true_evaluation_protocol": "configs/gelu_scaling_real_eval.json",
+    "new_best": false,
+    "results": "results/gelu_scaling/results.json",
+    "true_results": "results/gelu_scaling_real_eval/summary.json",
+    "true_validation": "results/gelu_scaling_real_eval/independent_validation.json",
+    "source_freeze": "results/gelu_scaling/source_freeze.json",
+    "true_MNIST": {
+      "independent_original_correct": 9969,
+      "independent_protected_correct": 9969,
+      "n": 10000,
+      "TA_original_correct": 9937,
+      "TA_protected_correct": 9936,
+      "AGA_original_correct": 9932,
+      "AGA_protected_correct": 9930,
+      "AGA_changed": 6,
+      "AGA_lost": 4,
+      "AGA_gained": 2,
+      "AGA_paired_p": 0.6875
+    },
+    "AGA_scaling_survives_exactly": true,
+    "AGA_MLP_permutations_equal": true,
+    "FP32_export_distance": 0.49999999687376684,
+    "all17_rows_and272_replays_verified": true,
+    "public_cleaning_run": false,
+    "cross_protected_task_run": false,
+    "post_test_parameter_selection": false
   }
 }

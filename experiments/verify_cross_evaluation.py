@@ -19,7 +19,8 @@ from verify_probe_candidate import explicit_merge
 @torch.no_grad()
 def verify(output):
     output=Path(output);cfg=json.loads((output/"protocol.json").read_text());meta=json.loads((output/"execution.json").read_text());case=json.loads((output/"case.json").read_text())
-    assert meta["completed"] and meta["fusion_run"] and meta["optimizer_steps"]==64 and meta["evaluation_optimizer_steps"]==0
+    construction_steps=cfg.get("construction_optimizer_steps",64)
+    assert meta["completed"] and meta["fusion_run"] and meta["optimizer_steps"]==construction_steps and meta["evaluation_optimizer_steps"]==0
     for file,key in [("release.pt","release_sha256"),("calibration.pt","calibration_sha256"),("predictions.pt","predictions_sha256"),("released_AGA_edits.pt","AGA_edits_sha256")]:
         assert digest(output/"artifacts"/file)==meta[key]
     assert digest("experiments/covariance_noise.py")==meta["runner_sha256"]
@@ -88,7 +89,7 @@ def verify(output):
             "original_checkpoint_sha256":meta["checkpoint_sha256"],"official_count_rows":len(rows),"per_class_and_paired_counts":"passed",
             "explicit_TA_formula":True,"author_AGA_source_pin_verified":True,"fresh_prediction_instances":sum(c["replayed_predictions"] for c in checks),"checks":checks,
             "author_AGA_text_sha256":author_text_sha,"author_AGA_raw_sha256":digest(author),"author_pin_encoding":"read_text UTF-8 with universal newline normalization; same as unchanged author loader",
-            "construction_optimizer_steps":64,"evaluation_optimizer_steps":0,"new_candidates":0,"first_phase_changed":False}
+            "construction_optimizer_steps":construction_steps,"evaluation_optimizer_steps":0,"new_candidates":0,"first_phase_changed":False}
     save_json(output/"independent_validation.json",result);print(json.dumps(result),flush=True)
 
 
