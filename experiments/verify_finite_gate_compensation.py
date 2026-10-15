@@ -42,7 +42,7 @@ def verify(cfg):
     for key,value in extended_parameters(expert,head).items():
         if torch.is_tensor(value):np.testing.assert_array_equal(value.numpy(),p[key])
     # Reuse only the nonunique original SVD coordinate orientation, never responses.
-    sp,_=readout({k:torch.from_numpy(v) if isinstance(v,np.ndarray) else v for k,v in p.items()});Q=sp['Q'].numpy();contrast=p['head']-p['head'].mean(0);M=p['gamma'][:,None]*(p['projection']@contrast.T);M-=M.mean(0);bias=p['beta']@p['projection']@contrast.T
+    sp,_=readout({k:torch.from_numpy(v).cuda() if isinstance(v,np.ndarray) else v for k,v in p.items()});Q=sp['Q'].cpu().numpy();contrast=p['head']-p['head'].mean(0);M=p['gamma'][:,None]*(p['projection']@contrast.T);M-=M.mean(0);bias=p['beta']@p['projection']@contrast.T
     qnp,sm,_=np.linalg.svd(M,full_matrices=False);qnp=qnp[:,:sum(sm>sm[0]*1e-10)];np.testing.assert_allclose(Q@Q.T,qnp@qnp.T,atol=1e-10)
     small=Q.T@M;v=np.linalg.solve(small@small.T,small@bias);w=v@Q.T;qa=1-np.mean((w-w.mean())**2);assert qa>0
     # Recover original source ordering and all natural/task/normal/tangent inputs.
@@ -120,7 +120,7 @@ def verify(cfg):
         maximum_numpy_score_error=float(max(errors)),trial_points_independently_reconstructed=len(d['trace']),all_trial_compensators_verified=True,last_trust_proposals=switching,
         frozen_critic_implicit_gradient_fd_errors=gradient_errors,distance_implicit_gradient_fd_errors=distance_gradient_errors,
         source_natural_original_correct=int((teacher[:len(ids)].argmax(1)==official_labels(cfg['target'],True)[ids]).sum()),source_natural_protected_correct=int((sa[:len(ids)].argmax(1)==official_labels(cfg['target'],True)[ids]).sum()),
-        source_completion_basis='Original nonunique Torch SVD coordinate orientation only, column projector independently verified; all completion, solve and finite responses are independent NumPy.',
+        source_completion_basis='Original nonunique CUDA/Torch SVD coordinate orientation only, column projector independently verified; all completion, solve and finite responses are independent NumPy. First verifier CPU orientation had different column signs; only basis-coordinate replay fixed, primary unchanged.',
         diagnostic_sha256=rep['diagnostic_sha256'],geometry_sha256=rep['geometry_sha256'],source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
         peer_loaded=False,test_loaded=False,confirmation_loaded=False,original_expert_updated=False,new_parameter_updates=0,new_release_weights=0,
         scope='Only one frozen gate chart and finite trust sequence verified. Failure is not a proof that full-budget finite gate compensation is impossible. Three actual shared prefix nodes do not prove unknown-peer coverage.')
