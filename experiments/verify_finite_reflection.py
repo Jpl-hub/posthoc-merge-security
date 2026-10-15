@@ -42,8 +42,11 @@ def verify(cfg):
         x.append(ln(c['r'][chosen],p['gamma2'],p['beta2'],p['eps2']));hh.append(c['h'][chosen]);ids.extend(np.asarray(indices)[chosen].tolist())
     x=np.concatenate(x);h=np.concatenate(hh);natural_n=len(x);pre=x@p['A'].T+p['a'];base=h-sigmoid_gelu(pre)@p['B'].T
     ra=np.sqrt(np.mean((x@va.T)**2,0));rb=np.sqrt(np.mean((sigmoid_gelu(pre)@vb.T)**2,0));sign=np.array([-1.,1.])
-    sa=(cfg['finite_step']*sign[:,None,None]*ra[None,:,None]*va[None]).reshape(2*len(va),-1)
-    sb=(cfg['finite_step']*sign[:,None,None]*rb[None,:,None]*vb[None]).reshape(2*len(vb),-1)
+    # Producer multiplies its float32 sign tensor by the Python scalar before
+    # promotion to double RMS/basis values. Reconstruct that frozen operation.
+    step=float(np.float32(cfg['finite_step']))
+    sa=(step*sign[:,None,None]*ra[None,:,None]*va[None]).reshape(2*len(va),-1)
+    sb=(step*sign[:,None,None]*rb[None,:,None]*vb[None]).reshape(2*len(vb),-1)
     xx=np.concatenate([x,(x[core,None]+sa[None]).reshape(-1,x.shape[1]),np.repeat(x[core],len(sa),axis=0)])
     bb=np.concatenate([base,np.repeat(base[core],len(sa),axis=0),np.repeat(base[core],len(sb),axis=0)+np.tile(sb,(len(core),1))@p['B'].T])
     mask=point['mask'].numpy();assert np.array_equal(mask,np.round(mask)) and mask.min()>=0 and mask.max()<=1
@@ -80,6 +83,7 @@ def verify(cfg):
     result=dict(status='passed_training_candidate' if meta['finite_multiclass_gate_passed'] else 'passed_failure_verification',parameter_distance=distance,
                 all_task_inputs=len(xx),task_worst_margin_drift=drift,native_changed=int(changed.sum()),source_midpoint_changed=int(mid_changed.sum()),
                 fractional_primal_dual_bound_maximum_error=bound_error,point_sha256=meta['point_sha256'],source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
+                synthetic_probe_step_exact_float32_value=step,
                 new_release_weights=0,test_used=False,partner_used=False,scope='Independent direct published A reconstruction and full nonlinear natural/SVD responses; fractional upper bounds checked by LP dual certificates. No task-general, trueTA, AGA or recovery claim.')
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
