@@ -102,7 +102,7 @@ def verify(cfg):
         y=env['data']['teacher'].argmax(1);ch=ss.argmax(1)!=y
         assert int(ch.sum())==expected['changed']
         for c,row in enumerate(expected['per_class']):assert int((ch&(y==c)).sum())==row['changed']
-        counts.append(dict(name=env['name'],changed=int(ch.sum()),classes_changed=sum(np.any(ch&(y==c)) for c in range(ss.shape[1]))))
+        counts.append(dict(name=env['name'],changed=int(ch.sum()),classes_changed=int(sum(np.any(ch&(y==c)) for c in range(ss.shape[1])))))
     signal=min(x['changed'] for x in counts)>=cfg['minimum_changed'] and min(x['classes_changed'] for x in counts)>=cfg['minimum_changed_classes'] and obj>report['initial']['objective']
     assert bool(signal)==report['confirmation_eligible'];assert np.linalg.norm(current)<=.5
     result=dict(status='passed_task_calibration' if signal else 'passed_closed_protocol',source_inputs=len(teacher),source_worst_task=float(np.abs(residual(teacher,final)).max()),
