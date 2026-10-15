@@ -1,0 +1,161 @@
+{
+  "status": "passed_frozen_coordinate_source_ablation",
+  "records": [
+    {
+      "chart": "decision_normal_gap_jet",
+      "parameter_distance": 0.16351489736070451,
+      "source": {
+        "n": 6816,
+        "changed": 0,
+        "per_class": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive_score_scales": 6816,
+        "median_score_scale": 0.9730126162211368,
+        "non_scaling_score_residual_rms": 0.2668980498042409,
+        "minimum_teacher_gap_ratio": 0.7684249143739496,
+        "decomposition_identity_error": 3.219646771412954e-15,
+        "worst_task_drift": 0.2315750856260505
+      },
+      "environments": [
+        {
+          "name": "zero",
+          "n": 512,
+          "changed": 3,
+          "per_class": [
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "positive_score_scales": 512,
+          "median_score_scale": 0.8535347311695083,
+          "non_scaling_score_residual_rms": 0.8667269112883343,
+          "minimum_teacher_gap_ratio": -0.953495028316011,
+          "decomposition_identity_error": 1.3322676295501878e-15
+        },
+        {
+          "name": "learned_shared",
+          "n": 512,
+          "changed": 3,
+          "per_class": [
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "positive_score_scales": 512,
+          "median_score_scale": 0.8344632360791826,
+          "non_scaling_score_residual_rms": 0.7742356515317691,
+          "minimum_teacher_gap_ratio": -1.0045757862169742,
+          "decomposition_identity_error": 1.3322676295501878e-15
+        }
+      ]
+    },
+    {
+      "chart": "full_hidden_at_same_C_L",
+      "parameter_distance": 0.184536696255205,
+      "source": {
+        "n": 6816,
+        "changed": 0,
+        "per_class": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive_score_scales": 6816,
+        "median_score_scale": 0.9996612749066516,
+        "non_scaling_score_residual_rms": 0.2119584487041441,
+        "minimum_teacher_gap_ratio": 0.7428864122347248,
+        "decomposition_identity_error": 3.497202527569243e-15,
+        "worst_task_drift": 0.2571135877652751
+      },
+      "environments": [
+        {
+          "name": "zero",
+          "n": 512,
+          "changed": 2,
+          "per_class": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "positive_score_scales": 512,
+          "median_score_scale": 0.9151458135349793,
+          "non_scaling_score_residual_rms": 0.7688683927752153,
+          "minimum_teacher_gap_ratio": -0.6906393925570383,
+          "decomposition_identity_error": 1.3322676295501878e-15
+        },
+        {
+          "name": "learned_shared",
+          "n": 512,
+          "changed": 2,
+          "per_class": [
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "positive_score_scales": 512,
+          "median_score_scale": 0.9224401805929907,
+          "non_scaling_score_residual_rms": 0.7390487971378369,
+          "minimum_teacher_gap_ratio": -0.8392477819642536,
+          "decomposition_identity_error": 1.3322676295501878e-15
+        }
+      ]
+    }
+  ],
+  "training_point_sha256": "00181033d785bb7f2f53a97dca2c7ed6e3bdb6dfd07543a893633fb4212192eb",
+  "diagnostic_sha256": "bf3feb8ab9ce2339989d727b9a8021e8142653136b809ec37e87e931c0ed08ef",
+  "source_sha256": "81a623b866137a3dc3be703ccca7627f6a6165e534a31f2bf0714f14ece36077",
+  "wall_seconds": 9.646304334979504,
+  "same_optimization_coordinates": true,
+  "new_parameter_updates": 0,
+  "new_full_model_forwards": 0,
+  "release_selected": false,
+  "confirmation_responses_loaded": false,
+  "test_loaded": false,
+  "peer_loaded": false,
+  "limitation": "Post-freeze source-only functional comparison; alternate chart is not a new candidate. Same C/L does not imply equal matrix distance; no causal claim about all possible optimizers or unknown partners."
+}
