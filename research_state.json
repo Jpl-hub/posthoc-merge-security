@@ -1,6 +1,6 @@
 {
-  "status": "phase2_new_finite_methods_verified_no_new_release",
-  "updated_utc": "2026-10-15T04:44:04.381203+00:00",
+  "status": "phase2_temperature_compensation_protocol_frozen",
+  "updated_utc": "2026-10-15T05:00:56.288690+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
@@ -9,9 +9,9 @@
   "stage": "two_structured_finite_method_families_closed_after_verification",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "No new release. Attention-mediated finite compensation satisfies the source gate at the last verified point but changes0/512 anchor predictions. Finite task-subspace neuron reflection violates source gate0.9267>0.5 and changes0/4608 source-midpoint predictions. Existing best O/B true results unchanged.",
+  "new_candidate": "One fixed same-sign Q/K temperature change plus finite source-only feature-subspace B distillation. No new validated release yet.",
   "mechanism": "notes/phase2_attention_cascade.md",
-  "next_action": "Both new finite method families are closed under their frozen protocols. No credible next release candidate has passed necessary conditions. Further work requires an actual finite task-feasible path with multiclass negative margins, not larger budgets, more iterations on this ray, or arbitrary proxy selection. Unknown-partner coverage remains conditional; do not resume automatic loops.",
+  "next_action": "Run one frozen temperature construction, independently verify source constraints. Source midpoint/public anchor flips are not universal gates; if task confirmation passes, evaluate trueTA/authorAGA once. No old solver/ray or parameter budget expansion.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1387,5 +1387,24 @@
     "new_release_weights": 0,
     "test_used": false,
     "partner_used": false
+  },
+  "phase2_temperature_compensation": {
+    "status": "protocol_frozen_before_execution",
+    "protocol": "configs/temperature_compensation.json",
+    "mechanism": "notes/phase2_temperature_compensation.md",
+    "parameter_budget": 0.5,
+    "task_budget": 0.5,
+    "gain_delta": 0.25,
+    "proxy_used": false,
+    "partner_used": false,
+    "test_used": false,
+    "new_release_weights": 0,
+    "true_TA_AGA_run": false
+  },
+  "screening_correction": {
+    "source_midpoint_failure_is_universal_necessary_condition": false,
+    "public_base_proxy_failure_is_universal_necessary_condition": false,
+    "reason": "Frozen O/B point retains source midpoint predictions yet disrupts realTA/AGA. Prior negative proxy results establish only lack of proxy signal, not impossibility under true partners.",
+    "old_finite_methods_not_restarted": true
   }
 }
