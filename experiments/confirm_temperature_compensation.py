@@ -67,7 +67,11 @@ def confirm(cfg):
     assert digest(out/'training_point.pt')==report['training_point_sha256']==valid['point_sha256']
     point=torch.load(out/'training_point.pt',map_location='cpu');old=torch.load(out/'diagnostic.pt',map_location='cpu')
     anchor,expert,head,pins=checked_models(cfg['target']);assert pins==report['checkpoint_sha256'];p=on_device(parameters(expert,head))
-    training=dataset(cfg['target'],'data',expert.val_preprocess,True);split=unused(training,old['indices'],cfg)
+    training=dataset(cfg['target'],'data',expert.val_preprocess,True)
+    split_file=out/'confirmation_split.json'
+    # A setup failure must never silently draw another confirmation set.
+    split=json.loads(split_file.read_text()) if split_file.exists() else unused(training,old['indices'],cfg)
+    assert split['seed']==cfg['confirmation_seed'] and not set(split['indices'])&set(old['indices'])
     save_json(out/'confirmation_split.json',split)
     groups={k:[] for k in ['H','h']};block=expert.model.visual.transformer.resblocks[11]
     hooks=[block.ln_1.register_forward_pre_hook(lambda _m,args:groups['H'].append(args[0].transpose(0,1).detach().cpu())),
@@ -78,7 +82,7 @@ def confirm(cfg):
     finally:
         for hook in hooks:hook.remove()
         expert.cpu()
-    cache={k:torch.cat(v) for k,v in groups.items()};rounding=[]
+    cache={k:torch.cat(v) for k,v in groups.items()};cache['h']=cache['h'].double();rounding=[]
     for start0 in range(0,len(cache['h']),cfg['batch_size']):
         h=cache['H'][start0:start0+cfg['batch_size']].cuda().double();rounding.append((cache['h'][start0:start0+len(h)].cuda().double()-thermal(h,p,1.)[0]).cpu())
     cache['rounding']=torch.cat(rounding);cache,ids,n=risk_first(cache,split['indices'],cfg['contexts_per_class'],p)
