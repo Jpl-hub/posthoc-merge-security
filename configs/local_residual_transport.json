@@ -1,0 +1,34 @@
+{
+  "target": "MNIST",
+  "output": "outputs/phase2_local_residual_transport_mnist",
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "fit_n": 4096,
+  "scale_n": 512,
+  "construction_seed": 2026101601,
+  "probe_rank": 32,
+  "contexts_per_class": 2,
+  "finite_step": 0.01,
+  "ridge_relative": 1e-06,
+  "full_replay_n": 20,
+  "replay_tolerance": 0.0005,
+  "minimum_finite_changes": 16,
+  "minimum_changed_classes": 5,
+  "wall_limit_seconds": 600,
+  "source_only": true,
+  "new_direction_count": 1,
+  "reflection_coefficient": 2.0,
+  "extra_excluded_indices": [
+    41538,
+    27330
+  ],
+  "distance_tensors": [
+    "O",
+    "ob",
+    "A",
+    "a",
+    "B",
+    "b"
+  ],
+  "hypothesis": "One local residual readout-stabilizing reflection; fit missing skip action using existing Attention branch; no global network rotation or inserted skip layer. Finite nonlinear task preservation and actual same-source midpoint decisions are falsifiable, not unknown-peer guarantees. No second mode, angle, regularizer or rank search."
+}
