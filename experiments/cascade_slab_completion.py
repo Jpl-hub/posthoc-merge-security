@@ -51,8 +51,8 @@ def slab(p,trial,cfg,counters):
     return (trial if task_metrics(p,trial)['worst_margin_drift']<=cfg['task_budget'] else None),history
 
 
-def construct(cfg):
-    out=Path(cfg['completion_output']);out.mkdir(parents=True,exist_ok=False);start=time.monotonic();p=Cascade(cfg)
+def construct(cfg,problem_class=Cascade):
+    out=Path(cfg['completion_output']);out.mkdir(parents=True,exist_ok=False);start=time.monotonic();p=problem_class(cfg)
     previous=json.loads((Path(cfg['equality_completion_reference'])/'results.json').read_text())
     assert previous['status']=='closed_source_continuation_no_multiclass_fusion_effect'
     ray=(-torch.diag(p.basis['s'])/p.basis['s'].norm()).flatten();theta=p.zero.clone();amplitude=0.;history=[];counters=dict(jacobians=0,corrections=0)
