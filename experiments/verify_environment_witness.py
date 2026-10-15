@@ -12,7 +12,8 @@ from clip_benchmark import digest
 from subspace_probe import save_json
 from verify_cascade import suffix
 from verify_covariance_noise import official_labels
-from verify_levelset_audits import convert, raw_scores, residual
+from verify_downstream_first import convert
+from verify_levelset_audits import raw_scores, residual
 
 
 def gap(s, y, scale):
@@ -86,18 +87,35 @@ def verify(cfg):
         b, a = evaluate(eta, pp), evaluate(eta, modified)
         np.testing.assert_allclose(b, saved['final_baseline'], atol=1e-9, rtol=1e-9)
         np.testing.assert_allclose(a, saved['final_released'], atol=1e-9, rtol=1e-9)
-        restored = initial_changed & (gap(a, y, scale) >= cfg['restored_gap'])
+        margin = gap(a, y, scale)
+        restored = initial_changed & (margin >= cfg['restored_gap'])
+        # The optional 0.01 inner stopping target has ULP-level ties. Preserve
+        # its ORIGINAL Torch count; do not reinterpret a tie as an efficacy
+        # threshold pass. Actual positive-margin class restoration is separate.
+        near_target = initial_changed & (np.abs(margin-cfg['restored_gap']) <= 1e-9)
+        lower = int((initial_changed & (margin > cfg['restored_gap']+1e-9)).sum())
+        upper = int((initial_changed & (margin >= cfg['restored_gap']-1e-9)).sum())
+        prediction_restored = initial_changed & (a.argmax(1) == y)
         drift = float(np.abs(residual(baseline, b)).max())
         transverse = float(np.max(np.abs(np.sum(eta*unit, axis=(1,2)))/size))
         rho = np.linalg.norm(eta.reshape(len(h), -1), axis=1)/size
         assert drift <= cfg['baseline_budget']+1e-10 and transverse < 1e-10 and rho.max() <= 1+1e-10
-        assert int(initial_changed.sum()) == expected['initially_changed'] and int(restored.sum()) == expected['restored']
+        assert int(initial_changed.sum()) == expected['initially_changed']
+        assert lower <= expected['restored'] <= upper
         for cls, entry in enumerate(expected['per_class']):
             mask = y == cls
-            assert int(mask.sum()) == entry['n'] and int((restored & mask).sum()) == entry['restored']
-        records.append(dict(case=case['name'], initially_changed=int(initial_changed.sum()), restored=int(restored.sum()),
+            lo = int((initial_changed & mask & (margin > cfg['restored_gap']+1e-9)).sum())
+            hi = int((initial_changed & mask & (margin >= cfg['restored_gap']-1e-9)).sum())
+            assert int(mask.sum()) == entry['n'] and lo <= entry['restored'] <= hi
+        records.append(dict(case=case['name'], initially_changed=int(initial_changed.sum()),
+            original_torch_stopping_target_count=expected['restored'], numpy_strict_stopping_target_count=int(restored.sum()),
+            stopping_target_near_ties=int(near_target.sum()), stopping_target_nonambiguous_count_interval=[lower, upper],
+            prediction_restored=int(prediction_restored.sum()),
             still_changed=int((a.argmax(1) != y).sum()), baseline_worst_drift=drift,
-            maximum_transverse_error=transverse, relative_norms=rho[restored].tolist()))
+            restored_minimum_positive_margin=float(margin[prediction_restored].min()) if prediction_restored.any() else None,
+            maximum_transverse_error=transverse, relative_norms=rho[prediction_restored].tolist(),
+            per_class=[dict(label=c, n=int((y == c).sum()), initially_changed=int((initial_changed & (y == c)).sum()),
+                            prediction_restored=int((prediction_restored & (y == c)).sum())) for c in range(len(p['head']))]))
     result = dict(status='passed', records=records, all_finite_trials_verified=trials_verified,
         maximum_numpy_score_error=score_error, maximum_numpy_directional_fd_error=fd_error,
         diagnostic_sha256=report['diagnostic_sha256'], source_sha256=digest(__file__),
