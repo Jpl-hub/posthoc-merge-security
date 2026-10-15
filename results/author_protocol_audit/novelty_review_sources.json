@@ -87,6 +87,37 @@
       "reviewed": "Sections3-5.2; generate_task_masks, construct_tall_mask, find_optimal_mask, construct_consensus_mask. Source uses strict >; lambda selected on per-task validation; multi-task vectors required.",
       "reproduced": false,
       "new_attack_run": false
+    },
+    {
+      "method": "LiNeS",
+      "paper": "https://arxiv.org/html/2410.17146v1",
+      "venue": "https://openreview.net/pdf?id=J5sUOvlLbQ",
+      "repository": "wang-kee/LiNeS",
+      "commit": "43a7bdd564a16195b164abc2c64ec1856c59c211",
+      "source_git_blobs": {
+        "src/eval/eval.py": "65ad1268cf1f932f577b2587d1a5c635216d5f75",
+        "src/eval/eval_utils.py": "59e057cce09015874f81efc33a78d6206dd98713",
+        "src/models/task_vectors.py": "2a2360d5f8cf98c727fa0c34e037ff5f189bc528",
+        "src/eval/aggregation.py": "60a17decdf37db5beac10ba45a14ad8842598bc3"
+      },
+      "reviewed": "Sections3-4, AppendixA/B.2.1; fixed layerwise residual scaling and validation-only selection preceding test. Single-task tradeoff includes control tasks.",
+      "reproduced": false
+    },
+    {
+      "method": "Neural Structural Obfuscation / NeuronClique / NeuronSplit",
+      "paper": "https://www.usenix.org/system/files/usenixsecurity23-yan.pdf",
+      "venue": "https://www.usenix.org/conference/usenixsecurity23/presentation/yan",
+      "reviewed": "Section6.2 equations1-4, Section7.4 Algorithm1 and AppendixA. Identical inputs with cancelling outgoing weights, function-preserving splitting; added hidden units change architecture.",
+      "official_implementation": "not located in checked primary paper/venue or repository search",
+      "reproduced": false
+    },
+    {
+      "method": "Sensitivity as a Shield",
+      "primary_index": "https://openreview.net/pdf?id=Kd59Qu5hey",
+      "alternate_indexed_pdf": "https://openreview.net/pdf/56a38a37bf692c3c2aa4c0c82e4cd70ef4db0487.pdf",
+      "reviewed": "Only publicly indexed abstract/introduction snippets; irreversible training-free global/local sensitivity processing stated. Full PDF still browser verification. No full mechanism or author/venue verification.",
+      "full_text_reviewed": false,
+      "reproduced": false
     }
   ],
   "access_limits": [
@@ -97,5 +128,9 @@
   ],
   "analytic_checks": "results/author_protocol_audit/prior_conditions.json",
   "rank_condition_checks": "results/author_protocol_audit/anchor_rank_condition.json",
-  "anchor_spectrum_checks": "results/author_protocol_audit/anchor_spectrum.json"
+  "anchor_spectrum_checks": "results/author_protocol_audit/anchor_spectrum.json",
+  "preimplementation_screen": {
+    "paired_coalescence": "not approved: known cancellation primitive, unbounded coalescence task error, independent hidden SVD probes and unknown signed fused response unresolved",
+    "new_algorithm_approved": false
+  }
 }
