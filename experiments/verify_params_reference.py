@@ -133,5 +133,27 @@ def verify(output):
     print("PARAMS_INDEPENDENT_VALIDATION_PASSED",len(rows),replays,flush=True)
 
 
+def aligned_control(output):
+    """Recount frozen O/B's surviving matrix distance without images or peers."""
+    out=Path(output);freeze=json.loads((out/"release_freeze.json").read_text())
+    reference=json.loads((out/"evaluation_protocol.json").read_text())["AGA_references"]["MNIST"]
+    edits_meta=json.loads(Path("results/boundary_eval/AGA_edits.json").read_text())
+    path=Path("outputs/boundary_mnist/artifacts/released_AGA_edits.pt")
+    assert digest(path)==edits_meta["sha256"] and digest(reference["path"])==reference["sha256"]
+    a=torch.load(reference["path"],map_location="cpu");edits=torch.load(path,map_location="cpu")
+    norms={r["key"]:r["original_norm"] for r in freeze["edited_tensors"]}
+    rows=[]
+    for k,w in edits.items():
+        assert w.ndim==2 and k in norms
+        relative=float(np.linalg.norm(arr(w).astype(np.float64)-arr(a[k]).astype(np.float64))/norms[k])
+        rows.append(dict(key=k,relative_to_original_expert=relative))
+    save_json(out/"frozen_OB_aligned_distance.json",dict(status="passed",matrix_distance=sum(r["relative_to_original_expert"]**2 for r in rows)**.5,
+              records=rows,AGA_reference_sha256=reference["sha256"],OB_AGA_edits_sha256=digest(path),
+              denominator_source_sha256=digest(out/"release_freeze.json"),source_sha256=digest(__file__),
+              images_or_peers_loaded=False,new_publication_parameters=False))
+
+
 if __name__=="__main__":
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument("--output",required=True);args=p.parse_args();verify(Path(args.output))
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument("--output",required=True)
+    p.add_argument("--aligned-control-only",action="store_true");args=p.parse_args()
+    aligned_control(Path(args.output)) if args.aligned_control_only else verify(Path(args.output))
