@@ -149,15 +149,18 @@ def run(protocol):
             else:row['frozen_task_SVD_B_projection']=None
             choose=torch.arange(cfg['full_forward_check_n']);images=torch.stack([train[ids[i]][0] for i in choose]).cuda()
             model.cuda();head.cuda();actual=head(model(images)).cpu();model.cpu();head.cpu()
-            expected=scores(st['joint'][choose.cuda()],p).cpu();e=float((actual.double()-expected).abs().max());assert e<cfg['forward_atol'],(env,case['name'],e)
+            expected=scores(st['joint'][choose.cuda()],p).cpu();e=float((actual.double()-expected).abs().max())
+            row['full_model_control_passed']=e<cfg['forward_atol']
+            row['full_model_control_tolerance']=cfg['forward_atol']
+            row['full_model_control_prediction_changes']=int(actual.argmax(1).ne(expected.argmax(1)).sum())
             row['full_model_replay_n']=len(choose);row['full_model_score_max_abs']=e
             raw['cases'].setdefault(case['name'],{})[env]=dict(parameters=q0,states=cpu(st),numerator_before=n0.cpu(),
                 numerator={k:numerator(st[k],p).cpu() for k in ['upper','B_only','joint']},terms=cpu(terms),actual=actual)
             records[env][case['name']]=row
             print('FROZEN_SOURCE',env,case['name'],json.dumps(row),flush=True)
     torch.save(raw,out/'artifacts/diagnostic.pt')
-    report=dict(status='frozen_source_signed_condition_audit_completed',records=records,source_n=len(ids),
-                source_only=True,test_used=False,partner_loaded=False,confirmation_used=False,new_candidates=0,new_full_model_attack_calls=0,toy_author_column_solver_calls=10,
+    report=dict(status='frozen_module_intervention_audit_with_recorded_full_model_controls',records=records,source_n=len(ids),
+                source_only=True,test_used=False,partner_loaded=False,confirmation_used=False,full_model_control_failures=sum(not row['full_model_control_passed'] for group in records.values() for row in group.values()),new_candidates=0,new_full_model_attack_calls=0,toy_author_column_solver_calls=10,
                 gradients=0,source_sha256=cfg['source_sha256'],input_sha256=cfg['inputs'],original_checkpoint_sha256=hashes,
                 diagnostic_sha256=digest(out/'artifacts/diagnostic.pt'),toy_sha256=digest(out/'counterexample.json'),
                 wall_seconds=time.monotonic()-start,GPU=torch.cuda.get_device_name(),

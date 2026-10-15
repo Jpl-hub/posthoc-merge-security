@@ -98,13 +98,14 @@ def verify(output):
                 assert abs(r1-rr['frozen_task_SVD_B_parameter_energy_ratio'])<1e-8
                 assert abs(r2-rr['frozen_task_SVD_B_class_response_energy_ratio'])<1e-8
             actual=group['actual'].double().numpy();e=float(abs(s1[:len(actual)]-actual).max());full_error=max(full_error,e)
-            assert e<cfg['forward_atol']
-            records.append(dict(environment=env,method=name,all512_counts_and_scores=True,all3_branches=True))
+            control=e<cfg['forward_atol'];assert control==rr['full_model_control_passed']
+            assert abs(e-rr['full_model_score_max_abs'])<1e-7
+            records.append(dict(environment=env,method=name,all512_module_counts_and_scores=True,all3_branches=True,full_model_control_passed=control))
             print('INDEPENDENT',env,name,'joint changes',rr['joint']['changed'],flush=True)
-    result=dict(status='passed_exact_and_independent_finite_source_audit',symbolic_counterexample=toy,
+    result=dict(status='finite_module_audit_verified_with_preserved_control_failures',symbolic_counterexample=toy,
                 NumPy_finite_numerator_max_abs=max_error,NumPy_vs_full_model_score_max_abs=full_error,
                 records=records,full_model_controls=sum(r['full_model_replay_n'] for g in report['records'].values() for r in g.values()),
-                source_only=True,no_new_candidate=True,real_partner_checkpoint_loaded=False,test_used=False,confirmation_used=False,
+                full_model_control_failures=sum(not r['full_model_control_passed'] for r in records),source_only=True,no_new_candidate=True,real_partner_checkpoint_loaded=False,test_used=False,confirmation_used=False,
                 diagnostic_sha256=report['diagnostic_sha256'],results_sha256=digest(root/'results.json'),verifier_sha256=digest(__file__),
                 wall_seconds=time.monotonic()-start)
     save_json(root/'independent_validation.json',result);print(json.dumps(result),flush=True)
