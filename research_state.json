@@ -1,25 +1,15 @@
 {
-  "status": "phase2_decision_normal_gap_jet_source_construction_running",
-  "updated_utc": "2026-10-15T11:53:26.863477+00:00",
+  "status": "phase2_gap_jet_fresh_confirmation_passed_real_eval_pending",
+  "updated_utc": "2026-10-15T11:57:18.154125+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "unique_scalar_boundary_equation_independently_verified_source_only_run",
-  "research_jobs": [
-    {
-      "server": "3090",
-      "entrypoint": "experiments/gap_jet_publication.py",
-      "protocol": "configs/gap_jet_publication.json",
-      "output": "outputs/phase2_gap_jet_publication_mnist",
-      "source_commit": "482fdab",
-      "maximum_trials": 16,
-      "maximum_wall_seconds": 600
-    }
-  ],
+  "stage": "new512_confirmation_passed_one_true_eval_frozen",
+  "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "No new release yet. Unique scalar decision-boundary root and normalized gap slope independently verified; sole from-zero bounded construction running. O/B remains best.",
+  "new_candidate": "Gap-jet final point passed fresh512 with .425919 worst drift, no changed predictions. RealTA/authorAGA not yet run, no defense success claimed. O/B remains best.",
   "mechanism": "notes/phase2_robust_shared_publication.md",
   "next_action": "Finish frozen16-proposal decision-normal source construction; independently replay all proposals and solve scalar roots with Brent/SVD. Only if source feasible, freeze sole final point and draw genuinely new512 seed20261026. Do not use past confirmation responses. TA/authorAGA only after confirmation.",
   "deferred": [
@@ -1972,15 +1962,20 @@
     "point_frozen_before_peer_or_test": true
   },
   "phase2_gap_jet_publication": {
-    "status": "source_only_construction_running",
+    "status": "fresh_confirmation_passed",
     "protocol": "configs/gap_jet_publication.json",
     "mechanism": "results/gap_jet_mechanism/results.json",
     "source_commit": "482fdab",
-    "new_release_weights": 0,
-    "confirmation_run": false,
+    "new_release_weights": 1,
+    "confirmation_run": true,
     "true_TA_run": false,
     "author_AGA_run": false,
     "old_failed_point_used": false,
-    "exposed_confirmation_used": false
+    "exposed_confirmation_used": false,
+    "source_distance": 0.1635148973607045,
+    "source_worst": 0.23157508562604495,
+    "confirmation_passed": true,
+    "confirmation_worst": 0.42591948732974816,
+    "candidate_sha256": "7f748688e95843a27f0b86e67b3f3d50d4b191c1948cde8b4c2ed63e473b3bd9"
   }
 }
