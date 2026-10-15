@@ -1,0 +1,58 @@
+{
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "test_counts": {
+    "MNIST": 10000,
+    "DTD": 1880,
+    "SVHN": 26032
+  },
+  "coefficient": 0.5,
+  "maximum_calibration_group": 512,
+  "standalone_loss_gate_pp": 0.5,
+  "seed": 20261014,
+  "publication_point": "outputs/phase2_joint_exchange_mnist",
+  "parameter_budget": 0.5,
+  "confirmation_seed": 20261021,
+  "runner_sha256": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+  "source_commit": "7bf0dd6b803ab2dea4b842a20ae0f2a98816c02e",
+  "source_sha256": {
+    "experiments/evaluate_cross_release.py": "4b5770e46c9a4228e7c1d57c1e8abc39a440cee4467c2b09a46153a0ef5fbf33",
+    "experiments/verify_cross_evaluation.py": "511ab35218a3467b04219a15f60d3371d6db6811763e54cdc1ee3cfc7395569b",
+    "experiments/joint_compensation_trust.py": "a6b34e1285b57c05321bfd147134d584478df1611c6d0cf83319eb4a654e152e",
+    "experiments/verify_joint_trust.py": "62823cc7cf99c4e00b188dd98e46a6312c75f199bca094964e2a90d32fbe7203",
+    "experiments/confirm_joint_trust.py": "79594936c138b740dd6558fc7c7fdfd4bf2dabcc2e5365cdd2d61391a6ff44ad",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "configs/sources.json": "528346ab06c38cc4e34a8a4064d9721f3884a1c2738deef4ec0e94a7b2b88a3f"
+  },
+  "description": "One source-only pre-frozen JOINT nonlinear-trust-region point. Original budgets .5/.5; target-only fresh512 confirmation. Unchanged TA.5 and authorAGA; partner/test never used for construction. Candidate SHA is filled exactly once from the confirmed FP32 export, without optimization or selection.",
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN"
+    }
+  ],
+  "candidate_sha256": "4aee58fa0391b4d06df592a2a6192d33037fc4af7328edfadefc94a91f8731f8",
+  "construction_optimizer_steps": 22,
+  "publication_keys": {
+    "A": "model.visual.transformer.resblocks.11.mlp.c_fc.weight",
+    "B": "model.visual.transformer.resblocks.11.mlp.c_proj.weight"
+  }
+}

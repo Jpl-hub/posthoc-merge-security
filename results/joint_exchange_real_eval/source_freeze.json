@@ -1,0 +1,62 @@
+{
+  "source_plan_commit": "e94b2d2aef2a095ae40994e41f1a61d2d04d71b0",
+  "construction_source_commit": "7bf0dd6b803ab2dea4b842a20ae0f2a98816c02e",
+  "protocol_sha256": "335319c99ca545ed4b955613bb29999f8c1ccb9b8abe6d1bb246350ae8d07978",
+  "command": "python experiments/evaluate_cross_release.py --target MNIST --partner SVHN --protocol configs/joint_compensation_real_eval_frozen.json --output outputs/phase2_joint_exchange_eval_mnist_svhn",
+  "verification_command": "python experiments/verify_cross_evaluation.py --output outputs/phase2_joint_exchange_eval_mnist_svhn",
+  "release_frozen_before_peer_and_test": {
+    "release_sha256": "fdde7bca2acbbe48e05c05a0613f2534afa640e0304b3a0d54d7b9d9efd7929f",
+    "calibration_sha256": "f9079863b13da246ec6f0609048bf5bd718b2470d120299c545be8dae63da27a",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "source_sha256": {
+      "experiments/evaluate_cross_release.py": "4b5770e46c9a4228e7c1d57c1e8abc39a440cee4467c2b09a46153a0ef5fbf33",
+      "experiments/verify_cross_evaluation.py": "511ab35218a3467b04219a15f60d3371d6db6811763e54cdc1ee3cfc7395569b",
+      "experiments/joint_compensation_trust.py": "a6b34e1285b57c05321bfd147134d584478df1611c6d0cf83319eb4a654e152e",
+      "experiments/verify_joint_trust.py": "62823cc7cf99c4e00b188dd98e46a6312c75f199bca094964e2a90d32fbe7203",
+      "experiments/confirm_joint_trust.py": "79594936c138b740dd6558fc7c7fdfd4bf2dabcc2e5365cdd2d61391a6ff44ad",
+      "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+      "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+      "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "configs/sources.json": "528346ab06c38cc4e34a8a4064d9721f3884a1c2738deef4ec0e94a7b2b88a3f"
+    },
+    "runner_sha256": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "protocol_sha256": "a33d45ee8d827c509a6dab5bce6ce943334fa0e9c685567ac54346b0898b47d6",
+    "partner_loaded": false,
+    "test_loaded": false
+  },
+  "artifact_sha256": {
+    "protocol.json": "335319c99ca545ed4b955613bb29999f8c1ccb9b8abe6d1bb246350ae8d07978",
+    "training_indices.json": "86eb377bd9b18159dcd67411e33c2cd5408fef19bd1fb6425beb116c1e70b0e3",
+    "geometry.json": "8d66cdd74ef3a78a8c9074e5767ee66443db8786cc36ee6b698f5ba67c600987",
+    "case.json": "59d0902047242e8129cf4d4cdcc2d6ad912b1e0181eb42d3e27280751141d7b0",
+    "release_freeze.json": "4afd6f698f2b696af4b518410d2c64cccb4f733a627638b28768a1f2346c1b67",
+    "holdout_protocol.json": "eec86e8f110acd3440f7a61eb8528773d57255824aedd2b72300a8821b8d4e6a",
+    "results.json": "ebdc58a73bb12725d6638f7fd9c11a01aea5d839b45030337c4a94a2143b7550",
+    "AGA_edits.json": "f429302dc1e47201b9f37a5c0c99ff9cf1b734b00f0fc95394a201fcc572d137",
+    "execution.json": "6cbc2c0c9893a62484d22fe5b9ba67b2ae30451c25c56b3902214757bd52c94b",
+    "independent_validation.json": "699fafec05602ace04f3bc2a061a9aa0b1f1854eb6fede34dd25629f3e5ccc86",
+    "AGA_retention_validation.json": "bdb7ce47ae519e74046f9ea5106a3ee21771d8cccfbd5b9acd047e4393cebfbb",
+    "summary.json": "74f7e08a340bc038d5ae8a807ae3c5b7cc663b65a9f0fbc418281847841585d3",
+    "execution.log": "700a17d539c07d2b8aedc2bcf9db39ab9bf9220e46537dd4594e3b572710607b",
+    "independent_verification.log": "9a0089ceb082c2866a762be89f42da82f42747495a8f13ba7f9f35bf8bef22e5",
+    "retention_audit_source.py": "1f0a95d4b7b0d1b2229139cb104faefb472a4d187d850eb56016579017acca2c",
+    "retention_audit.log": "8c64a7df09998200fcc815c205c1ab0ad0f1a5cacfa8d27d049312fc9fd4ba50",
+    "artifacts/release.pt": "fdde7bca2acbbe48e05c05a0613f2534afa640e0304b3a0d54d7b9d9efd7929f",
+    "artifacts/calibration.pt": "f9079863b13da246ec6f0609048bf5bd718b2470d120299c545be8dae63da27a",
+    "artifacts/predictions.pt": "7ac31e5dbd1e05a86b8360642e15fe2b98fdb5e5b52af959a4ccd4b54961a97e",
+    "artifacts/released_AGA_edits.pt": "4d50ed34d47ae0546555b7332691c740f10194823dd74796ad3d1a0570c7a056"
+  },
+  "retention_audit_source_sha256": "1f0a95d4b7b0d1b2229139cb104faefb472a4d187d850eb56016579017acca2c",
+  "retention_audit_command": "python experiments/audit_joint_retention.py --output outputs/phase2_joint_exchange_eval_mnist_svhn",
+  "historic_frozen_point_hashes_verified": {
+    "outputs/phase2_boundary_game_mnist/candidate.pt": "e0ee5e5eeb170d550401724dfe0a8c6ff39273afdde79f46a207a4370b2398a4",
+    "outputs/phase2_ffn_game_mnist/candidate.pt": "1c5ffd5e9e16b44a104dcc29825dbd2cac1a8a2cd534b1d203f5b18815732f3b",
+    "outputs/phase2_temperature_margin_mnist/training_point.pt": "b6429fe8d7b8810dbdca03763b712b009c29f37de930d1a7e2abd58f8f29a383",
+    "outputs/phase2_finite_gelu_scaling/candidate.pt": "b997737618995bf3c89cf0ab2d0684a0228b2f1521c314d5958dc608b18fc63e"
+  }
+}
