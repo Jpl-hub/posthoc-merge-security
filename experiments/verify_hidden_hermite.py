@@ -65,6 +65,7 @@ def verify(cfg):
     records=[];maxscore=0.;maxcoef=0.;maxslope=0.
     for item in rep['records']:
         name=item['method'];actual=saved['records'][name];k=actual['K'];np.testing.assert_allclose(actual['C'],c,atol=1e-13,rtol=1e-13)
+        condition=None
         if name!='uncompensated':
             f=jet['z'] if name=='value_only' else np.r_[jet['z'],jet['dz']]
             target=(jet['teacher']-jet['h0'])/nb
@@ -75,6 +76,11 @@ def verify(cfg):
             expected=np.linalg.lstsq(f,target,rcond=None)[0].T;err=float(np.abs(expected-k).max());maxcoef=max(maxcoef,err)
             np.testing.assert_allclose(expected,k,atol=1e-8,rtol=1e-7)
             equality=float(np.abs(f@k.T-target).max());assert equality<cfg['linear_equality_tolerance']
+            take=cfg.get('canonical_path_rows')
+            if take is not None:
+                take=take+[len(roots)+i for i in take] if name=='value_and_derivative' else take
+                condition=float(np.linalg.cond(f[take]))
+            else:condition=float(np.linalg.cond(f))
         after,der=score_jet(jet['h0']+nb*jet['z']@k.T,jet['dh0']+nb*jet['dz']@k.T,p)
         _,td=score_jet(jet['teacher'],jet['dteacher'],p);value=after-teacher;value-=value.mean(1,keepdims=True);slope=der-td;slope-=slope.mean(1,keepdims=True)
         err=float(np.abs(value-actual['root_value']).max());derr=float(np.abs(slope-actual['root_slope']).max());maxscore=max(maxscore,err);maxslope=max(maxslope,derr)
@@ -93,8 +99,8 @@ def verify(cfg):
         worst=float(np.abs(residual(before,ss)).max());changed=int((before.argmax(1)!=ss.argmax(1)).sum())
         assert abs(worst-item['natural_worst_task'])<1e-5 and changed==item['natural_changed']
         distance=float(np.sqrt(np.sum(c*c)+np.sum(k*k)));assert abs(distance-item['parameter_distance'])<1e-8
-        records.append(dict(method=name,distance=distance,natural_worst_task=worst,natural_changed=changed,root_score_error=float(np.abs(value).max()),root_derivative_error=float(np.abs(slope).max()),finite_pair_relative_errors=finite))
-    near=max(records[-1]['finite_pair_relative_errors'][-2:]);far=max(records[-1]['finite_pair_relative_errors'][:2]);actual_support=bool(records[-1]['root_score_error']<cfg['score_tolerance'] and records[-1]['root_derivative_error']<cfg['derivative_tolerance'] and near<=far/cfg['minimum_relative_decay'])
+        records.append(dict(method=name,distance=distance,natural_worst_task=worst,natural_changed=changed,root_score_error=float(np.abs(value).max()),root_derivative_error=float(np.abs(slope).max()),finite_pair_relative_errors=finite,constraint_condition=condition))
+    near=max(records[-1]['finite_pair_relative_errors'][-2:]);far=max(records[-1]['finite_pair_relative_errors'][:2]);actual_support=bool(records[-1]['root_score_error']<cfg['score_tolerance'] and records[-1]['root_derivative_error']<cfg['derivative_tolerance'] and near<=far/cfg['minimum_relative_decay'] and records[-1]['constraint_condition']<cfg['maximum_condition'])
     assert actual_support==rep['mechanism_supported']
     result=dict(status='passed_mechanism' if actual_support else 'passed_closed_mechanism',records=records,teacher_root_gap_maximum=root_gap,
         maximum_numpy_score_error=maxscore,maximum_numpy_derivative_error=maxslope,maximum_numpy_coefficient_error=maxcoef,
