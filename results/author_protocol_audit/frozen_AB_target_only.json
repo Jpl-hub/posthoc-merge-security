@@ -1,0 +1,214 @@
+{
+  "status": "frozen_baseline_protocol_completed_not_new_defense",
+  "protocol": "configs/frozen_AB_target_only.json",
+  "results": [
+    {
+      "task": "MNIST",
+      "correct": 8542,
+      "n": 10000,
+      "top1": 0.8542,
+      "evaluation_seconds": 11.158729653805494,
+      "peak_gpu_bytes": 858202624,
+      "original_correct": 9930,
+      "changed_predictions": 1459,
+      "paired": {
+        "both_correct": 8517,
+        "lost": 1413,
+        "gained": 25,
+        "both_wrong": 45,
+        "loss_pp": 13.88,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -378.91015868596406,
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "original_correct": 975,
+          "correct": 414
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "original_correct": 1133,
+          "correct": 622
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "original_correct": 1024,
+          "correct": 984
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "original_correct": 1009,
+          "correct": 842
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "original_correct": 978,
+          "correct": 966
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "original_correct": 884,
+          "correct": 889
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "original_correct": 941,
+          "correct": 956
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "original_correct": 1017,
+          "correct": 908
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "original_correct": 970,
+          "correct": 967
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "original_correct": 999,
+          "correct": 994
+        }
+      ]
+    },
+    {
+      "task": "SVHN",
+      "correct": 19653,
+      "n": 26032,
+      "top1": 0.7549554394591272,
+      "evaluation_seconds": 25.53003659285605,
+      "peak_gpu_bytes": 858857984,
+      "original_correct": 24153,
+      "changed_predictions": 5844,
+      "paired": {
+        "both_correct": 19339,
+        "lost": 4814,
+        "gained": 314,
+        "both_wrong": 1565,
+        "loss_pp": 17.28641671788568,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -1031.9922357056053,
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "original_correct": 1711,
+          "correct": 1064
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "original_correct": 4829,
+          "correct": 2665
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "original_correct": 3990,
+          "correct": 3707
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "original_correct": 2452,
+          "correct": 1388
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "original_correct": 2293,
+          "correct": 2092
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "original_correct": 2309,
+          "correct": 2347
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "original_correct": 1713,
+          "correct": 1851
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "original_correct": 1836,
+          "correct": 1547
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "original_correct": 1589,
+          "correct": 1596
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "original_correct": 1431,
+          "correct": 1396
+        }
+      ]
+    }
+  ],
+  "execution": {
+    "status": "completed_frozen_reference_evaluation",
+    "new_candidates": 0,
+    "optimizer_steps": 0,
+    "new_attack_calls": 0,
+    "parameter_distance": 0.36413885381817546,
+    "peer_attacked": false,
+    "attack_scope": "Original author AGA applied only to protected expert; reuse saved attack weights.",
+    "predictions_sha256": "c791eb2ad19846bf58a68333f14e6ec6d1cafd231c5481663a50222384d16195",
+    "source_sha256": "d45a337793bcb7f8fb50d44daa325c7b6ce80e1343f86fdcc7102ae7c878fb15",
+    "wall_seconds": 46.18527977075428,
+    "replay_forwards": 0,
+    "source_cfg_sha256": "86dd6dfda6cfeca69c21b00212d34376c5f2e89740c745a605500328fa8b71d5",
+    "no_test_parameter_selection": true,
+    "historical_tests_not_fresh_blind": true,
+    "first_phase_changed": false
+  },
+  "independent_validation": {
+    "status": "passed",
+    "new_candidates": 0,
+    "optimizer_steps": 0,
+    "new_attack_calls": 0,
+    "parameter_distance": 0.36413885381817546,
+    "peer_attacked": false,
+    "attack_scope": "Original author AGA applied only to protected expert; reuse saved attack weights.",
+    "predictions_sha256": "c791eb2ad19846bf58a68333f14e6ec6d1cafd231c5481663a50222384d16195",
+    "source_sha256": "d45a337793bcb7f8fb50d44daa325c7b6ce80e1343f86fdcc7102ae7c878fb15",
+    "wall_seconds": 13.842138022650033,
+    "replay_forwards": 64,
+    "source_cfg_sha256": "86dd6dfda6cfeca69c21b00212d34376c5f2e89740c745a605500328fa8b71d5",
+    "no_test_parameter_selection": true,
+    "historical_tests_not_fresh_blind": true,
+    "first_phase_changed": false
+  },
+  "old_standalone_MNIST": 99.65,
+  "old_TA_MNIST": 91.07,
+  "old_TA_SVHN": 77.45851259987707,
+  "old_AGA_all_participants_MNIST": 79.2,
+  "old_AGA_all_participants_SVHN": 69.84096496619544,
+  "source_budget_audit": "results/author_protocol_audit/frozen_AB_budget.json",
+  "limitations": [
+    "Historical tests already exposed; evaluation never used for parameters or method selection.",
+    "Old A/B remains closed for optimization; this is missing protocol completion.",
+    "Finite source audit and old confirmation do not prove all-input feasibility.",
+    "Only MNIST protected; SVHN remains a partner."
+  ]
+}

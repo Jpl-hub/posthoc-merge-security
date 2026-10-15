@@ -16,6 +16,7 @@
 | [Generalized LMC，NeurIPS 2025](https://arxiv.org/html/2506.22712v1)，[官方实现](https://github.com/alexandertheus/Generalized-LMC-for-Transformers) | 对齐研究，非保护 | 统一排列、半排列、正交／可逆变换及近似对称性 | 换基、跨头混合与近似函数保持不能因换个名字而成为原创。此处只作机制边界对照，未复现 |
 | [RegMean，ICLR 2023](https://arxiv.org/abs/2212.09849)，[官方示例](https://github.com/bloomberg/dataless-model-merging/blob/main/regmean_demo.ipynb) | 融合，非保护 | 用输入Gram统计最小化线性层预测差异，求闭式融合 | 激活重建／最小二乘补偿本身已有来源。与保护目标不同；这里只核对思想及示例，未运行基线 |
 | [ESM，CVPR 2026](https://arxiv.org/html/2602.20208v1)，[官方实现](https://github.com/kiddo127/ESM) | 融合，非保护 | 对真实输入下的任务输出位移做SVD，选择最小化线性输出重建误差的子空间 | 激活加权的任务SVD已有直接先例；平均线性重建误差不保证最坏归一化分类间隔保持。仅阅读，未复现 |
+| [TALL-masks／Consensus，ICML 2024](https://proceedings.mlr.press/v235/wang24k.html)，[官方实现](https://github.com/nik-dim/tall_masks) | 融合／压缩，非保护 | 根据单任务向量与多任务向量的逐参数偏差定位任务支持，减轻任务间干扰 | “任务无关参数可能破坏融合”已有明确研究。其掩码构造需要多个任务向量，不能把未来伙伴带入本项目的保护构造；仅阅读，未复现 |
 
 “未定位”限定于此次检查的版本和可访问来源，不表示代码永远不存在。所读版本不自动等同最新修订；后续若出现改变机制或实验结论的版本，需重新审查。搜索不是原创性的完备证明。
 
@@ -33,6 +34,13 @@
 Trap²的[固定完整微调入口](https://github.com/ml-postech/Trap2/blob/ef65a26590d92fe07955c5621c08bb315484ff29/training_scripts/8vision_training_full_trap2.py)中，AdamW接收`model.parameters()`；`make_scaled_params`计算`w0 + alpha*(p-w0)`，随后对原尺度CE减去缩放CE反传。固定提交`ef65a26`、Git blob为`6e3817b3c6d3e5c1457fc432c837cc7677d39916`，仅核对源码，未运行训练。此公式也不能仅加上硬约束就宣称全新思想。
 
 ESM固定提交[`d60b506`](https://github.com/kiddo127/ESM/blob/d60b50683fd5089578ad69b7c847e2c47025f73c/ESM-ViT/essential_subspace_decomposition.py)，文件Git blob为`bea60fa42a06408b8e8b6ec7291cbaee9cee9c13`。它对$X\Delta W^\top$直接做未减均值的SVD；当前Attention O投影代码被注释，不能把说明文字当全部矩阵均已实现。当前仓库含后续ESM++，此固定文件核对不冒充原论文完整复现。其`Val`数据注册的`test_dataset`字段须先核对划分含义；本项目不能照抄该字段作为合法训练数据证明。
+
+TALL-masks固定提交[`3b1b2ee`](https://github.com/nik-dim/tall_masks/blob/3b1b2ee365b8d734d84cf90f363d265fe3e54cdf/src/utils/tallmask_utils.py)，文件Git blob为`1152112559be8a2d56f69fcc43e239fa68689f36`。论文掩码为
+
+$$m_t=\mathbf1\{|\tau_t|\ge\lambda_t|\tau_{MTL}-\tau_t|\},\qquad
+\widehat\theta_t=\theta_0+m_t\odot\tau_{MTL}.$$
+
+源码`generate_task_masks`实际使用严格`>`，边界相等时应区分；`construct_tall_mask`固定候选$\lambda\in\{0.2,0.3,0.4,0.5,0.6\}$，`find_optimal_mask`用各任务验证准确率选择，Consensus再按使用该参数的任务数过滤。其恢复过程已知原单任务向量，不能据此声称攻击者仅凭公开基座就能恢复我们的干净专家。论文说明任务信息仍可能存在于融合向量中、却因干扰不可用；这一现象也不能作为本项目的新发现。这里不运行掩码搜索或新增攻击。
 
 ## 损失界与保持条件的核验
 
@@ -97,6 +105,8 @@ O/B在固定架构的最后Attention输出矩阵O与MLP矩阵B之间，优化发
 此外，当前仅证明MNIST保护；类别1与7在已测AGA净损失中集中；未知伙伴覆盖、跨任务方法优势、全部攻击鲁棒性均未证明。已知位置预训练参数替换仅是补充诊断，不是AGA或任务向量恢复，也不取消真实TA/AGA效果。
 
 冻结A/B另经同一暴露训练切片的[预算审计](../results/author_protocol_audit/frozen_AB_budget.json)：512张无超预算或改判；最大间隔漂移完整重放为0.354614，参数距离0.364139。保留原独立确认0.463577和历史独立99.65%、TA91.07%、AGA全参与专家79.20%。这为旧A/B增加有限保持证据，不恢复旧优化，不称为新候选、全任务证书或新突破。与O/B的预算反例分开报告；该审计结果不用于任何发布参数选择。
+
+同一冻结A/B的[缺失AGA口径已补齐](../results/author_protocol_audit/frozen_AB_target_only.json)：仅处理保护专家时，MNIST85.42%、SVHN75.50%；未保护参考99.30%／92.78%。MNIST净损失1388张，类别0、1、3占89.27%，仍非广泛类别失效。与全参与专家79.20%／69.84%分列。保存的作者攻击权重直接复用，没有重新构造防御；全量配对统计、官方标签与64次完整重放独立验证通过。
 
 ## 统一数学问题
 
