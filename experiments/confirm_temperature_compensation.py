@@ -33,7 +33,11 @@ def unused(training, ids, cfg):
     excluded=set(ids);sources={}
     audit=json.loads(Path('results/task_boundary_audit/split_independence_audit.json').read_text())
     for row in audit['records']:
-        path=Path(row['path']);group=row['group'];assert digest(path)==row['sha256']
+        path=Path(row['path']);group=row['group']
+        pin=row.get('sha256')
+        if pin is None:
+            pin=json.loads(path.with_name(cfg['target']+'.json').read_text())['diagnostic_sha256']
+        assert digest(path)==pin
         record=json.loads(path.read_text()) if path.suffix=='.json' else torch.load(path,map_location='cpu')['indices']
         excluded.update(record[group]);sources[str(path)]=digest(path)
     for folder in Path('outputs').iterdir():
