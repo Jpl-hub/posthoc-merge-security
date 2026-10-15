@@ -1,0 +1,18 @@
+{
+  "target": "MNIST",
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "coefficient": 0.5,
+  "root_steps": 80,
+  "output": "outputs/phase2_normalization_conjugacy",
+  "mixed_diagnostic": "outputs/phase2_mixed_compensation_audit/diagnostic.pt",
+  "point": "outputs/phase2_boundary_game_mnist/candidate.pt",
+  "inputs": {
+    "outputs/phase2_mixed_compensation_audit/diagnostic.pt": "861b8a31cb56b978ce4fb28c90905f508a231ad46bb01aa3a8c427fdbc5a3bc8",
+    "outputs/phase2_boundary_game_mnist/candidate.pt": "e0ee5e5eeb170d550401724dfe0a8c6ff39273afdde79f46a207a4370b2398a4"
+  },
+  "source_sha256": "a5bfe1883c198f2c8a77b4946b16eeea882f1d8c972eef9642adc86b2138bf02",
+  "entrypoint": "experiments/normalization_conjugacy.py",
+  "description": "One exact LN2/A scalar conjugacy, fixed analytically by the existing0.5 joint relative distance budget; source preserved for all inputs. No task parameters optimized, no peers or tests. Check finite anchor response and public inverse separately; this is not a release.",
+  "protocol_path": "configs/normalization_conjugacy.json"
+}
