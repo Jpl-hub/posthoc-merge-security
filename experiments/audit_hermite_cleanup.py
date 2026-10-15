@@ -23,6 +23,8 @@ def run(cfg):
     # checkpoint and these same public locations. No partner or test is read.
     prior=Path('outputs/boundary_public_refill');oldcfg=json.loads((prior/'protocol.json').read_text());oldfreeze=json.loads((prior/'attack_freeze.json').read_text());oldvalid=json.loads((prior/'independent_validation.json').read_text())
     assert set(oldcfg['keys'])==set(keys.values()) and oldvalid['status']=='passed'
+    oldpins=json.loads((Path(oldcfg['defense_evaluation'])/'release_freeze.json').read_text())['checkpoint_sha256']
+    for name,pin in pins.items():assert oldpins[name]==pin,name
     edits=torch.load(prior/'artifacts/clean_edits.pt',map_location='cpu');assert digest(prior/'artifacts/clean_edits.pt')==oldfreeze['clean_edits_sha256']
     for key in keys.values():assert torch.equal(edits[key],anchor.state_dict()[key])
     result=dict(status='matched_public_replacement_erases_release_exactly',candidate_sha256=meta['candidate_sha256'],keys=keys,
