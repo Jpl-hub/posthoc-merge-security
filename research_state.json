@@ -1,17 +1,17 @@
 {
-  "status": "phase2_new_finite_methods_verified_no_new_release",
-  "updated_utc": "2026-10-15T04:44:04.381203+00:00",
+  "status": "phase2_temperature_true_eval_verified_no_improvement",
+  "updated_utc": "2026-10-15T05:23:27.095286+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "two_structured_finite_method_families_closed_after_verification",
+  "stage": "finite_temperature_distillation_real_transfer_verified_closed",
   "research_jobs": [],
   "breakthrough_verified": false,
-  "new_candidate": "No new release. Attention-mediated finite compensation satisfies the source gate at the last verified point but changes0/512 anchor predictions. Finite task-subspace neuron reflection violates source gate0.9267>0.5 and changes0/4608 source-midpoint predictions. Existing best O/B true results unchanged.",
-  "mechanism": "notes/phase2_attention_cascade.md",
-  "next_action": "Both new finite method families are closed under their frozen protocols. No credible next release candidate has passed necessary conditions. Further work requires an actual finite task-feasible path with multiclass negative margins, not larger budgets, more iterations on this ray, or arbitrary proxy selection. Unknown-partner coverage remains conditional; do not resume automatic loops.",
+  "new_candidate": "One source-only fixed Q/K-temperature plus finite B-distillation release passed source, independent confirmation and full-model replays, but trueTA MNIST99.36 and authorAGA99.32 show no defense. Preserve this negative point and the better O/B99.71/78.77/77.85. No new best candidate.",
+  "mechanism": "notes/phase2_temperature_compensation.md",
+  "next_action": "Temperature branch is closed after trueTA/authorAGA, not proxy filtering. Do not increase gain, ranks, budgets or steps. Further research needs a justified finite task-preserving transformation whose compensation mismatch crosses multiclass margins, rather than score shrinkage or attention entropy. No credible next frozen candidate currently; unknown-partner coverage is unproved. Keep old automatic loops paused.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1130,18 +1130,13 @@
     ]
   },
   "github_sync": {
-    "status": "final_snapshot_pending_publication",
+    "status": "final_snapshot_awaits_receipt",
     "transport": "GitHub plugin",
-    "last_verified_remote_commit": "851506e030b3b11b1cee3ed22f2ad6fb7625ec4d",
-    "last_verified_local_commit": "0bb991570211355c991b77d3c6ee80c80dad0f61",
-    "last_verified_canonical_tree": "e17a3da774a4d305a3addf82dbc32b7e0647fd62",
-    "failures": [
-      "Transient create_tree transport error; remote main checked unchanged."
-    ],
-    "local_commits_preserved": true,
-    "claim_uploaded": false,
+    "last_verified_remote_commit": "fe33467b04031c9bcb5b767a5388525251537fe7",
+    "last_verified_local_commit": "fadef6c7343d1db674320930d3121921caaa3594",
+    "last_verified_canonical_tree": "cb84d461f81c90d6682814bacf2557cc828c2dee",
     "verification_receipt": "outputs/latest_github_sync_receipt.json",
-    "durability": "This field records the last verified revision before this snapshot. Final exact remote/local commits and canonical tree are recorded in the ignored receipt after publication; no circular commit self-reference."
+    "durability": "Last verified prior revision above; exact final remote/local pair and whole-tree readback recorded in ignored receipt after publication, avoiding commit self-reference."
   },
   "phase2_mixed_compensation": {
     "status": "verified_mixed_mechanism_distinct_direction_closed_no_classification_effect",
@@ -1294,18 +1289,19 @@
     "scope": "One analytic scalar at the unchanged joint budget, no channel/amplitude sweep. Exact structure-based preservation, not a new task-subspace discovery or recovery defense."
   },
   "latest_verified_facts": [
-    "Two distinct structured finite families implemented on3090 using only source expert/base/source training data: cross-block attention compensation and task-subspace neuron reflection.",
-    "Cascade source inputs9728 include4608 natural images. Last exact-identity verified point has distance0.0661886 and max task-margin drift0.493067<=0.5; original/released4605 correct and0 natural prediction changes.",
-    "Cascade final source-parameter midpoint changes1/4608 (class9 only); public-base proxy changes0/512. Current-worst mandatory oracle returns bitwise identical coefficients. No finite multiclass signal.",
-    "Reflection selects2982 neurons at distance0.403088; actual task-margin drift0.926706>0.5. Endpoint and source midpoint both0/4608 prediction changes. Independently reconstructed NumPy failure verified.",
-    "Reflection fractional distance-budget upper bound allows at most27/128 sampled inputs to cross,17 are class0; bound is for this fixed source-midpoint family and slice only, not all mergers.",
-    "No new release, fresh confirmation, realTA, authorAGA or cross-target evaluation for these failed candidates. Historical success is not updated by proxy diagnostics.",
-    "Frozen O/B remains MNIST independent99.71%,TA78.77%,authorAGA77.85%; O/B and A/B candidate SHA256 independently rechecked unchanged.",
-    "Phase1 tag and artifacts retained. No4090 access or automatic loop resumed."
+    "One fixed same-sign Q/K gain1.25 plus source-only finite B distillation constructed and evaluated under realTA/authorAGA, independent of proxy prediction gates.",
+    "Source9,728-input max task drift0.453799 at formal distance0.499999999938; all4,608 natural predictions preserved. Fresh512 confirmation max drift0.398982, original/protected510 correct, exact full-model replays.",
+    "Pinned authorAGA removes Q/K gain: source recovered protected/unprotected difference6.99e-8; B compensation remains with unchanged MLP permutation. This alone is not sufficient for class collapse.",
+    "MNIST real independent99.69->99.68,TA99.37->99.36,authorAGA99.32->99.32. AGA4 changes,lost2,gained2,pairedp1. No improvement.",
+    "SVHN peer standalone97.46,TA92.50->92.61,AGA91.77->91.74. Target and peer, raw per-class predictions and matched counts independently verified.",
+    "All17 official prediction groups and272 full-model replays verified. No post-test parameter changes or cross-protected-task extension.",
+    "Source B-only radial scale median0.7745,transverse residual relative median0.0483,zero finite margin crossings; attention entropy change is not a classification effect.",
+    "Previously frozen cascade0-proxy changes does not prove realTA/AGA failure. Proxy/source-midpoint class collapse is not a universal necessary condition.",
+    "Best O/B independent99.71,TA78.77,AGA77.85 and A/B artifacts rehashed unchanged; Phase1 remains frozen."
   ],
   "latest_unverified_hypotheses": [
-    "A different finite task-preserving nonconjugate path might produce multiclass negative margins; no such new path is established. Current frozen rays failing locally do not prove global impossibility.",
-    "No construction-only environment set has established unknown-partner coverage or cross-protected-task generality."
+    "A different task-preserving finite transform might create sufficiently large non-order-preserving compensation under justified non-source environments. No new such candidate is established.",
+    "Unknown-peer representation/readout coverage and cross-protected-task generality remain unproved; no universal impossibility inferred."
   ],
   "phase2_attention_cascade": {
     "status": "all_finite_constructions_verified_closed_no_multiclass_effect",
@@ -1369,7 +1365,8 @@
     "oracle_resume_wall_seconds": 107.73641358083114,
     "confirmation_used": false,
     "cross_target_validation_run": false,
-    "scope": "Finite local solver failures and no class crossing, not a global infeasibility proof. No partner or test data used for construction. Analytical VJPs/Jacobians and transform optimization are not zero-gradient defense."
+    "scope": "Finite local solver failures and no class crossing, not a global infeasibility proof. No partner or test data used for construction. Analytical VJPs/Jacobians and transform optimization are not zero-gradient defense.",
+    "interpretation_correction": "No trueTA/AGA was measured. Proxy-negative screening closure is not proof of real fusion ineffectiveness. Preserve artifacts and do not restart this branch."
   },
   "phase2_finite_neuron_reflection": {
     "status": "independently_verified_closed",
@@ -1387,5 +1384,65 @@
     "new_release_weights": 0,
     "test_used": false,
     "partner_used": false
+  },
+  "phase2_temperature_compensation": {
+    "status": "independently_verified_true_transfer_negative_closed",
+    "protocol": "configs/temperature_compensation.json",
+    "mechanism": "notes/phase2_temperature_compensation.md",
+    "parameter_budget": 0.5,
+    "task_budget": 0.5,
+    "gain_delta": 0.25,
+    "proxy_used": false,
+    "partner_used": false,
+    "test_used": false,
+    "new_release_weights": 1,
+    "true_TA_AGA_run": true,
+    "failed_setup_source_commit": "bb73ae9",
+    "failed_setup_log": "outputs/phase2_temperature_compensation.log",
+    "current_protocol": "configs/temperature_margin_compensation.json",
+    "reason": "Raw-score fixed-point contraction sufficient condition fails; no coefficient or task score evaluated before this failure. Switch to original allowed0.75 centered-score target, not relaxed task gate.",
+    "training_point_sha256": "b6429fe8d7b8810dbdca03763b712b009c29f37de930d1a7e2abd58f8f29a383",
+    "source_distance": 0.49999999993794,
+    "source_worst_margin_drift": 0.45379899714482785,
+    "native_prediction_changes": 0,
+    "B_only_prediction_changes": 0,
+    "confirmation_source_worst_drift": 0.3989824809214891,
+    "confirmation_n": 512,
+    "confirmation_original_correct": 510,
+    "confirmation_released_correct": 510,
+    "confirmation_prediction_changes": 0,
+    "AGA_source_QK_relative_difference": 6.992075308550314e-08,
+    "release_edits_sha256": "338becd585f4e1d9f9efecc1c4d8ca7c286a7e7e3ee5cdbcd626b89b0251464c",
+    "results": "results/temperature_margin_compensation/results.json",
+    "source_validation": "results/temperature_margin_compensation/independent_validation.json",
+    "confirmation_validation": "results/temperature_margin_compensation/confirmation_validation.json",
+    "true_results": "results/temperature_real_eval/summary.json",
+    "true_validation": "results/temperature_real_eval/independent_validation.json",
+    "source_freeze": "results/temperature_margin_compensation/source_freeze.json",
+    "FP32_export_distance": 0.5000000004621267,
+    "FP32_distance_rounding_difference": 5.241866940508544e-10,
+    "true_MNIST": {
+      "independent_original_correct": 9969,
+      "independent_protected_correct": 9968,
+      "n": 10000,
+      "TA_original_correct": 9937,
+      "TA_protected_correct": 9936,
+      "AGA_original_correct": 9932,
+      "AGA_protected_correct": 9932,
+      "AGA_changed": 4,
+      "AGA_lost": 2,
+      "AGA_gained": 2,
+      "AGA_paired_p": 1.0
+    },
+    "cross_protected_task_run": false,
+    "public_cleaning_run": false,
+    "post_test_parameter_selection": false,
+    "all17_rows_and272_replays_verified": true
+  },
+  "screening_correction": {
+    "source_midpoint_failure_is_universal_necessary_condition": false,
+    "public_base_proxy_failure_is_universal_necessary_condition": false,
+    "reason": "Frozen O/B point retains source midpoint predictions yet disrupts realTA/AGA. Prior negative proxy results establish only lack of proxy signal, not impossibility under true partners.",
+    "old_finite_methods_not_restarted": true
   }
 }

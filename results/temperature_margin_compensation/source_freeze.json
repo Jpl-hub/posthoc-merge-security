@@ -1,0 +1,78 @@
+{
+  "status": "sole_confirmed_point_real_evaluation_negative",
+  "construction": {
+    "source_commit": "ed6c0d688d9ef144600999df74a4fad1852dad3c",
+    "server_path": "outputs/phase2_temperature_margin_mnist/source.zip",
+    "sha256": "5e132990701a2e0503fc2a6b17e5d886c8a1d965131753b787e1a99179292efa"
+  },
+  "verification": {
+    "source_commit": "a47a10de74160ffb4b8f2503fa8387a5e9e287fc",
+    "server_path": "outputs/phase2_temperature_margin_mnist/verification_source.zip",
+    "sha256": "3c128d801ba4da2c182778b867fb60e842c57d6868afd06e9b929e1b13728c49"
+  },
+  "confirmation": {
+    "source_commit": "ee8abaacc7195d03a783cec7165b7829f34fa638",
+    "server_path": "outputs/phase2_temperature_margin_mnist/confirmation_source.zip",
+    "sha256": "4064478b371611491e5d08d806df98192efafc777324c0d5b439639acd9db1b1"
+  },
+  "decision_audit": {
+    "source_commit": "276a3391fde2e987a0164f17a8697481071d69ce",
+    "server_path": "outputs/phase2_temperature_margin_mnist/decision_audit_source.zip",
+    "sha256": "240c9c34ca102afa328c11bf7235e144eadd2ce650c4d0f729b5b073e5c70e9a"
+  },
+  "training_point_sha256": "b6429fe8d7b8810dbdca03763b712b009c29f37de930d1a7e2abd58f8f29a383",
+  "diagnostic_sha256": "d55128f98637a4bf840f14c4d190c663b8e9a9271af9595b7240be384542bae8",
+  "training_predictions_sha256": "0a019b4814e6b8844cdf9991d3480390de5b22bc847f5e508d55880ad9b307b6",
+  "independent_predictions_sha256": "2ba747b71450e757ef2ea1b4d93de588b8faa55acaac7e5f8a22dad68468b6ce",
+  "confirmation_sha256": "9061858f7ce445db3b75309bf3bb7edbd38df3aa48b64c428a7a3099961eac53",
+  "release_edits_sha256": "338becd585f4e1d9f9efecc1c4d8ca7c286a7e7e3ee5cdbcd626b89b0251464c",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "cache_sha256": "aaf492c814b1b8baca7b8146824e0502ab1419171ed8b26c09a15c6dab4f91dd",
+  "construction_protocol_sha256": "ad3fca0da527727fef3d51b62cd477d5bef1093e10bb6c0702167adfe08e816c",
+  "confirmation_split_sha256": "dfcd3f3d41e8ee467fd3f923652793d6161a17e8680d00610718607dc68b64f3",
+  "confirmation_split_reused_after_setup_failure": true,
+  "setup_failures": {
+    "index_dtype": "initial_verification_failure.log",
+    "historical_metadata_hash": "initial_confirmation_setup_failure.log",
+    "feature_dtype": "confirmation_dtype_setup_failure.log",
+    "runner_interface": "eval_interface_setup_failure.log"
+  },
+  "failed_source_archives": [
+    {
+      "source_commit": "9ea8befae6df0bff886d599d122b26450187c2b7",
+      "server_path": "outputs/phase2_temperature_margin_mnist/initial_verification_source.zip",
+      "sha256": "0d72e9f3c15d5a733f73e45f30d50510b27076cc1e9e33f73f0dea13d5e26884"
+    },
+    {
+      "source_commit": "ef262e18ee2b3c770364135fb6b63225faa8f3fd",
+      "server_path": "outputs/phase2_temperature_margin_mnist/initial_confirmation_source.zip",
+      "sha256": "909d431f9c4f5867c4c306a2ea2af3e2fc57eb70b165cdc1bac2071eba8db47b"
+    },
+    {
+      "source_commit": "3320d634d762b8a43fec79ce7cb845de3ee7ae76",
+      "server_path": "outputs/phase2_temperature_margin_mnist/dtype_confirmation_source.zip",
+      "sha256": "c90804a667fad691b786313dcee1443345caed6b1e7e0966ee71e4d26a5e8d9a"
+    },
+    {
+      "source_commit": "d2faa6d260575dd5971b8d919e5297dc125e0294",
+      "server_path": "outputs/phase2_temperature_margin_mnist/initial_eval_source.zip",
+      "sha256": "9893f62dbda95174ddb0addfb1453d467e16725be08de1f29715f15fe8a81582"
+    }
+  ],
+  "one_protected_point": true,
+  "no_post_test_parameter_change": true,
+  "new_candidates_after_test": 0,
+  "original_expert_updates": 0,
+  "phase1_changed": false,
+  "allow_4090": false,
+  "reproduction_commands": [
+    "python experiments/temperature_compensation.py --protocol configs/temperature_margin_compensation.json",
+    "python experiments/verify_temperature_compensation.py --protocol configs/temperature_margin_compensation.json",
+    "python experiments/confirm_temperature_compensation.py --protocol configs/temperature_margin_compensation.json"
+  ],
+  "scope": "Replay each stage from its pinned source archive into a new output path; heavy checkpoints/cache/predictions stay on3090. Sparse released weights plus pinned original define the full protected model."
+}

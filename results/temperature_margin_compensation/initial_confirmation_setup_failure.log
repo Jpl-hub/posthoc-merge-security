@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/root/autodl-tmp/merge_security_20261009/experiments/confirm_temperature_compensation.py", line 115, in <module>
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol',required=True);args=ap.parse_args();initialize();confirm(json.loads(Path(args.protocol).read_text()))
+                                                                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/confirm_temperature_compensation.py", line 66, in confirm
+    training=dataset(cfg['target'],'data',expert.val_preprocess,True);split=unused(training,old['indices'],cfg)
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/confirm_temperature_compensation.py", line 36, in unused
+    path=Path(row['path']);group=row['group'];assert digest(path)==row['sha256']
+                                                                   ~~~^^^^^^^^^^
+KeyError: 'sha256'

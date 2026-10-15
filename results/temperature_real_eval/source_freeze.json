@@ -1,0 +1,42 @@
+{
+  "execution": {
+    "source_commit": "d703c4aba57ad0df2c1bdb030834a3cfb5e0da2b",
+    "server_path": "outputs/phase2_temperature_eval_mnist_svhn/source.zip",
+    "sha256": "1081dc449c7f9fd8f50950f5aa73fcfd5d4c03fdc52c2d1d3a416fd17411018a"
+  },
+  "verification": {
+    "source_commit": "f159d848463a3938a1cc4e5b344fa8ff006d04b7",
+    "server_path": "outputs/phase2_temperature_eval_mnist_svhn/verification_source.zip",
+    "sha256": "38d4a8cb2f69cbcc1178424a36d75d4bbabdb6bdf98f81a63be93cd40ee073de"
+  },
+  "runner_recorded_parent_commit": "ee8abaacc7195d03a783cec7165b7829f34fa638",
+  "release_sha256": "b9308cc38ca960830ed9f8cc9be8ccf581674c4f891a09b27267de22195cf579",
+  "training_point_sha256": "b6429fe8d7b8810dbdca03763b712b009c29f37de930d1a7e2abd58f8f29a383",
+  "predictions_sha256": "219b46be670216ecb83b38b0710ae537f4332cf411d772a3437c87589284622e",
+  "AGA_edits_sha256": "3b8e797ee2d3dc5f822d0ec2103570b2679d1b1db96fbcd1f8a99b5796fcece5",
+  "protocol_sha256": "5d45dedeb0ebc293b1cc7c1a123735314bc6184927b568c8b78b0e42257e0ff2",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322",
+    "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+    "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "independent_validation_sha256": "9996819ce975ca30340c4b10719bc440eea9a10d45b06f86b95bb4eb74a2f97e",
+  "formal_distance": 0.49999999993794,
+  "FP32_export_distance": 0.5000000004621267,
+  "FP32_distance_rounding_difference": 5.241866940508544e-10,
+  "formal_parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "true_TA_AGA_run": true,
+  "new_candidates": 1,
+  "post_test_parameter_selection": false,
+  "public_cleaning_run": false,
+  "cross_protected_task_run": false,
+  "old_best_preserved": true,
+  "commands": [
+    "python experiments/evaluate_temperature_release.py --target MNIST --partner SVHN --protocol configs/temperature_real_eval.json --output outputs/phase2_temperature_eval_mnist_svhn",
+    "python experiments/verify_temperature_evaluation.py --output outputs/phase2_temperature_eval_mnist_svhn"
+  ],
+  "scope": "The config stores an existing source parent; exact executed source+config and verification are separately pinned here. No later point selection or test tuning."
+}
