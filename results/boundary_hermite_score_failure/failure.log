@@ -1,0 +1,24 @@
+{"method": "uncompensated", "parameter_distance": 0.125, "root_score_error": 5.208774281985828, "root_score_derivative_error": 7.141701856535438, "natural_worst_task": 1.5602512183077062, "natural_changed": 332, "constraint_matrix_condition": null, "linear_equality_maximum_error": null, "finite": [{"exponent": 3, "sign": -1.0, "max_pair_relative_drift": 11.703468280969142, "maximum_raw_score_error": 11.55569278968663}, {"exponent": 3, "sign": 1.0, "max_pair_relative_drift": 11.62752162442663, "maximum_raw_score_error": 11.664283177433227}, {"exponent": 5, "sign": -1.0, "max_pair_relative_drift": 46.69823205043086, "maximum_raw_score_error": 11.6356634577427}, {"exponent": 5, "sign": 1.0, "max_pair_relative_drift": 46.62229207408946, "maximum_raw_score_error": 11.663095988984372}, {"exponent": 7, "sign": -1.0, "max_pair_relative_drift": 186.6785885478522, "maximum_raw_score_error": 11.648474372864285}, {"exponent": 7, "sign": 1.0, "max_pair_relative_drift": 186.60264898883887, "maximum_raw_score_error": 11.655336856025455}, {"exponent": 9, "sign": -1.0, "max_pair_relative_drift": 746.6003374691501, "maximum_raw_score_error": 11.65120589417814}, {"exponent": 9, "sign": 1.0, "max_pair_relative_drift": 746.5243979351894, "maximum_raw_score_error": 11.652921582796694}]}
+Traceback (most recent call last):
+  File "/root/autodl-tmp/merge_security_20261009/experiments/boundary_hermite.py", line 175, in <module>
+    prepare_data(cfg) if args.prepare else diagnose(cfg)
+                                           ^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/boundary_hermite.py", line 132, in diagnose
+    else:k,finfo=chart.complete(c,derivatives=kind)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/boundary_hermite.py", line 56, in complete
+    part,f,gram,target=self.factors(c,derivatives,create_graph)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/boundary_hermite.py", line 49, in factors
+    else:f,target=fn(self.roots)
+                  ^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/boundary_hermite.py", line 45, in fn
+    def fn(t):return self.path_targets(c,t)
+                     ^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/boundary_hermite.py", line 41, in path_targets
+    _,target,_=raw_score_target(h0,a['teacher_h'],self.space,self.p['eps'],self.cfg['fixed_point_iterations'])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/classification_completion.py", line 75, in raw_score_target
+    assert bound.max()<1.-1e-8,"Raw-score variance map is not certified contractive"
+           ^^^^^^^^^^^^^^^^^^^
+AssertionError: Raw-score variance map is not certified contractive
