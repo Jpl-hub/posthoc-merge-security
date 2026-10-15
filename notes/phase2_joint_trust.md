@@ -51,7 +51,7 @@ $$G_{\ell m}=(a_\ell^\top a_m)(t_\ell^\top t_m)+(b_\ell^\top b_m)(z_\ell^\top z_
 $$\mathrm{pred}=\nabla F^\top s,\qquad
 \mathrm{ared}=F(\theta+s)-F(\theta),\qquad\rho=\mathrm{ared}/\mathrm{pred}.$$
 
-只接受$\mathrm{pred}>0$、$\mathrm{ared}>0$、$\rho\ge0.1$、全部输入线性预测误差和实际有限任务漂移均不超过0.5、全局距离不超过0.5且自然预测保持的步。记录$\|r(\theta+s)-r(\theta)-Js\|_\infty$；每个模型点核对实际有限差分导数。
+只接受$\mathrm{pred}>0$、$\mathrm{ared}>0$、$\rho\ge0.1$、全部输入线性预测的任务漂移和实际有限任务漂移均不超过0.5、全局距离不超过0.5且自然预测保持的步。记录$\|r(\theta+s)-r(\theta)-Js\|_\infty$；每个模型点核对实际有限差分导数。
 
 初始半径0.025，上限0.05。拒绝时减半；$\rho\ge0.75$且有限任务模型误差不超过0.05时至多加倍。半径低于$5\times10^{-5}$、活动输入达到128或提议达到24次即停止，不扩大次数或重启。每个接受点始终满足完整非线性校准约束，区别于此前先产生巨大任务误差再局部补救。
 
@@ -79,3 +79,56 @@ python experiments/joint_compensation_trust.py --protocol configs/joint_compensa
 python experiments/joint_compensation_trust.py --protocol configs/joint_compensation_exchange.json
 python experiments/verify_joint_trust.py --protocol configs/joint_compensation_exchange.json
 ```
+
+## 有限源内点与独立确认
+
+有界交换协议完成原定24次提议，接受22次。联合距离0.179090，全部9,728源输入最坏任务漂移0.040846，自然图片预测全部保持；下游单分支在4,096张拟合图片上改判238张，涉及9类，其中8类达到预设1%比例。主要损失仍集中在类别6（92张），不能称完全均衡。原极端反向构造的4,588次改判不是本点结果。
+
+全部24个提议已用独立NumPy重算，包括未接受的提议：最大分数误差$1.32\times10^{-13}$、完整任务JVP误差$5.43\times10^{-13}$、类别对手梯度相对误差$9.15\times10^{-14}$。第2次提议的线性最坏漂移0.0681、实际4.007，确实被拒绝；没有将越界点写入接受路径。
+
+系数哈希在确认数据读取前固定。新512张训练确认图片排除历史使用索引，原／保护均512张正确、逐张预测一致；含3,072个自然／奇异探针输入的最坏漂移0.120847。FP32导出重查源约束仍为0.040846，实际全模型重放通过。参数距离为0.17908984054。它成为一个合法的新发布点，尚不代表防御有效。
+
+## 真实融合结果
+
+保护MNIST，伙伴SVHN，固定TA(0.5)，作者AGA源码不变。
+
+| 阶段 | MNIST 原 → 保护 | SVHN 原 → 保护 |
+|---|---:|---:|
+| 独立测试 | 99.69% → 99.68% | 97.46% → 97.46%（伙伴未改） |
+| 直接TA | 99.37% → 99.36% | 92.50% → 92.63% |
+| AGA后融合 | 99.32% → 99.32% | 91.77% → 91.93% |
+
+MNIST独立测试改变5个预测，失3得2，净少1；TA改变7个预测，失4得3，净少1；AGA改变5个预测，失2得2，正确数保持9,932/10,000，配对$p=1$。作者AGA后单独使用目标专家为99.68%→99.67%。完整逐类计数保留，不将SVHN的变化当作保护效果。共享评测器另有固定512张训练评估，其标签为`confirmation`；真正新取的独立确认对应`holdout`，两者不可混同。
+
+17组官方计数与272个显式模型重放全部通过。对现成AGA结果再作逐位矩阵比对：新A/B与发布A/B在**原有AGA神经元排列**下完全相等。没有新增攻击调用。**本点直接融合已经无效，不能将失败仅归因于AGA删掉了变化。**
+
+## 反例与剩余障碍
+
+本点给出一个有原始权重和预测的具体反例：原0.5双预算内的任务保持、有限补偿和源内多类别下游改判可以同时成立，但真实融合仍保持原任务能力。因此这些源内条件本身不能作为融合失效的充分条件，也不能通过增加距离或继续优化本点来宣称解决迁移。
+
+令某融合环境中的原预激活为$P_f$、MLP输入为$X_f$。在未改变排列的坐标中，$\lambda=0.5$、发布变化为$\delta A,\delta B$，则精确隐藏变化为
+
+$$\delta h_f=[\phi(P_f+\lambda X_f\delta A^\top)-\phi(P_f)]B_f^\top
++\lambda\phi(P_f+\lambda X_f\delta A^\top)\delta B^\top.$$
+
+类别排序的精确分子变化为
+
+$$\delta N_f=\delta h_fM_f+[\sigma(h_f+\delta h_f)-\sigma(h_f)]b_f.$$
+
+真正改判需要某个竞争类的负向$\delta N_{f,y}-\delta N_{f,k}$超过原间隔。源内任务约束只控制原环境中的**联合**响应；源B改判只控制原环境中的**单分支**。二者均不提供上述融合联合项的下界。当前实验也未测量所有环境的分数变化，不能进一步断言“补偿在融合中完全保持”或具体哪项因果贡献为零。
+
+初始360个活动分类响应的上游Jacobian满行秩，目标B梯度的线性不可达分量约$1.47\times10^{-15}$，联合投影保留约45.24%梯度；有限可行路径和新确认又实际成立。**本轮的主要未解环节已经从补偿可行性推进到融合环境下的方向性非保序作用。** 仅依赖源函数不变与潜在下游破坏的构造仍缺乏这种约束。
+
+该固定联合目标关闭，不续跑迭代、扩大预算或根据此次测试调整类别目标。MNIST真实效果未改善，因此没有扩展DTD/SVHN被保护专家，也没有新增公开清理攻击。旧O/B仍为独立99.71%、TA78.77%、AGA77.85%，第一阶段完全保留。未知伙伴方向覆盖仍是未验证假设，不将“找到可行参数”包装为防御突破。
+
+## 指纹与成本
+
+- 源系数：`723a2d8c4e3f1e41904729b1b78fd0193e6487f0c4a0cc192d9c825f788f98bb`。
+- 独立确认候选：`4aee58fa0391b4d06df592a2a6192d33037fc4af7328edfadefc94a91f8731f8`。
+- 真实发布矩阵：`fdde7bca2acbbe48e05c05a0613f2534afa640e0304b3a0d54d7b9d9efd7929f`。
+
+首协议构造15.95秒、独立核验68.68秒；交换协议构造29.43秒、独立核验168.47秒；新确认22.69秒、1,536次完整前向。正式评估212,208次完整前向，逐组评估耗时合计201.67秒；这不包含全部加载、AGA与存储开销，未测完整评估总墙钟时间，不补造。独立真实重放另272次。交换协议有24次发布系数反向梯度和24次解析任务Jacobian，接受22步；不是零梯度后处理。
+
+[构造与确认](../results/joint_exchange/results.json)、[全部提议独立核验](../results/joint_exchange/source_independent_validation.json)、[真实计数](../results/joint_exchange_real_eval/results.json)、[真实独立复核](../results/joint_exchange_real_eval/independent_validation.json)、[AGA矩阵保留](../results/joint_exchange_real_eval/AGA_retention_validation.json)。重张量和原始预测只在3090的`outputs/phase2_joint_exchange_mnist/`及`outputs/phase2_joint_exchange_eval_mnist_svhn/`。
+
+历史首协议重放使用`8bbb1d3`源码包，交换协议使用`7bf0dd6`包；确认及预先声明的真实评估使用`e94b2d2`包。真实协议仅将预留候选指纹替换为唯一确认导出，不修改构造、预算、数据或评估规则。信赖域与矩阵投影本身是[标准数值优化工具](https://docs.scipy.org/doc/scipy/reference/optimize.minimize-trustconstr.html)，不作为新颖性结论；本实现不是调用或复现SciPy的求解器。
