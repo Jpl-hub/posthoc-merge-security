@@ -50,14 +50,19 @@ class HermiteChart:
             f=torch.cat([z,dz]);target=torch.cat([y,dy])
         else:f,target=fn(self.roots)
         scale=f.norm(dim=1,keepdim=True);f=f/scale;target=target/scale
+        f_all,target_all=f,target
+        if self.cfg.get('canonical_path_rows') is not None:
+            rows=self.cfg['canonical_path_rows'];n=len(self.roots)
+            rows=rows+[n+i for i in rows] if derivatives else rows
+            f,target=f[rows],target[rows]
         gram=f@f.T
         part=target.T@torch.linalg.solve(gram,f)
-        return part,f,gram,target
+        return part,f,gram,target,f_all,target_all
 
     def complete(self,c,free=None,derivatives=True,create_graph=False):
-        part,f,gram,target=self.factors(c,derivatives,create_graph)
+        part,f,gram,target,f_all,target_all=self.factors(c,derivatives,create_graph)
         k=part if free is None else part+free-(free@f.T)@torch.linalg.solve(gram,f)
-        return k,dict(F=f,gram=gram,target=target,part=part)
+        return k,dict(F=f,gram=gram,target=target,part=part,F_all=f_all,target_all=target_all)
 
     def predict_h(self,a,c,k,p=None,factor=1.):
         p=self.p if p is None else p
@@ -152,7 +157,7 @@ def diagnose(cfg):
                     pair_gap=g.detach().cpu(),pair_gap_change=dg.detach().cpu(),maximum_raw_score_error=float((ss-teacher).abs().max())))
         natural=chart.predict(raw,c,k);drift=signed_residual(before,natural);dist=float((c.square().sum()+k.square().sum()).sqrt())
         condition=None if finfo is None else float(torch.linalg.cond(finfo['F']))
-        eq=None if finfo is None else float((finfo['F']@k.T-finfo['target']).abs().max())
+        eq=None if finfo is None else float((finfo['F_all']@k.T-finfo['target_all']).abs().max())
         row=dict(method=name,parameter_distance=dist,root_score_error=float(root_value.abs().max()),root_score_derivative_error=float(root_slope.abs().max()),
             natural_worst_task=float(drift.abs().max()),natural_changed=int((natural.argmax(1)!=before.argmax(1)).sum()),
             constraint_matrix_condition=condition,linear_equality_maximum_error=eq,finite=[{a:b for a,b in v.items() if not torch.is_tensor(b)} for v in finite])

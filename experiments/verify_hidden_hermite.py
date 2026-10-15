@@ -70,7 +70,9 @@ def verify(cfg):
             target=(jet['teacher']-jet['h0'])/nb
             if name=='value_and_derivative':target=np.r_[target,(jet['dteacher']-jet['dh0'])/nb]
             scale=np.linalg.norm(f,axis=1,keepdims=True);f=f/scale;target=target/scale
-            expected=target.T@np.linalg.solve(f@f.T,f);err=float(np.abs(expected-k).max());maxcoef=max(maxcoef,err)
+            # Independent rank-revealing least squares retains ALL original
+            # equations, including reversed copies of the same chord.
+            expected=np.linalg.lstsq(f,target,rcond=None)[0].T;err=float(np.abs(expected-k).max());maxcoef=max(maxcoef,err)
             np.testing.assert_allclose(expected,k,atol=1e-8,rtol=1e-7)
             equality=float(np.abs(f@k.T-target).max());assert equality<cfg['linear_equality_tolerance']
         after,der=score_jet(jet['h0']+nb*jet['z']@k.T,jet['dh0']+nb*jet['dz']@k.T,p)
