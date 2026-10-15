@@ -68,3 +68,14 @@ $$\mathrm{pred}=\nabla F^\top s,\qquad
 ```bash
 python experiments/joint_compensation_trust.py --protocol configs/joint_compensation_trust.json
 ```
+
+## 有界工作集交换
+
+首个累积工作集协议在9次提议、8次接受后因128输入容量提前停止：联合距离0.07447、最坏任务漂移0.42833、自然改判0；下游仅3张／3类改判，尚无足够分类信号。这个停止是工作集容量问题，不是有限可行性或全参数空间不可能性证据。源码包`8bbb1d3`和完整失败点保留，不覆盖。
+
+第二个协议仅改变见证维护规则：始终保留固定40上下文、每类当前最坏输入、最近被拒绝提议的最坏见证；其余旧见证按当前漂移从高到低保留至原128容量。丢弃的是局部Jacobian工作集中的旧行，**完整9,728输入的线性预测和非线性验收一行不删**。同样从零开始，仍最多24次提议；原双预算、半径规则、类别目标、数据和确认资格均不变。这是对提前截断原因的工作集交换修正，不通过放大容量、次数或放松门槛换取继续运行。
+
+```bash
+python experiments/joint_compensation_trust.py --protocol configs/joint_compensation_exchange.json
+python experiments/verify_joint_trust.py --protocol configs/joint_compensation_exchange.json
+```

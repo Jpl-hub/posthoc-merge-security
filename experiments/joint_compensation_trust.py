@@ -95,9 +95,16 @@ class JointProblem:
 
     def factors(self, state):
         risk = signed_residual(self.teacher, state['scores']).abs().max(1).values
+        mandatory = set(self.packed['core'].cpu().tolist())
         for cls in range(self.classes):
             members = (self.y == cls).nonzero().flatten()
-            self.active.add(int(members[risk[members].argmax()]))
+            witness = int(members[risk[members].argmax()]); self.active.add(witness); mandatory.add(witness)
+        if self.cfg.get('working_set_exchange', False):
+            mandatory.update(getattr(self, 'rejected_witnesses', set()))
+            pool = self.active | mandatory; cap = self.cfg['maximum_active_inputs']
+            assert len(mandatory) <= cap
+            other = sorted(pool-mandatory, key=lambda i: (-float(risk[i]), i))
+            self.active = mandatory | set(other[:cap-len(mandatory)])
         selected = torch.tensor(sorted(self.active), device='cuda'); jh, now = score_jacobian(state['h'][selected], self.p)
         teacher = self.teacher[selected]; yy = self.y[selected]; row = torch.arange(len(selected), device='cuda')
         keep = torch.ones_like(teacher, dtype=torch.bool); keep[row, yy] = False
@@ -143,7 +150,8 @@ def optimize(cfg):
     radius = cfg['trust_initial']; history = []; snapshots = []; accepted = 0; reason = 'fixed_trial_cap'; calls = 0; reachability = None
     initial = p.metrics(state, c, k)
     for trial in range(cfg['maximum_trials']):
-        if len(p.active)+p.classes > cfg['maximum_active_inputs']: reason = 'fixed_task_witness_cap'; break
+        if not cfg.get('working_set_exchange', False) and len(p.active)+p.classes > cfg['maximum_active_inputs']:
+            reason = 'fixed_task_witness_cap'; break
         f = p.factors(state); calls += 1
         with torch.enable_grad():
             leaf = k.detach().clone().requires_grad_(True)
@@ -220,8 +228,10 @@ def optimize(cfg):
             radius *= cfg['trust_contraction']
             # Add source-only witnesses of a rejected constraint/model error.
             risk = torch.maximum(actual_residual.abs().max(1).values, (actual_residual-predicted_residual).abs().max(1).values)
+            rejected = set()
             for cls in range(p.classes):
-                members = (p.y == cls).nonzero().flatten(); p.active.add(int(members[risk[members].argmax()]))
+                members = (p.y == cls).nonzero().flatten(); rejected.add(int(members[risk[members].argmax()]))
+            p.active.update(rejected); p.rejected_witnesses = rejected
         if radius < cfg['trust_minimum']: reason = 'trust_radius_below_predeclared_floor'; break
         if accepted >= cfg['maximum_accepted_steps']: reason = 'fixed_accepted_step_cap'; break
     final = p.metrics(state, c, k); latent, _, b_scores = p.latent(k)
