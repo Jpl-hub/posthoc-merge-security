@@ -57,7 +57,12 @@ def construct(cfg,problem_class=Cascade):
     assert previous['status']=='closed_source_continuation_no_multiclass_fusion_effect'
     ray=(-torch.diag(p.basis['s'])/p.basis['s'].norm()).flatten();theta=p.zero.clone();amplitude=0.;history=[];counters=dict(jacobians=0,corrections=0)
     step=cfg['parameter_budget']/cfg['continuation_steps'];reason='continuation_step_cap'
-    for iteration in range(cfg['continuation_steps']):
+    first_step=0
+    if cfg.get('resume_point'):
+        assert digest(cfg['resume_point'])==cfg['resume_sha256']
+        resumed=torch.load(cfg['resume_point'],map_location='cpu');theta=resumed['theta'].cuda();amplitude=resumed['upstream_amplitude'];first_step=round(amplitude/step)
+        counters.update(cfg['prior_construction_counters'])
+    for iteration in range(first_step,cfg['continuation_steps']):
         trial=theta.clone();proposal=amplitude+step;trial[:p.size]=proposal*ray
         accepted,correction_history=slab(p,trial,cfg,counters)
         history.append(dict(iteration=iteration+1,upstream_distance=proposal,accepted=accepted is not None,corrections=correction_history))
@@ -69,7 +74,7 @@ def construct(cfg,problem_class=Cascade):
     signal=metrics['proxy_changed']>=cfg['minimum_finite_changes'] and sum(v>0 for v in metrics['changed_by_teacher_class'])>=cfg['minimum_changed_classes']
     report=dict(target=cfg['target'],status='finite_slab_cascade_completion' if signal else 'closed_slab_cascade_no_multiclass_fusion_effect',
                 method='source_only_nonlinear_attention_cascade_margin_slab_completion',selected=metrics,upstream_distance=amplitude,
-                downstream_distance=float(theta[p.size:].norm()),accepted_continuation_steps=sum(x['accepted'] for x in history),stop_reason=reason,
+                downstream_distance=float(theta[p.size:].norm()),accepted_continuation_steps=first_step+sum(x['accepted'] for x in history),stop_reason=reason,
                 finite_multiclass_gate_passed=signal,**counters,point_sha256=frozen_sha,source_sha256=digest(__file__),protocol_sha256=digest(cfg['protocol_path']),
                 construction_proxy_used=False,first_proxy_observation_after_point_sha256=frozen_sha,
                 parameter_budget=cfg['parameter_budget'],task_budget=cfg['task_budget'],test_used=False,partner_used=False,confirmation_used=False,
