@@ -41,7 +41,22 @@
       "method": "Generalized LMC",
       "paper": "https://arxiv.org/html/2506.22712v1",
       "official_repository": "https://github.com/alexandertheus/Generalized-LMC-for-Transformers",
-      "scope": "Paper mechanism review; not pinned-source or experiment reproduction"
+      "scope": "Pinned official source mechanism reading only; no execution, CLIP adaptation or reproduction.",
+      "repository": "alexandertheus/Generalized-LMC-for-Transformers",
+      "commit": "5e343c05683ce1f2972c7ca3f25111e82d3f00e5",
+      "source_git_blobs": {
+        "merger.py": "4d4b658b723015f706dc179fa2cb5329c8204b2e",
+        "train_merger.py": "c930964fa329fcb7b255fc6ab6d17a3fab0ed416",
+        "weight_matching.py": "bf2120b41680abd95a268d876bd293046250fb53",
+        "utils.py": "aa84dd38b3703384de718d2551ae0d328a30558b",
+        "run_merger.sh": "4cbb2df01bd5f6f7bb88800db66a8b7a9e02299c"
+      },
+      "reviewed_sections": [
+        "merger.py 290-355,396-445",
+        "weight_matching.py 1-40",
+        "utils.py 1-73",
+        "train_merger.py 154-206"
+      ]
     },
     {
       "method": "RegMean",
@@ -65,7 +80,10 @@
   "access_limits": [
     "HF metadata endpoints for MergeBarrier/MergeGuard returned Internal Error; arXiv and official venue primary texts used instead.",
     "Two initial GitHub plugin reads failed with transport errors; later readback succeeded.",
-    "One additional anonymous OpenReview sensitivity-defense PDF was blocked by browser verification and has NOT been reviewed. Do not make exhaustive or first-method claims."
+    "One additional anonymous OpenReview sensitivity-defense PDF was blocked by browser verification and has NOT been reviewed. Do not make exhaustive or first-method claims.",
+    "HF paper_search connector exposed metadata but invocation returned UNAVAILABLE: paper_search not returned by tools/list. Two semantic queries produced no usable paper evidence."
   ],
-  "analytic_checks": "results/author_protocol_audit/prior_conditions.json"
+  "analytic_checks": "results/author_protocol_audit/prior_conditions.json",
+  "rank_condition_checks": "results/author_protocol_audit/anchor_rank_condition.json",
+  "anchor_spectrum_checks": "results/author_protocol_audit/anchor_spectrum.json"
 }
