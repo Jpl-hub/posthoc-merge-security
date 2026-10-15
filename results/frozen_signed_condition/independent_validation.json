@@ -1,0 +1,128 @@
+{
+  "status": "finite_module_audit_verified_with_preserved_control_failures",
+  "symbolic_counterexample": {
+    "symbolic_finite_identity": true,
+    "exact_source_all_input_function": true,
+    "exact_squared_distance": "11097/76100",
+    "all9_exact_margin_rows": true,
+    "checks": [
+      {
+        "partner": "public_base",
+        "column_alignment": "none",
+        "correct": 2
+      },
+      {
+        "partner": "public_base",
+        "column_alignment": "target_columns",
+        "correct": 2
+      },
+      {
+        "partner": "public_base",
+        "column_alignment": "all_columns",
+        "correct": 2
+      },
+      {
+        "partner": "same_function_preserved",
+        "column_alignment": "none",
+        "correct": 2
+      },
+      {
+        "partner": "same_function_preserved",
+        "column_alignment": "target_columns",
+        "correct": 2
+      },
+      {
+        "partner": "same_function_preserved",
+        "column_alignment": "all_columns",
+        "correct": 2
+      },
+      {
+        "partner": "same_function_reversed",
+        "column_alignment": "none",
+        "correct": 0
+      },
+      {
+        "partner": "same_function_reversed",
+        "column_alignment": "target_columns",
+        "correct": 0
+      },
+      {
+        "partner": "same_function_reversed",
+        "column_alignment": "all_columns",
+        "correct": 0
+      }
+    ],
+    "scope": "Two-module mathematical illustration with column alignment only, not an original defense or real CLIP fusion result."
+  },
+  "NumPy_finite_numerator_max_abs": 1.2079226507921703e-13,
+  "NumPy_vs_full_model_score_max_abs": 0.0010145102003544793,
+  "records": [
+    {
+      "environment": "source",
+      "method": "O_B",
+      "all512_module_counts_and_scores": true,
+      "all3_branches": true,
+      "full_model_control_passed": true
+    },
+    {
+      "environment": "source",
+      "method": "PaRaMS_full_outside_budget",
+      "all512_module_counts_and_scores": true,
+      "all3_branches": true,
+      "full_model_control_passed": true
+    },
+    {
+      "environment": "source",
+      "method": "PaRaMS_scaling_ablation",
+      "all512_module_counts_and_scores": true,
+      "all3_branches": true,
+      "full_model_control_passed": true
+    },
+    {
+      "environment": "source",
+      "method": "head",
+      "all512_module_counts_and_scores": true,
+      "all3_branches": true,
+      "full_model_control_passed": true
+    },
+    {
+      "environment": "aligned_source",
+      "method": "O_B",
+      "all512_module_counts_and_scores": true,
+      "all3_branches": true,
+      "full_model_control_passed": true
+    },
+    {
+      "environment": "aligned_source",
+      "method": "PaRaMS_full_outside_budget",
+      "all512_module_counts_and_scores": true,
+      "all3_branches": true,
+      "full_model_control_passed": false
+    },
+    {
+      "environment": "aligned_source",
+      "method": "PaRaMS_scaling_ablation",
+      "all512_module_counts_and_scores": true,
+      "all3_branches": true,
+      "full_model_control_passed": true
+    },
+    {
+      "environment": "aligned_source",
+      "method": "head",
+      "all512_module_counts_and_scores": true,
+      "all3_branches": true,
+      "full_model_control_passed": true
+    }
+  ],
+  "full_model_controls": 128,
+  "full_model_control_failures": 1,
+  "source_only": true,
+  "no_new_candidate": true,
+  "real_partner_checkpoint_loaded": false,
+  "test_used": false,
+  "confirmation_used": false,
+  "diagnostic_sha256": "0228b63e4e70bf7c474529fad6ebd8bc50a3923e3fc758503afdce716e73f155",
+  "results_sha256": "f6fdc7d463c2f36d756e2f68fdaba9bf2cff5c50085a5db3a01f655667a733df",
+  "verifier_sha256": "8914d1b2cf6cd92a2777e99008074a32bbfd1b7835703b082b8816e7cd6563bd",
+  "wall_seconds": 21.96825893316418
+}

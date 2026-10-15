@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-16",
+  "read_only": true,
+  "existing_fixed_code_audit": "results/author_protocol_audit/source_review.json",
+  "new_algorithm_approved": false,
+  "scope": "Mechanism and novelty review, not comprehensive attack reproduction or proof of priority.",
+  "additional_sources": [
+    {
+      "method": "MergeBarrier",
+      "paper": "https://arxiv.org/html/2511.10712v1",
+      "venue": "https://ojs.aaai.org/index.php/AAAI/article/download/40433/44394",
+      "reviewed": "Attention projection and FFN activation expansion, Sections3.2/3.3",
+      "official_implementation": "not located in checked paper/search",
+      "reproduced": false
+    },
+    {
+      "method": "MergeGuard",
+      "paper": "https://arxiv.org/html/2511.11851v1",
+      "venue": "https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf",
+      "reviewed": "Stage1 CE+L2 model training; Stage2 masked task-vector negation",
+      "official_implementation": "not located in checked sources",
+      "reproduced": false
+    },
+    {
+      "method": "Trap2",
+      "paper": "https://arxiv.org/html/2601.21898v2",
+      "repository": "ml-postech/Trap2",
+      "commit": "ef65a26590d92fe07955c5621c08bb315484ff29",
+      "source": "training_scripts/8vision_training_full_trap2.py",
+      "git_blob_sha": "6e3817b3c6d3e5c1457fc432c837cc7677d39916",
+      "reviewed_lines": [
+        109,
+        131,
+        145,
+        183
+      ],
+      "model_parameters_optimized": true,
+      "reproduced": false
+    },
+    {
+      "method": "Generalized LMC",
+      "paper": "https://arxiv.org/html/2506.22712v1",
+      "official_repository": "https://github.com/alexandertheus/Generalized-LMC-for-Transformers",
+      "scope": "Paper mechanism review; not pinned-source or experiment reproduction"
+    },
+    {
+      "method": "RegMean",
+      "paper": "https://arxiv.org/abs/2212.09849",
+      "source": "https://raw.githubusercontent.com/bloomberg/dataless-model-merging/main/regmean_demo.ipynb",
+      "reviewed": "compute_gram and regmean_merge",
+      "scope": "Unpinned official notebook mechanism reading, no reproduction"
+    }
+  ],
+  "access_limits": [
+    "HF metadata endpoints for MergeBarrier/MergeGuard returned Internal Error; arXiv and official venue primary texts used instead.",
+    "Two initial GitHub plugin reads failed with transport errors; later readback succeeded.",
+    "One additional anonymous OpenReview sensitivity-defense PDF was blocked by browser verification and has NOT been reviewed. Do not make exhaustive or first-method claims."
+  ]
+}

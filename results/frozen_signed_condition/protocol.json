@@ -1,0 +1,78 @@
+{
+  "experiment": "frozen_source_finite_signed_condition_and_exact_counterexample",
+  "date": "2026-10-16",
+  "output": "outputs/phase2_frozen_signed_condition_interventions",
+  "target": "MNIST",
+  "n": 512,
+  "source_indices": "outputs/phase2_head_commutator_mnist/source_split.json",
+  "original_AGA": "outputs/feature_noise/artifacts/original_AGA.pt",
+  "basis_reference": "outputs/phase2_ffn_levelset_diagnosis/diagnostic.pt",
+  "inputs": {
+    "outputs/feature_noise/artifacts/original_AGA.pt": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+    "outputs/boundary_mnist/artifacts/release.pt": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46",
+    "outputs/boundary_mnist/artifacts/released_AGA_edits.pt": "178a5266abc457c0b443ba82a392e7d37dd0e4308661a1e56d214104241b415b",
+    "outputs/phase2_ffn_levelset_diagnosis/diagnostic.pt": "18a824e537e4c83ea0d9ab7c20f3bd657744aeede98211b412f4345eb85ee184",
+    "outputs/phase2_params_default_20261016/artifacts/PaRaMS.pt": "5a7bca84cc9a40528f16676b617ef06823197b5ce2242e132fd3f5d18413b706",
+    "outputs/phase2_params_default_20261016/artifacts/AGA_release_edits.pt": "a441587682b6ef5794a3ed7018d9b221ca403b54fa33489b525a4362e9ccbf3b",
+    "outputs/phase2_params_scaling_20261016/artifacts/PaRaMS.pt": "233551908105783739ec10f2a606935b43bde529b870cbf620760414cf9f0c82",
+    "outputs/phase2_params_scaling_20261016/artifacts/AGA_release_edits.pt": "ed6094b029d61c67f620d4d7f69dcee3ef7acd8150da6c65ae661a6cb6a4df94",
+    "outputs/phase2_head_commutator_mnist/artifacts/diagnostic_edits.pt": "240f09e0e8069050d3f2ebc5e4462e9a75394e523259c35eb27ec57f6eae235e",
+    "outputs/phase2_head_commutator_mnist/artifacts/finite_audit.pt": "635287345b7e81b444acedd623a2f917e4730ff2787cd41ba075cac54f10f76b",
+    "outputs/phase2_head_commutator_mnist/source_split.json": "dced50273ddca773530591e27d6c4e4e04299516ec6579b28de8d9bec48d45dc"
+  },
+  "cases": [
+    {
+      "name": "O_B",
+      "release": "outputs/boundary_mnist/artifacts/release.pt",
+      "AGA_edits": "outputs/boundary_mnist/artifacts/released_AGA_edits.pt"
+    },
+    {
+      "name": "PaRaMS_full_outside_budget",
+      "release": "outputs/phase2_params_default_20261016/artifacts/PaRaMS.pt",
+      "AGA_edits": "outputs/phase2_params_default_20261016/artifacts/AGA_release_edits.pt"
+    },
+    {
+      "name": "PaRaMS_scaling_ablation",
+      "release": "outputs/phase2_params_scaling_20261016/artifacts/PaRaMS.pt",
+      "AGA_edits": "outputs/phase2_params_scaling_20261016/artifacts/AGA_release_edits.pt"
+    },
+    {
+      "name": "head",
+      "release": "outputs/phase2_head_commutator_mnist/artifacts/diagnostic_edits.pt",
+      "AGA_raw": "outputs/phase2_head_commutator_mnist/artifacts/finite_audit.pt"
+    }
+  ],
+  "source_sha256": {
+    "experiments/frozen_signed_condition.py": "e3d0dd9d6abdddcead98f68127032ef108f6a466e9545e81ab7c01f66a053ded",
+    "experiments/attention_cascade.py": "868fc15bd7628f412557af8afc19807a06ad9cacbeed4e1d126108f4f4654593",
+    "experiments/compare_finite_protection.py": "c48bc93752c87f85cf985dac2e61fcec702ed56f7eff5c18dcec7a1422acb4e2",
+    "experiments/finite_compensation_transport.py": "d485a69bef0a3f6043f3bd3c73902f109fca3c2d084e12542888ed5d9264a03d",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "AGA_source_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "full_forward_check_n": 16,
+  "forward_atol": 0.0005,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "new_candidate_allowed": false,
+  "new_optimizer_allowed": false,
+  "future_peer_or_test_or_confirmation_allowed": false,
+  "toy_coefficients": {
+    "a": "3/10",
+    "b": "3/10",
+    "c": "4/5",
+    "margin": "1/20",
+    "peer_bad_third_row": [
+      "-4/5",
+      "4/5"
+    ]
+  },
+  "scope": "One retrospective source-only finite structural test plus exact logical counterexample. No new release, no repaired closed method, no unknown-peer distribution claim.",
+  "implementation_repair": "Convert exact rational constants to float at Torch and NumPy SVD boundaries only. Both failed runs before actual model/data loading retained. Scientific coefficients, source indices, cases and rules unchanged.",
+  "audit_reporting_amendment": "Following a failed common-prefix full-model control, complete the SAME intervention analysis and record every failed control at unchanged0.0005 tolerance. Do not label module interventions as exact whole-model outputs. No scientific coefficient, image, protection weight or selection changed."
+}

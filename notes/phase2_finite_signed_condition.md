@@ -81,4 +81,41 @@ $$\max_{\psi:\,D\le0.5,\ R_{\rm task}\le0.5}\ \min_{e\in\mathcal E}\min_c\ \math
 
 [PaRaMS](https://arxiv.org/html/2503.07661v1)、[固定实现](https://github.com/ISCT-W/PaRaMS/blob/4159a9a8bf253088694154d944f4583db8eca60e/src/PaRaMS/PaRaMS_algorithm.py)给出函数对称与参数分离；[AGA](https://arxiv.org/html/2606.30360v1)、[固定实现](https://github.com/krumpguo/secure-merge-attack/blob/fb61429f5e6f3517102d506697a150ac26abbdea/utils_attack_B32.py)给出逐头锚点求解；[TSV](https://arxiv.org/html/2412.00081v2)、[固定矩阵定义](https://github.com/AntoAndGar/task_singular_vectors/tree/a6c97188f7aa0bb20753de4f2939be89dd64f1c3)提供矩阵奇异向量工具。这些基本工具不是本项目创新。
 
-结果待执行与独立审核。本轮不启动新方法优化。
+## 已核验结果
+
+精确两模块反例通过SymPy符号恒等式、九组有理数分类间隔和作者逐列求解器交叉核验。原始距离0.381866、逐列对齐后距离0.329644；同一源功能与探针保持条件下，伙伴可分别使两个输入全对或全错。它是逻辑反例，不能称新防御或真实AGA评价。
+
+同一512张源训练图片的末块干预如下。表中都是**预测改变数量**，不是测试准确率；AGA列使用既存对齐权重和原AGA专家前缀，不能冒充真实融合。
+
+| 冻结方法 | 原专家前缀：上游／B／联合 | AGA原专家前缀：上游／B／联合 |
+|---|---:|---:|
+| O/B | 2／45／0 | 1／51／0 |
+| 完整PaRaMS，超预算参考 | 0／0／0 | 0／0／0* |
+| 官方Attention缩放消融 | 0／0／0 | 0／0／0 |
+| 跨头固定诊断点 | 0／0／0 | 0／0／0 |
+
+*完整PaRaMS的AGA公共前缀控制失败：16张完整模型分数误差0.00101451超过冻结0.0005容差。上表该项仅为明确限定的末块干预，不能称完整模型重建。容差未放宽，其余七组控制通过。独立NumPy重建全部8组、三分支的有限分数和逐类计数，最大误差1.21e-13。单独保留原始失败记录，不把一次失败控制改写成通过。
+
+O/B源B分支45张改判中44张为教师类别1、1张为类别7；AGA前缀下51张中47张为类别1、3张为7、1张为0。联合抵消确实存在，但同一有限条件没有多类别广泛破坏的证据。冻结32个任务奇异方向上，B参数能量占比0.30914，源分类响应能量占比0.23642；不能由这些截断比例推出完整任务或未知环境保证。
+
+### 功能预算更正
+
+源O/B联合没有改判，但完整归一化分数的最坏相对间隔变化为**0.789630＞0.5**。独立NumPy定位后，用训练索引41538的原始图片直接运行原／保护完整模型，得到0.789627，重建分数误差7.89e-6。教师类别5、竞争类6、真值6，保护前后都预测5；原有预算没有排除教师误判图片，不能事后剔除这一见证。
+
+因此，旧O/B在原有限确认集上的0.37623通过事实，以及独立99.71%、真实TA78.77%、原版AGA79.53%／77.85%均保持；但**不能继续宣称全任务最坏0.5约束已满足**。不修改O/B权重，不用此已暴露样本重新校正候选。新方法必须解决独立任务保持泛化与真实融合损害的兼容性。
+
+## 复现、成本与失败
+
+固定入口：
+
+```bash
+python experiments/frozen_signed_condition.py --protocol configs/frozen_signed_condition_interventions.json
+python experiments/verify_frozen_signed_condition.py --output outputs/phase2_frozen_signed_condition_interventions
+python experiments/verify_frozen_OB_task_witness.py --output outputs/phase2_frozen_signed_condition_interventions
+```
+
+输出目录须为新路径；不覆盖本轮证据。完整轻量结果、九组解析间隔、独立验证和越界见证见[results](../results/frozen_signed_condition/)。原始激活、参数与分数仅在3090的`outputs/phase2_frozen_signed_condition_interventions/artifacts/diagnostic.pt`，SHA256为`0228b63e4e70bf7c474529fad6ebd8bc50a3923e3fc758503afdce716e73f155`。
+
+完成的干预运行20.54秒、独立SymPy／NumPy核验21.97秒、原始图片见证重放12.24秒。无梯度、无新权重、无真实伙伴／测试／新确认。完成运行包含1,024次原前缀图像前向、128次完整模型控制，见证另2次。三次先前失败保留：两次有理数与Torch／NumPy类型互操作错误发生于真实模型／数据加载前；一次公共前缀完整模型控制失败前运行1,120次图像前向。失败运行未单独记录耗时，不能计零或以完成运行耗时替代。
+
+独立核对Phase1冻结包、三个任务发布权重和原O/B候选哈希，全部不变。本轮没有超过O/B的保护方法。下一步先按[创新性审查](phase2_related_work_and_novelty.md)核对直接相关机制与任务保持缺口；没有可信的新结构条件，不启动优化。

@@ -1,0 +1,39 @@
+{
+  "runs": [
+    {
+      "status": "implementation_type_error_before_models_or_data",
+      "error": "Fraction multiplied by torch.Tensor in toy author solver check",
+      "source_commit": "d0fc867",
+      "mathematical_assertions_before_author_solver_passed": true,
+      "real_expert_or_data_loaded": false,
+      "scientific_configuration_changed": false,
+      "elapsed_seconds": null,
+      "cost_limitation": "No separate elapsed-time record before exception."
+    },
+    {
+      "status": "implementation_type_error_before_models_or_data",
+      "error": "Fraction times NumPy array creates object dtype in toy SVD",
+      "source_commit": "012d51d",
+      "real_expert_or_data_loaded": false,
+      "scientific_configuration_changed": false,
+      "toy_author_solver_calls_before_exception": 10,
+      "elapsed_seconds": null,
+      "cost_limitation": "No separate elapsed-time record before exception."
+    },
+    {
+      "status": "common_prefix_full_model_equivalence_control_failed",
+      "case": "aligned_source/PaRaMS_full_outside_budget",
+      "observed_max_abs_score_error": 0.0010145102003615847,
+      "frozen_tolerance": 0.0005,
+      "full_model_control_passed": false,
+      "tolerance_relaxed": false,
+      "new_protection_or_parameters": false,
+      "source_rows_completed": 5,
+      "source_full_forward_instances_before_stop": 1120,
+      "elapsed_seconds": null,
+      "reason": "Other upstream PaRaMS matrices differ slightly afterAGA; a common-prefix last-block intervention cannot be labelled an exact complete-model replay. Preserve failed assumption."
+    }
+  ],
+  "scientific_threshold_relaxed": false,
+  "failed_sources_and_logs_preserved_on_server": true
+}
