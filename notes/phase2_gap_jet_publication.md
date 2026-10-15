@@ -61,4 +61,6 @@ Possible contribution under investigation: decision-normal nonlinear boundary re
 
 ## Results
 
-Pending frozen mechanism check and independent replay. No new protection success claimed.
+The fixed non-releasable mechanism seed passed the scalar/jet checks: monotonic derivative lower bound3.4442, canonical feature-row condition90.55, independent Brent/SVD coefficient difference1.86e−16, gap error7.39e−13, slope error2.27e−13, objective directional derivative difference2.92e−8. Hidden response changes by55.32% while its selected pair jets remain preserved: this establishes finite representation freedom, not task preservation.
+
+That seed has worst finite task drift1.0143 and two natural changed predictions, so it is **not releasable and not rescaled**. The separate candidate optimization starts from zero. No new protection success claimed.
