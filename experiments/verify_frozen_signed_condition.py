@@ -150,6 +150,48 @@ def projection(output):
     save_json(target,result);print(json.dumps(result),flush=True)
 
 
+def probe_coordinates(output):
+    """A fixed known permutation control, not a protection constructor."""
+    from scipy.special import expit
+    from probe_margin_distance import scores
+    from verify_levelset_audits import residual
+    start=time.monotonic();root=Path(output);target=root/'probe_coordinates.json';assert not target.exists()
+    path=root/'artifacts/diagnostic.pt';pin='0228b63e4e70bf7c474529fad6ebd8bc50a3923e3fc758503afdce716e73f155'
+    assert digest(path)==pin;data=torch.load(path,map_location='cpu',weights_only=False)
+    pt=data['environments']['source']['parameters'];p=convert(pt);st=convert(data['cases']['O_B']['source']['states'])
+    v=data['basis'].numpy();perm=np.arange(p['B'].shape[1]);perm[:2]=perm[:2][::-1]
+    q=dict(p,A=p['A'][perm],a=p['a'][perm],B=p['B'][:,perm])
+    distance=float(sum((np.linalg.norm(q[k]-p[k])/np.linalg.norm(p[k]))**2 for k in ['A','a','B'])**.5)
+    a=st['x0']@p['A'].T+p['a'];b=st['x0']@q['A'].T+q['a']
+    h=st['h0']+(b*expit(1.702*b))@q['B'].T-(a*expit(1.702*a))@p['B'].T
+    natural=raw_scores(st['h0'],p);natural_after=raw_scores(h,p)
+    rms=np.sqrt(np.mean((st['z0']@v.T)**2,axis=0));dirs=np.concatenate([-.01*rms[:,None]*v,.01*rms[:,None]*v])
+    effects={'before':dirs@p['B'].T,'fixed_coordinates':dirs@q['B'].T,'transported_coordinates':dirs[:,perm]@q['B'].T}
+    saved={k:[] for k in effects};max_error=0.
+    for i in range(0,len(h),16):
+        for name,delta in effects.items():
+            base=st['h0'][i:i+16] if name=='before' else h[i:i+16]
+            hidden=(base[:,None]+delta[None]).reshape(-1,h.shape[1]);value=raw_scores(hidden,p)
+            independent=scores(torch.from_numpy(hidden),pt).numpy();max_error=max(max_error,float(abs(value-independent).max()))
+            assert max_error<1e-8;saved[name].append(value)
+    saved={k:np.concatenate(vv) for k,vv in saved.items()};rows=[]
+    for name in ['fixed_coordinates','transported_coordinates']:
+        value=saved[name];before=saved['before'];changed=value.argmax(1)!=before.argmax(1)
+        rows.append(dict(control=name,changed=int(changed.sum()),worst_task_drift=float(abs(residual(before,value)).max()),
+            maximum_score_error=float(abs(value-before).max())))
+    artifact=root/'artifacts/probe_coordinate_scores.npz';assert not artifact.exists()
+    np.savez(artifact,**saved,natural=natural,natural_after=natural_after,indices=np.asarray(data['indices']),directions=dirs)
+    result=dict(status='known_symmetry_probe_control_verified',swap=[0,1],rank=len(v),source_n=len(h),probe_inputs=len(saved['before']),
+        parameter_distance=distance,natural_changed=int((natural.argmax(1)!=natural_after.argmax(1)).sum()),
+        natural_worst_task_drift=float(abs(residual(natural,natural_after)).max()),controls=rows,numpy_torch_max_error=max_error,
+        source_sha256=digest(__file__),diagnostic_sha256=pin,raw_scores_sha256=digest(artifact),wall_seconds=time.monotonic()-start,
+        images_loaded=0,new_release_weights=0,gradients=0,scope='Known permutation control only; not a new method, peer guarantee, budget relaxation or explanation of earlier defense failures. No confirmation, partner or test input.')
+    save_json(target,result);print(json.dumps(result),flush=True)
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',required=True);p.add_argument('--projection',action='store_true')
-    args=p.parse_args();torch.set_num_threads(4);(projection if args.projection else verify)(args.output)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',required=True);p.add_argument('--projection',action='store_true');p.add_argument('--probe-coordinates',action='store_true')
+    args=p.parse_args();torch.set_num_threads(4)
+    if args.probe_coordinates:probe_coordinates(args.output)
+    elif args.projection:projection(args.output)
+    else:verify(args.output)
