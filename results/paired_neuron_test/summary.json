@@ -215,11 +215,11 @@
     "n": 512,
     "certified_no_class_change_for_any_real_K_within_original_budget": 512,
     "not_certified": 0,
-    "minimum_lower_gap": 0.3619065455590987,
+    "minimum_lower_gap": 0.3613040382652692,
     "activation_contrast_norm_median": 0.014367535217079144,
     "activation_contrast_norm_maximum": 0.03598808556265619,
     "coefficient_radius": 10.729409051365812,
-    "parameter_rounding_norm_bound": 2.602247071541454e-06,
+    "parameter_rounding_norm_bound": 1.9931353535046503e-05,
     "actual_candidate_changed": 0,
     "per_class": [
       {
@@ -273,9 +273,9 @@
         "certified": 46
       }
     ],
-    "source_sha256": "a3ebd830375e3c4c60fc67be073cf8f59875659f79ddceb332f5348d6fbad7ed",
+    "source_sha256": "7fa8f3cb348f6e7ac99fcecebe2664a390a0ac55763d13ed54cde83cd5b76b2b",
     "training_point_sha256": "87dd39e5a22a99e82f9f40bffb97679e4a1ccafff729b23ec930477e361ad59d",
-    "wall_seconds": 1.776315649971366,
+    "wall_seconds": 1.7590915593318641,
     "images_loaded": 0,
     "new_parameters_selected": false,
     "scope": "Fixed public-base suffix, fixed coalescence/Q/S, complete LN numerator. Bounds parameter rounding, not every GPU arithmetic operation. Not an upper bound on unknown-partner or full-space defense efficacy; uncertified is not evidence of a feasible flip."
@@ -1521,6 +1521,95 @@
       "failed_target_source.py": "5641686371deec057f11854c408cbc2ef62c1584f513ccc767735517f1d31190",
       "failed_target.log": "bc20a624c9278401342856a82d3093e1b3b6391da320acc7e3f4ddd524e73b64"
     },
-    "metadata_audit_reproduction": "Reconstruct excluded union from frozen source fit/scale indices, cfg.extra_excluded_indices, the exact group per static split_independence_audit record, and training_indices/holdout_protocol/confirmation_split fields pinned in confirmation_split.excluded_metadata_sha256. Assert all hashes, 30332 exclusions, no source/confirmation overlap, then independently replay numpy.default_rng(2026101603).choice(sorted(set(range(60000))-excluded),512,replace=False); exact order matches frozen confirmation."
+    "metadata_audit_reproduction": "Reconstruct excluded union from frozen source fit/scale indices, cfg.extra_excluded_indices, the exact group per static split_independence_audit record, and training_indices/holdout_protocol/confirmation_split fields pinned in confirmation_split.excluded_metadata_sha256. Assert all hashes, 30332 exclusions, no source/confirmation overlap, then independently replay numpy.default_rng(2026101603).choice(sorted(set(range(60000))-excluded),512,replace=False); exact order matches frozen confirmation.",
+    "bound_review_correction": "Initial read-only bound counted only a final merge sum rounding. Independent source review expanded the conservative padding to include both reference/release subtraction and addition in the actual author merge expression. Preserved initial result; final lower gap0.361304 remains positive on all512. No weight, coefficient, source index, confirmation or real evaluation changed."
+  },
+  "finite_family_bound_initial_rounding.json": {
+    "status": "finite_family_bound_computed_not_unknown_peer_certificate",
+    "n": 512,
+    "certified_no_class_change_for_any_real_K_within_original_budget": 512,
+    "not_certified": 0,
+    "minimum_lower_gap": 0.3619065455590987,
+    "activation_contrast_norm_median": 0.014367535217079144,
+    "activation_contrast_norm_maximum": 0.03598808556265619,
+    "coefficient_radius": 10.729409051365812,
+    "parameter_rounding_norm_bound": 2.602247071541454e-06,
+    "actual_candidate_changed": 0,
+    "per_class": [
+      {
+        "class_id": 0,
+        "n": 61,
+        "certified": 61
+      },
+      {
+        "class_id": 1,
+        "n": 55,
+        "certified": 55
+      },
+      {
+        "class_id": 2,
+        "n": 51,
+        "certified": 51
+      },
+      {
+        "class_id": 3,
+        "n": 48,
+        "certified": 48
+      },
+      {
+        "class_id": 4,
+        "n": 49,
+        "certified": 49
+      },
+      {
+        "class_id": 5,
+        "n": 51,
+        "certified": 51
+      },
+      {
+        "class_id": 6,
+        "n": 51,
+        "certified": 51
+      },
+      {
+        "class_id": 7,
+        "n": 49,
+        "certified": 49
+      },
+      {
+        "class_id": 8,
+        "n": 51,
+        "certified": 51
+      },
+      {
+        "class_id": 9,
+        "n": 46,
+        "certified": 46
+      }
+    ],
+    "source_sha256": "a3ebd830375e3c4c60fc67be073cf8f59875659f79ddceb332f5348d6fbad7ed",
+    "training_point_sha256": "87dd39e5a22a99e82f9f40bffb97679e4a1ccafff729b23ec930477e361ad59d",
+    "wall_seconds": 1.776315649971366,
+    "images_loaded": 0,
+    "new_parameters_selected": false,
+    "scope": "Fixed public-base suffix, fixed coalescence/Q/S, complete LN numerator. Bounds parameter rounding, not every GPU arithmetic operation. Not an upper bound on unknown-partner or full-space defense efficacy; uncertified is not evidence of a feasible flip."
+  },
+  "retention_integrity.json": {
+    "status": "passed",
+    "historical_artifacts": {
+      "outputs/phase2_boundary_game_mnist/candidate.pt": "e0ee5e5eeb170d550401724dfe0a8c6ff39273afdde79f46a207a4370b2398a4",
+      "outputs/phase1_frozen_20261014/source.zip": "602dd96dea9786e68bbfe74c3ae2e5eaf1a053382fb6f9637ea21a05c772b5ae",
+      "outputs/projection_bias_noise_mnist/artifacts/release.pt": "6c5c29354c85bea33dccb3ec60c3f89fcd05664c6281cd693a0129c6dde40e71",
+      "outputs/projection_bias_noise_dtd/artifacts/release.pt": "0dfad6a9d8748a96f1403a77ce12728a829126b1a3cdd69ec2e7ada1248c1f5d",
+      "outputs/projection_bias_noise_svhn/artifacts/release.pt": "454a5afcf23e9859c1c41fb39dbb0e4a46981802a6e2d4f93a081088044f4c29",
+      "outputs/boundary_mnist/artifacts/release.pt": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46"
+    },
+    "current_artifacts": {
+      "frozen_release.pt": "fbc69446ee4f832cc8b7a402ef0e5f7e529b54203adb6fac2b57b1a8418399e7",
+      "training_point.pt": "87dd39e5a22a99e82f9f40bffb97679e4a1ccafff729b23ec930477e361ad59d",
+      "confirmation.pt": "f848fcd8fc2446a8504ac5ae3b8b7db349d418f99dc587346c40eeb282316587"
+    },
+    "old_OB_and_phase1_unchanged": true,
+    "wall_seconds": 2.688842357136309
   }
 }

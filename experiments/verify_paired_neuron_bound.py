@@ -31,8 +31,12 @@ def run(output):
     full_lipschitz=np.linalg.norm(normals,axis=2)+abs(biases)/d**.5
     base_cost=sum((np.linalg.norm(q[k]-p[k])/np.linalg.norm(p[k]))**2 for k in ['A','a'])
     radius=np.linalg.norm(p['B'])*np.sqrt(.25-base_cost)
-    u=2.**-24; eb=u*(np.linalg.norm(p['B'])+radius)
-    em=.5*eb+u*(np.linalg.norm(pp['B'])+.5*(radius+eb))
+    u=2.**-24; bn=np.linalg.norm(p['B']); eb=u*(bn+radius)
+    # Actual public proxy: fl(anchor + .5*fl(release-anchor)). Include
+    # rounding in BOTH original and released merges, not only the last sum.
+    anchor_bound=(2*np.linalg.norm(pp['B'])+(1+2*u+u*u)*bn)/(1-4*u-u*u)
+    def merge_error(norm):return u*((1+.5*u)*norm+(2+.5*u)*anchor_bound)
+    em=.5*eb+merge_error(bn+radius+eb)+merge_error(bn)
     lower=gaps-radius*np.linalg.norm(X,axis=1)[:,None]*task_lipschitz-em*np.linalg.norm(z,axis=1)[:,None]*full_lipschitz
     lower[np.arange(len(y)),y]=np.inf; certified=lower.min(1)>0
     before=raw_scores(cache['h'],pp); actual=raw['proxy_after'].numpy()
