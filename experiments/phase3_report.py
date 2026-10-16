@@ -42,7 +42,18 @@ def build(source, output):
             pins[str(p)] = hashlib.sha256(p.read_bytes()).hexdigest()
     assert rows, 'No independently verified full results.'
     utility_path = source/'utility/results.json'
-    utilities = {r['defense']: r for r in json.loads(utility_path.read_text())} if utility_path.exists() else {}
+    utility_validation_path = source/'utility/independent_validation.json'
+    utility_validation = json.loads(utility_validation_path.read_text()) if utility_validation_path.exists() else None
+    if utility_validation: assert utility_validation['status'] == 'passed_numpy_score_recount'
+    utilities = {r['defense']: r for r in json.loads(utility_path.read_text())} if utility_validation else {}
+    if utilities:
+        (out/'utility.json').write_text(utility_path.read_text())
+        pins[str(utility_validation_path)] = hashlib.sha256(utility_validation_path.read_bytes()).hexdigest()
+    witness_path = source/'utility/witnesses.json'
+    if witness_path.exists():
+        (out/'utility_witnesses.json').write_text(witness_path.read_text())
+        pins[str(witness_path)] = hashlib.sha256(witness_path.read_bytes()).hexdigest()
+    ab_violation = utilities.get('A/B', {}).get('n_inputs_over_task_budget', 0) > 0
     for r in rows:
         group = [v for v in rows if (v['target'], v['partner'], v['merger'], v['dataset'], v.get('order')) ==
                  (r['target'], r['partner'], r['merger'], r['dataset'], r.get('order'))]
@@ -77,13 +88,14 @@ def build(source, output):
         writer = csv.DictWriter(f, fieldnames=columns); writer.writeheader()
         for r in rows:
             entry = {k: r.get(k, '') for k in columns}
+            entry['order'] = '/'.join(r.get('order', []))
             entry.update(lost=r['paired']['lost'], gained=r['paired']['gained'], net_loss_pp=r['paired']['loss_pp'],
                          imported_from=r.get('provenance', {}).get('imported_from', ''))
             writer.writerow(entry)
     scopes = ['None', 'Protected expert', 'All experts']
     titles = ['No attack', 'AGA (protected expert)', 'AGA (all experts)']
     names = ['Unprotected', 'Phase1_MNIST', 'O/B', 'A/B', 'PaRaMS', 'PaRaMS_Attention']
-    labels = ['Unprotected', 'Phase 1 (LN bias)*', 'O/B†', 'A/B', 'PaRaMS (full)*', 'PaRaMS (attention)']
+    labels = ['Unprotected', 'Phase 1 (LN bias)*', 'O/B†', 'A/B†' if ab_violation else 'A/B', 'PaRaMS (full)*', 'PaRaMS (attention)']
     primary = [r for r in rows if (r['target'], r['partner']) == ('MNIST', 'SVHN')]
     def get(table, name, method, scope, task):
         hits = [r for r in table if (r['defense'], r['merger'], r['attack_scope'], r['dataset']) == (name, method, scope, task)]
@@ -107,7 +119,7 @@ def build(source, output):
                             color='white' if values[a,b] < 48 else 'black', fontsize=9)
     fig.colorbar(image, ax=axes, label='Accuracy (%)', shrink=.78)
     fig.suptitle('MNIST–SVHN model merging', fontsize=12)
-    fig.supxlabel('* Different-budget references. † Task budget exceeded (0.7896 > 0.5). A/B: finite confirmation only.', fontsize=8)
+    fig.supxlabel('* Different-budget references. † Task-preservation bound exceeded (see finite audit).', fontsize=8)
     save_figure(fig, out, 'attack_comparison')
     plt.close(fig)
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 3.5), layout='constrained')
@@ -121,14 +133,16 @@ def build(source, output):
         image = ax.imshow(values, vmin=-100, vmax=100, cmap='RdBu_r', aspect='auto')
         ax.set_title(f'AGA → {method} (protected expert)', loc='left')
         ax.set_xticks(range(10)); ax.set_xlabel('MNIST class')
-        ax.set_yticks(range(4), ['Phase 1 (LN bias)*', 'O/B†', 'A/B', 'PaRaMS (full)*'])
+        ax.set_yticks(range(4), [labels[i] for i in [1, 2, 3, 4]])
     fig.colorbar(image, ax=axes, label='Net class accuracy loss (pp)', shrink=.9)
     fig.supxlabel('Compared with matched unprotected controls. * Different-budget references. † Task budget exceeded.', fontsize=8)
     save_figure(fig, out, 'class_losses')
     plt.close(fig)
     lines = ['# Phase 3 evaluation results', '',
              'Accuracy (%). Frozen defenses; historically exposed test sets. No defense was selected or updated from these results.', '',
-             '*Phase 1 and full PaRaMS are different-budget references. † O/B has a known task-preservation violation. A/B has finite confirmation only.*', '']
+             '*Phase 1 and full PaRaMS are different-budget references. † Task-preservation bound exceeded. Earlier finite confirmations do not prove global feasibility.*', '']
+    if ab_violation:
+        lines += ['The read-only 512-image audit also finds an A/B violation. Its historical confirmation and merge results remain valid observations; it cannot be presented as globally satisfying the 0.5 task bound.', '']
     latex = []
     for target, partner in sorted({(r['target'], r['partner']) for r in rows}):
         table = [r for r in rows if (r['target'], r['partner']) == (target, partner)]
@@ -159,6 +173,15 @@ def build(source, output):
                 pairs = [f'{get(table,name,"NUFILT",s,"MNIST")["accuracy_percent"]:.2f} / {get(table,name,"NUFILT",s,"SVHN")["accuracy_percent"]:.2f}' for s in scopes]
                 lines.append(f'| {" → ".join(order)} | {labels[names.index(name)]} | '+' | '.join(pairs)+' |')
         lines += ['', 'Phase 1 scores reuse the exact same merged models after checking all selected inputs are identical. Unselected biases, LN, fc2 and visual projection remain at the public anchor. No defense was changed. Merger gates were optimized on parameter projection losses only: 12 distinct two-task merges × 50 global backward steps, with zero expert/defense updates. Full evaluation uses frozen pilot merge weights.', '']
+        latex += ['% NUFILT: same native adapter and fixed defaults; both task orders, one fixed seed.',
+                  r'\begin{tabular}{llrrr}', r'\toprule', r'Order & Defense & No attack & AGA (protected) & AGA (all) \\', r'\midrule']
+        for order in [('MNIST', 'SVHN'), ('SVHN', 'MNIST')]:
+            table = [r for r in nr if tuple(r['order']) == order]
+            for name in ['Unprotected', 'Phase1_MNIST', 'A/B']:
+                pairs = [f'{get(table,name,"NUFILT",s,"MNIST")["accuracy_percent"]:.2f} / {get(table,name,"NUFILT",s,"SVHN")["accuracy_percent"]:.2f}' for s in scopes]
+                label = labels[names.index(name)].replace('*', r'$^{*}$').replace('†', r'$^{\dagger}$')
+                latex.append('--'.join(order)+' & '+label+' & '+' & '.join(pairs)+r' \\')
+        latex += [r'\bottomrule', r'\end{tabular}', '']
     lines += ['## Evidence and limits', '',
               f'- Independently verified cases: {len(executions)}/4; result rows: {len(rows)}.',
               '- TA coefficient 0.5; TIES top 20%, mass signs, disjoint mean, coefficient 1.0. Each has a separate unprotected control.',
@@ -181,6 +204,9 @@ def build(source, output):
     (out/'provenance.json').write_text(json.dumps(dict(status='verified_batch', cases=len(executions),
         source_files_sha256=pins, independent_validations=validations, plotting_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         nufilt_validation=nufilt_validation,
+        nufilt_pilot_execution=json.loads((nufilt.parent/'pilot/execution.json').read_text()) if nufilt_validation else None,
+        nufilt_full_execution=json.loads((nufilt/'execution.json').read_text()) if nufilt_validation else None,
+        utility_independent_validation=utility_validation,
         utility_source_sha256=hashlib.sha256(utility_path.read_bytes()).hexdigest() if utilities else None,
         evaluation_wall_seconds=sum(x['wall_seconds'] for x in executions)), indent=2)+'\n')
 

@@ -2,7 +2,7 @@
 
 研究已微调 CLIP ViT-B/32 专家的发布前参数后处理保护：保持独立任务能力，评价未经授权融合及恢复攻击后的任务能力。
 
-当前为 **Phase 3：冻结防御的系统攻防评价**。不再构造或调整 Phase 2 防御；仅使用 RTX3090。
+当前为 **Phase 3：冻结防御的系统攻防评价**。本批244行结果、3904次完整模型抽样重放已通过；O/B、A/B均发现任务预算反例，不能宣称严格可行。不再构造或调整 Phase 2 防御；仅使用 RTX3090。
 
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
 - [冻结模型、源码、数据与参数指纹](configs/phase3.json)
@@ -17,11 +17,11 @@
 | 无保护专家 | 各融合方法、任务组合和攻击范围分别提供匹配控制 |
 | Phase 1 最终 LN 偏置 | 已有 MNIST、DTD、SVHN；不同预算参考。原版 AGA 未修改关键偏置，不能据此声称抗任意恢复 |
 | Phase 2 O/B | 有真实融合干扰；已核验任务漂移0.789627超过0.5，只作效果参考 |
-| Phase 2 A/B | 既往有限确认通过，不等于全任务保持证明；继续只读审计 |
+| Phase 2 A/B | 既往有限确认通过；本阶段完整模型已重放任务漂移39.920的越界见证，只作效果参考 |
 | PaRaMS 完整官方配置 | 函数保持，但参数距离超出0.5；不同约束参考 |
 | PaRaMS Attention 消融 | 官方组件的预算内消融，不是完整方法的同预算复现 |
 
-[Phase 1 数学机制与历史结果](notes/projection_bias_noise.md)、[O/B 构造与历史结果](notes/phase2_boundary.md)、[预算越界更正](notes/phase2_finite_signed_condition.md)、[官方 PaRaMS 与 AGA 协议核对](notes/phase2_params_and_structure.md)。其他历史实验、权重和失败证据保留在原目录；本页不再重复逐轮日志。
+[Phase 1 数学机制与历史结果](notes/projection_bias_noise.md)、[O/B 构造与历史结果](notes/phase2_boundary.md)、[预算越界更正](notes/phase2_finite_signed_condition.md)、[本阶段 O/B 与 A/B 完整模型反例](results/phase3/utility_witnesses.json)、[官方 PaRaMS 与 AGA 协议核对](notes/phase2_params_and_structure.md)。其他历史实验、权重和失败证据保留在原目录；本页不再重复逐轮日志。
 
 ## 评价范围
 
@@ -31,7 +31,7 @@ TA、TIES 属于融合算法；AGA 属于参数对齐恢复攻击。分别报告
 
 TA 系数0.5；TIES 使用固定官方纯函数，保留前20%、mass 符号、disjoint mean、系数1.0。AGA 使用固定作者逐头 float64 求解、1e-8正则和 MLP 匈牙利匹配。不同范围及不同预算不混同。
 
-NUFILT 正在进行固定官方内核与 native checkpoint 的对应验证；不是另一个恢复攻击。MergeLock、MergeGuard、MergeBarrier 中尚未获得可核验官方执行版本的内容只列论文分析，不填自产复现成绩。完成状态以结果与源码指纹为准。
+NUFILT 已完成固定官方内核与 native checkpoint 对应验证（MNIST/SVHN、两个顺序、三种范围）；它是融合算法。Phase 1 在该设置下与无保护模型完全相同，A/B 的 MNIST 也恢复至98.86%–99.33%。MergeLock、MergeGuard、MergeBarrier 中尚未获得可核验官方执行版本的内容只列论文分析，不填自产复现成绩。完成状态以结果与源码指纹为准。
 
 ## 复现
 
