@@ -111,5 +111,45 @@ def verify(output):
     save_json(root/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
 
+def projection(output):
+    """Read-only split of a frozen B change, never a candidate constructor."""
+    from angular_distance import signed_residual
+    from probe_margin_distance import scores
+    from verify_levelset_audits import residual
+    start=time.monotonic();root=Path(output);path=root/'artifacts/diagnostic.pt'
+    assert digest(path)=='0228b63e4e70bf7c474529fad6ebd8bc50a3923e3fc758503afdce716e73f155'
+    raw=torch.load(path,map_location='cpu',weights_only=False)
+    group=raw['cases']['O_B']['source'];pt=raw['environments']['source']['parameters'];p=convert(pt)
+    q=convert(group['parameters']);st=convert(group['states']);v=raw['basis'].numpy()
+    np.testing.assert_allclose(v@v.T,np.eye(len(v)),atol=1e-10)
+    assert np.array_equal(p['A'],q['A'])
+    db=q['B']-p['B'];task=db@v.T@v;complement=db-task
+    h=dict(O_only=st['upper'],B_full=st['h0']+st['z0']@db.T,
+           B_task=st['h0']+st['z0']@task.T,B_complement=st['h0']+st['z0']@complement.T,
+           O_B_full=st['upper']+st['z']@db.T,O_B_task=st['upper']+st['z']@task.T,
+           O_B_complement=st['upper']+st['z']@complement.T)
+    np.testing.assert_allclose(h['O_B_full'],st['joint'],atol=1e-9)
+    before=raw_scores(st['h0'],p);y=before.argmax(1);rows=[];error=0.
+    for name,value in h.items():
+        after=raw_scores(value,p);independent=scores(torch.from_numpy(value),pt).numpy()
+        error=max(error,float(abs(after-independent).max()));assert error<1e-8
+        drift=residual(before,after);check=signed_residual(torch.from_numpy(before),torch.from_numpy(independent)).numpy()
+        np.testing.assert_allclose(drift,check,atol=1e-8)
+        changed=after.argmax(1)!=y
+        rows.append(dict(component=name,changed=int(changed.sum()),worst_task_drift=float(abs(drift).max()),
+            per_class=[dict(class_id=c,n=int((y==c).sum()),changed=int((changed&(y==c)).sum()),
+                worst_task_drift=float(abs(drift[y==c]).max())) for c in range(before.shape[1])]))
+    result=dict(status='frozen_source_projection_verified_not_defense',n=len(y),rank=len(v),
+        task_parameter_energy_ratio=float(np.linalg.norm(task)**2/np.linalg.norm(db)**2),
+        complement_probe_action_norm=float(np.linalg.norm(complement@v.T)),rows=rows,
+        numpy_torch_full_score_error=error,original_diagnostic_sha256=digest(path),
+        source_sha256=digest(__file__),gradients=0,new_weights=0,images_loaded=0,partner_used=False,
+        confirmation_used=False,test_used=False,wall_seconds=time.monotonic()-start,
+        scope='Frozen source construction inputs only. Old O/B already violates task budget. Counterfactual matrix parts are not releases or independent confirmations; no selection, repair, unknown-peer or novelty claim.')
+    target=root/'B_projection.json';assert not target.exists()
+    save_json(target,result);print(json.dumps(result),flush=True)
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',required=True);torch.set_num_threads(4);verify(p.parse_args().output)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',required=True);p.add_argument('--projection',action='store_true')
+    args=p.parse_args();torch.set_num_threads(4);(projection if args.projection else verify)(args.output)
