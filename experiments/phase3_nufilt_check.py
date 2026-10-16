@@ -12,8 +12,7 @@ from torch import Tensor, nn
 from clip_benchmark import checkpoint_loader, digest
 
 
-def run():
-    torch.set_num_threads(1)
+def load_official():
     root = Path('external/NUFILT')
     pins = {
         'fusion_bench/method/nufilt/utils.py': 'feaef2cb710d345521d6a51de49e434e144be09d6d23111c92708ed802a67983',
@@ -29,6 +28,12 @@ def run():
         nodes = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.ClassDef)) and n.name in names]
         assert {n.name for n in nodes} == names
         exec(compile(ast.Module(body=nodes, type_ignores=[]), str(root/path), 'exec'), env)
+    return env, pins
+
+
+def run():
+    torch.set_num_threads(1)
+    env, pins = load_official()
     torch.manual_seed(42)
     base = nn.Linear(16, 12)
     task = torch.randn(12, 16)*.02; previous = torch.randn(12, 16)*.02

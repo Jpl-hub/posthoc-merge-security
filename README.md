@@ -1,76 +1,61 @@
 # posthoc-merge-security
 
-对已微调 CLIP ViT-B/32 专家做发布前参数后处理，研究如何保持独立能力、阻止融合利用被保护任务。第一、第二阶段成果已冻结；当前进入第三阶段，系统评价已有防御，不再构造第二阶段新方法。只使用 RTX3090。
+研究已微调 CLIP ViT-B/32 专家的发布前参数后处理保护：保持独立任务能力，评价未经授权融合及恢复攻击后的任务能力。
 
-**Phase 3：** [攻击调研、权限与统一协议](notes/phase3_attack_review.md)，[冻结权重及评价配置](configs/phase3.json)。先验证小规模端到端流程，再补齐 TA、TIES 与原作者 AGA 两种作用范围的目标／伙伴指标。O/B 已有任务预算越界证据，只作效果参考；A/B 的有限确认不代表全任务保持证明。
+当前为 **Phase 3：冻结防御的系统攻防评价**。不再构造或调整 Phase 2 防御；仅使用 RTX3090。
 
-**新增审计与研究门槛（2026-10-16）：** 新算法实现前必须完成[相关工作、研究缺口与创新性审查](notes/phase2_related_work_and_novelty.md)。同一源数据的冻结方法对照和精确反例已核验，没有新防御。O/B历史TA／AGA效果保留，但新训练图片完整重放发现相对任务漂移0.789627＞0.5，故旧有限确认不能宣传为普遍满足任务预算。该越界不通过剔除误判图片或重调旧参数消除。[有限机制、失败控制与预算更正](notes/phase2_finite_signed_condition.md)。
+- [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
+- [冻结模型、源码、数据与参数指纹](configs/phase3.json)
+- [已独立复核的结果主表](results/phase3/tables.md)
+- [逐类计数、配对统计及完整指标](results/phase3/results.json) · [CSV](results/phase3/results.csv) · [复核与绘图指纹](results/phase3/provenance.json)
+- [研究状态](research_state.json) · [相关工作与创新性审查](notes/phase2_related_work_and_novelty.md)
 
-**Phase 2当前进展（2026-10-16）：** PaRaMS官方基线已完成。完整默认配置保持MNIST独立99.69%，直接TA融合后MNIST为8.92%，AGA后为99.30%；原始矩阵距离30.425，属于超0.5预算参考。预算内官方Attention缩放消融没有实质保护，也不称为完整PaRaMS同预算复现。冻结O/B仍最佳：独立99.71%，直接TA78.77%，AGA79.53%。这里AGA按公开主程序仅处理受保护专家；对全部参与融合专家执行AGA的补充结果为77.85%。两种范围不是两个攻击算法。38组计数与608次完整模型重放通过，暂无新原创防御。[基线、预算、机制与双方任务指标](notes/phase2_params_and_structure.md)。
+## 冻结对照
 
-**最新源端机制检验：** 一个预注册跨头有限变换保持构造训练功能，AGA后矩阵距离仍为0.37086，但固定公开基座插值0/512改判，最大有符号间隔损害0.25582。NumPy及完整模型重放通过。该点缺少预注册多类别信号，未发布、未进入真实TA/AGA；这不等于证明其真实伙伴结果无效。O/B仍是当前有效基线。[数学条件、固定协议及反例](notes/phase2_head_commutator.md)。
+| 方法 | 证据及限制 |
+|---|---|
+| 无保护专家 | 各融合方法、任务组合和攻击范围分别提供匹配控制 |
+| Phase 1 最终 LN 偏置 | 已有 MNIST、DTD、SVHN；不同预算参考。原版 AGA 未修改关键偏置，不能据此声称抗任意恢复 |
+| Phase 2 O/B | 有真实融合干扰；已核验任务漂移0.789627超过0.5，只作效果参考 |
+| Phase 2 A/B | 既往有限确认通过，不等于全任务保持证明；继续只读审计 |
+| PaRaMS 完整官方配置 | 函数保持，但参数距离超出0.5；不同约束参考 |
+| PaRaMS Attention 消融 | 官方组件的预算内消融，不是完整方法的同预算复现 |
 
-**已有经过独立复核的阶段性效果。** 同一投影核偏置噪声算法分别保护 MNIST、DTD、SVHN；独立预测逐张保持，原作者 AGA 后的目标分类输出塌缩为单一类别。
+[Phase 1 数学机制与历史结果](notes/projection_bias_noise.md)、[O/B 构造与历史结果](notes/phase2_boundary.md)、[预算越界更正](notes/phase2_finite_signed_condition.md)、[官方 PaRaMS 与 AGA 协议核对](notes/phase2_params_and_structure.md)。其他历史实验、权重和失败证据保留在原目录；本页不再重复逐轮日志。
 
-| 被保护专家 | 伙伴 | 独立：原 → 保护 | AGA 后目标：原 → 保护 |
-|---|---|---:|---:|
-| MNIST | SVHN | 99.69% → 99.69% | 99.32% → 9.80% |
-| MNIST | DTD | 同一 MNIST 保护权重 | 99.42% → 9.80% |
-| DTD | MNIST | 79.41% → 79.41% | 68.78% → 2.13% |
-| SVHN | MNIST | 97.46% → 97.46% | 91.77% → 6.70% |
+## 评价范围
 
-只改最终 LN 的一个偏置向量。噪声满足 $v^\top B_e=0$，原专家完整视觉特征保持；融合投影 $B_f$ 改变后，$v^\top B_f$ 可能非零，产生类别偏置。没有 PCA 样本外保持假设、额外微调或伙伴参与构造。[数学机制、完整指标和边界](notes/projection_bias_noise.md)。
+TA、TIES 属于融合算法；AGA 属于参数对齐恢复攻击。分别报告 **No attack / AGA (protected expert) / AGA (all experts)**，每项同时列被保护任务和伙伴任务。
 
-**范围必须区分：** TA(0.5)、FP32、三个被保护专家。原版 AGA 不修改最后 LN 偏置与视觉投影，因此这是该原版攻击后的融合干扰；尚无抗公开清理／参数替换的结论，也未证明任务信息不可恢复，不是 ARF/Table 6 复现。第一阶段结果作为冻结对照保留。第二阶段首轮及任务向量蒸馏补偿均保持独立能力，但真实融合和 AGA 后没有有效的目标准确率下降；[补偿构造、真实结果和约束问题](notes/phase2_compensation.md)、[结果与机制结论](notes/phase2_results.md)、[数学建模](notes/phase2_distance.md)。随后有限任务探针候选在三个专家上也没有有效下降：MNIST、DTD、SVHN 的 AGA 后准确率分别为99.35%、68.83%、91.76%。[有限探针机制与结果](notes/phase2_margin_probes.md)。当前发布系数优化采用目标训练数据和公开基座，属于有梯度的后处理，不是零梯度构造；[优化变量、约束及求解诊断](notes/phase2_projected_game.md)。新的去中心化归一化分数优化与解析复合蒸馏，仍只改判1/512；独立确认最坏探针变化0.699/0.651超过冻结的0.5预算，没有新release或完整融合评估。[排序梯度、可行性、分类边界证据](notes/phase2_angular.md)。最后Attention与MLP的跨模块候选通过了独立训练确认，但真实MNIST＋SVHN的AGA目标准确率99.32%→99.30%，配对p=0.815，仍未构成有效防御。[跨模块推导、完整目标/伙伴指标与代价](notes/phase2_cross_module.md)。未开展全面攻击实验或新增恢复攻击。
+固定组合为 MNIST→SVHN、MNIST→DTD、DTD→MNIST、SVHN→MNIST。前两组只更换 MNIST 的伙伴；后两组评价已有 Phase 1 专家，不能当作 A/B 的跨被保护任务验证。历史测试集已多次查看，本阶段不是首次盲测。
 
-分类充分统计补偿已完成真实MNIST/SVHN验证：独立99.69%→99.68%，TA99.37%→99.18%，AGA99.32%→99.23%，仍无有效保护。Query单侧取权候选改变了实际Attention计算，但独立确认间隔变化0.772超过0.5门槛，关闭且未发布。[最新机制结论与参数化边界](notes/phase2_mechanism_checkpoint.md)、[分类补偿](notes/phase2_classification_completion.md)、[Query诊断](notes/phase2_query.md)。
+TA 系数0.5；TIES 使用固定官方纯函数，保留前20%、mass 符号、disjoint mean、系数1.0。AGA 使用固定作者逐头 float64 求解、1e-8正则和 MLP 匈牙利匹配。不同范围及不同预算不混同。
 
-自由联合发布变量的新诊断提高了代理分类覆盖：54/512→111/512改判，涉及8类；但新确认集间隔变化0.725超过原0.5约束。完整模型重放确认失败，停止发布，未运行真实融合或AGA。低间隔输入上的补偿保持是当前障碍，不能把代理改善称为防御突破。[联合优化、失败见证与代价](notes/phase2_joint_class.md)。
+NUFILT 正在进行固定官方内核与 native checkpoint 的对应验证；不是另一个恢复攻击。MergeLock、MergeGuard、MergeBarrier 中尚未获得可核验官方执行版本的内容只列论文分析，不填自产复现成绩。完成状态以结果与源码指纹为准。
 
-**第二阶段冻结O/B基线：** 统一低间隔校准与非线性任务可行路径优化通过独立保持。MNIST独立99.69%→99.71%，真实TA99.37%→78.77%，AGA-both99.32%→77.85%。公开预训练参数替换两个修改矩阵后为99.31%，其独立效用代价0.02个百分点；这是已知位置替换诊断，不是AGA或精确任务向量恢复。该发布点完整保留，未证明抗参数替换、跨被保护任务或论文成熟性。[机制、真实效果、匹配恢复与代价](notes/phase2_boundary.md)。
+## 复现
 
-- `experiments/projection_bias_noise.py`：当前保护构造
-- `configs/projection_bias_noise_svhn.json`：当前直接采集训练图的冻结协议；[SVHN 迁移结果](notes/projection_bias_noise_svhn.md)
-- `configs/projection_bias_noise.json`：MNIST/DTD 原始协议，重放须使用 `7949958` 源码或服务器冻结包
-- `experiments/replay_projection_bias.py`：去缓存后精确重现 MNIST/DTD 编辑权重
-- `experiments/covariance_noise.py`：共享数据与匹配评测入口，默认历史算法保留
-- `experiments/verify_noise_release.py`：独立 NumPy 重建、官方标签及真实前向核验
-- `experiments/transfer_noise_release.py`：同权重更换伙伴与显式融合公式重放
-- `results/projection_bias_noise/`：完整轻量计数、逐类结果、协议与指纹
-
-历史对照保留：原 MNIST 秩一噪声 AGA 后为 91.15%／77.16%（SVHN／DTD 伙伴）；[类间噪声](notes/phase1_class_noise.md)、[交叉协方差噪声](notes/covariance_noise.md)、[MLP 输出补空间噪声](notes/decision_noise.md)未改善。[判别与 PCA 稳定性分析](notes/decision_audit.md)解释此前限制。历史重放使用各自冻结源码包；不混用旧版本指纹与当前共享入口。
-
-SVHN 运行命令（3090 项目根目录，输出目录须为新的路径）：
+在已有3090环境、已登记 checkpoint 和数据目录中：
 
 ```bash
-python experiments/projection_bias_noise.py --target SVHN --partner MNIST --protocol configs/projection_bias_noise_svhn.json --output outputs/my_svhn_run
-python experiments/verify_noise_release.py --output outputs/my_svhn_run --probe-n 32
+python experiments/phase3_evaluate.py --pilot --case 0
+python experiments/phase3_evaluate.py --verify outputs/phase3/pilot/00_MNIST_SVHN
+python experiments/phase3_evaluate.py --case 0
+python experiments/phase3_evaluate.py --verify outputs/phase3/full/00_MNIST_SVHN
+python experiments/phase3_evaluate.py --audit
+python experiments/phase3_report.py
 ```
 
-原始预测、保护权重、模型、数据及历史证据只存服务器 `/root/autodl-tmp/merge_security_20261009`；[归档索引](results/archive.json)。不写凭据，不大规模下载，不删除真实失败证据。
+其余组合使用 `--case 1/2/3`。输出目录不得覆盖。若需匹配原评价的128张批上下文重放，使用 `python experiments/phase3_replay.py <已完成组合目录>`；保留原16个抽样索引和0.0005分数误差上限，记录额外前向数量。原始16张重放失败记录保留。
 
-**本轮机制复盘：** 冻结模型的分支拆分支持“原专家中补偿、融合后补偿失配”的解释。新MLP A/B可行路径通过独立确认与真实评估，MNIST独立99.65%、TA91.07%、AGA79.20%，未超过已保留O/B的AGA77.85%，因此关闭该固定候选。原／保护AGA的MLP排列一致；目标专家规范化代理的可行梯度与普通代理余弦0.993，也未解决迁移差距。公开回填与原版AGA分开报告，不作为唯一优化目标。[机制、对照、成本与下一步](notes/phase2_coupling.md)。
+NUFILT 的只读源码检查为 `python experiments/phase3_nufilt_check.py`；对应验证为 `python experiments/phase3_nufilt.py`，通过后 `--full` 使用同一批冻结合并权重，不重新优化。
 
-**任务几何诊断：** 两个冻结点与原专家取参数中点仅改判1、2/4096张训练图片。分类相关表示／读出邻域已推导并独立核验，但未知伙伴覆盖没有得到证明。固定16维几何空间的跨类别正曲率方向在任务保持校正后仍无中点改判，因此没有生成新发布模型。O/B的高阶LayerNorm自动微分差异单独记录，已用解析二阶导和有限差分核验；不影响旧真实融合结果。[条件、证据、限制与下一步](notes/phase2_source_geometry.md)。
+## 文件组织
 
-**混合响应核验：** 目标/基座混合Jacobian确有不同于旧代理的方向，但有限任务约束下的新方向仍为0/128代理改判；已有发布点的一阶响应近似误差超过100%。未生成新保护模型，不继续放大该方向。[推导、有限实验与独立复核](notes/phase2_mixed_compensation.md)。
+- `experiments/`：保护、评价、独立验证及绘图源码。
+- `configs/`：固定版本、预算、数据与模型指纹。
+- `notes/`：数学推导、论文核对和历史结论。
+- `results/phase3/`：轻量指标、表格及 PDF/SVG 论文图。
+- 服务器 `outputs/phase3/`：原始分数、重权重、门控、运行日志与原论文缓存，不上传 GitHub。
 
-**有限补偿诊断：** 精确分解分类间隔后，仅替换上游表示即可使冻结O/B、A/B在已知128张训练切片上分别改判72、76次；不是新保护结果。原任务激活满列秩且条件数约7万，有限分数方向残差的传递缺少未知环境保证。另一个解析LN/MLP共轭变换用满0.5距离仍为0/512代理改判，并可公开逆转，已关闭。没有新release或更强TA/AGA；[有限恒等式、核验和边界](notes/phase2_finite_transport.md)。
-
-**有限新构造：** 跨块Attention补偿与任务子空间神经元反射已实现并核验。前者最终任务约束0.493、距离0.0662，但固定基座代理0/512改判；后者距离0.4031，任务约束0.9267超出0.5且参数中点0改判。两类均未生成新发布模型或真实TA／AGA结果，未超过已保留O/B。求解器修正、失败记录与源码包完整保留；[跨块机制及有限约束](notes/phase2_attention_cascade.md)、[反射构造及分类作用上界](notes/phase2_finite_reflection.md)。
-
-**真实迁移检验：** 源中点／基座代理改判已取消作为统一必要门槛。一个固定Q/K温度变化＋有限任务蒸馏构造通过9,728输入独立核验、新512张确认和完整模型重放，随后完成真实TA／原版AGA：MNIST独立99.68%、TA99.36%、AGA99.32%，没有防御效果。AGA确实移除了上游增益，但留下的补偿未跨越分类间隔。该固定方法关闭，保留O/B最佳点；[数学假设、真实计数及失败分析](notes/phase2_temperature_compensation.md)。
-
-**有限缩放检验：** QuickGELU成对神经元缩放使用原0.5距离预算，通过9,728个源输入和新512张独立确认。真实MNIST独立99.69%、TA99.36%、AGA99.30%，AGA仅6张改判，配对p=0.6875，无实质防御效果。作者AGA逐位保留全部缩放，说明留下大参数差异仍不足以破坏分类。17组计数与272次完整重放通过，该固定构造关闭，旧O/B最佳不变；[有限公式、条件覆盖、真实结果及成本](notes/phase2_gelu_scaling.md)。
-
-**成功／失败机制对比：** 同一512张训练图片上，O/B、A/B的源B单分支分别改判60、31张，联合均恢复；温度、缩放B单分支均0。精确六项分解将真实融合损害主要定位到“激活变化×具体B改动×分类读出”，NumPy误差低于$7.3\times10^{-14}$。但原32任务奇异方向和新增9个分类加权补空间方向，在一个源RMS的正负检验中均不能复现已有O/B失效；不能用这些探针定义未知伙伴集合或直接启动优化。本轮无新候选、测试集或攻击，旧最佳不变；[有限公式、匹配计数、源内否定证据及新假设](notes/phase2_finite_comparison.md)。
-
-**主动构造检验：** 一个冻结的“下游分类分数反向拟合→上游任务奇异方向有限补偿”构造，在4,608张源训练图片上产生4,588次下游改判，覆盖全部10类；联合补偿后剩2次自然改判，但9,728输入最坏任务漂移3.56888超过原0.5上限。局部模型预计恢复，真实有限全步却严重越界；没有生成可发布模型或运行TA/AGA。独立NumPy核验通过，关闭该固定方案。后续需先解决下游破坏与上游有限响应的兼容性，不能靠增加迭代或放宽预算；[构造、数学条件、逐类结果及失败原因](notes/phase2_downstream_first.md)。
-
-**联合有限构造：** 从零联合优化A/B发布系数，并以真实／预测改善比控制信赖域，得到满足原双预算的新点：距离0.17909、源任务最坏漂移0.04085，下游238/4,096次改判涉及9类。新512张独立训练确认逐张保持、探针误差0.12085，FP32完整模型重放通过。真实MNIST独立99.68%、TA99.36%、AGA99.32%，未形成有效防御；作者AGA逐位保留A/B变化，不能仅归因于攻击删除参数。该固定目标关闭，旧O/B的AGA77.85%仍最佳；[联合极大极小、有限验收、完整结果与反例](notes/phase2_joint_trust.md)。
-
-**联合响应的稳定性：** 新的源端有限检验中，固定任务撤回投影的正交接口变化使O/B在40张训练图中的28个改判全部恢复；但将这些自由见证一次投影到同一个任务SVD前缀参数后，恢复0个。两层结果均独立核验，不能把自由表示球视为真实伙伴分布。未生成新保护模型，真实最佳不变；下一问题是共同可实现环境与非保序联合响应的交集，而不是继续增加距离或单分支改判。[条件博弈、逐类计数、可达性与证据边界](notes/phase2_environment_margin.md)。
-
-**共享参数博弈：** 直接求解同一任务SVD前缀矩阵后，固定512张源训练图上O/B的367个参考改判降至3个；全部有限约束、独立NumPy与完整模型重放通过。随后唯一外层联合构造将两个固定环境的改判提高至424／226，涉及全部10类，但新512张独立确认的最坏任务漂移3.519218超过原0.5预算。该点关闭、权重与分数保留，未生成发布模型或运行真实TA／AGA。确认正确数510→511也不能替代冻结的功能保持约束；O/B真实最佳不变。[共同环境与适用条件](notes/phase2_shared_environment_game.md)、[外层结果、独立失败与下一障碍](notes/phase2_robust_shared_publication.md)。
-
-**边界值与导数保持：** 新4,096张合法构造数据上的隐藏Hermite补偿，从零联合优化得到距离0.206094、源最坏漂移0.203605的新点。唯一全新512张确认最坏漂移0.410343，全部自然预测保持。随后真实MNIST独立99.70%、TA99.36%、AGA99.29%，AGA仅净损失3张、配对p=0.664，没有有效保护；伙伴SVHN下降不能替代目标失效。17组真实计数和272次完整重放通过，固定方案关闭，全部权重与失败记录保留。边界局部二阶抑制经独立验证，但未给出全局保持或未知伙伴保证，公开回填仍精确消除两处编辑，O/B最佳不变。[机制、完整结果、索引隔离与证据边界](notes/phase2_boundary_hermite.md)。
+不以参数距离、代理改判或单一任务下降代替真实保护结论。不根据 Phase 3 的测试或攻击结果重新选择防御参数。

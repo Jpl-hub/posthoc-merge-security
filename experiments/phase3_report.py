@@ -13,6 +13,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def save_figure(fig, output, name):
+    for ext in ['pdf', 'svg', 'png']:
+        metadata = {'CreationDate': None, 'ModDate': None} if ext == 'pdf' else {'Date': None} if ext == 'svg' else None
+        fig.savefig(output/f'{name}.{ext}', metadata=metadata)
+
+
 def build(source, output):
     out = Path(output); out.mkdir(parents=True, exist_ok=True)
     source = Path(source); rows, pins, executions, validations = [], {}, [], []
@@ -26,12 +32,20 @@ def build(source, output):
             p = case/name; pins[str(p)] = hashlib.sha256(p.read_bytes()).hexdigest()
         rows.extend(json.loads((case/'results.json').read_text()))
         executions.append(json.loads((case/'execution.json').read_text()))
+    nufilt = source/'nufilt/full'
+    nufilt_validation = None
+    if (nufilt/'validation.json').exists():
+        nufilt_validation = json.loads((nufilt/'validation.json').read_text())
+        assert nufilt_validation['status'] == 'passed'
+        rows.extend(json.loads((nufilt/'results.json').read_text()))
+        for p in [nufilt/'results.json', nufilt/'execution.json', nufilt/'validation.json', nufilt.parent/'protocol.json', nufilt.parent/'pilot/execution.json']:
+            pins[str(p)] = hashlib.sha256(p.read_bytes()).hexdigest()
     assert rows, 'No independently verified full results.'
     utility_path = source/'utility/results.json'
     utilities = {r['defense']: r for r in json.loads(utility_path.read_text())} if utility_path.exists() else {}
     for r in rows:
-        group = [v for v in rows if (v['target'], v['partner'], v['merger'], v['dataset']) ==
-                 (r['target'], r['partner'], r['merger'], r['dataset'])]
+        group = [v for v in rows if (v['target'], v['partner'], v['merger'], v['dataset'], v.get('order')) ==
+                 (r['target'], r['partner'], r['merger'], r['dataset'], r.get('order'))]
         clean = next(v for v in group if v['defense'] == 'Unprotected' and v['attack_scope'] == r['attack_scope'])
         before = next(v for v in group if v['defense'] == r['defense'] and v['attack_scope'] == 'None')
         clean_before = next(v for v in group if v['defense'] == 'Unprotected' and v['attack_scope'] == 'None')
@@ -52,7 +66,7 @@ def build(source, output):
     for r in comparisons:
         r['mcnemar_bonferroni_log10_p'] = min(0., r['mcnemar_log10_p']+math.log10(len(comparisons)))
     (out/'results.json').write_text(json.dumps(rows, indent=2)+'\n')
-    columns = ['target', 'partner', 'defense', 'merger', 'attack_scope', 'dataset', 'role',
+    columns = ['target', 'partner', 'defense', 'merger', 'order', 'attack_scope', 'dataset', 'role',
                'native_target_accuracy_percent', 'native_partner_accuracy_percent',
                'parameter_distance_changed_tensors', 'finite512_worst_task_drift', 'budget_status',
                'correct', 'n', 'accuracy_percent', 'matched_unprotected_accuracy_percent',
@@ -64,7 +78,7 @@ def build(source, output):
         for r in rows:
             entry = {k: r.get(k, '') for k in columns}
             entry.update(lost=r['paired']['lost'], gained=r['paired']['gained'], net_loss_pp=r['paired']['loss_pp'],
-                         imported_from=r['provenance'].get('imported_from', ''))
+                         imported_from=r.get('provenance', {}).get('imported_from', ''))
             writer.writerow(entry)
     scopes = ['None', 'Protected expert', 'All experts']
     titles = ['No attack', 'AGA (protected expert)', 'AGA (all experts)']
@@ -77,6 +91,7 @@ def build(source, output):
         return hits[0]
     plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 9,
                          'pdf.fonttype': 42, 'svg.fonttype': 'none', 'axes.spines.top': False,
+                         'svg.hashsalt': 'posthoc-merge-security-phase3',
                          'axes.spines.right': False, 'savefig.dpi': 240})
     fig, axes = plt.subplots(2, 2, figsize=(10.6, 7.0), layout='constrained')
     for j, method in enumerate(['TA', 'TIES']):
@@ -93,7 +108,7 @@ def build(source, output):
     fig.colorbar(image, ax=axes, label='Accuracy (%)', shrink=.78)
     fig.suptitle('MNIST–SVHN model merging', fontsize=12)
     fig.supxlabel('* Different-budget references. † Task budget exceeded (0.7896 > 0.5). A/B: finite confirmation only.', fontsize=8)
-    for ext in ['pdf', 'svg', 'png']: fig.savefig(out/f'attack_comparison.{ext}')
+    save_figure(fig, out, 'attack_comparison')
     plt.close(fig)
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 3.5), layout='constrained')
     methods = ['Phase1_MNIST', 'O/B', 'A/B', 'PaRaMS']
@@ -109,7 +124,7 @@ def build(source, output):
         ax.set_yticks(range(4), ['Phase 1 (LN bias)*', 'O/B†', 'A/B', 'PaRaMS (full)*'])
     fig.colorbar(image, ax=axes, label='Net class accuracy loss (pp)', shrink=.9)
     fig.supxlabel('Compared with matched unprotected controls. * Different-budget references. † Task budget exceeded.', fontsize=8)
-    for ext in ['pdf', 'svg', 'png']: fig.savefig(out/f'class_losses.{ext}')
+    save_figure(fig, out, 'class_losses')
     plt.close(fig)
     lines = ['# Phase 3 evaluation results', '',
              'Accuracy (%). Frozen defenses; historically exposed test sets. No defense was selected or updated from these results.', '',
@@ -132,6 +147,18 @@ def build(source, output):
                 lines.append(f'| {label} | {native:.2f} | '+ ' | '.join(pairs)+' |')
                 latex.append(label.replace('*', r'$^{*}$').replace('†', r'$^{\dagger}$')+f' & {native:.2f} & '+' & '.join(pairs)+r' \\')
             lines.append(''); latex += [r'\bottomrule', r'\end{tabular}', '']
+    if nufilt_validation:
+        lines += ['## MNIST → SVHN: NUFILT', '',
+                  'Official kernels with a native weight adapter; fixed author defaults. Both task orders are reported. This is not the full FusionBench application/table.', '',
+                  '| Task order | Defense | No attack | AGA (protected expert) | AGA (all experts) |',
+                  '|---|---|---:|---:|---:|']
+        nr = [r for r in rows if r['merger'] == 'NUFILT']
+        for order in [('MNIST', 'SVHN'), ('SVHN', 'MNIST')]:
+            table = [r for r in nr if tuple(r['order']) == order]
+            for name in ['Unprotected', 'Phase1_MNIST', 'A/B']:
+                pairs = [f'{get(table,name,"NUFILT",s,"MNIST")["accuracy_percent"]:.2f} / {get(table,name,"NUFILT",s,"SVHN")["accuracy_percent"]:.2f}' for s in scopes]
+                lines.append(f'| {" → ".join(order)} | {labels[names.index(name)]} | '+' | '.join(pairs)+' |')
+        lines += ['', 'Phase 1 scores reuse the exact same merged models after checking all selected inputs are identical. Unselected biases, LN, fc2 and visual projection remain at the public anchor. No defense was changed. Merger gates were optimized on parameter projection losses only: 12 distinct two-task merges × 50 global backward steps, with zero expert/defense updates. Full evaluation uses frozen pilot merge weights.', '']
     lines += ['## Evidence and limits', '',
               f'- Independently verified cases: {len(executions)}/4; result rows: {len(rows)}.',
               '- TA coefficient 0.5; TIES top 20%, mass signs, disjoint mean, coefficient 1.0. Each has a separate unprotected control.',
@@ -153,6 +180,7 @@ def build(source, output):
     (out/'tables.tex').write_text('\n'.join(latex))
     (out/'provenance.json').write_text(json.dumps(dict(status='verified_batch', cases=len(executions),
         source_files_sha256=pins, independent_validations=validations, plotting_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        nufilt_validation=nufilt_validation,
         utility_source_sha256=hashlib.sha256(utility_path.read_bytes()).hexdigest() if utilities else None,
         evaluation_wall_seconds=sum(x['wall_seconds'] for x in executions)), indent=2)+'\n')
 
