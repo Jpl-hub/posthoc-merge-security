@@ -1,24 +1,23 @@
 {
-  "status": "phase3_pilot_running_defenses_frozen",
-  "updated_utc": "2026-10-16T07:00:17.090523+00:00",
+  "status": "phase3_pilot_verified_full_evaluation_running",
+  "updated_utc": "2026-10-16T07:09:04.616289+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 3,
   "objective": "Systematic attack and merger evaluation of frozen Phase 1, O/B, A/B, PaRaMS; no new defense construction.",
-  "stage": "pilot_correctness_before_full_batches",
+  "stage": "full_frozen_defense_evaluation",
   "research_jobs": [
     {
       "server": "RTX3090",
-      "pid": 67006,
-      "job": "Phase3 MNIST/SVHN pilot",
-      "output": "outputs/phase3/pilot/00_MNIST_SVHN"
+      "job": "Phase3 four preregistered cases with per-case independent verification",
+      "log": "outputs/phase3/batch_v2.log"
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No justified new defense. Known-symmetry control found only2.925e-6 fixed-coordinate probe drift, below original0.5; no evidence this explains failed protection.",
   "mechanism": "notes/phase2_finite_signed_condition.md",
-  "next_action": "Independently verify the fixed64 pilot before full evaluation. Add real scores for prediction-only historical records, reuse hash-checked matching full-score records, then evaluate all preregistered cases without defense feedback.",
+  "next_action": "Complete each frozen full case, independently recount and replay, then archive and publish. Run read-only fixed512 utility/SVD audit; generate figures only from verified records. No defense adjustment.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -2946,8 +2945,10 @@
       "protected expert",
       "all experts"
     ],
-    "pilot_status": "running",
-    "full_evaluation_started": false,
-    "unknown_oracle_attack_claim": false
+    "pilot_status": "independently_verified_78rows_1248_full_replays",
+    "full_evaluation_started": true,
+    "unknown_oracle_attack_claim": false,
+    "registration": "results/phase3/registration.json",
+    "full_results_verified": false
   }
 }

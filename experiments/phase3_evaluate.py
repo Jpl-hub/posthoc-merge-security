@@ -6,6 +6,7 @@ No defense construction, coefficient selection, training, or test-time adaptatio
 import argparse
 import ast
 import copy
+import hashlib
 import json
 import logging
 import time
@@ -76,7 +77,9 @@ def setup(cfg):
     torch.backends.cuda.matmul.allow_tf32 = False
     torch.backends.cudnn.allow_tf32 = False
     assert '3090' in torch.cuda.get_device_name()
-    assert digest('external/secure-merge-attack/utils_attack_B32.py') == cfg['AGA']['sha256']
+    author_path = Path('external/secure-merge-attack/utils_attack_B32.py')
+    assert digest(author_path) == cfg['AGA']['raw_sha256']
+    assert hashlib.sha256(author_path.read_text().encode()).hexdigest() == cfg['AGA']['sha256']
     for p, sha in cfg['source_sha256'].items():
         assert digest(p) == sha, p
     load = checkpoint_loader(Path('external/secure-merge-attack'))
@@ -136,6 +139,7 @@ def run(protocol, case_index, pilot):
     anchor, originals, heads, aligned, ties = setup(cfg)
     target, partner = case['target'], case['partner']
     data = {t: dataset(t, 'data', originals[t].val_preprocess) for t in (target, partner)}
+    assert all(len(data[t]) == cfg['tasks'][t]['test_n'] for t in data)
     indices = {t: np.linspace(0, len(d)-1, cfg['pilot_n'], dtype=int).tolist() if pilot else list(range(len(d)))
                for t, d in data.items()}
     rows, raw, baseline = [], {}, {}
