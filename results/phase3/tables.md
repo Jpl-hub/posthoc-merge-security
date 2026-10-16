@@ -4,6 +4,50 @@ Accuracy (%). Frozen defenses; historically exposed test sets. No defense was se
 
 *Phase 1 and full PaRaMS are different-budget references. † O/B has a known task-preservation violation. A/B has finite confirmation only.*
 
+## DTD → MNIST: TA
+
+Each entry is **protected-task / partner-task** accuracy.
+
+| Defense | Standalone target | No attack | AGA (protected expert) | AGA (all experts) |
+|---|---:|---:|---:|---:|
+| Unprotected | 79.41 | 69.31 / 99.45 | 68.40 / 99.45 | 68.78 / 99.42 |
+| Phase 1 LN bias* | 79.41 | 2.13 / 21.09 | 2.13 / 21.09 | 2.13 / 21.05 |
+
+## DTD → MNIST: TIES
+
+Each entry is **protected-task / partner-task** accuracy.
+
+| Defense | Standalone target | No attack | AGA (protected expert) | AGA (all experts) |
+|---|---:|---:|---:|---:|
+| Unprotected | 79.41 | 74.26 / 99.60 | 73.51 / 99.60 | 73.51 / 99.61 |
+| Phase 1 LN bias* | 79.41 | 2.13 / 9.58 | 2.13 / 9.58 | 4.26 / 9.58 |
+
+## MNIST → DTD: TA
+
+Each entry is **protected-task / partner-task** accuracy.
+
+| Defense | Standalone target | No attack | AGA (protected expert) | AGA (all experts) |
+|---|---:|---:|---:|---:|
+| Unprotected | 99.69 | 99.45 / 69.31 | 99.43 / 69.41 | 99.42 / 68.78 |
+| Phase 1 (LN bias)* | 99.69 | 9.80 / 2.13 | 9.80 / 2.13 | 9.80 / 2.13 |
+| O/B† | 99.71 | 42.99 / 63.24 | 47.18 / 63.88 | 46.01 / 62.61 |
+| A/B | 99.65 | 49.40 / 59.41 | 36.77 / 59.68 | 35.54 / 58.19 |
+| PaRaMS (full)* | 99.69 | 8.89 / 2.07 | 99.43 / 69.41 | 99.42 / 68.78 |
+| PaRaMS (attention) | 99.69 | 99.46 / 69.26 | 99.43 / 69.41 | 99.42 / 68.78 |
+
+## MNIST → DTD: TIES
+
+Each entry is **protected-task / partner-task** accuracy.
+
+| Defense | Standalone target | No attack | AGA (protected expert) | AGA (all experts) |
+|---|---:|---:|---:|---:|
+| Unprotected | 99.69 | 99.60 / 74.26 | 99.60 / 74.41 | 99.61 / 73.51 |
+| Phase 1 (LN bias)* | 99.69 | 9.82 / 2.13 | 9.82 / 2.13 | 9.82 / 2.13 |
+| O/B† | 99.71 | 43.97 / 52.66 | 39.88 / 55.48 | 39.68 / 53.67 |
+| A/B | 99.65 | 50.60 / 49.41 | 36.69 / 50.21 | 35.78 / 47.39 |
+| PaRaMS (full)* | 99.69 | 8.92 / 2.13 | 99.60 / 74.36 | 99.61 / 73.46 |
+| PaRaMS (attention) | 99.69 | 99.60 / 71.17 | 99.60 / 74.41 | 99.61 / 73.51 |
+
 ## MNIST → SVHN: TA
 
 Each entry is **protected-task / partner-task** accuracy.
@@ -32,7 +76,7 @@ Each entry is **protected-task / partner-task** accuracy.
 
 ## Evidence and limits
 
-- Independently verified cases: 1/4; result rows: 78.
+- Independently verified cases: 3/4; result rows: 182.
 - TA coefficient 0.5; TIES top 20%, mass signs, disjoint mean, coefficient 1.0. Each has a separate unprotected control.
 - Original AGA leaves final LN bias unchanged. Phase 1 accuracy collapse does not establish coverage against arbitrary recovery.
 - Per-class counts, paired losses/gains, approximate paired 95% intervals and exact McNemar log-p are in results.json/CSV. Bonferroni correction covers all non-native protected comparisons in this generated batch.

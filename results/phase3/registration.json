@@ -45,5 +45,38 @@
   },
   "additional_harness_validation": "Fixed independent NumPy TIES fixture; old prediction-only rows require real score evaluation, not synthetic logits.",
   "new_defense_weights": 0,
-  "test_or_partner_parameter_selection": false
+  "test_or_partner_parameter_selection": false,
+  "validation_amendment": {
+    "case": "DTD/MNIST",
+    "original_failure": {
+      "row": "Phase1_DTD/Standalone/None/DTD",
+      "maximum_score_error": 0.0007152557373046875,
+      "score_tolerance": 0.0005,
+      "replay_batch_size": 16,
+      "evaluation_batch_size": 128
+    },
+    "resolution_pending": "Replay the same 16 predetermined images in their original 128-image batch context. Preserve frozen scores, labels, weights, merger/attack settings and tolerance. No defense repair.",
+    "verifier": "experiments/phase3_replay.py",
+    "verifier_sha256": "37fc592c210ee56490bf2bb48be54cf146e44e92f1f00186092daee3eb20cd1c",
+    "failed_log_on_server": "outputs/phase3/batch_v2.log",
+    "resolution": "Same predetermined 16 samples replayed in their original 128-image batch context. All 416 sampled DTD/MNIST scores exactly match (max error 0); frozen results and tolerance unchanged.",
+    "validation": {
+      "status": "passed",
+      "rows": 26,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 416,
+      "context_forward_images": 49552,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 0.0,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": true,
+      "independent_TIES_small_numpy_fixture": true,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "6ad2b18516db9733d69285a12fbaa1b34a7ff6b0f9125656c47d81c40649bda1",
+      "source_sha256": "37fc592c210ee56490bf2bb48be54cf146e44e92f1f00186092daee3eb20cd1c",
+      "original_evaluation_source_sha256": "cf36d5e5c95aed6aaf71d6623ccfc0d0e86c31bc37974e192cbeb5f2bf2104a9",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    }
+  }
 }
