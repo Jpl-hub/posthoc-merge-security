@@ -120,8 +120,8 @@ def fit_output(cfg):
     G=Q.T@space['M']; v=torch.linalg.solve(G@G.T,G@space['b']); w=v@Q.T; wc=w-w.mean()
     a=1-wc.square().mean(); assert a>1e-8 and (v@G-space['b']).norm()<1e-8
     target=-(cache['h']@space['M']+sigma(cache['h'],pp['eps'])*space['b'])
-    coord=torch.linalg.solve(G@G.T,G@target.T).T
-    star=hg+((coord-hg@Q)@Q.T); centered=star-star.mean(1,keepdim=True)
+    correction=torch.linalg.solve(G@G.T,G@(target-hg@space['M']).T).T
+    star=hg+correction@Q.T; centered=star-star.mean(1,keepdim=True)
     b0=(centered*wc).mean(1,keepdim=True); c0=centered.square().mean(1,keepdim=True)+pp['eps']
     rho=c0/((b0.square()+a*c0).sqrt()+b0); ideal=star-rho*w
     error=float((ideal@space['M']+sigma(ideal,pp['eps'])*space['b']-target).abs().max()); assert error<1e-8
