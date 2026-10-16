@@ -93,3 +93,28 @@ $$\lambda z_m\Delta B^\top M_m
 源码、固定配置和[完整轻量证据](../results/local_residual_transport/summary.json)对应：构造`36aa4b9`、确认`3daac3f`、评价`7280d04`。严格源码指纹应使用对应版本；服务器另保存执行时的`completed_source.py`与`completed_eval_source.py`。权重、激活及原始预测仅在3090：`outputs/phase2_local_residual_transport_mnist`、`outputs/phase2_local_residual_transport_eval`。
 
 冻结权重SHA256：`1d531c0ec56f0a0507b8c99d645402615b9b1c9a010e93aa07732407d5082cba`；完整评价预测SHA256：`95f04bd5093c364aa4840094312aa99c4afacbf742dcb8a3bf223f56f041fd28`。不继续优化该点。下一步应先审查能保留分类可见补偿自由度的数学条件，不能用更大的读出不可见距离替代它。
+
+## 对齐后的可见性：下一项解析核对
+
+上述B分支核验不能推广成“源读出零响应的所有参数变化都无效”。原作者对B只做配对排列；对Attention则做依赖整个列空间的锚点投影。两种操作未必保持相同的读出核空间。
+
+先固定一个解析核对，不构造CLIP模型、不选新方向。令
+
+$$X_e=\begin{bmatrix}1&0\\0&1\\0&0\end{bmatrix},\quad
+X_0=\tfrac45X_e,\quad X_r=X_e+\tfrac12e_3e_1^\top,\quad
+G=\begin{bmatrix}1&0&0\\0&1&0\end{bmatrix}.$$
+
+源端$GX_r=GX_e$，两个任务向量右奇异探针的完整读出也严格保持，距离$1/(2\sqrt2)<0.5$。这是线性模块和固定读出，不包含CLIP的Attention／MLP／LN，不能称为新保护方案。
+
+按已固定官方求解器的$\eta=10^{-8}$，其列对齐输出为
+
+$$\mathcal A_\eta(X)=X(X^\top X+\eta I)^{-1}X^\top X_0.$$
+
+直接计算得到
+
+$$G\mathcal A_\eta(X_r)-G\mathcal A_\eta(X_e)
+=\operatorname{diag}\!\left[-\frac{(4/5)(1/4)}{(1+\eta)(5/4+\eta)},\ 0\right].$$
+
+因此源端不可见的改动可以在对齐后变成可见、非均匀的衰减。预先固定两个输入$(11/10,1)^\top$和$(1,11/10)^\top$：预测读出后再L2归一化；预计第一个输入在对齐后，以及对齐结果与公开基座0.5均值后严格翻转，第二个保持；原发布模型及直接均值都保持。不更换系数，不增加样本或挑选变体。
+
+核验用精确有理数、NumPy闭式解及原作者列求解器三个独立计算。它检验的是“不应把源读出核空间直接当作对齐后核空间”，不检验完整AGA、未知伙伴覆盖、多类别保护或新方法创新性。原作者投影与这些基础矩阵性质属于已有数学工具。即使预测成立，也不批准新候选：尚缺原CLIP有限任务保持和实质区别于已知机制的构造。
