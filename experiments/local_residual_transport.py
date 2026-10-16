@@ -211,10 +211,28 @@ def inspect_geometry(folder):
         source_point_sha256=digest(out/'diagnostic.pt'),source_sha256=digest(__file__),new_images=0,new_gradients=0,new_candidates=0,wall_seconds=time.monotonic()-start)
     save_json(out/'geometry_validation.json',result);print(json.dumps(result),flush=True)
 
+def verify_splits(folder):
+    from audit_hermite_splits import exclusions
+    out=Path(folder);source=json.loads((out/'construction_split.json').read_text());fresh=json.loads((out/'confirmation_split.json').read_text())
+    cfg=json.loads((out/'protocol.json').read_text());initial=set(cfg['extra_excluded_indices']);extra={}
+    for path in cfg['extra_index_exclusions']:
+        initial.update(json.loads(Path(path).read_text())['indices']);extra[path]=digest(path)
+    old,exposed=exclusions(source,initial);assert len(old)==source['excluded_count']
+    chosen=np.random.default_rng(source['seed']).choice(sorted(set(range(60000))-old),len(source['indices']),replace=False).tolist();assert chosen==source['indices']
+    old2,exposed2=exclusions(fresh,initial|set(chosen));assert len(old2)==fresh['excluded_count']
+    chosen2=np.random.default_rng(fresh['seed']).choice(sorted(set(range(60000))-old2),len(fresh['indices']),replace=False).tolist();assert chosen2==fresh['indices']
+    assert not set(chosen)&exposed and not set(chosen2)&old2
+    result=dict(status='passed_registered_exclusions_and_exact_both_draws',construction_n=len(chosen),confirmation_n=len(chosen2),
+        construction_excluded_n=len(old),confirmation_excluded_n=len(old2),exposed_confirmations_used_for_construction=0,construction_confirmation_overlap=0,
+        source_split_sha256=digest(out/'construction_split.json'),confirmation_split_sha256=digest(out/'confirmation_split.json'),extra_exclusion_sha256=extra,
+        new_images=0,new_gradients=0,new_weights=0,source_sha256=digest(__file__))
+    save_json(out/'split_independence_audit.json',result);print(json.dumps(result),flush=True)
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--anchor-check');ap.add_argument('--geometry');args=ap.parse_args();initialize()
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--anchor-check');ap.add_argument('--geometry');ap.add_argument('--verify-splits');args=ap.parse_args();initialize()
     if args.verify:verify(args.verify)
     elif args.anchor_check:anchor_check(args.anchor_check)
     elif args.geometry:inspect_geometry(args.geometry)
+    elif args.verify_splits:verify_splits(args.verify_splits)
     else:
         cfg=json.loads(Path(args.protocol).read_text());cfg['protocol_path']=args.protocol;run(cfg)
