@@ -1,5 +1,5 @@
 {
-  "status": "phase3_three_batches_verified_final_case_running",
+  "status": "phase3_TA_TIES_NUFILT_batch_verified_budget_claims_corrected",
   "updated_utc": "2026-10-16T07:09:04.616289+00:00",
   "automatic_continuation": false,
   "server": "3090",
@@ -7,19 +7,11 @@
   "phase": 3,
   "objective": "Systematic attack and merger evaluation of frozen Phase 1, O/B, A/B, PaRaMS; no new defense construction.",
   "stage": "full_frozen_defense_evaluation",
-  "research_jobs": [
-    {
-      "server": "RTX3090",
-      "job": "Finish SVHN/MNIST and read-only utility; then fixed NUFILT pilot and full evaluation of same merged weights",
-      "log": "outputs/phase3/finish_batch.log",
-      "finite_batch": true,
-      "recurring_monitor": false
-    }
-  ],
+  "research_jobs": [],
   "breakthrough_verified": false,
   "new_candidate": "No justified new defense. Known-symmetry control found only2.925e-6 fixed-coordinate probe drift, below original0.5; no evidence this explains failed protection.",
   "mechanism": "notes/phase2_finite_signed_condition.md",
-  "next_action": "Complete final frozen case and audit, independently verify, publish combined tables. NUFILT only after source/native pilot; keep all two-order/scope results without tuning.",
+  "next_action": "This registered batch is complete. Preserve new full-model budget counterexamples without defense repair. Future Phase3 batches require a new scientific question and fixed source/data/permission protocol; prioritize substantive gaps instead of adding names. No recurring checks or Phase2 optimizer loops.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1167,11 +1159,11 @@
     ]
   },
   "github_sync": {
-    "status": "next_verified_batch_pending",
+    "status": "final_verified_batch_pending_publication",
     "transport": "GitHub plugin",
-    "last_verified_remote_commit": "d5e4948246750fa2cf90f75e1f809c4be8f3c7b6",
-    "last_verified_local_commit": "8e45ff14ef60b5fb9313052f7e45593c281c8620",
-    "last_verified_canonical_tree": "7b271fee3a01550f3d35fb2f3579c9c6dcc4c34f",
+    "last_verified_remote_commit": "3ee1b77927556271c856eba78278ea864ccf9d1d",
+    "last_verified_local_commit": "db34930c48a4e0b639e44f597848d9a97aa68e81",
+    "last_verified_canonical_tree": "886985242572ddf86a9bb0c02423f887aefe308b",
     "verification_receipt": "outputs/latest_github_sync_receipt.json",
     "durability": "Last verified prior revision above; exact final remote/local pair and whole-tree readback recorded in ignored receipt after publication, avoiding commit self-reference."
   },
@@ -2938,7 +2930,8 @@
     "AB_globally_feasible_proved": false,
     "mergers": [
       "TA",
-      "TIES"
+      "TIES",
+      "NUFILT (author kernels with native weight adapter)"
     ],
     "attacks": [
       "Original author AGA"
@@ -2951,16 +2944,16 @@
     "full_evaluation_started": true,
     "unknown_oracle_attack_claim": false,
     "registration": "results/phase3/registration.json",
-    "full_results_verified": false,
-    "verified_full_cases": 3,
+    "full_results_verified": true,
+    "verified_full_cases": 4,
     "expected_full_cases": 4,
-    "verified_result_rows": 182,
+    "verified_result_rows": 244,
     "first_case": "MNIST/SVHN",
     "first_case_full_replays": 1248,
     "first_case_max_score_error": 0.0003908872604370117,
     "full_results": "results/phase3/results.json",
     "figures": "results/phase3",
-    "nufilt_status": "fixed_native_adapter_registered_pilot_then_frozen_weight_full_evaluation_queued",
+    "nufilt_status": "verified_author_kernels_native_adapter_full_two_task_evaluation",
     "review_scope": "Papers, experiment sections, appendices and fixed source; unavailable implementations and incomplete reproductions explicitly separated",
     "first_batch_observation": {
       "merger": "TIES top20%, mass, dis-mean, lambda1.0",
@@ -2972,6 +2965,70 @@
       },
       "interpretation": "This fixed merger is not a stronger recovery for these frozen defenses. No defense was changed. Both task results and per-class counts retained."
     },
-    "validation_amendment": "DTD/MNIST original-batch-context replay: 416 samples, score error 0; original 16-vs-128 failure retained, tolerance unchanged."
+    "validation_amendment": "DTD/MNIST original-batch-context replay: 416 samples, score error 0; original 16-vs-128 failure retained, tolerance unchanged.",
+    "AB_task_budget_counterexample": true,
+    "utility_audit": "passed_numpy_score_recount_and_full_model_witness_replay",
+    "utility_witnesses": "results/phase3/utility_witnesses.json",
+    "new_task_budget_witnesses": {
+      "training_index": 31374,
+      "OB_relative_drift": 5.369067717126243,
+      "AB_signed_relative_drift": -39.92018383042581,
+      "full_model_score_error": 0.0,
+      "AB_prediction_change": "7 to 9",
+      "repair_allowed": false
+    },
+    "NUFILT_pilot": {
+      "status": "passed",
+      "rows": 36,
+      "full_replay_count": 576,
+      "maximum_score_error": 1.9073486328125e-05
+    },
+    "main_TA_TIES_rows": 208,
+    "NUFILT_rows": 36,
+    "full_model_score_replays": 3904,
+    "NUFILT_full": {
+      "status": "passed",
+      "scope": "MNIST protected with SVHN; both task orders; no attack / AGA protected / AGA all",
+      "rows": 36,
+      "full_replay_count": 576,
+      "maximum_score_error": 2.86102294921875e-05,
+      "author_kernel_and_native_adapter": true,
+      "full_FusionBench_application_reproduced": false,
+      "Phase1_exact_selected_weight_and_prediction_equality": true,
+      "Phase1_MNIST_accuracy_percent_range": [
+        99.07,
+        99.43
+      ],
+      "Phase1_partner_SVHN_accuracy_percent_range": [
+        93.75,
+        95.3480331899201
+      ],
+      "AB_MNIST_accuracy_percent_range": [
+        98.86,
+        99.33
+      ],
+      "AB_remaining_gap_pp_range": [
+        0.06,
+        0.31
+      ],
+      "attacker_gate_backward_steps": 600,
+      "expert_or_defense_updates": 0,
+      "pilot_wall_seconds": 604.0679933289066,
+      "full_wall_seconds": 521.6011736928485
+    },
+    "AB_globally_feasible": false,
+    "strict_dual_budget_effective_defense_established": false,
+    "untested": [
+      "DARE",
+      "Full TSV-Merge",
+      "Data-assisted adaptation or distillation",
+      "MergeLock/MergeGuard/MergeBarrier official executable reproduction",
+      "NUFILT protecting DTD/SVHN or frozen O/B"
+    ],
+    "post_run_frozen_model_integrity": {
+      "status": "all_registered_sha256_match",
+      "files_checked": 24,
+      "checked_after_all_evaluations": true
+    }
   }
 }

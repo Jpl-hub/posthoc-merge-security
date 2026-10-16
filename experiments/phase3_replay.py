@@ -77,6 +77,53 @@ def verify(output):
     print('PHASE3_CONTEXT_VERIFIED', out, replays, maximum, flush=True)
 
 
+@torch.no_grad()
+def utility_witnesses():
+    """Replay budget counterexamples; exposed inputs never repair a defense."""
+    out = Path('outputs/phase3/utility')
+    cfg = json.loads((out/'protocol.json').read_text())
+    proof = json.loads((out/'independent_validation.json').read_text())
+    assert proof['status'] == 'passed_numpy_score_recount'
+    assert digest(out/'scores.pt') == proof['scores_sha256']
+    _, experts, heads, _, _ = setup(cfg)
+    raw = torch.load(out/'scores.pt', map_location='cpu', weights_only=False)
+    records = []
+    for row in json.loads((out/'results.json').read_text()):
+        if row['defense'] not in ['O/B', 'A/B']: continue
+        task, name = row['target'], row['defense']; r = raw[task]
+        before, after = r['teacher_logits'].numpy(), r[name].numpy()
+        y = before.argmax(1); gap = before[np.arange(len(y)), y, None]-before
+        ds = after-before; delta = ds[np.arange(len(y)), y, None]-ds
+        ratio = np.divide(delta, gap, out=np.zeros_like(delta), where=gap>0)
+        i, c = np.unravel_index(np.abs(ratio).argmax(), ratio.shape)
+        own = experts[task]; released = apply(own, cfg['defenses'][name]['release'])
+        train = dataset(task, 'data', own.val_preprocess, True)
+        batch = inspect.signature(make_loader).parameters['batch_size'].default
+        start, end = i//batch*batch, min((i//batch+1)*batch, len(y))
+        images = torch.stack([train[r['indices'][k]][0] for k in range(start, end)]).cuda()
+        own.cuda(); released.cuda(); heads[task].cuda()
+        a = heads[task](own(images)).cpu().double().numpy()
+        b = heads[task](released(images)).cpu().double().numpy()
+        error = max(float(np.abs(a-before[start:end]).max()), float(np.abs(b-after[start:end]).max()))
+        assert error <= cfg['score_tolerance']
+        a, b = a[i-start], b[i-start]; teacher = int(y[i])
+        actual = ((b[teacher]-b[c])-(a[teacher]-a[c]))/(a[teacher]-a[c])
+        assert abs(actual-ratio[i,c]) < 1e-5 and abs(actual) > cfg['task_budget']
+        records.append(dict(defense=name, training_index=int(r['indices'][i]), label=int(train[r['indices'][i]][1]),
+            teacher_class=teacher, competitor_class=int(c), teacher_gap=float(a[teacher]-a[c]),
+            release_gap=float(b[teacher]-b[c]), signed_relative_drift=float(actual),
+            teacher_prediction=int(a.argmax()), release_prediction=int(b.argmax()),
+            complete_before_scores=a.tolist(), complete_after_scores=b.tolist(), full_model_score_error=error,
+            release_sha256=cfg['defenses'][name]['release']['sha256']))
+        own.cpu(); released.cpu(); heads[task].cpu()
+    save_json(out/'witnesses.json', dict(status='counterexamples_replayed_in_frozen_full_models',
+        records=records, budget=cfg['task_budget'], raw_scores_sha256=digest(out/'scores.pt'),
+        source_sha256=digest(__file__), gradients=0, new_weights=0, repair_or_selection=False,
+        scope='Read-only exposed audit witnesses; accuracy results and earlier finite confirmations retained.'))
+    print('PHASE3_UTILITY_WITNESSES', json.dumps(records), flush=True)
+
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=__doc__); parser.add_argument('output')
-    verify(parser.parse_args().output)
+    parser = argparse.ArgumentParser(description=__doc__); parser.add_argument('output', nargs='?')
+    parser.add_argument('--utility', action='store_true'); args = parser.parse_args()
+    utility_witnesses() if args.utility else verify(args.output)

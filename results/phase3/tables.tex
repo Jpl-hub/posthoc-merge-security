@@ -26,7 +26,7 @@ Defense & Standalone & No attack & AGA (protected) & AGA (all) \\
 Unprotected & 99.69 & 99.45 / 69.31 & 99.43 / 69.41 & 99.42 / 68.78 \\
 Phase 1 (LN bias)$^{*}$ & 99.69 & 9.80 / 2.13 & 9.80 / 2.13 & 9.80 / 2.13 \\
 O/B$^{\dagger}$ & 99.71 & 42.99 / 63.24 & 47.18 / 63.88 & 46.01 / 62.61 \\
-A/B & 99.65 & 49.40 / 59.41 & 36.77 / 59.68 & 35.54 / 58.19 \\
+A/B$^{\dagger}$ & 99.65 & 49.40 / 59.41 & 36.77 / 59.68 & 35.54 / 58.19 \\
 PaRaMS (full)$^{*}$ & 99.69 & 8.89 / 2.07 & 99.43 / 69.41 & 99.42 / 68.78 \\
 PaRaMS (attention) & 99.69 & 99.46 / 69.26 & 99.43 / 69.41 & 99.42 / 68.78 \\
 \bottomrule
@@ -40,7 +40,7 @@ Defense & Standalone & No attack & AGA (protected) & AGA (all) \\
 Unprotected & 99.69 & 99.60 / 74.26 & 99.60 / 74.41 & 99.61 / 73.51 \\
 Phase 1 (LN bias)$^{*}$ & 99.69 & 9.82 / 2.13 & 9.82 / 2.13 & 9.82 / 2.13 \\
 O/B$^{\dagger}$ & 99.71 & 43.97 / 52.66 & 39.88 / 55.48 & 39.68 / 53.67 \\
-A/B & 99.65 & 50.60 / 49.41 & 36.69 / 50.21 & 35.78 / 47.39 \\
+A/B$^{\dagger}$ & 99.65 & 50.60 / 49.41 & 36.69 / 50.21 & 35.78 / 47.39 \\
 PaRaMS (full)$^{*}$ & 99.69 & 8.92 / 2.13 & 99.60 / 74.36 & 99.61 / 73.46 \\
 PaRaMS (attention) & 99.69 & 99.60 / 71.17 & 99.60 / 74.41 & 99.61 / 73.51 \\
 \bottomrule
@@ -54,7 +54,7 @@ Defense & Standalone & No attack & AGA (protected) & AGA (all) \\
 Unprotected & 99.69 & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
 Phase 1 (LN bias)$^{*}$ & 99.69 & 9.80 / 6.70 & 9.80 / 6.70 & 9.80 / 6.70 \\
 O/B$^{\dagger}$ & 99.71 & 78.77 / 62.94 & 79.53 / 65.82 & 77.85 / 61.42 \\
-A/B & 99.65 & 91.07 / 77.46 & 85.42 / 75.50 & 79.20 / 69.84 \\
+A/B$^{\dagger}$ & 99.65 & 91.07 / 77.46 & 85.42 / 75.50 & 79.20 / 69.84 \\
 PaRaMS (full)$^{*}$ & 99.69 & 8.92 / 9.15 & 99.30 / 92.79 & 99.32 / 91.77 \\
 PaRaMS (attention) & 99.69 & 99.37 / 92.51 & 99.30 / 92.78 & 99.32 / 91.77 \\
 \bottomrule
@@ -68,8 +68,42 @@ Defense & Standalone & No attack & AGA (protected) & AGA (all) \\
 Unprotected & 99.69 & 99.34 / 94.37 & 99.32 / 94.81 & 99.36 / 94.18 \\
 Phase 1 (LN bias)$^{*}$ & 99.69 & 9.82 / 9.69 & 9.82 / 9.69 & 9.82 / 9.69 \\
 O/B$^{\dagger}$ & 99.71 & 64.31 / 54.27 & 57.13 / 50.75 & 54.06 / 44.53 \\
-A/B & 99.65 & 69.44 / 66.83 & 65.76 / 66.21 & 62.69 / 61.80 \\
+A/B$^{\dagger}$ & 99.65 & 69.44 / 66.83 & 65.76 / 66.21 & 62.69 / 61.80 \\
 PaRaMS (full)$^{*}$ & 99.69 & 8.92 / 9.05 & 99.32 / 94.81 & 99.36 / 94.18 \\
 PaRaMS (attention) & 99.69 & 99.35 / 93.92 & 99.32 / 94.81 & 99.36 / 94.18 \\
+\bottomrule
+\end{tabular}
+
+% SVHN / MNIST: TA
+\begin{tabular}{lrrrr}
+\toprule
+Defense & Standalone & No attack & AGA (protected) & AGA (all) \\
+\midrule
+Unprotected & 97.46 & 92.50 / 99.37 & 91.56 / 99.39 & 91.77 / 99.32 \\
+Phase 1 LN bias$^{*}$ & 97.46 & 6.70 / 9.80 & 6.70 / 9.80 & 6.70 / 9.80 \\
+\bottomrule
+\end{tabular}
+
+% SVHN / MNIST: TIES
+\begin{tabular}{lrrrr}
+\toprule
+Defense & Standalone & No attack & AGA (protected) & AGA (all) \\
+\midrule
+Unprotected & 97.46 & 94.37 / 99.34 & 93.75 / 99.37 & 94.18 / 99.36 \\
+Phase 1 LN bias$^{*}$ & 97.46 & 17.22 / 20.04 & 17.14 / 20.04 & 16.10 / 19.42 \\
+\bottomrule
+\end{tabular}
+
+% NUFILT: same native adapter and fixed defaults; both task orders, one fixed seed.
+\begin{tabular}{llrrr}
+\toprule
+Order & Defense & No attack & AGA (protected) & AGA (all) \\
+\midrule
+MNIST--SVHN & Unprotected & 99.43 / 94.45 & 99.39 / 94.68 & 99.39 / 93.75 \\
+MNIST--SVHN & Phase 1 (LN bias)$^{*}$ & 99.43 / 94.45 & 99.39 / 94.68 & 99.39 / 93.75 \\
+MNIST--SVHN & A/B$^{\dagger}$ & 99.33 / 94.46 & 99.14 / 94.61 & 99.08 / 93.72 \\
+SVHN--MNIST & Unprotected & 99.19 / 95.11 & 99.07 / 95.35 & 99.14 / 94.51 \\
+SVHN--MNIST & Phase 1 (LN bias)$^{*}$ & 99.19 / 95.11 & 99.07 / 95.35 & 99.14 / 94.51 \\
+SVHN--MNIST & A/B$^{\dagger}$ & 99.13 / 95.21 & 98.86 / 95.38 & 98.94 / 94.53 \\
 \bottomrule
 \end{tabular}
