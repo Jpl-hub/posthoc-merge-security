@@ -68,6 +68,56 @@ def run(output):
     print(json.dumps(result),flush=True)
 
 
+def run_readout_null(output):
+    """A fixed projection counterexample; no CLIP weights or candidate search."""
+    start = time.monotonic()
+    out = Path(output); out.mkdir(parents=True, exist_ok=False)
+    author, pin = load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))
+    assert pin == '4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778'
+    x = np.eye(3, 2); base = .8*x; release = x.copy(); release[2, 0] = .5
+    readout = np.eye(2, 3); inputs = np.array([[1.1, 1.], [1., 1.1]])
+    assert np.array_equal(readout@release, readout@x)
+    aligned = []; formula = []; eta = 1e-8
+    for value in [x, release]:
+        src, ref = [torch.tensor(v, dtype=torch.float32) for v in [value, base]]
+        aligned.append((src@author['solve_linear_transformation'](src, ref)).numpy())
+        formula.append(value@np.linalg.solve(value.T@value+eta*np.eye(2), value.T@base))
+    error = max(float(abs(a-b).max()) for a, b in zip(aligned, formula))
+    assert error < 1e-6
+    lam = Q(1, 100000000); a = Q(4, 5)/(1+lam); b = Q(4, 5)/(Q(5, 4)+lam)
+    exact = dict(source_original=[Q(1, 10), -Q(1, 10)], source_release=[Q(1, 10), -Q(1, 10)],
+        direct_original=[Q(9, 100), -Q(9, 100)], direct_release=[Q(9, 100), -Q(9, 100)],
+        aligned_original=[a/10, -a/10], aligned_release=[Q(11, 10)*b-a, b-Q(11, 10)*a],
+        aligned_anchor_original=[(a+Q(4, 5))/20, -(a+Q(4, 5))/20],
+        aligned_anchor_release=[(Q(11, 10)*(b+Q(4, 5))-a-Q(4, 5))/2,
+                                (b+Q(4, 5)-Q(11, 10)*(a+Q(4, 5)))/2])
+    matrices = dict(source_original=x, source_release=release,
+        direct_original=(x+base)/2, direct_release=(release+base)/2,
+        aligned_original=aligned[0], aligned_release=aligned[1],
+        aligned_anchor_original=(aligned[0]+base)/2, aligned_anchor_release=(aligned[1]+base)/2)
+    rows = {}
+    for name, value in matrices.items():
+        f = readout@value@inputs; gap = f[0]-f[1]
+        np.testing.assert_allclose(gap, list(map(float, exact[name])), atol=1e-6, rtol=0)
+        f /= np.linalg.norm(f, axis=0, keepdims=True)
+        pred = f.argmax(0); wanted = [1, 1] if name in ['aligned_release', 'aligned_anchor_release'] else [0, 1]
+        assert pred.tolist() == wanted and np.min(abs(f[0]-f[1])) > .005
+        rows[name] = dict(predictions=pred.tolist(), normalized_gaps=(f[0]-f[1]).tolist(),
+                          exact_unnormalized_gaps=list(map(str, exact[name])))
+    result = dict(status='fixed_readout_null_alignment_counterexample_verified',
+        preregistered_commit='f7f6a0d', parameter_distance=float(np.linalg.norm(release-x)/np.linalg.norm(x)),
+        source_readout_error=0., source_normalized_task_drift=0., task_vector_right_probe_error=0.,
+        author_vs_numpy_max_error=error, author_source_sha256=pin, rows=rows,
+        official_column_solver_calls=2, CLIP_checkpoints_loaded=0, images_loaded=0, gradients=0,
+        new_defense_weights=0, GPU_used=False, wall_seconds=time.monotonic()-start,
+        source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        scope='Projection component only, not full Attention/AGA, CLIP defense, unknown-peer coverage, or a new algorithm. Source readout-null edits need not stay null after alignment. No class/angle/rank search.')
+    (out/'results.json').write_text(json.dumps(result,indent=2)+'\n')
+    print(json.dumps(result),flush=True)
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(description=__doc__); ap.add_argument('--output',required=True)
-    run(ap.parse_args().output)
+    ap.add_argument('--readout-null', action='store_true')
+    args = ap.parse_args()
+    (run_readout_null if args.readout_null else run)(args.output)
