@@ -254,7 +254,7 @@ def confirm(cfg):
     release=copy.deepcopy(expert); release.load_state_dict(release.state_dict()|torch.load(out/'frozen_release.pt',map_location='cpu',weights_only=False))
     actual=[];release.cuda();head.cuda()
     for images,_ in make_loader(train,split['indices'],64):actual.append(head(release(images.cuda())).cpu())
-    release.cpu(); actual=torch.cat(actual).double(); original=head(cache['actual'].float()).cpu().double() if cache['actual'].device.type=='cpu' else head(cache['actual'].float()).cpu().double();head.cpu()
+    release.cpu(); actual=torch.cat(actual).double(); original=head(cache['actual'].float()).cpu().double();head.cpu()
     n=len(split['indices']); control=max(float((actual-after[:n].cpu()).abs().max()),float((original-before[:n].cpu()).abs().max()))
     assert control<=cfg['score_tolerance']; actual_drift=float(signed_residual(original,actual).abs().max())
     changed=int((original.argmax(1)!=actual.argmax(1)).sum()); distance=float(sum(((q[k]-p[k]).norm()/p[k].norm()).square() for k in ['A','a','B']).sqrt())
