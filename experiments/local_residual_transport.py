@@ -146,8 +146,42 @@ def verify(folder):
     result=dict(status='passed',numpy_score_max_error=maximum,source_drift=rows,source_feasible=rep['source_feasible'],new_release_weights=0,gradients=0,source_sha256=digest(__file__),wall_seconds=time.monotonic()-start)
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
+@torch.no_grad()
+def anchor_check(folder):
+    """Complete the stated public-base record; never reselect or promote the point."""
+    out=Path(folder);start=time.monotonic();rep=json.loads((out/'results.json').read_text())
+    assert not (out/'anchor_interpolation.json').exists() and digest(out/'diagnostic.pt')==rep['diagnostic_sha256']
+    raw=torch.load(out/'diagnostic.pt',map_location='cpu');cfg=raw['cfg'];anchor,expert,head,pins=checked_models(cfg['target'])
+    assert pins==rep['checkpoint_sha256'];base=merge(anchor,expert,anchor,.5);p=on_device(extended_parameters(base,head));q=dict(p)
+    for k in FIELDS:q[k]=(p[k]+.5*(raw['q'][k]-raw['p'][k]).cuda()).float().double()
+    train=dataset(cfg['target'],'data',expert.val_preprocess,True);ids=raw['indices']['scale'];c=on_device(capture(base,train,ids))
+    data=dict(r=c['r'],H=c['o_input'],rounding=c['h']-final_hidden(c['r'],p),offset=torch.zeros((len(ids),p['A'].shape[0]),device='cuda'))
+    before,after=forward(data,p,p),forward(data,p,q);result=metric(before,after,len(ids));R={}
+    for name,par,wanted in [('original',p,before),('changed',q,after)]:
+        model=copy.deepcopy(base)
+        for k,key in FIELDS.items():model.state_dict()['model.visual.transformer.resblocks.11.'+key].copy_(par[k].cpu().float())
+        actual=[];model.cuda();head.cuda()
+        for images,_ in make_loader(train,ids[:cfg['full_replay_n']],64):actual.append(head(model(images.cuda())).cpu())
+        model.cpu();head.cpu();a=torch.cat(actual).double();err=float((a-wanted[:len(a)].cpu()).abs().max())
+        assert err<=cfg['replay_tolerance'] and torch.equal(a.argmax(1),wanted[:len(a)].cpu().argmax(1));R[name]=dict(n=len(a),score_error=err)
+    def numpy_forward(params):
+        pn={k:v.cpu().numpy() if torch.is_tensor(v) else v for k,v in params.items()};dn={k:v.cpu().numpy() for k,v in data.items()}
+        r=dn['r']+dn['H']@(pn['O']-p['O'].cpu().numpy()).T+pn['ob']-p['ob'].cpu().numpy();cc=r-r.mean(1,keepdims=True)
+        pre=(cc/np.sqrt((cc**2).mean(1,keepdims=True)+pn['eps2'])*pn['gamma2']+pn['beta2'])@pn['A'].T+pn['a']
+        return raw_scores(dn['rounding']+r+(pre*expit(1.702*pre))@pn['B'].T+pn['b'],pn)
+    numpy_error=0.
+    for par,wanted in [(p,before),(q,after)]:
+        actual=numpy_forward(par);numpy_error=max(numpy_error,float(abs(actual-wanted.cpu().numpy()).max()));np.testing.assert_allclose(actual,wanted.cpu(),atol=1e-8,rtol=1e-9)
+    torch.save(dict(data=cpu(data),p=cpu(p),q=cpu(q),before=before.cpu(),after=after.cpu(),indices=ids),out/'anchor_interpolation.pt')
+    result.update(status='fixed_public_base_record_not_unknown_peer_test',source_point_unchanged=rep['diagnostic_sha256'],
+        full_model_controls=R,numpy_score_max_error=numpy_error,new_candidates=0,point_promoted=False,new_gradients=0,
+        protocol_scope='Complete predeclared public-base interpolation record only; no original results overwritten or failed midpoint gate relaxed.',
+        source_sha256=digest(__file__),raw_sha256=digest(out/'anchor_interpolation.pt'),wall_seconds=time.monotonic()-start,full_model_forwards=len(ids)+2*cfg['full_replay_n'])
+    save_json(out/'anchor_interpolation.json',result);print(json.dumps(result),flush=True)
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');args=ap.parse_args();initialize()
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--anchor-check');args=ap.parse_args();initialize()
     if args.verify:verify(args.verify)
+    elif args.anchor_check:anchor_check(args.anchor_check)
     else:
         cfg=json.loads(Path(args.protocol).read_text());cfg['protocol_path']=args.protocol;run(cfg)
