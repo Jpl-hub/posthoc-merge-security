@@ -58,7 +58,7 @@ def run(cfg):
     ctx=torch.tensor(contexts,device='cuda'); shifts=[]
     for value,V in [(x[:counts[0]],va),(z[:counts[0]],vb)]:
         rms=(value@V.T).square().mean(0).sqrt()
-        shifts.append((cfg['finite_step']*torch.tensor([-1.,1.],device='cuda')[:,None,None]*rms[None,:,None]*V[None]).flatten(0,1))
+        shifts.append((cfg['finite_step']*torch.tensor([-1.,1.],device='cuda',dtype=torch.float64)[:,None,None]*rms[None,:,None]*V[None]).flatten(0,1))
     sa,sb=shifts; m=len(sa); assert len(sb)==m
     data=dict(x=torch.cat([x,(x[ctx,None]+sa[None]).flatten(0,1),x[ctx].repeat_interleave(m,0)]),
         base=torch.cat([base,base[ctx].repeat_interleave(m,0),base[ctx].repeat_interleave(m,0)]),
