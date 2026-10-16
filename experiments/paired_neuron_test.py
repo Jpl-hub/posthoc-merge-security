@@ -183,9 +183,98 @@ def verify(output):
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
 
+def verify_output(output):
+    start=time.monotonic(); out=Path(output); report=json.loads((out/'output_fit.json').read_text())
+    assert digest(out/'training_point.pt')==report['training_point_sha256'] and digest(out/'frozen_release.pt')==report['release_sha256']
+    raw=torch.load(out/'training_point.pt',map_location='cpu',weights_only=False)
+    par={k:v.numpy() if torch.is_tensor(v) else v for k,v in raw['q'].items()}; data={k:v.numpy() for k,v in raw['data'].items()}
+    pre=data['x']@par['A'].T+par['a']; z=pre*expit(1.702*pre)+data['offset']
+    actual=raw_scores(data['base']+z@par['B'].T,par); np.testing.assert_allclose(actual,raw['after'],atol=1e-8,rtol=1e-9)
+    X,Y,weight,ridge=[raw[k].numpy() for k in ['X','Y','weight','ridge']]
+    kt=np.linalg.lstsq(X.T@(weight[:,None]*X)+ridge*np.eye(X.shape[1]),X.T@(weight[:,None]*Y),rcond=None)[0].T
+    np.testing.assert_allclose(kt,raw['kt'],atol=1e-8,rtol=1e-8)
+    pp={k:v.numpy() if torch.is_tensor(v) else v for k,v in raw['pp'].items()}; qp={k:v.numpy() if torch.is_tensor(v) else v for k,v in raw['qp'].items()}
+    cache={k:v.numpy() for k,v in raw['proxy_cache'].items()}; r=cache['r']; rc=r-r.mean(1,keepdims=True)
+    x=rc/np.sqrt((rc**2).mean(1,keepdims=True)+pp['eps2'])*pp['gamma2']+pp['beta2']
+    def hidden(p):
+        a=x@p['A'].T+p['a'];return r+(a*expit(1.702*a))@p['B'].T+p['b']
+    h=cache['h']-hidden(pp)+hidden(qp); checked=raw_scores(h,qp)
+    np.testing.assert_allclose(checked,raw['proxy_after'],atol=1e-8,rtol=1e-9)
+    contrast=pp['head']-pp['head'].mean(0); M=pp['gamma'][:,None]*(pp['projection']@contrast.T); M-=M.mean(0)
+    b=pp['beta']@pp['projection']@contrast.T; ideal=raw['ideal'].numpy(); sig=np.sqrt(((ideal-ideal.mean(1,keepdims=True))**2).mean(1,keepdims=True)+pp['eps'])
+    err=float(abs(ideal@M+sig*b-raw['target'].numpy()).max()); assert err<1e-8
+    result=dict(status='passed',source_feasible=report['source_feasible'],source_score_error=float(abs(actual-raw['after'].numpy()).max()),
+        proxy_score_error=float(abs(checked-raw['proxy_after'].numpy()).max()),ideal_target_error=err,
+        independent_lstsq_coefficient_error=float(abs(kt-raw['kt'].numpy()).max()),release_sha256=report['release_sha256'],
+        training_point_sha256=report['training_point_sha256'],wall_seconds=time.monotonic()-start,source_sha256=digest(__file__))
+    save_json(out/'output_independent_validation.json',result);print(json.dumps(result),flush=True)
+
+
+def fresh_data(cache,p,basis,source_x,cfg):
+    x=normalized_input(cache['r'],p); z=gelu(x@p['A'].T+p['a']); base=cache['h']-z@p['B'].T
+    teacher=scores(cache['h'],p); y=teacher.argmax(1); other=teacher.clone(); other[torch.arange(len(x),device='cuda'),y]=-torch.inf
+    gap=teacher.gather(1,y[:,None]).flatten()-other.max(1).values; contexts=[]
+    for c in range(len(p['head'])):
+        ids=(y==c).nonzero().flatten(); assert len(ids)>=cfg['contexts_per_class']
+        contexts.extend(ids[gap[ids].argsort(stable=True)[:cfg['contexts_per_class']]].tolist())
+    ctx=torch.tensor(contexts,device='cuda'); shifts=[]; source_z=gelu(source_x@p['A'].T+p['a'])
+    for value,V in [(source_x,basis['A']['vh'].cuda()),(source_z,basis['B']['vh'].cuda())]:
+        rms=(value@V.T).square().mean(0).sqrt(); shifts.append((cfg['finite_step']*torch.tensor([-1.,1.],device='cuda',dtype=torch.float64)[:,None,None]*rms[None,:,None]*V[None]).flatten(0,1))
+    sa,sb=shifts; m=len(sa)
+    return dict(x=torch.cat([x,(x[ctx,None]+sa[None]).flatten(0,1),x[ctx].repeat_interleave(m,0)]),
+        base=torch.cat([base,base[ctx].repeat_interleave(m,0),base[ctx].repeat_interleave(m,0)]),
+        offset=torch.cat([torch.zeros_like(z),torch.zeros((len(ctx)*m,z.shape[1]),device='cuda',dtype=torch.float64),sb.repeat(len(ctx),1)]))
+
+
+@torch.no_grad()
+def confirm(cfg):
+    import copy
+    from angular_distance import signed_residual
+    from confirm_temperature_compensation import unused
+    from covariance_noise import dataset
+    from cross_module_distance import capture_attention
+    from subspace_probe import make_loader
+    from task_probe_distance import checked_models
+    start=time.monotonic(); out=Path(cfg['output']); assert not (out/'confirmation_split.json').exists()
+    fit=json.loads((out/'output_fit.json').read_text()); valid=json.loads((out/'output_independent_validation.json').read_text())
+    assert fit['source_feasible'] and valid['status']=='passed' and digest(out/'frozen_release.pt')==fit['release_sha256']
+    raw=torch.load(out/'training_point.pt',map_location='cpu',weights_only=False); p,q=[on_device(raw[k]) for k in ['p','q']]
+    save_json(out/'pre_confirmation_freeze.json',dict(release_sha256=fit['release_sha256'],training_point_sha256=fit['training_point_sha256'],
+        source_sha256=digest(__file__),confirmation_drawn=False,cfg=cfg))
+    _,expert,head,pins=checked_models(cfg['target']); assert pins==raw['checkpoint_sha256']
+    train=dataset(cfg['target'],'data',expert.val_preprocess,True); excluded=set(cfg['extra_excluded_indices'])
+    for ids in raw['indices'].values():excluded.update(ids)
+    split=unused(train,excluded,cfg); save_json(out/'confirmation_split.json',split)
+    cache=on_device(capture_attention(expert,train,split['indices'])); basis=torch.load(cfg['task_basis'],map_location='cpu',weights_only=False)['basis']
+    nfit=len(raw['indices']['fit']); data=fresh_data(cache,p,basis,raw['data']['x'][:nfit].cuda(),cfg)
+    before,after=predict(data,p),predict(data,q); drift=float(signed_residual(before,after).abs().max())
+    pn={k:v.cpu().numpy() if torch.is_tensor(v) else v for k,v in q.items()}; d={k:v.cpu().numpy() for k,v in data.items()}
+    z=d['x']@pn['A'].T+pn['a']; checked=raw_scores(d['base']+(z*expit(1.702*z)+d['offset'])@pn['B'].T,pn)
+    np.testing.assert_allclose(checked,after.cpu(),atol=1e-8,rtol=1e-9)
+    release=copy.deepcopy(expert); release.load_state_dict(release.state_dict()|torch.load(out/'frozen_release.pt',map_location='cpu',weights_only=False))
+    actual=[];release.cuda();head.cuda()
+    for images,_ in make_loader(train,split['indices'],64):actual.append(head(release(images.cuda())).cpu())
+    release.cpu(); actual=torch.cat(actual).double(); original=head(cache['actual'].float()).cpu().double() if cache['actual'].device.type=='cpu' else head(cache['actual'].float()).cpu().double();head.cpu()
+    n=len(split['indices']); control=max(float((actual-after[:n].cpu()).abs().max()),float((original-before[:n].cpu()).abs().max()))
+    assert control<=cfg['score_tolerance']; actual_drift=float(signed_residual(original,actual).abs().max())
+    changed=int((original.argmax(1)!=actual.argmax(1)).sum()); distance=float(sum(((q[k]-p[k]).norm()/p[k].norm()).square() for k in ['A','a','B']).sqrt())
+    passed=drift<=cfg['task_budget'] and actual_drift<=cfg['task_budget'] and distance<=cfg['parameter_budget'] and changed==0
+    labels=torch.tensor([int(train[i][1]) for i in split['indices']]); torch.save(dict(data=cpu(data),cache=cpu(cache),before=before.cpu(),after=after.cpu(),
+        actual_original=original,actual_release=actual,indices=split['indices'],labels=labels),out/'confirmation.pt')
+    result=dict(status='passed' if passed else 'failed',confirmation_passed=passed,n=n,task_inputs=len(before),worst_task_drift=drift,
+        full_model_natural_worst_drift=actual_drift,full_model_control_max_error=control,numpy_score_error=float(abs(checked-after.cpu().numpy()).max()),
+        changed=changed,original_correct=int((original.argmax(1)==labels).sum()),released_correct=int((actual.argmax(1)==labels).sum()),
+        parameter_distance=distance,release_sha256=fit['release_sha256'],split_sha256=digest(out/'confirmation_split.json'),
+        confirmation_sha256=digest(out/'confirmation.pt'),source_sha256=digest(__file__),confirmation_redrawn=False,source_point_repaired=False,
+        source_construction_n=nfit+len(raw['indices']['scale']),full_model_forwards=2*n,gradients=0,wall_seconds=time.monotonic()-start)
+    save_json(out/'confirmation_validation.json',result);print(json.dumps(result),flush=True)
+
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__); ap.add_argument('--protocol'); ap.add_argument('--verify'); ap.add_argument('--fit-output',action='store_true'); args=ap.parse_args()
+    ap=argparse.ArgumentParser(description=__doc__); ap.add_argument('--protocol'); ap.add_argument('--verify'); ap.add_argument('--verify-output')
+    ap.add_argument('--fit-output',action='store_true'); ap.add_argument('--confirm',action='store_true'); args=ap.parse_args()
     if args.verify: verify(args.verify)
+    elif args.verify_output: verify_output(args.verify_output)
     else:
         cfg=json.loads(Path(args.protocol).read_text()); cfg['protocol_path']=args.protocol
-        initialize();(fit_output if args.fit_output else run)(cfg)
+        initialize();(confirm if args.confirm else fit_output if args.fit_output else run)(cfg)
