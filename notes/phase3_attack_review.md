@@ -9,7 +9,7 @@
 | 攻击／恢复流程 | 原论文依据与攻击者权限 | 实现核对与当前状态 |
 |---|---|---|
 | AGA | [§3–4](https://arxiv.org/html/2606.30360v1#S3)：发布权重＋公开基座；逐头最小二乘与MLP余弦匈牙利匹配；无图片 | 固定官方代码已复现。仅处理保护专家、处理全部专家分列；float64、正则1e-8保留 |
-| PaRaMS自适应置换／缩放恢复 | [§6](https://arxiv.org/html/2503.07661v1#S6)：已知保护机制＋公开基座；恢复MLP排列和Attention尺度 | 官方MLP函数支持`obj='matching'`，按双矩阵与偏置内积求Hungarian；已核对正文和代码。完整Attention恢复／蒸馏入口未确认；完整链未复现，不能借用AGA数字 |
+| PaRaMS自适应置换／缩放恢复 | [§6](https://arxiv.org/html/2503.07661v1#S6)：已知保护机制＋公开基座；恢复MLP排列和Attention尺度 | 官方MLP匹配内核与调用方向已做CPU反例核验；保护接口直接改`matching`不能保证恢复坐标。完整Attention恢复／蒸馏入口未确认；完整链未复现，不能借用AGA数字 |
 | PaRaMS伪标签蒸馏 | 同文§6、附录H.2：同分布无标签图片、教师预测及替代模型训练，再融合 | 属于数据和训练增强的攻击权限；论文报告50 epochs、batch128，其他细节仍须补齐。未复现，不能声称抗蒸馏 |
 | MergeLock配对对齐 | [§4.2.2](https://arxiv.org/html/2509.01548v1#S4.SS2.SSS2)：以伙伴为参照，Q/K共用正交变换并含偏置；V/O配对 | 固定官方树仅README；式(11)排版歧义已核对PDF。没有作者可执行版本，不自行改公式冒称官方复现 |
 | MergeBarrier的PaRaMS解码 | [附录D.2](https://arxiv.org/html/2511.10712v1#A4.SS2)：公开基座、MLP最近距离匹配、Attention比值／中位尺度估计 | 原文有明确步骤，不能与AGA混同；逐列独立argmin未保证全局双射，行列与逆尺度须核对。未取得可核官方代码，未运行 |
@@ -23,7 +23,13 @@
 
 ### 源码核对的新增证据
 
-PaRaMS的`parameter_rearrangement`第60–139行包含对齐选项，`params(...,perm_config=...)`也暴露该参数。它累计A行、B列及偏置内积，`matching`使用`linear_sum_assignment(...,maximize=True)`；AGA只由A行余弦构造代价。两者不是同一实现。先前关于恢复入口的笼统表述已更正；完整调用的排列方向与缩放恢复仍需单独数值核验，不能据此声称完整攻击链已复现。
+PaRaMS的`parameter_rearrangement`第60–139行包含对齐选项，`params(...,perm_config=...)`也暴露该参数。它累计A行、B列及偏置内积，`matching`使用`linear_sum_assignment(...,maximize=True)`；AGA只由A行余弦构造代价。两者不是同一实现。
+
+**调用方向已实际核验。** 匹配代价`C_ij`比较第一个模型的神经元i和第二个模型的神经元j，返回的排列作用于第二个模型。官方保护包装函数却先以`(victim, base)`估计排列，再把它作用于victim；在保护模式下这仍保持MLP函数，但不能直接把`obj`改为`matching`就当恢复接口。固定三神经元循环`[1,2,0]`的CPU实验中，内核以`(base, protected)`求解并作用于protected，参数重建误差为0；直接包装调用的重建误差为19.808458，而两者MLP输出均不变。独立NumPy穷举全部6个排列验证唯一最优解。普通两两交换恰好等于逆排列，会掩盖这一问题。
+
+这只是未修改作者内核的方向核验，**不是完整PaRaMS攻击或CLIP准确率复现**，不改既有官方默认防御基线，也未自行补写Attention恢复。源文件SHA256、固定输入、依赖版本、运行时间与结果见[核验记录](../results/phase3/params_matching_check.json)，入口为`python experiments/phase3_params_matching_check.py`（使用已固定的`requirements-params.txt`与CPU PyTorch）。原官方源码保留在`external/PaRaMS`，本脚本逐字节校验，不替换作者求解器。
+
+再核对AGA的实际主入口：固定`main_task_arithmetic_attack_B32.py`使用8任务、TA系数0.2、batch128，每次仅对当前保护专家运行Attention恢复和MLP匹配，再与其余7个原专家融合。现有两任务、系数0.5结果是统一对照协议下的攻击评价，不能称其原论文8任务表已经复现。作者入口引用的`params_mlp_and_invertible`保护权重未随仓库提供，也不能由文件名推断它等于本项目默认对角PaRaMS。
 
 版本、文件Git blob及核对范围见[攻击源码索引](../results/phase3/attack_sources.json)。AGA、PaRaMS、MergeLock复用既有固定提交；ProDistill新增固定提交`c773fcaead79cf25b5654b2e3fe233450da4e387`。其`Vision/main_prodistill.py`对逐块教师特征作MSE，`merge_models.py`冻结教师和基座，仅学习融合系数；默认是逐参数元素系数，不是少量任务标量。校准使用`ValfromTrain`，不能擅自换成测试集。未启动新训练或新攻击评测。
 
@@ -53,7 +59,7 @@ PaRaMS的`parameter_rearrangement`第60–139行包含对齐选项，`params(...
 
 ## 冻结对象与约束
 
-权重路径、SHA-256、原 checkpoint、攻击权重和历史预测索引统一列于 `configs/phase3.json`。大文件只在 3090。发布权重不再生成、插值、裁剪或修补。
+权重路径、SHA-256、原 checkpoint、攻击权重和历史预测索引统一列于 `configs/phase3.json`。已有大文件保留在3090；组会后获准迁往4090，尚待连接和逐项核验，不删原归档。发布权重不再生成、插值、裁剪或修补。
 
 | 对照 | 当前证据边界 |
 |---|---|
@@ -66,7 +72,7 @@ PaRaMS的`parameter_rearrangement`第60–139行包含对齐选项，`params(...
 
 ## 统一协议
 
-模型为相同公开 CLIP ViT-B/32 基座的冻结专家。FP32，关闭 TF32，只用 RTX3090。分类头独立保留，不参与融合。
+已完成批次使用相同公开 CLIP ViT-B/32 基座的冻结专家。FP32，关闭 TF32，运行硬件为RTX3090；这些历史条件不追改。后续4090运行需另记录硬件与源码指纹并先重放控制，不静默修改旧协议。分类头独立保留，不参与融合。
 
 设公开基座为 $\theta_0$，发布目标为 $\theta_d$，伙伴为 $\theta_p$，则
 
