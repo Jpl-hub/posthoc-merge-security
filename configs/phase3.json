@@ -1,0 +1,490 @@
+{
+  "experiment": "Phase 3 frozen-defense evaluation",
+  "base_source_commit": "0df8abfffba8e1603a60fd00d2a5b8c07e5bd6d6",
+  "output": "outputs/phase3",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "DTD": {
+      "classes": 47,
+      "test_n": 1880
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TA",
+    "TIES"
+  ],
+  "TIES": {
+    "repository": "https://github.com/prateeky2806/ties-merging",
+    "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+    "path": "external/ties-merging/src/utils/merge_utils.py",
+    "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+    "topk_percent": 20,
+    "coefficient": 1.0,
+    "resolve_method": "mass",
+    "merge_func": "dis-mean",
+    "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+  },
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "utility_seed": 20261016,
+  "utility_n": 512,
+  "probe_rank": 32,
+  "test_status": "Historically exposed test sets. Frozen defenses, no tuning or model selection from Phase 3.",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": false,
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+  },
+  "defenses": {
+    "Phase1_MNIST": {
+      "label": "Phase 1 LN bias",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/projection_bias_noise_mnist/artifacts/release.pt",
+        "sha256": "6c5c29354c85bea33dccb3ec60c3f89fcd05664c6281cd693a0129c6dde40e71"
+      },
+      "AGA_edits": {
+        "path": "outputs/projection_bias_noise_mnist/artifacts/released_AGA_edits.pt",
+        "sha256": "a75436a26ecf9686e01a93e1d98a771cafc0ec6e7954227b8e3fc6ed5dfef385"
+      },
+      "budget_status": "Different constraint reference; actual distance reported, not assumed within Phase 2 budget.",
+      "function_status": "Exact ideal projection-null condition; measured FP32 utility, not generic recovery security."
+    },
+    "Phase1_DTD": {
+      "label": "Phase 1 LN bias",
+      "target": "DTD",
+      "release": {
+        "path": "outputs/projection_bias_noise_dtd/artifacts/release.pt",
+        "sha256": "0dfad6a9d8748a96f1403a77ce12728a829126b1a3cdd69ec2e7ada1248c1f5d"
+      },
+      "AGA_edits": {
+        "path": "outputs/projection_bias_noise_dtd/artifacts/released_AGA_edits.pt",
+        "sha256": "ca45ae14c98cfdd86d892da5eb9dc40a105e96a3547c2d54c0473b326b552c61"
+      },
+      "budget_status": "Different constraint reference; actual distance reported, not assumed within Phase 2 budget.",
+      "function_status": "Exact ideal projection-null condition; measured FP32 utility, not generic recovery security."
+    },
+    "Phase1_SVHN": {
+      "label": "Phase 1 LN bias",
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/projection_bias_noise_svhn/artifacts/release.pt",
+        "sha256": "454a5afcf23e9859c1c41fb39dbb0e4a46981802a6e2d4f93a081088044f4c29"
+      },
+      "AGA_edits": {
+        "path": "outputs/projection_bias_noise_svhn/artifacts/released_AGA_edits.pt",
+        "sha256": "55e8592dac571bb5c549b26f2d84825fb10e748adc78e35c17edf8ae41bcf46e"
+      },
+      "budget_status": "Different constraint reference; actual distance reported, not assumed within Phase 2 budget.",
+      "function_status": "Exact ideal projection-null condition; measured FP32 utility, not generic recovery security."
+    },
+    "O/B": {
+      "label": "O/B",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/boundary_mnist/artifacts/release.pt",
+        "sha256": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46"
+      },
+      "AGA_edits": {
+        "path": "outputs/boundary_mnist/artifacts/released_AGA_edits.pt",
+        "sha256": "178a5266abc457c0b443ba82a392e7d37dd0e4308661a1e56d214104241b415b"
+      },
+      "budget_status": "Task budget violated: exposed witness 0.789627 > 0.5. Effect reference only.",
+      "function_status": "Frozen historical checkpoint, never repaired or selected from Phase 3."
+    },
+    "A/B": {
+      "label": "A/B",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/ffn_mnist/artifacts/release.pt",
+        "sha256": "45c51b0fc6d532bbddf2f240c8daaafee6ea2d7058a31b0bf7caafbaa23849d8"
+      },
+      "AGA_edits": {
+        "path": "outputs/ffn_mnist/artifacts/released_AGA_edits.pt",
+        "sha256": "72869d49cc9089a7b461d3fa6c2d0ea218ab27a89e2b64ac6d67dfb4b7f8f0d0"
+      },
+      "budget_status": "Finite independent confirmation passed (0.463577); no global task guarantee.",
+      "function_status": "Frozen historical checkpoint, never repaired or selected from Phase 3."
+    },
+    "PaRaMS": {
+      "label": "PaRaMS (official full)",
+      "target": "MNIST",
+      "full_state": true,
+      "release": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/PaRaMS.pt",
+        "sha256": "5a7bca84cc9a40528f16676b617ef06823197b5ce2242e132fd3f5d18413b706"
+      },
+      "AGA_edits": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/AGA_release_edits.pt",
+        "sha256": "a441587682b6ef5794a3ed7018d9b221ca403b54fa33489b525a4362e9ccbf3b"
+      },
+      "budget_status": "Over-budget official reference"
+    },
+    "PaRaMS_Attention": {
+      "label": "PaRaMS (Attention ablation)",
+      "target": "MNIST",
+      "full_state": true,
+      "release": {
+        "path": "outputs/phase2_params_scaling_20261016/artifacts/PaRaMS.pt",
+        "sha256": "233551908105783739ec10f2a606935b43bde529b870cbf620760414cf9f0c82"
+      },
+      "AGA_edits": {
+        "path": "outputs/phase2_params_scaling_20261016/artifacts/AGA_release_edits.pt",
+        "sha256": "ed6094b029d61c67f620d4d7f69dcee3ef7acd8150da6c65ae661a6cb6a4df94"
+      },
+      "budget_status": "Official component ablation; within parameter budget, finite function confirmation only."
+    }
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "defenses": [
+        "Phase1_MNIST",
+        "O/B",
+        "A/B",
+        "PaRaMS",
+        "PaRaMS_Attention"
+      ]
+    },
+    {
+      "target": "MNIST",
+      "partner": "DTD",
+      "defenses": [
+        "Phase1_MNIST",
+        "O/B",
+        "A/B",
+        "PaRaMS",
+        "PaRaMS_Attention"
+      ]
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "defenses": [
+        "Phase1_DTD"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "defenses": [
+        "Phase1_SVHN"
+      ]
+    }
+  ],
+  "legacy": {
+    "MNIST_SVHN/Unprotected": {
+      "standalone": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+        "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60",
+        "preset": "original",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+        "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60",
+        "preset": "original",
+        "stage": "direct"
+      },
+      "AGA_target_only": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+        "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60",
+        "preset": "original",
+        "stage": "AGA_target_only"
+      },
+      "AGA_both": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+        "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60",
+        "preset": "original",
+        "stage": "AGA_both"
+      }
+    },
+    "MNIST_SVHN/PaRaMS": {
+      "standalone": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+        "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60",
+        "preset": "released",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+        "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60",
+        "preset": "released",
+        "stage": "direct"
+      },
+      "AGA_target_only": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+        "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60",
+        "preset": "released",
+        "stage": "AGA_target_only"
+      },
+      "AGA_both": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+        "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60",
+        "preset": "released",
+        "stage": "AGA_both"
+      }
+    },
+    "MNIST_SVHN/PaRaMS_Attention": {
+      "standalone": {
+        "path": "outputs/phase2_params_scaling_20261016/artifacts/predictions.pt",
+        "sha256": "9a7e682d126ab660e67173dd455eb1b32eff2cd893a09a4101be30e0be08d42c",
+        "preset": "released",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/phase2_params_scaling_20261016/artifacts/predictions.pt",
+        "sha256": "9a7e682d126ab660e67173dd455eb1b32eff2cd893a09a4101be30e0be08d42c",
+        "preset": "released",
+        "stage": "direct"
+      },
+      "AGA_target_only": {
+        "path": "outputs/phase2_params_scaling_20261016/artifacts/predictions.pt",
+        "sha256": "9a7e682d126ab660e67173dd455eb1b32eff2cd893a09a4101be30e0be08d42c",
+        "preset": "released",
+        "stage": "AGA_target_only"
+      },
+      "AGA_both": {
+        "path": "outputs/phase2_params_scaling_20261016/artifacts/predictions.pt",
+        "sha256": "9a7e682d126ab660e67173dd455eb1b32eff2cd893a09a4101be30e0be08d42c",
+        "preset": "released",
+        "stage": "AGA_both"
+      }
+    },
+    "MNIST_SVHN/O/B": {
+      "standalone": {
+        "path": "outputs/boundary_mnist/artifacts/predictions.pt",
+        "sha256": "50ff4fc88522b7531e58b8d65ad5142cfb9dc8b46d245cc0dd25a6189055682c",
+        "preset": "released",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/boundary_mnist/artifacts/predictions.pt",
+        "sha256": "50ff4fc88522b7531e58b8d65ad5142cfb9dc8b46d245cc0dd25a6189055682c",
+        "preset": "released",
+        "stage": "direct"
+      },
+      "AGA_both": {
+        "path": "outputs/boundary_mnist/artifacts/predictions.pt",
+        "sha256": "50ff4fc88522b7531e58b8d65ad5142cfb9dc8b46d245cc0dd25a6189055682c",
+        "preset": "released",
+        "stage": "AGA"
+      },
+      "AGA_target_only": {
+        "path": "outputs/phase2_author_protocol_audit_corrected/artifacts/predictions.pt",
+        "sha256": "31c9f96505497f5dde1ae9dd99b4bb8e886e5a0a78e1e699c6081be3037c516e",
+        "preset": "released",
+        "stage": "AGA_target_only"
+      }
+    },
+    "MNIST_SVHN/A/B": {
+      "standalone": {
+        "path": "outputs/ffn_mnist/artifacts/predictions.pt",
+        "sha256": "d6fd7dc727e34e436629115b2b35380b88c04759f5b4caca3d290558c178f3f5",
+        "preset": "released",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/ffn_mnist/artifacts/predictions.pt",
+        "sha256": "d6fd7dc727e34e436629115b2b35380b88c04759f5b4caca3d290558c178f3f5",
+        "preset": "released",
+        "stage": "direct"
+      },
+      "AGA_both": {
+        "path": "outputs/ffn_mnist/artifacts/predictions.pt",
+        "sha256": "d6fd7dc727e34e436629115b2b35380b88c04759f5b4caca3d290558c178f3f5",
+        "preset": "released",
+        "stage": "AGA"
+      },
+      "AGA_target_only": {
+        "path": "outputs/phase2_frozen_AB_target_only/predictions.pt",
+        "sha256": "c791eb2ad19846bf58a68333f14e6ec6d1cafd231c5481663a50222384d16195",
+        "key_template": "{task}"
+      }
+    },
+    "MNIST_SVHN/Phase1_MNIST": {
+      "standalone": {
+        "path": "outputs/projection_bias_noise_mnist/artifacts/predictions.pt",
+        "sha256": "f8ae4553c5c8666b09d1942ce9ed9a690a1ba53b7571c016215f1eec7b33b048",
+        "preset": "released",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/projection_bias_noise_mnist/artifacts/predictions.pt",
+        "sha256": "f8ae4553c5c8666b09d1942ce9ed9a690a1ba53b7571c016215f1eec7b33b048",
+        "preset": "released",
+        "stage": "direct"
+      },
+      "AGA_both": {
+        "path": "outputs/projection_bias_noise_mnist/artifacts/predictions.pt",
+        "sha256": "f8ae4553c5c8666b09d1942ce9ed9a690a1ba53b7571c016215f1eec7b33b048",
+        "preset": "released",
+        "stage": "AGA"
+      }
+    },
+    "DTD_MNIST/Phase1_DTD": {
+      "standalone": {
+        "path": "outputs/projection_bias_noise_dtd/artifacts/predictions.pt",
+        "sha256": "c6ae80685e2d06da3e9198712d32acfe30fdb651e349c9c1dfb03b79bceacc17",
+        "preset": "released",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/projection_bias_noise_dtd/artifacts/predictions.pt",
+        "sha256": "c6ae80685e2d06da3e9198712d32acfe30fdb651e349c9c1dfb03b79bceacc17",
+        "preset": "released",
+        "stage": "direct"
+      },
+      "AGA_both": {
+        "path": "outputs/projection_bias_noise_dtd/artifacts/predictions.pt",
+        "sha256": "c6ae80685e2d06da3e9198712d32acfe30fdb651e349c9c1dfb03b79bceacc17",
+        "preset": "released",
+        "stage": "AGA"
+      }
+    },
+    "DTD_MNIST/Unprotected": {
+      "standalone": {
+        "path": "outputs/projection_bias_noise_dtd/artifacts/predictions.pt",
+        "sha256": "c6ae80685e2d06da3e9198712d32acfe30fdb651e349c9c1dfb03b79bceacc17",
+        "preset": "original",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/projection_bias_noise_dtd/artifacts/predictions.pt",
+        "sha256": "c6ae80685e2d06da3e9198712d32acfe30fdb651e349c9c1dfb03b79bceacc17",
+        "preset": "original",
+        "stage": "direct"
+      },
+      "AGA_both": {
+        "path": "outputs/projection_bias_noise_dtd/artifacts/predictions.pt",
+        "sha256": "c6ae80685e2d06da3e9198712d32acfe30fdb651e349c9c1dfb03b79bceacc17",
+        "preset": "original",
+        "stage": "AGA"
+      }
+    },
+    "SVHN_MNIST/Phase1_SVHN": {
+      "standalone": {
+        "path": "outputs/projection_bias_noise_svhn/artifacts/predictions.pt",
+        "sha256": "a7f4643d8723e13cc350df0e109a0b924abe99f75116ba468f33afcb91b87bf0",
+        "preset": "released",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/projection_bias_noise_svhn/artifacts/predictions.pt",
+        "sha256": "a7f4643d8723e13cc350df0e109a0b924abe99f75116ba468f33afcb91b87bf0",
+        "preset": "released",
+        "stage": "direct"
+      },
+      "AGA_both": {
+        "path": "outputs/projection_bias_noise_svhn/artifacts/predictions.pt",
+        "sha256": "a7f4643d8723e13cc350df0e109a0b924abe99f75116ba468f33afcb91b87bf0",
+        "preset": "released",
+        "stage": "AGA"
+      }
+    },
+    "SVHN_MNIST/Unprotected": {
+      "standalone": {
+        "path": "outputs/projection_bias_noise_svhn/artifacts/predictions.pt",
+        "sha256": "a7f4643d8723e13cc350df0e109a0b924abe99f75116ba468f33afcb91b87bf0",
+        "preset": "original",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/projection_bias_noise_svhn/artifacts/predictions.pt",
+        "sha256": "a7f4643d8723e13cc350df0e109a0b924abe99f75116ba468f33afcb91b87bf0",
+        "preset": "original",
+        "stage": "direct"
+      },
+      "AGA_both": {
+        "path": "outputs/projection_bias_noise_svhn/artifacts/predictions.pt",
+        "sha256": "a7f4643d8723e13cc350df0e109a0b924abe99f75116ba468f33afcb91b87bf0",
+        "preset": "original",
+        "stage": "AGA"
+      }
+    },
+    "MNIST_DTD/Phase1_MNIST": {
+      "standalone": {
+        "path": "outputs/projection_bias_noise_mnist_dtd/artifacts/predictions.pt",
+        "sha256": "196ac946273ed2865b550db02d152d25ca8306a6ae95cf0df799b4788e5c8593",
+        "preset": "released",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/projection_bias_noise_mnist_dtd/artifacts/predictions.pt",
+        "sha256": "196ac946273ed2865b550db02d152d25ca8306a6ae95cf0df799b4788e5c8593",
+        "preset": "released",
+        "stage": "direct"
+      },
+      "AGA_both": {
+        "path": "outputs/projection_bias_noise_mnist_dtd/artifacts/predictions.pt",
+        "sha256": "196ac946273ed2865b550db02d152d25ca8306a6ae95cf0df799b4788e5c8593",
+        "preset": "released",
+        "stage": "AGA"
+      }
+    },
+    "MNIST_DTD/Unprotected": {
+      "standalone": {
+        "path": "outputs/projection_bias_noise_mnist_dtd/artifacts/predictions.pt",
+        "sha256": "196ac946273ed2865b550db02d152d25ca8306a6ae95cf0df799b4788e5c8593",
+        "preset": "original",
+        "stage": "standalone"
+      },
+      "direct": {
+        "path": "outputs/projection_bias_noise_mnist_dtd/artifacts/predictions.pt",
+        "sha256": "196ac946273ed2865b550db02d152d25ca8306a6ae95cf0df799b4788e5c8593",
+        "preset": "original",
+        "stage": "direct"
+      },
+      "AGA_both": {
+        "path": "outputs/projection_bias_noise_mnist_dtd/artifacts/predictions.pt",
+        "sha256": "196ac946273ed2865b550db02d152d25ca8306a6ae95cf0df799b4788e5c8593",
+        "preset": "original",
+        "stage": "AGA"
+      }
+    }
+  },
+  "source_sha256": {
+    "experiments/phase3_evaluate.py": "b25484424f7f5e9a75bde580d7af1493a9085a57ef63ca12306ea5500da67501",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/frozen_AB_target_only.py": "d45a337793bcb7f8fb50d44daa325c7b6ce80e1343f86fdcc7102ae7c878fb15",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "experiments/verify_probe_candidate.py": "f91b7f1dcb7dcd19144b0b7ac711dd557b1a0ce1bb51809a047e53f0c7f8cdf9",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  }
+}

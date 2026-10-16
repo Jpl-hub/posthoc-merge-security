@@ -1,17 +1,24 @@
 {
-  "status": "phase2_finite_compensation_condition_reviewed_no_new_candidate",
-  "updated_utc": "2026-10-16T04:01:18.834834+00:00",
+  "status": "phase3_pilot_running_defenses_frozen",
+  "updated_utc": "2026-10-16T07:00:17.090523+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
-  "phase": 2,
-  "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "single_known_symmetry_control_complete",
-  "research_jobs": [],
+  "phase": 3,
+  "objective": "Systematic attack and merger evaluation of frozen Phase 1, O/B, A/B, PaRaMS; no new defense construction.",
+  "stage": "pilot_correctness_before_full_batches",
+  "research_jobs": [
+    {
+      "server": "RTX3090",
+      "pid": 67006,
+      "job": "Phase3 MNIST/SVHN pilot",
+      "output": "outputs/phase3/pilot/00_MNIST_SVHN"
+    }
+  ],
   "breakthrough_verified": false,
   "new_candidate": "No justified new defense. Known-symmetry control found only2.925e-6 fixed-coordinate probe drift, below original0.5; no evidence this explains failed protection.",
   "mechanism": "notes/phase2_finite_signed_condition.md",
-  "next_action": "Do not reopen closed optimizer, permutation, pair, scaling or projection points. Finite compensation formula separates endpoint task error, bilinear cross interaction, full LN/QuickGELU chord remainder and final variance term. A new source-only construction requires a defensible condition on their signed sum after fusion and prior-art distinction; neither a parameter norm nor a probe-coordinate correction establishes it. No continuous or unknown-peer claim.",
+  "next_action": "Independently verify the fixed64 pilot before full evaluation. Add real scores for prediction-only historical records, reuse hash-checked matching full-score records, then evaluate all preregistered cases without defense feedback.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -2919,5 +2926,28 @@
     "new_method": false,
     "changed_any_budget": false,
     "raw_scores_server_path": "outputs/phase2_frozen_signed_condition_interventions/artifacts/probe_coordinate_scores.npz"
+  },
+  "phase3": {
+    "review": "notes/phase3_attack_review.md",
+    "protocol": "configs/phase3.json",
+    "new_defense_weights": 0,
+    "defense_optimization": false,
+    "phase2_methods_frozen": true,
+    "OB_globally_feasible": false,
+    "AB_globally_feasible_proved": false,
+    "mergers": [
+      "TA",
+      "TIES"
+    ],
+    "attacks": [
+      "Original author AGA"
+    ],
+    "attack_scopes": [
+      "protected expert",
+      "all experts"
+    ],
+    "pilot_status": "running",
+    "full_evaluation_started": false,
+    "unknown_oracle_attack_claim": false
   }
 }
