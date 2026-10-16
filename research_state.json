@@ -1,5 +1,5 @@
 {
-  "status": "phase3_pilot_verified_full_evaluation_running",
+  "status": "phase3_first_batch_verified_remaining_cases_running",
   "updated_utc": "2026-10-16T07:09:04.616289+00:00",
   "automatic_continuation": false,
   "server": "3090",
@@ -17,7 +17,7 @@
   "breakthrough_verified": false,
   "new_candidate": "No justified new defense. Known-symmetry control found only2.925e-6 fixed-coordinate probe drift, below original0.5; no evidence this explains failed protection.",
   "mechanism": "notes/phase2_finite_signed_condition.md",
-  "next_action": "Complete each frozen full case, independently recount and replay, then archive and publish. Run read-only fixed512 utility/SVD audit; generate figures only from verified records. No defense adjustment.",
+  "next_action": "Finish and independently verify registered MNIST/DTD, DTD/MNIST, SVHN/MNIST; read-only utility/SVD audit; regenerate matched tables/figures. NUFILT full reproduction remains pending native checkpoint mapping validation; conditional Phase1 selected-weight invariance is not measured accuracy.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -1165,11 +1165,11 @@
     ]
   },
   "github_sync": {
-    "status": "exact_final_publication_and_server_readback_tracked_in_receipt",
+    "status": "next_batch_pending_publication",
     "transport": "GitHub plugin",
-    "last_verified_remote_commit": "15999782789547f2879dbf332a9339fb6e676677",
-    "last_verified_local_commit": "f3bafa597989aebf90a39005d8e326a56089f0b8",
-    "last_verified_canonical_tree": "d9b07154d9b19fcbd1938b6fbca7fc9257951456",
+    "last_verified_remote_commit": "7cfcd238bcc3eae434d63b0d869358b9769166c7",
+    "last_verified_local_commit": "f50e50b1b93eb2cc75ab4499150862edab92d294",
+    "last_verified_canonical_tree": "6ecd197028043c4e8eadbb4a3463f87e348e0b3d",
     "verification_receipt": "outputs/latest_github_sync_receipt.json",
     "durability": "Last verified prior revision above; exact final remote/local pair and whole-tree readback recorded in ignored receipt after publication, avoiding commit self-reference."
   },
@@ -2949,6 +2949,26 @@
     "full_evaluation_started": true,
     "unknown_oracle_attack_claim": false,
     "registration": "results/phase3/registration.json",
-    "full_results_verified": false
+    "full_results_verified": false,
+    "verified_full_cases": 1,
+    "expected_full_cases": 4,
+    "verified_result_rows": 78,
+    "first_case": "MNIST/SVHN",
+    "first_case_full_replays": 1248,
+    "first_case_max_score_error": 0.0003908872604370117,
+    "full_results": "results/phase3/results.json",
+    "figures": "results/phase3",
+    "nufilt_status": "official_source_and_cpu_kernel_checked_native_adapter_not_validated",
+    "review_scope": "Papers, experiment sections, appendices and fixed source; unavailable implementations and incomplete reproductions explicitly separated",
+    "first_batch_observation": {
+      "merger": "TIES top20%, mass, dis-mean, lambda1.0",
+      "scope": "AGA protected expert",
+      "MNIST_accuracy_percent": {
+        "unprotected": 99.32,
+        "OB_budget_violation_reference": 57.13,
+        "AB_finite_confirmation": 65.76
+      },
+      "interpretation": "This fixed merger is not a stronger recovery for these frozen defenses. No defense was changed. Both task results and per-class counts retained."
+    }
   }
 }
