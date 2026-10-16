@@ -1,17 +1,23 @@
 {
-  "status": "phase2_local_residual_transport_real_eval_failed_verified",
-  "updated_utc": "2026-10-16T02:02:33.448379+00:00",
+  "status": "phase2_fixed_pair_confirmed_real_evaluation_running",
+  "updated_utc": "2026-10-16T02:51:30.492842+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "alignment_visibility_condition_verified_no_new_candidate",
-  "research_jobs": [],
+  "stage": "one_frozen_real_evaluation",
+  "research_jobs": [
+    {
+      "server": "RTX3090",
+      "output": "outputs/phase2_paired_neuron_eval_mnist_svhn",
+      "role": "one frozen TA/originalAGA evaluation; no defense parameter selection"
+    }
+  ],
   "breakthrough_verified": false,
   "new_candidate": "No new defense. Novelty review now gates all new implementations. Frozen O/B real results preserved, but a complete-image source witness violates worst task drift0.5; no global feasibility claim.",
   "mechanism": "notes/phase2_finite_signed_condition.md",
-  "next_action": "Review one preimplementation condition: source task-preserving changes may become classifier-visible after the official anchor projection, unlike B edits under a matching permutation. Require an original-architecture finite nonlinear preservation mechanism and a distinction from pinned priors before constructing any candidate. The exact rank-two example only prevents an invalid universal veto; it is not a CLIP method, unknown-peer guarantee or authorization to retry closed reflections/null/low-rank optimizers.",
+  "next_action": "Finish the already frozen single TA and originalAGA evaluation, then independently verify counts and full replays. Do not adjust pair count, contrast rank, direction, strength, or use peer/test results to repair this point. Scheduled tasks remain cancelled.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -2768,5 +2774,27 @@
     "unknown_peer_guarantee": false,
     "innovation_claim": false,
     "next_algorithm_approved": false
+  },
+  "phase2_paired_neuron_test": {
+    "status": "confirmed_not_yet_effective",
+    "report": "notes/phase2_related_work_and_novelty.md",
+    "evidence": "results/paired_neuron_test/summary.json",
+    "pair_count": 41,
+    "contrast_free_dimension": 9,
+    "coalescence_distance": 0.10481051500941603,
+    "source_worst_drift": 0.03997815961215873,
+    "fresh_confirmation_worst_drift": 0.0028639442746172575,
+    "fresh_confirmation_n": 512,
+    "parameter_distance": 0.49999952200754694,
+    "proxy_changed": 0,
+    "proxy_n": 512,
+    "release_sha256": "fbc69446ee4f832cc8b7a402ef0e5f7e529b54203adb6fac2b57b1a8418399e7",
+    "original_expert_frozen": true,
+    "gradients": 0,
+    "candidate_count": 1,
+    "selection_from_test": false,
+    "unknown_partner_guarantee": false,
+    "novelty_proved": false,
+    "known_primitive_prior": "USENIX2023 NeuronClique/NeuronSplit; fixed-width cost plus task-probe kernel are the conditional mechanism under test; no broad originality claim"
   }
 }
