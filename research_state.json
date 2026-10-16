@@ -1,17 +1,17 @@
 {
   "status": "phase3_TA_TIES_NUFILT_batch_verified_budget_claims_corrected",
-  "updated_utc": "2026-10-16T13:26:29.477075+00:00",
+  "updated_utc": "2026-10-16T14:33:33.776873+00:00",
   "automatic_continuation": false,
-  "server": "4090_connection_pending",
+  "server": "RTX4090_D_connected_original_hashes_verified",
   "allow_4090": true,
   "phase": 3,
   "objective": "Two pure post-hoc defense schemes: strengthen mechanism with source-only evidence and complete attack literature, official baselines and fixed evaluations. Original checkpoints and frozen historical releases preserved.",
-  "stage": "post_meeting_source_audit_and_compute_migration",
+  "stage": "4090_migration_and_frozen_PaRaMS_adaptive_recovery",
   "research_jobs": [],
   "breakthrough_verified": false,
   "new_candidate": "No new defense weights or optimizer run. Frozen code and finite history audited; official PaRaMS MLP matching direction independently checked on CPU.",
   "mechanism": "notes/phase2_finite_signed_condition.md",
-  "next_action": "Await RTX4090 endpoint/login, inspect processes/disk and verify archived weights before cleanup/transfer. Reuse frozen artifacts to complete missing module amplitudes; do not restart closed optimization. For attack reproduction use verified PaRaMS kernel operand orientation, separately resolve Attention recovery and register real-model evaluation before running.",
+  "next_action": "Finish frozen-release transfer and SHA256 checks on4090. Run fixed PaRaMS diagonal recovery pilot, independent verification, then full evaluation with identical frozen edits. Do not rerun historical244 rows. Defense2 next tests finite classification compensation reachability, no new optimizer or old-point repair.",
   "deferred": [
     "No new automatic cycles",
     "No unregistered defense tuning from attack/test feedback"
@@ -2739,11 +2739,18 @@
     "next_candidate_approved": false
   },
   "server_connection": {
-    "status": "awaiting_4090_endpoint_and_login",
+    "status": "4090_connected_migration_in_progress",
     "new_gpu_authorization": "User authorized the previously used 4090 after the group meeting on 2026-10-16. This supersedes the old 3090-only restriction.",
     "3090": "Running without a GPU; only CPU archival access if needed.",
     "4090_cleanup": "Inspect first; remove only confirmed disposable caches/temp/duplicate files. Preserve all original/release checkpoints, raw scores and failed evidence.",
-    "schedulers_will_not_restart": true
+    "schedulers_will_not_restart": true,
+    "workspace": "/root/posthoc_20261016",
+    "environment": "/root/autodl-tmp/merge_env/bin/python",
+    "GPU": "NVIDIA GeForce RTX4090 D",
+    "original_checkpoints_verified": 17,
+    "inventory": "results/phase3/4090_environment.json",
+    "persistent_disk": "98% full; historical27GB raw archives preserved. New work in system-disk workspace, archive to3090 persistent disk before shutdown.",
+    "disposable_bulk_found": false
   },
   "phase2_alignment_visibility": {
     "status": "exact_condition_verified_no_CLIP_candidate",
@@ -3066,6 +3073,15 @@
       "attack_scope": "One protected expert per outer loop; other seven experts vanilla",
       "protected_weights_in_repository": false,
       "current_two_task_results_not_paper_table_reproduction": true
+    },
+    "PaRaMS_diagonal_adaptation": {
+      "status": "CPU_Attention_MLP_chain_passed_real_CLIP_not_started",
+      "protocol": "configs/params_adaptive.json",
+      "source": "experiments/params_adaptive.py",
+      "CPU_evidence": "results/phase3/params_adaptive_check.json",
+      "official_code_scope": "MLP matching kernel unchanged; Attention is an explicit paper-objective diagonal adaptation, not complete author recovery code.",
+      "planned_rows": 30,
+      "new_defense_updates": 0
     }
   },
   "active_focus": [

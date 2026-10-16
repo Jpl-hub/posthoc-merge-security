@@ -1,0 +1,48 @@
+{
+  "experiment": "frozen_defenses_PaRaMS_diagonal_adaptive_recovery",
+  "date": "2026-10-16",
+  "GPU": "RTX4090",
+  "frozen_protocol": "configs/phase3.json",
+  "frozen_protocol_sha256": "4e40f5286e9cbaa7b39b19214742c6cddaf8946af69369ef163ff596194ef7c7",
+  "output": "outputs/phase3_params_adaptive",
+  "defenses": [
+    "Phase1_MNIST",
+    "O/B",
+    "A/B",
+    "PaRaMS",
+    "PaRaMS_Attention"
+  ],
+  "target": "MNIST",
+  "partner": "SVHN",
+  "TA_coefficient": 0.5,
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "recovery": "Official MLP matching kernel plus paper-objective diagonal Attention adaptation; not complete author attack code or paper table reproduction.",
+  "permissions": "Released model and public base only; no images, labels or peer in recovery construction. All-expert scope separately recovers peer using base.",
+  "optimization": {
+    "MLP": "Official max_iter200, tolerance1, objmatching, seed0; apply returned permutation to second operand.",
+    "Attention": "Per-row float64 unconstrained LS of Q and V weights; reciprocal scales on K and O; compensate Q/K/V biases. No ridge, floor, clipping or scale search. Stop at zero/nonfinite coefficient."
+  },
+  "budget_labels": {
+    "Phase1_MNIST": "Different budget reference",
+    "O/B": "Known task-budget counterexamples; effect reference only",
+    "A/B": "Known task-budget counterexamples; effect reference only",
+    "PaRaMS": "Official full over-budget reference",
+    "PaRaMS_Attention": "Official component ablation, not full same-budget PaRaMS"
+  },
+  "protocol": "Freeze every recovered edit before loading evaluation images; pilot implementation controls only, no attack/defense tuning. Pass independent pilot verification before full evaluation with same edits. Previously exposed tests, no blind-test claim.",
+  "source_sha256": {
+    "experiments/params_adaptive.py": "07c7f1391e1236083bdf2956043953b854334731940fdbb07a6d2bc7e2aebb33",
+    "experiments/phase3_evaluate.py": "cf36d5e5c95aed6aaf71d6623ccfc0d0e86c31bc37974e192cbeb5f2bf2104a9",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/verify_probe_candidate.py": "f91b7f1dcb7dcd19144b0b7ac711dd557b1a0ce1bb51809a047e53f0c7f8cdf9",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/frozen_AB_target_only.py": "d45a337793bcb7f8fb50d44daa325c7b6ce80e1343f86fdcc7102ae7c878fb15",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "results/phase3/params_adaptive_check.json": "59e87d21389eef91429ffe92040f8db538819f414b7240a415bf95fb64be82eb"
+  },
+  "new_defense_updates": 0
+}

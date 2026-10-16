@@ -47,6 +47,29 @@ PaRaMS的`parameter_rearrangement`第60–139行包含对齐选项，`params(...
 
 ## 融合算法与防御对照
 
+### 新增恢复实验：PaRaMS对角自适应恢复
+
+本轮将原文§6的目标落实为一个固定、可运行的两任务协议，**不是已经取得的CLIP攻击成绩，也不是完整原作者攻击代码复现**。MLP直接调用固定官方匹配内核，以`(anchor, released)`求解并作用于released。Attention针对现有官方默认的对角保护，独立拟合Q、V各行的尺度：
+
+$$a_i=\frac{\langle Q_{r,i},Q_{0,i}\rangle}{\|Q_{r,i}\|^2},\qquad
+v_i=\frac{\langle V_{r,i},V_{0,i}\rangle}{\|V_{r,i}\|^2}.$$
+
+随后令`Q←diag(a)Q, K←diag(1/a)K, V←diag(v)V, O←O diag(1/v)`，并相应变换Q/K/V偏置；O偏置、LN和视觉投影不变。这些配对保持Attention函数。原文把恢复Q的拟合矩阵与K的转置尺度相邻叙述，不能不核对逆方向就照搬；这里明确采用保护公式要求的配对逆变换，标为**论文目标的对角适配实现**。不把它扩充为任意可逆矩阵恢复，不借用AGA名称。零行或零／非有限尺度直接停止，不加事后裁剪、正则或重选参数。
+
+固定官方默认保护的小型完整Attention＋QuickGELU MLP计算已通过CPU检查：独立NumPy重建配对矩阵，恢复输出误差2.38×10⁻⁷、参数误差2.98×10⁻⁸。它补上了Attention实现检查，但仍不是CLIP恢复效果。[源码与运行记录](../results/phase3/params_adaptive_check.json)。
+
+真实运行使用新4090协议[params_adaptive.json](../configs/params_adaptive.json)，复用原评价函数和冻结权重：MNIST／SVHN、TA(0.5)、未保护及五项冻结防御参考。先一次性构造并哈希所有恢复编辑，再读图片；两种攻击范围分列。64张小规模控制通过并独立重放后，原编辑不变，评价完整测试集。只新增恢复后的30行，不重跑244行历史表。每行保留原始分数、逐类与配对统计、完整相对间隔变化；独立验证按原128张批上下文重放16个固定位置，分数容差仍为0.0005。O/B、A/B均保留任务预算反例，完整PaRaMS仍为超预算参考。
+
+```bash
+python experiments/params_adaptive.py --check
+python experiments/params_adaptive.py --pilot
+python experiments/params_adaptive.py --verify
+python experiments/params_adaptive.py --full
+python experiments/params_adaptive.py --verify --full-output
+```
+
+CPU检查结果与输出目录均禁止覆盖；服务器首次CPU检查可在未存在对应结果的源副本运行。完整运行必须读取已通过验证的pilot及其冻结编辑，不能因成绩调整方法。新实验结果在独立核验通过前不进入正式主表。
+
 | 项目 | 正确分类 | 当前用途 |
 |---|---|---|
 | TA、TIES | 无数据融合算法 | 已有正式匹配控制及AGA后融合结果 |

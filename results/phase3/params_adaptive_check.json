@@ -1,0 +1,27 @@
+{
+  "status": "synthetic_full_Attention_and_MLP_chain_verified_not_CLIP_evaluation",
+  "method": "PaRaMS diagonal adaptation (paper objective)",
+  "official_commit": "4159a9a8bf253088694154d944f4583db8eca60e",
+  "official_source_sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60",
+  "implementation_sha256": "07c7f1391e1236083bdf2956043953b854334731940fdbb07a6d2bc7e2aebb33",
+  "fixture": "One seeded 12-dimensional 3-head Attention plus QuickGELU MLP; author default protection.",
+  "full_response_max_abs": {
+    "protected": 1.1920928955078125e-07,
+    "recovered": 2.384185791015625e-07
+  },
+  "reconstructed_parameter_max_abs": 2.9802322387695312e-08,
+  "independent_NumPy_parameter_reconstruction_max_abs": 0.0,
+  "K_recovery": "reciprocal of fitted Q scale",
+  "O_recovery": "reciprocal of fitted V scale",
+  "paper_scope": "Section6 objective with explicit paired-inverse diagonal completion; not the paper multi-task table.",
+  "images": 0,
+  "gradients": 0,
+  "GPU": false,
+  "real_CLIP_evaluations": 0,
+  "wall_seconds": 2.272131097000056,
+  "runtime": {
+    "torch": "2.5.1+cpu",
+    "jax": "0.4.35",
+    "numpy": "2.2.6"
+  }
+}
