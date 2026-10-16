@@ -1,0 +1,58 @@
+{
+  "rows": [
+    {
+      "defense": "O/B",
+      "key": "model.visual.transformer.resblocks.11.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 12.374043903180612,
+      "delta_norm": 1.6549576499445389,
+      "relative_norm": 0.13374428464078345,
+      "release_sha256": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46"
+    },
+    {
+      "defense": "O/B",
+      "key": "model.visual.transformer.resblocks.11.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 21.94640785771347,
+      "delta_norm": 5.8698893700463035,
+      "relative_norm": 0.26746469892033936,
+      "release_sha256": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46"
+    },
+    {
+      "defense": "A/B",
+      "key": "model.visual.transformer.resblocks.11.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 22.00851396657309,
+      "delta_norm": 2.780627087606909,
+      "relative_norm": 0.1263432457016486,
+      "release_sha256": "45c51b0fc6d532bbddf2f240c8daaafee6ea2d7058a31b0bf7caafbaa23849d8"
+    },
+    {
+      "defense": "A/B",
+      "key": "model.visual.transformer.resblocks.11.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 21.94640785771347,
+      "delta_norm": 7.495091545188114,
+      "relative_norm": 0.341517919186662,
+      "release_sha256": "45c51b0fc6d532bbddf2f240c8daaafee6ea2d7058a31b0bf7caafbaa23849d8"
+    }
+  ],
+  "checkpoint_sha256": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+  "gradients": 0,
+  "images": 0,
+  "new_weights": 0,
+  "formula": "delta_norm=norm(release.double()-expert.double()); relative_norm=delta_norm/norm(expert.double())",
+  "scope": "Read-only frozen weights; no source/confirmation/test inputs or repair."
+}

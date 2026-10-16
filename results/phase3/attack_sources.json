@@ -1,6 +1,6 @@
 {
   "checked_date": "2026-10-16",
-  "purpose": "Attack literature and official-code scope audit; no new attack evaluation or defense update.",
+  "purpose": "Attack literature and official-code scope audit, with separately labelled real diagonal recovery adaptation; no defense updates.",
   "completed_recovery_attacks": [
     "AGA"
   ],
@@ -35,7 +35,7 @@
       "commit": "4159a9a8bf253088694154d944f4583db8eca60e",
       "tree_truncated": false,
       "blob_count": 33,
-      "status": "Official matching kernel executed unchanged on fixed synthetic CPU fixture. Wrapper matching operand direction has a counterexample; no complete real-model recovery evaluation. Default defense reference unchanged.",
+      "status": "Official MLP kernel verified and used in full CLIP evaluation. Attention is our explicitly labelled paper-objective diagonal adaptation; complete author attack entry unavailable. No defense baseline or checkpoint changed.",
       "files": [
         {
           "path": "src/PaRaMS/PaRaMS_algorithm.py",
@@ -104,7 +104,7 @@
     {
       "name": "PaRaMS adaptive rearrangement/scaling",
       "source": "https://arxiv.org/html/2503.07661v1#S6",
-      "status": "Paper and official MLP matching kernel checked including exact CPU operand-direction counterexample. No real CLIP or complete Attention recovery evaluation."
+      "status": "MNIST/SVHN fixed diagonal adaptation completed,30 real rows independently verified; original MLP kernel plus explicit paired Attention scales. Not paper Table4 or general-invertible recovery reproduction."
     },
     {
       "name": "PaRaMS pseudo-label distillation",
@@ -147,9 +147,23 @@
       "status": "underlying method is distillation merger; official vision source audited, not run"
     }
   ],
-  "scope_limits": "Bounded review of directly related defenses and recovery evaluations; no claim of exhaustive all-security literature or all attacks reproduced. Broader backdoor/privacy/fingerprint papers indexed separately in the review. No GPU jobs or new protected weights.",
+  "scope_limits": "Bounded review of directly related defenses and recovery evaluations; no claim of exhaustive all-security literature or all attacks reproduced. Broader backdoor/privacy/fingerprint papers indexed separately in the review. New paper-objective diagonal recovery evaluated on4090; no new protected weights. Official attacks and paper adaptations are recorded separately.",
   "latest_CPU_check": {
     "path": "results/phase3/params_matching_check.json",
     "scope": "MLP operand orientation only; no GPU, images, gradients or model update"
-  }
+  },
+  "completed_paper_objective_adaptations": [
+    {
+      "name": "PaRaMS diagonal adaptive recovery",
+      "official_MLP_kernel": true,
+      "Attention": "Explicit paired-inverse diagonal row-LS adaptation of paper objective",
+      "full_author_attack_reproduction": false,
+      "results": "results/phase3/params_adaptive/results.json",
+      "validation": "results/phase3/params_adaptive/independent_validation.json",
+      "real_CLIP_rows": 30
+    }
+  ],
+  "unexecuted_supplementary_diagnostics": [
+    "Projection of final LN bias to published visual-projection column space; mathematical risk only, not counted as a reproduced attack."
+  ]
 }
