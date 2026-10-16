@@ -1,0 +1,27 @@
+% MNIST / SVHN: TA
+\begin{tabular}{lrrrr}
+\toprule
+Defense & Standalone & No attack & AGA (protected) & AGA (all) \\
+\midrule
+Unprotected & 99.69 & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+Phase 1 (LN bias)$^{*}$ & 99.69 & 9.80 / 6.70 & 9.80 / 6.70 & 9.80 / 6.70 \\
+O/B$^{\dagger}$ & 99.71 & 78.77 / 62.94 & 79.53 / 65.82 & 77.85 / 61.42 \\
+A/B & 99.65 & 91.07 / 77.46 & 85.42 / 75.50 & 79.20 / 69.84 \\
+PaRaMS (full)$^{*}$ & 99.69 & 8.92 / 9.15 & 99.30 / 92.79 & 99.32 / 91.77 \\
+PaRaMS (attention) & 99.69 & 99.37 / 92.51 & 99.30 / 92.78 & 99.32 / 91.77 \\
+\bottomrule
+\end{tabular}
+
+% MNIST / SVHN: TIES
+\begin{tabular}{lrrrr}
+\toprule
+Defense & Standalone & No attack & AGA (protected) & AGA (all) \\
+\midrule
+Unprotected & 99.69 & 99.34 / 94.37 & 99.32 / 94.81 & 99.36 / 94.18 \\
+Phase 1 (LN bias)$^{*}$ & 99.69 & 9.82 / 9.69 & 9.82 / 9.69 & 9.82 / 9.69 \\
+O/B$^{\dagger}$ & 99.71 & 64.31 / 54.27 & 57.13 / 50.75 & 54.06 / 44.53 \\
+A/B & 99.65 & 69.44 / 66.83 & 65.76 / 66.21 & 62.69 / 61.80 \\
+PaRaMS (full)$^{*}$ & 99.69 & 8.92 / 9.05 & 99.32 / 94.81 & 99.36 / 94.18 \\
+PaRaMS (attention) & 99.69 & 99.35 / 93.92 & 99.32 / 94.81 & 99.36 / 94.18 \\
+\bottomrule
+\end{tabular}
