@@ -30,7 +30,7 @@ def run(protocol):
     raw={k:v for k,v in old.items() if k.startswith('original/') and '/confirmation/' not in k};rows=[]
     for key,r in raw.items():
         preset,stage,task=key.split('/');pred,y=r['prediction'],r['target']
-        rows.append(dict(preset=preset,stage=stage,dataset=task,n=len(y),correct=int(pred.eq(y).sum()),top1=float(pred.eq(y).double().mean()*100),per_class=counts(pred,y),cached_reference=True))
+        rows.append(dict(preset=preset,stage=stage,dataset=task,n=len(y),correct=int(pred.eq(y).sum()),top1=float(pred.eq(y).double().mean()),per_class=counts(pred,y),cached_reference=True))
     save_json(out/'pre_evaluation.json',dict(release=cfg['release'],confirmation=cfg['prior_confirmation'],parameter_distance=distance,
         source_point_reselected=False,protocol_amendment=cfg['protocol_amendment'],future_peer_used_for_construction=False,historical_tests_not_fresh_blind=True))
     data={t:dataset(t,'data',own.val_preprocess) for t in heads};assert {t:len(v) for t,v in data.items()}==cfg['test_counts']

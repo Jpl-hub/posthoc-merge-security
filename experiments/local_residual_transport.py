@@ -228,11 +228,34 @@ def verify_splits(folder):
         new_images=0,new_gradients=0,new_weights=0,source_sha256=digest(__file__))
     save_json(out/'split_independence_audit.json',result);print(json.dumps(result),flush=True)
 
+def aligned_geometry(folder):
+    from aga_coordinate_audit import permutation
+    out=Path(folder);cfg=json.loads((out/'protocol.json').read_text());meta=json.loads((out/'execution.json').read_text())
+    root=Path(cfg['release']['path']).parent;raw=torch.load(root/'diagnostic.pt',map_location='cpu');p,q=raw['p'],raw['q']
+    ref=cfg['AGA_references']['MNIST'];assert digest(ref['path'])==ref['sha256'];original=torch.load(ref['path'],map_location='cpu')
+    path=out/'artifacts/AGA_release_edits.pt';assert digest(path)==meta['AGA_edits_sha256'];changed=original|torch.load(path,map_location='cpu')
+    key='model.visual.transformer.resblocks.11.mlp.'
+    p0=permutation(p['A'].float(),original[key+'c_fc.weight']);p1=permutation(q['A'].float(),changed[key+'c_fc.weight'])
+    for par,state,perm in [(p,original,p0),(q,changed,p1)]:
+        assert torch.equal(par['a'].float()[perm],state[key+'c_fc.bias'])
+        assert torch.equal(par['B'].float()[:,perm],state[key+'c_proj.weight'])
+    M=p['gamma'][:,None]*(p['projection']@p['head'].T);M-=M.mean(0);rows={}
+    for name,db in [('before_AGA',q['B']-p['B']),('after_AGA',changed[key+'c_proj.weight'].double()-original[key+'c_proj.weight'].double())]:
+        rows[name]=dict(B_difference_frobenius=float(db.norm()),B_difference_readout_frobenius=float((db.T@M).norm()),
+            normalized_B_readout_ratio=float((db.T@M).norm()/(db.norm()*M.norm())))
+    result=dict(status='frozen_point_source_readout_geometry_verified',changed_MLP_permutation_positions=int((p0!=p1).sum()),
+        source_readout_axis_norm=float((raw['axis']@M).norm()),operators=rows,
+        source_point_sha256=digest(root/'diagnostic.pt'),AGA_edits_sha256=meta['AGA_edits_sha256'],source_sha256=digest(__file__),
+        new_images=0,new_attacks=0,new_gradients=0,new_weights=0,partner_loaded=False,
+        scope='Read-only source/author-alignment operator geometry; no claim operator norms alone prove fused class outcomes.')
+    save_json(out/'readout_geometry.json',result);print(json.dumps(result),flush=True)
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--anchor-check');ap.add_argument('--geometry');ap.add_argument('--verify-splits');args=ap.parse_args();initialize()
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--anchor-check');ap.add_argument('--geometry');ap.add_argument('--verify-splits');ap.add_argument('--aligned-geometry');args=ap.parse_args();initialize()
     if args.verify:verify(args.verify)
     elif args.anchor_check:anchor_check(args.anchor_check)
     elif args.geometry:inspect_geometry(args.geometry)
     elif args.verify_splits:verify_splits(args.verify_splits)
+    elif args.aligned_geometry:aligned_geometry(args.aligned_geometry)
     else:
         cfg=json.loads(Path(args.protocol).read_text());cfg['protocol_path']=args.protocol;run(cfg)
