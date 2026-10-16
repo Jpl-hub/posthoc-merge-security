@@ -19,14 +19,23 @@
       "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
       "tree_truncated": false,
       "blob_count": 21,
-      "status": "official AGA already evaluated; source version unchanged"
+      "status": "official AGA already evaluated; source version unchanged",
+      "main_entry": {
+        "path": "main_task_arithmetic_attack_B32.py",
+        "git_blob": "239d2c73f4ccaa325c9e0bd514bf355a0b3d9f3f",
+        "tasks": 8,
+        "TA_coefficient": 0.2,
+        "batch_size": 128,
+        "scope": "protected expert only",
+        "provided_protected_checkpoints": false
+      }
     },
     {
       "repository": "ISCT-W/PaRaMS",
       "commit": "4159a9a8bf253088694154d944f4583db8eca60e",
       "tree_truncated": false,
       "blob_count": 33,
-      "status": "Official parameter_rearrangement supports obj=matching and joint MLP inner-product Hungarian; full attention recovery and KD entry not confirmed. Complete attack not evaluated.",
+      "status": "Official matching kernel executed unchanged on fixed synthetic CPU fixture. Wrapper matching operand direction has a counterexample; no complete real-model recovery evaluation. Default defense reference unchanged.",
       "files": [
         {
           "path": "src/PaRaMS/PaRaMS_algorithm.py",
@@ -41,7 +50,8 @@
         60,
         139
       ],
-      "distinction_from_AGA": "Joint input/output/bias inner products, not A-only row cosine. Full caller permutation orientation needs numerical verification."
+      "distinction_from_AGA": "Joint A/B/bias inner-product assignment, not A-only row cosine. Returned permutation acts on params_b; the protection wrapper applies it to params_a. Do not use matching flag alone as recovery.",
+      "matching_validation": "results/phase3/params_matching_check.json"
     },
     {
       "repository": "hetailang/Merge-Lock",
@@ -94,7 +104,7 @@
     {
       "name": "PaRaMS adaptive rearrangement/scaling",
       "source": "https://arxiv.org/html/2503.07661v1#S6",
-      "status": "Paper and actual MLP matching option read; full recovery chain not reproduced."
+      "status": "Paper and official MLP matching kernel checked including exact CPU operand-direction counterexample. No real CLIP or complete Attention recovery evaluation."
     },
     {
       "name": "PaRaMS pseudo-label distillation",
@@ -137,5 +147,9 @@
       "status": "underlying method is distillation merger; official vision source audited, not run"
     }
   ],
-  "scope_limits": "Bounded review of directly related defenses and recovery evaluations; no claim of exhaustive all-security literature or all attacks reproduced. Broader backdoor/privacy/fingerprint papers indexed separately in the review. No GPU jobs or new protected weights."
+  "scope_limits": "Bounded review of directly related defenses and recovery evaluations; no claim of exhaustive all-security literature or all attacks reproduced. Broader backdoor/privacy/fingerprint papers indexed separately in the review. No GPU jobs or new protected weights.",
+  "latest_CPU_check": {
+    "path": "results/phase3/params_matching_check.json",
+    "scope": "MLP operand orientation only; no GPU, images, gradients or model update"
+  }
 }

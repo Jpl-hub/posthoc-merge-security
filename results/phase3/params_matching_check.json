@@ -1,0 +1,46 @@
+{
+  "status": "official_MLP_matching_kernel_checked_wrapper_direction_counterexample",
+  "repository": "ISCT-W/PaRaMS",
+  "commit": "4159a9a8bf253088694154d944f4583db8eca60e",
+  "official_source_sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60",
+  "check_source_sha256": "177b0ba74aefe86c57124c4937f2b5753ec9bfb7e100dc9d44fe6a52da86a1a0",
+  "runtime": {
+    "torch": "2.5.1+cpu",
+    "jax": "0.4.35",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3"
+  },
+  "fixture": "One synthetic MLP, hidden width3, fixed three-cycle; no expert checkpoint or dataset.",
+  "protection_permutation": [
+    1,
+    2,
+    0
+  ],
+  "kernel_protected_reference_base_moving": [
+    1,
+    2,
+    0
+  ],
+  "kernel_base_reference_protected_moving": [
+    2,
+    0,
+    1
+  ],
+  "kernel_correct_operand_reconstruction_error": 0.0,
+  "wrapper_matching_reconstruction_error": 19.808457789540306,
+  "identity_control_reconstruction_error": 0.0,
+  "NumPy_exhaustive_assignment_agrees": true,
+  "assignment_optimum_margin": 130.0625,
+  "finite_QuickGELU_response_max_abs": {
+    "protected": 0.0,
+    "kernel_restored": 0.0,
+    "wrapper": 0.0
+  },
+  "conclusion": "Kernel permutes params_b. params wrapper estimates that permutation from (victim, base), then applies it to victim; matching mode need not restore coordinates. Kernel (base, protected) plus apply to protected is verified on this fixture.",
+  "scope": "MLP source check only. No Attention recovery, real CLIP accuracy, unknown-peer guarantee or new attack result.",
+  "images_used": 0,
+  "gradients": 0,
+  "GPU_used": false,
+  "protected_checkpoint_modified": false,
+  "wall_seconds": 2.2621813069999916
+}
