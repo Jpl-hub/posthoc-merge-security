@@ -4,9 +4,10 @@
 
 当前围绕两套防御：**投影核空间偏置扰动、任务子空间约束的跨模块补偿**，同时补齐攻击调研与对比实验。本批244行结果、3904次完整模型抽样重放已通过；O/B、A/B均发现任务预算反例，不能宣称严格可行。历史发布权重冻结，新方法须另立源端构造与独立确认协议。
 
-2026-10-16组会后已获准改用RTX4090；当前等待登录信息，尚未在4090启动作业。3090无GPU，只保留CPU归档用途；既有结果仍明确记为3090。
+2026-10-16已恢复RTX4090D，17份原始checkpoint和5份本轮保护权重哈希匹配。新增PaRaMS论文目标的对角自适应恢复评价已完成并复核，[对照表与限制](results/phase3/params_adaptive/tables.md)。3090只作CPU归档；旧244行不覆盖，新30行独立保存，不把行数当攻击种类数。
 
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
+- [Defense 2有限补偿机制与无判别力的必要界](notes/phase2_coupling.md)
 - [冻结模型、源码、数据与参数指纹](configs/phase3.json)
 - [已独立复核的结果主表](results/phase3/tables.md)
 - [逐类计数、配对统计及完整指标](results/phase3/results.json) · [CSV](results/phase3/results.csv) · [复核与绘图指纹](results/phase3/provenance.json)
@@ -36,6 +37,8 @@ TA 系数0.5；TIES 使用固定官方纯函数，保留前20%、mass 符号、d
 
 NUFILT 已完成固定官方内核与 native checkpoint 对应验证（MNIST/SVHN、两个顺序、三种范围）；它是融合算法。Phase 1 在该设置下与无保护模型完全相同，A/B 的 MNIST 也恢复至98.86%–99.33%。MergeLock、MergeGuard、MergeBarrier 中尚未获得可核验官方执行版本的内容只列论文分析，不填自产复现成绩。完成状态以结果与源码指纹为准。
 
+PaRaMS新增恢复使用官方MLP匹配内核及明确配对逆尺度的Attention适配，不是完整作者攻击代码复现。在MNIST/SVHN上，完整PaRaMS参考恢复至99.37%／92.50%；Phase1仍为9.80%／6.70%，但此攻击同样不改最终LN偏置，不能据此称通用抗恢复。O/B、A/B的任务预算反例仍成立，没有新防御模型。
+
 ## 复现
 
 在已有3090环境、已登记 checkpoint 和数据目录中：
@@ -52,6 +55,8 @@ python experiments/phase3_report.py
 其余组合使用 `--case 1/2/3`。输出目录不得覆盖。若需匹配原评价的128张批上下文重放，使用 `python experiments/phase3_replay.py <已完成组合目录>`；保留原16个抽样索引和0.0005分数误差上限，记录额外前向数量。原始16张重放失败记录保留。
 
 NUFILT 的只读源码检查为 `python experiments/phase3_nufilt_check.py`；对应验证为 `python experiments/phase3_nufilt.py`，通过后 `--full` 使用同一批冻结合并权重，不重新优化。
+
+新增4090恢复实验使用`configs/params_adaptive.json`及`experiments/params_adaptive.py`，按`--pilot`、`--verify`、`--full`、`--verify --full-output`依次执行；目录已完成时不能覆盖。`python experiments/params_adaptive_report.py`只从已验证结果生成新对照表，不修改旧表或保护参数。
 
 ## 文件组织
 
