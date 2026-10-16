@@ -1,17 +1,17 @@
 {
   "status": "phase2_local_residual_transport_real_eval_failed_verified",
-  "updated_utc": "2026-10-16T01:59:40.650626+00:00",
+  "updated_utc": "2026-10-16T02:02:33.448379+00:00",
   "automatic_continuation": false,
   "server": "3090",
   "allow_4090": false,
   "phase": 2,
   "objective": "Phase2: bounded publication-parameter distance optimization with task-SVD finite response and margin distillation constraints; original expert frozen, target-only construction,3090 only.",
-  "stage": "analytic_alignment_visibility_check_no_new_candidate",
+  "stage": "alignment_visibility_condition_verified_no_new_candidate",
   "research_jobs": [],
   "breakthrough_verified": false,
   "new_candidate": "No new defense. Novelty review now gates all new implementations. Frozen O/B real results preserved, but a complete-image source witness violates worst task drift0.5; no global feasibility claim.",
   "mechanism": "notes/phase2_finite_signed_condition.md",
-  "next_action": "Once-fixed exact alignment-visibility check from the official column solver: distinguish source readout-null edits from attack-output readout-null edits, without approving a CLIP candidate or reopening local reflection. No peer/test information or source direction selection. Then review the unresolved finite source-preservation and novelty conditions before any new optimization.",
+  "next_action": "Review one preimplementation condition: source task-preserving changes may become classifier-visible after the official anchor projection, unlike B edits under a matching permutation. Require an original-architecture finite nonlinear preservation mechanism and a distinction from pinned priors before constructing any candidate. The exact rank-two example only prevents an invalid universal veto; it is not a CLIP method, unknown-peer guarantee or authorization to retry closed reflections/null/low-rank optimizers.",
   "deferred": [
     "Combination with phase1 bias protection",
     "Broad attack survey",
@@ -2748,5 +2748,25 @@
     "hourly_monitor_running": false,
     "schedulers_will_not_restart": true,
     "server_sync_pending": true
+  },
+  "phase2_alignment_visibility": {
+    "status": "exact_condition_verified_no_CLIP_candidate",
+    "report": "notes/phase2_local_residual_transport.md",
+    "evidence": "results/author_protocol_audit/readout_null_alignment_check.json",
+    "preregistered_commit": "f7f6a0d",
+    "implementation_commit": "15b606c",
+    "source_readout_error": 0,
+    "task_budget_in_toy": 0,
+    "parameter_distance_in_toy": 0.35355339059327373,
+    "synthetic_input_count": 2,
+    "independent_exact_rows": 8,
+    "official_solver_max_error": 1.9920928795436055e-08,
+    "official_solver_calls": 2,
+    "images": 0,
+    "CLIP_weights": 0,
+    "new_candidate": false,
+    "unknown_peer_guarantee": false,
+    "innovation_claim": false,
+    "next_algorithm_approved": false
   }
 }
