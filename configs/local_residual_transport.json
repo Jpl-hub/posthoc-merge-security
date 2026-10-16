@@ -1,0 +1,47 @@
+{
+  "target": "MNIST",
+  "output": "outputs/phase2_local_residual_transport_mnist",
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "fit_n": 4096,
+  "scale_n": 512,
+  "construction_seed": 2026101601,
+  "probe_rank": 32,
+  "contexts_per_class": 2,
+  "finite_step": 0.01,
+  "ridge_relative": 1e-06,
+  "full_replay_n": 20,
+  "replay_tolerance": 0.0005,
+  "minimum_finite_changes": 16,
+  "minimum_changed_classes": 5,
+  "wall_limit_seconds": 600,
+  "source_only": true,
+  "new_direction_count": 1,
+  "reflection_coefficient": 2.0,
+  "extra_excluded_indices": [
+    41538,
+    27330
+  ],
+  "distance_tensors": [
+    "O",
+    "ob",
+    "A",
+    "a",
+    "B",
+    "b"
+  ],
+  "hypothesis": "One local residual readout-stabilizing reflection; fit missing skip action using existing Attention branch; no global network rotation or inserted skip layer. Finite nonlinear task preservation and actual same-source midpoint decisions are falsifiable, not unknown-peer guarantees. No second mode, angle, regularizer or rank search.",
+  "extra_index_exclusions": [
+    "outputs/phase2_head_commutator_mnist/source_split.json"
+  ],
+  "source_sha256": {
+    "experiments/local_residual_transport.py": "c006623be700b6e53c245f924e7d87c8a9ffcac9599ffb51e66aa9e09f07710e",
+    "experiments/confirm_temperature_compensation.py": "e7384b08036cbd75e31d2a0fbd1b8c9cf843d8b169ce5ccddf89da3412432600",
+    "experiments/cross_module_distance.py": "74fcf77f10c37dcc989017e9f6462a47490e6b656dd3f3364c7448084c048c19",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/verify_levelset_audits.py": "7d51baf85314d0529b06cac0177f87cc3b7a2495bd92279db6025c5f96a003c0",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "results/task_boundary_audit/split_independence_audit.json": "66c04d547fe4b33a0051360791d4b439250b160a74d41b1a24d825e5f6881b3e"
+  }
+}

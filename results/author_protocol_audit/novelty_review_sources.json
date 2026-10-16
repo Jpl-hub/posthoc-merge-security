@@ -118,6 +118,16 @@
       "reviewed": "Only publicly indexed abstract/introduction snippets; irreversible training-free global/local sensitivity processing stated. Full PDF still browser verification. No full mechanism or author/venue verification.",
       "full_text_reviewed": false,
       "reproduced": false
+    },
+    {
+      "method": "SliceGPT",
+      "paper": "https://arxiv.org/html/2401.15024v2",
+      "repository": "microsoft/TransformerCompression",
+      "commit": "183cd92d8469bf3f1e979585a08dc382692bfbed",
+      "source": "src/slicegpt/rotate.py",
+      "git_blob_sha": "c5333b3faa827829f570088e867e59857369984e",
+      "reviewed": "Sections3.1-3.3, rotate_attention/MLP/head and attn_shortcut_Q/mlp_shortcut_Q; blockwise differing rotations explicitly add shortcut matrices.",
+      "reproduced": false
     }
   ],
   "access_limits": [
@@ -132,5 +142,10 @@
   "preimplementation_screen": {
     "paired_coalescence": "not approved: known cancellation primitive, unbounded coalescence task error, independent hidden SVD probes and unknown signed fused response unresolved",
     "new_algorithm_approved": false
+  },
+  "local_residual_test": {
+    "novelty_gate": "Conditional source-realizability hypothesis documented and preregistered before code; known rotation not originality.",
+    "report": "notes/phase2_local_residual_transport.md",
+    "outcome": "Fresh source constraints passed, real TA/AGA defense failed, fixed point closed."
   }
 }
