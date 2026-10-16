@@ -179,9 +179,42 @@ def anchor_check(folder):
         source_sha256=digest(__file__),raw_sha256=digest(out/'anchor_interpolation.pt'),wall_seconds=time.monotonic()-start,full_model_forwards=len(ids)+2*cfg['full_replay_n'])
     save_json(out/'anchor_interpolation.json',result);print(json.dumps(result),flush=True)
 
+def inspect_geometry(folder):
+    """Read-only finite classification decomposition of the already closed point."""
+    out=Path(folder);start=time.monotonic();raw=torch.load(out/'diagnostic.pt',map_location='cpu')
+    p,q=[{k:v.numpy() if torch.is_tensor(v) else v for k,v in raw[t].items()} for t in ['p','q']]
+    axis=raw['axis'].numpy();mid=p|{k:((p[k]+q[k])*.5).astype('float32').astype('float64') for k in FIELDS}
+    m=p['gamma'][:,None]*(p['projection']@p['head'].T);m-=m.mean(0);bias=p['beta']@p['projection']@p['head'].T
+    contributions={k:float(np.linalg.norm(q[k]-p[k])**2/np.linalg.norm(p[k])**2) for k in FIELDS};groups={}
+    for name,data in raw['groups'].items():
+        n=data['natural_n'];c={k:v[:n].numpy() for k,v in data.items() if torch.is_tensor(v)};r0=c['r'];r1=r0+c['H']@(mid['O']-p['O']).T+mid['ob']-p['ob']
+        def activation(r,pp):
+            cc=r-r.mean(1,keepdims=True);v=(cc/np.sqrt((cc**2).mean(1,keepdims=True)+pp['eps2'])*pp['gamma2']+pp['beta2'])@pp['A'].T+pp['a']
+            return v*expit(1.702*v)
+        z0=activation(r0,p);z1=activation(r1,mid)
+        h0=c['rounding']+r0+z0@p['B'].T+p['b'];h1=c['rounding']+r1+z1@mid['B'].T+mid['b']
+        sd=lambda h:np.sqrt(((h-h.mean(1,keepdims=True))**2).mean(1,keepdims=True)+p['eps'])
+        n0=h0@m+sd(h0)*bias;n1=h1@m+sd(h1)*bias;y=n0.argmax(1);ii=np.arange(n)
+        gap=n0[ii,y,None]-n0;gap[ii,y]=1
+        terms={'gate':((z1-z0)@mid['B'].T)@m,'direct':((r1-r0)+z0@(mid['B']-p['B']).T+mid['b']-p['b'])@m,'final_LN_scale':(sd(h1)-sd(h0))*bias}
+        err=float(abs(sum(terms.values())-(n1-n0)).max());assert err<1e-8
+        damage=-(n1-n0)[ii,y,None]+(n1-n0);damage/=gap;damage[ii,y]=-np.inf;competitor=damage.argmax(1);maximum=damage[ii,competitor]
+        changed=n1.argmax(1)!=y;assert np.array_equal(changed,maximum>1)
+        centered=r0-r0.mean(1,keepdims=True);energy=(centered@axis)**2/(centered**2).sum(1)
+        pieces={key:(-(v[ii,y]-v[ii,competitor])/gap[ii,competitor]) for key,v in terms.items()}
+        groups[name]=dict(n=n,changed=int(changed.sum()),reflection_axis_centered_energy_quantiles=np.quantile(energy,[.5,.95,1]).tolist(),
+            signed_margin_harm_quantiles=np.quantile(maximum,[.5,.95,1]).tolist(),maximum_signed_harm=float(maximum.max()),finite_numerator_identity_error=err,
+            competing_direction_term_quantiles={k:np.quantile(v,[.5,.95,1]).tolist() for k,v in pieces.items()},
+            direct_numerator_max=float(abs(terms['direct']).max()),by_class=[dict(class_id=k,n=int((y==k).sum()),changed=int(changed[y==k].sum()),maximum_harm=float(maximum[y==k].max())) for k in range(len(p['head']))])
+    result=dict(status='closed_point_finite_geometry_verified',distance_squared_by_tensor=contributions,
+        bias_fraction_of_distance_squared=sum(contributions[k] for k in ['ob','a','b'])/sum(contributions.values()),groups=groups,
+        source_point_sha256=digest(out/'diagnostic.pt'),source_sha256=digest(__file__),new_images=0,new_gradients=0,new_candidates=0,wall_seconds=time.monotonic()-start)
+    save_json(out/'geometry_validation.json',result);print(json.dumps(result),flush=True)
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--anchor-check');args=ap.parse_args();initialize()
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--anchor-check');ap.add_argument('--geometry');args=ap.parse_args();initialize()
     if args.verify:verify(args.verify)
     elif args.anchor_check:anchor_check(args.anchor_check)
+    elif args.geometry:inspect_geometry(args.geometry)
     else:
         cfg=json.loads(Path(args.protocol).read_text());cfg['protocol_path']=args.protocol;run(cfg)
