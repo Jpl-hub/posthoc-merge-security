@@ -1,32 +1,55 @@
 # Phase 3: attack review and evaluation protocol
 
-Phase 2 停止构造新防御。第一阶段、O/B、A/B、PaRaMS 及失败记录原样保留。所有攻击结果只用于评价，不更新保护权重。
+本批评价不构造新防御。第一阶段、O/B、A/B、PaRaMS及失败记录原样保留。所有攻击结果只用于评价，不更新冻结保护权重；组会后恢复的方法研究须另立源端协议。
 
-## 方法与权限
+## 攻击方法与复现状态
 
-| 方法 | 类别、原问题 | 攻击者所需信息 / 代价 | CLIP ViT-B/32 的使用范围 |
-|---|---|---|---|
-| [AGA](https://github.com/krumpguo/secure-merge-attack) | 公开基座锚点对齐攻击；Attention 最小二乘、MLP 匈牙利匹配 | 发布专家、公开基座；无需图片、标签或训练；逐头求解与逐层匹配 | 固定作者代码，复用有哈希和独立验证的攻击权重。分别报告仅处理保护专家、处理全部参与专家 |
-| [PaRaMS §6 自适应恢复](https://arxiv.org/html/2503.07661v1#S6) | 已知防御的 MLP 重排与 Attention 缩放恢复 | 公开基座、方法知识；对齐求解 | 论文机制已核对；与 AGA 有重叠，不能将 AGA 重命名后计为第二个已复现攻击。独立官方恢复入口尚未确认 |
-| PaRaMS §6 蒸馏恢复 | 用可查询的独立专家训练替代模型，再融合 | 同分布无标签图片、教师查询、额外训练 | 不属于无数据对齐。单列高成本权限层，本批不运行；不据此声称当前防御抗蒸馏 |
-| [MergeLock §4.2.2 对齐](https://arxiv.org/html/2509.01548v1#S4.SS2.SSS2) | 保护模型与未保护伙伴间的正交配对对齐；不是公开基座 AGA | 两模型权重；Q/K 共同旋转，包含偏置；V/O 配对 | 论文公式与闭式解已读，官方仓库只有 README；V/O 公式排版需进一步核对，未实现、不填复现结果 |
-| [MergeGuard §7 Unmask / GradErase](https://arxiv.org/html/2511.11851v1#S7) | 分别减去保护参数、估计扰动后投影梯度重训练 | 前者权重操作；后者还需有限训练数据、扰动估计与额外训练 | Unmask 会移除目标专家项，须有基座／伙伴控制；GradErase 权限不同。尚无已核验官方执行入口，本批未复现 |
-| [MergeBarrier 攻击设置](https://arxiv.org/html/2511.10712v1#S4) | 修改层回置公开基座后融合；PaRaMS 解码另见附录 D | 公开基座、编辑位置／防御结构知识 | 是论文采用的补充攻击设置，但不等于 AGA 或任务向量恢复。本项目既有替换诊断仍单列，不作主实验 |
-| [Git Re-Basin](https://github.com/samuela/git-re-basin) | 为融合寻找函数等价的神经元置换；不是针对本防御提出的攻击 | 待对齐模型及参照；weight matching 无标签，activation matching 需图片 | 官方实现主要为 MLP/VGG/ResNet，不能直接宣称完整 CLIP Transformer 复现。AGA 已包含不同目标的 MLP 匹配；暂不另写适配器凑数量 |
-| [Task Arithmetic](https://github.com/mlfoundations/task_vectors) | 融合基准：基座加任务向量加权和 | 发布专家、伙伴、公开基座；无需数据或训练 | 固定系数 0.5；原作者差分与求和代码，另用显式公式复核 |
-| [TIES-Merging](https://github.com/prateeky2806/ties-merging) | 融合算法：全局幅度裁剪、符号选择、同号聚合 | 同上；无需数据或训练 | 新增正式融合对照。固定作者函数、保留前 20%、mass 符号、disjoint mean、系数 1.0；不是论文最优系数表的复现 |
-| [DARE / MergeLM](https://github.com/yule-BUAA/MergeLM) | 随机删除并重标定任务增量；融合组件，不是恢复攻击 | 同上；需记录删除率及随机种子 | 原论文以语言模型为主。待固定源码和 CLIP 适配检查；本批无 DARE 结果，不按结果挑种子 |
-| [TSV-Merge](https://github.com/AntoAndGar/task_singular_vectors) | 分矩阵 SVD 压缩与去干扰融合 | 所有发布任务向量及基座；矩阵分解，无标签 | 与现有 checkpoint 兼容；须核对向量/偏置处理及秩规则。既往 SVD 诊断不算完整 TSV-Merge 复现 |
-| [RegMean](https://github.com/bloomberg/dataless-model-merging) | 用输入二阶统计约束线性层重构的融合算法 | 专家、基座及校准输入，无需标签；收集激活 | 数据权限不同；需先固定校准来源和非线性层处理，本批不运行 |
-| [AdaMerging](https://github.com/EnnengYang/AdaMerging) | 在无标签数据上最小化熵以学习融合系数 | 专家、基座、输入与系数梯度 | 属于数据辅助自适应融合。原文使用无标签测试数据，不能与当前无数据协议混表；后续须另设适配集与评价集 |
-| [NUFILT](https://github.com/zihuanqiu/NUFILT) | 无数据连续融合：零空间过滤＋投影目标下的 LoRA 门控求解 | 发布任务向量、基座、先前融合权重；无图片，含融合参数梯度 | 已补读正文 §4–5、默认配置及 FilterLoRA。官方 HF CLIP 模块选择与现有 OpenAI CLIP 不同，直接套用漏层；本批已完成原内核＋native权重适配的 MNIST/SVHN 两顺序评价；不称完整 FusionBench 应用／论文表格复现，详见下文 |
-| [PaRaMS](https://github.com/ISCT-W/PaRaMS) | 纯后处理防御，MLP 置换与 Attention 配对缩放 | 防御构造无需伙伴/图片 | 已完成官方完整配置及 Attention 消融；完整配置超参数预算，分列参考 |
-| [MergeLock](https://github.com/hetailang/Merge-Lock) | Attention 可逆保护防御 | 防御端变换；论文讨论对齐与逆变换风险 | 固定审计版本仅 README，未复现完整方法，不能填入自产数字 |
-| [ARF](https://arxiv.org/html/2606.30360v1) | 排斥锚点微调后施加可逆保护 | 原任务训练和梯度 | 训练期防御；不作为纯后处理同约束基线，未复现完整训练/Table 6 |
+调研以“能否恢复被冻结保护专家的融合能力”为主问题。检索截至2026-10-16，逐项回查下列论文正文、附录及可取得的官方源码。**实际完成的恢复攻击目前只有AGA**；两个作用范围是同一攻击的不同设置。TA、TIES、NUFILT不计入攻击方法数量。244行是评价记录数量，不是244种攻击或独立实验。
 
-AGA 与 PaRaMS 已固定版本见 `configs/sources.json`；TIES 本批版本为 `44e7891fc84f3de7e4caa52664cd864ca3715e91`。新增调研条目的链接不等于已固定源码或已复现。BadMerging 等污染伙伴的后门攻击针对模型完整性，不能替代这里的受保护能力恢复评价。
+| 攻击／恢复流程 | 原论文依据与攻击者权限 | 实现核对与当前状态 |
+|---|---|---|
+| AGA | [§3–4](https://arxiv.org/html/2606.30360v1#S3)：发布权重＋公开基座；逐头最小二乘与MLP余弦匈牙利匹配；无图片 | 固定官方代码已复现。仅处理保护专家、处理全部专家分列；float64、正则1e-8保留 |
+| PaRaMS自适应置换／缩放恢复 | [§6](https://arxiv.org/html/2503.07661v1#S6)：已知保护机制＋公开基座；恢复MLP排列和Attention尺度 | 官方MLP函数支持`obj='matching'`，按双矩阵与偏置内积求Hungarian；已核对正文和代码。完整Attention恢复／蒸馏入口未确认；完整链未复现，不能借用AGA数字 |
+| PaRaMS伪标签蒸馏 | 同文§6、附录H.2：同分布无标签图片、教师预测及替代模型训练，再融合 | 属于数据和训练增强的攻击权限；论文报告50 epochs、batch128，其他细节仍须补齐。未复现，不能声称抗蒸馏 |
+| MergeLock配对对齐 | [§4.2.2](https://arxiv.org/html/2509.01548v1#S4.SS2.SSS2)：以伙伴为参照，Q/K共用正交变换并含偏置；V/O配对 | 固定官方树仅README；式(11)排版歧义已核对PDF。没有作者可执行版本，不自行改公式冒称官方复现 |
+| MergeBarrier的PaRaMS解码 | [附录D.2](https://arxiv.org/html/2511.10712v1#A4.SS2)：公开基座、MLP最近距离匹配、Attention比值／中位尺度估计 | 原文有明确步骤，不能与AGA混同；逐列独立argmin未保证全局双射，行列与逆尺度须核对。未取得可核官方代码，未运行 |
+| MergeBarrier修改层替换 | 同文§4.1：知道改写位置，将相应层替换为公开基座，再融合 | 属于论文中的位置已知恢复设置。项目已有局部替换诊断，但不是MergeBarrier完整复现，也不是原任务向量恢复；作为补充 |
+| MergeGuard Unmask | [CVPR2026 §7](https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf)：从融合参数减去缩放后的整份保护参数；原文系数0.3 | 公式已核对正式PDF；尚未取得可核官方执行入口。须有基座／伙伴控制，不能把删除目标专家项称作恢复其知识 |
+| MergeGuard GradErase | 同文§7：有限训练数据估计扰动方向，重训练时去除该方向的梯度分量 | 原文未充分给出扰动估计、数据量和更新日程；没有核验的作者实现，未复现。不能用原始干净专家差分充当攻击者估计 |
+| 融合后监督微调（SFT） | [Trap² §6.4](https://arxiv.org/html/2601.21898v2#S6.SS4)：攻击者取得任务数据／标签后，训练合并模型副本 | 官方固定README说明恢复流程未随库附带；本项目未执行。强权限攻击，不与无数据AGA混表；防御者原checkpoint仍不变 |
+| 蒸馏式恢复流程（ProDistill） | 同文§6.4将[ProDistill](https://github.com/JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation)用于恢复评估：无标签校准输入、专家中间特征与融合系数梯度 | ProDistill本体是数据辅助融合方法，不是专门恢复攻击。官方Vision入口和系数参数已读；有CLIP ViT-B/32实现，默认8任务，不能直接声称两任务攻击复现 |
 
-TIES 的 20%／1.0 也对应[原论文 Appendix C.4 的无验证集配方](https://arxiv.org/html/2306.01708v2#A3.SS4)，因此无需在本项目测试集上扫描系数。此次仍只复现固定算法与本项目的两专家设置，不借用作者八任务表作为自己的结果。2026-10-16 再次检查 MergeLock 官方仓库，仍只有 README 和“Coming Soon”说明。
+没有公开完整代码不等于攻击无效。论文复现若需自行实现，必须标为“依据论文实现”，先核对歧义和权限；不能用自创恢复步骤替代原作者方法。攻击者训练副本也不等于重新微调防御者专家，二者必须区分。
+
+### 源码核对的新增证据
+
+PaRaMS的`parameter_rearrangement`第60–139行包含对齐选项，`params(...,perm_config=...)`也暴露该参数。它累计A行、B列及偏置内积，`matching`使用`linear_sum_assignment(...,maximize=True)`；AGA只由A行余弦构造代价。两者不是同一实现。先前关于恢复入口的笼统表述已更正；完整调用的排列方向与缩放恢复仍需单独数值核验，不能据此声称完整攻击链已复现。
+
+版本、文件Git blob及核对范围见[攻击源码索引](../results/phase3/attack_sources.json)。AGA、PaRaMS、MergeLock复用既有固定提交；ProDistill新增固定提交`c773fcaead79cf25b5654b2e3fe233450da4e387`。其`Vision/main_prodistill.py`对逐块教师特征作MSE，`merge_models.py`冻结教师和基座，仅学习融合系数；默认是逐参数元素系数，不是少量任务标量。校准使用`ValfromTrain`，不能擅自换成测试集。未启动新训练或新攻击评测。
+
+### 其他模型融合安全攻击
+
+为避免漏掉“攻击”一词的不同含义，另检查如下威胁分支；它们不替代当前的能力恢复主实验，也未在本项目运行：
+
+| 威胁 | 代表原论文与官方来源 | 与当前评价的区别 |
+|---|---|---|
+| 后门／供应链投毒 | [BadMerging，CCS2024及官方代码](https://github.com/jzhang538/BadMerging)、[LoBAM](https://arxiv.org/abs/2411.16746)、[Merge Hijacking，ACL2025](https://aclanthology.org/2025.acl-long.1571/)、[MergeBackdoor，USENIX2025](https://www.usenix.org/system/files/usenixsecurity25-wang-lijin.pdf) | 训练恶意参与模型并衡量触发成功率；不是恢复冻结保护专家的正常任务能力。此次仅核对问题定义／入口，未逐项完成算法复现 |
+| 隐私窃取 | [Merger-as-a-Stealer，EMNLP2025](https://aclanthology.org/2025.emnlp-main.295/)、[PhiMM](https://arxiv.org/abs/2502.11533) | 恶意伙伴诱发PII／成员信息泄露，需不同数据与指标；不能拿其ASR填正常任务准确率表 |
+| 水印／指纹移除与安全退化 | [Have You Merged My Model?，LAMPS2024及官方代码](https://github.com/CryptoAILab/MergeGuard) | 审计融合后水印、指纹及安全性；此同名MergeGuard与CVPR2026双阶段防御是不同工作 |
+
+这是有明确检索边界的清单，不宣称已经穷尽全部模型安全攻击。新检索发现只计为文献线索；读过摘要、看过源码与完成复现分别记录。
+
+## 融合算法与防御对照
+
+| 项目 | 正确分类 | 当前用途 |
+|---|---|---|
+| TA、TIES | 无数据融合算法 | 已有正式匹配控制及AGA后融合结果 |
+| NUFILT | 无数据连续融合算法，优化融合门控 | 已完成官方内核＋native适配的MNIST/SVHN评价；不是新增攻击方法，不是完整FusionBench论文表复现 |
+| DARE、TSV、RegMean、AdaMerging | 分别为稀疏融合／SVD融合／数据辅助融合等 | 仅按可靠实现与问题需要补充，不为凑攻击数量移植；当前未新增成绩 |
+| PaRaMS、MergeLock、MergeBarrier | 防御方法；各自论文另含恢复设置 | 对应攻击应从其恢复章节单独提取 |
+| ARF、Trap²、完整MergeGuard | 含训练期防御 | 不能作为本项目冻结专家的纯后处理方案 |
+
+两套自有防御为最终LN偏置方案与跨模块补偿方案；O/B、A/B是后者的两个冻结实现。未保护与PaRaMS为对照，不另算自有方法。所有既有权重、失败证据及结果继续保留。
 
 ## 冻结对象与约束
 

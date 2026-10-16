@@ -1,0 +1,168 @@
+% !TeX program = xelatex
+\documentclass[aspectratio=169,11pt]{beamer}
+\usepackage[UTF8,fontset=none]{ctex}
+\setCJKmainfont{Microsoft YaHei}
+\setCJKsansfont{Microsoft YaHei}
+\setsansfont{Arial}
+\usepackage{amsmath,amssymb,booktabs,array}
+\definecolor{ink}{HTML}{17314D}
+\definecolor{muted}{HTML}{586575}
+\definecolor{accent}{HTML}{146A86}
+\setbeamercolor{normal text}{fg=ink,bg=white}
+\setbeamercolor{frametitle}{fg=ink}
+\setbeamercolor{structure}{fg=accent}
+\setbeamerfont{frametitle}{size=\Large,series=\bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{footline}{\hfill{\color{muted}\scriptsize\insertframenumber}\hspace{6mm}\vspace{3mm}}
+\setbeamersize{text margin left=9mm,text margin right=9mm}
+\setlength{\parskip}{5pt}
+\newcommand{\source}[1]{{\vfill\scriptsize\color{muted}#1\par}}
+\newcommand{\key}[1]{{\color{accent}\bfseries#1}}
+\input{tables.tex}
+\begin{document}
+
+\begin{frame}[plain]
+\vspace{12mm}
+{\color{accent}\small Post-hoc Model Merge Protection\par}
+\vspace{5mm}
+{\LARGE\bfseries 模型融合的后处理防御\par}
+\vspace{4mm}
+{\large 两种方案与攻击评估\par}
+\vspace{13mm}
+{\color{muted} CLIP ViT-B/32 \quad RTX 3090\par}
+{\color{muted}\small 2026年10月16日\par}
+\end{frame}
+
+\begin{frame}{研究问题}
+\key{专家独立使用时保持能力，未经授权融合后降低被保护任务性能。}
+\[
+\theta_{\rm release}=T_c(\theta_e),\qquad
+\theta_{\rm merge}=\theta_0+\tfrac12
+\big[(\theta_{\rm release}-\theta_0)+(\theta_p-\theta_0)\big].
+\]
+\begin{itemize}\setlength{\itemsep}{6pt}
+\item 已微调专家$\theta_e$冻结；保护发生在模型发布前。
+\item 构造仅使用目标专家、公开基座及目标训练数据，不读取未来伙伴。
+\item 同时评价\textbf{被保护任务与伙伴任务}，区分融合和攻击恢复。
+\end{itemize}
+\vspace{3mm}
+两套方案：\textbf{投影核空间偏置扰动}；\textbf{任务子空间约束的跨模块补偿}。
+\source{评价使用历史测试集，冻结防御后执行；不将其称为首次盲测。TA为Task Arithmetic。}
+\end{frame}
+
+\begin{frame}{方案一：投影核空间中的偏置扰动}
+CLIP末端特征为$t=\operatorname{LN}_{\gamma,b}(h)P_e$，
+$P_e\in\mathbb R^{768\times512}$。选择
+\[
+v^\top P_e=0,\qquad b'=b+\alpha v
+\quad\Longrightarrow\quad t'=t.
+\]
+独立模型不读取该方向；融合后读出矩阵改变，扰动变为
+$\delta t_{\rm merge}=\frac{\alpha}{2}v^\top P_{\rm merge}$。
+\vspace{2mm}
+\begin{center}\small
+\PhaseOneTable
+\end{center}
+\small
+AGA原版未修改关键LN偏置；这些结果不能证明抗任意恢复。
+\source{准确率（\%）；AGA处理全部参与专家。该方案与第二方案的0.5距离预算分列，不能直接作同预算优劣比较。来源：results/phase3/results.json。}
+\end{frame}
+
+\begin{frame}{方案二：任务子空间约束下的跨模块补偿}
+对任务矩阵$\Delta W=W_e-W_0=U\Sigma V^\top$构造奇异方向探针，
+仅求解发布变换系数$c$。
+\[
+\max_c D(T_c(\theta_e),\theta_e)
+\quad\text{s.t.}\quad
+D\le0.5,\quad R_{\mathcal C\cup\mathcal P}(c)\le0.5.
+\]
+\begin{itemize}\setlength{\itemsep}{5pt}
+\item $R$：自然训练输入与奇异探针上的最坏相对分类间隔变化。
+\item 内层选择最坏任务输入／竞争类别；外层在有限可行域内增大参数距离，并使用公开基座代理诊断分类响应。
+\item O/B联合修改Attention输出和MLP输出；A/B联合修改MLP输入和输出。
+\end{itemize}
+\key{原任务中的联合补偿，可能在融合后的表示与门控变化下失配。}
+\source{SVD是结构工具，不是功能保持证明；有限内层与公开代理不构成未知伙伴下的安全保证。使用发布系数梯度，不能称零训练成本。}
+\end{frame}
+
+\begin{frame}{真实融合与AGA结果}
+\small MNIST为被保护任务，SVHN为伙伴；每格为\textbf{MNIST / SVHN}准确率（\%）。
+\vspace{3mm}
+\begin{center}\footnotesize
+\MainTable
+\end{center}
+\vspace{2mm}
+\small
+PaRaMS完整配置的直接融合破坏可被AGA恢复。
+O/B、A/B的干扰仍然存在，但需要单独核验功能约束。
+\source{TA系数0.5；两列AGA分别处理保护专家、全部专家。*不同预算参考；$^\dagger$已发现任务保持预算反例。PaRaMS为完整官方配置。}
+\end{frame}
+
+\begin{frame}{准确率保持，不等于最坏功能误差合格}
+\begin{center}\small
+\UtilityTable
+\end{center}
+\vspace{3mm}
+\small
+同一训练样本的教师7/9分数间隔仅为0.02034：
+\begin{itemize}\setlength{\itemsep}{5pt}
+\item O/B使该间隔增大，预测仍为7；相对漂移仍超过0.5。
+\item A/B使间隔变为负值，预测由7变为9；同样违反约束。
+\end{itemize}
+\vspace{2mm}
+\key{两者保留为真实效果参考，不能宣称全任务满足双0.5预算。}
+\source{固定512张训练图的只读审计；完整模型重放误差为0。历史有限确认保留，不使用暴露见证修补权重。来源：utility.json、utility\_witnesses.json。}
+\end{frame}
+
+\begin{frame}{攻击方法：依据、权限与复现状态}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.28}
+\begin{tabular}{@{}p{3.4cm}p{6.2cm}p{3.9cm}@{}}
+\toprule
+攻击／恢复流程 & 关键权限与操作 & 当前状态\\
+\midrule
+AGA & 公开基座；Attention求解＋MLP匹配 & 官方代码已复现\\
+PaRaMS自适应恢复 & 基座与防御知识；恢复排列／尺度 & MLP官方对齐入口已核对；未运行\\
+MergeLock配对对齐 & 伙伴参照；Q/K、V/O耦合正交对齐 & 原文核对；官方库仅README\\
+MergeBarrier解码／层替换 & 基座、变换／修改位置知识 & 原文与附录核对；替换仅历史诊断\\
+Unmask / GradErase & 参数减法／任务数据＋投影梯度再训练 & 正式论文核对；未复现\\
+蒸馏、融合后SFT & 教师查询／任务数据与额外训练 & 未运行；强权限单列\\
+ProDistill用于恢复 & 校准输入＋逐层特征蒸馏，学习融合系数 & 官方Vision代码已读；未运行\\
+\bottomrule
+\end{tabular}
+\vspace{3mm}
+\small
+\textbf{TA、TIES、NUFILT是融合算法。}攻击后可以接不同融合算法，但不把它们计为新增恢复攻击。
+\source{PaRaMS \S6；MergeLock \S4.2.2；MergeBarrier \S4.1、附录D；MergeGuard \S7；Trap² \S6.4。完整链接与固定源码见notes/phase3\_attack\_review.md。}
+\end{frame}
+
+\begin{frame}{更换融合算法后的保护边界}
+\small
+NUFILT原作者内核＋现有CLIP权重适配；保护MNIST，伙伴SVHN。
+两个任务顺序均评价，下面展示MNIST先加入的固定顺序。
+\vspace{2mm}
+\begin{center}\small
+\NufiltTable
+\end{center}
+\vspace{2mm}
+\begin{itemize}\setlength{\itemsep}{4pt}
+\item 其默认合并不读取关键LN偏置，方案一与对应无保护合并模型相同。
+\item 两个顺序中，A/B距匹配无保护MNIST控制仅0.06--0.31个百分点。
+\end{itemize}
+\source{每格为MNIST / SVHN准确率（\%）。无图片参与融合门控求解；原专家和防御不更新。此处是融合方法评价，不是新增攻击；未复现完整FusionBench论文表。}
+\end{frame}
+
+\begin{frame}{当前结论与后续实验}
+\begin{itemize}\setlength{\itemsep}{11pt}
+\item \textbf{两种机制均观察到真实融合干扰。}\\
+方案一有跨被保护任务结果；方案二仍主要限于MNIST。
+\item \textbf{安全边界已经明确。}\\
+方案一依赖融合参数覆盖；方案二存在任务预算反例，通用性与创新性尚未确立。
+\item \textbf{下一步补攻击证据，不改冻结防御。}\\
+优先补齐可核验的对齐／解码恢复；蒸馏和再训练按更强权限单独评价。
+\end{itemize}
+\source{全部既有权重、原始预测和失败证据保留。当前完成的是固定攻击与融合设置，未宣称覆盖所有攻击。}
+\end{frame}
+\end{document}
