@@ -2,13 +2,16 @@
 
 研究已微调 CLIP ViT-B/32 专家的发布前参数后处理保护：保持独立任务能力，评价未经授权融合及恢复攻击后的任务能力。
 
-当前为 **Phase 3：冻结防御的系统攻防评价**。本批244行结果、3904次完整模型抽样重放已通过；O/B、A/B均发现任务预算反例，不能宣称严格可行。不再构造或调整 Phase 2 防御；仅使用 RTX3090。
+当前围绕两套防御：**投影核空间偏置扰动、任务子空间约束的跨模块补偿**，同时补齐攻击调研与对比实验。本批244行结果、3904次完整模型抽样重放已通过；O/B、A/B均发现任务预算反例，不能宣称严格可行。历史发布权重冻结，新方法须另立源端构造与独立确认协议。
+
+2026-10-16组会后已获准改用RTX4090；当前等待登录信息，尚未在4090启动作业。3090无GPU，只保留CPU归档用途；既有结果仍明确记为3090。
 
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
 - [冻结模型、源码、数据与参数指纹](configs/phase3.json)
 - [已独立复核的结果主表](results/phase3/tables.md)
 - [逐类计数、配对统计及完整指标](results/phase3/results.json) · [CSV](results/phase3/results.csv) · [复核与绘图指纹](results/phase3/provenance.json)
 - [研究状态](research_state.json) · [相关工作与创新性审查](notes/phase2_related_work_and_novelty.md)
+- [科研汇报 PDF](presentation/main.pdf) · [PowerPoint放映版](presentation/research_report.pptx) · [LaTeX源稿](presentation/main.tex)。运行`python3 presentation/update_tables.py`从结果文件更新表格。
 
 ## 冻结对照
 
