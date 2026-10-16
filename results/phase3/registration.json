@@ -1,0 +1,49 @@
+{
+  "status": "pilot_verified_full_protocol_frozen",
+  "updated_utc": "2026-10-16T07:09:04.616289+00:00",
+  "pilot": {
+    "execution": {
+      "completed": true,
+      "pilot": true,
+      "case_index": 0,
+      "rows": 78,
+      "wall_seconds": 276.80997433373705,
+      "GPU": "NVIDIA GeForce RTX 3090",
+      "new_defense_weights": 0,
+      "optimizer_steps": 0,
+      "new_AGA_calls": 0,
+      "cached_author_AGA_weights": true,
+      "defense_feedback": false,
+      "predictions_sha256": "8b701574e4d20dda6cecb0259d73e3c1ef93da8882b7e11c0a31831566d4bd2a",
+      "source_sha256": "f9d76945816599ff862815a8a9b992f8b46ecdd051506af116274a9c8733dc33",
+      "protocol_sha256": "a26497f233d456f7026cebb2666eca8a56d4e6a02ce739c5e9cbcea818c1b634"
+    },
+    "validation": {
+      "status": "passed",
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 1248,
+      "maximum_score_error": 0.00034809112548828125,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": true,
+      "independent_TIES_reimplementation": false,
+      "rows": 78,
+      "raw_sha256": "8b701574e4d20dda6cecb0259d73e3c1ef93da8882b7e11c0a31831566d4bd2a",
+      "source_sha256": "f9d76945816599ff862815a8a9b992f8b46ecdd051506af116274a9c8733dc33"
+    },
+    "source_on_server": "outputs/phase3/pilot_source.py",
+    "scientific_settings_changed_after_pilot": false
+  },
+  "full_protocol_sha256": "4e40f5286e9cbaa7b39b19214742c6cddaf8946af69369ef163ff596194ef7c7",
+  "full_source_sha256": "cf36d5e5c95aed6aaf71d6623ccfc0d0e86c31bc37974e192cbeb5f2bf2104a9",
+  "failure": {
+    "kind": "source_fingerprint_byte_vs_text_line_endings",
+    "before_any_full_evaluation": true,
+    "server_archive": "outputs/phase3/failed_protocol_hash01",
+    "AGA_raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "AGA_normalized_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "resolution": "Validate both raw and canonical text hashes; do not modify official source."
+  },
+  "additional_harness_validation": "Fixed independent NumPy TIES fixture; old prediction-only rows require real score evaluation, not synthetic logits.",
+  "new_defense_weights": 0,
+  "test_or_partner_parameter_selection": false
+}
