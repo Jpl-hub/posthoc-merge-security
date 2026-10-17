@@ -63,5 +63,30 @@ def failure(output):
     save_json(out/'utility_witness_validation.json',record)
 
 
+@torch.no_grad()
+def ln_pre(output):
+    """Can this fixed source R extend through native CLIP's initial affine LN?"""
+    out=Path(output);meta=json.loads((out/'execution.json').read_text())
+    assert digest(out/'diagnostic.pt')==meta['raw_sha256']
+    u=torch.load(out/'diagnostic.pt',map_location='cpu',weights_only=False)['u'].numpy()
+    _,own,_,_=checked_models('MNIST');gamma=own.model.visual.ln_pre.weight.double().numpy()
+    r=np.eye(len(gamma))-2*u@u.T;a=r-r.mean(0);target=gamma[:,None]*r;target-=target.mean(0)
+    scale=np.sum(a*target,axis=0)/np.sum(a*a,axis=0);error=a*scale[None]-target
+    # Each column's least-squares residual is orthogonal to its only free column.
+    normal=float(np.max(np.abs(np.sum(a*error,axis=0))));assert normal<1e-10
+    saved=json.loads((out/'native_ln_pre_obstruction.json').read_text())
+    f,op=float(np.linalg.norm(error)),float(np.linalg.norm(error,ord=2))
+    assert abs(f-saved['minimum_diagonal_affine_residual_Frobenius'])<1e-9
+    assert abs(op-saved['minimum_diagonal_affine_residual_spectral'])<1e-9 and op>1e-8
+    save_json(out/'native_ln_pre_validation.json',dict(status='passed_numpy_minimum_residual',
+        residual_Frobenius=f,residual_spectral=op,normal_equation_error=normal,
+        original_expert_sha256=saved['original_expert_sha256'],source_raw_sha256=meta['raw_sha256'],
+        checker_sha256=digest(__file__),images=0,gradients=0,new_weights=0,
+        scope='This fixed orthogonal coordinate conjugacy is not exactly realizable by native ln_pre diagonal affine parameters. Not a proof against all posthoc methods.'))
+
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);g=ap.add_mutually_exclusive_group(required=True);g.add_argument('--source');g.add_argument('--failure');a=ap.parse_args();source(a.source) if a.source else failure(a.failure)
+    ap=argparse.ArgumentParser(description=__doc__);g=ap.add_mutually_exclusive_group(required=True);g.add_argument('--source');g.add_argument('--failure');g.add_argument('--ln-pre');a=ap.parse_args()
+    if a.source: source(a.source)
+    elif a.failure: failure(a.failure)
+    else: ln_pre(a.ln_pre)

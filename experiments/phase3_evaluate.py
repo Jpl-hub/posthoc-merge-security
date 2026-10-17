@@ -1,4 +1,4 @@
-"""Frozen-defense evaluation: official TA/TIES, with cached original-author AGA.
+"""Frozen-defense evaluation: fixed merger kernels, cached original-author AGA.
 
 No defense construction, coefficient selection, training, or test-time adaptation.
 """
@@ -48,12 +48,51 @@ def load_ties(spec):
     return env['merge_methods']
 
 
+def load_dare(spec):
+    """Keep the official mask function unchanged; avoid unrelated LM imports."""
+    assert digest(spec['path']) == spec['sha256']
+    nodes = [n for n in ast.parse(Path(spec['path']).read_text()).body
+             if isinstance(n, ast.FunctionDef) and n.name == 'mask_input_with_mask_rate']
+    assert len(nodes) == 1
+    env = dict(torch=torch)
+    exec(compile(ast.Module(body=nodes, type_ignores=[]), spec['path'], 'exec'), env)
+    return env['mask_input_with_mask_rate']
+
+
 @torch.no_grad()
 def fuse(anchor, left, right, method, cfg, ties, independent=False):
     if method == 'TA':
         fn = explicit_merge if independent else merge
         return fn(anchor, left, right, cfg['TA_coefficient'])
     sa, sl, sr = [m.state_dict() for m in (anchor, left, right)]
+    if method == 'DARE+TA':
+        spec = cfg['DARE']; mask = load_dare(spec)
+        keys = [k for k, _ in anchor.named_parameters()]
+        deltas = []
+        # Author order: all parameters of expert 1, then all of expert 2.
+        with torch.random.fork_rng(devices=[]):
+            torch.default_generator.manual_seed(spec['seed'])
+            for source in [sl, sr]:
+                delta = {}
+                for k in keys:
+                    d = source[k]-sa[k]
+                    if independent:
+                        dropped = torch.bernoulli(torch.full_like(d, spec['drop_rate'])).numpy()
+                        dtype = d.numpy().dtype
+                        sparse = np.divide(d.numpy()*(1-dropped), 1-spec['drop_rate'], dtype=dtype)
+                        # Preserve author's base+masked delta, then subtract base again.
+                        delta[k] = torch.from_numpy(np.asarray(np.subtract(
+                            np.add(sa[k].numpy(), sparse, dtype=dtype), sa[k].numpy(), dtype=dtype)))
+                    else:
+                        reconstructed = sa[k]+mask(d, spec['drop_rate'], True, 'random')
+                        delta[k] = reconstructed-sa[k]
+                deltas.append(delta)
+        state = {k: v.clone() for k, v in sa.items()}
+        for k in keys:
+            state[k] = sa[k]+cfg['TA_coefficient']*(deltas[0][k]+deltas[1][k])
+        result = copy.deepcopy(anchor); result.load_state_dict(state, strict=True)
+        return result
+    assert method == 'TIES', method
     # Official load_vit uses sorted, globally flattened state dictionaries.
     keys = sorted(k for k, v in sa.items() if v.is_floating_point())
     vectors = torch.stack([torch.cat([(s[k] - sa[k]).flatten() for k in keys])
@@ -131,6 +170,7 @@ def row_metrics(scores, labels, before, classes):
 def run(protocol, case_index, pilot):
     cfg = json.loads(Path(protocol).read_text())
     case = cfg['cases'][case_index]
+    if 'DARE' in cfg: cfg['DARE']['seed'] = case['seed']
     out = Path(cfg['output']) / ('pilot' if pilot else 'full') / f'{case_index:02d}_{case["target"]}_{case["partner"]}'
     out.mkdir(parents=True, exist_ok=False)
     (out/'artifacts').mkdir()

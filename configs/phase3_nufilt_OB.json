@@ -1,0 +1,114 @@
+{
+  "experiment": "Missing frozen O/B NUFILT comparison; matched prior controls reused",
+  "base_source_commit": "0df8abfffba8e1603a60fd00d2a5b8c07e5bd6d6",
+  "output": "outputs/phase3/nufilt_OB",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "TIES": {
+    "repository": "https://github.com/prateeky2806/ties-merging",
+    "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+    "path": "external/ties-merging/src/utils/merge_utils.py",
+    "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+    "topk_percent": 20,
+    "coefficient": 1.0,
+    "resolve_method": "mass",
+    "merge_func": "dis-mean",
+    "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+  },
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "defense_optimization": false,
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "Phase1_MNIST": {
+      "label": "Phase 1 LN bias",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/projection_bias_noise_mnist/artifacts/release.pt",
+        "sha256": "6c5c29354c85bea33dccb3ec60c3f89fcd05664c6281cd693a0129c6dde40e71"
+      },
+      "AGA_edits": {
+        "path": "outputs/projection_bias_noise_mnist/artifacts/released_AGA_edits.pt",
+        "sha256": "a75436a26ecf9686e01a93e1d98a771cafc0ec6e7954227b8e3fc6ed5dfef385"
+      },
+      "budget_status": "Different constraint reference; actual distance reported, not assumed within Phase 2 budget.",
+      "function_status": "Exact ideal projection-null condition; measured FP32 utility, not generic recovery security."
+    },
+    "O/B": {
+      "label": "O/B",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/boundary_mnist/artifacts/release.pt",
+        "sha256": "953007daee0d6ba6f4c40de8aa738cfb5052db65270436aa4f0fe5e04aefaa46"
+      },
+      "AGA_edits": {
+        "path": "outputs/boundary_mnist/artifacts/released_AGA_edits.pt",
+        "sha256": "178a5266abc457c0b443ba82a392e7d37dd0e4308661a1e56d214104241b415b"
+      },
+      "budget_status": "Task budget violated: exposed witness 0.789627 > 0.5. Effect reference only.",
+      "function_status": "Frozen historical checkpoint, never repaired or selected from Phase 3."
+    }
+  },
+  "source_sha256": {
+    "experiments/phase3_evaluate.py": "393cfdd6c6bd8ec9574b887edcd8c05a3e9a855e44d63e91d7c6e68bf420bde7",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/frozen_AB_target_only.py": "d45a337793bcb7f8fb50d44daa325c7b6ce80e1343f86fdcc7102ae7c878fb15",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "experiments/verify_probe_candidate.py": "f91b7f1dcb7dcd19144b0b7ac711dd557b1a0ce1bb51809a047e53f0c7f8cdf9",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiments/phase3_replay.py": "2ef104eba0e08e4ace1e9a58ebfb4664e9ef0fc5c897672c71164f2f350ea1e2",
+    "experiments/phase3_nufilt.py": "2a04b27a3816b81ba425e02b0e3f7999ec9d583d88719f577dbd500a64932d3c"
+  },
+  "nufilt_defense": "O/B",
+  "nufilt_output": "outputs/phase3/nufilt_OB",
+  "nufilt_controls": {
+    "root": "outputs/phase3/nufilt",
+    "pilot": {
+      "path": "outputs/phase3/nufilt/pilot/scores.pt",
+      "sha256": "3438b681d4009941ee70a20b40f34ffe8b1e2d78d6eb66f9565b7802a71fce24"
+    },
+    "full": {
+      "path": "outputs/phase3/nufilt/full/scores.pt",
+      "sha256": "c44ee0e2bfc8e34b9fc1a37205f5627ad40381839da4a5698a52b89ee8072316"
+    },
+    "construction": {
+      "path": "outputs/phase3/nufilt/pilot/execution.json",
+      "sha256": "70d2c790a9a431ddb06af362c367af4d86537604a3acc864fd4378c9ea49cf15"
+    }
+  }
+}

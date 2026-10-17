@@ -15,6 +15,7 @@ from covariance_noise import dataset
 from phase3_evaluate import row_metrics
 from subspace_probe import make_loader, save_json
 from task_probe_distance import parameters
+from task_probe_distance import checked_models
 from verify_covariance_noise import official_labels
 from verify_levelset_audits import raw_scores
 
@@ -98,5 +99,46 @@ def run(protocol,pilot,verify):
         save_json(out/'execution.json',dict(completed=True,rows=len(rows),wall_seconds=time.monotonic()-start,GPU=torch.cuda.get_device_name(),prefix_dtype='float32',readout_dtype='float64',same_frozen_recovery_edits=True,defense_updates=0,gradients=0,raw_sha256=digest(out/'raw.pt'),source_sha256=digest(__file__),controls=controls,scope='Separate numerical protocol; does not retroactively pass the failed nativeFP32 protocol.'))
 
 
+@torch.no_grad()
+def certificate():
+    """Read-only sufficient bounds for arbitrary prefixes and fixed native tails."""
+    start=time.monotonic();torch.set_num_threads(4);protocol=Path('configs/phase3.json')
+    assert digest(protocol)=='4e40f5286e9cbaa7b39b19214742c6cddaf8946af69369ef163ff596194ef7c7'
+    cfg=json.loads(protocol.read_text());keys=['model.visual.ln_post.weight','model.visual.ln_post.bias','model.visual.proj'];originals={};protected={};heads={};hashes={}
+    for task in ['MNIST','DTD','SVHN']:
+        anchor,own,head,pins=checked_models(task);hashes[task]=pins;assert head.normalize and torch.count_nonzero(head.bias)==0
+        base={k:anchor.state_dict()[k].clone() for k in keys};originals[task]={k:own.state_dict()[k].clone() for k in keys};heads[task]=head.weight.detach().double()
+        ref=cfg['defenses']['Phase1_'+task]['release'];assert digest(ref['path'])==ref['sha256'];edit=torch.load(ref['path'],map_location='cpu',weights_only=False)
+        protected[task]={k:edit.get(k,originals[task][k]).clone() for k in keys}
+        del anchor,own,head,edit
+    rows=[];maximum=0.
+    for case in cfg['cases']:
+        target,peer=case['target'],case['partner']
+        for name,own in [('Unprotected',originals[target]),('Phase1_'+target,protected[target])]:
+            for coefficient in [.5,.3]:
+                if coefficient==.5:
+                    tail={k:base[k]+.5*((own[k]-base[k])+(originals[peer][k]-base[k])) for k in keys}
+                else:
+                    tail={k:(base[k]+.3*(own[k]-base[k]))+.3*(originals[peer][k]-base[k]) for k in keys}
+                gamma,beta,p=[tail[k].double() for k in keys]
+                for task in [target,peer]:
+                    t=heads[task];image=p@t.T;m=gamma[:,None]*image;m-=m.mean(0);b=beta@image
+                    lower=b[:,None]-b[None,:]-len(gamma)**.5*(m[:,:,None]-m[:,None,:]).norm(dim=0)
+                    # Independent NumPy dot products and pairwise norm, same frozen parameters.
+                    q=p.numpy()@t.numpy().T;mm=gamma.numpy()[:,None]*q;mm-=mm.mean(0);bb=beta.numpy()@q
+                    expected=bb[:,None]-bb[None,:]-len(gamma)**.5*np.linalg.norm(mm[:,:,None]-mm[:,None,:],axis=0)
+                    np.testing.assert_allclose(lower.numpy(),expected,atol=1e-8,rtol=1e-10);maximum=max(maximum,float(np.abs(lower.numpy()-expected).max()))
+                    lower.fill_diagonal_(torch.inf);k=int(lower.min(1).values.argmax());bound=float(lower[k].min())
+                    rows.append(dict(target=target,partner=peer,defense=name,coefficient=coefficient,dataset=task,
+                        role='target' if task==target else 'partner',best_constant_class=k,minimum_signed_bound=bound,
+                        all_prefix_constant_certified_in_real_arithmetic=bound>0,readout_linear_norm=float(m.norm()),readout_bias_norm=float(b.norm())))
+    out=Path('outputs/phase3_readout_scope');out.mkdir(exist_ok=False)
+    save_json(out/'results.json',rows);save_json(out/'validation.json',dict(status='passed_numpy_readout_bounds',maximum_algebra_error=maximum,
+        expert_sha256=hashes,protocol_sha256=digest(protocol),source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
+        new_images=0,gradient_steps=0,new_weights=0,actual_ProDistill_training=False,formal_FP32_roundoff_certificate=False,
+        scope='Sufficient real-arithmetic bound for all finite prefixes under the fixed two-expert final readout. Not an accuracy measurement or full author ProDistill reproduction.'))
+
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol',default='configs/bias_tail_precision.json');ap.add_argument('--pilot',action='store_true');ap.add_argument('--verify',action='store_true');a=ap.parse_args();run(a.protocol,a.pilot,a.verify)
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol',default='configs/bias_tail_precision.json');ap.add_argument('--pilot',action='store_true');ap.add_argument('--verify',action='store_true');ap.add_argument('--certificate',action='store_true');a=ap.parse_args()
+    certificate() if a.certificate else run(a.protocol,a.pilot,a.verify)

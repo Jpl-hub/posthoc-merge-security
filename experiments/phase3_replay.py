@@ -70,8 +70,9 @@ def verify(output):
     save_json(out/'independent_validation.json', dict(status='passed', rows=len(rows),
         official_label_numpy_recount=True, full_image_prediction_replays=replays, context_forward_images=context_images,
         original_evaluation_batch_size=batch, maximum_score_error=maximum, score_tolerance=cfg['score_tolerance'],
-        explicit_TA_reconstruction=True, original_TIES_functions=True, independent_TIES_small_numpy_fixture=True,
+        explicit_TA_reconstruction='TA' in cfg['mergers'], original_TIES_functions='TIES' in cfg['mergers'], independent_TIES_small_numpy_fixture='TIES' in cfg['mergers'],
         independent_full_TIES_reimplementation=False, raw_sha256=meta['predictions_sha256'],
+        DARE_NumPy_mask_arithmetic='DARE+TA' in cfg['mergers'], DARE_independent_RNG=False,
         source_sha256=digest(__file__), original_evaluation_source_sha256=meta['source_sha256'],
         reason='Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed.'))
     print('PHASE3_CONTEXT_VERIFIED', out, replays, maximum, flush=True)
