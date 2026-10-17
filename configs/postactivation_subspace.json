@@ -1,0 +1,37 @@
+{
+  "GPU": "RTX3090",
+  "frozen_protocol": "configs/phase3.json",
+  "frozen_protocol_sha256": "4e40f5286e9cbaa7b39b19214742c6cddaf8946af69369ef163ff596194ef7c7",
+  "score_tolerance": 0.0005,
+  "output": "outputs/phase2_postactivation_subspace_mnist",
+  "fit_n": 512,
+  "probe_rank": 32,
+  "probe_contexts_per_class": 2,
+  "probe_step": 0.01,
+  "task_budget": 0.5,
+  "parameter_budgets": [
+    0.5,
+    2.0
+  ],
+  "FP32_distance_reserve": 1e-06,
+  "construction_split": {
+    "path": "outputs/phase3/postactivation_construction_split.json",
+    "sha256": "c2603ebcf34e888ed09434cd0c65e1e66eb9066e8ce1dd292c808758c27219d0"
+  },
+  "novelty_review_commit": "7f0fb68",
+  "protocol": "Single closed-form class game. Inside/outside/joint and both amplitude budgets all retained; no seed/rank/strength search. Only jointly source-feasible points proceed to separately frozen fresh confirmation; no partner/test construction, no expert updates.",
+  "source_sha256": {
+    "experiments/postactivation_subspace.py": "b967622fed591bd99c9020c1c1c13d33776d38d8b8fb2809fd49eee660a3c818",
+    "experiments/bias_canonicalization.py": "3aa4e7456d6d1422c767555f7887e9fc888feb76dc97068b75bd9fa2c458fd8d",
+    "experiments/feature_noise.py": "c5c41afde9ecff2a79e434dd7f721397e3894687c489f3cc27858d5004d5d85f",
+    "experiments/input_null_transport.py": "b1b3983a310ea7c932e5cd89b95a3bb45f54f1602a8a7a91832a06f089642afc",
+    "experiments/classification_completion.py": "307477826472f0ce0c9ad305f3708d4d9e0e16b74258c6c7b92373aec8a0b0f1",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/verify_levelset_audits.py": "7d51baf85314d0529b06cac0177f87cc3b7a2495bd92279db6025c5f96a003c0",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  }
+}
