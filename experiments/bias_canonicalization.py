@@ -9,13 +9,27 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from clip_benchmark import digest, evaluate, merge
+from clip_benchmark import checkpoint_loader, digest, evaluate, merge
 from covariance_noise import dataset
-from params_adaptive import inputs
 from phase3_evaluate import apply, row_metrics
 from subspace_probe import make_loader, save_json
 from verify_covariance_noise import official_labels
 from verify_probe_candidate import explicit_merge
+
+
+def inputs(protocol):
+    cfg=json.loads(Path(protocol).read_text())
+    assert cfg['GPU'].removeprefix('RTX') in torch.cuda.get_device_name()
+    torch.set_num_threads(4); torch.backends.cuda.matmul.allow_tf32=False; torch.backends.cudnn.allow_tf32=False
+    for path,pin in cfg['source_sha256'].items(): assert digest(path)==pin,path
+    assert digest(cfg['frozen_protocol'])==cfg['frozen_protocol_sha256']
+    frozen=json.loads(Path(cfg['frozen_protocol']).read_text())
+    pins={r['path']:r['sha256'] for r in json.loads(Path('configs/checkpoints.json').read_text())['files']}
+    load=checkpoint_loader(Path('external/secure-merge-attack'))
+    def checked(name):
+        path=Path('checkpoints/ViT-B-32')/name; assert digest(path)==pins['ViT-B-32/'+name]
+        model=load(str(path)).cpu().eval(); model.requires_grad_(False); return model
+    return cfg,frozen,checked
 
 
 @torch.no_grad()
@@ -44,7 +58,11 @@ def run(protocol, full=False, verify=False):
     if not full and not verify:
         root.mkdir(parents=True, exist_ok=False); (root/'artifacts').mkdir()
         save_json(root/'protocol.json', cfg); records = {}
-        for task in tasks:
+        if cfg.get('frozen_recovery_reference'):
+            ref=cfg['frozen_recovery_reference']; assert digest(ref['path'])==ref['sha256']
+            previous=json.loads(Path(ref['path']).read_text()); assert previous['constructed_before_images']
+            records=previous['records']
+        for task in ([] if records else tasks):
             own = checked(task+'/finetuned.pt')
             for name in ['Unprotected', 'Phase1_'+task]:
                 model = own if name == 'Unprotected' else apply(own, frozen['defenses'][name]['release'])

@@ -1,5 +1,5 @@
 {
-  "GPU": "RTX4090",
+  "GPU": "RTX3090",
   "frozen_protocol": "configs/phase3.json",
   "frozen_protocol_sha256": "4e40f5286e9cbaa7b39b19214742c6cddaf8946af69369ef163ff596194ef7c7",
   "pilot_n": 64,
@@ -16,10 +16,10 @@
     "experiments/frozen_AB_target_only.py": "d45a337793bcb7f8fb50d44daa325c7b6ce80e1343f86fdcc7102ae7c878fb15",
     "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
     "results/phase3/params_adaptive_check.json": "59e87d21389eef91429ffe92040f8db538819f414b7240a415bf95fb64be82eb",
-    "experiments/bias_canonicalization.py": "0cf685b1a995e1f36d8964430223470038eae76470ebc8dbf3e5db0c59984923"
+    "experiments/bias_canonicalization.py": "3aa4e7456d6d1422c767555f7887e9fc888feb76dc97068b75bd9fa2c458fd8d"
   },
   "experiment": "frozen_Phase1_published_projection_bias_canonicalization",
-  "output": "outputs/phase3_bias_canonicalization",
+  "output": "outputs/phase3_bias_canonicalization_3090",
   "cases": [
     {
       "target": "MNIST",
@@ -42,5 +42,10 @@
   "definition": "beta_clean=Q Q^T beta, reduced QR of published P; preserve beta^T P ideally. One fixed operation, no tuning, no LN gamma/P edits.",
   "status": "Supplementary architecture-aware adaptive recovery diagnosis; not original AGA or a claimed published attack reproduction.",
   "validation": "Freeze all6 recovered biases before any images; pilot score preservation tolerance0.0005, independent NumPy least-squares reconstruction and explicit TA replays before full evaluation. No defense changes.",
-  "new_defense_updates": 0
+  "new_defense_updates": 0,
+  "frozen_recovery_reference": {
+    "path": "outputs/phase3_bias_canonicalization/freeze.json",
+    "sha256": "a8c6ddfda3c9f420ae7beaa1261ecd7f5b6a99dbe086ff4d50d93c51e5ea0eea"
+  },
+  "hardware_amendment": "User switched GPU to3090; reuse the six frozen4090 recovered biases without reconstruction, parameter change or selection; repeat pilot verification on3090. Original4090 source and pilot kept."
 }
