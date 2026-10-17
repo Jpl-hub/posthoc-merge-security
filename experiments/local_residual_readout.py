@@ -1,6 +1,7 @@
 """One source-only feasibility check of a localized residual/readout compensation."""
 
 import argparse
+import copy
 import json
 import time
 from pathlib import Path
@@ -9,10 +10,13 @@ import numpy as np
 import torch
 
 from bias_canonicalization import inputs
-from clip_benchmark import digest
+from clip_benchmark import digest, evaluate
+from confirm_temperature_compensation import unused
+from covariance_noise import dataset
+from feature_noise import capture
 from postactivation_subspace import metric
 from probe_margin_distance import scores
-from subspace_probe import save_json
+from subspace_probe import make_loader, save_json
 from task_probe_distance import tail
 from verify_levelset_audits import raw_scores
 
@@ -72,5 +76,38 @@ def run(protocol):
     save_json(out/'execution.json',dict(completed=True,CPU_seconds=time.monotonic()-start,GPU_compute=False,source_n=len(h),fit_n=n,probe_n=len(hprobe),regression_rank=int(rank),regression_retained_condition=float(sv[0]/sv[int(rank)-1]),predictor_inside_norm=float(inside.norm()),predictor_outside_norm=float((c-inside).norm()),source_raw_sha256=ref['sha256'],raw_sha256=digest(out/'diagnostic.pt'),source_sha256=digest(__file__),new_images=0,gradients=0,expert_updates=0,new_release_count=0,novelty_established=False,unknown_partner_guarantee=False))
 
 
+@torch.no_grad()
+def confirm(protocol):
+    start=time.monotonic();cfg,_,checked=inputs(protocol);out=Path(cfg['output']);out.mkdir(parents=True,exist_ok=False)
+    for ref in cfg['references'].values():assert digest(ref['path'])==ref['sha256']
+    source=torch.load(cfg['references']['source_point']['path'],map_location='cpu',weights_only=False)
+    parent=torch.load(source['source_reference']['path'],map_location='cpu',weights_only=False);assert digest(source['source_reference']['path'])==source['source_reference']['sha256']
+    p=parent['parameters'];delta=source['points']['0.5']['delta'];q=p|{k:(p[k]+v).float().double() for k,v in delta.items()}
+    keys={'B':'model.visual.transformer.resblocks.11.mlp.c_proj.weight','projection':'model.visual.proj','beta':'model.visual.ln_post.bias'}
+    own,head=checked('MNIST/finetuned.pt'),checked('head_MNIST.pt');released=copy.deepcopy(own);edits={}
+    for name,key in keys.items():
+        assert torch.equal(own.state_dict()[key].double(),p[name]);edits[key]=q[name].float();released.state_dict()[key].copy_(edits[key])
+    distance=sum(float(((q[k]-p[k])/p[k].norm()).square().sum()) for k in delta)**.5;assert distance<=cfg['parameter_budget']
+    train=dataset('MNIST','data',own.val_preprocess,True)
+    def pair(ids):
+        a=[];b=[];evaluate(own,head,make_loader(train,ids,64),'cuda',logit_sink=a.append);evaluate(released,head,make_loader(train,ids,64),'cuda',logit_sink=b.append)
+        return torch.cat(a).double(),torch.cat(b).double()
+    a,b=pair(parent['indices']);full=metric(a,b);error=float((b-source['points']['0.5']['source']).abs().max());assert error<=cfg['score_tolerance']
+    save_json(out/'full_source_validation.json',dict(**full,score_error=error,parameter_distance=distance))
+    if full['worst_task_drift']>cfg['task_budget']:save_json(out/'confirmation_validation.json',dict(status='failed_full_source',full_source=full));return
+    file=out/'frozen_release.pt';torch.save(edits,file);save_json(out/'pre_confirmation_freeze.json',dict(release_sha256=digest(file),parameter_distance=distance,source_point_sha256=cfg['references']['source_point']['sha256'],confirmation_drawn=False,protocol=cfg,source_sha256=digest(__file__)))
+    audit=np.random.default_rng(20261016).choice(len(train),512,replace=False).tolist();split=unused(train,set(parent['indices'])|set(audit)|{41538,27330,31374},cfg);save_json(out/'confirmation_split.json',split)
+    aa,bb=pair(split['indices']);zz,hh=capture(own,make_loader(train,split['indices'],64));before=scores(hh,p);after=scores(hh+zz@delta['B'].T,q)
+    control=max(float((aa-before).abs().max()),float((bb-after).abs().max()));assert control<=cfg['score_tolerance']
+    pn={k:v.numpy() if torch.is_tensor(v) else v for k,v in q.items()};numpy_score=raw_scores((hh+zz@delta['B'].T).numpy(),pn);np_error=float(abs(numpy_score-after.numpy()).max());assert np_error<1e-8
+    yy=before.argmax(1);context=torch.cat([torch.where(yy==i)[0][:2] for i in range(before.shape[1])]);assert len(context)==20
+    v=parent['v'];rms=(parent['z'][:512]@v.T).square().mean(0).sqrt();shift=(.01*torch.tensor([-1.,1.])[:,None,None]*rms[None,:,None]*v[None]).flatten(0,1)
+    zp=(zz[context,None]+shift[None]).flatten(0,1);hp=(hh[context,None]+shift[None]@p['B'].T).flatten(0,1);probe=metric(scores(hp,p),scores(hp+zp@delta['B'].T,q))
+    natural=metric(aa,bb);passed=max(natural['worst_task_drift'],probe['worst_task_drift'])<=cfg['task_budget'];labels=torch.tensor([int(train[i][1]) for i in split['indices']])
+    torch.save(dict(before=aa,after=bb,h=hh,z=zz,labels=labels,indices=split['indices']),out/'confirmation.pt')
+    report=dict(status='passed' if passed else 'failed',confirmation_passed=bool(passed),parameter_distance=distance,natural=natural,probes=probe,full_source=full,n=len(labels),original_correct=int((aa.argmax(1)==labels).sum()),released_correct=int((bb.argmax(1)==labels).sum()),full_model_score_error=control,NumPy_score_error=np_error,release_sha256=digest(file),confirmation_sha256=digest(out/'confirmation.pt'),split_sha256=digest(out/'confirmation_split.json'),source_sha256=digest(__file__),new_images=len(labels),full_model_forward_instances=2*len(parent['indices'])+3*len(labels),gradients=0,expert_updates=0,source_point_repaired=False,partner_used=False,test_used=False,wall_seconds=time.monotonic()-start,protocol=cfg)
+    save_json(out/'confirmation_validation.json',report);print(json.dumps(report),flush=True)
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--protocol',default='configs/local_residual_readout.json');run(p.parse_args().protocol)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--protocol',default='configs/local_residual_readout.json');p.add_argument('--confirm',action='store_true');a=p.parse_args();(confirm if a.confirm else run)(a.protocol)
