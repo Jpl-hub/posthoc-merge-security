@@ -19,6 +19,66 @@ def save_figure(fig, output, name):
         fig.savefig(output/f'{name}.{ext}', metadata=metadata)
 
 
+def dare(source, output):
+    """Three prespecified seeds; never pool repeated images as independent draws."""
+    source, output = Path(source), Path(output); output.mkdir(parents=True, exist_ok=True)
+    evidence = json.loads((source/'execution_and_validation.json').read_text()); rows = []
+    assert [e['seed'] for e in evidence] == [42,43,44]
+    for e in evidence:
+        assert e['execution']['completed'] and e['validation']['status'] == 'passed'
+        assert e['execution']['predictions_sha256'] == e['validation']['raw_sha256']
+        table = json.loads((source/f'seed{e["seed"]}.json').read_text()); assert len(table) == 42
+        rows.extend(dict(r, seed=e['seed']) for r in table)
+    names = ['Unprotected','Phase1_MNIST','O/B','A/B','PaRaMS','PaRaMS_Attention']
+    labels = ['Unprotected','Defense 1','O/B†','A/B†','PaRaMS (full)*','PaRaMS (attention)']
+    scopes = ['None','Protected expert','All experts']; tasks = ['MNIST','SVHN']
+    def values(name, scope, task):
+        return np.array([next(r['accuracy_percent'] for r in rows if (r['seed'],r['defense'],r['merger'],r['attack_scope'],r['dataset']) ==
+            (seed,name,'DARE+TA',scope,task)) for seed in [42,43,44]])
+    lines = ['# Fixed DARE+TA and original AGA','','MNIST protected / SVHN partner. Drop0.2, TA0.5; all seeds42/43/44 retained. Cells are mean ± sample SD (%) across three masks, not a confidence interval.','',
+        '| Defense | No attack: target / partner | AGA (protected expert): target / partner | AGA (all experts): target / partner |','|---|---:|---:|---:|']
+    summary = []
+    for name,label in zip(names,labels):
+        cells = [label]
+        for scope in scopes:
+            shown = []
+            for task in tasks:
+                v = values(name,scope,task); control = values('Unprotected',scope,task); before = values(name,'None',task)
+                shown.append(f'{v.mean():.2f} ± {v.std(ddof=1):.2f}')
+                summary.append(dict(defense=name,attack_scope=scope,dataset=task,mean_percent=float(v.mean()),sample_SD_pp=float(v.std(ddof=1)),
+                    minimum_percent=float(v.min()),maximum_percent=float(v.max()),seed_values=v.tolist(),remaining_gap_mean_pp=float((control-v).mean()),
+                    recovery_from_no_attack_mean_pp=float((v-before).mean())))
+            cells.append(' / '.join(shown))
+        lines.append('| '+' | '.join(cells)+' |')
+    lines += ['', '† O/B and A/B violate the task0.5 budget; effect references only. * Full official PaRaMS is over-budget. Defense1 has different constraints. Frozen native accuracies and per-class/paired counts remain in each seed record.', '',
+        'Each seed/scope has its own unprotected control. Images repeat across seeds: per-seed paired tests are not pooled. DARE is a merger component, not an additional recovery attack. Official mask function is unchanged; native CLIP adaptation and FP32 reconstruction arithmetic are explicit. This does not reproduce the original LM/GLUE hyperparameter search.', '',
+        f'Full evaluation wall time: {sum(e["execution"]["wall_seconds"] for e in evidence):.2f}s; independent selected-score replays: {sum(e["validation"]["full_image_prediction_replays"] for e in evidence)}, maximum error {max(e["validation"]["maximum_score_error"] for e in evidence):.6g}. Replay wall time is additional and was not separately timed.']
+    (output/'tables.md').write_text('\n'.join(lines)+'\n'); (output/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
+    columns = ['seed','defense','merger','attack_scope','dataset','correct','n','accuracy_percent','changed_predictions','lost','gained','net_loss_pp','mcnemar_log10_p','bonferroni_log10_p']
+    with (output/'results.csv').open('w',newline='') as f:
+        writer=csv.DictWriter(f,fieldnames=columns);writer.writeheader()
+        for r in rows:
+            if r['merger']=='Standalone': continue
+            record={k:r.get(k,'') for k in columns};record.update(lost=r['paired']['lost'],gained=r['paired']['gained'],net_loss_pp=r['paired']['loss_pp'],
+                bonferroni_log10_p=min(0.,r['mcnemar_log10_p']+math.log10(90)))
+            writer.writerow(record)
+    old=json.loads(Path('results/phase3/results.json').read_text()); fig,axes=plt.subplots(1,2,figsize=(9,3.5),sharey=True,layout='constrained')
+    fig.suptitle('AGA on the protected expert',fontsize=10)
+    with plt.rc_context({'font.size':9,'axes.spines.top':False,'axes.spines.right':False}):
+        for ax,task in zip(axes,tasks):
+            for i,name in enumerate(names):
+                v=values(name,'Protected expert',task); baseline=next(r['accuracy_percent'] for r in old if
+                    (r['target'],r['partner'],r['defense'],r['merger'],r['attack_scope'],r['dataset']) == ('MNIST','SVHN',name,'TA','Protected expert',task))
+                ax.scatter(i+np.array([-.08,0,.08]),v,color='#2878a5',s=17,label='DARE+TA: three seeds' if i==0 else None)
+                ax.errorbar(i,v.mean(),yerr=v.std(ddof=1),color='#2878a5',capsize=3,lw=1)
+                ax.scatter(i,baseline,marker='D',facecolors='none',edgecolors='#555555',s=30,label='TA: frozen reference' if i==0 else None)
+            ax.set(title=task,ylim=(0,103),xticks=range(len(names)),xticklabels=labels);ax.tick_params(axis='x',rotation=30,labelsize=8);ax.grid(axis='y',alpha=.18);ax.set_axisbelow(True)
+        axes[0].set_ylabel('Accuracy (%)');axes[1].legend(loc='lower right',fontsize=8,frameon=False)
+        save_figure(fig,output,'dare_aga_comparison');plt.close(fig)
+    pins={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [source/f'seed{s}.json' for s in [42,43,44]]+[source/'execution_and_validation.json',Path('configs/phase3_dare.json'),Path('results/phase3/results.json'),Path(__file__)]}
+    (output/'provenance.json').write_text(json.dumps(dict(source_sha256=pins,scopes=scopes,seeds=[42,43,44],source_test_sets_historically_exposed=True),indent=2)+'\n')
+
+
 def build(source, output):
     out = Path(output); out.mkdir(parents=True, exist_ok=True)
     source = Path(source); rows, pins, executions, validations = [], {}, [], []
@@ -214,4 +274,4 @@ def build(source, output):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    args = p.parse_args(); build(args.source, args.output)
+    p.add_argument('--dare', action='store_true'); args = p.parse_args(); (dare if args.dare else build)(args.source, args.output)
