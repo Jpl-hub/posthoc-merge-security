@@ -42,7 +42,17 @@ def run(protocol):
             changed_predictions=int(before['prediction'].ne(pred).sum()),paired=pair,mcnemar_log10_p=paired_logp(pair['lost'],pair['gained']),per_class=counts(pred,y))
         rows.append(row);save_json(out/'results.json',rows);torch.save(raw,out/'artifacts/predictions.pt');print('FROZEN_LOCAL_EVAL',json.dumps(row),flush=True)
         assert time.monotonic()-start<cfg['wall_limit_seconds']
-    record(released,'standalone','MNIST');model=merge(anchor,released,peer,.5)
+    record(released,'standalone','MNIST')
+    # Full observed utility must pass before any new merger or recovery evaluation.
+    original=raw['original/standalone/MNIST']['logits'].double();after=raw['released/standalone/MNIST']['logits'].double()
+    winner=original.argmax(1);ix=torch.arange(len(winner));gaps=original[ix,winner,None]-original;mask=torch.ones_like(gaps,dtype=torch.bool);mask[ix,winner]=False;assert (gaps[mask]>0).all()
+    change=after-original;ratio=(change[ix,winner,None]-change)/gaps.masked_fill(~mask,1.);ratio[ix,winner]=0
+    worst=float(ratio.abs().max());pos=int(ratio.abs().argmax());image,competitor=divmod(pos,ratio.shape[1])
+    gate=dict(passed=worst<=cfg['task_budget'],n=len(winner),task_budget=cfg['task_budget'],worst_relative_margin_drift=worst,witness_index=image,teacher_class=int(winner[image]),competitor=competitor,source_point_repaired=False,historical_test_not_blind=True)
+    save_json(out/'full_native_gate.json',gate)
+    if not gate['passed']:
+        save_json(out/'execution.json',dict(completed=False,stopped='full_native_task_budget_violation',author_AGA_calls=0,parameter_distance=distance,utility_gate=gate,predictions_sha256=digest(out/'artifacts/predictions.pt'),source_sha256=digest(__file__),wall_seconds=time.monotonic()-start));return
+    model=merge(anchor,released,peer,.5)
     for task in heads:record(model,'direct',task)
     del model;author,pin=load_author(Path('external/secure-merge-attack/utils_attack_B32.py'),True);assert pin==cfg['AGA_text_sha256']
     log=io.StringIO();attack_start=time.monotonic()
@@ -90,8 +100,10 @@ def verify(output):
         else:
             left=(own if preset=='original' else released) if stage=='direct' else (aligned['MNIST'] if preset=='original' else attacked)
             other=aligned['SVHN'] if stage=='AGA_both' else peer;model=explicit_merge(anchor,left,other,.5)
-        ids=np.linspace(0,len(y)-1,16,dtype=int);images=torch.stack([data[task][int(i)][0] for i in ids]).cuda();model.cuda();heads[task].cuda()
-        actual=heads[task](model(images)).cpu();model.cpu();heads[task].cpu();np.testing.assert_array_equal(actual.argmax(1),pred[ids])
+        ids=np.linspace(0,len(y)-1,16,dtype=int);actual=[];model.cuda();heads[task].cuda()
+        for i in ids:
+            lo=int(i)//128*128;hi=min(lo+128,len(y));images=torch.stack([data[task][j][0] for j in range(lo,hi)]).cuda();actual.append(heads[task](model(images))[int(i)-lo].cpu())
+        actual=torch.stack(actual);model.cpu();heads[task].cpu();np.testing.assert_array_equal(actual.argmax(1),pred[ids])
         assert float((actual.double()-r['logits'][ids].double()).abs().max())<=cfg['score_tolerance'];replays+=len(ids)
     save_json(out/'independent_validation.json',dict(status='passed',rows=len(rows),explicit_TA_full_model_replays=replays,
         official_label_perclass_and_pair_counts=True,predictions_sha256=meta['predictions_sha256'],parameter_distance=distance,
