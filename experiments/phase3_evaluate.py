@@ -78,9 +78,11 @@ def fuse(anchor, left, right, method, cfg, ties, independent=False):
                     d = source[k]-sa[k]
                     if independent:
                         dropped = torch.bernoulli(torch.full_like(d, spec['drop_rate'])).numpy()
-                        sparse = np.divide(d.numpy()*(1-dropped), 1-spec['drop_rate'])
+                        dtype = d.numpy().dtype
+                        sparse = np.divide(d.numpy()*(1-dropped), 1-spec['drop_rate'], dtype=dtype)
                         # Preserve author's base+masked delta, then subtract base again.
-                        delta[k] = torch.from_numpy((sa[k].numpy()+sparse)-sa[k].numpy())
+                        delta[k] = torch.from_numpy(np.asarray(np.subtract(
+                            np.add(sa[k].numpy(), sparse, dtype=dtype), sa[k].numpy(), dtype=dtype)))
                     else:
                         reconstructed = sa[k]+mask(d, spec['drop_rate'], True, 'random')
                         delta[k] = reconstructed-sa[k]
