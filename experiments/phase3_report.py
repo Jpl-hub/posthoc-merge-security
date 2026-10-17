@@ -79,6 +79,25 @@ def dare(source, output):
     (output/'provenance.json').write_text(json.dumps(dict(source_sha256=pins,scopes=scopes,seeds=[42,43,44],source_test_sets_historically_exposed=True),indent=2)+'\n')
 
 
+def nufilt_ob(source, output):
+    source,output=Path(source),Path(output);output.mkdir(parents=True,exist_ok=True)
+    rows=json.loads((source/'results.json').read_text());valid=json.loads((source/'validation.json').read_text());cost=json.loads((source/'cost_audit.json').read_text())
+    assert valid['status']=='passed' and len(rows)==36 and cost['new_merger_backward_steps']==300
+    lines=['# Frozen O/B under NUFILT and original AGA','','O/B is an effect reference with known task0.5 violations. Every accuracy cell is MNIST protected / SVHN partner (%). Two orders are reported separately, not as random seeds.','',
+        '| Merge order | Recovery scope | Matched unprotected | O/B | Remaining gap (pp) |','|---|---|---:|---:|---:|']
+    for order in [['MNIST','SVHN'],['SVHN','MNIST']]:
+        for scope in ['None','Protected expert','All experts']:
+            def cells(name):return [next(r for r in rows if (r['order'],r['attack_scope'],r['defense'],r['dataset'])==(order,scope,name,t)) for t in ['MNIST','SVHN']]
+            a,b=cells('Unprotected'),cells('O/B');values=[' → '.join(order),scope]
+            values+=[' / '.join(f'{r["accuracy_percent"]:.2f}' for r in records) for records in [a,b]]
+            values.append(' / '.join(f'{u["accuracy_percent"]-r["accuracy_percent"]:.2f}' for u,r in zip(a,b)));lines.append('| '+' | '.join(values)+' |')
+    lines+=['','Only12 O/B dataset results and six merged models are new. The24 matched unprotected/Phase1 records reuse hash-verified earlier scores; unchanged selected weights establish the Phase1 reuse. This is an official NUFILT kernel with native CLIP adaptation, not the complete FusionBench paper experiment.','',
+        f'All per-class and paired counts passed NumPy recount; {valid["full_replay_count"]} selected-score replays in original contexts, maximum error {valid["maximum_score_error"]:.6g}. Full raw scores and merged weights remain on3090.','',
+        f'The original aggregate wall timers are invalid because a replay index overwrote the timer. They are retained unchanged. Valid sub-costs: merger construction {cost["measured_merger_seconds"]:.2f}s, full evaluation {cost["measured_full_evaluation_seconds"]:.2f}s,300 merger-gate backwards,0 expert/defense updates. The filesystem campaign interval was {cost["timestamp_campaign_seconds"]:.2f}s including pilot, full evaluation, replays and gaps; it is not isolated GPU timing.']
+    (output/'tables.md').write_text('\n'.join(lines)+'\n');pins={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in [source/'results.json',source/'validation.json',source/'cost_audit.json',Path(__file__)]}
+    (output/'provenance.json').write_text(json.dumps(pins,indent=2)+'\n')
+
+
 def build(source, output):
     out = Path(output); out.mkdir(parents=True, exist_ok=True)
     source = Path(source); rows, pins, executions, validations = [], {}, [], []
@@ -274,4 +293,5 @@ def build(source, output):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    p.add_argument('--dare', action='store_true'); args = p.parse_args(); (dare if args.dare else build)(args.source, args.output)
+    g=p.add_mutually_exclusive_group();g.add_argument('--dare', action='store_true');g.add_argument('--nufilt-ob',action='store_true');args=p.parse_args()
+    (dare if args.dare else nufilt_ob if args.nufilt_ob else build)(args.source,args.output)
