@@ -4,10 +4,11 @@
 
 当前围绕两套防御：**投影核空间偏置扰动、任务子空间约束的跨模块补偿**，同时补齐攻击调研与对比实验。本批244行结果、3904次完整模型抽样重放已通过；O/B、A/B均发现任务预算反例，不能宣称严格可行。历史发布权重冻结，新方法须另立源端构造与独立确认协议。
 
-2026-10-16已恢复RTX4090D，17份原始checkpoint和5份本轮保护权重哈希匹配。新增PaRaMS论文目标的对角自适应恢复评价已完成并复核，[对照表与限制](results/phase3/params_adaptive/tables.md)。3090只作CPU归档；旧244行不覆盖，新30行独立保存，不把行数当攻击种类数。
+当前主力GPU为RTX3090（用户2026-10-17切回），4090只作CPU存储。此前4090批次的原始checkpoint及保护权重已核对。新增PaRaMS论文目标的对角自适应恢复评价已完成并复核，[对照表与限制](results/phase3/params_adaptive/tables.md)。旧244行不覆盖，新增30行独立保存，不把行数当攻击种类数。
 
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
-- [Defense 2有限补偿机制与无判别力的必要界](notes/phase2_coupling.md)
+- [Defense 2机制、任务内外消融与新任务预算反例](notes/phase2_coupling.md)
+- [4090已归档重复文件清理记录](results/phase3/4090_cleanup.json)
 - [冻结模型、源码、数据与参数指纹](configs/phase3.json)
 - [已独立复核的结果主表](results/phase3/tables.md)
 - [逐类计数、配对统计及完整指标](results/phase3/results.json) · [CSV](results/phase3/results.csv) · [复核与绘图指纹](results/phase3/provenance.json)
@@ -67,3 +68,7 @@ NUFILT 的只读源码检查为 `python experiments/phase3_nufilt_check.py`；�
 - 服务器 `outputs/phase3/`：原始分数、重权重、门控、运行日志与原论文缓存，不上传 GitHub。
 
 不以参数距离、代理改判或单一任务下降代替真实保护结论。不根据 Phase 3 的测试或攻击结果重新选择防御参数。
+
+本轮显式任务内／外／联合构造保留原0.5与另列2.0幅度参考。任务外0.5虽通过新鲜512张确认，完整独立评价仍出现5.942429的任务预算反例，已关闭，无新合规防御或完整AGA融合结果。详见[六点消融与反例](results/postactivation_subspace/)。
+
+针对最终LN偏置的架构自适应清理已完成MNIST两个伙伴的全量评价及320次完整模型分数重放，误差为0。清理后目标／伙伴分别恢复至99.37%／92.50%（SVHN）、99.45%／69.26%（DTD），与同样清理的无保护对照逐预测一致。[恢复对照表、逐类与配对统计](results/phase3/bias_canonicalization/tables.md)。这不是原版AGA或论文攻击的完整复现；保护DTD时的3090数值控制失败保留，未填完整恢复成绩。旧244行、PaRaMS适配30行及本批20行分开保存，不以行数当攻击数量。

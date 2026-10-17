@@ -1,0 +1,129 @@
+{
+  "original4090_pilot_validation": {
+    "status": "passed",
+    "NumPy_labels_classes_pairs": true,
+    "NumPy_lstsq_bias_reconstruction": true,
+    "explicit_TA": true,
+    "selected_score_replays": 640,
+    "maximum_score_error": 0.0,
+    "predictions_sha256": "69d94b12e44aaee796c74756c21574f938dd04b3ae29979db39f58821480fc63",
+    "source_sha256": "0cf685b1a995e1f36d8964430223470038eae76470ebc8dbf3e5db0c59984923"
+  },
+  "original4090_pilot_execution": {
+    "completed": true,
+    "rows": 40,
+    "wall_seconds": 91.85570852458477,
+    "GPU": "NVIDIA GeForce RTX 4090 D",
+    "defense_updates": 0,
+    "gradients": 0,
+    "test_parameter_selection": false,
+    "full": false,
+    "predictions_sha256": "69d94b12e44aaee796c74756c21574f938dd04b3ae29979db39f58821480fc63",
+    "source_sha256": "0cf685b1a995e1f36d8964430223470038eae76470ebc8dbf3e5db0c59984923"
+  },
+  "original4090_function_controls": [
+    {
+      "case": 0,
+      "defense": "Unprotected",
+      "max_score_error": 5.7220458984375e-06
+    },
+    {
+      "case": 0,
+      "defense": "Phase1_MNIST",
+      "max_score_error": 0.0003170967102050781
+    },
+    {
+      "case": 1,
+      "defense": "Unprotected",
+      "max_score_error": 5.7220458984375e-06
+    },
+    {
+      "case": 1,
+      "defense": "Phase1_MNIST",
+      "max_score_error": 0.0003170967102050781
+    },
+    {
+      "case": 2,
+      "defense": "Unprotected",
+      "max_score_error": 7.62939453125e-06
+    },
+    {
+      "case": 2,
+      "defense": "Phase1_DTD",
+      "max_score_error": 0.0004696846008300781
+    },
+    {
+      "case": 3,
+      "defense": "Unprotected",
+      "max_score_error": 9.5367431640625e-06
+    },
+    {
+      "case": 3,
+      "defense": "Phase1_SVHN",
+      "max_score_error": 0.0002117156982421875
+    }
+  ],
+  "original4090_freeze_sha256": "a8c6ddfda3c9f420ae7beaa1261ecd7f5b6a99dbe086ff4d50d93c51e5ea0eea",
+  "four_case3090_status": "stopped_at_DTD_function_control",
+  "four_case3090_function_controls": [
+    {
+      "case": 0,
+      "defense": "Unprotected",
+      "max_score_error": 3.814697265625e-06
+    },
+    {
+      "case": 0,
+      "defense": "Phase1_MNIST",
+      "max_score_error": 0.0004291534423828125
+    },
+    {
+      "case": 1,
+      "defense": "Unprotected",
+      "max_score_error": 3.814697265625e-06
+    },
+    {
+      "case": 1,
+      "defense": "Phase1_MNIST",
+      "max_score_error": 0.0004291534423828125
+    },
+    {
+      "case": 2,
+      "defense": "Unprotected",
+      "max_score_error": 7.62939453125e-06
+    },
+    {
+      "case": 2,
+      "defense": "Phase1_DTD",
+      "max_score_error": 0.0008249282836914062
+    }
+  ],
+  "four_case3090_partial_raw_sha256": "791f979931d78588db5b55a0a6817f8c3db85fac984ddf5837bfe53b6096498a",
+  "failure_log_sha256": "1c0adfb1d6597b2382540a347d853a5edee12a1cfd5900a484c15cdcb7b66e6b",
+  "passing_MNIST_pilot_validation": {
+    "status": "passed",
+    "NumPy_labels_classes_pairs": true,
+    "NumPy_lstsq_bias_reconstruction": true,
+    "explicit_TA": true,
+    "selected_score_replays": 320,
+    "maximum_score_error": 0.0,
+    "predictions_sha256": "6ec4ab2dd776cd05660bb5deda77381f925fb4f5438d1167209074979dd13150",
+    "source_sha256": "3aa4e7456d6d1422c767555f7887e9fc888feb76dc97068b75bd9fa2c458fd8d"
+  },
+  "passing_MNIST_import": {
+    "completed": true,
+    "rows": 20,
+    "wall_seconds": null,
+    "source_sha256": "3aa4e7456d6d1422c767555f7887e9fc888feb76dc97068b75bd9fa2c458fd8d",
+    "predictions_sha256": "6ec4ab2dd776cd05660bb5deda77381f925fb4f5438d1167209074979dd13150",
+    "imported_from": "outputs/phase3_bias_canonicalization_3090/pilot",
+    "parent_partial_predictions_sha256": "791f979931d78588db5b55a0a6817f8c3db85fac984ddf5837bfe53b6096498a",
+    "parent_completed": false,
+    "source_rows_already_evaluated": true,
+    "reason": "Two independently passing cases retained from failed four-case hardware pilot. No logits or weights recomputed/selected using accuracy. DTD failure and unvisited SVHN retained separately."
+  },
+  "threshold": 0.0005,
+  "threshold_changed": false,
+  "recovery_edits_changed": false,
+  "source_and_failure_logs_archived": true,
+  "SVHN_protected_full_not_evaluated": true
+}
