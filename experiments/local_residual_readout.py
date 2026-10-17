@@ -47,7 +47,7 @@ def run(protocol):
         sn,cn=np.sin(theta),1-np.cos(theta);delta={k:sn*sine[k]+cn*cosine[k] for k in sine}
         ideal=p|{k:p[k]+delta[k] for k in delta};actual=p|{k:ideal[k].float().double() for k in delta};delta={k:actual[k]-p[k] for k in delta}
         distance=sum(float((delta[k]/p[k].norm()).square().sum()) for k in delta)**.5;assert distance<=radius
-        rotation=torch.eye(h.shape[1],dtype=torch.float64)+u@(sn*j-cn*torch.eye(2))@u.T
+        rotation=torch.eye(h.shape[1],dtype=torch.float64)+u@(sn*j-cn*torch.eye(2,dtype=torch.float64))@u.T
         ideal_feature_error=float((tail(h@rotation,ideal)[1]-tail(h,p)[1]).abs().max());assert ideal_feature_error<1e-9
         hn=h+z@delta['B'].T;src=scores(hn,actual);probe=scores(hprobe+zprobe@delta['B'].T,actual)
         # Reproduce the fixed public interpolation's actual FP32 parameter arithmetic.
@@ -57,7 +57,7 @@ def run(protocol):
         for hh,pp,expected in [(hn,actual,src),(he,new_env,proxy)]:
             pn={k:v.numpy() if torch.is_tensor(v) else v for k,v in pp.items()};errors.append(float(abs(raw_scores(hh.numpy(),pn)-expected.numpy()).max()))
         assert max(errors)<1e-8
-        ideal_hidden=h+z@(sn*sine['B']+cn*cosine['B']).T;residual=(z@c-h@u)@(sn*j-cn*torch.eye(2))@u.T
+        ideal_hidden=h+z@(sn*sine['B']+cn*cosine['B']).T;residual=(z@c-h@u)@(sn*j-cn*torch.eye(2,dtype=torch.float64))@u.T
         identity=float((ideal_hidden-h@rotation-residual).abs().max());assert identity<1e-9
         toy=(torch.eye(len(h[0]))+.5*(rotation-torch.eye(len(h[0]))))@(torch.eye(len(h[0]))+.5*(rotation.T-torch.eye(len(h[0]))))
         toy_error=float((toy-(torch.eye(len(h[0]))-.5*cn*(u@u.T))).abs().max());assert toy_error<1e-10
