@@ -1,0 +1,29 @@
+{
+  "GPU": "RTX3090",
+  "frozen_protocol": "configs/phase3.json",
+  "frozen_protocol_sha256": "4e40f5286e9cbaa7b39b19214742c6cddaf8946af69369ef163ff596194ef7c7",
+  "score_tolerance": 0.0005,
+  "target": "MNIST",
+  "source_output": "outputs/phase2_postactivation_subspace_mnist",
+  "output": "outputs/phase2_postactivation_outside_confirmation_mnist",
+  "point_key": "Outside_0.5",
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "confirmation_n": 512,
+  "confirmation_seed": 2026101704,
+  "utility_seed": 20261016,
+  "utility_n": 512,
+  "references": {
+    "outputs/phase2_postactivation_subspace_mnist/diagnostic.pt": "39a3fc2946b89d8b0fab6bd0c45d649abfac6fe4b436e85e28956d257d413827",
+    "outputs/phase2_postactivation_subspace_mnist/results.json": "fa73acdfc512ea4e8ac19f46386c2266fa7f0280f7199af24088df86f8dd094c"
+  },
+  "source_sha256": {
+    "experiments/confirm_postactivation_subspace.py": "40c9894ed38dc732ac4e10df3243c763dbcc0c21da7d8ef42720da73a5ebc3d7",
+    "experiments/postactivation_subspace.py": "b967622fed591bd99c9020c1c1c13d33776d38d8b8fb2809fd49eee660a3c818",
+    "experiments/bias_canonicalization.py": "3aa4e7456d6d1422c767555f7887e9fc888feb76dc97068b75bd9fa2c458fd8d",
+    "experiments/confirm_temperature_compensation.py": "e7384b08036cbd75e31d2a0fbd1b8c9cf843d8b169ce5ccddf89da3412432600",
+    "experiments/verify_levelset_audits.py": "7d51baf85314d0529b06cac0177f87cc3b7a2495bd92279db6025c5f96a003c0",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "scope_amendment": "Joint construct failed. Confirm only the unchanged source-feasible Outside0.5 ablation. Selection uses original source task constraints, never proxy/partner/test success. No change to direction, amplitude or source data. This is an ablation follow-up, not successful Joint compensation."
+}
