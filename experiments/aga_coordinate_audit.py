@@ -257,11 +257,55 @@ def fixedpoint_cost(output):
     save_json(out/'fit_cost.json',result);print(json.dumps(result,indent=2),flush=True)
 
 
+@torch.no_grad()
+def normalization_geometry(output):
+    """Decompose the frozen point and recount its evaluated class losses; no fitting."""
+    from scipy.special import logsumexp
+    out=Path(output);cfg=json.loads((out/'protocol.json').read_text())
+    pointdir=Path(cfg['release']['path']).parent
+    anchor,expert,head,pins=checked_models('MNIST');state=expert.state_dict();base=anchor.state_dict()
+    edits=torch.load(cfg['release']['path'],map_location='cpu');assert digest(cfg['release']['path'])==cfg['release']['sha256']
+    point=torch.load(pointdir/'point.pt',map_location='cpu');prefix='model.visual.transformer.resblocks.11.attn.'
+    geometry={}
+    for key in ['in_proj_weight','out_proj.weight']:
+        k=prefix+key;original=state[k].double().numpy();delta=edits[k].double().numpy()-original
+        if key=='in_proj_weight':
+            task=(state[k][1536:]-base[k][1536:]).double().numpy();_,_,vh=np.linalg.svd(task,full_matrices=False);v=vh[:32];d=delta[1536:]
+        else:v=point['vo'].numpy();d=delta
+        inside=(d@v.T)@v;outside=d-inside;den=np.linalg.norm(original)
+        geometry[key]=dict(relative_distance=float(np.linalg.norm(delta)/den),task32_inside_distance=float(np.linalg.norm(inside)/den),
+            task32_outside_distance=float(np.linalg.norm(outside)/den),outside_squared_energy_fraction=float(np.linalg.norm(outside)**2/np.linalg.norm(d)**2),
+            orthogonality_error=float(abs(np.sum(inside*outside))),denominator='Full edited tensor, including unchanged Q/K where applicable.')
+    meta=json.loads((out/'execution.json').read_text());assert meta['completed']
+    rawpath=out/'artifacts/predictions.pt';assert digest(rawpath)==meta['predictions_sha256']
+    raw=torch.load(rawpath,map_location='cpu');rows=[]
+    for key,data in raw.items():
+        if not key.startswith('released/'):continue
+        ref=raw[key.replace('released/','original/',1)];a,b=[x['logits'].double().numpy() for x in [ref,data]]
+        y=data['target'].numpy();np.testing.assert_array_equal(y,ref['target']);ix=np.arange(len(y))
+        la=logsumexp(a,axis=1)-a[ix,y];lb=logsumexp(b,axis=1)-b[ix,y];pa,pb=a.argmax(1),b.argmax(1)
+        teacher=a.argmax(1);gap=a[ix,teacher,None]-a;gap[ix,teacher]=1;ds=b-a
+        harm=-(ds[ix,teacher,None]-ds)/np.maximum(gap,1e-12);harm[ix,teacher]=0
+        absolute_drift=float(abs(harm).max())
+        if key=='released/standalone/MNIST':
+            gate=json.loads((out/'full_native_gate.json').read_text())
+            assert abs(absolute_drift-gate['worst_relative_margin_drift'])<1e-9
+        rows.append(dict(key=key,original_accuracy=float((pa==y).mean()),released_accuracy=float((pb==y).mean()),
+            maximum_absolute_relative_margin_drift=absolute_drift,
+            signed_relative_teacher_margin_harm_quantiles=np.quantile(harm.max(1),[.5,.95,1]).tolist(),
+            classes=[dict(class_id=c,n=int((y==c).sum()),original_mean_CE=float(la[y==c].mean()),released_mean_CE=float(lb[y==c].mean()),
+                lost=int(((pa==y)&(pb!=y)&(y==c)).sum()),gained=int(((pa!=y)&(pb==y)&(y==c)).sum())) for c in range(10)]))
+    save_json(out/'mechanism_and_class_loss.json',dict(status='passed_read_only_recount',parameter_geometry=geometry,rows=rows,
+        predictions_sha256=meta['predictions_sha256'],release_sha256=cfg['release']['sha256'],verifier_sha256=digest(__file__),
+        gradients=0,new_images=0,new_weights=0,scope='Parameter task-SVD geometry is not a functional nullspace. Classification effects and source preservation are measured separately.'))
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True)
     mode=parser.add_mutually_exclusive_group()
     mode.add_argument('--head-geometry',action='store_true');mode.add_argument('--head-response',action='store_true')
     mode.add_argument('--fixedpoint',action='store_true')
     mode.add_argument('--fixedpoint-cost',action='store_true')
+    mode.add_argument('--normalization',action='store_true')
     args=parser.parse_args();torch.set_num_threads(4)
-    (fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
+    (normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
