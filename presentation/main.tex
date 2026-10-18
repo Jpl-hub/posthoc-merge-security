@@ -31,7 +31,7 @@
 {\large 两种方案与攻击评估\par}
 \vspace{13mm}
 {\color{muted} CLIP ViT-B/32 \quad RTX 3090\par}
-{\color{muted}\small 2026年10月16日\par}
+{\color{muted}\small 2026年10月19日组会（数据截至10月18日）\par}
 \end{frame}
 
 \begin{frame}{研究问题}
@@ -58,7 +58,7 @@ $P_e\in\mathbb R^{768\times512}$。选择
 v^\top P_e=0,\qquad b'=b+\alpha v
 \quad\Longrightarrow\quad t'=t.
 \]
-独立模型不读取该方向；融合后读出矩阵改变，扰动变为
+理想算术下独立特征不变；融合后读出矩阵改变，扰动变为
 $\delta t_{\rm merge}=\frac{\alpha}{2}v^\top P_{\rm merge}$。
 \vspace{2mm}
 \begin{center}\small
@@ -69,48 +69,52 @@ AGA原版未修改关键LN偏置；这些结果不能证明抗任意恢复。
 \source{准确率（\%）；AGA处理全部参与专家。该方案与第二方案的0.5距离预算分列，不能直接作同预算优劣比较。来源：results/phase3/results.json。}
 \end{frame}
 
-\begin{frame}{方案二：任务子空间约束下的跨模块补偿}
-对任务矩阵$\Delta W=W_e-W_0=U\Sigma V^\top$构造奇异方向探针，
-仅求解发布变换系数$c$。
+\begin{frame}{方案二：距离目标与任务内外的实际处理}
+\small
+任务向量$\Delta W=W_e-W_0=U\Sigma V^\top$；O/B旧参数化为
 \[
-\max_c D(T_c(\theta_e),\theta_e)
-\quad\text{s.t.}\quad
-D\le0.5,\quad R_{\mathcal C\cup\mathcal P}(c)\le0.5.
+\delta O=\|O_e\|_F U_{32}CV_{32}^\top,\qquad
+\delta B=\|B_e\|_F Q_{\rm cls}K.
+\]
+\[
+\max_c\;D(c)^2/0.5^2+\phi_{\rm source}(c)
+\quad\mathrm{s.t.}\quad D(c)\le0.5,\quad R_{\mathcal C\cup\mathcal P}(c)\le0.5.
 \]
 \begin{itemize}\setlength{\itemsep}{5pt}
-\item $R$：自然训练输入与奇异探针上的最坏相对分类间隔变化。
-\item 内层选择最坏任务输入／竞争类别；外层在有限可行域内增大参数距离，并使用公开基座代理诊断分类响应。
-\item O/B联合修改Attention输出和MLP输出；A/B联合修改MLP输入和输出。
+\item 距离最大化目标已经写入；$R$是完整分数的相对分类间隔变化，不是概率差。
+\item 上游仅开放32维任务SVD坐标；B输入已覆盖3072维，输出仍受分类读出空间限制。
+\item 奇异方向作有限上下文探针，另用自然训练输入验收；不能当作完整功能零空间。
 \end{itemize}
-\key{原任务中的联合补偿，可能在融合后的表示与门控变化下失配。}
-\source{SVD是结构工具，不是功能保持证明；有限内层与公开代理不构成未知伙伴下的安全保证。使用发布系数梯度，不能称零训练成本。}
+\key{需要联合控制完整功能，不是简单删去任务内分量或放大噪声。}
+\source{代码：angular\_distance.py、boundary\_game.py、ffn\_game.py。有限最坏任务约束及公开基座代理，不构成未知伙伴下的完整安全博弈；仅发布系数有梯度。}
 \end{frame}
 
 \begin{frame}{真实融合与AGA结果}
+\setlength{\parskip}{2pt}
 \small MNIST为被保护任务，SVHN为伙伴；每格为\textbf{MNIST / SVHN}准确率（\%）。
-\vspace{3mm}
-\begin{center}\footnotesize
-\MainTable
-\end{center}
-\vspace{2mm}
-\small
-PaRaMS完整配置的直接融合破坏可被AGA恢复。
-O/B、A/B的干扰仍然存在，但需要单独核验功能约束。
-\source{TA系数0.5；两列AGA分别处理保护专家、全部专家。*不同预算参考；$^\dagger$已发现任务保持预算反例。PaRaMS为完整官方配置。}
+\vspace{1mm}
+{\centering\footnotesize\MainTable\par}
+\vspace{1mm}
+{\centering\footnotesize\EightTable\par}
+\scriptsize 八专家表只评三任务，AGA仅处理保护专家；参与数与系数同时变化，不能归因于单一因素。
+\source{上表TA系数0.5；两列AGA分别处理保护专家、全部专家。*不同预算参考；$^\dagger$已发现任务保持预算反例。PaRaMS为完整官方配置。}
 \end{frame}
 
 \begin{frame}{准确率保持，不等于最坏功能误差合格}
-\begin{center}\small
-\UtilityTable
-\end{center}
-\vspace{3mm}
+\setlength{\parskip}{2pt}
+{\centering\small\UtilityTable\par}
 \small
-同一训练样本的教师7/9分数间隔仅为0.02034：
+完整读出仍含LN尺度$\sigma(h)$；$\Gamma=\operatorname{diag}(\gamma)$，$H$为固定分类头：
+\[
+u(h)=\operatorname{center}(h)\Gamma P+\sigma(h)\beta P,
+\qquad s(h)=u(h)H^\top/\|u(h)\|.
+\]
 \begin{itemize}\setlength{\itemsep}{5pt}
-\item O/B使该间隔增大，预测仍为7；相对漂移仍超过0.5。
-\item A/B使间隔变为负值，预测由7变为9；同样违反约束。
+\item 教师7/9间隔仅0.02034；O/B预测未变仍越界，A/B已有改判反例。
+\item 新任务外0.5点：源漂移0.47384、新确认0.45155；完整漂移仍达5.94243，已关闭。
+\item 线性读出核没有控制完整LN方差与特征范数；更大幅度或更多层不自动解决这一问题。
 \end{itemize}
-\vspace{2mm}
+\vspace{1mm}
 \key{两者保留为真实效果参考，不能宣称全任务满足双0.5预算。}
 \source{固定512张训练图的只读审计；完整模型重放误差为0。历史有限确认保留，不使用暴露见证修补权重。来源：utility.json、utility\_witnesses.json。}
 \end{frame}
@@ -124,45 +128,43 @@ O/B、A/B的干扰仍然存在，但需要单独核验功能约束。
 攻击／恢复流程 & 关键权限与操作 & 当前状态\\
 \midrule
 AGA & 公开基座；Attention求解＋MLP匹配 & 官方代码已复现\\
-PaRaMS自适应恢复 & 基座与防御知识；恢复排列／尺度 & MLP官方对齐入口已核对；未运行\\
+PaRaMS自适应恢复 & 基座与防御知识；恢复排列／尺度 & MLP官方核＋对角Attention适配已验证\\
 MergeLock配对对齐 & 伙伴参照；Q/K、V/O耦合正交对齐 & 原文核对；官方库仅README\\
 MergeBarrier解码／层替换 & 基座、变换／修改位置知识 & 原文与附录核对；替换仅历史诊断\\
-Unmask / GradErase & 参数减法／任务数据＋投影梯度再训练 & 正式论文核对；未复现\\
-蒸馏、融合后SFT & 教师查询／任务数据与额外训练 & 未运行；强权限单列\\
-ProDistill用于恢复 & 校准输入＋逐层特征蒸馏，学习融合系数 & 官方Vision代码已读；未运行\\
+Unmask / GradErase & 整份参数减法／数据＋投影梯度再训练 & Unmask全量未有效恢复；GradErase未运行\\
+偏置清理；蒸馏／SFT & 发布P和偏置；或教师数据与训练 & 清理已验证；SFT未运行\\
+ProDistill用于恢复 & 每任务64张无类别标签图＋任务归属 & 官方系数核两专家适配已完成\\
 \bottomrule
 \end{tabular}
 \vspace{3mm}
 \small
-\textbf{TA、TIES、NUFILT是融合算法。}攻击后可以接不同融合算法，但不把它们计为新增恢复攻击。
+\textbf{TA、TIES、DARE、NUFILT、ProDistill是融合维度。}攻击后可以接不同融合算法，但不把它们计为新增恢复攻击。
 \source{PaRaMS \S6；MergeLock \S4.2.2；MergeBarrier \S4.1、附录D；MergeGuard \S7；Trap² \S6.4。完整链接与固定源码见notes/phase3\_attack\_review.md。}
 \end{frame}
 
-\begin{frame}{更换融合算法后的保护边界}
+\begin{frame}{方案一：关键偏置未被合并时，保护被绕过}
 \small
-NUFILT原作者内核＋现有CLIP权重适配；保护MNIST，伙伴SVHN。
-两个任务顺序均评价，下面展示MNIST先加入的固定顺序。
-\vspace{2mm}
-\begin{center}\small
-\NufiltTable
+同为AGA仅处理保护专家；每格为目标／伙伴准确率（\%），固定目标先加入顺序。
+\begin{center}\footnotesize
+\PhaseOneRecoveryTable
 \end{center}
-\vspace{2mm}
-\begin{itemize}\setlength{\itemsep}{4pt}
-\item 其默认合并不读取关键LN偏置，方案一与对应无保护合并模型相同。
-\item 两个顺序中，A/B距匹配无保护MNIST控制仅0.06--0.31个百分点。
+\begin{itemize}\setlength{\itemsep}{6pt}
+\item NUFILT不读取最终LN偏置；这些保护／无保护合并模型的分数逐项相同。
+\item 发布P和偏置的最小范数清理也能恢复；DTD/SVHN用单列混合精度读出验证，原生FP32失败保留。
+\item O/B、A/B在AGA后接ProDistill时，MNIST均99.42\%，控制99.42\%；SVHN仍有0.67／0.37个百分点差距。
 \end{itemize}
-\source{每格为MNIST / SVHN准确率（\%）。无图片参与融合门控求解；原专家和防御不更新。此处是融合方法评价，不是新增攻击；未复现完整FusionBench论文表。}
+\source{NUFILT为融合方法，非新恢复攻击。ProDistill使用64张／任务、任务归属和逐元素系数梯度；最终LN/P未更新，因此不能将其对方案一失败称为通用抗蒸馏。}
 \end{frame}
 
-\begin{frame}{当前结论与后续实验}
-\begin{itemize}\setlength{\itemsep}{11pt}
-\item \textbf{两种机制均观察到真实融合干扰。}\\
-方案一有跨被保护任务结果；方案二仍主要限于MNIST。
-\item \textbf{安全边界已经明确。}\\
-方案一依赖融合参数覆盖；方案二存在任务预算反例，通用性与创新性尚未确立。
-\item \textbf{下一步补攻击证据，不改冻结防御。}\\
-优先补齐可核验的对齐／解码恢复；蒸馏和再训练按更强权限单独评价。
+\begin{frame}{已完成什么，还差什么}
+\begin{itemize}\setlength{\itemsep}{10pt}
+\item \textbf{方案一：机制与局限已有完整证据。}\\
+TA／AGA下有明显干扰；偏置清理和NUFILT能绕过，不能只报低准确率。
+\item \textbf{方案二：合规有效的新方法仍未完成。}\\
+已完成参数内外核对与固定消融；尚未打通完整功能保持与融合有害响应。O/B、A/B仅作效果参考。
+\item \textbf{攻击评价：已补任务、伙伴和知识来源控制。}\\
+Unmask固定公式已核验，但无保护控制也严重退化；下一方法先解决原生结构的功能保持，再作一个最小验证。
 \end{itemize}
-\source{全部既有权重、原始预测和失败证据保留。当前完成的是固定攻击与融合设置，未宣称覆盖所有攻击。}
+\source{保留所有冻结权重和失败证据；不把SVD、参数对称性、常规min-max或恢复器覆盖缺口当作原创算法。完整论文／源码核对及未复现项均见仓库。}
 \end{frame}
 \end{document}

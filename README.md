@@ -4,7 +4,7 @@
 
 当前围绕两套防御：**投影核空间偏置扰动、任务子空间约束的跨模块补偿**，同时补齐攻击调研与对比实验。历史发布权重冻结；O/B、A/B均有任务预算反例，不能宣称严格可行。新方法须先完成创新性审查及源端协议，再独立确认。
 
-主力GPU为RTX3090，4090只作CPU存储。已核验TA/TIES、原AGA、PaRaMS对角恢复适配、NUFILT、三种子DARE及ProDistill两专家适配。融合算法与恢复攻击分别记录，不把结果行数当攻击种类数。
+当前只使用RTX3090，暂不访问4090。已核验TA/TIES、原AGA、PaRaMS对角恢复适配、NUFILT、三种子DARE及ProDistill两专家适配。融合算法与恢复攻击分别记录，不把结果行数当攻击种类数。
 
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
 - [Defense 2机制、任务内外消融与新任务预算反例](notes/phase2_coupling.md)
@@ -12,6 +12,8 @@
 - [冻结模型、源码、数据与参数指纹](configs/phase3.json)
 - [已独立复核的结果主表](results/phase3/tables.md)
 - 补充固定批次：[PaRaMS恢复适配](results/phase3/params_adaptive/tables.md) · [DARE三种子](results/phase3/dare/tables.md) · [O/B与NUFILT](results/phase3/nufilt_OB/tables.md) · [ProDistill MNIST](results/phase3/prodistill/tables.md) · [DTD/SVHN扩展](results/phase3/prodistill_other_tasks/tables.md)
+- 最新扩展：[八专家、三任务评价](results/phase3/eight_task/tables.md) · [去目标向量对照](results/phase3/controls/leave_out/tables.md) · [NUFILT的DTD/SVHN缺失单元](results/phase3/nufilt_other_tasks/tables.md) · [统一双任务恢复差距表与论文图](results/phase3/recovery_overview/tables.md)
+- [组会要求与已完成／未完成对应](notes/teacher_feedback.md)：Defense2尚无合规有效的新方案，不将分析工作称为方法完成。
 - [公开基座／单专家知识来源对照](results/phase3/controls/single/tables.md)：九条新跨任务评价，三条原任务分数核哈希复用；不把任务准确率恢复等同于独有知识提取。
 - 偏置恢复：[原生FP32的MNIST结果](results/phase3/bias_canonicalization/tables.md) · [单列混合精度的DTD/SVHN结果](results/phase3/bias_tail_precision/tables.md)
 - [逐类计数、配对统计及完整指标](results/phase3/results.json) · [CSV](results/phase3/results.csv) · [复核与绘图指纹](results/phase3/provenance.json)
@@ -77,3 +79,5 @@ NUFILT 的只读源码检查为 `python experiments/phase3_nufilt_check.py`；�
 本轮显式任务内／外／联合构造保留原0.5与另列2.0幅度参考。任务外0.5虽通过新鲜512张确认，完整独立评价仍出现5.942429的任务预算反例，已关闭，无新合规防御或完整AGA融合结果。详见[六点消融与反例](results/postactivation_subspace/)。
 
 偏置规范化恢复已在MNIST两伙伴的原生FP32评价，以及DTD/SVHN保护任务的单列FP32前缀／FP64最终读出协议下完成。后者不能撤销原生FP32数值控制失败；原分数、阈值、失败证据及两套精度结果分别保留。MNIST原生FP32清理前后分数差0.00069427也超过0.0005；恢复模型重放误差0是另一项检查。这是架构相关补充诊断，不是原版AGA或新的论文攻击算法。
+
+明日组会：[九页汇报PPT](presentation/research_report.pptx)、[PDF](presentation/main.pdf)、[老师要求落实与缺口](notes/teacher_feedback.md)。最新[固定Unmask全表](results/phase3/unmask/tables.md)显示无保护控制也退化，不将低分误记为防御成功；Defense2合规有效的新机制仍未完成。

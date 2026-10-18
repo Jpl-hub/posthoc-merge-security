@@ -48,3 +48,27 @@ A/B & 0.36414 & 39.92018 & 1/512 & 超过0.5 \\
 \bottomrule
 \end{tabular}
 }
+
+\newcommand{\EightTable}{
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+八专家TA0.2 & MNIST & DTD & SVHN \\
+\midrule
+无保护 & 93.23 & 52.34 & 73.90 \\
+O/B$^\dagger$ & 54.22 & 50.80 & 44.63 \\
+A/B$^\dagger$ & 59.16 & 50.59 & 51.97 \\
+\bottomrule
+\end{tabular}
+}
+
+\newcommand{\PhaseOneRecoveryTable}{
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+目标／伙伴 & TA+AGA & NUFILT+AGA & NUFILT无保护 \\
+\midrule
+MNIST / SVHN & 9.80 / 6.70 & 99.39 / 94.68 & 99.39 / 94.68 \\
+DTD / MNIST & 2.13 / 21.09 & 70.59 / 99.45 & 70.59 / 99.45 \\
+SVHN / MNIST & 6.70 / 9.80 & 94.40 / 99.25 & 94.40 / 99.25 \\
+\bottomrule
+\end{tabular}
+}
