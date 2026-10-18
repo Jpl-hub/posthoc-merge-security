@@ -5,6 +5,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 rows = json.loads((ROOT / "results/phase3/results.json").read_text())
 utility = json.loads((ROOT / "results/phase3/utility.json").read_text())
+recent_root = ROOT / 'results/normalization_alignment'
+recent = json.loads((recent_root / 'evaluation/results.json').read_text())
+assert json.loads((recent_root / 'evaluation/independent_validation.json').read_text())['status'] == 'passed'
+recent_gate = json.loads((recent_root / 'evaluation/full_native_gate.json').read_text())
+recent_source = json.loads((recent_root / 'results.json').read_text())
+
+
+def recent_value(stage, task):
+    row = next(r for r in recent if (r['preset'], r['stage'], r['dataset']) == ('released', stage, task))
+    return f"{100*row['top1']:.2f}"
 
 
 def accuracy(defense, merger, scope, task, target="MNIST", partner="SVHN", order=None):
@@ -44,6 +54,9 @@ for name, label in [("Unprotected", "无保护"), ("Phase1_MNIST", r"偏置扰�
     body.append([label, accuracy(name, "Standalone", "None", "MNIST"),
                  pair(name, "TA", "None"), pair(name, "TA", "Protected expert"),
                  pair(name, "TA", "All experts")])
+body.append(['功能保持对照', recent_value('standalone', 'MNIST')] +
+            [' / '.join(recent_value(stage, t) for t in ['MNIST', 'SVHN'])
+             for stage in ['direct', 'AGA_target_only', 'AGA_both']])
 blocks.append(table("MainTable", "lrrrr",
     r"方法 & 独立MNIST & 直接融合 & \shortstack{AGA处理\\保护专家} & \shortstack{AGA处理\\全部专家}", body))
 
@@ -53,6 +66,9 @@ for name in ["O/B", "A/B"]:
     body.append([name, f'{u["parameter_distance_changed_tensors"]:.5f}',
                  f'{u["worst_relative_task_margin_drift"]:.5f}',
                  f'{u["n_inputs_over_task_budget"]}/{u["n"]}', "超过0.5"])
+assert recent_gate['passed']
+body.append(['功能保持对照', f"{recent_source['geometry']['parameter_distance']:.5f}",
+             f"{recent_gate['worst_relative_margin_drift']:.5f}", f"0/{recent_gate['n']}", '已查样本通过'])
 blocks.append(table("UtilityTable", "lrrrl",
     r"实现 & 参数距离 & 最大间隔漂移 & 越界样本 & 任务约束", body))
 
