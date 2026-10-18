@@ -209,10 +209,59 @@ def fixedpoint(output):
     save_json(path,result);print(json.dumps(result,indent=2),flush=True)
 
 
+@torch.no_grad()
+def fixedpoint_cost(output):
+    """Replay only the closed fit's spectral cost; never construct another B."""
+    from scipy.linalg import svd
+    from scipy.special import expit
+    from covariance_noise import dataset
+    from cross_module_distance import capture_attention
+    from task_probe_distance import initialize
+    initialize();assert '3090' in torch.cuda.get_device_name()
+    out=Path(output);start=time.monotonic();report=json.loads((out/'results.json').read_text())
+    assert report['closed'] and digest(out/'diagnostic.pt')==report['diagnostic_sha256']
+    raw=torch.load(out/'diagnostic.pt',map_location='cpu');cfg=raw['cfg'];p,q=raw['p'],raw['q']
+    for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
+    anchor,expert,head,pins=checked_models(cfg['target']);assert pins==report['geometry']['checkpoint_sha256']
+    training=dataset(cfg['target'],'data',expert.val_preprocess,True);ids=raw['indices']['fit']
+    cache=capture_attention(expert,training,ids);r=cache['r'].numpy();H=cache['o_input'].numpy()
+    pn={k:v.numpy() if torch.is_tensor(v) else v for k,v in p.items()}
+    def activation(x):
+        c=x-x.mean(1,keepdims=True)
+        pre=(c/np.sqrt((c*c).mean(1,keepdims=True)+pn['eps2'])*pn['gamma2']+pn['beta2'])@pn['A'].T+pn['a']
+        return pre*expit(1.702*pre)
+    changed=r+H@(q['O']-p['O']).numpy().T;z=activation(changed)
+    target=r-changed+(activation(r)-z)@pn['B'].T
+    u,s,vh=svd(z,full_matrices=False,lapack_driver='gesdd',check_finite=True)
+    keep=s>s[0]*cfg['regression_rcond'];assert int(keep.sum())==report['fit_rank']
+    modes=u.T@target;energy=(modes*modes).sum(1);cost=energy[keep]/s[keep]**2
+    den=np.linalg.norm(pn['B']);distance=float(np.sqrt(cost.sum())/den)
+    saved=(q['B']-p['B']).numpy().T;residual=float(np.linalg.norm(z@saved-target)/np.linalg.norm(target))
+    assert abs(distance-report['per_matrix_distance']['B'])<1e-6
+    assert abs(residual-report['fit_relative_hidden_residual'])<1e-6
+    projected=vh[keep]@saved;wanted=modes[keep]/s[keep,None]
+    coefficient_error=float(np.linalg.norm(projected-wanted)/np.linalg.norm(wanted));assert coefficient_error<1e-6
+    rows=[];relative=s/s[0];total=float((target*target).sum())
+    for low,high in [(0.1,1.01),(0.01,0.1),(0.001,0.01),(cfg['regression_rcond'],0.001)]:
+        mask=(relative>=low)&(relative<high)&keep;values=energy[mask]/s[mask]**2
+        rows.append(dict(relative_singular_interval=[low,min(high,1.)],modes=int(mask.sum()),
+            target_energy_fraction=float(energy[mask].sum()/total),parameter_cost_fraction=float(values.sum()/cost.sum())))
+    np.savez_compressed(out/'fit_spectrum.npz',singular_values=s,target_mode_energy=energy,retained=keep)
+    result=dict(status='closed_fit_cost_independently_replayed',n=len(ids),fit_rank=int(keep.sum()),
+        B_relative_distance=distance,hidden_relative_residual=residual,coefficient_relative_error=coefficient_error,
+        rows=rows,source_point_sha256=report['diagnostic_sha256'],verifier_sha256=digest(__file__),
+        spectrum_sha256=digest(out/'fit_spectrum.npz'),source_split_sha256=digest(out/'construction_split.json'),
+        original_model_forwards=len(ids),new_training_images=0,new_releases=0,gradients=0,expert_updates=0,
+        confirmation_or_test_used=False,wall_seconds=time.monotonic()-start,
+        scope='Independent NumPy LN/QuickGELU and SciPy SVD of the original fixed construction. No alternative coefficient, cutoff, direction, release or task-feasibility claim.')
+    save_json(out/'fit_cost.json',result);print(json.dumps(result,indent=2),flush=True)
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True)
     mode=parser.add_mutually_exclusive_group()
     mode.add_argument('--head-geometry',action='store_true');mode.add_argument('--head-response',action='store_true')
     mode.add_argument('--fixedpoint',action='store_true')
+    mode.add_argument('--fixedpoint-cost',action='store_true')
     args=parser.parse_args();torch.set_num_threads(4)
-    (fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
+    (fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
