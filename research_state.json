@@ -1,6 +1,6 @@
 {
-  "status": "manual_Defense2_mechanism_research_no_new_candidate",
-  "updated_utc": "2026-10-18T11:51:38.011221+00:00",
+  "status": "manual_Defense2_single_preregistered_fixedpoint_feasibility",
+  "updated_utc": "2026-10-18T12:06:02.067246+00:00",
   "automatic_continuation": "Six-hour window completed; heartbeat13-35 paused after final audit and publication. No unbounded automatic cycles.",
   "server": "RTX3090_active_4090_unused",
   "allow_4090": false,
@@ -44,7 +44,7 @@
   "breakthrough_verified": false,
   "new_candidate": "No compliant new Defense2: two-dimensional readout point independently fails full task drift2.140134; fixed class-readout reflection fails source drift0.744124. Neither proceeded to TA/AGA.",
   "mechanism": "notes/phase2_coupling.md",
-  "next_action": "Find a native full-function compensation structure before one new candidate. Current O/B normal change largely survives AGA; parameter energy and removing low-energy coordinates do not establish functional safety. Do not restart frozen O/B or tune from old counterexamples.",
+  "next_action": "Run the sole source feasibility test after source publication; fail closed on geometry, joint parameter budget, complete functional or numerical validation. Independent confirmation and true TA/AGA only after source pass.",
   "deferred": [
     "No automatic cycles beyond the current authorized2026-10-18T09:46:25Z end.",
     "No unregistered defense tuning from attack/test feedback"
@@ -3789,5 +3789,12 @@
     "gradients": 0,
     "original_budget_unchanged": true,
     "scope": "Finite native source tail counterfactual, not full AGA function, unknown-peer guarantee or new defense."
+  },
+  "phase2_alignment_fixedpoint": {
+    "status": "frozen_source_before_execution",
+    "protocol": "configs/alignment_fixedpoint.json",
+    "implementation": "experiments/alignment_fixedpoint.py",
+    "output": "outputs/phase2_alignment_fixedpoint_mnist_20261018",
+    "scope": "One fixed original-AGA ridge fixed-point O relocation plus one closed-form full-hidden B distillation; not an established innovative defense or security game. Original budgets unchanged; no seed/rank/angle retry after source responses."
   }
 }
