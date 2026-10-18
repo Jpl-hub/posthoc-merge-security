@@ -1,6 +1,6 @@
 {
   "status": "verified_evidence_published_eight_expert_pilot_active",
-  "updated_utc": "2026-10-18T04:49:42.432274+00:00",
+  "updated_utc": "2026-10-18T05:02:36.770081+00:00",
   "automatic_continuation": "Bounded current-thread heartbeat13-35 active through2026-10-18T09:46:25Z; previous failed loops remain closed.",
   "server": "RTX3090_active_4090_CPU_only",
   "allow_4090": false,
@@ -20,7 +20,7 @@
       "server": "3090",
       "output": "outputs/phase3_eight_task_20261018",
       "log": "outputs/phase3_eight_task_20261018.log",
-      "status": "pilot_running_after_original_hash_restoration",
+      "status": "pilot_passed_full_evaluation_running",
       "role": "Original-author eight-expert order and TA0.2; target-only AGA; three datasets evaluated, no eight-task mean.",
       "launcher_pid": 12158
     },
@@ -3607,7 +3607,7 @@
     "interpretation": "Final LN/P coverage gap; not robustness against arbitrary distillation. Matching unprotected controls and all scopes retained."
   },
   "phase3_eight_task": {
-    "status": "pilot_running_after_all_five_original_hashes_restored",
+    "status": "pilot_passed_full_evaluation_running",
     "protocol": "configs/phase3_eight_task.json",
     "failure": "results/phase3/eight_task/input_failure.json",
     "missing_original_experts": [
@@ -3627,7 +3627,12 @@
       "EuroSAT",
       "GTSRB"
     ],
-    "launcher_pid": 12158
+    "launcher_pid": 12158,
+    "pilot_score_replays": 960,
+    "pilot_maximum_context_score_error": 0.0,
+    "independent_report_source": "experiments/phase3_report.py --eight-task",
+    "independent_report_source_sha256": "12637c5f25e74e9a67ffb0484bf33b6a149cc0e0afaa4a7ffeb6dff2e5ca8951",
+    "independent_audit_launcher_pid": 13486
   },
   "phase3_knowledge_controls": {
     "protocol": "configs/phase3_controls.json",
@@ -3660,5 +3665,14 @@
     "new_expert_or_defense_updates": 0,
     "new_recovery_attack_types": 0,
     "old_native_results_preserved": true
+  },
+  "phase3_unmask": {
+    "status": "preregistered_not_implemented_or_run",
+    "paper": "MergeGuard CVPR2026 section7 page8",
+    "formula": "merged_parameters -0.3 protected_parameters",
+    "official_author_execution": false,
+    "scope": "Same eight-expert TA0.2; matched unprotected subtraction; three tasks. Fixed coefficient, no AGA composition or search.",
+    "prerequisite": "Active eight-task and leave-out sources/reports must finish before modifying existing entry.",
+    "new_gradients": 0
   }
 }
