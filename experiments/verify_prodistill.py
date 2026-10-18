@@ -79,5 +79,45 @@ def verify(root):
     out.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))
 
 
+@torch.no_grad()
+def capacity(root):
+    """Algebraic coefficient-map rank, not a convergence or security guarantee."""
+    from clip_benchmark import checkpoint_loader
+    from phase3_evaluate import apply
+    root=Path(root);out=root/'capacity_audit.json';assert not out.exists();start=time.monotonic();torch.set_num_threads(2)
+    cfg=json.loads((root/'00/protocol.json').read_text());ref=cfg['frozen_inputs'];assert digest(ref['path'])==ref['sha256']
+    parent=json.loads(Path(ref['path']).read_text());load=checkpoint_loader(Path('external/secure-merge-attack'))
+    pins={r['path']:r['sha256'] for r in json.loads(Path('configs/checkpoints.json').read_text())['files']}
+    def checked(name):
+        path=Path('checkpoints/ViT-B-32')/name;assert digest(path)==pins['ViT-B-32/'+name]
+        return load(str(path),map_location='cpu').eval().requires_grad_(False)
+    base=checked('zeroshot.pt');originals={t:checked(t+'/finetuned.pt') for t in ['MNIST','SVHN']}
+    aligned={t:apply(originals[t],parent['AGA_references'][t],full=True) for t in originals}
+    records=[]
+    for i,c in enumerate(cfg['cases']):
+        own=originals['MNIST'] if c['scope']=='None' else aligned['MNIST']
+        peer=aligned['SVHN'] if c['scope']=='All experts' else originals['SVHN']
+        if c['defense']!='Unprotected':own=apply(own,parent['defenses'][c['defense']]['release' if c['scope']=='None' else 'AGA_edits'])
+        layers=[]
+        for j in range(12):
+            left=dict(own.model.visual.transformer.resblocks[j].named_parameters());right=dict(peer.model.visual.transformer.resblocks[j].named_parameters())
+            count=support=0;minimum=float('inf');maximum=0.
+            for name,p0 in base.model.visual.transformer.resblocks[j].named_parameters():
+                a=(left[name]-p0).double();b=(right[name]-p0).double();scale=a.square()+b.square();positive=scale[scale>0]
+                count+=p0.numel();support+=positive.numel()
+                if positive.numel():minimum=min(minimum,float(positive.min()));maximum=max(maximum,float(positive.max()))
+            layers.append(dict(layer=j,block_parameters=count,coefficient_parameters=2*count,algebraically_reachable_coordinates=support,
+                reachable_fraction=support/count,positive_diagonal_min=minimum if support else None,positive_diagonal_max=maximum))
+        final=torch.load(root/f'{i:02d}'/'model.pt',map_location='cpu',weights_only=False)
+        control=torch.load(root/f'{c["control"]:02d}'/'model.pt',map_location='cpu',weights_only=False)
+        prefix=[k for k in final if '.resblocks.' not in k or int(k.split('.resblocks.')[1].split('.')[0])<11]
+        records.append(dict(case=i,configuration=c,layers=layers,all_parameters_outside_last_block_equal_to_control=all(torch.equal(final[k],control[k]) for k in prefix)))
+        del final,control
+    fixture=np.ones((3,3));assert np.linalg.matrix_rank(fixture)==1 and np.linalg.matrix_rank(fixture*np.eye(3))==3
+    result=dict(status='completed_read_only_coefficient_capacity_audit',cases=records,source_sha256=digest(__file__),CPU_wall_seconds=time.monotonic()-start,
+        new_images=0,gradient_steps=0,new_weights=0,scope='Real-algebra coordinate reachability only; Adam trajectory, finite precision, convergence and classification are not certified. Official elementwise coefficients are unconstrained; original experts remain frozen.')
+    out.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps({k:v for k,v in result.items() if k!='cases'},indent=2))
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('root');a=p.parse_args();verify(a.root)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('root');p.add_argument('--capacity',action='store_true');a=p.parse_args();(capacity if a.capacity else verify)(a.root)
