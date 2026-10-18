@@ -109,6 +109,90 @@ def eight_task(source, output):
     (output/'independent_validation.json').write_text(json.dumps(result,indent=2)+'\n')
 
 
+def nufilt_tasks(source, output):
+    """Recount missing task cells; finish only an interrupted score replay, never refit."""
+    import copy
+    import time
+    import torch
+    from clip_benchmark import digest, evaluate
+    from covariance_noise import dataset
+    from phase3_evaluate import setup
+    from phase3_nufilt_check import load_official
+    from subspace_probe import make_loader, save_json
+    from verify_covariance_noise import official_labels
+    from verify_prodistill import verify_metrics
+    source,output=Path(source),Path(output);output.mkdir(parents=True,exist_ok=True)
+    spec=json.loads(Path('configs/phase3_nufilt_other_tasks.json').read_text())
+    parents=[]
+    for ref in spec['frozen_inputs'].values():
+        assert digest(ref['path'])==ref['sha256'];parents.append(json.loads(Path(ref['path']).read_text()))
+    cfg=parents[0]
+    for key in ['tasks','AGA_references','defenses']:cfg[key].update(parents[1][key])
+    _,author=load_official();pins={};rows_out=[];checks=[];maximum=0.;count=0;new_replays=0
+    for i,case in enumerate(spec['cases']):
+        root=source/f'{i:02d}';protocol=json.loads((root/'protocol.json').read_text())
+        assert protocol['parent_protocol_sha256']==digest('configs/phase3_nufilt_other_tasks.json')
+        assert protocol['author_source_sha256']==author
+        for path,sha in protocol['source_sha256'].items():assert digest(path)==sha
+        pilot=json.loads((root/'pilot/execution.json').read_text())
+        for c in pilot['costs']:
+            key=c['key'].replace('Phase1_'+case['target'],'Unprotected');p=root/(key+'.pt')
+            assert digest(p)==c['artifact_sha256'];pins[str(p)]=c['artifact_sha256']
+        for stage in ['pilot','full']:
+            p=root/stage;raw=torch.load(p/'scores.pt',map_location='cpu',weights_only=False)
+            rows=json.loads((p/'results.json').read_text());assert len(rows)==len(protocol['orders'])*len(protocol['scopes'])*4
+            raw_sha=digest(p/'scores.pt');pins[str(p/'scores.pt')]=raw_sha
+            missing=not (p/'validation.json').exists();replays=0;error=0.;start=time.monotonic()
+            if missing:
+                assert stage=='full' and json.loads((root/'pilot/validation.json').read_text())['status']=='passed'
+                anchor,experts,heads,_,_=setup(cfg)
+                data={t:dataset(t,'data',experts[t].val_preprocess) for t in [case['target'],case['partner']]}
+            for row in rows:
+                order=protocol['orders'].index(row['order']);scope=protocol['scopes'].index(row['attack_scope'])
+                prefix=f'{order}_{scope}_';task=row['dataset'];x=raw[prefix+row['defense']+'/'+task]
+                before=raw[prefix+'Unprotected/'+task]['logits'];labels=official_labels(task)
+                ids=list(range(len(labels))) if stage=='full' else np.linspace(0,len(labels)-1,64,dtype=int).tolist()
+                assert x['indices']==ids;np.testing.assert_array_equal(x['target'].numpy(),labels[ids])
+                maximum=max(maximum,verify_metrics(x['logits'],x['target'],before,row));count+=1
+                if row['defense']!='Unprotected':torch.testing.assert_close(x['logits'],before,rtol=0,atol=0)
+                if missing:
+                    name=prefix+'Unprotected';record=torch.load(root/(name+'.pt'),map_location='cpu',weights_only=False)
+                    model=copy.deepcopy(anchor);model.load_state_dict(anchor.state_dict()|record['weights'],strict=True)
+                    selected=np.linspace(0,len(ids)-1,16,dtype=int)
+                    for block in sorted(set(selected//128)):
+                        lo,hi=block*128,min((block+1)*128,len(ids));wanted=selected[(selected>=lo)&(selected<hi)];sink=[]
+                        evaluate(model,heads[task],make_loader(data[task],ids[lo:hi]),'cuda',logit_sink=sink.append)
+                        error=max(error,float((torch.cat(sink)[wanted-lo]-x['logits'][wanted]).abs().max()));replays+=len(wanted)
+                    del model
+                    assert error<=protocol['score_tolerance']
+                if stage=='full':
+                    y=x['target'].numpy();ok=x['logits'].numpy().argmax(1)==y;was=before.numpy().argmax(1)==y
+                    for c in row['per_class']:
+                        mask=y==c['class_id'];c.update(lost=int((mask&was&~ok).sum()),gained=int((mask&~was&ok).sum()))
+                    rows_out.append(row)
+            if missing:
+                v=dict(status='passed',rows=len(rows),full_replay_count=replays,maximum_score_error=error,
+                    raw_sha256=raw_sha,resumed_after_interruption=True,replay_seconds=time.monotonic()-start,
+                    original_complete_wall_seconds=None,verification_source_sha256=digest(__file__),new_merger_updates=0)
+                save_json(p/'validation.json',v);new_replays+=replays
+            v=json.loads((p/'validation.json').read_text());assert v['status']=='passed'
+            if (p/'execution.json').exists():assert json.loads((p/'execution.json').read_text())['scores_sha256']==raw_sha
+            else:assert v['resumed_after_interruption'] and v['raw_sha256']==raw_sha
+            checks.append(dict(case=i,stage=stage,validation=v,pilot_execution=pilot))
+    lines=['# Missing NUFILT protected-task cells','',
+        'Accuracy (%), protected task / partner. Every Phase1 result has the exact same predictions and scores as its matched unprotected merger; selected-input identity was checked before reuse. Official kernels, native adapter; no calibration images. These are merger evaluations, not new recovery attacks.','',
+        '| Protected task / partner | AGA scope | Order | Unprotected = Defense1 |','|---|---|---|---:|']
+    for row in rows_out:
+        if row['defense']!='Unprotected' or row['dataset']!=row['target']:continue
+        peer=next(r for r in rows_out if r['defense']=='Unprotected' and r['order']==row['order'] and r['target']==row['target'] and r['attack_scope']==row['attack_scope'] and r['dataset']==row['partner'])
+        lines.append(f'| {row["target"]} / {row["partner"]} | {row["attack_scope"]} | {" → ".join(row["order"])} | {row["accuracy_percent"]:.2f} / {peer["accuracy_percent"]:.2f} |')
+    lines+=['','SVHN/MNIST without AGA and with all-expert AGA reuse earlier identical-model results after target/partner relabeling; they were not retrained here. DTD full scores survived interruption: only the unfinished original-context replay was completed; its original total wall time is unavailable. Frozen weights, thresholds and raw scores were unchanged.']
+    save_json(output/'results.json',rows_out);(output/'tables.md').write_text('\n'.join(lines)+'\n')
+    save_json(output/'independent_validation.json',dict(status='passed_independent_numpy_metrics_and_artifact_hashes',
+        rows_checked=count,maximum_logp_error=maximum,raw_and_weights_sha256=pins,stages=checks,
+        resumed_score_replays=new_replays,expert_updates=0,defense_updates=0,report_source_sha256=digest(__file__)))
+
+
 def controls(source, output):
     """Independent raw-score recount and one knowledge-source comparison table."""
     import time
@@ -509,7 +593,7 @@ def build(source, output):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    modes=dict(dare=dare,nufilt_ob=nufilt_ob,prodistill=prodistill,controls=controls,eight_task=eight_task)
+    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task)
     g=p.add_mutually_exclusive_group()
     for name in modes:g.add_argument('--'+name.replace('_','-'),action='store_true')
     args=p.parse_args();next((fn for name,fn in modes.items() if getattr(args,name)),build)(args.source,args.output)
