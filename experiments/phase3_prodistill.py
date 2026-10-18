@@ -58,8 +58,9 @@ def initial(anchor, experts):
 
 
 def train(cfg,case,out,anchor,experts,own,peer,env):
-    start=time.monotonic();torch.manual_seed(0);torch.cuda.reset_peak_memory_stats();target='MNIST'
-    data={t:dataset(t,'data',experts[t].val_preprocess,True) for t in ['MNIST','SVHN']}
+    start=time.monotonic();torch.manual_seed(0);torch.cuda.reset_peak_memory_stats()
+    tasks=[case.get('target','MNIST'),case.get('partner','SVHN')]
+    data={t:dataset(t,'data',experts[t].val_preprocess,True) for t in tasks}
     ids={t:torch.randperm(len(data[t]),generator=torch.Generator().manual_seed(0))[-64:].tolist() for t in data}
     save_json(out/'calibration_indices.json',ids)
     images=torch.stack([data[t][i][0] for t in ids for i in ids[t]]).cuda();del data
@@ -114,16 +115,17 @@ def assess(cfg,case,out,model,head_models,experts,full):
     stage='full' if full else 'pilot';folder=out/stage;folder.mkdir(exist_ok=False);raw={};rows=[];maximum=0.;replays=0
     if full:assert json.loads((out/'pilot/validation.json').read_text())['status']=='passed'
     start=time.monotonic();name=case['defense'];control=Path(cfg['output'])/f'{case["control"]:02d}'/stage/'scores.pt'
-    names=[name,'Phase1_MNIST'] if name=='Unprotected' else [name]
+    target,partner=case.get('target','MNIST'),case.get('partner','SVHN')
+    phase1='Phase1_'+target;names=[name,phase1] if name=='Unprotected' else [name]
     for defense in names:
         current=copy.deepcopy(model)
-        if defense=='Phase1_MNIST':current.model.visual.ln_post.bias.copy_(torch.load(out/'phase1_tail.pt',map_location='cpu',weights_only=False))
-        for task in ['MNIST','SVHN']:
+        if defense==phase1:current.model.visual.ln_post.bias.copy_(torch.load(out/'phase1_tail.pt',map_location='cpu',weights_only=False))
+        for task in [target,partner]:
             data=dataset(task,'data',experts[task].val_preprocess);ids=list(range(len(data))) if full else np.linspace(0,len(data)-1,64,dtype=int).tolist()
             scores=[];labels=[];metric=evaluate(current,head_models[task],make_loader(data,ids),'cuda',logit_sink=scores.append,prediction_sink=lambda p,y:labels.append(y))
             score=torch.cat(scores);label=torch.cat(labels);np.testing.assert_array_equal(label.numpy(),official_labels(task)[ids]);assert torch.isfinite(score).all()
             before=score if defense=='Unprotected' else raw['Unprotected/'+task]['logits'] if name=='Unprotected' else torch.load(control,map_location='cpu',weights_only=False)['Unprotected/'+task]['logits']
-            row=dict(defense=defense,merger='ProDistill (two-expert adapter)',attack_scope=case['scope'],target='MNIST',partner='SVHN',dataset=task,role='target' if task=='MNIST' else 'partner',evaluation_seconds=metric['evaluation_seconds'],**row_metrics(score,label,before,10))
+            row=dict(defense=defense,merger='ProDistill (two-expert adapter)',attack_scope=case['scope'],target=target,partner=partner,dataset=task,role='target' if task==target else 'partner',evaluation_seconds=metric['evaluation_seconds'],**row_metrics(score,label,before,score.shape[1]))
             loc=np.linspace(0,len(ids)-1,16,dtype=int)
             for block in sorted(set(loc//128)):
                 lo,hi=block*128,min((block+1)*128,len(ids));wanted=loc[(loc>=lo)&(loc<hi)];values=[]
@@ -138,15 +140,20 @@ def assess(cfg,case,out,model,head_models,experts,full):
 
 def run(protocol,index,full):
     cfg=json.loads(Path(protocol).read_text());assert digest(cfg['frozen_inputs']['path'])==cfg['frozen_inputs']['sha256'];assert digest(__file__)==cfg['source_sha256'];case=cfg['cases'][index]
-    parent=json.loads(Path(cfg['frozen_inputs']['path']).read_text());anchor,experts,heads,aligned,_=setup(parent);env=author(cfg)
-    own=experts['MNIST'] if case['scope']=='None' else aligned['MNIST'];peer=aligned['SVHN'] if case['scope']=='All experts' else experts['SVHN']
+    parent=json.loads(Path(cfg['frozen_inputs']['path']).read_text())
+    if 'additional_inputs' in cfg:
+        ref=cfg['additional_inputs'];assert digest(ref['path'])==ref['sha256'];extra=json.loads(Path(ref['path']).read_text())
+        for key in ['tasks','AGA_references','defenses']:parent[key].update(extra[key])
+    anchor,experts,heads,aligned,_=setup(parent);env=author(cfg)
+    target,partner=case.get('target','MNIST'),case.get('partner','SVHN')
+    own=experts[target] if case['scope']=='None' else aligned[target];peer=aligned[partner] if case['scope']=='All experts' else experts[partner]
     name=case['defense'];out=Path(cfg['output'])/f'{index:02d}'
     if name!='Unprotected':own=apply(own,parent['defenses'][name]['release' if case['scope']=='None' else 'AGA_edits'])
     assert json.loads((Path(cfg['output'])/'kernel_validation.json').read_text())['status']=='passed_official_coefficient_formula_and_gradient'
     if not full:
         out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg);model=train(cfg,case,out,anchor,experts,own,peer,env)
         if name=='Unprotected':
-            phase1=apply(own,parent['defenses']['Phase1_MNIST']['release' if case['scope']=='None' else 'AGA_edits'])
+            phase1=apply(own,parent['defenses']['Phase1_'+target]['release' if case['scope']=='None' else 'AGA_edits'])
             key='model.visual.ln_post.bias';assert all(torch.equal(v,phase1.state_dict()[k]) for k,v in own.state_dict().items() if k!=key)
             p=anchor.state_dict()[key];beta=(p+.3*(phase1.state_dict()[key]-p))+.3*(peer.state_dict()[key]-p);torch.save(beta,out/'phase1_tail.pt')
         save_json(out/'pre_evaluation.json',dict(model_sha256=digest(out/'model.pt'),phase1_tail_sha256=digest(out/'phase1_tail.pt') if name=='Unprotected' else None,test_images_read=0,source_sha256=digest(__file__)))
