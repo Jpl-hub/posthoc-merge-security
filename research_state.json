@@ -3610,13 +3610,7 @@
     "status": "completed_independently_verified",
     "protocol": "configs/phase3_eight_task.json",
     "failure": "results/phase3/eight_task/input_failure.json",
-    "missing_original_experts": [
-      "SUN397",
-      "Cars",
-      "RESISC45",
-      "EuroSAT",
-      "GTSRB"
-    ],
+    "missing_original_experts": [],
     "evaluation_scope": "Eight expert parameters, original author TA0.2 and protected-expert AGA; only MNIST/DTD/SVHN datasets. No eight-task mean.",
     "checkpoint_substitution_allowed": false,
     "original_public_retrieval": "completed_without_checkpoint_substitution",
@@ -3639,7 +3633,32 @@
     "full_maximum_context_score_error": 0.0,
     "independent_rows_checked": 120,
     "full_wall_seconds": 2387.2262483090162,
-    "table": "results/phase3/eight_task/tables.md"
+    "table": "results/phase3/eight_task/tables.md",
+    "historically_missing_original_experts": [
+      "SUN397",
+      "Cars",
+      "RESISC45",
+      "EuroSAT",
+      "GTSRB"
+    ],
+    "reproduction_source_commit": "01181f3",
+    "MNIST_AGA_protected_target_DTD_SVHN_percent": {
+      "Unprotected": [
+        93.23,
+        52.34042553191489,
+        73.90135218192994
+      ],
+      "OB": [
+        54.22,
+        50.797872340425535,
+        44.633527965580825
+      ],
+      "AB": [
+        59.16,
+        50.58510638297873,
+        51.96681007990166
+      ]
+    }
   },
   "phase3_knowledge_controls": {
     "protocol": "configs/phase3_controls.json",
@@ -3662,19 +3681,15 @@
     "leave_target_out_status": "waiting_original_eight_expert_input_and_full_reference"
   },
   "phase3_nufilt_other_tasks": {
+    "status": "case1_active_case0_full_scores_retained_unfinished_replay_queued",
     "protocol": "configs/phase3_nufilt_other_tasks.json",
-    "source_freeze_commit": "23bf203",
-    "status": "queued_after_eight_expert_and_leaveout",
-    "distinct_new_mergers": 8,
-    "new_full_dataset_cells": 16,
-    "identical_selected_input_reuse_cells": 16,
-    "merger_gate_backward_steps_planned": 400,
-    "new_expert_or_defense_updates": 0,
-    "new_recovery_attack_types": 0,
-    "old_native_results_preserved": true
+    "case1_launcher": 1067,
+    "original_expert_updates": 0,
+    "defense_updates": 0,
+    "resumed_case0": "Only original128batch score replays; no merger optimization or full evaluation rerun; original total full wall time unavailable."
   },
   "phase3_unmask": {
-    "status": "minimal_implementation_frozen_not_yet_run",
+    "status": "frozen_published_queued_after_missing_NUFILT_validation",
     "paper": "MergeGuard CVPR2026 section7 page8",
     "formula": "merged_parameters -0.3 protected_parameters",
     "official_author_execution": false,
@@ -3683,7 +3698,8 @@
     "new_gradients": 0,
     "reason_not_run": "Source/config committing before pilot; queued after fixed NUFILTcase1.",
     "protocol": "configs/phase3_unmask.json",
-    "source_sha256": "0e5c450b8b3629f312364a1b6c0a0c6f80560bf0ecd36e76a468680137a101e1"
+    "source_sha256": "0e5c450b8b3629f312364a1b6c0a0c6f80560bf0ecd36e76a468680137a101e1",
+    "source_published_before_evaluation": "9d2e21cd808e9877ba8bb3d03295818897f2f086"
   },
   "current_connection": {
     "server": "3090",
