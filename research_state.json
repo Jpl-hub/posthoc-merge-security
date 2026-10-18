@@ -1,17 +1,32 @@
 {
-  "status": "completed_prodistill_collecting_independent_results",
-  "updated_utc": "2026-10-18T03:50:05.137253+00:00",
+  "status": "verified_prodistill_missing_protected_tasks_running",
+  "updated_utc": "2026-10-18T03:59:46.385154+00:00",
   "automatic_continuation": "Bounded current-thread heartbeat13-35 active through2026-10-18T09:46:25Z; previous failed loops remain closed.",
   "server": "RTX3090_active_4090_CPU_only",
   "allow_4090": false,
   "phase": 3,
   "objective": "Two pure post-hoc defense schemes: strengthen mechanism with source-only evidence and complete attack literature, official baselines and fixed evaluations. Original checkpoints and frozen historical releases preserved.",
   "stage": "full_task_counterexample_and_targeted_LN_recovery_independently_verified",
-  "research_jobs": [],
+  "research_jobs": [
+    {
+      "server": "3090",
+      "output": "outputs/phase3_prodistill_other_tasks",
+      "log": "outputs/phase3_prodistill_other_tasks.log",
+      "launcher_pid": 3107,
+      "role": "Six fixed two-expert ProDistill cases; only merger coefficients trained, original defenses frozen"
+    },
+    {
+      "server": "3090",
+      "output": "outputs/phase3_eight_task_20261018",
+      "log": "outputs/phase3_eight_task_20261018.log",
+      "status": "queued_after_prodistill",
+      "role": "Original-author eight-expert order and TA0.2; target-only AGA; three datasets evaluated, no eight-task mean."
+    }
+  ],
   "breakthrough_verified": false,
   "new_candidate": "No compliant new Defense2: two-dimensional readout point independently fails full task drift2.140134; fixed class-readout reflection fails source drift0.744124. Neither proceeded to TA/AGA.",
   "mechanism": "notes/phase2_coupling.md",
-  "next_action": "Publish independently verified ProDistill and pending O/B NUFILT results.",
+  "next_action": "Complete fixed missing protected-task ProDistill and queued eight-expert author-order evaluation; independently audit/publish; no defense tuning.",
   "deferred": [
     "No new automatic cycles",
     "No unregistered defense tuning from attack/test feedback"
@@ -3525,5 +3540,20 @@
     "aggregate_timer_valid": false,
     "cost_audit": "results/phase3/nufilt_OB/cost_audit.json",
     "O_B_task_budget_violation_retained": true
+  },
+  "prodistill_fixed_nine_cases": {
+    "status": "passed_independent_audit",
+    "results": "results/phase3/prodistill/",
+    "raw_rows": 24,
+    "full_score_replays": 384,
+    "maximum_score_error": 0,
+    "MNIST_AGA_protected": {
+      "unprotected": 99.42,
+      "OB": 99.42,
+      "AB": 99.42,
+      "Phase1": 9.8
+    },
+    "scope": "Data-assisted native two-expert adapter; final LN/P not updated; OB/AB task-budget violations retained",
+    "new_defense_updates": 0
   }
 }
