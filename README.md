@@ -4,7 +4,7 @@
 
 当前围绕两套防御：**投影核空间偏置扰动、任务子空间约束的跨模块补偿**，同时补齐攻击调研与对比实验。历史发布权重冻结；O/B、A/B均有任务预算反例，不能宣称严格可行。新方法须先完成创新性审查及源端协议，再独立确认。
 
-主力GPU为RTX3090，4090只作CPU存储。已核验TA/TIES、原AGA、PaRaMS对角恢复适配、NUFILT、三种子DARE及ProDistill两专家适配。融合算法与恢复攻击分别记录，不把结果行数当攻击种类数。
+当前只使用RTX3090，暂不访问4090。已核验TA/TIES、原AGA、PaRaMS对角恢复适配、NUFILT、三种子DARE及ProDistill两专家适配。融合算法与恢复攻击分别记录，不把结果行数当攻击种类数。
 
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
 - [Defense 2机制、任务内外消融与新任务预算反例](notes/phase2_coupling.md)
@@ -12,6 +12,8 @@
 - [冻结模型、源码、数据与参数指纹](configs/phase3.json)
 - [已独立复核的结果主表](results/phase3/tables.md)
 - 补充固定批次：[PaRaMS恢复适配](results/phase3/params_adaptive/tables.md) · [DARE三种子](results/phase3/dare/tables.md) · [O/B与NUFILT](results/phase3/nufilt_OB/tables.md) · [ProDistill MNIST](results/phase3/prodistill/tables.md) · [DTD/SVHN扩展](results/phase3/prodistill_other_tasks/tables.md)
+- 最新扩展：[八专家、三任务评价](results/phase3/eight_task/tables.md) · [去目标向量对照](results/phase3/controls/leave_out/tables.md) · [NUFILT的DTD/SVHN缺失单元](results/phase3/nufilt_other_tasks/tables.md) · [统一双任务恢复差距表与论文图](results/phase3/recovery_overview/tables.md)
+- [组会要求与已完成／未完成对应](notes/teacher_feedback.md)：Defense2尚无合规有效的新方案，不将分析工作称为方法完成。
 - [公开基座／单专家知识来源对照](results/phase3/controls/single/tables.md)：九条新跨任务评价，三条原任务分数核哈希复用；不把任务准确率恢复等同于独有知识提取。
 - 偏置恢复：[原生FP32的MNIST结果](results/phase3/bias_canonicalization/tables.md) · [单列混合精度的DTD/SVHN结果](results/phase3/bias_tail_precision/tables.md)
 - [逐类计数、配对统计及完整指标](results/phase3/results.json) · [CSV](results/phase3/results.csv) · [复核与绘图指纹](results/phase3/provenance.json)
