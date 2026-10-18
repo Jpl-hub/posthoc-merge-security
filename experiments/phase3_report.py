@@ -19,6 +19,63 @@ def save_figure(fig, output, name):
         fig.savefig(output/f'{name}.{ext}', metadata=metadata)
 
 
+def controls(source, output):
+    """Independent raw-score recount and one knowledge-source comparison table."""
+    import time
+    import torch
+    from clip_benchmark import digest
+    from verify_covariance_noise import official_labels
+    from verify_prodistill import verify_metrics
+    start=time.monotonic();source,output=Path(source),Path(output);output.mkdir(parents=True,exist_ok=True)
+    cfg=json.loads((source/'full/protocol.json').read_text());baseline={};pins={};maximum=0.;count=0
+    assert cfg==json.loads((source/'pilot/protocol.json').read_text())
+    for path,sha in cfg['source_sha256'].items():assert digest(path)==sha,path
+    if source.name=='single':
+        for t,ref in cfg['native_scores'].items():
+            assert digest(ref['path'])==ref['sha256'];pins[ref['path']]=ref['sha256']
+            baseline[t]=torch.load(ref['path'],map_location='cpu',weights_only=False)[ref['key']]['logits']
+    else:
+        eight=json.loads(Path(cfg['eight_task_protocol']['path']).read_text());p=Path(eight['output'])/'full'
+        v=json.loads((p/'validation.json').read_text());assert v['status']=='passed' and digest(p/'scores.pt')==v['raw_sha256']
+        old=torch.load(p/'scores.pt',map_location='cpu',weights_only=False);pins[str(p/'scores.pt')]=v['raw_sha256']
+        baseline={t:old['MNIST/Unprotected/None/'+t]['logits'] for t in cfg['tasks']}
+    validations=[];frozen=json.loads((source/'pilot/pre_evaluation.json').read_text())
+    assert frozen==json.loads((source/'full/pre_evaluation.json').read_text())
+    for stage in ['pilot','full']:
+        p=source/stage;v=json.loads((p/'validation.json').read_text());assert v['status']=='passed'
+        assert digest(p/'scores.pt')==v['raw_sha256'];pins[str(p/'scores.pt')]=v['raw_sha256'];validations.append(v)
+        raw=torch.load(p/'scores.pt',map_location='cpu',weights_only=False);rows=json.loads((p/'results.json').read_text())
+        assert len(rows)==len(frozen)*len(cfg['tasks'])
+        for row in rows:
+            x=raw[row['model']+'/'+row['dataset']];ids=x['indices']
+            labels=official_labels(row['dataset']);expected=list(range(len(labels))) if stage=='full' else np.linspace(0,len(labels)-1,64,dtype=int).tolist()
+            assert ids==expected;np.testing.assert_array_equal(x['target'].numpy(),labels[ids])
+            assert row['model_parameter_sha256']==frozen[row['model']]
+            maximum=max(maximum,verify_metrics(x['logits'],x['target'],baseline[row['dataset']][ids],row));count+=1
+    lines=['# Frozen knowledge-source controls','','Accuracy (%) with the same three fixed classification heads. Historically exposed tests; no tuning.','',
+        '| Model | MNIST | DTD | SVHN |','|---|---:|---:|---:|']
+    latex=[r'\begin{tabular}{lrrr}',r'\toprule',r'Model & MNIST & DTD & SVHN \\',r'\midrule']
+    names=list(frozen);values=[]
+    for name in names:
+        v=[next(r['accuracy_percent'] for r in rows if (r['model'],r['dataset'])==(name,t)) for t in cfg['tasks']];values.append(v)
+        label=name if source.name=='single' else 'Without '+name
+        lines.append('| '+label+' | '+' | '.join(f'{a:.2f}' for a in v)+' |');latex.append(label+' & '+' & '.join(f'{a:.2f}' for a in v)+r' \\')
+    lines+=['','Single-expert diagonal scores reuse hash-verified native records. Leave-target-out retains the other seven TA coefficients at0.2 without renormalizing. Neither source accuracy nor a leave-out difference proves unique-knowledge extraction. Per-class and paired statistics use the original dataset expert (single models) or the eight-expert unprotected TA control (leave-out).']
+    (output/'tables.md').write_text('\n'.join(lines)+'\n');(output/'tables.tex').write_text('\n'.join(latex+[r'\bottomrule',r'\end{tabular}'])+'\n')
+    (output/'results.json').write_text(json.dumps(rows,indent=2)+'\n');(output/'protocol.json').write_text(json.dumps(cfg,indent=2)+'\n')
+    result=dict(status='passed_independent_numpy_recount_and_hashes',rows_checked=count,maximum_logp_error=maximum,
+        pilot_and_full_validations=validations,raw_files_sha256=pins,model_parameters_sha256=frozen,report_source_sha256=digest(__file__),
+        audit_and_table_seconds=time.monotonic()-start,new_GPU_forwards=0)
+    (output/'independent_validation.json').write_text(json.dumps(result,indent=2)+'\n')
+    if source.name=='single':
+        with plt.rc_context({'font.size':9}):
+            fig,ax=plt.subplots(figsize=(4.5,3),layout='constrained');image=ax.imshow(values,vmin=0,vmax=100,cmap='Blues',aspect='auto')
+            ax.set(xticks=range(3),xticklabels=cfg['tasks'],yticks=range(len(names)),yticklabels=names,xlabel='Evaluation task',ylabel='Frozen model')
+            for i,v in enumerate(values):
+                for j,a in enumerate(v):ax.text(j,i,f'{a:.2f}',ha='center',va='center',color='white' if a>65 else '#222222')
+            fig.colorbar(image,ax=ax,label='Accuracy (%)',shrink=.85);save_figure(fig,output,'knowledge_sources');plt.close(fig)
+
+
 def dare(source, output):
     """Three prespecified seeds; never pool repeated images as independent draws."""
     source, output = Path(source), Path(output); output.mkdir(parents=True, exist_ok=True)
@@ -362,5 +419,5 @@ def build(source, output):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    g=p.add_mutually_exclusive_group();g.add_argument('--dare', action='store_true');g.add_argument('--nufilt-ob',action='store_true');g.add_argument('--prodistill',action='store_true');args=p.parse_args()
-    (dare if args.dare else nufilt_ob if args.nufilt_ob else prodistill if args.prodistill else build)(args.source,args.output)
+    g=p.add_mutually_exclusive_group();g.add_argument('--dare', action='store_true');g.add_argument('--nufilt-ob',action='store_true');g.add_argument('--prodistill',action='store_true');g.add_argument('--controls',action='store_true');args=p.parse_args()
+    (controls if args.controls else dare if args.dare else nufilt_ob if args.nufilt_ob else prodistill if args.prodistill else build)(args.source,args.output)

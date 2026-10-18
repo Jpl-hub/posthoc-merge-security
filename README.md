@@ -12,6 +12,7 @@
 - [冻结模型、源码、数据与参数指纹](configs/phase3.json)
 - [已独立复核的结果主表](results/phase3/tables.md)
 - 补充固定批次：[PaRaMS恢复适配](results/phase3/params_adaptive/tables.md) · [DARE三种子](results/phase3/dare/tables.md) · [O/B与NUFILT](results/phase3/nufilt_OB/tables.md) · [ProDistill MNIST](results/phase3/prodistill/tables.md) · [DTD/SVHN扩展](results/phase3/prodistill_other_tasks/tables.md)
+- [公开基座／单专家知识来源对照](results/phase3/controls/single/tables.md)：九条新跨任务评价，三条原任务分数核哈希复用；不把任务准确率恢复等同于独有知识提取。
 - 偏置恢复：[原生FP32的MNIST结果](results/phase3/bias_canonicalization/tables.md) · [单列混合精度的DTD/SVHN结果](results/phase3/bias_tail_precision/tables.md)
 - [逐类计数、配对统计及完整指标](results/phase3/results.json) · [CSV](results/phase3/results.csv) · [复核与绘图指纹](results/phase3/provenance.json)
 - [研究状态](research_state.json) · [相关工作与创新性审查](notes/phase2_related_work_and_novelty.md)
