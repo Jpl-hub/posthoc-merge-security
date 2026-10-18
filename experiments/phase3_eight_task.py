@@ -43,6 +43,20 @@ def combine(anchor,models,order,coefficient):
 
 
 @torch.no_grad()
+def unmask(model, published, coefficient):
+    """MergeGuard section7: subtract whole published parameters, not a task vector."""
+    state=model.state_dict();reference=published.state_dict()
+    for key,value in state.items():
+        if not value.is_floating_point():continue
+        recovered=value-coefficient*reference[key]
+        expected=np.subtract(value.numpy(),np.multiply(reference[key].numpy(),coefficient,dtype=value.numpy().dtype),dtype=value.numpy().dtype)
+        np.testing.assert_array_equal(recovered.numpy(),expected)
+        state[key]=recovered
+    model.load_state_dict(state,strict=True)
+    return model
+
+
+@torch.no_grad()
 def run(protocol,full):
     cfg=json.loads(Path(protocol).read_text());assert digest(__file__)==cfg['source_sha256']
     for ref in cfg['inputs'].values():assert digest(ref['path'])==ref['sha256']
@@ -63,13 +77,20 @@ def run(protocol,full):
     raw={};rows=[];frozen={};score_cache={};maximum=0.;replays=0;start=time.monotonic()
     for case in cfg['cases']:
         target=case['target']
-        for scope in ['None','Protected expert']:
+        for scope in cfg.get('scopes',['None','Protected expert']):
             control={}
             for name in ['Unprotected']+case['defenses']:
-                models=dict(originals);own=originals[target] if scope=='None' else aligned[target]
+                aligned_scope=scope=='Protected expert'
+                models=dict(originals);own=aligned[target] if aligned_scope else originals[target]
                 if name!='Unprotected':
-                    ref=parent['defenses'][name];own=apply(own,ref['release' if scope=='None' else 'AGA_edits'],ref.get('full_state',False) if scope=='None' else False)
-                models[target]=own;model,error=combine(anchor,models,cfg['task_order'],cfg['coefficient']);sha=parameter_hash(model.state_dict())
+                    ref=parent['defenses'][name];own=apply(own,ref['AGA_edits' if aligned_scope else 'release'],False if aligned_scope else ref.get('full_state',False))
+                models[target]=own;model,error=combine(anchor,models,cfg['task_order'],cfg['coefficient'])
+                if scope=='Unmask':
+                    reference=cfg['no_attack_reference']['parameters'];assert digest(reference['path'])==reference['sha256']
+                    baseline=json.loads(Path(reference['path']).read_text())
+                    assert parameter_hash(model.state_dict())==baseline['/'.join([target,name,'None'])]
+                    model=unmask(model,own,cfg['unmask_coefficient'])
+                sha=parameter_hash(model.state_dict())
                 key='/'.join([target,name,scope]);frozen[key]=sha
                 if full:assert sha==json.loads((root/'pilot/pre_evaluation.json').read_text())[key]
                 save_json(out/'pre_evaluation.json',frozen)
@@ -98,7 +119,7 @@ def run(protocol,full):
     torch.save(raw,out/'scores.pt');save_json(out/'results.json',rows);save_json(out/'protocol.json',cfg)
     save_json(out/'validation.json',dict(status='passed',rows=len(rows),raw_sha256=digest(out/'scores.pt'),score_replays=replays,
         maximum_context_score_error=maximum,wall_seconds=time.monotonic()-start,source_sha256=digest(__file__),
-        scope='Eight expert parameters and author0.2; only three evaluated datasets; protected-expert AGA only. Not full original paper replication.'))
+        scope=cfg['experiment']+'; only three evaluated datasets, no eight-task average or complete paper reproduction.'))
 
 
 if __name__=='__main__':

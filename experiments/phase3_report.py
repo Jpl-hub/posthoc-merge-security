@@ -36,7 +36,14 @@ def eight_task(source, output):
     for p,sha in active['source_sha256'].items():assert digest(p)==sha,p
     frozen=json.loads((source/'pilot/pre_evaluation.json').read_text())
     assert frozen==json.loads((source/'full/pre_evaluation.json').read_text())
-    expected=sum(2*(1+len(c['defenses']))*len(cfg['evaluate']) for c in cfg['cases'])
+    scopes=cfg.get('scopes',['None','Protected expert']);reference_rows=[]
+    if 'no_attack_reference' in cfg:
+        for ref in cfg['no_attack_reference'].values():assert digest(ref['path'])==ref['sha256']
+        reference_rows=json.loads(Path(cfg['no_attack_reference']['rows']['path']).read_text())
+        audit=json.loads(Path(cfg['no_attack_reference']['validation']['path']).read_text())
+        assert audit['status']=='passed_independent_numpy_metrics_and_frozen_artifact_hashes'
+        assert audit['model_parameter_hashes']==json.loads(Path(cfg['no_attack_reference']['parameters']['path']).read_text())
+    expected=sum(len(scopes)*(1+len(c['defenses']))*len(cfg['evaluate']) for c in cfg['cases'])
     maximum=0.;count=0;validations=[];pins={}
     for stage in ['pilot','full']:
         root=source/stage;v=json.loads((root/'validation.json').read_text());assert v['status']=='passed'
@@ -61,7 +68,7 @@ def eight_task(source, output):
         validations.append(v);pins[str(root/'scores.pt')]=v['raw_sha256']
     output.mkdir(parents=True,exist_ok=True)
     def get(target,name,scope,task):
-        return next(r for r in rows if (r['target'],r['defense'],r['attack_scope'],r['dataset'])==(target,name,scope,task))
+        return next(r for r in rows+reference_rows if (r['target'],r['defense'],r['attack_scope'],r['dataset'])==(target,name,scope,task))
     for r in rows:
         t,n,s,k=r['target'],r['defense'],r['attack_scope'],r['dataset']
         r['defense_drop_without_attack_pp']=get(t,'Unprotected','None',k)['accuracy_percent']-get(t,n,'None',k)['accuracy_percent']
@@ -71,15 +78,20 @@ def eight_task(source, output):
     for r in rows:r['bonferroni_log10_p']=min(0.,r['mcnemar_log10_p']+math.log10(comparisons))
     labels={'Unprotected':'Unprotected','O/B':'O/B†','A/B':'A/B†','PaRaMS':'PaRaMS (full)*','PaRaMS_Attention':'PaRaMS (attention)'}
     lines=['# Eight participating experts; three evaluated tasks','','Original author task order, TA0.2, and AGA applied to the protected expert. Accuracy (%); no eight-task average. The other five partner datasets were not evaluated. This setting changes both coefficient and participant count relative to the two-expert TA0.5 table.','']
-    latex=[]
+    if 'Unmask' in scopes:
+        lines=['# Paper-defined Unmask recovery: eight experts, three evaluated tasks','',
+            'Fixed MergeGuard section7 operator: merged parameters minus0.3 times the whole published expert. TA0.2, one known protected expert; no AGA composition. Native CLIP paper-formula adaptation, not official execution or complete Table5 replication. Accuracy (%); no eight-task average.','']
+    shown_scopes=['None']+[s for s in scopes if s!='None']
+    scope_labels={'None':'No attack','Protected expert':'AGA (protected expert)','Unmask':'Unmask (0.3)'}
+    headers=[scope_labels[v] for v in shown_scopes];latex=[]
     for case in cfg['cases']:
         target=case['target'];tasks=[target]+[t for t in cfg['evaluate'] if t!=target]
         lines += ['## Protected task: '+target,'','Cells: '+' / '.join(tasks)+' (target / evaluated partners).','',
-            '| Defense | No attack | AGA (protected expert) |','|---|---:|---:|']
-        latex += ['% Protected task: '+target+'; cells: '+' / '.join(tasks),r'\begin{tabular}{lrr}',r'\toprule',r'Defense & No attack & AGA (protected expert) \\',r'\midrule']
+            '| Defense | '+' | '.join(headers)+' |','|---|'+'---:|'*len(headers)]
+        latex += ['% Protected task: '+target+'; cells: '+' / '.join(tasks),r'\begin{tabular}{lrr}',r'\toprule','Defense & '+' & '.join(headers)+r' \\',r'\midrule']
         for name in ['Unprotected']+case['defenses']:
             label=labels.get(name,'Defense 1*')
-            cells=[' / '.join(f'{get(target,name,s,t)["accuracy_percent"]:.2f}' for t in tasks) for s in ['None','Protected expert']]
+            cells=[' / '.join(f'{get(target,name,s,t)["accuracy_percent"]:.2f}' for t in tasks) for s in shown_scopes]
             lines.append('| '+label+' | '+' | '.join(cells)+' |')
             latex.append(label.replace('†',r'$^{\dagger}$').replace('*',r'$^{*}$')+' & '+' & '.join(cells)+r' \\')
         lines.append('');latex += [r'\bottomrule',r'\end{tabular}','']
@@ -93,7 +105,7 @@ def eight_task(source, output):
         writer=csv.DictWriter(f,fieldnames=columns,extrasaction='ignore');writer.writeheader();writer.writerows(rows)
     result=dict(status='passed_independent_numpy_metrics_and_frozen_artifact_hashes',rows_checked=count,maximum_logp_error=maximum,
         pilot_and_full_validations=validations,raw_files_sha256=pins,model_parameter_hashes=frozen,
-        report_source_sha256=digest(__file__),audit_and_table_seconds=time.monotonic()-start,new_GPU_forwards=0)
+        report_source_sha256=digest(__file__),reference_files=cfg.get('no_attack_reference'),audit_and_table_seconds=time.monotonic()-start,new_GPU_forwards=0)
     (output/'independent_validation.json').write_text(json.dumps(result,indent=2)+'\n')
 
 

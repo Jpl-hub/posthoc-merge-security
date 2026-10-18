@@ -1,0 +1,90 @@
+{
+  "experiment": "Paper-defined Unmask0.3 whole-published-parameter subtraction; eight-expertTA0.2, three evaluated tasks",
+  "output": "outputs/phase3_unmask_20261018",
+  "coefficient": 0.2,
+  "task_order": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "EuroSAT",
+    "SVHN",
+    "GTSRB",
+    "MNIST",
+    "DTD"
+  ],
+  "evaluate": [
+    "MNIST",
+    "DTD",
+    "SVHN"
+  ],
+  "score_tolerance": 0.0005,
+  "source_sha256": "0e5c450b8b3629f312364a1b6c0a0c6f80560bf0ecd36e76a468680137a101e1",
+  "inputs": {
+    "active": {
+      "path": "configs/phase3_dare.json",
+      "sha256": "0258fe882c7f1a401c3af87e5374599067a424fbe159518a797547dd4907a3da"
+    },
+    "additional": {
+      "path": "configs/phase3.json",
+      "sha256": "4e40f5286e9cbaa7b39b19214742c6cddaf8946af69369ef163ff596194ef7c7"
+    }
+  },
+  "author_TaskVector": {
+    "path": "external/secure-merge-attack/task_vectors.py",
+    "sha256": "9d95bdb8b9fef2a4457e47b28ea3e1ccc188f30ded8c4c1ec1fe1e55cfded4af",
+    "git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea"
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "defenses": [
+        "Phase1_MNIST",
+        "O/B",
+        "A/B",
+        "PaRaMS",
+        "PaRaMS_Attention"
+      ]
+    },
+    {
+      "target": "DTD",
+      "defenses": [
+        "Phase1_DTD"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defenses": [
+        "Phase1_SVHN"
+      ]
+    }
+  ],
+  "limitations": [
+    "Paper formula nativeCLIP adapter; author Unmask execution code not acquired; not completeTable5 reproduction.",
+    "Fixed0.3; matched unprotected subtraction; noAGA composition or coefficient search.",
+    "Eight participating experts, onlyMNIST/DTD/SVHN evaluated.",
+    "OB/AB task0.5 violations retained; fullPaRaMS over-budget.",
+    "Source controls and unmasked accuracy do not prove unique-knowledge recovery.",
+    "All visual-encoder floating tensors modified; fixed external task heads unchanged. Historically exposed tests; no tuning."
+  ],
+  "gradient_steps": 0,
+  "defense_updates": 0,
+  "scopes": [
+    "Unmask"
+  ],
+  "unmask_coefficient": 0.3,
+  "no_attack_reference": {
+    "parameters": {
+      "path": "outputs/phase3_eight_task_20261018/pilot/pre_evaluation.json",
+      "sha256": "5b8b3e836225af2c921a59684aba481977cccd59b3dde70a982a0f3976c0f206"
+    },
+    "rows": {
+      "path": "results/phase3/eight_task/results.json",
+      "sha256": "a319051abf584522a7d7d276fa7cccbcf26fea21911f8276a915adfcc276e142"
+    },
+    "validation": {
+      "path": "results/phase3/eight_task/independent_validation.json",
+      "sha256": "3aea2bdf933293f6b19e9e359fc66df9b955a7acaa892352fd2903a5c4018504"
+    }
+  }
+}

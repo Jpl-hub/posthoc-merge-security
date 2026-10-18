@@ -3607,7 +3607,7 @@
     "interpretation": "Final LN/P coverage gap; not robustness against arbitrary distillation. Matching unprotected controls and all scopes retained."
   },
   "phase3_eight_task": {
-    "status": "last_seen_full_running_completion_unverified_SSH_unavailable",
+    "status": "completed_independently_verified",
     "protocol": "configs/phase3_eight_task.json",
     "failure": "results/phase3/eight_task/input_failure.json",
     "missing_original_experts": [
@@ -3634,7 +3634,12 @@
     "independent_report_source_sha256": "12637c5f25e74e9a67ffb0484bf33b6a149cc0e0afaa4a7ffeb6dff2e5ca8951",
     "independent_audit_launcher_pid": 13486,
     "last_verified_connection_utc": "2026-10-18T05:14:11Z",
-    "remote_completion_claimed": false
+    "remote_completion_claimed": true,
+    "full_score_replays": 960,
+    "full_maximum_context_score_error": 0.0,
+    "independent_rows_checked": 120,
+    "full_wall_seconds": 2387.2262483090162,
+    "table": "results/phase3/eight_task/tables.md"
   },
   "phase3_knowledge_controls": {
     "protocol": "configs/phase3_controls.json",
@@ -3669,25 +3674,27 @@
     "old_native_results_preserved": true
   },
   "phase3_unmask": {
-    "status": "preregistered_pending_minimal_patch_not_deployed_or_run",
+    "status": "minimal_implementation_frozen_not_yet_run",
     "paper": "MergeGuard CVPR2026 section7 page8",
     "formula": "merged_parameters -0.3 protected_parameters",
     "official_author_execution": false,
     "scope": "Same eight-expert TA0.2; matched unprotected subtraction; three tasks. Fixed coefficient, no AGA composition or search.",
     "prerequisite": "Active eight-task and leave-out sources/reports must finish before modifying existing entry.",
     "new_gradients": 0,
-    "reason_not_run": "Current eight/leave-out producer and audit completion cannot be verified while3090 SSH is unavailable; active sources remain unchanged."
+    "reason_not_run": "Source/config committing before pilot; queued after fixed NUFILTcase1.",
+    "protocol": "configs/phase3_unmask.json",
+    "source_sha256": "0e5c450b8b3629f312364a1b6c0a0c6f80560bf0ecd36e76a468680137a101e1"
   },
   "current_connection": {
     "server": "3090",
-    "status": "SSH_closed_before_authentication",
-    "checked_utc": "2026-10-18T08:53:45.955222+00:00",
+    "status": "reconnected_3090_GPU_verified",
+    "checked_utc": "2026-10-18T09:00:03Z",
     "domain_and_current_public_IP_checked": true,
-    "master_socket_present": false,
+    "master_socket_present": true,
     "credentials_written": false,
     "hosts_changed": false,
     "4090": "Not used per latest user reply",
-    "effect": "Detached jobs may continue; new full results cannot be independently retrieved/verified yet. No duplicate jobs or completion claims."
+    "effect": "Eight-expert and leave-out completed and independently verified; NUFILTcase0 full replay interrupted, case1 resumed under unchanged protocol."
   },
   "phase3_recovery_overview": {
     "status": "generated_from_previously_independently_verified_results",
@@ -3700,5 +3707,15 @@
     "new_recovery_attacks": 0,
     "raw_scores_rechecked_this_summary": false,
     "OB_AB_budget_violations_retained": true
+  },
+  "phase3_leave_out": {
+    "status": "completed_independently_verified",
+    "results": "results/phase3/controls/leave_out",
+    "full_rows": 9,
+    "independent_rows_checked": 18,
+    "full_score_replays": 144,
+    "maximum_context_score_error": 0.0,
+    "coefficient": 0.2,
+    "renormalized": false
   }
 }
