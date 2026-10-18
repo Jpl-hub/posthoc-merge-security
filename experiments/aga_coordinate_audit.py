@@ -106,7 +106,51 @@ def head_geometry(output):
     save_json(out,result);print(json.dumps(result,indent=2),flush=True)
 
 
+@torch.no_grad()
+def head_response(output):
+    """Measure the two head-space components in the frozen source computation."""
+    from angular_distance import signed_residual
+    from cross_module_distance import extended_parameters, final_hidden
+    from probe_margin_distance import scores
+    from verify_levelset_audits import convert, raw_scores
+    from scipy.special import expit
+    start=time.monotonic();out=Path(output);assert not out.exists()
+    cfg=json.loads(Path('configs/frozen_coupling_audit.json').read_text())
+    _,expert,head,pins=checked_models('MNIST');p=extended_parameters(expert,head)
+    for field in ['point','release']:assert digest(cfg[field])==cfg[field+'_sha256']
+    point=torch.load(cfg['point'],map_location='cpu');release=torch.load(cfg['release'],map_location='cpu')
+    c={k:v[:512].double() for k,v in point['native'].items()};pn=convert(p)
+    key='model.visual.transformer.resblocks.11.'
+    d=release[key+'attn.out_proj.weight'].double()-p['O'];db=release[key+'mlp.c_proj.weight'].double()-p['B']
+    tangent=torch.empty_like(d)
+    for h in range(12):
+        sl=slice(h*64,(h+1)*64);q=torch.linalg.qr(p['O'][:,sl],mode='reduced').Q
+        tangent[:,sl]=q@(q.T@d[:,sl])
+    rounding=c['h']-final_hidden(c['r'],p);before=scores(c['h'],p);winner=before.argmax(1)
+    records=[];error=0.
+    for name,delta in [('none',torch.zeros_like(d)),('full',d),('tangent',tangent),('normal',d-tangent)]:
+        r=c['r']+c['o_input']@delta.T;rn=r.numpy();center=rn-rn.mean(1,keepdims=True)
+        pre=(center/np.sqrt((center**2).mean(1,keepdims=True)+p['eps2'])*pn['gamma2']+pn['beta2'])@pn['A'].T+pn['a']
+        for compensate in [False,True]:
+            pp=p|{'B':p['B']+(db if compensate else 0)}
+            hidden=rounding+final_hidden(r,pp);after=scores(hidden,p)
+            hn=rounding.numpy()+rn+(pre*expit(1.702*pre))@pp['B'].numpy().T+pn['b']
+            independent=raw_scores(hn,pn);err=float(abs(independent-after.numpy()).max());assert err<1e-8;error=max(error,err)
+            changed=after.argmax(1)!=winner
+            records.append(dict(O_component=name,B_changed=compensate,teacher_prediction_changes=int(changed.sum()),
+                changed_by_teacher_class=torch.bincount(winner[changed],minlength=10).tolist(),
+                maximum_relative_margin_drift=float(signed_residual(before,after).abs().max())))
+    result=dict(status='frozen_source_finite_counterfactual_not_actual_AGA_or_candidate',source_n=512,rows=records,
+        source_sha256=digest(__file__),point_sha256=cfg['point_sha256'],release_sha256=cfg['release_sha256'],
+        source_indices_sha256=hashlib.sha256(json.dumps(point['indices']['fit'][:512]).encode()).hexdigest(),
+        checkpoint_sha256=pins,maximum_independent_NumPy_score_error=error,wall_seconds=time.monotonic()-start,
+        images_loaded=0,gradients=0,new_release_weights=0,partner_used=False,test_used=False,
+        scope='Native cached source activations; exact LN2, QuickGELU, final LN and feature normalization. Removing a head-space component is a counterfactual, not the complete finite AGA map. No attack-effect or universal guarantee.')
+    save_json(out,result);print(json.dumps(result,indent=2),flush=True)
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True)
-    parser.add_argument('--head-geometry',action='store_true');args=parser.parse_args();torch.set_num_threads(4)
-    (head_geometry if args.head_geometry else audit)(args.output)
+    parser.add_argument('--head-geometry',action='store_true');parser.add_argument('--head-response',action='store_true')
+    args=parser.parse_args();assert not (args.head_geometry and args.head_response);torch.set_num_threads(4)
+    (head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
