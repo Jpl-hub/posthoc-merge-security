@@ -1,5 +1,5 @@
 {
-  "checked_date": "2026-10-16",
+  "checked_date": "2026-10-18",
   "purpose": "Attack literature and official-code scope audit, with separately labelled real diagonal recovery adaptation; no defense updates.",
   "completed_recovery_attacks": [
     "AGA"
@@ -11,7 +11,10 @@
   "mergers_not_counted_as_attacks": [
     "TA",
     "TIES",
-    "NUFILT"
+    "NUFILT",
+    "DARE",
+    "ProDistill",
+    "FeatCal (not executed)"
   ],
   "pinned_sources": [
     {
@@ -75,29 +78,29 @@
       "repository": "JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation",
       "commit": "c773fcaead79cf25b5654b2e3fe233450da4e387",
       "tree_truncated": false,
-      "files": [
-        {
-          "path": "Vision/README.md",
-          "git_blob": "0ccea9c6344c69519d1100f44a160d833c1a27cc"
-        },
-        {
-          "path": "Vision/main_prodistill.py",
-          "git_blob": "1942b7328fb15bf80d5750d745fdb13160adff7b"
-        },
-        {
-          "path": "Vision/merge_models.py",
-          "git_blob": "a853be7c28e2f49b30f8c40865a6cd3d5640e294"
-        },
-        {
-          "path": "Vision/merge_args.py",
-          "git_blob": "185e1db59f6fb497f126c00b5701fb1a0acc924e"
-        },
-        {
-          "path": "Vision/utils.py",
-          "git_blob": "abacb3602da00817495796f2ae3e22d58a541f8f"
-        }
-      ],
-      "status": "Vision source read; teachers and anchor frozen, elementwise merge coefficients optimized with MSE on training-derived calibration; default eight-task flow not executed or claimed as our two-task attack"
+      "files": {
+        "Vision/merge_models.py": "a853be7c28e2f49b30f8c40865a6cd3d5640e294",
+        "Vision/merge_args.py": "185e1db59f6fb497f126c00b5701fb1a0acc924e",
+        "Vision/utils.py": "abacb3602da00817495796f2ae3e22d58a541f8f",
+        "Vision/merge_datasets.py": "c421b57e6bd76661f85e497eaf14867d0a93b3a5",
+        "README.md": "d82fc6a0e21d090e8a1c797cbd2d1f3017d2dd1e"
+      },
+      "status": "Official coefficient kernel, explicit native two-expert driver; nine MNIST/SVHN cases completed and independently recounted. Not original eight-task table; task-assigned unlabeled calibration and merger gradients required.",
+      "entry_blob": "1942b7328fb15bf80d5750d745fdb13160adff7b",
+      "registry_blob": "0b28551f1c999dfff81fbe3dda18cd3df26617e7"
+    },
+    {
+      "repository": "egangu/featcal",
+      "commit": "56f7fbb9f69332dc69a89b9f3035c3c2e03f4f7c",
+      "tree_truncated": false,
+      "files": {
+        "README.md": "ad82a6ca023aa46dad7c560e5ccf1c535034d9ff",
+        "src/featcal/featcal.py": "5561cc07bcc8e640e9600aef89bb39031fe905dc",
+        "src/featcal/solver.py": "57eaf0e2fcb1992b4b4a655e4a5f6959b1d221b1",
+        "src/featcal/models.py": "b384391b58316f5a1e7a024db87d3b6cda2856f4",
+        "src/featcal/run_ta8.py": "413980800ed8d21f6fecc8191e11a0254959a049"
+      },
+      "status": "Primary paper method/appendix and fixed official CLIP demo read; not executed. Block-local Linear/LN only; native final projection/head mapping required."
     }
   ],
   "paper_recovery_procedures": [
@@ -165,5 +168,10 @@
   ],
   "unexecuted_supplementary_diagnostics": [
     "Projection of final LN bias to published visual-projection column space; mathematical risk only, not counted as a reproduced attack."
-  ]
+  ],
+  "latest_completed_merger_evaluations": {
+    "DARE+TA": "Fixed drop0.2, three retained masks,2016 selected-score replays; no new recovery attack",
+    "O/B_NUFILT": "12 new cells,24 existing controls reused,300 merger-gate backwards,576 context score replays. Aggregate old wall timer invalid; see cost audit."
+  },
+  "calibration_permission": "ProDistill uses64 known-task unlabeled train examples per expert; class labels unused, dataset/task membership is used. Original expert/defense checkpoints never updated."
 }

@@ -194,9 +194,9 @@ def run(full=False, protocol='configs/phase3.json'):
         loc = np.linspace(0, len(labels)-1, 16, dtype=int)
         error = 0.
         for block in sorted(set(loc//128)):
-            start, stop = block*128, min((block+1)*128, len(labels)); wanted = loc[(loc >= start) & (loc < stop)]
-            logits = []; evaluate(fused, heads[row['dataset']], make_loader(data[row['dataset']], score['indices'][start:stop]), 'cuda', logit_sink=logits.append)
-            error = max(error, float((torch.cat(logits)[wanted-start]-score['logits'][wanted]).abs().max()))
+            lo, hi = block*128, min((block+1)*128, len(labels)); wanted = loc[(loc >= lo) & (loc < hi)]
+            logits = []; evaluate(fused, heads[row['dataset']], make_loader(data[row['dataset']], score['indices'][lo:hi]), 'cuda', logit_sink=logits.append)
+            error = max(error, float((torch.cat(logits)[wanted-lo]-score['logits'][wanted]).abs().max()))
         maximum_error = max(maximum_error, error)
         assert error <= .0005, (key, error)
         del fused

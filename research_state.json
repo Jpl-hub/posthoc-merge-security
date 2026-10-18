@@ -1,32 +1,17 @@
 {
-  "status": "verified_fixed_DARE_and_missing_recovery_comparisons_advancing",
-  "updated_utc": "2026-10-17T07:35:19.520014+00:00",
-  "automatic_continuation": "Active bounded current-thread heartbeat13-35 through2026-10-17T11:11:55Z; old failed experiment loops remain closed.",
+  "status": "completed_prodistill_collecting_independent_results",
+  "updated_utc": "2026-10-18T03:50:05.137253+00:00",
+  "automatic_continuation": "Bounded current-thread heartbeat13-35 active through2026-10-18T09:46:25Z; previous failed loops remain closed.",
   "server": "RTX3090_active_4090_CPU_only",
   "allow_4090": false,
   "phase": 3,
   "objective": "Two pure post-hoc defense schemes: strengthen mechanism with source-only evidence and complete attack literature, official baselines and fixed evaluations. Original checkpoints and frozen historical releases preserved.",
   "stage": "full_task_counterexample_and_targeted_LN_recovery_independently_verified",
-  "research_jobs": [
-    {
-      "server": "3090",
-      "output": "outputs/phase3/nufilt_OB",
-      "log": "outputs/phase3_nufilt_OB.log",
-      "pid": 19815,
-      "role": "Missing six O/B merges with old U/Phase1 controls hash-reused; full results awaiting final replay"
-    },
-    {
-      "server": "3090",
-      "output": "outputs/phase3_prodistill",
-      "log": "outputs/phase3_prodistill.log",
-      "pid": 22464,
-      "role": "Fixed data-assisted 64+64 unlabeled source images; only attacker merge coefficients; nine prespecified cases"
-    }
-  ],
+  "research_jobs": [],
   "breakthrough_verified": false,
   "new_candidate": "No compliant new Defense2: two-dimensional readout point independently fails full task drift2.140134; fixed class-readout reflection fails source drift0.744124. Neither proceeded to TA/AGA.",
   "mechanism": "notes/phase2_coupling.md",
-  "next_action": "Complete frozen O/B NUFILT and official-kernel ProDistill two-expert adapter; no new Defense2 candidate, no test-driven defense repair.",
+  "next_action": "Publish independently verified ProDistill and pending O/B NUFILT results.",
   "deferred": [
     "No new automatic cycles",
     "No unregistered defense tuning from attack/test feedback"
@@ -1175,12 +1160,12 @@
   "github_sync": {
     "status": "verified_result_snapshot",
     "transport": "GitHub plugin",
-    "last_verified_remote_commit": "02bfb00c7b009f4e85ae68fe84bb1aa19f883278",
-    "last_verified_local_commit": "28636e2b3d517862aee9cac05a95ceb4d0c8dad0",
-    "last_verified_canonical_tree": "05e810fa3394c448ca21c2cbb24e251e2aada315",
+    "last_verified_remote_commit": "c4463d3864a7efed02b99dc4138c3d3ee7f9348a",
+    "last_verified_local_commit": "02bd7fb530ef06afdb7dbc526855f83e6898984a",
+    "last_verified_canonical_tree": "b6fc6d89e903c79b80112f8b895565099d4d02be",
     "verification_receipt": "outputs/latest_github_sync_receipt.json",
     "durability": "The verified scientific result snapshot is named above. A later state-only receipt commit may follow; exact current remote/local pair is in outputs/latest_github_sync_receipt.json, avoiding self-reference.",
-    "all_changed_files_read_back": 35,
+    "all_changed_files_read_back": 30,
     "source_archive_sha256": "47be58d6d6084e81f2e569d4015341651eb8c6314a854d8e76b68ea9d0da5433",
     "source_archive_server": "3090:/root/autodl-tmp/merge_security_20261009/outputs/phase3_continuation_archive"
   },
@@ -3512,5 +3497,33 @@
     "scope": "No-data audit only, not ProDistill accuracy; cannot exclude prefix-only recovery.",
     "gradients": 0,
     "new_images": 0
+  },
+  "phase3_nufilt_OB": {
+    "status": "completed_independently_verified",
+    "results": "results/phase3/nufilt_OB",
+    "table": "results/phase3/nufilt_OB/tables.md",
+    "new_merger_models": 6,
+    "new_dataset_cells": 12,
+    "reused_control_cells": 24,
+    "merger_gradient_steps": 300,
+    "expert_updates": 0,
+    "defense_updates": 0,
+    "score_replays": 576,
+    "maximum_replay_error": 0.0,
+    "AGA_target_accuracy_range": [
+      98.92,
+      99.24
+    ],
+    "AGA_partner_accuracy_range": [
+      92.7320221266134,
+      95.071450522434
+    ],
+    "remaining_target_gap_pp": [
+      0.1,
+      0.22
+    ],
+    "aggregate_timer_valid": false,
+    "cost_audit": "results/phase3/nufilt_OB/cost_audit.json",
+    "O_B_task_budget_violation_retained": true
   }
 }
