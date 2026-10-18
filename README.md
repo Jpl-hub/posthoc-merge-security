@@ -11,7 +11,7 @@
 - [4090已归档重复文件清理记录](results/phase3/4090_cleanup.json)
 - [冻结模型、源码、数据与参数指纹](configs/phase3.json)
 - [已独立复核的结果主表](results/phase3/tables.md)
-- 补充固定批次：[PaRaMS恢复适配](results/phase3/params_adaptive/tables.md) · [DARE三种子](results/phase3/dare/tables.md) · [O/B与NUFILT](results/phase3/nufilt_OB/tables.md) · [ProDistill](results/phase3/prodistill/tables.md)
+- 补充固定批次：[PaRaMS恢复适配](results/phase3/params_adaptive/tables.md) · [DARE三种子](results/phase3/dare/tables.md) · [O/B与NUFILT](results/phase3/nufilt_OB/tables.md) · [ProDistill MNIST](results/phase3/prodistill/tables.md) · [DTD/SVHN扩展](results/phase3/prodistill_other_tasks/tables.md)
 - 偏置恢复：[原生FP32的MNIST结果](results/phase3/bias_canonicalization/tables.md) · [单列混合精度的DTD/SVHN结果](results/phase3/bias_tail_precision/tables.md)
 - [逐类计数、配对统计及完整指标](results/phase3/results.json) · [CSV](results/phase3/results.csv) · [复核与绘图指纹](results/phase3/provenance.json)
 - [研究状态](research_state.json) · [相关工作与创新性审查](notes/phase2_related_work_and_novelty.md)
@@ -40,7 +40,7 @@ TA 系数0.5；TIES 使用固定官方纯函数，保留前20%、mass 符号、d
 
 NUFILT 已完成固定官方内核与 native checkpoint 对应验证（MNIST/SVHN、两个顺序、三种范围）；它是融合算法。Phase 1 在该设置下与无保护模型完全相同，A/B 的 MNIST 也恢复至98.86%–99.33%。MergeLock、MergeGuard、MergeBarrier 中尚未获得可核验官方执行版本的内容只列论文分析，不填自产复现成绩。完成状态以结果与源码指纹为准。
 
-AGA后NUFILT的O/B目标恢复至98.92%–99.24%。ProDistill使用每任务64张无类别标签训练图及任务归属、只优化攻击方融合系数；O/B与A/B的目标恢复至约99.42%。这是更高数据权限下的结果，不能与无数据AGA混为同一攻击设置。该ProDistill实现不更新最终LN/P，Phase1仍低分不代表抗覆盖这些位置的恢复。
+AGA后NUFILT的O/B目标恢复至98.92%–99.24%。ProDistill使用每任务64张无类别标签训练图及任务归属、只优化攻击方融合系数；O/B与A/B的目标恢复至约99.42%。这是更高数据权限下的结果，不能与无数据AGA混为同一攻击设置。逐元素系数使块内8505万个坐标在代数上全部可达，累计1.70亿系数按块训练；这不是低维标量合并，也不意味着数值上任意目标可实现。该ProDistill实现不更新最终LN/P，Phase1仍低分不代表抗覆盖这些位置的恢复。
 
 PaRaMS新增恢复使用官方MLP匹配内核及明确配对逆尺度的Attention适配，不是完整作者攻击代码复现。在MNIST/SVHN上，完整PaRaMS参考恢复至99.37%／92.50%；Phase1仍为9.80%／6.70%，但此攻击同样不改最终LN偏置，不能据此称通用抗恢复。O/B、A/B的任务预算反例仍成立，没有新防御模型。
 
