@@ -3607,7 +3607,7 @@
     "interpretation": "Final LN/P coverage gap; not robustness against arbitrary distillation. Matching unprotected controls and all scopes retained."
   },
   "phase3_eight_task": {
-    "status": "pilot_passed_full_evaluation_running",
+    "status": "last_seen_full_running_completion_unverified_SSH_unavailable",
     "protocol": "configs/phase3_eight_task.json",
     "failure": "results/phase3/eight_task/input_failure.json",
     "missing_original_experts": [
@@ -3632,7 +3632,9 @@
     "pilot_maximum_context_score_error": 0.0,
     "independent_report_source": "experiments/phase3_report.py --eight-task",
     "independent_report_source_sha256": "12637c5f25e74e9a67ffb0484bf33b6a149cc0e0afaa4a7ffeb6dff2e5ca8951",
-    "independent_audit_launcher_pid": 13486
+    "independent_audit_launcher_pid": 13486,
+    "last_verified_connection_utc": "2026-10-18T05:14:11Z",
+    "remote_completion_claimed": false
   },
   "phase3_knowledge_controls": {
     "protocol": "configs/phase3_controls.json",
@@ -3667,12 +3669,24 @@
     "old_native_results_preserved": true
   },
   "phase3_unmask": {
-    "status": "preregistered_not_implemented_or_run",
+    "status": "preregistered_pending_minimal_patch_not_deployed_or_run",
     "paper": "MergeGuard CVPR2026 section7 page8",
     "formula": "merged_parameters -0.3 protected_parameters",
     "official_author_execution": false,
     "scope": "Same eight-expert TA0.2; matched unprotected subtraction; three tasks. Fixed coefficient, no AGA composition or search.",
     "prerequisite": "Active eight-task and leave-out sources/reports must finish before modifying existing entry.",
-    "new_gradients": 0
+    "new_gradients": 0,
+    "reason_not_run": "Current eight/leave-out producer and audit completion cannot be verified while3090 SSH is unavailable; active sources remain unchanged."
+  },
+  "current_connection": {
+    "server": "3090",
+    "status": "SSH_closed_before_authentication",
+    "checked_utc": "2026-10-18T08:53:45.955222+00:00",
+    "domain_and_current_public_IP_checked": true,
+    "master_socket_present": false,
+    "credentials_written": false,
+    "hosts_changed": false,
+    "4090": "Not used per latest user reply",
+    "effect": "Detached jobs may continue; new full results cannot be independently retrieved/verified yet. No duplicate jobs or completion claims."
   }
 }
