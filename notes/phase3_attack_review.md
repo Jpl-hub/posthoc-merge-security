@@ -17,7 +17,7 @@
 | MergeGuard Unmask | [CVPR2026 §7](https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf)：从融合参数减去缩放后的整份保护参数；原文系数0.3 | 公式已核对正式PDF；尚未取得可核官方执行入口。须有基座／伙伴控制，不能把删除目标专家项称作恢复其知识 |
 | MergeGuard GradErase | 同文§7：有限训练数据估计扰动方向，重训练时去除该方向的梯度分量 | 原文未充分给出扰动估计、数据量和更新日程；没有核验的作者实现，未复现。不能用原始干净专家差分充当攻击者估计 |
 | 融合后监督微调（SFT） | [Trap² §6.4](https://arxiv.org/html/2601.21898v2#S6.SS4)：攻击者取得任务数据／标签后，训练合并模型副本 | 官方固定README说明恢复流程未随库附带；本项目未执行。强权限攻击，不与无数据AGA混表；防御者原checkpoint仍不变 |
-| 蒸馏式恢复流程（ProDistill） | 同文§6.4将[ProDistill](https://github.com/JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation)用于恢复评估：无类别标签校准输入、任务归属、专家中间特征与融合系数梯度 | 官方系数核的native两专家适配已完成MNIST/SVHN九组并独立复核；默认8任务论文表未复现。仅优化攻击方系数；最终LN/P不更新。DTD/SVHN保护任务扩展在运行 |
+| 蒸馏式恢复流程（ProDistill） | 同文§6.4将[ProDistill](https://github.com/JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation)用于恢复评估：无类别标签校准输入、任务归属、专家中间特征与融合系数梯度 | 官方系数核的native两专家适配已完成MNIST/SVHN九组并独立复核；默认8任务论文表未复现。仅优化攻击方系数；最终LN/P不更新。DTD/SVHN保护任务六组扩展亦已完成并独立复核 |
 
 没有公开完整代码不等于攻击无效。论文复现若需自行实现，必须标为“依据论文实现”，先核对歧义和权限；不能用自创恢复步骤替代原作者方法。攻击者训练副本也不等于重新微调防御者专家，二者必须区分。
 
@@ -414,3 +414,11 @@ DTD/SVHN保护任务的六组固定ProDistill也已完成：[双任务全表](..
 下一批只泛化已验证的NUFILT入口的任务名和类别数，不移植新算法，不改变作者核、优化目标或超参数。DTD→MNIST补未对齐、AGA仅保护专家、AGA全部专家，均保留两种任务顺序；SVHN→MNIST只补AGA仅保护专家，因为无攻击与全部专家对齐已由同一MNIST/SVHN模型对的旧结果覆盖，交换目标／伙伴列即可，不能重复训练计作新结果。两保护任务的Phase1仍须逐张量证明所选输入与匹配无保护相同；未选择的LN／偏置／B／P保持公开基座。这个恒等检查只证明同一合并模型，准确率仍由既定数据评价。
 
 新构造单元共8个，每个50步门控优化，16个新完整数据集单元加16条相同模型复用记录。固定seed42、LoRA64、null128、probe8、lr0.001；无训练图片／标签参与优化，原模型与防御不更新。每个先冻结权重、64图pilot和原128批上下文重放，通过原0.0005后才以同一权重完整评价；两个任务、逐类／配对及分数哈希均保留。源码和小协议先提交；排在现有八专家实验之后，避免争用GPU。若到授权截止仍未启动，不再开启新批次。旧NUFILT结果与计时失败原样保留，本批只使用未覆盖的任务／作用范围。
+
+### Unmask的执行前定义核对
+
+已再次对照正式CVPR PDF第8页§7及公式版面（本地PDF SHA256 `270a8a1ab26cfafaf6aecb6a59a2e291e03ce5a0ea1f9fbdef8191e9cc96b4f2`）：`theta_U=Merge(theta0,theta_d,peers)-0.3 theta_d`。减去整份发布参数，不能偷换成任务向量。设原融合系数为a、任务向量tau_d=theta_d-theta0，则相对去目标向量控制的差为`(a-0.3)tau_d-0.3theta0`，因此不是单纯删除目标贡献。
+
+下一项真实攻击补充仅使用当前八专家TA0.2的同一冻结输入，Unmask强度固定论文0.3；三任务评价，未保护控制同样施加该操作。不优化强度、不组合AGA、不增加“全部专家Unmask”分支；无图片、标签或梯度用于恢复构造。使用与TA一致的浮点视觉编码器参数域，既定任务头仍不参与融合。官方执行源码未取得，须标为论文公式的native CLIP适配，不能称作者Table5完整复现。
+
+当前八专家、leave-out及其独立报告的源码指纹仍在使用；在这些作业结束前不修改公共八专家入口。之后只在既有入口增加必要的参数减法及NumPy逐张量检查，新源码／配置先冻结、权重哈希先于64图pilot；通过原0.0005上下文重放后，同一参数做完整评价。原八专家无攻击分数、公开基座和七专家控制核哈希复用，不能把性能上升自动称独有知识恢复。到期不启动新批次；定义或数值失败保留停止。
