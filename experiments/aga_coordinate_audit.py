@@ -149,8 +149,70 @@ def head_response(output):
     save_json(out,result);print(json.dumps(result,indent=2),flush=True)
 
 
+@torch.no_grad()
+def fixedpoint(output):
+    """Independent CPU recount of one closed construction, without image responses."""
+    from audit_hermite_splits import exclusions
+    out=Path(output);start=time.monotonic();cfg=json.loads((out/'protocol.json').read_text())
+    report=json.loads((out/'results.json').read_text());assert report['closed'] and not report['source_feasible']
+    assert digest(out/'diagnostic.pt')==report['diagnostic_sha256']
+    assert digest(out/'executed_source.py')==report['source_sha256']==cfg['source_sha256']['experiments/alignment_fixedpoint.py']
+    raw=torch.load(out/'diagnostic.pt',map_location='cpu');p,q=raw['p'],raw['q'];rows={}
+    for k,v in p.items():
+        if k in ['O','B']:continue
+        if torch.is_tensor(v):assert torch.equal(v,q[k]),k
+        else:assert v==q[k],k
+    for k,basis in [('O',raw['vo']),('B',raw['vb'])]:
+        delta=(q[k]-p[k]).numpy();v=basis.numpy();np.testing.assert_allclose(v@v.T,np.eye(len(v)),atol=1e-10)
+        inside=(delta@v.T)@v;outside=delta-inside;den=np.linalg.norm(p[k])
+        rows[k]=dict(relative_distance=float(np.linalg.norm(delta)/den),
+            frozen_probe_subspace_relative_distance=float(np.linalg.norm(inside)/den),
+            frozen_probe_complement_relative_distance=float(np.linalg.norm(outside)/den),
+            frozen_probe_subspace_energy_fraction=float(np.linalg.norm(inside)**2/np.linalg.norm(delta)**2))
+        assert abs(rows[k]['relative_distance']-report['per_matrix_distance'][k])<1e-10
+    db=(q['B']-p['B']).numpy();den=np.linalg.norm(p['B'])
+    readout=p['gamma'].numpy()[:,None]*(p['projection'].numpy()@p['head'].numpy().T)
+    readout-=readout.mean(0,keepdims=True);readout-=readout.mean(1,keepdims=True)
+    u,s,_=np.linalg.svd(readout,full_matrices=False);rank=int((s>s[0]*1e-10).sum());u=u[:,:rank]
+    output_geometry=dict(zero_mean_B_relative_distance=float(np.linalg.norm(db-db.mean(0,keepdims=True))/den),
+        class_linear_readout_rank=rank,class_linear_B_relative_distance=float(np.linalg.norm(u.T@db)/den),
+        class_linear_complement_B_relative_distance=float(np.linalg.norm(db-u@(u.T@db))/den),
+        scope='Decomposition of the closed regression only; neither a necessary task-budget bound nor an evaluated replacement.')
+    distance=sum(v['relative_distance']**2 for v in rows.values())**.5
+    assert abs(distance-report['parameter_distance'])<1e-10 and distance>cfg['parameter_budget']
+    anchor,expert,head,pins=checked_models(cfg['target']);assert pins==report['geometry']['checkpoint_sha256']
+    base=anchor.state_dict()['model.visual.transformer.resblocks.11.attn.out_proj.weight'].double().numpy()
+    errors=[]
+    for i in range(0,768,64):
+        x=q['O'][:,i:i+64].numpy();a=base[:,i:i+64]
+        t=np.linalg.solve(x.T@x+cfg['ridge']*np.eye(64),x.T@a)
+        errors.append(float(abs((x.astype('float32')@t.astype('float32')).astype('float64')-x).max()))
+    assert max(errors)<cfg['author_weight_tolerance']
+    split=json.loads((out/'construction_split.json').read_text());initial=set(cfg['extra_excluded_indices'])
+    for path in cfg['extra_index_exclusions']:initial.update(json.loads(Path(path).read_text())['indices'])
+    excluded,confirmed=exclusions(split,initial);assert len(excluded)==split['excluded_count']
+    ids=np.random.default_rng(cfg['construction_seed']).choice(sorted(set(range(60000))-excluded),cfg['fit_n']+cfg['check_n'],replace=False).tolist()
+    assert ids==split['indices']==raw['indices']['fit']+raw['indices']['check']
+    assert not set(ids)&(excluded|confirmed) and len(set(ids))==len(ids)
+    result=dict(status='passed_independent_closed_point_recount',parameter_distance=distance,by_matrix=rows,
+        parameter_budget=cfg['parameter_budget'],source_feasible=False,closed=True,output_geometry=output_geometry,
+        NumPy_FP32_fixedpoint_maximum_weight_error=max(errors),historical_excluded_n=len(excluded),
+        construction_n=len(ids),fit_n=len(raw['indices']['fit']),source_check_n=len(raw['indices']['check']),
+        historical_exposed_indices_used=0,exact_construction_draw_verified=True,unchanged_tensors_verified=True,
+        diagnostic_sha256=report['diagnostic_sha256'],executed_source_sha256=report['source_sha256'],
+        split_sha256=digest(out/'construction_split.json'),verifier_sha256=digest(__file__),
+        images_loaded=0,gradients=0,new_releases=0,confirmation_draws=0,new_TA_or_AGA_evaluations=0,
+        fit_residual_independently_replayed=False,wall_seconds=time.monotonic()-start,
+        scope='Parameter and input-index recount only. Probe-space fractions are not functional preservation. The least-squares residual is not re-evaluated here; no classification claim or candidate repair.')
+    path=out/'independent_validation.json'
+    if path.exists():save_json(out/'parameter_recount_initial.json',json.loads(path.read_text()))
+    save_json(path,result);print(json.dumps(result,indent=2),flush=True)
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True)
-    parser.add_argument('--head-geometry',action='store_true');parser.add_argument('--head-response',action='store_true')
-    args=parser.parse_args();assert not (args.head_geometry and args.head_response);torch.set_num_threads(4)
-    (head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
+    mode=parser.add_mutually_exclusive_group()
+    mode.add_argument('--head-geometry',action='store_true');mode.add_argument('--head-response',action='store_true')
+    mode.add_argument('--fixedpoint',action='store_true')
+    args=parser.parse_args();torch.set_num_threads(4)
+    (fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
