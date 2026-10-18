@@ -19,6 +19,84 @@ def save_figure(fig, output, name):
         fig.savefig(output/f'{name}.{ext}', metadata=metadata)
 
 
+def eight_task(source, output):
+    """Recount the fixed eight-expert experiment; only three tasks were scored."""
+    import time
+    import torch
+    from clip_benchmark import digest
+    from verify_covariance_noise import official_labels
+    from verify_prodistill import verify_metrics
+    start=time.monotonic();source,output=Path(source),Path(output)
+    cfg=json.loads((source/'full/protocol.json').read_text())
+    assert cfg==json.loads((source/'pilot/protocol.json').read_text())
+    assert digest('experiments/phase3_eight_task.py')==cfg['source_sha256']
+    assert digest(cfg['author_TaskVector']['path'])==cfg['author_TaskVector']['sha256']
+    for ref in cfg['inputs'].values():assert digest(ref['path'])==ref['sha256']
+    active=json.loads(Path(cfg['inputs']['active']['path']).read_text())
+    for p,sha in active['source_sha256'].items():assert digest(p)==sha,p
+    frozen=json.loads((source/'pilot/pre_evaluation.json').read_text())
+    assert frozen==json.loads((source/'full/pre_evaluation.json').read_text())
+    expected=sum(2*(1+len(c['defenses']))*len(cfg['evaluate']) for c in cfg['cases'])
+    maximum=0.;count=0;validations=[];pins={}
+    for stage in ['pilot','full']:
+        root=source/stage;v=json.loads((root/'validation.json').read_text());assert v['status']=='passed'
+        assert digest(root/'scores.pt')==v['raw_sha256'] and v['rows']==expected
+        raw=torch.load(root/'scores.pt',map_location='cpu',weights_only=False)
+        rows=json.loads((root/'results.json').read_text());assert len(rows)==expected
+        for row in rows:
+            key='/'.join([row['target'],row['defense'],row['attack_scope']]);task=row['dataset'];x=raw[key+'/'+task]
+            labels=official_labels(task);ids=list(range(len(labels))) if stage=='full' else np.linspace(0,len(labels)-1,64,dtype=int).tolist()
+            assert x['indices']==ids;np.testing.assert_array_equal(x['target'].numpy(),labels[ids])
+            assert row['model_parameter_sha256']==frozen[key] and row['NumPy_weight_error']==0.
+            before=raw['/'.join([row['target'],'Unprotected',row['attack_scope'],task])]['logits']
+            maximum=max(maximum,verify_metrics(x['logits'],x['target'],before,row));count+=1
+            if stage=='full':
+                prediction,reference=x['logits'].numpy().argmax(1),before.numpy().argmax(1)
+                y=x['target'].numpy();correct,was=prediction==y,reference==y
+                for c in row['per_class']:
+                    mask=y==c['class_id'];lost=int((mask&was&~correct).sum());gained=int((mask&~was&correct).sum())
+                    c.update(lost=lost,gained=gained,net_loss_count=lost-gained,net_loss_pp=100*(lost-gained)/c['n'])
+                assert sum(c['lost'] for c in row['per_class'])==row['paired']['lost']
+                assert sum(c['gained'] for c in row['per_class'])==row['paired']['gained']
+        validations.append(v);pins[str(root/'scores.pt')]=v['raw_sha256']
+    output.mkdir(parents=True,exist_ok=True)
+    def get(target,name,scope,task):
+        return next(r for r in rows if (r['target'],r['defense'],r['attack_scope'],r['dataset'])==(target,name,scope,task))
+    for r in rows:
+        t,n,s,k=r['target'],r['defense'],r['attack_scope'],r['dataset']
+        r['defense_drop_without_attack_pp']=get(t,'Unprotected','None',k)['accuracy_percent']-get(t,n,'None',k)['accuracy_percent']
+        r['attack_recovery_pp']=r['accuracy_percent']-get(t,n,'None',k)['accuracy_percent']
+        r['remaining_gap_pp']=get(t,'Unprotected',s,k)['accuracy_percent']-r['accuracy_percent']
+    comparisons=sum(r['defense']!='Unprotected' for r in rows)
+    for r in rows:r['bonferroni_log10_p']=min(0.,r['mcnemar_log10_p']+math.log10(comparisons))
+    labels={'Unprotected':'Unprotected','O/B':'O/B†','A/B':'A/B†','PaRaMS':'PaRaMS (full)*','PaRaMS_Attention':'PaRaMS (attention)'}
+    lines=['# Eight participating experts; three evaluated tasks','','Original author task order, TA0.2, and AGA applied to the protected expert. Accuracy (%); no eight-task average. The other five partner datasets were not evaluated. This setting changes both coefficient and participant count relative to the two-expert TA0.5 table.','']
+    latex=[]
+    for case in cfg['cases']:
+        target=case['target'];tasks=[target]+[t for t in cfg['evaluate'] if t!=target]
+        lines += ['## Protected task: '+target,'','Cells: '+' / '.join(tasks)+' (target / evaluated partners).','',
+            '| Defense | No attack | AGA (protected expert) |','|---|---:|---:|']
+        latex += ['% Protected task: '+target+'; cells: '+' / '.join(tasks),r'\begin{tabular}{lrr}',r'\toprule',r'Defense & No attack & AGA (protected expert) \\',r'\midrule']
+        for name in ['Unprotected']+case['defenses']:
+            label=labels.get(name,'Defense 1*')
+            cells=[' / '.join(f'{get(target,name,s,t)["accuracy_percent"]:.2f}' for t in tasks) for s in ['None','Protected expert']]
+            lines.append('| '+label+' | '+' | '.join(cells)+' |')
+            latex.append(label.replace('†',r'$^{\dagger}$').replace('*',r'$^{*}$')+' & '+' & '.join(cells)+r' \\')
+        lines.append('');latex += [r'\bottomrule',r'\end{tabular}','']
+    lines += ['† O/B and A/B violate the task-preservation budget; effect references only. * Defense 1 has different constraints; full PaRaMS is over-budget. The attention ablation is not the complete PaRaMS method. Historically exposed tests; no tuning.','',
+        f'Per-class and paired statistics compare each row with its own unprotected control at the same attack scope. Bonferroni correction covers all {comparisons} protected comparisons. Recovery is attacked minus unattacked protected accuracy; remaining gap is matched unprotected minus protected accuracy. Neither distance nor high accuracy proves unique-knowledge extraction. Independent NumPy metric recount is separate from the producer\'s bitwise NumPy reconstruction of all merged parameter tensors; this is not a second implementation of the complete author attack.']
+    (output/'tables.md').write_text('\n'.join(lines)+'\n');(output/'tables.tex').write_text('\n'.join(latex)+'\n')
+    (output/'results.json').write_text(json.dumps(rows,indent=2)+'\n');(output/'protocol.json').write_text(json.dumps(cfg,indent=2)+'\n')
+    columns=['target','defense','attack_scope','dataset','role','correct','n','accuracy_percent','defense_drop_without_attack_pp',
+        'attack_recovery_pp','remaining_gap_pp','changed_predictions','mcnemar_log10_p','bonferroni_log10_p','model_parameter_sha256']
+    with (output/'results.csv').open('w',newline='') as f:
+        writer=csv.DictWriter(f,fieldnames=columns,extrasaction='ignore');writer.writeheader();writer.writerows(rows)
+    result=dict(status='passed_independent_numpy_metrics_and_frozen_artifact_hashes',rows_checked=count,maximum_logp_error=maximum,
+        pilot_and_full_validations=validations,raw_files_sha256=pins,model_parameter_hashes=frozen,
+        report_source_sha256=digest(__file__),audit_and_table_seconds=time.monotonic()-start,new_GPU_forwards=0)
+    (output/'independent_validation.json').write_text(json.dumps(result,indent=2)+'\n')
+
+
 def controls(source, output):
     """Independent raw-score recount and one knowledge-source comparison table."""
     import time
@@ -419,5 +497,7 @@ def build(source, output):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    g=p.add_mutually_exclusive_group();g.add_argument('--dare', action='store_true');g.add_argument('--nufilt-ob',action='store_true');g.add_argument('--prodistill',action='store_true');g.add_argument('--controls',action='store_true');args=p.parse_args()
-    (controls if args.controls else dare if args.dare else nufilt_ob if args.nufilt_ob else prodistill if args.prodistill else build)(args.source,args.output)
+    modes=dict(dare=dare,nufilt_ob=nufilt_ob,prodistill=prodistill,controls=controls,eight_task=eight_task)
+    g=p.add_mutually_exclusive_group()
+    for name in modes:g.add_argument('--'+name.replace('_','-'),action='store_true')
+    args=p.parse_args();next((fn for name,fn in modes.items() if getattr(args,name)),build)(args.source,args.output)
