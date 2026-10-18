@@ -1,0 +1,40 @@
+{
+  "experiment": "Missing Phase1 protected-task NUFILT coverage; same fixed official kernels",
+  "output": "outputs/phase3_nufilt_other_tasks_20261018",
+  "frozen_inputs": {
+    "active": {
+      "path": "configs/phase3_dare.json",
+      "sha256": "0258fe882c7f1a401c3af87e5374599067a424fbe159518a797547dd4907a3da"
+    },
+    "additional": {
+      "path": "configs/phase3.json",
+      "sha256": "4e40f5286e9cbaa7b39b19214742c6cddaf8946af69369ef163ff596194ef7c7"
+    }
+  },
+  "source_sha256": "ef0e766faf648952846c34a3b25969512c9d069c78389021c5287396eb83cf52",
+  "cases": [
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "scopes": [
+        "None",
+        "Protected expert",
+        "All experts"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "scopes": [
+        "Protected expert"
+      ]
+    }
+  ],
+  "defaults": "Both task orders, seed42, LoRA64/null128/probe8,50 global Adam steps,lr0.001. Unchanged official kernel. No image data in merger optimization.",
+  "reuse": "Phase1 selected tensors must equal matching unprotected inputs before reusing its merger and scores. For SVHN no-attack and all-expertAGA, previous MNIST/SVHN pair results in results/phase3 already cover identical models after exchanging target/partner labels; not rerun. The protected-expert scope differs and is the missing cell.",
+  "prediction": "If the original matching selected tensors are identical and all skipped tensors remain anchor, Phase1 has identical merger weights to unprotected; actual two-task accuracies measured, not inferred from parameter residual.",
+  "phase1_budget": "Different-budget reference; existing FP32 utility limitations retained.",
+  "new_defense_updates": 0,
+  "kernel_check": "results/phase3/nufilt_source_check.json",
+  "test_feedback": false
+}

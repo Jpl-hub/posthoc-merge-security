@@ -1,6 +1,6 @@
 """NUFILT author kernels with an explicit OpenAI CLIP weight adapter.
 
-Fixed two-order MNIST/SVHN evaluation. No images enter merger optimization;
+Fixed two-order evaluation. No images enter merger optimization;
 original experts and defenses are frozen. This is not the FusionBench app/table.
 """
 
@@ -80,8 +80,22 @@ def merge_nufilt(anchor, inputs, author, output):
                         artifact_sha256=digest(output), matrix_reconstruction_passed=True)
 
 
-def run(full=False, protocol='configs/phase3.json'):
-    cfg = json.loads(Path(protocol).read_text()); candidate = cfg.get('nufilt_defense', 'A/B')
+def run(full=False, protocol='configs/phase3.json', case_index=0):
+    cfg = json.loads(Path(protocol).read_text())
+    if 'frozen_inputs' in cfg:
+        spec=cfg;assert digest(__file__)==spec['source_sha256']
+        parents=[]
+        for ref in spec['frozen_inputs'].values():
+            assert digest(ref['path'])==ref['sha256'];parents.append(json.loads(Path(ref['path']).read_text()))
+        cfg=parents[0]
+        for k in ['tasks','AGA_references','defenses']:cfg[k].update(parents[1][k])
+        case=spec['cases'][case_index]
+        cfg.update(nufilt_target=case['target'],nufilt_partner=case['partner'],nufilt_defense=None,
+            nufilt_scopes=case['scopes'],nufilt_output=spec['output']+f'/{case_index:02d}')
+    candidate = cfg.get('nufilt_defense', 'A/B')
+    target_task,partner_task=cfg.get('nufilt_target','MNIST'),cfg.get('nufilt_partner','SVHN')
+    phase1='Phase1_'+target_task
+    defenses=['Unprotected']+([candidate] if candidate else [])+[phase1]
     author, pins = load_official()
     root = Path(cfg.get('nufilt_output', 'outputs/phase3/nufilt')); root.mkdir(parents=True, exist_ok=True)
     previous = cfg.get('nufilt_controls'); controls_raw = None
@@ -90,8 +104,8 @@ def run(full=False, protocol='configs/phase3.json'):
         controls_raw = torch.load(ref['path'], map_location='cpu', weights_only=False)
         ref = previous['construction']; assert digest(ref['path']) == ref['sha256']
         old_costs = {c['key']: c for c in json.loads(Path(ref['path']).read_text())['costs']}
-    frozen = dict(seed=42, orders=[['MNIST', 'SVHN'], ['SVHN', 'MNIST']],
-        defenses=['Unprotected', 'Phase1_MNIST', candidate], scopes=['None', 'Protected expert', 'All experts'],
+    frozen = dict(seed=42, orders=[[target_task,partner_task],[partner_task,target_task]],
+        defenses=defenses, scopes=cfg.get('nufilt_scopes',['None', 'Protected expert', 'All experts']),
         defaults=dict(lora_rank=64, null_rank=128, probe_rank=8, steps=50, lr=.001),
         source_sha256={__file__: digest(__file__), 'experiments/phase3_nufilt_check.py': digest('experiments/phase3_nufilt_check.py')},
         author_source_sha256=pins, parent_protocol_sha256=digest(protocol), reused_controls=previous,
@@ -109,7 +123,7 @@ def run(full=False, protocol='configs/phase3.json'):
     pilot_costs = {c['key']: c for c in json.loads((root/'pilot/execution.json').read_text())['costs']} if full else {}
     anchor, experts, heads, aligned, _ = setup(cfg)
     start = time.monotonic(); rows, raw, costs = [], {}, []
-    data = {t: dataset(t, 'data', experts[t].val_preprocess) for t in ['MNIST', 'SVHN']}
+    data = {t: dataset(t, 'data', experts[t].val_preprocess) for t in [target_task,partner_task]}
     ids = {t: list(range(len(d))) if full else np.linspace(0, len(d)-1, 64, dtype=int).tolist() for t, d in data.items()}
     # QKV split and repack must preserve every original tensor bit-for-bit.
     for model in [anchor]+list(experts.values()):
@@ -120,20 +134,20 @@ def run(full=False, protocol='configs/phase3.json'):
     for order_id, order in enumerate(frozen['orders']):
         for scope_id, scope in enumerate(frozen['scopes']):
             controls = {}
-            for defense in ['Unprotected', candidate, 'Phase1_MNIST']:
-                target = experts['MNIST'] if scope == 'None' else aligned['MNIST']
+            for defense in defenses:
+                target = experts[target_task] if scope == 'None' else aligned[target_task]
                 if defense != 'Unprotected':
                     spec = cfg['defenses'][defense]
                     target = apply(target, spec['release'] if scope == 'None' else spec['AGA_edits'])
-                peer = aligned['SVHN'] if scope == 'All experts' else experts['SVHN']
-                inputs = {'MNIST': target, 'SVHN': peer}
+                peer = aligned[partner_task] if scope == 'All experts' else experts[partner_task]
+                inputs = {target_task: target, partner_task: peer}
                 key = f'{order_id}_{scope_id}_{defense.replace("/", "_")}'
-                artifact = root/f'{order_id}_{scope_id}_{"Unprotected" if defense == "Phase1_MNIST" else defense.replace("/", "_")}.pt'
-                if previous and defense in ['Unprotected', 'Phase1_MNIST']:
+                artifact = root/f'{order_id}_{scope_id}_{"Unprotected" if defense == phase1 else defense.replace("/", "_")}.pt'
+                if previous and defense in ['Unprotected', phase1]:
                     artifact = Path(previous['root'])/f'{order_id}_{scope_id}_Unprotected.pt'
                     assert digest(artifact) == old_costs[f'{order_id}_{scope_id}_Unprotected']['artifact_sha256']
-                if defense == 'Phase1_MNIST':
-                    ref = experts['MNIST'] if scope == 'None' else aligned['MNIST']
+                if defense == phase1:
+                    ref = experts[target_task] if scope == 'None' else aligned[target_task]
                     assert all(torch.equal(target.state_dict()[k][a:b], ref.state_dict()[k][a:b]) for k, a, b in selection(ref.state_dict()))
                     # Already measured exact same merged model; no fabricated new forward.
                     scores_by_task = controls
@@ -159,18 +173,18 @@ def run(full=False, protocol='configs/phase3.json'):
                                  prediction_sink=lambda p, y: labels.append(y), logit_sink=logits.append)
                         scores_by_task[t] = dict(logits=torch.cat(logits), target=torch.cat(labels), indices=ids[t],
                                                 evaluation_seconds=timing['evaluation_seconds'])
-                        assert scores_by_task[t]['logits'].shape == (len(ids[t]), 10)
+                        assert scores_by_task[t]['logits'].shape == (len(ids[t]), cfg['tasks'][t]['classes'])
                         assert torch.isfinite(scores_by_task[t]['logits']).all()
                         np.testing.assert_array_equal(scores_by_task[t]['target'].numpy(), official_labels(t)[ids[t]])
                     del fused
                 if defense == 'Unprotected': controls = scores_by_task
                 costs.append(dict(key=key, **cost))
                 for t, score in scores_by_task.items():
-                    entry = dict(defense=defense, target='MNIST', partner='SVHN', merger='NUFILT', order=order,
-                        attack_scope=scope, dataset=t, role='target' if t == 'MNIST' else 'partner',
-                        evaluation_seconds=0. if defense == 'Phase1_MNIST' or cost.get('reused_frozen_control_scores') else score['evaluation_seconds'],
-                        measurement='Reused identical selected-input model' if defense == 'Phase1_MNIST' else 'Reused frozen matched control' if cost.get('reused_frozen_control_scores') else 'Full forward',
-                        **row_metrics(score['logits'], score['target'], controls[t]['logits'], 10))
+                    entry = dict(defense=defense, target=target_task, partner=partner_task, merger='NUFILT', order=order,
+                        attack_scope=scope, dataset=t, role='target' if t == target_task else 'partner',
+                        evaluation_seconds=0. if defense == phase1 or cost.get('reused_frozen_control_scores') else score['evaluation_seconds'],
+                        measurement='Reused identical selected-input model' if defense == phase1 else 'Reused frozen matched control' if cost.get('reused_frozen_control_scores') else 'Full forward',
+                        **row_metrics(score['logits'], score['target'], controls[t]['logits'], cfg['tasks'][t]['classes']))
                     rows.append(entry); raw[key+'/'+t] = score
                     print('NUFILT_ROW', order_id, defense, scope, t, entry['correct'], entry['n'], flush=True)
                 save_json(out/'results.json', rows)
@@ -187,7 +201,7 @@ def run(full=False, protocol='configs/phase3.json'):
         assert int(((before == labels) & (pred != labels)).sum()) == row['paired']['lost']
         assert int(((before != labels) & (pred == labels)).sum()) == row['paired']['gained']
         for c in row['per_class']: assert int(((pred == labels) & (labels == c['class_id'])).sum()) == c['correct']
-        name = 'Unprotected' if row['defense'] == 'Phase1_MNIST' else row['defense'].replace('/', '_')
+        name = 'Unprotected' if row['defense'] == phase1 else row['defense'].replace('/', '_')
         artifact_root = Path(previous['root']) if previous and name == 'Unprotected' else root
         record = torch.load(artifact_root/f'{order_id}_{scope_id}_{name}.pt', map_location='cpu', weights_only=False)
         fused = copy.deepcopy(anchor); fused.load_state_dict(anchor.state_dict() | record['weights'], strict=True)
@@ -209,5 +223,5 @@ def run(full=False, protocol='configs/phase3.json'):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=__doc__); parser.add_argument('--full', action='store_true'); parser.add_argument('--protocol', default='configs/phase3.json'); args = parser.parse_args()
-    run(args.full, args.protocol)
+    parser = argparse.ArgumentParser(description=__doc__); parser.add_argument('--full', action='store_true'); parser.add_argument('--protocol', default='configs/phase3.json'); parser.add_argument('--case',type=int,default=0);args = parser.parse_args()
+    run(args.full, args.protocol,args.case)
