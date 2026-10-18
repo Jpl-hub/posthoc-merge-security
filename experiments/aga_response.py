@@ -110,6 +110,76 @@ def verify(folder):
         gradient_cosine=cosine,numpy_finite_tail_derivative_error=finite_error,author_derivative_control_status=report['status'],new_images=0,new_releases=0,new_gradients=0))
 
 
+@torch.no_grad()
+def functional_cost(protocol):
+    """Bound the closed O point's linearized B cost, without creating a release."""
+    from probe_margin_distance import scores
+    cfg=json.loads(Path(protocol).read_text());start=time.monotonic();out=Path(cfg['output'])
+    for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
+    assert digest(cfg['diagnostic']['path'])==cfg['diagnostic']['sha256']
+    assert '3090' in torch.cuda.get_device_name();out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    old=torch.load(cfg['diagnostic']['path'],map_location='cpu');ids=old['indices']['fit'];assert len(ids)==4096
+    _,expert,head,pins=checked_models('MNIST');train=dataset('MNIST','data',expert.val_preprocess,True)
+    original=extended_parameters(expert,head)
+    assert all(torch.equal(old['p'][k],original[k]) for k in ['O','A','B','head'])
+    c=on_device(capture_attention(expert,train,ids));p=on_device(old['p']);teacher=scores(c['h'],p)
+    control=float((teacher-c['actual']/c['actual'].norm(dim=1,keepdim=True)@p['head'].T).abs().max());assert control<=cfg['score_tolerance']
+    r=c['r']+c['o_input']@(old['q']['O']-old['p']['O']).cuda().T
+    h=c['h']-final_hidden(c['r'],p)+final_hidden(r,p);jh,_,z,current=raw_jacobians(dict(r=r,h=h),p)
+    y=teacher.argmax(1);ix=torch.arange(len(y),device='cuda');gap=teacher[ix,y,None]-teacher
+    mask=torch.ones_like(gap,dtype=torch.bool);mask[ix,y]=False;assert bool((gap[mask]>0).all());gap[ix,y]=1
+    j=((jh[ix,y,None]-jh)/gap[:,:,None])[mask].reshape(len(y),9,768)
+    b=(1-(current[ix,y,None]-current)/gap)[mask].reshape(len(y),9);nb=p['B'].norm()
+    def adjoint(lam):return nb*torch.einsum('ncd,nc->nd',j,lam).T@z
+    def kernel(lam):return nb*torch.einsum('ncd,nd->nc',j,z@adjoint(lam).T)
+    diagonal=nb.square()*j.square().sum(2)*z.square().sum(1)[:,None];assert float(diagonal.min())>0
+    dual=torch.zeros_like(b);res=b.clone();pre=res/diagonal;direction=pre.clone();rho=(res*pre).sum();steps=0
+    for steps in range(1,cfg['cg_iterations']+1):
+        value=kernel(direction);den=(direction*value).sum();assert float(den)>0
+        step=rho/den;dual+=step*direction;res-=step*value
+        if steps%20==0:res=b-kernel(dual)
+        if float(res.norm()/b.norm())<=cfg['cg_relative_tolerance']:break
+        pre=res/diagonal;next_rho=(res*pre).sum();direction=pre+(next_rho/rho)*direction;rho=next_rho
+    image=kernel(dual);adj=adjoint(dual);cost=float(adj.norm());residual=image-b
+    lower=max(0.,float((dual*b).sum()-cfg['task_budget']*dual.abs().sum()))/cost
+    linear_feasible=float(residual.abs().max())<=cfg['task_budget']
+    hdir=nb*z@(adj/cost).T;eps=cfg['finite_step'];plus,minus=scores(h+eps*hdir,p),scores(h-eps*hdir,p)
+    ds=(plus-minus)/(2*eps);fd=((ds[ix,y,None]-ds)/gap)[mask].reshape(len(y),9)
+    predicted=torch.einsum('ncd,nd->nc',j,hdir);fd_error=float((fd-predicted).norm()/predicted.norm())
+    distance_O=float((old['q']['O']-old['p']['O']).norm()/old['p']['O'].norm())
+    report=dict(status='passed_linear_cost_control' if fd_error<=cfg['derivative_relative_tolerance'] else 'failed_fixed_cost_control',
+        n=len(ids),linear_constraints=b.numel(),PCG_iterations=steps,linear_residual_max=float(residual.abs().max()),
+        linear_residual_relative=float(residual.norm()/b.norm()),linear_B_cost_lower_bound=lower,
+        linear_B_cost_upper_bound=cost if linear_feasible else None,linear_solution_norm=cost,linear_band_feasible=linear_feasible,
+        fixed_O_distance=distance_O,original_joint_budget=0.5,task_budget=cfg['task_budget'],
+        linear_joint_cost_lower_bound=(distance_O**2+lower**2)**.5,
+        linear_joint_cost_upper_bound=(distance_O**2+cost**2)**.5 if linear_feasible else None,
+        finite_difference_relative_error=fd_error,full_prefix_score_control=control,source_sha256=digest(__file__),protocol_sha256=digest(protocol),checkpoint_sha256=pins,
+        original_model_repeat_forwards=len(ids),new_training_images=0,reverse_gradients=0,analytic_jacobian_inputs=len(ids),new_releases=0,
+        closed_point_repaired=False,confirmation_or_test_used=False,wall_seconds=time.monotonic()-start,
+        scope='Bounds apply only to the full normalized-class-margin linearization at the frozen O-only point on its original4096 fit inputs. Not finite task feasibility, a nonlinear cost bound, a replacement B, or permission to reopen the closed fixed point.')
+    torch.save(dict(j=j.cpu(),z=z.cpu(),dual=dual.cpu(),b=b.cpu(),image=image.cpu(),norm_B=nb.cpu(),hidden=h.cpu(),
+        hidden_direction=hdir.cpu(),p=cpu(p),winner=y.cpu(),gaps=gap[mask].reshape(len(y),9).cpu(),linear_probe=predicted.cpu(),finite_step=eps),out/'linear_cost.pt')
+    report['raw_sha256']=digest(out/'linear_cost.pt');save_json(out/'results.json',report);print(json.dumps(report),flush=True)
+
+
+def verify_cost(folder):
+    out=Path(folder);report=json.loads((out/'results.json').read_text());assert digest(out/'linear_cost.pt')==report['raw_sha256']
+    r=torch.load(out/'linear_cost.pt',map_location='cpu');j,z,dual,b,image=[r[k].numpy() for k in ['j','z','dual','b','image']];nb=float(r['norm_B'])
+    adj=nb*np.einsum('ncd,nc->nd',j,dual).T@z;actual=nb*np.einsum('ncd,nd->nc',j,z@adj.T)
+    error=float(np.linalg.norm(actual-image)/np.linalg.norm(image));assert error<1e-9
+    cost=float(np.linalg.norm(adj));lower=max(0.,float(np.sum(dual*b)-report['task_budget']*np.abs(dual).sum()))/cost
+    assert abs(cost-report['linear_solution_norm'])<1e-8 and abs(lower-report['linear_B_cost_lower_bound'])<1e-8
+    assert bool(abs(actual-b).max()<=report['task_budget'])==report['linear_band_feasible']
+    p=convert(r['p']);h=r['hidden'].numpy();d=r['hidden_direction'].numpy();eps=r['finite_step'];y=r['winner'].numpy();ix=np.arange(len(y))
+    ds=(raw_scores(h+eps*d,p)-raw_scores(h-eps*d,p))/(2*eps);mask=np.ones_like(ds,dtype=bool);mask[ix,y]=False
+    fd=(ds[ix,y,None]-ds)[mask].reshape(len(y),9)/r['gaps'].numpy();wanted=r['linear_probe'].numpy()
+    fd_error=float(np.linalg.norm(fd-wanted)/np.linalg.norm(wanted));assert abs(fd_error-report['finite_difference_relative_error'])<1e-7
+    save_json(out/'independent_validation.json',dict(status='passed_linear_dual_recount',raw_sha256=report['raw_sha256'],
+        source_sha256=digest(__file__),numpy_kernel_relative_error=error,numpy_linear_cost=cost,numpy_dual_lower_bound=lower,
+        finite_difference_relative_error=fd_error,new_images=0,new_releases=0,closed_point_repaired=False))
+
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');a=ap.parse_args();initialize()
-    verify(a.verify) if a.verify else run(a.protocol)
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--cost',action='store_true');a=ap.parse_args();initialize()
+    (verify_cost if a.cost else verify)(a.verify) if a.verify else (functional_cost if a.cost else run)(a.protocol)
