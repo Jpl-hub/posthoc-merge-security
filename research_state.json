@@ -1,6 +1,6 @@
 {
-  "status": "verified_source_controls_and_prodistill_eight_expert_inputs_retrieving",
-  "updated_utc": "2026-10-18T04:46:05.231862+00:00",
+  "status": "verified_evidence_published_eight_expert_pilot_active",
+  "updated_utc": "2026-10-18T04:49:42.432274+00:00",
   "automatic_continuation": "Bounded current-thread heartbeat13-35 active through2026-10-18T09:46:25Z; previous failed loops remain closed.",
   "server": "RTX3090_active_4090_CPU_only",
   "allow_4090": false,
@@ -20,8 +20,9 @@
       "server": "3090",
       "output": "outputs/phase3_eight_task_20261018",
       "log": "outputs/phase3_eight_task_20261018.log",
-      "status": "stopped_missing_inputs_before_images",
-      "role": "Original-author eight-expert order and TA0.2; target-only AGA; three datasets evaluated, no eight-task mean."
+      "status": "pilot_running_after_original_hash_restoration",
+      "role": "Original-author eight-expert order and TA0.2; target-only AGA; three datasets evaluated, no eight-task mean.",
+      "launcher_pid": 12158
     },
     {
       "server": "3090",
@@ -3606,7 +3607,7 @@
     "interpretation": "Final LN/P coverage gap; not robustness against arbitrary distillation. Matching unprotected controls and all scopes retained."
   },
   "phase3_eight_task": {
-    "status": "missing_inputs_before_any_test_image",
+    "status": "pilot_running_after_all_five_original_hashes_restored",
     "protocol": "configs/phase3_eight_task.json",
     "failure": "results/phase3/eight_task/input_failure.json",
     "missing_original_experts": [
@@ -3618,13 +3619,15 @@
     ],
     "evaluation_scope": "Eight expert parameters, original author TA0.2 and protected-expert AGA; only MNIST/DTD/SVHN datasets. No eight-task mean.",
     "checkpoint_substitution_allowed": false,
-    "original_public_retrieval": "in_progress_hash_gated",
+    "original_public_retrieval": "completed_without_checkpoint_substitution",
     "originals_restored_with_matching_sha": [
       "SUN397",
       "Cars",
       "RESISC45",
-      "EuroSAT"
-    ]
+      "EuroSAT",
+      "GTSRB"
+    ],
+    "launcher_pid": 12158
   },
   "phase3_knowledge_controls": {
     "protocol": "configs/phase3_controls.json",
