@@ -1,0 +1,112 @@
+{
+  "new_merger_models": 8,
+  "new_merger_backward_steps": 400,
+  "merging_seconds": 364.74210678599775,
+  "full_evaluation_subtotal_seconds": 167.29220281774178,
+  "full_case0_original_wall_seconds": null,
+  "full_case1_wall_seconds": 225.41639906540513,
+  "resumed_case0_context_replay_seconds": 504.5975773893297,
+  "full_selected_score_replays": 512,
+  "maximum_full_score_error": 0.0,
+  "expert_updates": 0,
+  "defense_updates": 0,
+  "protocols": {
+    "0": {
+      "seed": 42,
+      "orders": [
+        [
+          "DTD",
+          "MNIST"
+        ],
+        [
+          "MNIST",
+          "DTD"
+        ]
+      ],
+      "defenses": [
+        "Unprotected",
+        "Phase1_DTD"
+      ],
+      "scopes": [
+        "None",
+        "Protected expert",
+        "All experts"
+      ],
+      "defaults": {
+        "lora_rank": 64,
+        "null_rank": 128,
+        "probe_rank": 8,
+        "steps": 50,
+        "lr": 0.001
+      },
+      "source_sha256": {
+        "/root/autodl-tmp/merge_security_20261009/experiments/phase3_nufilt.py": "ef0e766faf648952846c34a3b25969512c9d069c78389021c5287396eb83cf52",
+        "experiments/phase3_nufilt_check.py": "0317a52cb99db09b5fbf771b5f2f0851fa4d650982b9ba192c7324a124871503"
+      },
+      "author_source_sha256": {
+        "fusion_bench/method/nufilt/utils.py": "feaef2cb710d345521d6a51de49e434e144be09d6d23111c92708ed802a67983",
+        "fusion_bench/models/filter_lora.py": "1d0897cb65c6bbc10520dafb8294be1d281034d812fa7be6374bf9babd7828ad",
+        "fusion_bench/method/nufilt/nufilt.py": "68381a159aa37b538f77225aa68f497272acb9f8d59f16600e4a494d7176af75",
+        "config/method/nufilt/nufilt.yaml": "fbd950dde20625169b797d492e67244bde370c3920aae7a8c66a5a357961bfb6"
+      },
+      "parent_protocol_sha256": "e14a078e1e763a07c9ddf6b0bddbe2315079f2822b9c7f3a17e02d1624219d5c",
+      "reused_controls": null,
+      "adapter": "Selected weights only; packed QKV split/merge, k/v/q/out/fc1 order. All skipped tensors from public anchor.",
+      "scope": "Official kernels and native weight adapter, not full FusionBench execution or original multi-task table.",
+      "data": "No optimization images. Historically exposed evaluation sets; no method/hyperparameter selection.",
+      "phase1_reuse": "Selected inputs identical: assert exact equality before reusing merged model and scores.",
+      "pilot_n": 64,
+      "full_replay_n": 16,
+      "score_tolerance": 0.0005,
+      "gradient_role": "Attacker merger gates only; 50 global backwards per distinct two-task merge. No expert or defense optimization."
+    },
+    "1": {
+      "seed": 42,
+      "orders": [
+        [
+          "SVHN",
+          "MNIST"
+        ],
+        [
+          "MNIST",
+          "SVHN"
+        ]
+      ],
+      "defenses": [
+        "Unprotected",
+        "Phase1_SVHN"
+      ],
+      "scopes": [
+        "Protected expert"
+      ],
+      "defaults": {
+        "lora_rank": 64,
+        "null_rank": 128,
+        "probe_rank": 8,
+        "steps": 50,
+        "lr": 0.001
+      },
+      "source_sha256": {
+        "/root/autodl-tmp/merge_security_20261009/experiments/phase3_nufilt.py": "ef0e766faf648952846c34a3b25969512c9d069c78389021c5287396eb83cf52",
+        "experiments/phase3_nufilt_check.py": "0317a52cb99db09b5fbf771b5f2f0851fa4d650982b9ba192c7324a124871503"
+      },
+      "author_source_sha256": {
+        "fusion_bench/method/nufilt/utils.py": "feaef2cb710d345521d6a51de49e434e144be09d6d23111c92708ed802a67983",
+        "fusion_bench/models/filter_lora.py": "1d0897cb65c6bbc10520dafb8294be1d281034d812fa7be6374bf9babd7828ad",
+        "fusion_bench/method/nufilt/nufilt.py": "68381a159aa37b538f77225aa68f497272acb9f8d59f16600e4a494d7176af75",
+        "config/method/nufilt/nufilt.yaml": "fbd950dde20625169b797d492e67244bde370c3920aae7a8c66a5a357961bfb6"
+      },
+      "parent_protocol_sha256": "e14a078e1e763a07c9ddf6b0bddbe2315079f2822b9c7f3a17e02d1624219d5c",
+      "reused_controls": null,
+      "adapter": "Selected weights only; packed QKV split/merge, k/v/q/out/fc1 order. All skipped tensors from public anchor.",
+      "scope": "Official kernels and native weight adapter, not full FusionBench execution or original multi-task table.",
+      "data": "No optimization images. Historically exposed evaluation sets; no method/hyperparameter selection.",
+      "phase1_reuse": "Selected inputs identical: assert exact equality before reusing merged model and scores.",
+      "pilot_n": 64,
+      "full_replay_n": 16,
+      "score_tolerance": 0.0005,
+      "gradient_role": "Attacker merger gates only; 50 global backwards per distinct two-task merge. No expert or defense optimization."
+    }
+  },
+  "scope": "Subset cost fields only; interrupted original total wall time unavailable, not zero. Evaluation subtotal excludes context replays and setup."
+}
