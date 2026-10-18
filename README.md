@@ -79,3 +79,5 @@ NUFILT 的只读源码检查为 `python experiments/phase3_nufilt_check.py`；�
 本轮显式任务内／外／联合构造保留原0.5与另列2.0幅度参考。任务外0.5虽通过新鲜512张确认，完整独立评价仍出现5.942429的任务预算反例，已关闭，无新合规防御或完整AGA融合结果。详见[六点消融与反例](results/postactivation_subspace/)。
 
 偏置规范化恢复已在MNIST两伙伴的原生FP32评价，以及DTD/SVHN保护任务的单列FP32前缀／FP64最终读出协议下完成。后者不能撤销原生FP32数值控制失败；原分数、阈值、失败证据及两套精度结果分别保留。MNIST原生FP32清理前后分数差0.00069427也超过0.0005；恢复模型重放误差0是另一项检查。这是架构相关补充诊断，不是原版AGA或新的论文攻击算法。
+
+明日组会：[九页汇报PPT](presentation/research_report.pptx)、[PDF](presentation/main.pdf)、[老师要求落实与缺口](notes/teacher_feedback.md)。最新[固定Unmask全表](results/phase3/unmask/tables.md)显示无保护控制也退化，不将低分误记为防御成功；Defense2合规有效的新机制仍未完成。
