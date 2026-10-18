@@ -1,6 +1,6 @@
 {
-  "status": "verified_prodistill_missing_protected_tasks_running",
-  "updated_utc": "2026-10-18T03:59:46.385154+00:00",
+  "status": "verified_new_prodistill_task_coverage_eight_expert_inputs_pending",
+  "updated_utc": "2026-10-18T04:25:58.184856+00:00",
   "automatic_continuation": "Bounded current-thread heartbeat13-35 active through2026-10-18T09:46:25Z; previous failed loops remain closed.",
   "server": "RTX3090_active_4090_CPU_only",
   "allow_4090": false,
@@ -13,20 +13,21 @@
       "output": "outputs/phase3_prodistill_other_tasks",
       "log": "outputs/phase3_prodistill_other_tasks.log",
       "launcher_pid": 3107,
-      "role": "Six fixed two-expert ProDistill cases; only merger coefficients trained, original defenses frozen"
+      "role": "Six fixed two-expert ProDistill cases; only merger coefficients trained, original defenses frozen",
+      "status": "completed_independent_audit_passed"
     },
     {
       "server": "3090",
       "output": "outputs/phase3_eight_task_20261018",
       "log": "outputs/phase3_eight_task_20261018.log",
-      "status": "queued_after_prodistill",
+      "status": "stopped_missing_inputs_before_images",
       "role": "Original-author eight-expert order and TA0.2; target-only AGA; three datasets evaluated, no eight-task mean."
     }
   ],
   "breakthrough_verified": false,
   "new_candidate": "No compliant new Defense2: two-dimensional readout point independently fails full task drift2.140134; fixed class-readout reflection fails source drift0.744124. Neither proceeded to TA/AGA.",
   "mechanism": "notes/phase2_coupling.md",
-  "next_action": "Complete fixed missing protected-task ProDistill and queued eight-expert author-order evaluation; independently audit/publish; no defense tuning.",
+  "next_action": "Publish completed six-case protected-task ProDistill and read-only coefficient-capacity audit. Then original-hash eight-expert input retrieval and frozen evaluation; missing knowledge-source controls, no defense tuning.",
   "deferred": [
     "No new automatic cycles",
     "No unregistered defense tuning from attack/test feedback"
@@ -2969,7 +2970,9 @@
     "mergers": [
       "TA",
       "TIES",
-      "NUFILT (author kernels with native weight adapter)"
+      "DARE+TA (three fixed seeds)",
+      "NUFILT (author kernels, native adapter)",
+      "ProDistill (official elementwise kernel, native two-expert adapter)"
     ],
     "attacks": [
       "Original author AGA"
@@ -3057,11 +3060,11 @@
     "AB_globally_feasible": false,
     "strict_dual_budget_effective_defense_established": false,
     "untested": [
-      "DARE",
       "Full TSV-Merge",
-      "Data-assisted adaptation or distillation",
       "MergeLock/MergeGuard/MergeBarrier official executable reproduction",
-      "NUFILT protecting DTD/SVHN or frozen O/B"
+      "Full original-author eight-task dataset table",
+      "FeatCal native CLIP adaptation",
+      "NUFILT protecting DTD/SVHN"
     ],
     "post_run_frozen_model_integrity": {
       "status": "all_registered_sha256_match",
@@ -3230,7 +3233,8 @@
       "new_attack_algorithm_claim": false,
       "same_six_frozen_recovery_edits": true,
       "separate_from_294_native_FP32_rows": true
-    }
+    },
+    "data_assisted_permissions": "NUFILT and ProDistill are mergers, not additional recovery attacks. ProDistill uses task membership and64 unlabeled training images/task with elementwise merger-coefficient gradients; experts and frozen defense releases unchanged."
   },
   "active_focus": [
     "Defense2 finite functional-space mechanism and novelty review",
@@ -3379,11 +3383,11 @@
     }
   },
   "autonomous_campaign": {
-    "path": "outputs/2026-10-17_research/campaign.json",
-    "start_utc": "2026-10-17T04:11:55+00:00",
-    "end_utc": "2026-10-17T11:11:55+00:00",
+    "start_utc": "2026-10-18T03:46:25Z",
+    "end_utc": "2026-10-18T09:46:25Z",
     "status": "active",
-    "GPU": "RTX3090"
+    "GPU": "RTX3090",
+    "path": "outputs/2026-10-18_research/campaign.json"
   },
   "phase2_local_residual_readout": {
     "status": "closed_independently_replayed_full_task_violation",
@@ -3554,6 +3558,57 @@
       "Phase1": 9.8
     },
     "scope": "Data-assisted native two-expert adapter; final LN/P not updated; OB/AB task-budget violations retained",
-    "new_defense_updates": 0
+    "new_defense_updates": 0,
+    "coefficient_capacity": {
+      "evidence": "results/phase3/prodistill/capacity_audit.json",
+      "block_parameter_coordinates": 85054464,
+      "reachable_coordinates_each_case": 85054464,
+      "elementwise_coefficients_cumulative": 170108928,
+      "simultaneously_all_resident": false,
+      "new_images": 0,
+      "new_gradients": 0,
+      "guarantees_finite_optimizer_recovery": false
+    }
+  },
+  "phase3_prodistill_other_tasks": {
+    "status": "completed_independently_verified",
+    "protocol": "configs/phase3_prodistill_other_tasks.json",
+    "results": "results/phase3/prodistill_other_tasks",
+    "cases": 6,
+    "full_rows": 24,
+    "full_score_replays": 384,
+    "maximum_context_score_error": 0.0,
+    "independent_pilot_and_full_rows": 48,
+    "independent_exact_logp_max_error": 5.684341886080802e-14,
+    "backward_steps": 7200,
+    "expert_or_defense_updates": 0,
+    "training_seconds": 287.21,
+    "full_evaluation_subtotal_seconds": 301.56,
+    "AGA_protected_target_partner_percent": {
+      "DTD_MNIST": [
+        2.127659574468085,
+        98.07
+      ],
+      "SVHN_MNIST": [
+        6.699446834665028,
+        9.8
+      ]
+    },
+    "interpretation": "Final LN/P coverage gap; not robustness against arbitrary distillation. Matching unprotected controls and all scopes retained."
+  },
+  "phase3_eight_task": {
+    "status": "missing_inputs_before_any_test_image",
+    "protocol": "configs/phase3_eight_task.json",
+    "failure": "results/phase3/eight_task/input_failure.json",
+    "missing_original_experts": [
+      "SUN397",
+      "Cars",
+      "RESISC45",
+      "EuroSAT",
+      "GTSRB"
+    ],
+    "evaluation_scope": "Eight expert parameters, original author TA0.2 and protected-expert AGA; only MNIST/DTD/SVHN datasets. No eight-task mean.",
+    "checkpoint_substitution_allowed": false,
+    "original_public_retrieval": "in_progress_hash_gated"
   }
 }
