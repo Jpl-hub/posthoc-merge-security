@@ -99,10 +99,11 @@ def nufilt_ob(source, output):
 
 
 def prodistill(source, output):
-    """Report the nine fixed, data-assisted two-expert cases; no model selection."""
+    """Report fixed data-assisted pairs; no model or checkpoint selection."""
     source, output = Path(source), Path(output); output.mkdir(parents=True, exist_ok=True)
-    rows, evidence = [], []
-    for i in range(9):
+    protocol=json.loads((source/'00/protocol.json').read_text())
+    rows, evidence, calibrations = [], [], {}
+    for i,case in enumerate(protocol['cases']):
         folder = source/f'{i:02d}'
         read = lambda name: json.loads((folder/name).read_text())
         training, freeze = read('training.json'), read('pre_evaluation.json')
@@ -111,46 +112,49 @@ def prodistill(source, output):
         assert training['model_sha256'] == freeze['model_sha256'] == full['model_sha256']
         assert training['backward_steps'] == 1200 and len(training['layers']) == 12
         assert training['expert_updates'] == training['defense_updates'] == 0
-        if i: assert read('calibration_indices.json') == json.loads((source/'00/calibration_indices.json').read_text())
+        pair=case.get('target','MNIST')+'/'+case.get('partner','SVHN');ids=read('calibration_indices.json')
+        if pair in calibrations:assert ids==calibrations[pair]
+        calibrations[pair]=ids
         rows.extend(read('full/results.json'))
-        evidence.append(dict(case=i, training=training, freeze=freeze, pilot=pilot, full=full))
-    assert len(rows) == 24
-    names = ['Unprotected', 'Phase1_MNIST', 'O/B', 'A/B']
-    labels = ['Unprotected', 'Defense 1', 'O/B†', 'A/B†']
+        evidence.append(dict(case=i,case_metadata=case,training=training,freeze=freeze,pilot=pilot,full=full))
+    assert len(rows)==sum(4 if c['defense']=='Unprotected' else 2 for c in protocol['cases'])
     scopes = ['None', 'Protected expert', 'All experts']
-    get = lambda name, scope, task: next(r for r in rows if (r['defense'],r['attack_scope'],r['dataset']) == (name,scope,task))
+    get = lambda target,name,scope,task: next(r for r in rows if (r['target'],r['defense'],r['attack_scope'],r['dataset']) == (target,name,scope,task))
     comparisons = sum(r['defense'] != 'Unprotected' for r in rows)
     for row in rows:
-        name, scope, task = row['defense'], row['attack_scope'], row['dataset']
-        row.update(matched_unprotected_accuracy_percent=get('Unprotected',scope,task)['accuracy_percent'],
-            defense_drop_pp=get('Unprotected','None',task)['accuracy_percent']-get(name,'None',task)['accuracy_percent'],
-            attack_recovery_pp=row['accuracy_percent']-get(name,'None',task)['accuracy_percent'],
-            remaining_gap_pp=get('Unprotected',scope,task)['accuracy_percent']-row['accuracy_percent'],
+        target,name,scope,task=row['target'],row['defense'],row['attack_scope'],row['dataset']
+        row.update(matched_unprotected_accuracy_percent=get(target,'Unprotected',scope,task)['accuracy_percent'],
+            defense_drop_pp=get(target,'Unprotected','None',task)['accuracy_percent']-get(target,name,'None',task)['accuracy_percent'],
+            attack_recovery_pp=row['accuracy_percent']-get(target,name,'None',task)['accuracy_percent'],
+            remaining_gap_pp=get(target,'Unprotected',scope,task)['accuracy_percent']-row['accuracy_percent'],
             mcnemar_bonferroni_log10_p=min(0.,row['mcnemar_log10_p']+math.log10(comparisons)))
     lines = ['# ProDistill: fixed two-expert evaluation', '',
-        'MNIST protected / SVHN partner (%). Attacker uses64 unlabeled train images per task and task membership; only merger coefficients receive gradients. This is a native two-expert adapter of the official kernel, not the original eight-task table.', '',
-        '| Defense | No alignment | AGA (protected expert) | AGA (all experts) |', '|---|---:|---:|---:|']
-    latex = [r'\begin{tabular}{lrrr}',r'\toprule',r'Defense & No alignment & AGA (protected) & AGA (all) \\',r'\midrule']
-    for name,label in zip(names,labels):
-        cells = [' / '.join(f'{get(name,scope,t)["accuracy_percent"]:.2f}' for t in ['MNIST','SVHN']) for scope in scopes]
-        lines.append('| '+' | '.join([label]+cells)+' |')
-        latex.append(label.replace('†',r'$^{\dagger}$')+' & '+' & '.join(cells)+r' \\')
+        'Cells are protected task / partner accuracy (%). Attacker uses64 unlabeled train images per task and task membership; only merger coefficients receive gradients. This is a native two-expert adapter of the official kernel, not the original eight-task table.']
+    latex=[]
+    for target,partner in sorted({(r['target'],r['partner']) for r in rows}):
+        names=['Unprotected','Phase1_'+target]+[n for n in ['O/B','A/B'] if any(r['target']==target and r['defense']==n for r in rows)]
+        lines+=['',f'## {target} / {partner}','','| Defense | No alignment | AGA (protected expert) | AGA (all experts) |','|---|---:|---:|---:|']
+        latex += [f'% {target} / {partner}',r'\begin{tabular}{lrrr}',r'\toprule',r'Defense & No alignment & AGA (protected) & AGA (all) \\',r'\midrule']
+        for name in names:
+            label='Defense 1' if name.startswith('Phase1_') else name+'†' if name in ['O/B','A/B'] else name
+            cells=[' / '.join(f'{get(target,name,scope,t)["accuracy_percent"]:.2f}' for t in [target,partner]) for scope in scopes]
+            lines.append('| '+' | '.join([label]+cells)+' |');latex.append(label.replace('†',r'$^{\dagger}$')+' & '+' & '.join(cells)+r' \\')
+        latex += [r'\bottomrule',r'\end{tabular}','']
     train_seconds = sum(e['training']['wall_seconds'] for e in evidence)
     eval_seconds = sum(r['evaluation_seconds'] for r in rows)
     checked = sum(e['full']['score_replays'] for e in evidence)
     maximum = max(e['full']['maximum_context_score_error'] for e in evidence)
     lines += ['', '† O/B and A/B have independently confirmed task0.5 violations: effect references only. Defense1 uses a different parameter constraint. Frozen standalone utility, SVD probes and budgets remain in ../utility.json; no defense is retrained or selected from these results.', '',
-        'Every scope has a matched unprotected control. Equal accuracy does not imply equal predictions: raw per-class counts and lost/gained pairs are retained. Bonferroni correction covers18 protected comparisons in this batch. Historically exposed tests are not new blind evaluation.', '',
+        f'Every scope has a matched unprotected control. Equal accuracy does not imply equal predictions: raw per-class counts and lost/gained pairs are retained. Bonferroni correction covers{comparisons} protected comparisons in this batch. Historically exposed tests are not new blind evaluation.', '',
         'Defense1 shares all observed prefixes/blocks with the unprotected control. Its identical coefficient training is reused only after exact input-weight equality; its own frozen final LN bias is retained. This attack does not optimize final LN/P. Failure against that bias does not establish resistance to attacks that cover it; the separately reported bias canonicalization already restores it.', '',
-        f'Nine coefficient fits,10800 backwards,0 expert/defense updates. Training wall time {train_seconds:.2f}s; full evaluation sub-cost {eval_seconds:.2f}s. {checked} original-context score replays passed with maximum error {maximum:.6g}. Assessment wall times including their replays are retained per case; the sub-costs are not whole-project GPU time.']
-    latex += [r'\bottomrule',r'\end{tabular}']
+        f'{len(evidence)} coefficient fits,{sum(e["training"]["backward_steps"] for e in evidence)} backwards,0 expert/defense updates. Training wall time {train_seconds:.2f}s; full evaluation sub-cost {eval_seconds:.2f}s. {checked} original-context score replays passed with maximum error {maximum:.6g}. Assessment wall times including their replays are retained per case; the sub-costs are not whole-project GPU time.']
     for name,value in [('results.json',rows),('execution_and_validation.json',evidence)]:
         (output/name).write_text(json.dumps(value,indent=2)+'\n')
     (output/'tables.md').write_text('\n'.join(lines)+'\n');(output/'tables.tex').write_text('\n'.join(latex)+'\n')
-    for name in ['calibration_indices.json','protocol.json']:
-        (output/name).write_bytes((source/'00'/name).read_bytes())
+    (output/'calibration_indices.json').write_text(json.dumps(calibrations,indent=2)+'\n')
+    (output/'protocol.json').write_bytes((source/'00/protocol.json').read_bytes())
     (output/'kernel_validation.json').write_bytes((source/'kernel_validation.json').read_bytes())
-    columns = ['defense','attack_scope','dataset','n','correct','accuracy_percent','matched_unprotected_accuracy_percent',
+    columns = ['target','partner','defense','attack_scope','dataset','n','correct','accuracy_percent','matched_unprotected_accuracy_percent',
         'defense_drop_pp','attack_recovery_pp','remaining_gap_pp','changed_predictions','lost','gained','mcnemar_log10_p','mcnemar_bonferroni_log10_p']
     with (output/'results.csv').open('w',newline='') as f:
         writer=csv.DictWriter(f,fieldnames=columns);writer.writeheader()
