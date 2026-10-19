@@ -476,7 +476,7 @@ def normalization_geometry(output):
     edits=torch.load(cfg['release']['path'],map_location='cpu');assert digest(cfg['release']['path'])==cfg['release']['sha256']
     point=torch.load(pointdir/'point.pt',map_location='cpu');prefix='model.visual.transformer.resblocks.11.attn.'
     geometry={}
-    for key in ([] if point.get('site') in ['MLP','HEAD'] else ['in_proj_weight','out_proj.weight']):
+    for key in ([] if point.get('site') in ['MLP','HEAD','READOUT'] else ['in_proj_weight','out_proj.weight']):
         k=prefix+key;original=state[k].double().numpy();delta=edits[k].double().numpy()-original
         if key=='in_proj_weight':
             task=(state[k][1536:]-base[k][1536:]).double().numpy();_,_,vh=np.linalg.svd(task,full_matrices=False);v=vh[:32];d=delta[1536:]
@@ -499,6 +499,28 @@ def normalization_geometry(output):
             pieces=zip(['Q','K','V'],np.split(a,3),np.split(b,3)) if k.endswith(('in_proj_weight','in_proj_bias')) else [('O',a,b)]
             for name,x,y in pieces:geometry[k+':'+name]=dict(relative_distance=float(np.linalg.norm(x-y)/np.linalg.norm(y)) if np.linalg.norm(y)>0 else 0.,
                 denominator='Whole separate logical projection or its bias, float64; known head-permutation control, not functional distance.')
+    if point.get('site')=='READOUT':
+        for k,changed in edits.items():
+            delta=changed.double().numpy()-state[k].double().numpy();den=np.linalg.norm(state[k].double().numpy())
+            geometry[k]=dict(relative_distance=float(np.linalg.norm(delta)/den),denominator='Own full final LN bias or projection tensor, float64.')
+            if delta.ndim==2:
+                v=point['vh'].numpy();inside=v.T@(v@delta);outside=delta-inside
+                geometry[k].update(task32_inside_distance=float(np.linalg.norm(inside)/den),task32_outside_distance=float(np.linalg.norm(outside)/den),
+                    outside_squared_energy_fraction=float(np.linalg.norm(outside)**2/np.linalg.norm(delta)**2))
+        source=torch.load(pointdir/'source.pt',map_location='cpu');h=source['inputs'].double().numpy();gamma=point['gamma'].numpy()
+        z=(h-h.mean(1,keepdims=True))/np.sqrt(((h-h.mean(1,keepdims=True))**2).mean(1,keepdims=True)+point['eps'])
+        beta,p=point['beta'].numpy(),point['projection'].numpy();head=source['head_weight'].numpy()
+        bp,pp=[edits[k].double().numpy() for k in ['model.visual.ln_post.bias','model.visual.proj']]
+        f=(z*gamma+beta)@p;mid=(z*gamma+(beta+bp)/2)@((p+pp)/2);shift=mid-f
+        n=point['normal'].numpy();c=float(point['constant']);r=json.loads((pointdir/'before_images.json').read_text())['geometry']['r']
+        ideal=c*r*r/(4*(1-r))*(n@p);error=float(abs(shift-ideal).max());assert error<1e-6
+        scores=f/np.linalg.norm(f,axis=1,keepdims=True)@head.T;after=mid/np.linalg.norm(mid,axis=1,keepdims=True)@head.T
+        y=scores.argmax(1);ix=np.arange(len(y));numer=f@head.T;dn=shift@head.T;gap=numer[ix,y,None]-numer;gap[ix,y]=1
+        harm=-(dn[ix,y,None]-dn)/np.maximum(gap,1e-12);harm[ix,y]=0
+        geometry['fixed_source_self_midpoint']=dict(n=len(y),changed=int((y!=after.argmax(1)).sum()),feature_shift_norm=float(np.linalg.norm(ideal)),
+            finite_constant_identity_error=error,maximum_signed_numerator_margin_harm=float(harm.max()),
+            maximum_harm_per_image_quantiles=np.quantile(harm.max(1),[.5,.95,1]).tolist(),
+            scope='Fixed source-only self-chord after freezing. Not a true partner/AGA evaluation, new candidate, or universal no-change certificate.')
     meta=json.loads((out/'execution.json').read_text());assert meta['completed']
     rawpath=out/'artifacts/predictions.pt';assert digest(rawpath)==meta['predictions_sha256']
     raw=torch.load(rawpath,map_location='cpu');rows=[]
