@@ -31,15 +31,18 @@
     }
   },
   "source_sha256": {
-    "experiments/phase3_distillation.py": "30ce6c36dd4decdd238d483cc138ee860ed44c0c71f7ae4413451cd09b38ab9c",
-    "experiments/phase3_evaluate.py": "393cfdd6c6bd8ec9574b887edcd8c05a3e9a855e44d63e91d7c6e68bf420bde7",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
     "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
-    "experiments/verify_prodistill.py": "2eed3dc011e3b0fb6689b177ab4f0e60cb3cef438a4a14da91a02c8e6e2a7b58",
-    "experiments/phase3_eight_task.py": "0e5c450b8b3629f312364a1b6c0a0c6f80560bf0ecd36e76a468680137a101e1",
     "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/frozen_AB_target_only.py": "d45a337793bcb7f8fb50d44daa325c7b6ce80e1343f86fdcc7102ae7c878fb15",
     "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "experiments/phase3_distillation.py": "13ec6c17eda2fcf746e10e62a01d1cc383d29721db2f7907c35310484e4b316a",
+    "experiments/phase3_eight_task.py": "0e5c450b8b3629f312364a1b6c0a0c6f80560bf0ecd36e76a468680137a101e1",
+    "experiments/phase3_evaluate.py": "393cfdd6c6bd8ec9574b887edcd8c05a3e9a855e44d63e91d7c6e68bf420bde7",
     "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
-    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10"
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "experiments/verify_probe_candidate.py": "f91b7f1dcb7dcd19144b0b7ac711dd557b1a0ce1bb51809a047e53f0c7f8cdf9",
+    "experiments/verify_prodistill.py": "2eed3dc011e3b0fb6689b177ab4f0e60cb3cef438a4a14da91a02c8e6e2a7b58"
   },
   "paper_reference": "PaRaMS arxiv2503.07661v1 section6 and AppendixH.2,50epochs/batch128. Native2048-image adaptation; optimizer/schedule fixed from task_vectors, not claimed PaRaMS officialKD implementation.",
   "permission": "Same-distribution unlabeled training images, hard protected-teacher labels, public-base attacker student with full visual-encoder gradients. Original experts/defenses/head frozen.",
@@ -48,5 +51,6 @@
   "same_labels_rule": "If complete fixed2048 teacher argmax vectors equal, train only once and explicitly reuse identical attack problem. This is not an independent seed result.",
   "novel_attack_claim": false,
   "is_new_defense": false,
-  "historical_tests_not_blind": true
+  "historical_tests_not_blind": true,
+  "loader_amendment": "Initial attempt stopped before image queries because unchanged historical parent protocol pins an older shared loader. Original frozen defense/weight/AGA references retained; this new native attack verifies its explicitly frozen current source dependencies instead. Failure directory/log and first source retained. No data/seed/optimizer/epoch/threshold change."
 }
