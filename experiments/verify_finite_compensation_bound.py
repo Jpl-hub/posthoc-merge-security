@@ -80,6 +80,24 @@ def verify_projection_cone(root):
     H=data['head'].numpy();np.testing.assert_array_equal(H,head.weight.double().numpy())
     ids=data['indices'];assert ids==json.loads((root/'source_split.json').read_text())['indices']
     assert not set(ids)&set(cfg['extra_excluded_indices'])
+    split=json.loads((root/'source_split.json').read_text());excluded=set(cfg['extra_excluded_indices'])
+    boundary=json.loads(Path('results/task_boundary_audit/split_independence_audit.json').read_text())
+    static={row['path']:row['group'] for row in boundary['records']}
+    for path,pin in split['excluded_metadata_sha256'].items():
+        assert digest(path)==pin,path
+        if path in static:
+            value=json.loads(Path(path).read_text()) if Path(path).suffix=='.json' else torch.load(path,map_location='cpu',weights_only=False)['indices']
+            excluded.update(value[static[path]])
+        else:
+            value=json.loads(Path(path).read_text())
+            groups=(list(value.values()) if isinstance(value,dict) else [value]) if Path(path).name=='training_indices.json' else [value.get('indices',[])]
+            for group in groups:
+                if isinstance(group,list):excluded.update(int(x) for x in group)
+    for path in cfg['extra_index_exclusions']:excluded.update(json.loads(Path(path).read_text())['indices'])
+    assert len(excluded)==split['excluded_count']
+    pool=sorted(set(range(60000))-excluded)
+    expected=np.random.default_rng(cfg['construction_seed']).choice(pool,cfg['source_n'],replace=False).tolist()
+    assert expected==ids and not set(ids)&excluded
     np.testing.assert_array_equal(data['labels'].numpy(),official_labels(cfg['target'],True)[ids[:cfg['fit_n']]])
     U,Q=data['projection_basis'].numpy(),data['head_basis'].numpy()
     np.testing.assert_allclose(U.T@U,np.eye(len(U.T)),atol=1e-12)
@@ -105,7 +123,8 @@ def verify_projection_cone(root):
     actual_D=float(np.linalg.norm(data['B_edit'].numpy()-B)/np.linalg.norm(B))
     assert abs(actual_D-meta['prefix_distance'])<1e-10
     report=dict(status='independent_cone_assembly_checked',solver_status=meta['status'],assembly_errors=errors,
-        original_head_error=control,prefix_D=actual_D,new_model_forwards=0,new_candidates=0,new_TA_calls=0,new_AGA_calls=0,
+        original_head_error=control,prefix_D=actual_D,source_sampling_reproduced=True,source_n=len(ids),excluded_source_indices=len(excluded),
+        new_model_forwards=0,new_candidates=0,new_TA_calls=0,new_AGA_calls=0,
         source_sha256=digest(__file__),input_result_sha256=digest(root/'results.json'),raw_sha256=meta['cone_raw_sha256'])
     if meta['status']=='PrimalInfeasible':
         z=raw['z'];stationarity=float(abs(A.T@z).max());dot=float(b@z);at=0;violation=0.
