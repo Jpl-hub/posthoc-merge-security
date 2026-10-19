@@ -443,6 +443,25 @@
       "tree_truncated": false,
       "tree_entries": 367,
       "selected_git_blobs_verified": 13
+    },
+    "EMMET_formulation_reference": {
+      "paper": "https://arxiv.org/html/2403.14236v1",
+      "read_scope": "Sections3-4, experimental setting and figures3-5; not claimed full paper/full implementation audit.",
+      "official_repository": "https://github.com/scalable-model-editing/unified-model-editing",
+      "commit": "23d72b560e52992e675377cc2d1deed7a45b1cd0",
+      "core_path": "emmet/emmet_main.py",
+      "core_git_blob": "e77e76a71f1182aa525debe0c918b9b883d06525",
+      "core_sha256": "8bec703dbfc6957ecbb07eac1b7ec6756dc9c31d200348f6a55ca3987548a566",
+      "server_primary_source": "outputs/2026-10-19_research/primary_sources/EMMET_23d72b5_emmet_main.py",
+      "classification": "LLM knowledge editing formulation reference,not merging recovery attack or defense baseline.",
+      "source_findings": [
+        "Float64 covariance/key algebra; optional moment scaling and covariance ridge.",
+        "Batched key system adds emmet_lambda on its diagonal; inverse falls back to pseudoinverse on exception.",
+        "Residual is divided across remaining selected layers. Exact paper equality is conditional,not an arbitrary-task functional guarantee."
+      ],
+      "relevance": "Preservation/editing and multilayer distribution are established ideas. Our proposed normalized-class finite-cone constraint is a different limited feasibility condition; no novelty or successful Defense2 follows.",
+      "new_attack_count": 0,
+      "execution_status": "method/core reviewed,not ported or run"
     }
   },
   "literature_access": {
