@@ -279,8 +279,38 @@ def branch_norm_check(protocol):
     report['raw_sha256']=digest(out/'mechanism.pt');save_json(out/'results.json',report);print(json.dumps(report),flush=True)
 
 
+def verify_branch_norm(folder):
+    out=Path(folder);report=json.loads((out/'results.json').read_text());assert digest(out/'mechanism.pt')==report['raw_sha256']
+    raw=torch.load(out/'mechanism.pt',map_location='cpu');N,r,z=[raw[k].numpy() for k in ['N','r','z']];p=convert(raw['p']);B=p['B']
+    readout=np.column_stack([np.ones(768),p['gamma'][:,None]*p['projection']]);u,s,_=np.linalg.svd(readout,full_matrices=True);nk=u[:,int((s>s[0]*1e-10).sum()):]
+    assert N.shape[1]==nk.shape[1]==report['reflection_rank']==255
+    projector_error=float(abs(N@N.T-nk@nk.T).max());assert projector_error<1e-10
+    q=(B-2*N@(N.T@B)).astype('float32').astype('float64');distance=float(np.linalg.norm(q-B)/np.linalg.norm(B));assert abs(distance-report['parameter_distance'])<1e-8
+    skip=r+p['b'];m=z@B.T;h=skip+m;before=raw_scores(h,p);d=768;var=((h-h.mean(1,keepdims=True))**2).mean(1)+p['eps'];errors=[];sigma_error=0.
+    for lam in [1.,.5]:
+        after=raw_scores(skip+z@(B+lam*(q-B)).T,p);winner=before.argmax(1);ix=np.arange(len(h));gap=before[ix,winner,None]-before;gap[ix,winner]=1
+        delta=after-before;rho=abs((delta[ix,winner,None]-delta)/np.maximum(gap,1e-12));rho[ix,winner]=0
+        errors.append(abs(float(rho.max())-report['groups'][str(lam)]['metric']['worst_task_drift']))
+        assert int((before.argmax(1)!=after.argmax(1)).sum())==report['groups'][str(lam)]['metric']['changed']
+        exact=skip+m-2*lam*(m@N)@N.T;measured=((exact-exact.mean(1,keepdims=True))**2).mean(1)+p['eps']-var
+        rhs=(-4*lam*((skip@N)*(m@N)).sum(1)-4*lam*(1-lam)*((m@N)**2).sum(1))/d
+        sigma_error=max(sigma_error,float(abs(measured-rhs).max()))
+    assert max(errors)<1e-6 and sigma_error<1e-8
+    # Uniform-source dual bound for the specific proposed variance-contraction mechanism.
+    sk,mb=skip@nk,m@nk;cross=(sk.T@mb+mb.T@sk)/(2*len(h));middle=2*cross+mb.T@mb/len(h)
+    ev,em=[np.linalg.eigvalsh(x) for x in [cross,middle]]
+    certificate=dict(source_count=len(h),source_endpoint_cross_eigenvalue_range=[float(ev[0]),float(ev[-1])],
+        source_midpoint_contraction_eigenvalue_range=[float(em[0]),float(em[-1])],
+        uniform_positive_midpoint_variance_contraction_excluded=bool(em[-1]<-1e-10),
+        exact_source_variance_preservation_nonzero_reflection_excluded=bool(ev[-1]<-1e-10 or ev[0]>1e-10),
+        scope='Uniform average is a legal simplex dual only for this scalar skip/branch variance mechanism in the fixed full visual-readout kernel. Not a classification-defense impossibility or a necessary gate for other methods.')
+    save_json(out/'independent_validation.json',dict(status='passed_numpy_finite_norm_and_score_recount',raw_sha256=report['raw_sha256'],
+        source_sha256=digest(__file__),NumPy_projector_error=projector_error,NumPy_task_drift_recount_error=max(errors),NumPy_variance_identity_error=sigma_error,
+        geometric_rank=255,new_images=0,new_releases=0,source_task_feasibility_is_not_independent_confirmation=True,finite_variance_bound=certificate))
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--cost',action='store_true');ap.add_argument('--affine',action='store_true');ap.add_argument('--branch-norm',action='store_true');a=ap.parse_args();initialize()
-    if a.branch_norm: branch_norm_check(a.protocol)
+    if a.branch_norm: verify_branch_norm(a.verify) if a.verify else branch_norm_check(a.protocol)
     elif a.affine: affine_audit(a.protocol)
     else: (verify_cost if a.cost else verify)(a.verify) if a.verify else (functional_cost if a.cost else run)(a.protocol)
