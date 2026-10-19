@@ -123,8 +123,22 @@ def verify_projection_cone(root):
     B=expert.model.visual.transformer.resblocks[0].mlp.c_proj.weight.double().numpy()
     actual_D=float(np.linalg.norm(data['B_edit'].numpy()-B)/np.linalg.norm(B))
     assert abs(actual_D-meta['prefix_distance'])<1e-10
+    B0=anchor.model.visual.transformer.resblocks[0].mlp.c_proj.weight.double().numpy()
+    vb=np.linalg.svd(B-B0,full_matrices=False)[2][:cfg['rank']]
+    deltaB=data['B_edit'].numpy()-B
+    complement_leak=float(np.linalg.norm(deltaB@vb.T)/np.linalg.norm(deltaB))
+    pu=np.linalg.svd(P-anchor.model.visual.proj.double().numpy(),full_matrices=False)[0][:,:cfg['rank']]
+    basis_error=float(abs(U@U.T-pu@pu.T).max());assert basis_error<1e-8
+    prefix=data['prefix_scores'].numpy().astype(float);ds=prefix-teacher
+    drift=(ds[np.arange(len(y)),y,None]-ds)/np.where(gap>0,gap,1);drift[np.arange(len(y)),y]=0
+    truth=data['labels'].numpy();prediction=prefix.argmax(1)
     report=dict(status='independent_cone_assembly_checked',solver_status=meta['status'],assembly_errors=errors,
         original_head_error=control,prefix_D=actual_D,source_sampling_reproduced=True,source_n=len(ids),excluded_source_indices=len(excluded),
+        prefix_right_task32_response_fraction=complement_leak,projection_task32_basis_error=basis_error,
+        fit_n=len(y),original_fit_correct=int((y==truth).sum()),prefix_fit_correct=int((prediction==truth).sum()),
+        prefix_fit_changed=int((prediction!=y).sum()),prefix_fit_R=float(abs(drift).max()),
+        prefix_per_class=[dict(class_id=k,n=int((truth==k).sum()),lost=int(((y==truth)&(prediction!=truth)&(truth==k)).sum()),
+            gained=int(((y!=truth)&(prediction==truth)&(truth==k)).sum())) for k in range(len(H))],
         new_model_forwards=0,new_candidates=0,new_TA_calls=0,new_AGA_calls=0,
         source_sha256=digest(__file__),input_result_sha256=digest(root/'results.json'),raw_sha256=meta['cone_raw_sha256'])
     if meta['status']=='PrimalInfeasible':
