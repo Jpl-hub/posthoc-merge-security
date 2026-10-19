@@ -180,6 +180,64 @@ def verify_cost(folder):
         finite_difference_relative_error=fd_error,new_images=0,new_releases=0,closed_point_repaired=False))
 
 
+@torch.no_grad()
+def affine_audit(protocol):
+    """Trace the frozen affine point through actual attention; never select a new point."""
+    from ln_affine_release import observe
+    from scipy.special import logsumexp, softmax
+    cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output']);start=time.monotonic()
+    validation=json.loads((out/'independent_validation.json').read_text());assert validation['status']=='passed'
+    meta=json.loads((out/'execution.json').read_text());assert digest(out/'artifacts/predictions.pt')==meta['predictions_sha256']
+    source=Path(cfg['prior_confirmation']).parent;assert not (out/'affine_mechanism.pt').exists()
+    src=torch.load(source/'source.pt',map_location='cpu');_,expert,head,pins=checked_models('MNIST')
+    ref=cfg['AGA_references']['MNIST'];assert digest(ref['path'])==ref['sha256']
+    expert.load_state_dict(torch.load(ref['path'],map_location='cpu'),strict=True);changed=copy.deepcopy(expert)
+    edits=torch.load(out/'artifacts/AGA_release_edits.pt',map_location='cpu');assert sorted(edits)==cfg['allowed_keys']
+    for k,v in edits.items():changed.state_dict()[k].copy_(v)
+    train=dataset('MNIST','data',expert.val_preprocess,True);maps=[];qs=[];ks=[];native=[];prefix=None;control=0.
+    for model in [expert,changed]:
+        score,x=observe(model,head,train,src['indices'],True);native.append(score)
+        if prefix is None:prefix=x
+        else:assert torch.equal(prefix,x),'Prefixes must be identical for the causal Q-only comparison.'
+        block=model.model.visual.transformer.resblocks[11].cuda();allq=[];allk=[];allp=[]
+        for part in x.split(64):
+            norm=block.ln_1(part.cuda().transpose(0,1));q,k,_=torch.nn.functional.linear(norm,block.attn.in_proj_weight,block.attn.in_proj_bias).chunk(3,-1)
+            q=q[0].reshape(-1,12,64).double();k=k.transpose(0,1).reshape(len(part),50,12,64).transpose(1,2).double()
+            logits=torch.einsum('nhd,nhtd->nht',q,k)/8;prob=logits.softmax(-1)
+            _,actual=block.attn(norm,norm,norm,need_weights=True,average_attn_weights=False)
+            control=max(control,float((actual[:,:,0].double()-prob).abs().max()));allq.append(q.cpu());allk.append(k.cpu());allp.append(prob.cpu())
+        block.cpu();qs.append(torch.cat(allq));ks.append(torch.cat(allk));maps.append(torch.cat(allp))
+    assert control<=5e-6 and torch.equal(ks[0],ks[1])
+    q0,q1=[q.numpy() for q in qs];k=ks[0].numpy();p0,p1=[p.numpy() for p in maps]
+    logits=[np.einsum('nhd,nhtd->nht',q,k)/8 for q in [q0,q1]]
+    error=max(float(abs(softmax(z,axis=-1)-p).max()) for z,p in zip(logits,[p0,p1]));assert error<1e-12
+    delta=logits[1]-logits[0];tv=abs(p1-p0).sum(-1)/2;bound=np.tanh(np.ptp(delta,axis=-1)/4);assert np.all(tv<=bound+1e-12)
+    full=torch.load(out/'artifacts/predictions.pt',map_location='cpu');classes=[];margins=[]
+    for key,row in full.items():
+        if not key.startswith('released/'):continue
+        original=full[key.replace('released/','original/')];a,b=[v['logits'].double().numpy() for v in [original,row]];labels=row['target'].numpy();n=len(labels);ix=np.arange(n)
+        logp=b-logsumexp(b,axis=1,keepdims=True);oldp=a-logsumexp(a,axis=1,keepdims=True)
+        winner=a.argmax(1);other=a.copy();other[ix,winner]=-np.inf;runner=other.argmax(1);gap=a[ix,winner]-a[ix,runner]
+        harm=1-(b[ix,winner]-b[ix,runner])/gap
+        margins.append(dict(key=key,signed_margin_harm_quantiles=np.quantile(harm,[0,.5,.95,1]).tolist(),teacher_runner_crossings=int((harm>1).sum())))
+        for c in range(10):
+            mask=labels==c;pred0=a.argmax(1);pred1=b.argmax(1)
+            classes.append(dict(key=key,class_id=c,n=int(mask.sum()),original_accuracy=float((pred0[mask]==labels[mask]).mean()),released_accuracy=float((pred1[mask]==labels[mask]).mean()),
+                original_mean_NLL=float(-oldp[ix[mask],labels[mask]].mean()),released_mean_NLL=float(-logp[ix[mask],labels[mask]].mean()),
+                lost=int(((pred0==labels)&(pred1!=labels)&mask).sum()),gained=int(((pred0!=labels)&(pred1==labels)&mask).sum())))
+    torch.save(dict(q=qs,k=ks[0],attention=maps,source_scores=native,source_indices=src['indices']),out/'affine_mechanism.pt')
+    report=dict(status='passed_numpy_attention_and_class_loss_recount',native_attention_control=control,numpy_attention_error=error,
+        source_query_relative_change=float(np.linalg.norm(q1-q0)/np.linalg.norm(q0)),source_attention_TV_quantiles=np.quantile(tv,[0,.5,.95,1]).tolist(),
+        source_attention_TV_maximum_by_head=tv.max(0).tolist(),softmax_TV_bound_valid=True,
+        source_changed_predictions=int((native[0].argmax(1)!=native[1].argmax(1)).sum()),source_n=len(src['indices']),
+        repeated_original_source_image_forwards=2*len(src['indices']),new_images=0,new_weights=0,gradients=0,
+        full_class_loss=classes,full_signed_margin_harm=margins,wall_seconds=time.monotonic()-start,
+        source_sha256=digest(__file__),raw_sha256=digest(out/'affine_mechanism.pt'),full_predictions_sha256=meta['predictions_sha256'],
+        scope='Posthoc explanation of one frozen failed point: identical actual AGA prefixes, full native attention control, NumPy softmax/TV bound and existing full evaluation losses. Not direction selection or an unknown-partner guarantee.')
+    save_json(out/'mechanism_and_class_loss.json',report);print(json.dumps({k:v for k,v in report.items() if not k.startswith('full_')}),flush=True)
+
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--cost',action='store_true');a=ap.parse_args();initialize()
-    (verify_cost if a.cost else verify)(a.verify) if a.verify else (functional_cost if a.cost else run)(a.protocol)
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--cost',action='store_true');ap.add_argument('--affine',action='store_true');a=ap.parse_args();initialize()
+    if a.affine: affine_audit(a.protocol)
+    else: (verify_cost if a.cost else verify)(a.verify) if a.verify else (functional_cost if a.cost else run)(a.protocol)
