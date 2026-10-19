@@ -98,34 +98,52 @@ def margin_stat(n0,n1):
 
 @torch.no_grad()
 def self_chord():
-    """One frozen O/B midpoint in both source coordinates; not a new defense."""
-    from scipy.special import expit
-    from cross_module_distance import final_hidden
+    """Fixed full-suffix midpoint; reconstruct only the same exposed source inputs."""
+    from attention_cascade import suffix
+    from verify_cascade import suffix as numpy_suffix
     from verify_levelset_audits import convert,raw_scores
-    root=Path('outputs/phase2_frozen_signed_condition');out=root/'OB_self_chord.json';assert not out.exists()
-    report=json.loads((root/'results.json').read_text());path=root/'artifacts/diagnostic.pt'
-    assert digest(path)==report['diagnostic_sha256'];raw=torch.load(path,map_location='cpu',weights_only=False)
-    torch.set_num_threads(4);start=time.monotonic();rows=[];maximum=0.
+    from angular_distance import signed_residual
+    cfg=json.loads(Path('configs/frozen_signed_condition.json').read_text())
+    out=Path('outputs/phase2_frozen_signed_condition/OB_self_chord.json');assert not out.exists()
+    case=cfg['cases'][0];paths=[cfg['source_indices'],cfg['original_AGA'],case['release'],case['AGA_edits']]
+    for path in paths:assert digest(path)==cfg['inputs'][path],path
+    initialize();torch.set_num_threads(4);start=time.monotonic()
+    _,own,head,pins=checked_models('MNIST');ids=json.loads(Path(cfg['source_indices']).read_text())['indices'];assert len(ids)==512
+    training=dataset('MNIST','data',own.val_preprocess,True);rows=[];maximum=0.
+    cache_path=Path('/root/posthoc_evaluation_cache/OB_self_chord_sources_20261019.pt');assert not cache_path.exists()
+    caches={}
     for env in ['source','aligned_source']:
-        p=raw['environments'][env]['parameters'];q=raw['cases']['O_B'][env]['parameters'];st=raw['cases']['O_B'][env]['states']
-        assert all(torch.equal(p[k],q[k]) for k in p if torch.is_tensor(p[k]) and k not in ['O','B'])
-        rounding=st['h0']-final_hidden(st['r0'],p);mid=p|{'B':(p['B']+q['B'])/2}
-        r=(st['r0']+st['r1'])/2;h=rounding+final_hidden(r,mid);after=scores(h,p);before=scores(st['h0'],p)
-        pn=convert(p);rn=r.numpy();c=rn-rn.mean(1,keepdims=True)
-        pre=(c/np.sqrt((c*c).mean(1,keepdims=True)+p['eps2'])*pn['gamma2']+pn['beta2'])@pn['A'].T+pn['a']
-        hn=rounding.numpy()+rn+(pre*expit(1.702*pre))@mid['B'].numpy().T+pn['b']
-        error=float(abs(raw_scores(hn,pn)-after.numpy()).max());assert error<1e-8;maximum=max(maximum,error)
-        from angular_distance import signed_residual
-        row=dict(environment=env,midpoint=margin_stat(numerator(st['h0'],p),numerator(h,p)),
+        baseline=copy.deepcopy(own)
+        if env=='aligned_source':baseline.load_state_dict(torch.load(cfg['original_AGA'],map_location='cpu',weights_only=False),strict=True)
+        protected=copy.deepcopy(baseline);protected.load_state_dict(baseline.state_dict()|torch.load(case['release' if env=='source' else 'AGA_edits'],map_location='cpu',weights_only=False),strict=True)
+        # Only the last block may differ. Interpolate all its actual changed tensors, including AGA coordinates.
+        prefix='model.visual.transformer.resblocks.11.'
+        assert all(torch.equal(v,protected.state_dict()[k]) for k,v in baseline.state_dict().items() if not k.startswith(prefix))
+        p=parameters(baseline,head);q=parameters(protected,head);p.pop('D');q.pop('D')
+        changed=[k for k in p if torch.is_tensor(p[k]) and not torch.equal(p[k],q[k])]
+        assert all(torch.equal(p[k],q[k]) for k in ['P','gamma','beta','head'])
+        middle={k:(p[k]+q[k])/2 if k in changed else p[k] for k in p}
+        cache=capture_prefix(baseline,training,ids);caches[env]=cache
+        hs=[];ends=[]
+        pn=convert(p);mn=convert(middle)
+        for at in range(0,len(ids),64):
+            H=cache['H'][at:at+64];native=cache['h'][at:at+64];rounding=native-suffix(H,p)[0]
+            mid=rounding+suffix(H,middle)[0];endpoint=rounding+suffix(H,q)[0]
+            independent=rounding.numpy()+numpy_suffix(H.numpy(),mn)[0]
+            error=float(abs(raw_scores(independent,pn)-scores(mid,p).numpy()).max());assert error<1e-8;maximum=max(maximum,error)
+            hs.append(mid);ends.append(endpoint)
+        h=torch.cat(hs);end=torch.cat(ends);before=scores(cache['h'],p);after=scores(h,p)
+        rows.append(dict(environment=env,changed_tail_tensors=changed,midpoint=margin_stat(numerator(cache['h'],p),numerator(h,p)),
             midpoint_full_relative_margin_drift=float(signed_residual(before,after).abs().max()),
-            endpoint=margin_stat(numerator(st['h0'],p),numerator(st['joint'],p)),
-            original_B_only=margin_stat(numerator(st['h0'],p),numerator(st['B_only'],p)))
-        rows.append(row)
+            endpoint=margin_stat(numerator(cache['h'],p),numerator(end,p))))
+        print('SELF_CHORD',json.dumps(rows[-1]),flush=True)
+    torch.save(dict(indices=ids,environments=caches),cache_path)
     save_json(out,dict(status='frozen_source_OB_self_chord_checked',rows=rows,source_sha256=digest(__file__),
-        raw_sha256=report['diagnostic_sha256'],maximum_independent_NumPy_score_error=maximum,
-        old_source_indices=raw['indices'],new_images=0,full_model_forwards=0,new_candidates=0,gradients=0,
+        input_sha256={path:digest(path) for path in paths},original_checkpoint_sha256=pins,
+        maximum_independent_NumPy_score_error=maximum,old_source_indices=ids,new_indices=0,
+        full_model_forward_inputs=1024,new_candidates=0,gradients=0,cache=str(cache_path),cache_sha256=digest(cache_path),
         wall_seconds=time.monotonic()-start,
-        scope='One fixed half-chord of original/aligned O/B endpoints on old construction inputs. Aligned source is original authorAGA coordinates, not an unknown peer, true two-task merger or fresh task confirmation. No changed weights, coefficient search or universal gate.'))
+        scope='Fixed half-chord on 512 old source training indices. Recomputed original and authorAGA prefixes because archived raw cache is unavailable locally. Full changed last-block tensors interpolated; not an unknown peer, fresh confirmation, defense or universal gate.'))
 
 
 @torch.no_grad()
