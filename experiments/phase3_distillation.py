@@ -63,7 +63,8 @@ def train(base, head, images, labels, cfg, pilot=False):
 
 
 def run(protocol):
-    cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output']);out.mkdir(parents=True,exist_ok=False)
+    cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output'])
+    (out.resolve() if out.is_symlink() else out).mkdir(parents=True,exist_ok=False)
     save_json(out/'protocol.json',cfg);assert digest(__file__)==cfg['source_sha256'][__file__ if __file__ in cfg['source_sha256'] else 'experiments/phase3_distillation.py']
     for p,sha in cfg['source_sha256'].items():assert digest(p)==sha,p
     parent=json.loads(Path(cfg['frozen_inputs']['path']).read_text());assert digest(cfg['frozen_inputs']['path'])==cfg['frozen_inputs']['sha256']
