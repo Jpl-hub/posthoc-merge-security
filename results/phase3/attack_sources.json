@@ -166,10 +166,24 @@
       "results": "results/phase3/params_adaptive/results.json",
       "validation": "results/phase3/params_adaptive/independent_validation.json",
       "real_CLIP_rows": 30
+    },
+    {
+      "name": "Hard-label student recovery",
+      "official_full_KD_reproduction": false,
+      "results": "results/phase3/distillation",
+      "fixed_unlabeled_n": 2048,
+      "epochs": 50,
+      "teacher_names": [
+        "Unprotected",
+        "Phase1_MNIST"
+      ],
+      "actual_training_groups": 1,
+      "extra_permissions": "Same-distribution unlabeled training data and full attacker-owned student training; original experts and defense weights frozen."
     }
   ],
   "unexecuted_supplementary_diagnostics": [
-    "Projection of final LN bias to published visual-projection column space; mathematical risk only, not counted as a reproduced attack."
+    "GradErase disturbance estimation recipe unresolved; no experiment claimed.",
+    "MergeLock coupled orthogonal recovery: official executable unavailable."
   ],
   "latest_completed_merger_evaluations": {
     "DARE+TA": "Fixed drop0.2, three retained masks,2016 selected-score replays; no new recovery attack",
@@ -471,5 +485,17 @@
     ],
     "scope": "All28 Python files in the pinned complete GitHub tree were retrieved and blob-verified. Hits only refer to already-finetuned checkpoint names; no supplied KD trainer found in this published tree. This is a bounded code-availability audit, not proof about unreleased author code or every branch."
   },
-  "hard_label_recovery": "results/phase3/distillation/tables.md; both teachers share one exact finite label-training problem; no full officialKD or independent seed claim."
+  "hard_label_recovery": "results/phase3/distillation/tables.md; both teachers share one exact finite label-training problem; no full officialKD or independent seed claim.",
+  "completed_architecture_aware_diagnostics": [
+    {
+      "name": "Minimum-norm final-LN-bias canonicalization",
+      "data": "results/phase3/bias_canonicalization",
+      "scope": "MNIST nativeFP32; preserves ideal projection response, not universal FP32 equivalence. Native function-preservation numerical failure retained."
+    },
+    {
+      "name": "Final-LN-bias canonicalization, mixed-precision tail",
+      "data": "results/phase3/bias_tail_precision",
+      "scope": "DTD/SVHN separately declared FP32-prefix/FP64-readout protocol; does not erase nativeFP32 failure."
+    }
+  ]
 }
