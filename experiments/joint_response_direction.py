@@ -24,7 +24,7 @@ from verify_levelset_audits import convert, raw_scores
 
 @torch.no_grad()
 def capture(model, training, indices):
-    groups = {k: [] for k in ['H', 'z10', 'h']}
+    groups = {k: [] for k in ['H', 'z10', 'h', 'features']}
     visual = model.model.visual
     hooks = [
         visual.transformer.resblocks[10].mlp.c_proj.register_forward_pre_hook(
@@ -37,7 +37,7 @@ def capture(model, training, indices):
     try:
         model.cuda().eval()
         for images, _ in make_loader(training, indices, 64):
-            model(images.cuda())
+            groups['features'].append(model(images.cuda()).detach().cpu())
     finally:
         for hook in hooks:
             hook.remove()
@@ -234,9 +234,86 @@ def run(protocol):
     print(json.dumps(report), flush=True)
 
 
+@torch.no_grad()
+def confirm(protocol):
+    from confirm_temperature_compensation import unused
+    from ln_affine_release import observe
+
+    cfg = json.loads(Path(protocol).read_text())
+    for path, pin in cfg['source_sha256'].items():
+        assert digest(path) == pin, path
+    out = Path(cfg['output']).resolve()
+    assert not (out / 'confirmation.pt').exists() and not (out / 'confirmation_split.json').exists()
+    for name in ['release.pt', 'results.json', 'diagnostic.pt', 'independent_validation.json']:
+        assert digest(out / name) == cfg['source_artifacts'][name], name
+    assert json.loads((out / 'independent_validation.json').read_text())['status'] == 'passed'
+    initialize()
+    start = time.monotonic()
+    _, expert, head, pins = checked_models('MNIST')
+    p = on_device(parameters(expert, head))
+    edits = torch.load(out / 'release.pt', map_location='cpu')
+    original = expert.state_dict()
+    distance = sum(float((v.double()-original[k].double()).norm().square()/original[k].double().norm().square()) for k, v in edits.items())**.5
+    assert distance <= cfg['parameter_budget']
+    deltas = [(edits[f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight'].double()-original[f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight'].double()).cuda() for layer in [10, 11]]
+    point = torch.load(out / 'diagnostic.pt', map_location='cpu')
+    bases = [v.cuda() for v in point['bases']]
+    del point
+    save_json(out / 'pre_confirmation_freeze.json', dict(protocol=cfg, release_sha256=cfg['source_artifacts']['release.pt'], weights_changed=False))
+    training = dataset('MNIST', 'data', expert.val_preprocess, True)
+    old_ids = json.loads((out / 'training_indices.json').read_text())['fit']
+    split = unused(training, set(old_ids) | set(cfg['excluded_witness_indices']), cfg)
+    save_json(out / 'confirmation_split.json', split)
+    cache = capture(expert, training, split['indices'])
+    natural = scores(cache['h'].cuda().double(), p).cpu()
+    y = natural.argmax(1)
+    contexts = torch.cat([torch.where(y == c)[0][:cfg['contexts_per_class']] for c in range(natural.shape[1])])
+    assert len(contexts) == natural.shape[1] * cfg['contexts_per_class']
+    z11 = torch.cat([suffix(H.cuda().double(), p)[1]['z'].cpu() for H in cache['H'].split(cfg['batch_size'])])
+    probes = []
+    for activation, basis in zip([cache['z10'][:, 0].double(), z11], bases):
+        rms = (activation.cuda() @ basis.T).square().mean(0).sqrt()
+        probes.append((cfg['finite_step'] * torch.tensor([-1., 1.], device='cuda')[:, None, None] * rms[None, :, None] * basis[None]).flatten(0, 1))
+    before, after, maximum = [], [], 0.
+    pn = convert(p)
+    for _, batch in inputs(cache, p, probes, contexts, cfg):
+        h = predict(batch, p, deltas)
+        before.append(scores(batch['h'], p).cpu())
+        after.append(scores(h, p).cpu())
+        H = batch['H'].cpu().numpy() + batch['z10'].cpu().numpy() @ deltas[0].cpu().numpy().T
+        qn = pn | {'B': pn['B'] + deltas[1].cpu().numpy()}
+        hn = batch['rounding'].cpu().numpy() + numpy_suffix(H, qn)[0] + batch['offset'].cpu().numpy() @ qn['B'].T
+        error = float(abs(raw_scores(hn, pn)-after[-1].numpy()).max())
+        assert error < cfg['numpy_score_tolerance']
+        maximum = max(maximum, error)
+    before, after = torch.cat(before), torch.cat(after)
+    released = copy.deepcopy(expert)
+    released.load_state_dict(original | edits, strict=True)
+    head.cuda()
+    actual_before = head(cache['features'].cuda()).cpu().double()
+    head.cpu()
+    actual_after, _ = observe(released, head, training, split['indices'])
+    control = max(float((actual_before-before[:len(y)]).abs().max()), float((actual_after-after[:len(y)]).abs().max()))
+    assert control < cfg['full_model_score_tolerance']
+    measured = metric(before, after)
+    actual = metric(actual_before, actual_after)
+    passed = all(v['worst_task_drift'] <= cfg['task_budget'] and v['changed'] == 0 for v in [measured, actual])
+    labels = torch.tensor([int(training[i][1]) for i in split['indices']])
+    torch.save(dict(cache=cache, before=before, after=after, actual_original=actual_before, actual_release=actual_after, labels=labels, indices=split['indices']), out / 'confirmation.pt')
+    report = dict(status='passed' if passed else 'failed_fixed_candidate_closed', parameter_distance=distance, source=measured, full_model=actual,
+                  full_model_score_control=control, maximum_independent_NumPy_score_error=maximum,
+                  original_correct=int((actual_before.argmax(1)==labels).sum()), released_correct=int((actual_after.argmax(1)==labels).sum()),
+                  release_sha256=cfg['source_artifacts']['release.pt'], raw_sha256=digest(out / 'confirmation.pt'), split_sha256=digest(out / 'confirmation_split.json'),
+                  checkpoint_sha256=pins, source_sha256=digest(__file__), protocol_sha256=digest(protocol), new_indices=len(y), full_model_forward_inputs=2*len(y),
+                  confirmation_redrawn=False, candidate_repaired=False, partner_used=False, test_used=False, wall_seconds=time.monotonic()-start)
+    save_json(out / 'confirmation_validation.json', report)
+    print(json.dumps(report), flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--protocol', required=True)
+    parser.add_argument('--confirm', action='store_true')
     args = parser.parse_args()
     with torch.no_grad():
-        run(args.protocol)
+        confirm(args.protocol) if args.confirm else run(args.protocol)
