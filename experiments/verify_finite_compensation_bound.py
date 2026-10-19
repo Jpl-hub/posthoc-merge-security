@@ -82,12 +82,13 @@ def verify_projection_cone(root):
     assert not set(ids)&set(cfg['extra_excluded_indices'])
     split=json.loads((root/'source_split.json').read_text());excluded=set(cfg['extra_excluded_indices'])
     boundary=json.loads(Path('results/task_boundary_audit/split_independence_audit.json').read_text())
-    static={row['path']:row['group'] for row in boundary['records']}
+    static={}
+    for row in boundary['records']:static.setdefault(row['path'],[]).append(row['group'])
     for path,pin in split['excluded_metadata_sha256'].items():
         assert digest(path)==pin,path
         if path in static:
             value=json.loads(Path(path).read_text()) if Path(path).suffix=='.json' else torch.load(path,map_location='cpu',weights_only=False)['indices']
-            excluded.update(value[static[path]])
+            for group in static[path]:excluded.update(value[group])
         else:
             value=json.loads(Path(path).read_text())
             groups=(list(value.values()) if isinstance(value,dict) else [value]) if Path(path).name=='training_indices.json' else [value.get('indices',[])]
