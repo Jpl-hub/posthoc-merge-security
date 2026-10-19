@@ -17,8 +17,22 @@ from mechanisms import load_author
 from probe_distance_candidate import on_device
 from subspace_probe import save_json
 from task_boundary_audit import raw_jacobians
-from task_probe_distance import checked_models, initialize
+from task_probe_distance import checked_models, gelu, initialize
 from verify_levelset_audits import convert, raw_scores
+
+
+def logical_parameter_distance(original, edits):
+    """Keep unchanged Q/K/V slices out of a modified projection's denominator."""
+    parts={}
+    for key,value in edits.items():
+        before=original[key].double();after=value.double()
+        packed=key.endswith(('in_proj_weight','in_proj_bias'))
+        groups=zip(['Q','K','V'],before.chunk(3,0),after.chunk(3,0)) if packed else [(None,before,after)]
+        for name,a,b in groups:
+            if torch.equal(a,b):continue
+            assert float(a.norm())>0, 'A zero reference needs an explicit absolute budget.'
+            parts[key+(':'+name if name else '')]=float((b-a).norm()/a.norm())
+    return sum(v*v for v in parts.values())**.5,parts
 
 
 @torch.no_grad()
@@ -327,7 +341,9 @@ def verify_branch_norm(folder):
         scope='All real interpolation coefficients0..1 in the cached last-block B-only chord, by convexity of augmented centered norm and linear margin numerators. Not a bound on task-drift0.5, all FP32 arithmetic, new inputs, a changed prefix/readout, TA with a peer, or AGA.')
     save_json(out/'independent_validation.json',dict(status='passed_numpy_finite_norm_and_score_recount',raw_sha256=report['raw_sha256'],
         source_sha256=digest(__file__),NumPy_projector_error=projector_error,NumPy_task_drift_recount_error=max(errors),NumPy_variance_identity_error=sigma_error,
-        geometric_rank=255,new_images=0,new_releases=0,source_task_feasibility_is_not_independent_confirmation=True,finite_variance_bound=certificate,scalar_decision_envelope=envelope,source_chord_certificate=chord))
+        geometric_rank=255,ideal_orthogonal_family_maximum_distance=float(2*np.linalg.norm(nk.T@B)/np.linalg.norm(B)),
+        quantized_prototype_distance=distance,new_images=0,new_releases=0,source_task_feasibility_is_not_independent_confirmation=True,
+        finite_variance_bound=certificate,scalar_decision_envelope=envelope,source_chord_certificate=chord))
 
 
 @torch.no_grad()
@@ -378,8 +394,38 @@ def branch_proxy_bound(protocol):
     report['raw_sha256']=digest(out/'bound.pt');save_json(out/'results.json',report);print(json.dumps(report),flush=True)
 
 
+@torch.no_grad()
+def verify_branch_proxy_bound(folder):
+    out=Path(folder);report=json.loads((out/'results.json').read_text());cfg=report['inputs']
+    assert digest(out/'bound.pt')==report['raw_sha256']
+    for name in ['kernel','proxy','AGA_original']:assert digest(cfg[name]['path'])==cfg[name]['sha256']
+    proof=torch.load(out/'bound.pt',map_location='cpu');kernel=torch.load(cfg['kernel']['path'],map_location='cpu')['N']
+    raw=torch.load(cfg['proxy']['path'],map_location='cpu');p=raw['p'];h=raw['cache']['h'];r=raw['cache']['r']
+    z=gelu(torch.nn.functional.layer_norm(r,(768,),p['gamma2'],p['beta2'],p['eps2'])@p['A'].T+p['a'])
+    B=torch.load(cfg['AGA_original']['path'],map_location='cpu')['model.visual.transformer.resblocks.11.mlp.c_proj.weight'].double()
+    hc=h-h.mean(1,keepdim=True);w=(z@B.T)@kernel;v=hc@kernel
+    rest=hc-v@kernel.T;other=rest.square().mean(1)+p['eps'];rad=w.norm(dim=1)/2;cen=(v-w/2).norm(dim=1)
+    lo=(other+(cen-rad).square()/768).sqrt();hi=(other+(cen+rad).square()/768).sqrt()
+    functional=(p['gamma'][:,None]*p['projection'])@p['head'].T;basis=kernel.T@functional
+    linear=hc@functional;bias=p['beta']@p['projection']@p['head'].T;y=torch.as_tensor(proof['winner']);ix=torch.arange(len(h))
+    directions=basis[:,y].T[:,None,:]-basis.T[None]
+    dot=torch.einsum('ni,nci->nc',w,directions);loss=(dot+w.norm(dim=1)[:,None]*directions.norm(dim=-1))/2
+    bg=bias[y,None]-bias[None];lower=linear[ix,y,None]-linear-loss+bg*torch.where(bg>=0,lo[:,None],hi[:,None])
+    error=float((lower-torch.as_tensor(proof['lower'])).abs().max());assert error<1e-8
+    mask=~torch.nn.functional.one_hot(y,10).bool();minimum=float(lower[mask].min());assert minimum>error
+    assert bool((lower.masked_fill(~mask,torch.inf)>0).all()) and report['certified_no_teacher_change']==len(h)
+    save_json(out/'independent_validation.json',dict(status='passed_independent_torch_full_family_bound',raw_sha256=report['raw_sha256'],
+        source_sha256=digest(__file__),full_bound_NumPy_torch_error=error,minimum_margin_numerator_lower_bound=minimum,
+        certified_source_inputs=len(h),new_images=0,new_releases=0,
+        scope='Independent full reconstruction using torch LayerNorm/QuickGELU and orthogonal-complement norm, versus the NumPy derivation. The vector-sphere proof also covers every orthogonal B-output transform in the same kernel; no peer or full native accuracy claim.'))
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--cost',action='store_true');ap.add_argument('--affine',action='store_true');ap.add_argument('--branch-norm',action='store_true');ap.add_argument('--bound',action='store_true');a=ap.parse_args();initialize()
-    if a.branch_norm: branch_proxy_bound(a.protocol) if a.bound else (verify_branch_norm(a.verify) if a.verify else branch_norm_check(a.protocol))
+    if a.branch_norm:
+        if a.bound:
+            verify_branch_proxy_bound(a.verify) if a.verify else branch_proxy_bound(a.protocol)
+        else:
+            verify_branch_norm(a.verify) if a.verify else branch_norm_check(a.protocol)
     elif a.affine: affine_audit(a.protocol)
     else: (verify_cost if a.cost else verify)(a.verify) if a.verify else (functional_cost if a.cost else run)(a.protocol)
