@@ -502,6 +502,97 @@ def verify_joint_class_response(folder):
     print(json.dumps(result), flush=True)
 
 
+@torch.no_grad()
+def verify_distributed_response(output):
+    """Independent CPU audit of the closed source-only multilayer experiment."""
+    from task_probe_distance import checked_models
+    start=time.monotonic();torch.set_num_threads(4);out=Path(output)
+    cfg=json.loads((out/'protocol.json').read_text());result=json.loads((out/'results.json').read_text())
+    assert result['status']=='closed_no_source_feasible_point'
+    raw=torch.load(out/'direction.pt',map_location='cpu',weights_only=False)
+    baseline=torch.load(out/'source_baseline.pt',map_location='cpu',weights_only=False)
+    attempts=torch.load(out/'attempt_scores.pt',map_location='cpu',weights_only=False)
+    ids=np.asarray(raw['source_indices']);assert ids.tolist()==baseline['indices']
+    assert digest(cfg['source_indices'])==cfg['source_indices_sha256']
+    assert ids.tolist()==json.loads(Path(cfg['source_indices']).read_text())['fit']
+    assert not set(ids)&set(cfg['excluded_witness_indices'])
+    truth=official_labels(cfg['target'],True)[ids]
+    np.testing.assert_array_equal(truth,baseline['labels'].numpy())
+    before=baseline['before'].numpy().astype(np.float64);n=cfg['fit_n']
+    s=before[:n];y=s.argmax(1);other=s.copy();other[np.arange(n),y]=-np.inf
+    gap=s[np.arange(n),y]-other.max(1);core=raw['core'].numpy()
+    expected=np.concatenate([np.flatnonzero(y==c)[np.argsort(gap[y==c])[:cfg['core_per_class']]] for c in range(s.shape[1])])
+    np.testing.assert_array_equal(core,expected)
+    j=raw['jacobian'].numpy().astype(np.float64);g=raw['gradient'].numpy().astype(np.float64)
+    d=raw['direction'].numpy().astype(np.float64);flat=d.reshape(-1)
+    gram=j@j.T;e,v=np.linalg.eigh(gram)
+    use=e>np.finfo(np.float64).eps*max(j.shape)*abs(e).max()
+    projected=g-j.T@(v[:,use]@((v[:,use].T@(j@g))/e[use]))
+    retained=float(np.linalg.norm(projected));projected/=retained
+    error=float(abs(projected-flat).max());assert error<=cfg['numpy_direction_tolerance']
+    null_ratio=float(np.linalg.norm(j@flat)/np.linalg.norm(j@g));assert null_ratio<=cfg['projection_tolerance']
+    per_layer=(j.reshape(len(j),len(d),-1)*d.reshape(1,len(d),-1)).sum(2)
+    cancellation=float(np.sum(per_layer.sum(1)**2)/np.sum(per_layer**2))
+    anchor,expert,head,pins=checked_models(cfg['target']);geometry=[];distance2=0.
+    for layer,b in enumerate(raw['basis']):
+        u,vh=b['u'].numpy().astype(np.float64),b['v'].numpy().astype(np.float64)
+        w=expert.model.visual.transformer.resblocks[layer].mlp.c_proj.weight.numpy().astype(np.float64)
+        w0=anchor.model.visual.transformer.resblocks[layer].mlp.c_proj.weight.numpy().astype(np.float64)
+        task=w-w0;singular=np.diag(u.T@task@vh.T)
+        equation=float(np.linalg.norm(task@vh.T-u*singular)/np.linalg.norm(task@vh.T))
+        assert equation<1e-4 and np.all(singular>0)
+        np.testing.assert_allclose(np.linalg.norm(w),b['norm'],rtol=1e-12,atol=1e-12)
+        c=d[layer]-(d[layer]@vh.T)@vh
+        contribution=float(np.sum((u.T@u)*(c@c.T).T));distance2+=contribution
+        geometry.append(dict(layer=layer,unit_direction_distance_squared=contribution,task_SVD_equation_error=equation,
+                            direct_right_task_response_ratio=float(np.linalg.norm(c@vh.T)/np.linalg.norm(c))))
+    weights=head.weight.numpy().astype(np.float64);f=baseline['features'].numpy().astype(np.float64)
+    head_error=float(abs((f/np.linalg.norm(f,axis=1,keepdims=True))@weights.T-before).max())
+    assert head_error<=cfg['full_model_score_tolerance']
+    rows=[];core_mask=np.zeros(n,dtype=bool);core_mask[core]=True
+    for k,(actual,reported) in enumerate(zip(attempts,result['attempts'])):
+        t=actual.numpy().astype(np.float64);ds=t-s;gaps=s[np.arange(n),y,None]-s;gaps[np.arange(n),y]=1
+        r=(ds[np.arange(n),y,None]-ds)/gaps;r[np.arange(n),y]=0
+        changes=t.argmax(1)!=y;row=dict(radius=reported['radius'],ideal_unquantized_logical_distance=reported['radius']*distance2**.5,
+            worst_task_drift=float(abs(r).max()),core20_worst_drift=float(abs(r[core_mask]).max()),
+            other492_worst_drift=float(abs(r[~core_mask]).max()),changed=int(changes.sum()),
+            core20_changed=int(changes[core_mask].sum()),original_correct=int((y==truth[:n]).sum()),
+            after_correct=int((t.argmax(1)==truth[:n]).sum()),per_class=[])
+        assert abs(row['worst_task_drift']-reported['worst_task_drift'])<1e-10 and row['changed']==reported['changed']
+        for c in range(s.shape[1]):
+            choose=truth[:n]==c;old=(y==truth[:n])&choose;new=(t.argmax(1)==truth[:n])&choose
+            row['per_class'].append(dict(class_id=c,n=int(choose.sum()),lost=int((old&~new).sum()),gained=int((new&~old).sum()),
+                original_correct=int(old.sum()),after_correct=int(new.sum())))
+        assert not(row['worst_task_drift']<=cfg['source_reserve'] and row['changed']==0)
+        rows.append(row)
+    report=dict(status='independently_verified_closed_source_experiment',rows=rows,geometry=geometry,
+        task_jacobian_rank=int(use.sum()),retained_public_gradient_fraction=retained,
+        independent_direction_max_error=error,native_normalized_row_null_ratio=null_ratio,
+        native_linear_cancellation_energy_ratio=cancellation,NumPy_complete_head_score_error=head_error,
+        construction_indices_sha256=cfg['source_indices_sha256'],checkpoint_sha256=pins,
+        producer_source_sha256=cfg['source_sha256']['experiments/joint_response_direction.py'],
+        verifier_source_sha256=digest(__file__),raw_sha256={p.name:digest(p) for p in out.iterdir() if p.is_file()},
+        source_images=4096,new_training_indices=0,new_images_evaluated_by_audit=0,task_SVD_probe_forwards=0,
+        new_confirmations=0,new_released_weights=0,new_TA_calls=0,new_AGA_calls=0,
+        producer_FP32_image_forwards_derived_from_completed_code_path=9276,
+        producer_FP64_control_image_forwards_derived_from_completed_code_path=1280,
+        producer_gradient_calls_derived_from_completed_code_path=182,
+        producer_wall_seconds=None,producer_peak_GPU_memory=None,audit_wall_seconds=time.monotonic()-start,
+        limitations='Only512 construction inputs were evaluated along the ray. NativeJacobian uses20 inputs. Failed before physical FP32 release,7680 finite probes,new confirmation,test,realTA,orAGA. This closes this one direction, not all multilayer B-only methods. Derived image counts are not measured GPU runtime.')
+    save_json(out/'independent_validation.json',report)
+    lines=['# Multilayer B-only source feasibility','',
+        'Frozen source-only diagnostic. No release, confirmation, fusion or attack performance. All rows fail the original task0.5 bound as well as the predeclared source reserve0.25.','',
+        '| Coefficient radius | R: core20 | R: other492 | Changed /512 | Correct /512 |',
+        '|---:|---:|---:|---:|---:|']
+    for row in rows:
+        lines.append(f"| {row['radius']:.8f} | {row['core20_worst_drift']:.6f} | {row['other492_worst_drift']:.6f} | {row['changed']} | {row['after_correct']} |")
+    lines+=['','Radii refer to the low-rank forward prototype; unquantized logical distances are in the JSON. No FP32 publication was materialized.',
+            'Per-class lost/gained counts, source labels/indices, directional geometry and provenance are in independent_validation.json.',
+            'The initial FP32 finite-difference failure is retained separately. The later FP64 reference changes numerical derivative validation only, not the primary FP32 function budget.','']
+    (out/'summary.md').write_text('\n'.join(lines))
+    print(json.dumps({k:report[k] for k in ['status','task_jacobian_rank','retained_public_gradient_fraction','native_linear_cancellation_energy_ratio','audit_wall_seconds']}),flush=True)
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--protocol')
@@ -512,8 +603,11 @@ if __name__=='__main__':
     ap.add_argument('--joint-activation')
     ap.add_argument('--public-base', action='store_true')
     ap.add_argument('--joint-class-response')
+    ap.add_argument('--distributed-response')
     args=ap.parse_args()
-    if args.joint_class_response:
+    if args.distributed_response:
+        verify_distributed_response(args.distributed_response)
+    elif args.joint_class_response:
         verify_joint_class_response(args.joint_class_response)
     elif args.joint_activation:
         verify_joint_activation(args.joint_activation, args.public_base)
