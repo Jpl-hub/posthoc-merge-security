@@ -431,7 +431,7 @@ def normalization_geometry(output):
     edits=torch.load(cfg['release']['path'],map_location='cpu');assert digest(cfg['release']['path'])==cfg['release']['sha256']
     point=torch.load(pointdir/'point.pt',map_location='cpu');prefix='model.visual.transformer.resblocks.11.attn.'
     geometry={}
-    for key in ([] if point.get('site')=='MLP' else ['in_proj_weight','out_proj.weight']):
+    for key in ([] if point.get('site') in ['MLP','HEAD'] else ['in_proj_weight','out_proj.weight']):
         k=prefix+key;original=state[k].double().numpy();delta=edits[k].double().numpy()-original
         if key=='in_proj_weight':
             task=(state[k][1536:]-base[k][1536:]).double().numpy();_,_,vh=np.linalg.svd(task,full_matrices=False);v=vh[:32];d=delta[1536:]
@@ -448,6 +448,12 @@ def normalization_geometry(output):
                 v=point['vh'].numpy();inside=(delta@v.T)@v;outside=delta-inside
                 geometry[k].update(task32_inside_distance=float(np.linalg.norm(inside)/den),task32_outside_distance=float(np.linalg.norm(outside)/den),
                     outside_squared_energy_fraction=float(np.linalg.norm(outside)**2/np.linalg.norm(delta)**2))
+    if point.get('site')=='HEAD':
+        for k,changed in edits.items():
+            a,b=changed.double().numpy(),state[k].double().numpy()
+            pieces=zip(['Q','K','V'],np.split(a,3),np.split(b,3)) if k.endswith(('in_proj_weight','in_proj_bias')) else [('O',a,b)]
+            for name,x,y in pieces:geometry[k+':'+name]=dict(relative_distance=float(np.linalg.norm(x-y)/np.linalg.norm(y)) if np.linalg.norm(y)>0 else 0.,
+                denominator='Whole separate logical projection or its bias, float64; known head-permutation control, not functional distance.')
     meta=json.loads((out/'execution.json').read_text());assert meta['completed']
     rawpath=out/'artifacts/predictions.pt';assert digest(rawpath)==meta['predictions_sha256']
     raw=torch.load(rawpath,map_location='cpu');rows=[]
