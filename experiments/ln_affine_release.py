@@ -248,9 +248,9 @@ def verify(folder, confirm=False):
         identity=max(float(abs(linear).max()),float(abs(bp@pp-beta@p).max()));assert identity<1e-6
         h=raw['inputs'].double().numpy();norm=(h-h.mean(1,keepdims=True))/np.sqrt(((h-h.mean(1,keepdims=True))**2).mean(1,keepdims=True)+point['eps'])
         maximum=0.
-        for name,bb,pr in [('before',beta,p),('after',bp,pp),('bias_only',bp,p),('projection_only',beta,pp)]:
+        for label,bb,pr in [('before',beta,p),('after',bp,pp),('bias_only',bp,p),('projection_only',beta,pp)]:
             f=(norm*g+bb)@pr;s=f/np.linalg.norm(f,axis=1,keepdims=True)@raw['head_weight'].numpy().T
-            actual=raw['branches'][name].numpy() if name in raw['branches'] else raw[name].numpy()
+            actual=raw['branches'][label].numpy() if label in raw['branches'] else raw[label].numpy()
             maximum=max(maximum,float(abs(s-actual).max()))
         assert maximum<=json.loads((out/'protocol.json').read_text())['score_tolerance']
     elif head_control:
