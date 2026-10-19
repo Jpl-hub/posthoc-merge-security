@@ -226,14 +226,87 @@ def verify_joint_response(folder, confirm=False):
     print(json.dumps(result), flush=True)
 
 
+@torch.no_grad()
+def verify_joint_full_gate(folder):
+    """Recount the entire stopped task gate and replay its original batch."""
+    import copy
+    from covariance_noise import dataset
+    from scipy.special import logsumexp
+    from task_probe_distance import checked_models, initialize
+
+    initialize()
+    start = time.monotonic()
+    out = Path(folder)
+    cfg = json.loads((out / 'protocol.json').read_text())
+    execution = json.loads((out / 'execution.json').read_text())
+    assert not execution['completed'] and execution['author_AGA_calls'] == 0
+    assert execution['stopped'] == 'full_native_task_budget_violation'
+    raw_path = out / 'artifacts/predictions.pt'
+    assert digest(raw_path) == execution['predictions_sha256']
+    raw = torch.load(raw_path, map_location='cpu')
+    before, after = [raw[key]['logits'].double().numpy() for key in ['original/standalone/MNIST', 'released/standalone/MNIST']]
+    labels = official_labels('MNIST')
+    np.testing.assert_array_equal(raw['released/standalone/MNIST']['target'].numpy(), labels)
+    rho = residual(before, after)
+    i, c = np.unravel_index(np.abs(rho).argmax(), rho.shape)
+    y = before.argmax(1)
+    maximum = float(abs(rho[i, c]))
+    assert maximum > cfg['task_budget']
+    assert abs(maximum-execution['utility_gate']['worst_relative_margin_drift']) < 1e-12
+    assert (int(i), int(c)) == (execution['utility_gate']['witness_index'], execution['utility_gate']['competitor'])
+    _, own, head, pins = checked_models('MNIST')
+    assert digest(cfg['release']['path']) == cfg['release']['sha256']
+    release = copy.deepcopy(own)
+    release.load_state_dict(own.state_dict() | torch.load(cfg['release']['path'], map_location='cpu'), strict=True)
+    data = dataset('MNIST', 'data', own.val_preprocess)
+    lo, hi = int(i)//128*128, min(int(i)//128*128+128, len(data))
+    images = torch.stack([data[k][0] for k in range(lo, hi)]).cuda()
+    replays = []
+    head.cuda()
+    for model, reference in [(own, before), (release, after)]:
+        model.cuda()
+        actual = head(model(images)).cpu().double().numpy()
+        model.cpu()
+        error = float(abs(actual-reference[lo:hi]).max())
+        assert error <= cfg['score_tolerance']
+        np.testing.assert_array_equal(actual.argmax(1), reference[lo:hi].argmax(1))
+        replays.append(actual)
+    head.cpu()
+    replay_ratio = float(residual(replays[0], replays[1])[int(i)-lo, c])
+    assert abs(replay_ratio-rho[i, c]) < 1e-8 and abs(replay_ratio) > cfg['task_budget']
+    nll0 = logsumexp(before, axis=1)-before[np.arange(len(labels)), labels]
+    nll1 = logsumexp(after, axis=1)-after[np.arange(len(labels)), labels]
+    classes = [dict(class_id=k, n=int((labels==k).sum()), original_correct=int(((y==labels)&(labels==k)).sum()),
+                    released_correct=int(((after.argmax(1)==labels)&(labels==k)).sum()),
+                    worst_task_drift=float(abs(rho[labels==k]).max()),
+                    mean_original_nll=float(nll0[labels==k].mean()), mean_released_nll=float(nll1[labels==k].mean())) for k in range(10)]
+    result = dict(status='verified_full_native_budget_failure_fixed_candidate_closed', n=len(labels),
+                  original_correct=int((y==labels).sum()), released_correct=int((after.argmax(1)==labels).sum()),
+                  changed_predictions=int((y!=after.argmax(1)).sum()), worst_task_drift=maximum,
+                  witness=dict(index=int(i), teacher_class=int(y[i]), competitor=int(c), label=int(labels[i]),
+                               original_gap=float(before[i,y[i]]-before[i,c]), released_gap=float(after[i,y[i]]-after[i,c]),
+                               signed_relative_change=float(rho[i,c])),
+                  replay_inputs=2*(hi-lo), matched_original_score_error=float(abs(replays[0]-before[lo:hi]).max()),
+                  matched_release_score_error=float(abs(replays[1]-after[lo:hi]).max()), replay_relative_change=replay_ratio,
+                  per_class=classes, release_sha256=cfg['release']['sha256'], raw_sha256=execution['predictions_sha256'],
+                  source_sha256=digest(__file__), checkpoint_sha256=pins, wall_seconds=time.monotonic()-start,
+                  new_AGA_calls=0, new_fusions=0, candidate_repaired=False, task_threshold_changed=False,
+                  scope='Historical full test is evaluation only. Increased confidence still violates the original absolute relative functional budget. No classification loss or fusion-protection claim; no witness-based repair.')
+    save_json(out / 'full_native_independent_validation.json', result)
+    print(json.dumps(result), flush=True)
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--protocol')
     ap.add_argument('--completion',action='store_true')
     ap.add_argument('--joint-response')
     ap.add_argument('--joint-confirm',action='store_true')
+    ap.add_argument('--joint-full-gate')
     args=ap.parse_args()
-    if args.joint_response:
+    if args.joint_full_gate:
+        verify_joint_full_gate(args.joint_full_gate)
+    elif args.joint_response:
         verify_joint_response(args.joint_response, args.joint_confirm)
     else:
         assert args.protocol

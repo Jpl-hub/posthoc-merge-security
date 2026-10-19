@@ -83,3 +83,6 @@ NUFILT 的只读源码检查为 `python experiments/phase3_nufilt_check.py`；�
 偏置规范化恢复已在MNIST两伙伴的原生FP32评价，以及DTD/SVHN保护任务的单列FP32前缀／FP64最终读出协议下完成。后者不能撤销原生FP32数值控制失败；原分数、阈值、失败证据及两套精度结果分别保留。MNIST原生FP32清理前后分数差0.00069427也超过0.0005；恢复模型重放误差0是另一项检查。这是架构相关补充诊断，不是原版AGA或新的论文攻击算法。
 
 历史汇报文件保留，其数据截止与预算说明不代表本次最新结论。最新研究进度见[老师要求落实与缺口](notes/teacher_feedback.md)。[固定Unmask全表](results/phase3/unmask/tables.md)显示无保护控制也退化，不将低分误记为防御成功。
+
+
+最新Defense2跨层构造已按原双0.5门控关闭：参数距离0.4999995，源端和新训练确认通过；完整MNIST准确率仍99.69%、预测不变，但两张图片的功能漂移越界，最大1.068482。未执行新TA／AGA，不宣称有效防御，也不据反例修改权重。[自动生成门控表与独立证据](results/joint_response_direction/summary.md)。

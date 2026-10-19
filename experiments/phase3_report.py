@@ -682,10 +682,65 @@ def build(source, output):
         evaluation_wall_seconds=sum(x['wall_seconds'] for x in executions)), indent=2)+'\n')
 
 
+def joint_task_gate(source, output):
+    """A stopped Defense2 task gate; do not manufacture merger/attack rows."""
+    import torch
+    source, output = Path(source), Path(output)
+    cfg = json.loads((source/'protocol.json').read_text())
+    root = Path(cfg['release']['path']).parent
+    calibration = json.loads((root/'results.json').read_text())
+    confirmation = json.loads((root/'confirmation_validation.json').read_text())
+    native = json.loads((source/'full_native_independent_validation.json').read_text())
+    execution = json.loads((source/'execution.json').read_text())
+    assert native['status'] == 'verified_full_native_budget_failure_fixed_candidate_closed'
+    assert execution['author_AGA_calls'] == 0 and not execution['completed']
+    for filename in ['independent_validation.json', 'confirmation_independent_validation.json']:
+        assert json.loads((root/filename).read_text())['status'] == 'passed'
+    raw_path = source/'artifacts/predictions.pt'
+    pin = hashlib.sha256(raw_path.read_bytes()).hexdigest()
+    assert pin == execution['predictions_sha256'] == native['raw_sha256']
+    raw = torch.load(raw_path, map_location='cpu')
+    before, after = [raw[k]['logits'].double().numpy() for k in ['original/standalone/MNIST', 'released/standalone/MNIST']]
+    y = before.argmax(1); gap = before[np.arange(len(y)), y, None]-before
+    delta = after-before; gap[np.arange(len(y)), y] = 1.
+    rho = (delta[np.arange(len(y)), y, None]-delta)/gap
+    rho[np.arange(len(y)), y] = 0.
+    violating = (abs(rho)>cfg['task_budget']).any(1)
+    assert abs(float(abs(rho).max())-native['worst_task_drift']) < 1e-12
+    stages = [
+        ('Construction + finite probes', calibration['task_inputs'], calibration['metrics']['joint']['worst_task_drift'], calibration['metrics']['joint']['changed']),
+        ('Fresh train + finite probes', confirmation['source']['n'], confirmation['source']['worst_task_drift'], confirmation['source']['changed']),
+        ('Complete MNIST test', native['n'], native['worst_task_drift'], native['changed_predictions']),
+    ]
+    lines = ['# Fixed joint-response direction: task gate', '',
+             'One frozen B10/B11 direction, parameter distance '+f'{calibration["parameter_distance"]:.7f}'+'. Original task budget 0.5; no change after confirmation or tests.', '',
+             '| Evaluation set | Inputs | Worst relative gap drift | Prediction changes | Task gate |',
+             '|---|---:|---:|---:|---|']
+    for label, n, drift, changed in stages:
+        lines.append(f'| {label} | {n} | {drift:.6g} | {changed} | '+('Pass' if drift<=cfg['task_budget'] else 'Fail')+' |')
+    w = native['witness']
+    lines += ['', f'Complete-test accuracy is {100*native["original_correct"]/native["n"]:.2f}% before and after protection; all predictions match. {int(violating.sum())} images exceed the functional budget.',
+              f'The independently replayed witness (test index {w["index"]}, class {w["teacher_class"]} versus {w["competitor"]}) increases the gap from {w["original_gap"]:.8f} to {w["released_gap"]:.8f}. Increased confidence still violates the original absolute relative-gap constraint.',
+              '', '**TA and original AGA were not run:** the preregistered native-task gate stopped this fixed candidate. This is neither a feasible-defense result nor evidence about its attack resistance. No radius, rank, layer, output axis or weights were changed to repair it.', '',
+              '## Coupling and limits', '',
+              f'On the construction inputs, B10 alone has worst drift {calibration["metrics"]["B10_only"]["worst_task_drift"]:.6g}, B11 alone {calibration["metrics"]["B11_only"]["worst_task_drift"]:.6g}, and their fixed combination {calibration["metrics"]["joint"]["worst_task_drift"]:.6g}. Each has zero construction prediction changes; this does not establish harmful isolated branches.',
+              'The minimum empirical joint response and finite task-SVD probes support source compensation, not unseen-input preservation. Standard SVD, Rayleigh optimization and Gauss-Newton geometry are not novelty claims. Historically exposed tests are not a first blind evaluation.', '',
+              f'Construction: {calibration["wall_seconds"]:.2f}s; confirmation: {confirmation["wall_seconds"]:.2f}s; stopped full-task evaluation: {execution["wall_seconds"]:.2f}s. Independent audits and their costs remain separate. No optimizer, expert updates or new attack fits.', '']
+    output.mkdir(parents=True, exist_ok=True)
+    (output/'summary.md').write_text('\n'.join(lines))
+    provenance = dict(status='verified_closed_task_budget_failure', raw_sha256=pin, source_release_sha256=cfg['release']['sha256'],
+                      n_functional_budget_violations=int(violating.sum()),
+                      violations_by_teacher_class=np.bincount(y[violating], minlength=10).tolist(),
+                      report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                      source_and_confirmation_passed=True, full_task_passed=False, new_AGA_calls=0, new_fusions=0,
+                      matched_original_score_error=native['matched_original_score_error'], matched_release_score_error=native['matched_release_score_error'])
+    (output/'table_provenance.json').write_text(json.dumps(provenance, indent=2)+'\n')
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task,distillation=distillation)
+    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task,distillation=distillation,joint_task_gate=joint_task_gate)
     g=p.add_mutually_exclusive_group()
     for name in modes:g.add_argument('--'+name.replace('_','-'),action='store_true')
     args=p.parse_args();next((fn for name,fn in modes.items() if getattr(args,name)),build)(args.source,args.output)
