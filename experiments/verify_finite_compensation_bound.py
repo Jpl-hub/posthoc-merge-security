@@ -180,12 +180,79 @@ def verify_projection_cone(root):
     report['wall_seconds']=time.monotonic()-start;save_json(root/'independent_validation.json',report);print(json.dumps(report),flush=True)
 
 
+def verify_rank_one_band(root):
+    """Independent full finite scores, shared constraints and original-batch replay."""
+    import copy,time
+    from scipy import sparse
+    from clip_benchmark import digest
+    from covariance_noise import dataset
+    from subspace_probe import make_loader,save_json
+    from task_probe_distance import checked_models,initialize
+    from verify_covariance_noise import official_labels
+    from verify_levelset_audits import raw_scores
+    initialize();start=time.monotonic();root=Path(root);assert not (root/'independent_validation.json').exists()
+    cfg=json.loads((root/'protocol.json').read_text());result=json.loads((root/'results.json').read_text())
+    for file,key in [('diagnostic.pt','raw_sha256'),('solver.npz','solver_sha256'),('constraints.npz','constraints_sha256')]:assert digest(root/file)==result[key]
+    d=torch.load(root/'diagnostic.pt',map_location='cpu');p={k:v.numpy() if torch.is_tensor(v) else v for k,v in d['parameters'].items()}
+    ids=d['indices'];assert ids==json.loads(Path(cfg['source_split']).read_text())['indices']
+    np.testing.assert_array_equal(d['labels'].numpy(),official_labels(cfg['target'],True)[ids])
+    A=sparse.load_npz(root/'constraints.npz');sol=np.load(root/'solver.npz');x=sol['x'];b=sol['b']
+    z=np.concatenate([d['Z'].numpy(),d['probe_Z'].numpy()]);h=np.concatenate([d['H'].numpy(),d['probe_H'].numpy()])
+    u=d['axis'].numpy();V=d['V'].numpy();lo=d['lower'].numpy();hi=d['upper'].numpy();nb=np.linalg.norm(p['B'])
+    def residual(t,s):
+        y=t.argmax(1);gap=t[np.arange(len(t)),y,None]-t;gap[np.arange(len(t)),y]=1
+        delta=s-t;r=(delta[np.arange(len(t)),y,None]-delta)/gap;r[np.arange(len(t)),y]=0;return abs(r).max()
+    # Independently use explicit NumPy LayerNorm, projection and L2 normalization.
+    teacher=raw_scores(h,p);maximum=0.
+    for frac in np.linspace(0,1,17):
+        t=(1-frac)*lo+frac*hi;maximum=max(maximum,float(residual(teacher,raw_scores(h+t[:,None]*u,p))))
+    assert maximum<=cfg['source_reserve']+1e-7
+    w=x[:-1];tau=nb*z@w;expected=np.r_[(hi-tau)/np.linalg.norm(nb*z,axis=1),(tau-lo)/np.linalg.norm(nb*z,axis=1),
+        d['G'].numpy()@w/np.linalg.norm(d['G'].numpy(),axis=1).max()-x[-1],-V@w,
+        cfg['parameter_budget']*(1-cfg['distance_reserve']),w]
+    error=float(abs(expected-(b-A@x)).max());assert error<1e-8
+    report=dict(status='passed_finite_source_audit',solver_status=result['solver_status'],shared_constraint_reconstruction_error=error,
+        independently_recomputed17_grid_R=maximum,formal_interval_certificate=False,source_n=len(ids),
+        raw_sha256=result['raw_sha256'],producer_sha256=result['source_sha256'],verifier_sha256=digest(__file__),
+        source_R=None,new_release_weights=0,full_peer_TA_calls=0,full_AGA_calls=0)
+    if result['solver_status']=='Solved':
+        delta=d['actual_delta'].numpy();after=raw_scores(d['H'].numpy()+d['Z'].numpy()@delta.T,p)
+        head_error=float(abs(after-d['after'].numpy()).max());assert head_error<=cfg['score_tolerance']
+        np.testing.assert_array_equal(p['B']+delta,d['edited_B'].double().numpy())
+        rho=float(residual(d['before'].numpy(),d['after'].numpy()));assert abs(rho-result['source_R'])<1e-8
+        ep={k:v.numpy() if torch.is_tensor(v) else v for k,v in d['environment_parameters'].items()}
+        env=raw_scores(d['environment_H'].numpy()+.5*d['environment_Z'].numpy()@delta[:,d['permutation'].numpy()].T,ep)
+        env_error=float(abs(env-d['environment_after'].numpy()).max());assert env_error<1e-8
+        report.update(source_R=rho,full_model_tail_error=head_error,environment_NumPy_error=env_error,
+            parameter_distance=float(np.linalg.norm(delta)/nb),source_feasible=result['source_feasible'])
+        # Replay the original first128 context, not isolated new-size minibatches.
+        _,expert,head,pins=checked_models(cfg['target']);assert pins==result['checkpoint_sha256']
+        train=dataset(cfg['target'],'data',expert.val_preprocess,True);edited=copy.deepcopy(expert)
+        with torch.no_grad():edited.model.visual.transformer.resblocks[11].mlp.c_proj.weight.copy_(d['edited_B'])
+        errors=[]
+        for model,target in [(expert,d['before']),(edited,d['after'])]:
+            model.cuda().eval();head.cuda().eval()
+            with torch.no_grad():
+                images,_=next(iter(make_loader(train,ids[:128],128)));ss=head(model(images.cuda())).cpu().double()
+            model.cpu();head.cpu();errors.append(float(abs(ss-target[:128]).max()));assert errors[-1]<=cfg['score_tolerance']
+        report.update(original128_context_replay_errors=errors,replay_image_instances=256)
+        before=d['before'].argmax(1).numpy();pred=d['after'].argmax(1).numpy();gold=d['labels'].numpy()
+        report['per_class']=[dict(class_id=c,n=int((gold==c).sum()),original_correct=int(((before==gold)&(gold==c)).sum()),
+            correct=int(((pred==gold)&(gold==c)).sum()),lost=int(((before==gold)&(pred!=gold)&(gold==c)).sum()),
+            gained=int(((before!=gold)&(pred==gold)&(gold==c)).sum())) for c in range(len(p['head']))]
+    report.update(wall_seconds=time.monotonic()-start,
+        scope='Finite source and numerical interval audit only; no interval-arithmetic/all-input theorem,novelty,fresh confirmation,full-task pass or actual peer-fusion protection claimed.')
+    save_json(root/'independent_validation.json',report);print(json.dumps(report),flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path('outputs/phase3/finite_compensation_source.pt'))
     parser.add_argument('--report', type=Path, default=Path('outputs/finite_compensation_bound.json'))
     parser.add_argument('--output', type=Path, default=Path('outputs/finite_compensation_bound_validation.json'))
     parser.add_argument('--projection-cone',type=Path)
+    parser.add_argument('--rank-one-band',type=Path)
     args = parser.parse_args()
-    if args.projection_cone:verify_projection_cone(args.projection_cone)
+    if args.rank_one_band:verify_rank_one_band(args.rank_one_band)
+    elif args.projection_cone:verify_projection_cone(args.projection_cone)
     else:verify(args.source, args.report, args.output)
