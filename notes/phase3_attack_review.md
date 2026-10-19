@@ -476,3 +476,5 @@ pilot/full共60条记录经独立NumPy完整索引标签、逐类／配对／区
 
 
 真实CLIP恢复核已经执行：从实际发布state重新计算12层不变量与头指派，没有读取head_order；匹配控制同样处理。全部158个张量与原专家逐项精确相等，最小严格行成本间隔3.839284，NumPy成本误差2.93e-14。耗时22.28秒，0图像／0梯度／0新增AGA调用。输入既然完全相同，就复用已按SHA核验、且本批272个完整上下文分数重放通过的原AGA控制：target-only为MNIST99.30%、SVHN92.78%，both为99.32%／91.77%。这些是明确标注的恒等复用，不是新的整套推理。它没有恢复Defense1关键beta，也没有测试O/B、A/B的新攻击，不能从这个已知对称性控制推广鲁棒性结论。[源码](../experiments/aga_coordinate_audit.py)、[发布张量真实恢复与原控制哈希](../results/head_identity_control/evaluation/head_recovery.json)。
+
+另一个最终LN偏置／视觉投影仿射补偿参考已按原预算完成真实AGA，但没有目标保护：target-only99.32%、both99.34%。作者AGA实际保留两个最终读出改动，其余恢复参数与匹配原AGA完全相同；不能把失败归因为AGA删掉了补偿。其执行前披露的无数据规范化只计算到原／发布规范参数的最大差2.93e−8，**没有新的适应清理准确率**，不计一个已完成恢复攻击。此点不值得在原AGA已无效后增加整套清理推理；公式、约束、所有双任务／逐类／配对数据及源码指纹见[机制与限界](phase2_related_work_and_novelty.md)末段及[真实结果](../results/ln_readout_compensation/evaluation/)。

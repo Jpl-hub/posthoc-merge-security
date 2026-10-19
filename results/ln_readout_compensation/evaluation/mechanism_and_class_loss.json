@@ -1,0 +1,782 @@
+{
+  "status": "passed_read_only_recount",
+  "parameter_geometry": {
+    "model.visual.ln_post.bias": {
+      "relative_distance": 0.4240943981354421,
+      "denominator": "Own full final LN bias or projection tensor, float64."
+    },
+    "model.visual.proj": {
+      "relative_distance": 0.2648460715509027,
+      "denominator": "Own full final LN bias or projection tensor, float64.",
+      "task32_inside_distance": 0.16016195499316324,
+      "task32_outside_distance": 0.21093029604282512,
+      "outside_squared_energy_fraction": 0.6342943654278789
+    },
+    "fixed_source_self_midpoint": {
+      "n": 512,
+      "changed": 0,
+      "feature_shift_norm": 2.252394740373649,
+      "finite_constant_identity_error": 5.02666925861206e-08,
+      "maximum_signed_numerator_margin_harm": 0.04221165656703925,
+      "maximum_harm_per_image_quantiles": [
+        0.015566752959544055,
+        0.03399222070460722,
+        0.04221165656703925
+      ],
+      "scope": "Fixed source-only self-chord after freezing. Not a true partner/AGA evaluation, new candidate, or universal no-change certificate."
+    }
+  },
+  "rows": [
+    {
+      "key": "released/standalone/MNIST",
+      "original_accuracy": 0.9969,
+      "released_accuracy": 0.9969,
+      "maximum_absolute_relative_margin_drift": 8.035032742758427e-05,
+      "signed_relative_teacher_margin_harm_quantiles": [
+        1.4605484748476402e-07,
+        4.717035633696147e-07,
+        8.035032742758427e-05
+      ],
+      "classes": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "original_mean_CE": 0.0027702378624756925,
+          "released_mean_CE": 0.0027702380932201334,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "original_mean_CE": 0.00865484372383613,
+          "released_mean_CE": 0.008654847892902771,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "original_mean_CE": 0.005064484267284621,
+          "released_mean_CE": 0.005064481597002905,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "original_mean_CE": 0.028083416929339824,
+          "released_mean_CE": 0.028083417258516676,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "original_mean_CE": 0.014907330565803248,
+          "released_mean_CE": 0.014907333882108966,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "original_mean_CE": 0.03431669721486792,
+          "released_mean_CE": 0.034316700492173606,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "original_mean_CE": 0.023218113427417336,
+          "released_mean_CE": 0.02321811130363524,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "original_mean_CE": 0.017996562456574168,
+          "released_mean_CE": 0.01799656017754059,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "original_mean_CE": 0.004198784970942001,
+          "released_mean_CE": 0.004198785716421248,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "original_mean_CE": 0.03896101034138989,
+          "released_mean_CE": 0.03896101333459099,
+          "lost": 0,
+          "gained": 0
+        }
+      ]
+    },
+    {
+      "key": "released/direct/MNIST",
+      "original_accuracy": 0.9937,
+      "released_accuracy": 0.9937,
+      "maximum_absolute_relative_margin_drift": 1.8748733389305463,
+      "signed_relative_teacher_margin_harm_quantiles": [
+        0.09812138100640538,
+        0.14576291081173215,
+        1.4149227153502475
+      ],
+      "classes": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "original_mean_CE": 0.01803336663788629,
+          "released_mean_CE": 0.019974828654381254,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "original_mean_CE": 0.00719073448470917,
+          "released_mean_CE": 0.010452785757376607,
+          "lost": 1,
+          "gained": 0
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "original_mean_CE": 0.019458862778098503,
+          "released_mean_CE": 0.022358446533143627,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "original_mean_CE": 0.03446375973851024,
+          "released_mean_CE": 0.04277142762793579,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "original_mean_CE": 0.012009005080149602,
+          "released_mean_CE": 0.012146766199458847,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "original_mean_CE": 0.029192639330871583,
+          "released_mean_CE": 0.028797281682973335,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "original_mean_CE": 0.0613019588964332,
+          "released_mean_CE": 0.05700051767791429,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "original_mean_CE": 0.027683974090072415,
+          "released_mean_CE": 0.026882545081291117,
+          "lost": 0,
+          "gained": 1
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "original_mean_CE": 0.015903865268501665,
+          "released_mean_CE": 0.01645918859882656,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "original_mean_CE": 0.04986115026456976,
+          "released_mean_CE": 0.05121685817921733,
+          "lost": 0,
+          "gained": 0
+        }
+      ]
+    },
+    {
+      "key": "released/direct/SVHN",
+      "original_accuracy": 0.9249769514443762,
+      "released_accuracy": 0.9247080516287646,
+      "maximum_absolute_relative_margin_drift": 241.3709677419355,
+      "signed_relative_teacher_margin_harm_quantiles": [
+        0.11002525823170385,
+        0.17850647351341536,
+        241.3709677419355
+      ],
+      "classes": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "original_mean_CE": 0.09309642009395734,
+          "released_mean_CE": 0.09600053432799645,
+          "lost": 1,
+          "gained": 0
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "original_mean_CE": 0.22054594298528957,
+          "released_mean_CE": 0.23054633488409812,
+          "lost": 27,
+          "gained": 0
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "original_mean_CE": 0.15466711932017868,
+          "released_mean_CE": 0.15642908602780148,
+          "lost": 4,
+          "gained": 0
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "original_mean_CE": 0.5836482520071847,
+          "released_mean_CE": 0.5701194472661335,
+          "lost": 8,
+          "gained": 4
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "original_mean_CE": 0.37633251275793567,
+          "released_mean_CE": 0.3354447389107579,
+          "lost": 0,
+          "gained": 11
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "original_mean_CE": 0.1355039502513466,
+          "released_mean_CE": 0.1263263314221645,
+          "lost": 0,
+          "gained": 4
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "original_mean_CE": 0.5830781049480915,
+          "released_mean_CE": 0.5160533059533595,
+          "lost": 0,
+          "gained": 5
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "original_mean_CE": 0.36060276187286094,
+          "released_mean_CE": 0.3310485096292727,
+          "lost": 1,
+          "gained": 2
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "original_mean_CE": 0.19773822047714404,
+          "released_mean_CE": 0.18149371528465855,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "original_mean_CE": 0.42516344490175123,
+          "released_mean_CE": 0.38801151080311286,
+          "lost": 0,
+          "gained": 8
+        }
+      ]
+    },
+    {
+      "key": "released/AGA_standalone/MNIST",
+      "original_accuracy": 0.9968,
+      "released_accuracy": 0.9968,
+      "maximum_absolute_relative_margin_drift": 2.0350434481776186e-05,
+      "signed_relative_teacher_margin_harm_quantiles": [
+        1.4619536063948256e-07,
+        4.677583437725941e-07,
+        2.0350434481776186e-05
+      ],
+      "classes": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "original_mean_CE": 0.0005735637432038328,
+          "released_mean_CE": 0.0005735638677316494,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "original_mean_CE": 0.0090618957309229,
+          "released_mean_CE": 0.009061895417215199,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "original_mean_CE": 0.005738469475492914,
+          "released_mean_CE": 0.005738468526634427,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "original_mean_CE": 0.028942793672555013,
+          "released_mean_CE": 0.02894279608290136,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "original_mean_CE": 0.014764581709312106,
+          "released_mean_CE": 0.014764582734422165,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "original_mean_CE": 0.03400666313540011,
+          "released_mean_CE": 0.034006659194619544,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "original_mean_CE": 0.0259689727997749,
+          "released_mean_CE": 0.025968972968770924,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "original_mean_CE": 0.018387354722687693,
+          "released_mean_CE": 0.018387353231903863,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "original_mean_CE": 0.0038723429218167657,
+          "released_mean_CE": 0.0038723449386856026,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "original_mean_CE": 0.03832017970979855,
+          "released_mean_CE": 0.03832017583798368,
+          "lost": 0,
+          "gained": 0
+        }
+      ]
+    },
+    {
+      "key": "released/AGA_target_only/MNIST",
+      "original_accuracy": 0.993,
+      "released_accuracy": 0.9932,
+      "maximum_absolute_relative_margin_drift": 1.572818763326226,
+      "signed_relative_teacher_margin_harm_quantiles": [
+        0.09940281146280476,
+        0.14727219378183146,
+        1.572818763326226
+      ],
+      "classes": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "original_mean_CE": 0.019751594931702948,
+          "released_mean_CE": 0.022205600336334362,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "original_mean_CE": 0.0077174498031431235,
+          "released_mean_CE": 0.011323528438214325,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "original_mean_CE": 0.022313421535164902,
+          "released_mean_CE": 0.025655822291859975,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "original_mean_CE": 0.036569974947976945,
+          "released_mean_CE": 0.044958271595541874,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "original_mean_CE": 0.013313594234298008,
+          "released_mean_CE": 0.013477387846657269,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "original_mean_CE": 0.02967447709002208,
+          "released_mean_CE": 0.029372623749575357,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "original_mean_CE": 0.06741814657278518,
+          "released_mean_CE": 0.06265132216568187,
+          "lost": 0,
+          "gained": 2
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "original_mean_CE": 0.02979126442399754,
+          "released_mean_CE": 0.0289942520910196,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "original_mean_CE": 0.01594111582511384,
+          "released_mean_CE": 0.016697014656771418,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "original_mean_CE": 0.05133750773136023,
+          "released_mean_CE": 0.052837946270364436,
+          "lost": 0,
+          "gained": 0
+        }
+      ]
+    },
+    {
+      "key": "released/AGA_target_only/SVHN",
+      "original_accuracy": 0.927819606637984,
+      "released_accuracy": 0.9276275353411186,
+      "maximum_absolute_relative_margin_drift": 212.40500916310324,
+      "signed_relative_teacher_margin_harm_quantiles": [
+        0.11121188445533439,
+        0.17805081900875466,
+        123.53370786516854
+      ],
+      "classes": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "original_mean_CE": 0.09169218103718349,
+          "released_mean_CE": 0.0951953040678715,
+          "lost": 3,
+          "gained": 0
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "original_mean_CE": 0.20190572809859228,
+          "released_mean_CE": 0.21299991523197562,
+          "lost": 22,
+          "gained": 0
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "original_mean_CE": 0.14444923046735436,
+          "released_mean_CE": 0.1467602684078546,
+          "lost": 9,
+          "gained": 0
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "original_mean_CE": 0.5859057812662084,
+          "released_mean_CE": 0.5740037758355884,
+          "lost": 7,
+          "gained": 2
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "original_mean_CE": 0.3536051426257608,
+          "released_mean_CE": 0.3169630665627665,
+          "lost": 0,
+          "gained": 12
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "original_mean_CE": 0.12931120155382989,
+          "released_mean_CE": 0.1211603521479466,
+          "lost": 0,
+          "gained": 2
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "original_mean_CE": 0.555055458721583,
+          "released_mean_CE": 0.49191341974988095,
+          "lost": 0,
+          "gained": 10
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "original_mean_CE": 0.3330390758092861,
+          "released_mean_CE": 0.30662823040187437,
+          "lost": 2,
+          "gained": 6
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "original_mean_CE": 0.17665694658372985,
+          "released_mean_CE": 0.1635034054228068,
+          "lost": 0,
+          "gained": 1
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "original_mean_CE": 0.39808386140383045,
+          "released_mean_CE": 0.36481911828613867,
+          "lost": 0,
+          "gained": 5
+        }
+      ]
+    },
+    {
+      "key": "released/AGA_both/MNIST",
+      "original_accuracy": 0.9932,
+      "released_accuracy": 0.9934,
+      "maximum_absolute_relative_margin_drift": 12.998327759197325,
+      "signed_relative_teacher_margin_harm_quantiles": [
+        0.0996505222160966,
+        0.14751607636183514,
+        1.3541259482558716
+      ],
+      "classes": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "original_mean_CE": 0.019768387240422614,
+          "released_mean_CE": 0.02235823860982213,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "original_mean_CE": 0.007259618365064365,
+          "released_mean_CE": 0.010839409117384796,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "original_mean_CE": 0.021391557178246198,
+          "released_mean_CE": 0.02483275313794278,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "original_mean_CE": 0.03759619880559975,
+          "released_mean_CE": 0.04625101603182508,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "original_mean_CE": 0.01418960003109143,
+          "released_mean_CE": 0.014293836328130754,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "original_mean_CE": 0.03026307281092225,
+          "released_mean_CE": 0.02994604034870597,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "original_mean_CE": 0.06583217712381274,
+          "released_mean_CE": 0.061361061398663604,
+          "lost": 0,
+          "gained": 1
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "original_mean_CE": 0.0294467034985496,
+          "released_mean_CE": 0.02862772138783703,
+          "lost": 0,
+          "gained": 1
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "original_mean_CE": 0.014005702598204918,
+          "released_mean_CE": 0.014825301569771373,
+          "lost": 0,
+          "gained": 0
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "original_mean_CE": 0.05012811132165576,
+          "released_mean_CE": 0.051858932800889365,
+          "lost": 0,
+          "gained": 0
+        }
+      ]
+    },
+    {
+      "key": "released/AGA_both/SVHN",
+      "original_accuracy": 0.9177166564228642,
+      "released_accuracy": 0.9179087277197295,
+      "maximum_absolute_relative_margin_drift": 152.44788732394366,
+      "signed_relative_teacher_margin_harm_quantiles": [
+        0.11426768719255917,
+        0.18841650598174034,
+        109.81503316138541
+      ],
+      "classes": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "original_mean_CE": 0.10370021152535659,
+          "released_mean_CE": 0.10863470425009343,
+          "lost": 1,
+          "gained": 0
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "original_mean_CE": 0.22000033399712943,
+          "released_mean_CE": 0.23285284229805978,
+          "lost": 23,
+          "gained": 0
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "original_mean_CE": 0.15674768214554427,
+          "released_mean_CE": 0.16006828776152657,
+          "lost": 7,
+          "gained": 2
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "original_mean_CE": 0.6622080314024419,
+          "released_mean_CE": 0.6471878034479164,
+          "lost": 6,
+          "gained": 3
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "original_mean_CE": 0.40831913659298547,
+          "released_mean_CE": 0.36785636546915096,
+          "lost": 0,
+          "gained": 15
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "original_mean_CE": 0.13837411594682614,
+          "released_mean_CE": 0.13011471564176963,
+          "lost": 0,
+          "gained": 3
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "original_mean_CE": 0.6017969384097981,
+          "released_mean_CE": 0.5335412013167544,
+          "lost": 0,
+          "gained": 10
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "original_mean_CE": 0.3778058729557407,
+          "released_mean_CE": 0.3484042887178354,
+          "lost": 1,
+          "gained": 6
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "original_mean_CE": 0.1782763361202264,
+          "released_mean_CE": 0.16607593488436573,
+          "lost": 0,
+          "gained": 1
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "original_mean_CE": 0.4297896730684006,
+          "released_mean_CE": 0.39505711776279845,
+          "lost": 1,
+          "gained": 4
+        }
+      ]
+    }
+  ],
+  "predictions_sha256": "affa21e41fa588598fef173e813fc47a5a1f86b396164a1ac7f7411a5ea294b8",
+  "release_sha256": "c4b5ae28b059f5ba6a145be0d1fa703a8e9de1127879a2ed41839b20e5cdc8c3",
+  "verifier_sha256": "a70d40c3dd79a09198fad649c1e774a874b3cfacee9a8f8f110eae1790567552",
+  "gradients": 0,
+  "new_images": 0,
+  "new_weights": 0,
+  "scope": "Parameter task-SVD geometry is not a functional nullspace. Classification effects and source preservation are measured separately."
+}
