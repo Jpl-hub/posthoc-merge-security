@@ -381,7 +381,7 @@ def distributed(protocol):
     def forward(model, x):
         nonlocal forwards
         forwards += len(x)
-        feature = model(x.cuda())
+        feature = model(x.cuda().to(next(model.parameters()).dtype))
         return head(feature), feature
 
     def observe(model, indices):
@@ -482,9 +482,44 @@ def distributed(protocol):
     measured /= torch.tensor(row_norms, dtype=torch.float64)
     native_derivative_error = float((measured - design.double() @ gradient.cpu().double()).abs().max())
     objective_derivative_error = abs((fd_objectives[1] - fd_objectives[0]) / (2 * eps) - gradient_norm) / gradient_norm
-    save_json(out / 'derivative_checks.json', dict(native_absolute_error=native_derivative_error,
-              public_objective_relative_error=objective_derivative_error,
-              step=eps, source_sha256=digest(__file__)))
+    numerical = dict(native_absolute_error=native_derivative_error,
+                     public_FP32_step001_relative_error=objective_derivative_error,
+                     public_FP32_gradient_norm=gradient_norm, step=eps, source_sha256=digest(__file__))
+    if cfg.get('objective_derivative_check_precision') == 'FP64_control_only':
+        environment.double(); head.double()
+        for b in basis:
+            b['u'] = b['u'].double(); b['v'] = b['v'].double()
+        with torch.enable_grad():
+            scalar = torch.zeros((), device='cuda', dtype=torch.float64, requires_grad=True)
+            runtime['coef'] = scalar * gradient.reshape(shape).double()
+            control_score, _ = forward(environment, x[:len(ref)])
+            control_value = objective(control_score)
+            derivative64 = float(torch.autograd.grad(control_value, scalar)[0])
+        differences = {}
+        for step in [eps, cfg['FP64_derivative_step']]:
+            values = []
+            for sign in [-1., 1.]:
+                runtime['coef'] = sign * step * gradient.reshape(shape).double()
+                ss, _ = forward(environment, x[:len(ref)])
+                values.append(float(objective(ss)))
+            differences[str(step)] = abs((values[1] - values[0]) / (2 * step) - derivative64) / abs(derivative64)
+        numeric_score_error = float((control_score.detach().float() - current.detach()).abs().max())
+        gradient_control_error = abs(derivative64 - gradient_norm) / gradient_norm
+        environment.float(); head.float()
+        for b in basis:
+            b['u'] = b['u'].float(); b['v'] = b['v'].float()
+        runtime['coef'] = None
+        numerical.update(public_FP64_derivative=derivative64,
+            public_FP64_finite_difference_relative_errors=differences,
+            public_FP32_vs_FP64_directional_gradient_relative_error=gradient_control_error,
+            public_FP32_vs_FP64_score_error=numeric_score_error,
+            scientific_construction_precision='FP32 unchanged; FP64 only checks derivatives')
+        save_json(out / 'derivative_checks.json', numerical)
+        assert numeric_score_error <= cfg['full_model_score_tolerance']
+        assert gradient_control_error <= cfg['gradient_precision_relative_tolerance']
+        objective_derivative_error = differences[str(cfg['FP64_derivative_step'])]
+    else:
+        save_json(out / 'derivative_checks.json', numerical)
     assert native_derivative_error <= cfg['derivative_absolute_tolerance']
     assert objective_derivative_error <= cfg['derivative_relative_tolerance']
     j = design.cuda().double()
