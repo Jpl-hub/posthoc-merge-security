@@ -304,9 +304,19 @@ def verify_branch_norm(folder):
         uniform_positive_midpoint_variance_contraction_excluded=bool(em[-1]<-1e-10),
         exact_source_variance_preservation_nonzero_reflection_excluded=bool(ev[-1]<-1e-10 or ev[0]>1e-10),
         scope='Uniform average is a legal simplex dual only for this scalar skip/branch variance mechanism in the fixed full visual-readout kernel. Not a classification-defense impossibility or a necessary gate for other methods.')
+    # A class margin numerator is affine in sigma. If it stays nonnegative at
+    # both ends, no interior contraction can change that teacher decision.
+    linear=((h-h.mean(1,keepdims=True))*p['gamma'])@p['projection']@p['head'].T
+    bias=p['beta']@p['projection']@p['head'].T;teacher=before.argmax(1);ix=np.arange(len(h))
+    zero_gap=linear[ix,teacher,None]-linear;bias_gap=bias[teacher,None]-bias[None,:]
+    can_contract=(zero_gap<0).any(1);can_any=((zero_gap<0)|(bias_gap<0)).any(1)
+    envelope=dict(source_n=len(h),maximum_teacher_changes_under_any_pointwise_variance_contraction=int(can_contract.sum()),
+        maximum_teacher_changes_under_any_positive_pointwise_variance=int(can_any.sum()),
+        contraction_by_teacher_class=[dict(class_id=c,n=int((teacher==c).sum()),maximum_changed=int((can_contract&(teacher==c)).sum())) for c in range(10)],
+        scope='Exact scalar-numerator decision envelope at these fixed source hidden states and readout. Allows independent arbitrary sigma per image, hence an upper bound for any shared reflection whose only score change is sigma. Not an accuracy bound after a changed peer/readout or AGA.')
     save_json(out/'independent_validation.json',dict(status='passed_numpy_finite_norm_and_score_recount',raw_sha256=report['raw_sha256'],
         source_sha256=digest(__file__),NumPy_projector_error=projector_error,NumPy_task_drift_recount_error=max(errors),NumPy_variance_identity_error=sigma_error,
-        geometric_rank=255,new_images=0,new_releases=0,source_task_feasibility_is_not_independent_confirmation=True,finite_variance_bound=certificate))
+        geometric_rank=255,new_images=0,new_releases=0,source_task_feasibility_is_not_independent_confirmation=True,finite_variance_bound=certificate,scalar_decision_envelope=envelope))
 
 
 if __name__=='__main__':
