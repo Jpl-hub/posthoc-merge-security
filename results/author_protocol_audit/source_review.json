@@ -233,6 +233,47 @@
       "main_experiment_decision": "Not ported: changes threat model and requires backdoor implantation/training.",
       "new_attacks_implemented": 0,
       "new_defenses": 0
+    },
+    "BSS_distillation": {
+      "commit": "586b1411ed067af92ab781ac4fc58f8cf58798dc",
+      "selected_files": [
+        {
+          "path": "train_BSS_distillation.py",
+          "git_blob": "34f29998db3b45cf8fccd81a66e929091b3fe02d",
+          "sha256": "bd37a9f3b7de7f427c24dcc003035b91e9320d723e970ba0f97f8090c8e6b0a1",
+          "bytes": 7508
+        },
+        {
+          "path": "attacks/attack_BSS.py",
+          "git_blob": "3c040f4a596113806828225f643205065ecd9d61",
+          "sha256": "8639681a1cac8b0571a56c1c649b2bc4cf974ddd84696f69eb436107671360fc",
+          "bytes": 2561
+        },
+        {
+          "path": "attacks/helpers.py",
+          "git_blob": "60e24779765a249dea71fe0233af2837a7ab4fb8",
+          "sha256": "42cc82b871d1102ad1a863560f52d87f91ca6a5604e12834da2bc56832e83ad4",
+          "bytes": 1654
+        }
+      ],
+      "paper": "https://arxiv.org/html/1805.05532v4",
+      "venue": "AAAI2019",
+      "repository": "bhheo/BSS_distillation",
+      "reviewed_utc": "2026-10-19",
+      "review_scope": "Method, experiments and settings; PDFp3/p4 visually checked;3 official files matched to pinned Git blobs.",
+      "pdf_server_path": "outputs/2026-10-19_research/primary_sources/BSS.pdf",
+      "pdf_bytes": 354576,
+      "pdf_sha256": "8b7a21381172e598aa36bda8fd9feea8851cb16ce000079c42f05f34de8f0caa",
+      "classification": "Boundary-supporting knowledge distillation, not merging recovery or new posthoc defense.",
+      "paper_conditions": "Input gradients, labeled data, teacher/student scores. Accuracy and boundary similarity, not worst relative gap guarantee.",
+      "implementation_differences": [
+        "Eq9 full probability distance versus code excluding ground-truth component.",
+        "Paper discards third-class/iteration-limit failures; released caller has no success mask for returned inputs.",
+        "max_epsilon is not an enforced perturbation radius; code clamps normalized images to[-2.5,2.5]."
+      ],
+      "main_experiment_decision": "Not ported or counted as an added attack; existing distillation tool insufficient alone for fixed functional budget.",
+      "new_model_runs": 0,
+      "new_defenses": 0
     }
   },
   "literature_access": {
