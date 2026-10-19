@@ -1,0 +1,41 @@
+{
+  "target": "MNIST",
+  "output": "outputs/phase2_joint_response_mnist_20261019",
+  "source_indices": "outputs/phase2_alignment_fixedpoint_mnist_20261018/training_indices.json",
+  "source_indices_sha256": "862166b7e3639dbe4745b97813ed022c009c24276863cc5878182954287eeeab",
+  "source_n": 4096,
+  "excluded_witness_indices": [
+    41538,
+    27330,
+    31374
+  ],
+  "probe_rank": 32,
+  "contexts_per_class": 2,
+  "finite_step": 0.01,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "distance_reserve": 1e-06,
+  "batch_size": 32,
+  "derivative_step": 1e-06,
+  "derivative_relative_tolerance": 0.0002,
+  "numpy_score_tolerance": 1e-08,
+  "full_model_score_tolerance": 0.0005,
+  "eigen_relative_tolerance": 1e-10,
+  "source_sha256": {
+    "experiments/joint_response_direction.py": "193686928d0a54eacf990cd4cf1e93c37233f9f931bc1fb7dd96043fa86356bd",
+    "experiments/attention_cascade.py": "868fc15bd7628f412557af8afc19807a06ad9cacbeed4e1d126108f4f4654593",
+    "experiments/task_boundary_audit.py": "d90956a382d8f0a2d2be46bf914e6a86567705c8c7acdab750d12ec3f09bcfdd",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/cross_module_distance.py": "74fcf77f10c37dcc989017e9f6462a47490e6b656dd3f3364c7448084c048c19",
+    "experiments/verify_cascade.py": "977e726182822c823c5eaef906a58f6dd4179156cc51100211bfab266c894ed5",
+    "experiments/verify_levelset_audits.py": "7d51baf85314d0529b06cac0177f87cc3b7a2495bd92279db6025c5f96a003c0",
+    "experiments/angular_distance.py": "9cff17f80aa43f22edbd3f2fa00bf6553391e71f91aa69f0c48bb754a055a65a",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "construction": "One minimum full normalized-margin response Rayleigh vector outside the first32 task-right singular directions in B10/B11; fixed leading class-numerator output axis. Joint candidate only; no axis/layer/radius/seed/rank search. No optimizer. Natural4096 plus2560 finite task-SVD probes. Ordinary Gauss-Newton/Rayleigh algebra is not claimed novel. Not a nonlinear minimax solution.",
+  "stop_rule": "Source or replay failure closes the fixed direction; do not change axis/rank/distance. Only source pass permits frozen new-training confirmation and then real TA0.5 plus original AGA scopes. Unseen-peer harm is a separate empirical question."
+}
