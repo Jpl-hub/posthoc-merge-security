@@ -103,7 +103,7 @@ def metric(before, after):
 @torch.no_grad()
 def run(protocol):
     cfg = json.loads(Path(protocol).read_text())
-    out = Path(cfg['output'])
+    out = Path(cfg['output']).resolve()
     out.mkdir(parents=True, exist_ok=False)
     save_json(out / 'protocol.json', cfg)
     for path, pin in cfg['source_sha256'].items():
