@@ -127,14 +127,28 @@ def verify_projection_cone(root):
         new_model_forwards=0,new_candidates=0,new_TA_calls=0,new_AGA_calls=0,
         source_sha256=digest(__file__),input_result_sha256=digest(root/'results.json'),raw_sha256=meta['cone_raw_sha256'])
     if meta['status']=='PrimalInfeasible':
-        z=raw['z'];stationarity=float(abs(A.T@z).max());dot=float(b@z);at=0;violation=0.
+        z=raw['z'].copy();stationarity=float(abs(A.T@z).max());dot=float(b@z);at=0;violation=0.
+        def project_soc(t):
+            norm=np.linalg.norm(t[1:])
+            if norm<=t[0]:p=t.copy()
+            elif norm<=-t[0]:p=np.zeros_like(t)
+            else:p=.5*(norm+t[0])*np.r_[1.,t[1:]/norm]
+            p[0]+=1e-12*max(1.,np.linalg.norm(p))
+            return p
         for _ in range(len(y)*(len(H)-1)):
-            t=z[at:at+q+2];violation=max(violation,float(np.linalg.norm(t[1:])-t[0]));at+=q+2
-        count=len(y)*len(H);violation=max(violation,float(-z[at:at+count].min()));at+=count
-        t=z[at:];assert len(t)==npar+1;violation=max(violation,float(np.linalg.norm(t[1:])-t[0]))
+            t=z[at:at+q+2];violation=max(violation,float(np.linalg.norm(t[1:])-t[0]));z[at:at+q+2]=project_soc(t);at+=q+2
+        count=len(y)*len(H);violation=max(violation,float(-z[at:at+count].min()))
+        z[at:at+count]=np.maximum(z[at:at+count],0.)+1e-12;at+=count
+        t=z[at:];assert len(t)==npar+1;violation=max(violation,float(np.linalg.norm(t[1:])-t[0]));z[at:]=project_soc(t)
+        # A compact variable ball gives a certificate even with nonzero A.T z:
+        # feasible => b.T z = x.T A.T z + s.T z >= -r*||A.T z||.
+        projected_dot=float(b@z);residual_bound=remaining*float(np.linalg.norm(A.T@z))
+        margin=-projected_dot-residual_bound
         report.update(dual_certificate_b_dot_z=dot,dual_stationarity_max=stationarity,dual_cone_violation=max(0.,violation),
-            infeasibility_certificate_verified=dot<-.5 and stationarity<1e-5 and violation<1e-5,
-            scope='A checked Farkas certificate only excludes this fixed source prefix,288-variable readout family,and sufficient inner cone. Not the original nonconvex task band or all defenses.')
+            projected_dual_b_dot_z=projected_dot,parameter_ball_residual_allowance=residual_bound,bounded_dual_certificate_margin=margin,
+            infeasibility_certificate_verified=margin>1e-5*(1+abs(projected_dot)+residual_bound),
+            scope='Numerical certificate with explicit stationarity residual allowance on the known parameter ball and projection into self-dual cones. Excludes only this fixed source prefix,288-variable readout family,and sufficient epsilon0.25 cone; not the original0.5 task band or all defenses. Not a formal interval-arithmetic certificate.')
+        np.savez_compressed(root/'projected_dual_certificate.npz',z=z)
         assert report['infeasibility_certificate_verified']
     elif meta['status']=='Solved':
         point=torch.load(root/'feasibility_point.pt',map_location='cpu',weights_only=False)
