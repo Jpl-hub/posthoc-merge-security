@@ -68,6 +68,8 @@ def run(protocol):
     save_json(out/'protocol.json',cfg);assert digest(__file__)==cfg['source_sha256'][__file__ if __file__ in cfg['source_sha256'] else 'experiments/phase3_distillation.py']
     for p,sha in cfg['source_sha256'].items():assert digest(p)==sha,p
     parent=json.loads(Path(cfg['frozen_inputs']['path']).read_text());assert digest(cfg['frozen_inputs']['path'])==cfg['frozen_inputs']['sha256']
+    # Historical defense/weight references stay fixed; this new attack pins its current loader explicitly.
+    parent['source_sha256']=cfg['source_sha256']
     base,originals,heads,aligned,_=setup(parent);target,partner=cfg['target'],cfg['partner']
     original_hash={t:parameter_hash(m.state_dict()) for t,m in originals.items()};base_hash=parameter_hash(base.state_dict())
     torch.use_deterministic_algorithms(True)
