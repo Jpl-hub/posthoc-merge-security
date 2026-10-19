@@ -24,6 +24,20 @@ def permutation(before, after):
     return p
 
 
+def head_costs(state,reference,layer):
+    """Native CLIP layout of GLMC's two published head invariants."""
+    prefix=f'model.visual.transformer.resblocks.{layer}.attn.'
+    def features(s):
+        w,b,o=[s[prefix+k].double() for k in ['in_proj_weight','in_proj_bias','out_proj.weight']]
+        q,k,v=torch.cat([w,b[:,None]],1).reshape(3,12,64,769)
+        return q.transpose(1,2)@k,o.reshape(768,12,64).permute(1,0,2)@v
+    a,b=features(state),features(reference)
+    cost=torch.stack([torch.stack([sum((x[i]-y[j]).norm() for x,y in zip(a,b)) for j in range(12)]) for i in range(12)])
+    independent=np.array([[sum(np.linalg.norm(x[i].numpy()-y[j].numpy()) for x,y in zip(a,b)) for j in range(12)] for i in range(12)])
+    error=float(abs(cost.numpy()-independent).max());assert error<1e-8
+    return independent,error
+
+
 @torch.no_grad()
 def head_identity_recovery(output):
     """Recover head identity using only actual published/public-anchor tensors."""
@@ -37,12 +51,7 @@ def head_identity_recovery(output):
         changed={};rows=[];maximum=0.
         for layer in range(12):
             prefix=f'model.visual.transformer.resblocks.{layer}.attn.';wk,bk,ok=[prefix+n for n in ['in_proj_weight','in_proj_bias','out_proj.weight']]
-            def feature(s):
-                q,k,v=torch.cat([s[wk].double(),s[bk].double()[:,None]],1).reshape(3,12,64,769)
-                return q.transpose(1,2)@k,s[ok].double().reshape(768,12,64).permute(1,0,2)@v
-            a,b=feature(state),feature(reference);cost=torch.stack([torch.stack([sum((x[i]-y[j]).norm() for x,y in zip(a,b)) for j in range(12)]) for i in range(12)])
-            independent=np.array([[sum(np.linalg.norm(x[i].numpy()-y[j].numpy()) for x,y in zip(a,b)) for j in range(12)] for i in range(12)])
-            error=float(abs(cost.numpy()-independent).max());assert error<1e-8;maximum=max(maximum,error)
+            independent,error=head_costs(state,reference,layer);maximum=max(maximum,error)
             row,col=linear_sum_assignment(independent);order=torch.empty(12,dtype=torch.long);order[torch.tensor(col)]=torch.tensor(row)
             other=independent.copy();other[row,col]=np.inf;margin=float((other.min(1)-independent[row,col]).min());assert margin>0
             ix=(64*order[:,None]+torch.arange(64)[None]).flatten();full=torch.cat([ix+768*j for j in range(3)])
@@ -76,18 +85,11 @@ def head_identity_geometry(output):
     anchor,expert,_,pins=checked_models('MNIST');s,b=expert.state_dict(),anchor.state_dict()
     order=torch.tensor([1,0]+list(range(2,12)));ix=(64*order[:,None]+torch.arange(64)[None]).flatten()
     edits={};original={};records=[];restored={};maximum=0.
-    def features(w,bias,o):
-        q,k,v=torch.cat([w.double(),bias.double()[:,None]],1).reshape(3,12,64,769)
-        return q.transpose(1,2)@k,o.double().reshape(768,12,64).permute(1,0,2)@v
     for layer in range(12):
         p=f'model.visual.transformer.resblocks.{layer}.attn.';wk,bk,ok=[p+n for n in ['in_proj_weight','in_proj_bias','out_proj.weight']]
         full=torch.cat([ix+768*j for j in range(3)])
         for key,v in [(wk,s[wk][full]),(bk,s[bk][full]),(ok,s[ok][:,ix])]:original[key]=s[key];edits[key]=v.clone()
-        f=features(s[wk],s[bk],s[ok]);a=features(b[wk],b[bk],b[ok]);cost=torch.zeros(12,12,dtype=torch.float64)
-        for i in range(12):
-            for j in range(12):cost[i,j]=sum((x[i]-y[j]).norm() for x,y in zip(f,a))
-        cn=np.stack([sum(np.linalg.norm(x[i].numpy()-y[j].numpy()) for x,y in zip(f,a)) for i in range(12) for j in range(12)]).reshape(12,12)
-        maximum=max(maximum,float(abs(cn-cost.numpy()).max()));assert maximum<1e-8
+        cn,error=head_costs(s,b,layer);maximum=max(maximum,error)
         base_row,base_col=linear_sum_assignment(cn);row,col=linear_sum_assignment(cn[order.numpy()]);restore=torch.empty(12,dtype=torch.long);restore[torch.tensor(col)]=torch.tensor(row)
         chosen=cn[order.numpy()][row,col];other=np.array(cn[order.numpy()],copy=True);other[row,col]=np.inf
         margin=float((other.min(1)-chosen).min());assert margin>0 and np.array_equal(base_col,np.arange(12))
