@@ -30,7 +30,7 @@
   "derivative_relative_tolerance": 0.05,
   "full_model_score_tolerance": 0.0005,
   "source_sha256": {
-    "experiments/joint_response_direction.py": "da6d9a59ed5ff806f7b8ebd95277eb58de2fe66cf55feb1b0f0bec77b092d45b",
+    "experiments/joint_response_direction.py": "6ad56fc5b4f32dca698b1d142918a1e41151df58d016d54adab07254795779c7",
     "experiments/angular_distance.py": "9cff17f80aa43f22edbd3f2fa00bf6553391e71f91aa69f0c48bb754a055a65a",
     "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
     "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
@@ -71,5 +71,6 @@
     "public_FP32_objective_derivative_error": 0.3139234564742891,
     "stage": "No direction constructed, no radius/candidate/confirmation/TA/AGA",
     "correction": "Retain old FP32 check and its failure; separately predeclare FP64 directional AD and differences at the old step and1e-6, plus matched FP32/F64 score and directional-AD controls. Primary construction remains FP32; original5% derivative threshold and0.5 task budget unchanged."
-  }
+  },
+  "FP64_LN_reference": "OpenAI CLIP LayerNorm casts inputs toFP32. Only the FP64 numerical reference uses F.layer_norm with the same gamma/beta/epsilon; native FP32 forward restored before any construction or evaluation."
 }

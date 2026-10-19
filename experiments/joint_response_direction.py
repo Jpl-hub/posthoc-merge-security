@@ -487,6 +487,14 @@ def distributed(protocol):
                      public_FP32_gradient_norm=gradient_norm, step=eps, source_sha256=digest(__file__))
     if cfg.get('objective_derivative_check_precision') == 'FP64_control_only':
         environment.double(); head.double()
+        # OpenAI CLIP's LayerNorm explicitly casts inputs to FP32. Bypass only
+        # that cast for this declared FP64 reference, then restore its forward.
+        norm_forwards = []
+        for module in environment.modules():
+            if isinstance(module, torch.nn.LayerNorm):
+                norm_forwards.append((module, module.forward))
+                module.forward = lambda value, m=module: F.layer_norm(
+                    value, m.normalized_shape, m.weight, m.bias, m.eps)
         for b in basis:
             b['u'] = b['u'].double(); b['v'] = b['v'].double()
         with torch.enable_grad():
@@ -505,6 +513,8 @@ def distributed(protocol):
             differences[str(step)] = abs((values[1] - values[0]) / (2 * step) - derivative64) / abs(derivative64)
         numeric_score_error = float((control_score.detach().float() - current.detach()).abs().max())
         gradient_control_error = abs(derivative64 - gradient_norm) / gradient_norm
+        for module, previous in norm_forwards:
+            module.forward = previous
         environment.float(); head.float()
         for b in basis:
             b['u'] = b['u'].float(); b['v'] = b['v'].float()
