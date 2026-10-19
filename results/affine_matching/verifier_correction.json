@@ -1,0 +1,13 @@
+{
+  "type": "verification_dtype_bug_only",
+  "failed_log": "outputs/phase2_affine_matching_mnist_20261019.log",
+  "original_source_sha256": "5b8315de06cf1e2e1a42cfa488d3584e6dbd17a5de53edd007499754f9a4685e",
+  "corrected_verifier_source_sha256": "d2bc78ab7a6fd33d659ad042bc18226460cd15bd6bc76a658b72c68c440ba0d2",
+  "original_NumPy_distance": 0.5000000259486068,
+  "float64_NumPy_distance": 0.4999994958391252,
+  "Torch_float64_distance": 0.4999994958390909,
+  "release_unchanged": true,
+  "source_images_rerun": false,
+  "threshold_changed": false,
+  "reason": "FP32 original tensor norm in independent verifier; all budget arithmetic is defined in float64. Cast denominator as well as numerator. Frozen source protocol/results preserved; confirm uses amended executable hash only."
+}

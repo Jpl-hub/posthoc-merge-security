@@ -183,7 +183,7 @@ def verify(folder, confirm=False):
     db=(edits[keys[1]].double()-point['original'][keys[1]].double()).numpy()
     linear=dw*g; centered=linear-linear.mean(1,keepdims=True)
     identity=max(float(abs(centered).max()),float(abs(dw@beta+db).max())); assert identity<1e-6
-    distance=sum(float(np.linalg.norm((edits[k].double()-v).numpy())**2/np.linalg.norm(v.numpy())**2) for k,v in point['original'].items())**.5
+    distance=sum(float(np.linalg.norm((edits[k].double()-v.double()).numpy())**2/np.linalg.norm(v.double().numpy())**2) for k,v in point['original'].items())**.5
     assert abs(distance-report['geometry']['parameter_distance'])<1e-10
     for (ka,kb), field in [(('before','after'),'natural'),(('probe_before','probe_after'),'finite_probes')]:
         a,b=raw[ka].numpy(),raw[kb].numpy(); y=a.argmax(1); ix=np.arange(len(a)); gap=a[ix,y,None]-a; gap[ix,y]=1
