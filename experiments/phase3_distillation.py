@@ -41,7 +41,7 @@ def train(base, head, images, labels, cfg, pilot=False):
     env={'np':np};exec(compile(ast.Module(body=nodes,type_ignores=[]),str(path),'exec'),env)
     steps=cfg['epochs']*(len(images)//cfg['batch_size']); scheduler=env['cosine_lr'](opt,cfg['lr'],cfg['warmup_steps'],steps)
     rng=torch.Generator().manual_seed(cfg['training_seed']); history=[];step=0;start=time.monotonic()
-    head_before=parameter_hash(head.state_dict());torch.cuda.reset_peak_memory_stats()
+    head_before=parameter_hash({k:v.cpu() for k,v in head.state_dict().items()});torch.cuda.reset_peak_memory_stats()
     for epoch in range(1 if pilot else cfg['epochs']):
         order=torch.randperm(len(images),generator=rng); losses=[]
         for ids in ([order[:8]] if pilot else order.split(cfg['batch_size'])):
@@ -53,7 +53,7 @@ def train(base, head, images, labels, cfg, pilot=False):
             opt.step();losses.append(float(loss.detach()));step+=1
         history.append({'epoch':epoch+1,'mean_pseudo_label_loss':float(np.mean(losses))})
         print('KD_EPOCH',epoch+1,history[-1]['mean_pseudo_label_loss'],flush=True)
-    assert head_before==parameter_hash(head.state_dict())
+    assert head_before==parameter_hash({k:v.cpu() for k,v in head.state_dict().items()})
     torch.cuda.synchronize(); seconds=time.monotonic()-start; peak=torch.cuda.max_memory_allocated()
     student.cpu().eval().requires_grad_(False);head.cpu();del opt
     assert step==(1 if pilot else steps)
@@ -104,7 +104,7 @@ def run(protocol):
         base_parameter_sha256=base_hash,original_parameter_sha256=original_hash,source_sha256=digest(__file__),
         protocol_sha256=digest(protocol),teacher_queries_sha256=digest(out/'teacher_queries.pt')))
     del images;data={t:dataset(t,'data',originals[t].val_preprocess) for t in [target,partner]}
-    raw={};rows=[];replays=0;maximum=0.;logp_error=0.;author=load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))
+    raw={};rows=[];replays=0;maximum=0.;logp_error=0.;author,_=load_author(Path('external/secure-merge-attack/utils_attack_B32.py'),include_wrappers=True)
     for group,names in groups.items():
         student=students[group];at=time.monotonic();recovered=author_recover(student,base,author);aga_seconds=time.monotonic()-at
         models=[('Standalone',student,[target]),('TA',merge(base,student,originals[partner],.5),[target,partner]),
