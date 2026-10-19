@@ -297,7 +297,7 @@ def verify_joint_full_gate(folder):
 
 
 @torch.no_grad()
-def verify_joint_activation(folder):
+def verify_joint_activation(folder, public_base=False):
     """Read-only source excitation audit; never constructs another direction."""
     from attention_cascade import parameters, suffix as torch_suffix
     from probe_distance_candidate import on_device
@@ -309,14 +309,28 @@ def verify_joint_activation(folder):
     meta = json.loads((out / 'results.json').read_text())
     for name, key in [('cache.pt', 'cache_sha256'), ('diagnostic.pt', 'diagnostic_sha256'), ('release.pt', 'release_sha256')]:
         assert digest(out / name) == meta[key], name
-    cache = torch.load(out / 'cache.pt', map_location='cpu')
     point = torch.load(out / 'diagnostic.pt', map_location='cpu')
     edits = torch.load(out / 'release.pt', map_location='cpu')
-    _, expert, head, pins = checked_models('MNIST')
+    anchor, expert, head, pins = checked_models('MNIST')
     p = on_device(parameters(expert, head))
+    environment = on_device(parameters(anchor, head)) if public_base else p
+    stem = 'activation_public_base' if public_base else 'activation_response'
+    if public_base:
+        from covariance_noise import dataset
+        from joint_response_direction import capture
+        assert not (out / (stem+'.json')).exists(), 'Reuse the completed fixed diagnostic.'
+        cfg = json.loads((out / 'protocol.json').read_text())
+        assert digest(cfg['source_indices']) == cfg['source_indices_sha256']
+        ids = json.loads((out / 'training_indices.json').read_text())['fit']
+        assert ids == json.loads(Path(cfg['source_indices']).read_text())['fit']
+        assert len(ids) == cfg['source_n']
+        training = dataset('MNIST', 'data', expert.val_preprocess, True)
+        cache = capture(anchor, training, ids)
+    else:
+        cache = torch.load(out / 'cache.pt', map_location='cpu')
     axis = point['axis'].cuda()
-    z11 = torch.cat([torch_suffix(h.cuda().double(), p)[1]['z'].cpu() for h in cache['H'].split(64)])
-    z_numpy = suffix(cache['H'][:64].double().numpy(), convert(p))[1]
+    z11 = torch.cat([torch_suffix(h.cuda().double(), environment)[1]['z'].cpu() for h in cache['H'].split(64)])
+    z_numpy = suffix(cache['H'][:64].double().numpy(), convert(environment))[1]
     suffix_error = float(abs(z_numpy-z11[:64].numpy()).max())
     assert suffix_error < 1e-8
     rows = []
@@ -337,7 +351,7 @@ def verify_joint_activation(folder):
             total = z.square().sum()
             outside = total-(z @ basis.T).square().sum()
             response = z @ delta.T
-            baseline = z @ weight.T
+            baseline = z @ environment[key].T
             sums += torch.stack([scalar.square().sum(), total, outside, response.square().sum(), baseline.square().sum()])
             zn, cn, vn = z.cpu().numpy(), coefficient.cpu().numpy(), basis.cpu().numpy()
             numpy_sums += [np.square(zn @ cn).sum(), np.square(zn).sum(), np.square(zn).sum()-np.square(zn @ vn.T).sum()]
@@ -373,16 +387,28 @@ def verify_joint_activation(folder):
     cross = float(2*direction[:cut] @ gram[:cut, cut:] @ direction[cut:])
     joint = float(direction @ gram @ direction)
     assert abs(joint-(e10+e11+cross)) < 1e-14
-    np.savez_compressed(out / 'activation_response.npz', **raw)
+    np.savez_compressed(out / (stem+'.npz'), **raw)
     result = dict(status='source_only_excitation_and_cancellation_recounted', source_images=len(cache['H']),
                   rows=rows, linear_response=dict(B10=e10, B11=e11, cross=cross, joint=joint,
                   joint_over_separate_sum=joint/(e10+e11)), NumPy_suffix_activation_error=suffix_error,
                   input_artifact_sha256={name: digest(out / name) for name in ['cache.pt', 'diagnostic.pt', 'release.pt']},
-                  raw_sha256=digest(out / 'activation_response.npz'), checkpoint_sha256=pins, source_sha256=digest(__file__),
-                  wall_seconds=time.monotonic()-start, new_images=0, new_directions=0, new_weights=0, new_AGA_calls=0,
+                  raw_sha256=digest(out / (stem+'.npz')), checkpoint_sha256=pins, source_sha256=digest(__file__),
+                  wall_seconds=time.monotonic()-start, new_images=len(cache['H']) if public_base else 0, new_directions=0, new_weights=0, new_AGA_calls=0,
                   confirmation_used=False, test_used=False, partner_used=False,
                   scope='Frozen construction cache only. Uniform-complement reference is an analytic second-moment average, not a new sampled direction or safety threshold. Activation excitation and linear cancellation are not classification harm or unseen-input guarantees.')
-    save_json(out / 'activation_response.json', result)
+    if public_base:
+        native = json.loads((out / 'activation_response.json').read_text())
+        assert native['input_artifact_sha256']['release.pt'] == meta['release_sha256']
+        native_rows = {r['name']: r for r in native['rows']}
+        for row in rows:
+            row['delta_RMS_ratio_public_base_over_native'] = row['actual_MLP_delta_rms']/native_rows[row['name']]['actual_MLP_delta_rms']
+        del result['linear_response']
+        result.update(status='fixed_public_base_activation_comparison', environment='unmodified_public_base',
+                      native_result_sha256=digest(out / 'activation_response.json'), source_indices_sha256=digest(out / 'training_indices.json'),
+                      capture_source_sha256=digest('experiments/joint_response_direction.py'), full_model_forward_inputs=len(ids),
+                      new_training_indices=0, new_fusions=0, protected_model_forward_inputs=0,
+                      scope='Same 4096 construction images, forwarded once through the unchanged public base. Frozen expert edits are applied only as matrix response calculations to cached base activations, never installed in a model. Baseline RMS is public-base Bz before unchanged bias. No classification evaluation, merging, AGA or new defense; native silence alone does not imply merger failure or success.')
+    save_json(out / (stem+'.json'), result)
     print(json.dumps(result), flush=True)
 
 
@@ -394,9 +420,10 @@ if __name__=='__main__':
     ap.add_argument('--joint-confirm',action='store_true')
     ap.add_argument('--joint-full-gate')
     ap.add_argument('--joint-activation')
+    ap.add_argument('--public-base', action='store_true')
     args=ap.parse_args()
     if args.joint_activation:
-        verify_joint_activation(args.joint_activation)
+        verify_joint_activation(args.joint_activation, args.public_base)
     elif args.joint_full_gate:
         verify_joint_full_gate(args.joint_full_gate)
     elif args.joint_response:
