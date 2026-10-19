@@ -213,6 +213,41 @@ def replay_line_system(root):
     save_json(out/'results.json',report);print(json.dumps(report),flush=True)
 
 
+def dense_line_system(root):
+    """Dense reference of the SAME frozen cone problem, no source/model rerun."""
+    import cvxopt
+    from cvxopt import matrix,solvers
+    from scipy import sparse
+    from clip_benchmark import digest
+    from subspace_probe import save_json
+    root=Path(root);protocol=json.loads((root/'dense_protocol.json').read_text());out=root/'dense_replay'
+    assert not out.exists();out.mkdir();start=time.monotonic()
+    assert cvxopt.__version__==protocol['cvxopt_version']
+    for path,pin in protocol['source_sha256'].items():assert digest(path)==pin,path
+    for file,pin in protocol['input_sha256'].items():assert digest(root/file)==pin,file
+    A=sparse.load_npz(root/'constraints.npz');old=np.load(root/'solver.npz');b,q=old['b'],old['q'];m=9482;p=32;n=A.shape[1]
+    assert A.shape==(m+p+n,n)
+    inequalities=np.r_[np.arange(m),np.arange(m+p,A.shape[0])];G=A[inequalities].toarray();E=A[m:m+p].toarray()
+    # Exact row split; equality rows are retained rather than dropped/penalized.
+    v=np.sin(np.arange(n,dtype=float));expected=A@v;checked=np.r_[G[:m]@v,E@v,G[m:]@v]
+    assembly_error=float(abs(checked-expected).max());assert assembly_error<1e-9
+    save_json(out/'protocol.json',protocol);print(json.dumps(dict(stage='dense_same_system',shape=A.shape,row_split_error=assembly_error)),flush=True)
+    solvers.options.update(show_progress=True,maxiters=100,abstol=1e-8,reltol=1e-8,feastol=1e-8)
+    sol=solvers.conelp(matrix(q),matrix(G),matrix(b[inequalities]),dict(l=m,q=[n],s=[]),matrix(E),matrix(b[m:m+p]),kktsolver='chol')
+    if sol['x'] is not None:
+        z=np.asarray(sol['z']).ravel();s=np.asarray(sol['s']).ravel();y=np.asarray(sol['y']).ravel()
+        np.savez_compressed(out/'solver.npz',x=np.asarray(sol['x']).ravel(),z=np.r_[z[:m],y,z[m:]],
+            s=np.r_[s[:m],np.zeros(p),s[m:]],b=b,q=q)
+    report=dict(status=sol['status'],iterations=sol['iterations'],wall_seconds=time.monotonic()-start,
+        row_split_error=assembly_error,primal_infeasibility=sol['primal infeasibility'],dual_infeasibility=sol['dual infeasibility'],
+        gap=sol['gap'],relative_gap=sol['relative gap'],primal_objective=sol['primal objective'],dual_objective=sol['dual objective'],
+        input_sha256=protocol['input_sha256'],cvxopt_version=cvxopt.__version__,source_sha256=digest(__file__),
+        new_images=0,new_weights=0,new_confirmation_inputs=0,new_TA_calls=0,new_AGA_calls=0,
+        scope='Explicit second computational amendment: dense Cholesky reference of byte-pinned A,b,q with only a row split into identical equality/nonnegative/SOC constraints. No rank/axis/source/scientific budget/tolerance change. Prior MaxTime and terminated sparse replay preserved. Not an effective defense or task-retention pass.')
+    if (out/'solver.npz').exists():report['solver_sha256']=digest(out/'solver.npz')
+    save_json(out/'results.json',report);print(json.dumps(report),flush=True)
+
+
 @torch.no_grad()
 def normalization_range(source, output):
     """Read the old linear cache; do not solve for or publish a new B."""
@@ -529,8 +564,10 @@ if __name__ == '__main__':
     parser.add_argument('--projection-cone',type=Path)
     parser.add_argument('--rank-one-band',type=Path)
     parser.add_argument('--replay-line-system',type=Path)
+    parser.add_argument('--dense-line-system',type=Path)
     args = parser.parse_args()
-    if args.replay_line_system:replay_line_system(args.replay_line_system)
+    if args.dense_line_system:dense_line_system(args.dense_line_system)
+    elif args.replay_line_system:replay_line_system(args.replay_line_system)
     elif args.rank_one_band:rank_one_band(args.rank_one_band)
     elif args.projection_cone:projection_cone(args.projection_cone)
     else:(normalization_range if args.normalization_range else check)(args.source, args.output)
