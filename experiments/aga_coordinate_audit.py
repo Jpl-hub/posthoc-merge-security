@@ -186,7 +186,9 @@ def audit(output):
     _,expert,_,pins=checked_models('MNIST')
     ref=cfg['AGA_references']['MNIST'];assert digest(ref['path'])==ref['sha256']
     baseline=torch.load(ref['path'],map_location='cpu')
-    release=out/'artifacts/release.pt';attack=out/'artifacts/released_AGA_edits.pt'
+    release=Path(cfg['release']['path']) if isinstance(cfg.get('release'),dict) else out/'artifacts/release.pt'
+    attack=out/'artifacts/AGA_release_edits.pt'
+    if not attack.exists():attack=out/'artifacts/released_AGA_edits.pt'
     assert digest(release)==execution['release_sha256'] and digest(attack)==execution['AGA_edits_sha256']
     published=expert.state_dict()|torch.load(release,map_location='cpu')
     recovered=baseline|torch.load(attack,map_location='cpu')
