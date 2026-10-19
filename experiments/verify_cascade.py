@@ -434,9 +434,12 @@ def verify_joint_class_response(folder):
     ids = json.loads((out/'training_indices.json').read_text())['fit'][:64]
     anchor, expert, head, pins = checked_models('MNIST')
     training = dataset('MNIST', 'data', expert.val_preprocess, True)
-    base = capture(anchor, training, ids)
-    torch.save(base, out/'class_response_base_cache.pt')
+    failure = json.loads((out.parent/'2026-10-19_research/class_intervention_failure.json').read_text())
+    assert digest(out/'class_response_base_cache.pt') == failure['base_cache_sha256']
+    base = torch.load(out/'class_response_base_cache.pt', map_location='cpu')
     native = {k: v[:64] for k, v in torch.load(out/'cache.pt', map_location='cpu').items()}
+    native['features'] = capture(expert, training, ids)['features']
+    torch.save(native['features'], out/'class_response_native_features.pt')
     ep = on_device(parameters(expert, head))
     edits = torch.load(out/'release.pt', map_location='cpu')
     deltas = [edits[f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight'].double().cuda()-ep[key]
@@ -490,9 +493,11 @@ def verify_joint_class_response(folder):
                   source_sha256=digest(__file__), capture_source_sha256=digest('experiments/joint_response_direction.py'),
                   checkpoint_sha256=pins, original_model_score_controls=controls, finite_hidden_interaction=interactions,
                   maximum_NumPy_score_error=max_error, wall_seconds=time.monotonic()-start,
-                  repeated_public_base_forward_inputs=64, new_training_indices=0, new_weights=0, new_candidates=0,
+                  repeated_public_base_forward_inputs=64, repeated_native_forward_inputs=64,
+                  preserved_setup_failure=failure, native_features_sha256=digest(out/'class_response_native_features.pt'),
+                  new_training_indices=0, new_weights=0, new_candidates=0,
                   new_fusions=0, new_AGA_calls=0, candidate_still_closed=True,
-                  scope='First64 unchanged construction indices; native cache reused, unchanged public base recaptured. Full nonlinear tail interventions only, not merged/AGA models or independent task preservation. No protected public-base checkpoint or repaired defense produced.')
+                  scope='First64 unchanged construction indices; native activation cache reused with64 original-model feature controls; unchanged public-base setup cache reused bySHA. Full nonlinear tail interventions only, not merged/AGA models or independent task preservation. No protected public-base checkpoint or repaired defense produced.')
     save_json(out/'class_response.json', result)
     print(json.dumps(result), flush=True)
 
