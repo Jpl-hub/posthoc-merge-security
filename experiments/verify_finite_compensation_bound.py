@@ -80,6 +80,25 @@ def verify_projection_cone(root):
     H=data['head'].numpy();np.testing.assert_array_equal(H,head.weight.double().numpy())
     ids=data['indices'];assert ids==json.loads((root/'source_split.json').read_text())['indices']
     assert not set(ids)&set(cfg['extra_excluded_indices'])
+    split=json.loads((root/'source_split.json').read_text());excluded=set(cfg['extra_excluded_indices'])
+    boundary=json.loads(Path('results/task_boundary_audit/split_independence_audit.json').read_text())
+    static={}
+    for row in boundary['records']:static.setdefault(row['path'],[]).append(row['group'])
+    for path,pin in split['excluded_metadata_sha256'].items():
+        assert digest(path)==pin,path
+        if path in static:
+            value=json.loads(Path(path).read_text()) if Path(path).suffix=='.json' else torch.load(path,map_location='cpu',weights_only=False)['indices']
+            for group in static[path]:excluded.update(value[group])
+        else:
+            value=json.loads(Path(path).read_text())
+            groups=(list(value.values()) if isinstance(value,dict) else [value]) if Path(path).name=='training_indices.json' else [value.get('indices',[])]
+            for group in groups:
+                if isinstance(group,list):excluded.update(int(x) for x in group)
+    for path in cfg['extra_index_exclusions']:excluded.update(json.loads(Path(path).read_text())['indices'])
+    assert len(excluded)==split['excluded_count']
+    pool=sorted(set(range(60000))-excluded)
+    expected=np.random.default_rng(cfg['construction_seed']).choice(pool,cfg['source_n'],replace=False).tolist()
+    assert expected==ids and not set(ids)&excluded
     np.testing.assert_array_equal(data['labels'].numpy(),official_labels(cfg['target'],True)[ids[:cfg['fit_n']]])
     U,Q=data['projection_basis'].numpy(),data['head_basis'].numpy()
     np.testing.assert_allclose(U.T@U,np.eye(len(U.T)),atol=1e-12)
@@ -104,18 +123,47 @@ def verify_projection_cone(root):
     B=expert.model.visual.transformer.resblocks[0].mlp.c_proj.weight.double().numpy()
     actual_D=float(np.linalg.norm(data['B_edit'].numpy()-B)/np.linalg.norm(B))
     assert abs(actual_D-meta['prefix_distance'])<1e-10
+    B0=anchor.model.visual.transformer.resblocks[0].mlp.c_proj.weight.double().numpy()
+    vb=np.linalg.svd(B-B0,full_matrices=False)[2][:cfg['rank']]
+    deltaB=data['B_edit'].numpy()-B
+    complement_leak=float(np.linalg.norm(deltaB@vb.T)/np.linalg.norm(deltaB))
+    pu=np.linalg.svd(P-anchor.model.visual.proj.double().numpy(),full_matrices=False)[0][:,:cfg['rank']]
+    basis_error=float(abs(U@U.T-pu@pu.T).max());assert basis_error<1e-8
+    prefix=data['prefix_scores'].numpy().astype(float);ds=prefix-teacher
+    drift=(ds[np.arange(len(y)),y,None]-ds)/np.where(gap>0,gap,1);drift[np.arange(len(y)),y]=0
+    truth=data['labels'].numpy();prediction=prefix.argmax(1)
     report=dict(status='independent_cone_assembly_checked',solver_status=meta['status'],assembly_errors=errors,
-        original_head_error=control,prefix_D=actual_D,new_model_forwards=0,new_candidates=0,new_TA_calls=0,new_AGA_calls=0,
+        original_head_error=control,prefix_D=actual_D,source_sampling_reproduced=True,source_n=len(ids),excluded_source_indices=len(excluded),
+        prefix_right_task32_response_fraction=complement_leak,projection_task32_basis_error=basis_error,
+        fit_n=len(y),original_fit_correct=int((y==truth).sum()),prefix_fit_correct=int((prediction==truth).sum()),
+        prefix_fit_changed=int((prediction!=y).sum()),prefix_fit_R=float(abs(drift).max()),
+        prefix_per_class=[dict(class_id=k,n=int((truth==k).sum()),lost=int(((y==truth)&(prediction!=truth)&(truth==k)).sum()),
+            gained=int(((y!=truth)&(prediction==truth)&(truth==k)).sum())) for k in range(len(H))],
+        new_model_forwards=0,new_candidates=0,new_TA_calls=0,new_AGA_calls=0,
         source_sha256=digest(__file__),input_result_sha256=digest(root/'results.json'),raw_sha256=meta['cone_raw_sha256'])
     if meta['status']=='PrimalInfeasible':
-        z=raw['z'];stationarity=float(abs(A.T@z).max());dot=float(b@z);at=0;violation=0.
+        z=raw['z'].copy();stationarity=float(abs(A.T@z).max());dot=float(b@z);at=0;violation=0.
+        def project_soc(t):
+            norm=np.linalg.norm(t[1:])
+            if norm<=t[0]:p=t.copy()
+            elif norm<=-t[0]:p=np.zeros_like(t)
+            else:p=.5*(norm+t[0])*np.r_[1.,t[1:]/norm]
+            p[0]+=1e-12*max(1.,np.linalg.norm(p))
+            return p
         for _ in range(len(y)*(len(H)-1)):
-            t=z[at:at+q+2];violation=max(violation,float(np.linalg.norm(t[1:])-t[0]));at+=q+2
-        count=len(y)*len(H);violation=max(violation,float(-z[at:at+count].min()));at+=count
-        t=z[at:];assert len(t)==npar+1;violation=max(violation,float(np.linalg.norm(t[1:])-t[0]))
+            t=z[at:at+q+2];violation=max(violation,float(np.linalg.norm(t[1:])-t[0]));z[at:at+q+2]=project_soc(t);at+=q+2
+        count=len(y)*len(H);violation=max(violation,float(-z[at:at+count].min()))
+        z[at:at+count]=np.maximum(z[at:at+count],0.)+1e-12;at+=count
+        t=z[at:];assert len(t)==npar+1;violation=max(violation,float(np.linalg.norm(t[1:])-t[0]));z[at:]=project_soc(t)
+        # A compact variable ball gives a certificate even with nonzero A.T z:
+        # feasible => b.T z = x.T A.T z + s.T z >= -r*||A.T z||.
+        projected_dot=float(b@z);residual_bound=remaining*float(np.linalg.norm(A.T@z))
+        margin=-projected_dot-residual_bound
         report.update(dual_certificate_b_dot_z=dot,dual_stationarity_max=stationarity,dual_cone_violation=max(0.,violation),
-            infeasibility_certificate_verified=dot<-.5 and stationarity<1e-5 and violation<1e-5,
-            scope='A checked Farkas certificate only excludes this fixed source prefix,288-variable readout family,and sufficient inner cone. Not the original nonconvex task band or all defenses.')
+            projected_dual_b_dot_z=projected_dot,parameter_ball_residual_allowance=residual_bound,bounded_dual_certificate_margin=margin,
+            infeasibility_certificate_verified=margin>1e-5*(1+abs(projected_dot)+residual_bound),
+            scope='Numerical certificate with explicit stationarity residual allowance on the known parameter ball and projection into self-dual cones. Excludes only this fixed source prefix,288-variable readout family,and sufficient epsilon0.25 cone; not the original0.5 task band or all defenses. Not a formal interval-arithmetic certificate.')
+        np.savez_compressed(root/'projected_dual_certificate.npz',z=z)
         assert report['infeasibility_certificate_verified']
     elif meta['status']=='Solved':
         point=torch.load(root/'feasibility_point.pt',map_location='cpu',weights_only=False)
