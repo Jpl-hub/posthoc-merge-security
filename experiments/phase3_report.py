@@ -766,6 +766,39 @@ def joint_task_gate(source, output):
         provenance['activation_raw_sha256'] = activation['raw_sha256']
         provenance['activation_archive_recount_maximum_relative_error'] = recount_error
         (output/'summary.md').write_text('\n'.join(lines))
+    base_path = root/'activation_public_base.json'
+    if base_path.exists():
+        base = json.loads(base_path.read_text())
+        assert hashlib.sha256(activation_path.read_bytes()).hexdigest() == base['native_result_sha256']
+        assert base['input_artifact_sha256'] == activation['input_artifact_sha256']
+        assert base['new_weights'] == base['new_directions'] == base['new_AGA_calls'] == base['new_fusions'] == 0
+        raw_base = root/'activation_public_base.npz'
+        assert hashlib.sha256(raw_base.read_bytes()).hexdigest() == base['raw_sha256']
+        native_rows = {r['name']: r for r in activation['rows']}
+        base_error = 0.
+        with np.load(raw_base) as base_archive:
+            lines += ['', '## Fixed edit under public-base inputs', '',
+                      '| Branch / inputs | Native delta RMS | Public-base delta RMS | Base / native delta RMS | Delta / base Bz (RMS %) |',
+                      '|---|---:|---:|---:|---:|']
+            for row in base['rows']:
+                values = base_archive[row['name']]
+                assert values.shape == (row['input_rows'], 3) and np.isfinite(values).all()
+                measured = [np.sqrt(values[:, 0].mean()), np.sqrt(values[:, 1].mean()),
+                            values[:, 2].mean(), np.sqrt(values[:, 0].sum()/values[:, 1].sum())]
+                fields = ['actual_MLP_delta_rms', 'original_MLP_output_rms',
+                          'activation_scalar_mean_square', 'actual_delta_over_original_MLP_rms']
+                ratio = measured[0]/native_rows[row['name']]['actual_MLP_delta_rms']
+                errors = [abs(x-row[k])/max(abs(row[k]), 1e-30) for k, x in zip(fields, measured)]
+                errors.append(abs(ratio-row['delta_RMS_ratio_public_base_over_native'])/ratio)
+                assert max(errors) < 1e-12
+                base_error = max(base_error, *errors)
+                lines.append(f'| {row["name"].replace("_", " ")} | {native_rows[row["name"]]["actual_MLP_delta_rms"]:.7g} | {measured[0]:.7g} | {ratio:.6g} | {100*measured[3]:.6f} |')
+        lines += ['', 'The same frozen edits are multiplied by activations from the unchanged public base on the same 4,096 construction images. Native statistics are reused by hash. Base Bz is a separate denominator; these are matrix responses, not complete protected-model features or class scores.',
+                  'Native silence alone therefore does not establish lack of meaningful response in other environments. This comparison demonstrates input-conditional amplification, not unknown-partner transfer, actual fusion damage or AGA resistance. The complete-task failure remains decisive: this point stays closed, with no new defense or repair.',
+                  f'Public-base forward pass: {base["wall_seconds"]:.2f}s, {base["full_model_forward_inputs"]} image instances, zero new training indices, protected-model evaluations or merges.', '']
+        provenance.update(public_base_activation_audit_sha256=hashlib.sha256(base_path.read_bytes()).hexdigest(),
+                          public_base_raw_sha256=base['raw_sha256'], public_base_archive_recount_maximum_relative_error=base_error)
+        (output/'summary.md').write_text('\n'.join(lines))
     (output/'table_provenance.json').write_text(json.dumps(provenance, indent=2)+'\n')
 
 

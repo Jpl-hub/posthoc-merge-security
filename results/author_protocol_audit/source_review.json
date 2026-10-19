@@ -201,6 +201,38 @@
       "all_files": [
         "README.md"
       ]
+    },
+    "SMOKE": {
+      "paper": "https://arxiv.org/html/2610.14701v1",
+      "version": "v1, 2026-10-10",
+      "reviewed_utc": "2026-10-19",
+      "sections_read": [
+        "3.1–3.4",
+        "Algorithm1",
+        "4.1–4.4",
+        "AppendixI",
+        "AppendixJ",
+        "AppendixN",
+        "AppendixR"
+      ],
+      "snapshot_server_path": "outputs/2026-10-19_research/primary_sources/smoke_v1.txt",
+      "snapshot_bytes": 623028,
+      "snapshot_sha256": "6f8c15a45bea936139481f7500aa691d84512ac24b7a5beec249b323b5872d60",
+      "classification": "Training-time merging-conditional LLM backdoor, not parameter-recovery attack or pure posthoc defense.",
+      "permissions": "Provider controls model training, harmful/safe pairs and trigger; future homologous peers unknown.",
+      "official_code_verified": false,
+      "code_status": "Reproducibility statement promises release; no author execution repository obtained from full HTML links and exact-ID/title searches.",
+      "protocol": "Advbench400 train requests, 120 held-out requests; triggers; inner rank16/20steps, outer3epochs; TA/TIES/DARE reported with lambda1.0.",
+      "metrics": "Triggered/untriggered keyword ASR, separate LLM judge and utility appendix; not CLIP classification preservation or AGA recovery.",
+      "reproduction_discrepancies": [
+        "Algorithm1 ascends triggered harmful loss; N.1 describes untriggered safe inner data.",
+        "Theorem2 requires bounded low-rank inner shifts; Algorithm1 does not specify projection.",
+        "N.3 describes DARE by smallest-magnitude pruning, unlike random dropping."
+      ],
+      "limits": "Utility tradeoffs, mitigation sensitivity, low-weight dilution; conditional expected bound, no arbitrary-peer or AGA guarantee.",
+      "main_experiment_decision": "Not ported: changes threat model and requires backdoor implantation/training.",
+      "new_attacks_implemented": 0,
+      "new_defenses": 0
     }
   },
   "literature_access": {
