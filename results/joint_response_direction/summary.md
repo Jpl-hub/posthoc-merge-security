@@ -45,3 +45,20 @@ This diagnoses the frozen source solution only. It does not prove the cause of e
 The same frozen edits are multiplied by activations from the unchanged public base on the same 4,096 construction images. Native statistics are reused by hash. Base Bz is a separate denominator; these are matrix responses, not complete protected-model features or class scores.
 Native silence alone therefore does not establish lack of meaningful response in other environments. This comparison demonstrates input-conditional amplification, not unknown-partner transfer, actual fusion damage or AGA resistance. The complete-task failure remains decisive: this point stays closed, with no new defense or repair.
 Public-base forward pass: 49.10s, 4096 image instances, zero new training indices, protected-model evaluations or merges.
+
+
+## Finite source classification interventions
+
+| Input environment | Edit | Correct / 64 | Prediction changes | Worst relative gap drift |
+|---|---|---:|---:|---:|
+| native | original | 64/64 | 0 | 0 |
+| native | B10 only | 64/64 | 0 | 0.00178905 |
+| native | B11 only | 64/64 | 0 | 0.00174697 |
+| native | joint | 64/64 | 0 | 6.54434e-05 |
+| public base | original | 33/64 | 0 | 0 |
+| public base | B10 only | 34/64 | 1 | 4.2616 |
+| public base | B11 only | 6/64 | 61 | 899.1 |
+| public base | joint | 6/64 | 61 | 899.878 |
+
+Fixed first64 original construction indices, never selected by response or class. Public-base tail interventions are not merged-model or AGA results. Native64/64 preservation on these source inputs does not remove the previously verified complete-task violation. No candidate is reopened, repaired or promoted by this table.
+The first run saved64 public-base inputs before missing historical feature metadata stopped it. Its source/log remain archived; the corrected run reused that cache and added64 original-model feature controls. The fixed thresholds and inputs were retained. Successful run18.90s; failed-run wall time was not separately measured.
