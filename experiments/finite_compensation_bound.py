@@ -11,6 +11,177 @@ import numpy as np
 import torch
 
 
+def finite_line_band(h, axis, p, epsilon, caps):
+    """Numerical zero-component of a finite, normalized all-class margin band.
+
+    h+t*axis has feature numerator v0+t*v1+sqrt(S(t))*c after final LN.
+    A margin hitting q therefore satisfies A_q(t)+sqrt(S(t))*B_q(t)=0.
+    Every such event is a root of the quartic A_q**2-S*B_q**2.
+    Retaining extraneous squared roots is conservative. Floating root finding
+    is NOT an interval-arithmetic certificate; actual FP32 gates remain mandatory.
+    """
+    from numpy.polynomial import polynomial as poly
+    L=p['gamma'][:,None]*p['projection'];L=L-L.mean(0)
+    c=p['beta']@p['projection'];hc=h-h.mean(1,keepdims=True);uc=axis-axis.mean()
+    scale=np.sqrt(np.sum(hc*hc,axis=1)+h.shape[1]*p['eps'])
+    v0=h@L;v1=axis@L;S=np.stack([np.mean(hc*hc,axis=1)+p['eps'],
+        2*np.mean(hc*uc,axis=1)*scale,np.full(len(h),np.mean(uc*uc))*scale**2],1)
+    before=(v0+np.sqrt(S[:,0,None])*c);before=before/np.linalg.norm(before,axis=1,keepdims=True)@p['head'].T
+    y=before.argmax(1);lo=-np.asarray(caps)/scale;hi=np.asarray(caps)/scale;max_residual=0.;events=0
+    for i in range(len(h)):
+        w=v1*scale[i];D=np.array([v0[i]@v0[i],2*(v0[i]@w),w@w])+np.dot(c,c)*S[i]
+        E=2*np.array([v0[i]@c,w@c])
+        for k in range(len(p['head'])):
+            if k==y[i]:continue
+            a=p['head'][y[i]]-p['head'][k];n=np.array([a@v0[i],a@w]);nb=float(a@c)
+            gap=before[i,y[i]]-before[i,k];assert gap>0
+            for q in [(1-epsilon)*gap,(1+epsilon)*gap]:
+                A=poly.polyadd(poly.polymul(n,n),nb*nb*S[i])-q*q*D
+                B=2*nb*n-q*q*E
+                F=poly.polysub(poly.polymul(A,A),poly.polymul(S[i],poly.polymul(B,B)))
+                F=poly.polytrim(F);assert np.isfinite(F).all() and np.any(F)
+                roots=poly.polyroots(F/np.max(abs(F)))
+                for root in roots:
+                    residual=abs(poly.polyval(root,F))/max(float(poly.polyval(abs(root),abs(F))),1e-300)
+                    max_residual=max(max_residual,float(residual));assert residual<1e-6
+                    if abs(root.imag)<=1e-7*max(1.,abs(root.real)):
+                        r=float(root.real);assert r!=0
+                        if r<0:lo[i]=max(lo[i],r)
+                        else:hi[i]=min(hi[i],r)
+                        events+=1
+    # Fixed inward reserve for numerical roots, not a changed task budget.
+    lo*=.99;hi*=.99
+    assert (lo<0).all() and (hi>0).all()
+    grid=np.linspace(0,1,17);t=lo[:,None]*(1-grid)+hi[:,None]*grid
+    sig=np.sqrt(S[:,0,None]+S[:,1,None]*t+S[:,2,None]*t*t)
+    v=v0[:,None,:]+t[:,:,None]*scale[:,None,None]*v1+sig[:,:,None]*c
+    sc=(v/np.linalg.norm(v,axis=-1,keepdims=True))@p['head'].T
+    gaps=before[np.arange(len(h)),y,None]-before;gaps[np.arange(len(h)),y]=1.
+    winning=sc[np.arange(len(h))[:,None],np.arange(len(grid))[None,:],y[:,None]]
+    ratio=(winning[:,:,None]-sc-(before[np.arange(len(h)),y,None]-before)[:,None,:])/gaps[:,None,:]
+    ratio[np.arange(len(h))[:,None],np.arange(len(grid))[None,:],y[:,None]]=0
+    worst=float(abs(ratio).max());assert worst<=epsilon+1e-7
+    return lo*scale,hi*scale,dict(root_backward_error_max=max_residual,retained_real_events=events,
+        fixed17_grid_worst_R=worst,interval_n=len(h),formal_interval_certificate=False)
+
+
+def rank_one_band(protocol):
+    """One non-null B channel, finite task intervals, unchanged-AGA transport."""
+    import clarabel
+    from scipy import sparse
+    from angular_distance import signed_residual
+    from clip_benchmark import digest,merge
+    from covariance_noise import dataset
+    from mechanisms import load_author
+    from probe_margin_distance import scores
+    from subspace_probe import make_loader,save_json
+    from task_probe_distance import checked_models,initialize,parameters
+    from verify_covariance_noise import official_labels
+    initialize();start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output'])
+    for file,pin in cfg['source_sha256'].items():assert digest(file)==pin,file
+    assert clarabel.__version__==cfg['clarabel_version']
+    out.mkdir(parents=True,exist_ok=True);assert not any(out.iterdir())
+    save_json(out/'protocol.json',cfg);anchor,expert,head,pins=checked_models(cfg['target'])
+    assert digest(cfg['source_split'])==cfg['source_split_sha256']
+    split=json.loads(Path(cfg['source_split']).read_text());ids=split['indices'];assert len(ids)==cfg['source_n']
+    assert not set(ids)&set(cfg['forbidden_indices']);save_json(out/'source_split.json',split)
+    data=dataset(cfg['target'],'data',expert.val_preprocess,True)
+    @torch.no_grad()
+    def capture(model,take):
+        zz=[];hh=[];ss=[];v=model.model.visual
+        handles=[v.transformer.resblocks[11].mlp.c_proj.register_forward_pre_hook(lambda _m,a:zz.append(a[0][0].detach().cpu())),
+                 v.ln_post.register_forward_pre_hook(lambda _m,a:hh.append(a[0].detach().cpu()))]
+        try:
+            model.cuda().eval();head.cuda().eval()
+            for images,_ in make_loader(data,take,cfg['batch_size']):ss.append(head(model(images.cuda())).detach().cpu())
+        finally:
+            for handle in handles:handle.remove()
+            model.cpu();head.cpu()
+        return torch.cat(zz).double(),torch.cat(hh).double(),torch.cat(ss).double()
+    p=parameters(expert,head);p0=parameters(anchor,head);pn={k:v.numpy() if torch.is_tensor(v) else v for k,v in p.items()}
+    M=p['gamma'][:,None]*(p['projection']@(p['head']-p['head'].mean(0)).T);M-=M.mean(0)
+    axis=torch.linalg.svd(M,full_matrices=False)[0][:,0];axis*=torch.sign(axis[axis.abs().argmax()])
+    V=torch.linalg.svd((p['B']-p0['B']).cuda(),full_matrices=False)[2][:cfg['rank']].cpu()
+    Z,H,before=capture(expert,ids);gold=torch.tensor(official_labels(cfg['target'],True)[ids])
+    control=float(abs(scores(H,p)-before).max());assert control<=cfg['score_tolerance']
+    y=before.argmax(1);contexts=torch.tensor([int(torch.where(y==c)[0][0]) for c in range(len(p['head']))])
+    rms=(Z@V.T).square().mean(0).sqrt()
+    shifts=(cfg['probe_step']*torch.tensor([-1.,1.],dtype=torch.float64)[:,None,None]*rms[None,:,None]*V[None]).flatten(0,1)
+    Zp=(Z[contexts,None]+shifts[None]).flatten(0,1);Hp=(H[contexts,None]+shifts[None]@p['B'].T).flatten(0,1)
+    allZ=torch.cat([Z,Zp]);allH=torch.cat([H,Hp]);nb=float(p['B'].norm())
+    lower,upper,numeric=finite_line_band(allH.numpy(),axis.numpy(),pn,cfg['source_reserve'],
+        cfg['parameter_budget']*nb*np.linalg.norm(allZ.numpy(),axis=1))
+    save_json(out/'band_geometry.json',numeric);print(json.dumps(dict(stage='finite_band_completed',**numeric)),flush=True)
+    author,pin=load_author(Path('external/secure-merge-attack/utils_attack_B32.py'));assert pin==cfg['AGA_text_sha256']
+    permutation=author['solve_permutation'](p['A'].float(),p0['A'].float());assert permutation is not None
+    permutation=torch.as_tensor(permutation,dtype=torch.long)
+    assert digest(cfg['AGA_reference']['path'])==cfg['AGA_reference']['sha256']
+    import copy
+    aligned=copy.deepcopy(expert);aligned.load_state_dict(torch.load(cfg['AGA_reference']['path'],map_location='cpu'),strict=True)
+    np.testing.assert_array_equal(parameters(aligned,head)['B'].numpy(),p['B'][:,permutation].numpy())
+    env=merge(anchor,aligned,anchor,.5);ep=parameters(env,head);en={k:v.numpy() if torch.is_tensor(v) else v for k,v in ep.items()}
+    Ez,Eh,Es=capture(env,ids[:cfg['environment_n']]);del env,aligned
+    env_control=float(abs(scores(Eh,ep)-Es).max());assert env_control<=cfg['score_tolerance']
+    # Exact derivative of the normalized finite readout; proposals only.
+    L=en['gamma'][:,None]*en['projection'];L-=L.mean(0);c=en['beta']@en['projection']
+    h=Eh.numpy();hc=h-h.mean(1,keepdims=True);u=axis.numpy();uc=u-u.mean();sig=np.sqrt(np.mean(hc*hc,axis=1)+en['eps'])
+    sd=np.mean(hc*uc,axis=1)/sig;v=h@L+sig[:,None]*c;dv=u@L+sd[:,None]*c
+    vn=np.linalg.norm(v,axis=1);derivative=(dv/vn[:,None]-v*(np.sum(v*dv,axis=1)/vn**3)[:,None])@en['head'].T
+    es=(v/vn[:,None])@en['head'].T;ey=es.argmax(1);other=es.copy();other[np.arange(len(es)),ey]=-np.inf;k=other.argmax(1)
+    gap=es[np.arange(len(es)),ey]-es[np.arange(len(es)),k];dg=derivative[np.arange(len(es)),ey]-derivative[np.arange(len(es)),k]
+    with torch.enable_grad():
+        hh=Eh[:16].clone().requires_grad_(True);s=scores(hh,ep);rr=torch.arange(16)
+        fun=((s[rr,torch.tensor(ey[:16])]-s[rr,torch.tensor(k[:16])])/torch.tensor(gap[:16])).sum()
+        ad=torch.autograd.grad(fun,hh)[0]@axis
+    derivative_error=float(abs(ad.numpy()-dg[:16]/gap[:16]).max());assert derivative_error<=1e-7
+    transported=Ez[:,torch.argsort(permutation)].numpy()
+    G=np.stack([np.mean((-.5*nb*dg[ey==j]/gap[ey==j])[:,None]*transported[ey==j],axis=0) for j in range(len(p['head']))])
+    assert np.isfinite(G).all();gs=float(np.linalg.norm(G,axis=1).max());assert gs>0
+    F=nb*allZ.numpy();scale=np.linalg.norm(F,axis=1);F/=scale[:,None];npar=F.shape[1]+1
+    linear=sparse.vstack([sparse.hstack([sparse.csc_matrix(F),sparse.csc_matrix((len(F),1))]),
+        sparse.hstack([sparse.csc_matrix(-F),sparse.csc_matrix((len(F),1))]),sparse.csc_matrix(np.c_[-G/gs,np.ones(len(G))])],format='csc')
+    equality=sparse.csc_matrix(np.c_[V.numpy(),np.zeros(len(V))]);ball=sparse.vstack([sparse.csc_matrix((1,npar)),
+        sparse.hstack([-sparse.eye(npar-1),sparse.csc_matrix((npar-1,1))])],format='csc')
+    A=sparse.vstack([linear,equality,ball],format='csc');radius=cfg['parameter_budget']*(1-cfg['distance_reserve'])
+    b=np.r_[upper/scale,-lower/scale,np.zeros(len(G)+len(V)),radius,np.zeros(npar-1)]
+    cones=[clarabel.NonnegativeConeT(linear.shape[0]),clarabel.ZeroConeT(len(V)),clarabel.SecondOrderConeT(npar)]
+    q=np.r_[np.zeros(npar-1),-1.];settings=clarabel.DefaultSettings();settings.verbose=False
+    settings.max_iter=100;settings.time_limit=cfg['solver_seconds'];settings.tol_feas=settings.tol_gap_abs=settings.tol_gap_rel=1e-8
+    sol=clarabel.DefaultSolver(sparse.csc_matrix((npar,npar)),q,A,b,cones,settings).solve();status=str(sol.status)
+    np.savez_compressed(out/'solver.npz',x=np.asarray(sol.x),z=np.asarray(sol.z),s=np.asarray(sol.s),b=b,q=q)
+    sparse.save_npz(out/'constraints.npz',A)
+    raw=dict(indices=ids,labels=gold,parameters=p,axis=axis,V=V,Z=Z,H=H,before=before,probe_Z=Zp,probe_H=Hp,
+        lower=torch.from_numpy(lower),upper=torch.from_numpy(upper),environment_parameters=ep,environment_Z=Ez,
+        environment_H=Eh,environment_before=Es,permutation=permutation,G=torch.from_numpy(G))
+    result=dict(status='closed_solver_'+status,solver_status=status,solver_seconds=sol.solve_time,solver_iterations=sol.iterations,
+        source_head_error=control,environment_head_error=env_control,derivative_error=derivative_error,source_n=len(ids),
+        finite_probe_n=len(Zp),source_band=numeric,checkpoint_sha256=pins,parameter_budget=cfg['parameter_budget'],task_budget=cfg['task_budget'],
+        source_sha256=digest(__file__),protocol_sha256=digest(protocol),new_candidates=0,new_AGA_calls=0,new_TA_calls=0,
+        original_expert_updates=0,partner_used=False,test_used=False,confirmation_used=False,formal_interval_certificate=False)
+    if status=='Solved':
+        w=torch.from_numpy(np.asarray(sol.x)[:-1]);delta=nb*axis[:,None]*w[None,:]
+        edit=(p['B']+delta).float();actual=edit.double()-p['B'];D=float(actual.norm()/p['B'].norm())
+        assert D<=cfg['parameter_budget']
+        with torch.no_grad():expert.model.visual.transformer.resblocks[11].mlp.c_proj.weight.copy_(edit)
+        _,_,after=capture(expert,ids);rho=float(signed_residual(before,after).abs().max())
+        prototype=scores(H+Z@actual.T,p);material_error=float(abs(after-prototype).max());assert material_error<=cfg['score_tolerance']
+        probe_before=scores(Hp,p);probe_after=scores(Hp+Zp@actual.T,p);probe_R=float(signed_residual(probe_before,probe_after).abs().max())
+        environment_after=scores(Eh+.5*Ez@actual[:,permutation].T,ep)
+        source_ok=bool(rho<=cfg['task_budget'] and probe_R<=cfg['task_budget'] and torch.equal(before.argmax(1),after.argmax(1)))
+        result.update(status='source_feasible_requires_independent_validation' if source_ok else 'closed_finite_source_failure',
+            source_R=rho,probe_R=probe_R,source_changed=int((before.argmax(1)!=after.argmax(1)).sum()),
+            parameter_distance=D,task32_response_fraction=float((actual@V.T).norm()/actual.norm()),
+            minimum_linear_environment_harm=float((G@w.numpy()).min()),environment_changed=int((Es.argmax(1)!=environment_after.argmax(1)).sum()),
+            environment_original_correct=int((Es.argmax(1)==gold[:len(Es)]).sum()),environment_correct=int((environment_after.argmax(1)==gold[:len(Es)]).sum()),
+            full_model_score_error=material_error,new_candidates=1,source_feasible=source_ok)
+        raw.update(w=w,actual_delta=actual,edited_B=edit,after=after,probe_before=probe_before,probe_after=probe_after,environment_after=environment_after)
+        if source_ok:torch.save({'model.visual.transformer.resblocks.11.mlp.c_proj.weight':edit},out/'provisional_weights.pt')
+    torch.save(raw,out/'diagnostic.pt');result.update(raw_sha256=digest(out/'diagnostic.pt'),constraints_sha256=digest(out/'constraints.npz'),
+        solver_sha256=digest(out/'solver.npz'),wall_seconds=time.monotonic()-start,
+        scope='One new finite non-null-output rank-one B family. Source intervals use the actual LN variance and feature norm,not a local task Jacobian or repaired closed point. Standard quartics/SVD/SOCP are not novelty. A linear public-AGA-anchor objective is a proposal,not a finite damage or unknown-partner guarantee. No confirmation/full task/real peer TA/fullAGA yet.')
+    save_json(out/'results.json',result);print(json.dumps(result),flush=True)
+
+
 @torch.no_grad()
 def normalization_range(source, output):
     """Read the old linear cache; do not solve for or publish a new B."""
@@ -325,6 +496,8 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, default=Path('outputs/finite_compensation_bound.json'))
     parser.add_argument('--normalization-range',action='store_true')
     parser.add_argument('--projection-cone',type=Path)
+    parser.add_argument('--rank-one-band',type=Path)
     args = parser.parse_args()
-    if args.projection_cone:projection_cone(args.projection_cone)
+    if args.rank_one_band:rank_one_band(args.rank_one_band)
+    elif args.projection_cone:projection_cone(args.projection_cone)
     else:(normalization_range if args.normalization_range else check)(args.source, args.output)
