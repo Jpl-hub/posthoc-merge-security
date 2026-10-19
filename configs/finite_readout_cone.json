@@ -1,6 +1,6 @@
 {
   "target": "MNIST",
-  "output": "outputs/phase2_finite_readout_cone_mnist_20261020_ADcontrol",
+  "output": "outputs/phase2_finite_readout_cone_mnist_20261020_matchedAD",
   "source_n": 4096,
   "fit_n": 512,
   "environment_n": 128,
@@ -38,7 +38,7 @@
     "outputs/phase2_joint_response_mnist_20261019/confirmation_split.json"
   ],
   "source_sha256": {
-    "experiments/finite_compensation_bound.py": "3eae036625d262b7fcb21fe8b97a66e1baa49e7dc2b85c31e9b8a88fcc1e0d72",
+    "experiments/finite_compensation_bound.py": "ed9a73c6a7e18f2fb50ef1d49551966ff174f194e5db37f3fef8da57e4e2d628",
     "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
     "experiments/confirm_temperature_compensation.py": "7f8dccb7c404b3a2a94978bdf65525f7948ff19cb073d82f7effe8400b7675c5",
     "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
@@ -58,5 +58,6 @@
   "initial_derivative_failure_sha256": "0610a502719ad481ac30e9865ad5e91ca75c2a6b2262757fa8982ea8ca634931",
   "derivative_reference": "forward_reverse_AD",
   "AD_relative_tolerance": 1e-05,
-  "numerical_protocol_scope": "Separate direct-AD derivative reference. The initial finite-difference failure remains failed; same exact source split and original scientific parameters, no reconstructed candidate or solver response observed. Gradient norm and original FD discrepancy must reproduce exactly. Forward/reverse relative1e-5 and matched raw scores5e-4 required before the originally frozen finite cone solve. No source resampling."
+  "numerical_protocol_scope": "Separate direct-AD derivative reference. The initial finite-difference failure remains failed; same exact source split and original scientific parameters, no reconstructed candidate or solver response observed. Gradient norm and original FD discrepancy must reproduce exactly. Forward/reverse relative1e-5 and matched raw scores5e-4 required before the originally frozen finite cone solve. No source resampling.",
+  "numeric_implementation_correction": "Previous direct-AD control compared math-kernel forward AD against the original fused-kernel backward derivative. Retain that failure. Compare forward and reverse on the same math kernel at1e-5; original-kernel/math-gradient difference must separately meet original5%. Same frozen input split and gradient norm/finite-difference reproduction; no conic or model point has yet been constructed."
 }

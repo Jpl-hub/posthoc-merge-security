@@ -61,9 +61,83 @@ def verify(source, report, output):
     output.write_text(json.dumps(validation, indent=2)+'\n'); print(json.dumps(validation, indent=2))
 
 
+def verify_projection_cone(root):
+    """Rebuild finite cones in NumPy; check a solution or an infeasibility ray."""
+    import time
+    from scipy import sparse
+    from clip_benchmark import digest
+    from subspace_probe import save_json
+    from task_probe_distance import checked_models,initialize
+    from verify_covariance_noise import official_labels
+    initialize();start=time.monotonic();root=Path(root)
+    assert not (root/'independent_validation.json').exists()
+    cfg=json.loads((root/'protocol.json').read_text());meta=json.loads((root/'results.json').read_text())
+    for file,key in [('source_data.pt','source_raw_sha256'),('cone_A.npz','cone_A_sha256'),('cone_raw.npz','cone_raw_sha256')]:assert digest(root/file)==meta[key]
+    data=torch.load(root/'source_data.pt',map_location='cpu',weights_only=False)
+    raw=np.load(root/'cone_raw.npz');A=sparse.load_npz(root/'cone_A.npz');b=raw['b']
+    anchor,expert,head,pins=checked_models(cfg['target']);assert pins==meta['checkpoint_sha256']
+    P=data['P'].numpy();np.testing.assert_array_equal(P,expert.model.visual.proj.double().numpy())
+    H=data['head'].numpy();np.testing.assert_array_equal(H,head.weight.double().numpy())
+    ids=data['indices'];assert ids==json.loads((root/'source_split.json').read_text())['indices']
+    assert not set(ids)&set(cfg['extra_excluded_indices'])
+    np.testing.assert_array_equal(data['labels'].numpy(),official_labels(cfg['target'],True)[ids[:cfg['fit_n']]])
+    U,Q=data['projection_basis'].numpy(),data['head_basis'].numpy()
+    np.testing.assert_allclose(U.T@U,np.eye(len(U.T)),atol=1e-12)
+    np.testing.assert_allclose(Q.T@Q,np.eye(len(Q.T)),atol=1e-12)
+    teacher=data['before'].numpy().astype(float);old=data['original_X'].numpy().astype(float)@P
+    f=old/np.linalg.norm(old,axis=1,keepdims=True);control=float(abs(f@H.T-teacher).max());assert control<=cfg['full_model_score_tolerance']
+    base=data['prefix_X'].numpy().astype(float)@P;Z=np.linalg.norm(P)*data['prefix_X'].numpy().astype(float)@U
+    y=teacher.argmax(1);gap=teacher[np.arange(len(y)),y,None]-teacher;npar=A.shape[1];q=Q.shape[1];eps=cfg['source_reserve']
+    remaining=meta['remaining_P_distance'];errors=[]
+    for c in [np.zeros(npar),np.arange(1,npar+1,dtype=float)*remaining/(2*np.linalg.norm(np.arange(1,npar+1)))]:
+        v=base+Z@c.reshape(cfg['rank'],q)@Q.T;perp=base-(base@Q)@Q.T
+        expected=[];upper=[]
+        for i in range(len(y)):
+            for k in range(len(H)):
+                if k==y[i]:continue
+                a=H[y[i]]-H[k];scale=(1-eps)*gap[i,k]
+                expected.extend(np.r_[a@v[i],scale*(v[i]@Q),scale*np.linalg.norm(perp[i])])
+                upper.append((1+eps)*gap[i,k]*(f[i]@v[i])-a@v[i])
+            upper.append(f[i]@v[i]-.5*np.linalg.norm(old[i]))
+        expected=np.r_[expected,upper,remaining,c]
+        error=float(abs(expected-(b-A@c)).max());assert error<1e-7;errors.append(error)
+    B=expert.model.visual.transformer.resblocks[0].mlp.c_proj.weight.double().numpy()
+    actual_D=float(np.linalg.norm(data['B_edit'].numpy()-B)/np.linalg.norm(B))
+    assert abs(actual_D-meta['prefix_distance'])<1e-10
+    report=dict(status='independent_cone_assembly_checked',solver_status=meta['status'],assembly_errors=errors,
+        original_head_error=control,prefix_D=actual_D,new_model_forwards=0,new_candidates=0,new_TA_calls=0,new_AGA_calls=0,
+        source_sha256=digest(__file__),input_result_sha256=digest(root/'results.json'),raw_sha256=meta['cone_raw_sha256'])
+    if meta['status']=='PrimalInfeasible':
+        z=raw['z'];stationarity=float(abs(A.T@z).max());dot=float(b@z);at=0;violation=0.
+        for _ in range(len(y)*(len(H)-1)):
+            t=z[at:at+q+2];violation=max(violation,float(np.linalg.norm(t[1:])-t[0]));at+=q+2
+        count=len(y)*len(H);violation=max(violation,float(-z[at:at+count].min()));at+=count
+        t=z[at:];assert len(t)==npar+1;violation=max(violation,float(np.linalg.norm(t[1:])-t[0]))
+        report.update(dual_certificate_b_dot_z=dot,dual_stationarity_max=stationarity,dual_cone_violation=max(0.,violation),
+            infeasibility_certificate_verified=dot<-.5 and stationarity<1e-5 and violation<1e-5,
+            scope='A checked Farkas certificate only excludes this fixed source prefix,288-variable readout family,and sufficient inner cone. Not the original nonconvex task band or all defenses.')
+        assert report['infeasibility_certificate_verified']
+    elif meta['status']=='Solved':
+        point=torch.load(root/'feasibility_point.pt',map_location='cpu',weights_only=False)
+        v=data['prefix_X'].numpy().astype(float)@point['P_edit'].numpy().astype(float)
+        s=v/np.linalg.norm(v,axis=1,keepdims=True)@H.T;delta=s-teacher
+        r=(delta[np.arange(len(y)),y,None]-delta)/np.where(gap>0,gap,1);r[np.arange(len(y)),y]=0
+        np.testing.assert_allclose(s,point['source_scores'].numpy(),atol=1e-8)
+        report.update(actual_source_R=float(abs(r).max()),actual_P_distance=float(np.linalg.norm(point['P_edit'].numpy()-P)/np.linalg.norm(P)),
+            scope='512 source feasibility only;4096 source/task-SVD/fresh-confirmation/full-task/TA/AGA gates remain. Not a validated defense.')
+        assert report['actual_source_R']<=cfg['task_budget']
+        assert (actual_D**2+report['actual_P_distance']**2)**.5<=cfg['parameter_budget']
+    else:
+        report['scope']='Solver did not return a fully solved point or a full infeasibility certificate; retain numerical/limit status without a scientific feasibility claim.'
+    report['wall_seconds']=time.monotonic()-start;save_json(root/'independent_validation.json',report);print(json.dumps(report),flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path('outputs/phase3/finite_compensation_source.pt'))
     parser.add_argument('--report', type=Path, default=Path('outputs/finite_compensation_bound.json'))
     parser.add_argument('--output', type=Path, default=Path('outputs/finite_compensation_bound_validation.json'))
-    args = parser.parse_args(); verify(args.source, args.report, args.output)
+    parser.add_argument('--projection-cone',type=Path)
+    args = parser.parse_args()
+    if args.projection_cone:verify_projection_cone(args.projection_cone)
+    else:verify(args.source, args.report, args.output)
