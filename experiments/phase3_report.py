@@ -734,6 +734,38 @@ def joint_task_gate(source, output):
                       report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                       source_and_confirmation_passed=True, full_task_passed=False, new_AGA_calls=0, new_fusions=0,
                       matched_original_score_error=native['matched_original_score_error'], matched_release_score_error=native['matched_release_score_error'])
+    activation_path = root/'activation_response.json'
+    if activation_path.exists():
+        activation = json.loads(activation_path.read_text())
+        assert activation['input_artifact_sha256']['release.pt'] == cfg['release']['sha256']
+        assert activation['new_images'] == activation['new_weights'] == activation['new_directions'] == 0
+        raw_activation = root/'activation_response.npz'
+        assert hashlib.sha256(raw_activation.read_bytes()).hexdigest() == activation['raw_sha256']
+        archive = np.load(raw_activation)
+        recount_error = 0.
+        for row in activation['rows']:
+            values = archive[row['name']]
+            assert values.shape == (row['input_rows'], 3) and np.isfinite(values).all()
+            measured = [np.sqrt(values[:, 0].mean()), np.sqrt(values[:, 1].mean()),
+                        values[:, 2].mean(), np.sqrt(values[:, 0].sum()/values[:, 1].sum())]
+            fields = ['actual_MLP_delta_rms', 'original_MLP_output_rms',
+                      'activation_scalar_mean_square', 'actual_delta_over_original_MLP_rms']
+            error = max(abs(x-row[k])/max(abs(row[k]), 1e-30) for k, x in zip(fields, measured))
+            assert error < 1e-12
+            recount_error = max(recount_error, error)
+        lines += ['', '## Parameter distance versus source activation', '',
+                  '| Branch / inputs | Relative parameter distance | MLP output change (RMS %) | Activation energy / uniform-complement mean |',
+                  '|---|---:|---:|---:|']
+        for row in activation['rows']:
+            layer = 0 if row['name'].startswith('B10') else 1
+            lines.append(f'| {row["name"].replace("_", " ")} | {calibration["per_layer_distance"][layer]:.6f} | {100*row["actual_delta_over_original_MLP_rms"]:.6f} | {row["excitation_over_uniform_reference"]:.6g} |')
+        lines += ['', 'All rows use the 4,096 original construction images. B10 includes separate all-token and CLS statistics; B11 uses CLS. MLP output here means the linear Bz contribution before the unchanged bias. The uniform-complement column is an analytic second-moment reference, with no sampled or optimized replacement direction.',
+                  f'The joint linear response energy is {activation["linear_response"]["joint_over_separate_sum"]:.6g} times the sum of isolated-branch energies: coupling exists, while the dominant B11 change is weakly excited on these inputs.',
+                  'This diagnoses the frozen source solution only. It does not prove the cause of every unseen-input violation or establish attack efficacy. No rewhitening, new weights, threshold changes or additional TA/AGA evaluations follow from this table.', '']
+        provenance['activation_audit_sha256'] = hashlib.sha256(activation_path.read_bytes()).hexdigest()
+        provenance['activation_raw_sha256'] = activation['raw_sha256']
+        provenance['activation_archive_recount_maximum_relative_error'] = recount_error
+        (output/'summary.md').write_text('\n'.join(lines))
     (output/'table_provenance.json').write_text(json.dumps(provenance, indent=2)+'\n')
 
 
