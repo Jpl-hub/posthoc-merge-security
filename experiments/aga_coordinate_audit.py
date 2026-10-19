@@ -326,6 +326,58 @@ def fixedpoint_cost(output):
 
 
 @torch.no_grad()
+def matching_response(output):
+    """Frozen 2x2 assignment/gauge counterfactual; never select another release."""
+    import copy
+    from scipy.special import expit
+    from clip_benchmark import merge
+    from cross_module_distance import capture_attention, extended_parameters, final_hidden
+    from covariance_noise import dataset
+    from evaluate_local_residual_transport import inputs
+    from local_residual_transport import metric
+    from probe_margin_distance import scores
+    from verify_levelset_audits import convert, raw_scores
+    out=Path(output);assert not (out/'matching_response.json').exists();start=time.monotonic()
+    cfg=json.loads((out/'protocol.json').read_text());meta=json.loads((out/'execution.json').read_text());assert meta['completed']
+    anchor,own,peer,release,heads,_,aligned=inputs(cfg);folder=Path(cfg['release']['path']).parent
+    point=torch.load(folder/'point.pt',map_location='cpu');source=torch.load(folder/'source.pt',map_location='cpu')
+    source_meta=json.loads((folder/'results.json').read_text());assert digest(folder/'source.pt')==source_meta['raw_sha256']
+    proto=json.loads((folder/'protocol.json').read_text());pin=proto['matching_geometry']
+    assert digest(pin['path'])==pin['sha256'];g=torch.load(pin['path'],map_location='cpu')
+    p0,p1=g['original_restore'],g['changed_restore'];state=own.state_dict();prefix='model.visual.transformer.resblocks.11.mlp.'
+    actual=aligned['MNIST'].state_dict()|torch.load(out/'artifacts/AGA_release_edits.pt',map_location='cpu')
+    control=merge(anchor,aligned['MNIST'],peer,.5);head=heads['MNIST'];p=extended_parameters(control,head)
+    cache=capture_attention(control,dataset('MNIST','data',own.val_preprocess,True),source['indices'])
+    rounding=cache['h']-final_hidden(cache['r'],p);before=scores(cache['h'],p);records=[];all_scores={};error=0.
+    for gauge in [False,True]:
+        for changed_order in [False,True]:
+            order=p1 if changed_order else p0;model=copy.deepcopy(aligned['MNIST']);s=model.state_dict();edited=release.state_dict() if gauge else state
+            for name in ['c_fc.weight','c_fc.bias']:s[prefix+name].copy_(edited[prefix+name][order])
+            s[prefix+'c_proj.weight'].copy_(state[prefix+'c_proj.weight'][:,order])
+            if gauge and changed_order:
+                assert all(torch.equal(v,actual[k]) for k,v in s.items()),'Factorial endpoint must equal executed author AGA.'
+            fused=merge(anchor,model,peer,.5);q=extended_parameters(fused,head)
+            for k,v in p.items():
+                if k not in ['A','a','B'] and torch.is_tensor(v):assert torch.equal(v,q[k]),k
+            h=rounding+final_hidden(cache['r'],q);after=scores(h,q);qn=convert(q);r=cache['r'].numpy();center=r-r.mean(1,keepdims=True)
+            pre=(center/np.sqrt((center*center).mean(1,keepdims=True)+qn['eps2'])*qn['gamma2']+qn['beta2'])@qn['A'].T+qn['a']
+            hn=rounding.numpy()+r+(pre*expit(1.702*pre))@qn['B'].T+qn['b']
+            err=float(abs(raw_scores(hn,qn)-after.numpy()).max());assert err<1e-8;error=max(error,err)
+            name=f'gauge{int(gauge)}_assignment{int(changed_order)}';all_scores[name]=after
+            records.append(dict(gauge=gauge,changed_assignment=changed_order,**metric(before,after,len(before)),
+                score_change_RMS=float((after-before).square().mean().sqrt())))
+            del model,fused
+    torch.save(dict(scores=all_scores,indices=source['indices']),out/'artifacts/matching_response.pt')
+    save_json(out/'matching_response.json',dict(status='frozen_retrospective_factorial_passed',rows=records,
+        source_n=len(before),NumPy_complete_tail_maximum_error=error,source_raw_sha256=source_meta['raw_sha256'],
+        evaluation_predictions_sha256=meta['predictions_sha256'],release_sha256=cfg['release']['sha256'],
+        raw_sha256=digest(out/'artifacts/matching_response.pt'),source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
+        new_training_images=0,source_image_reuses=len(before),test_images=0,gradients=0,new_releases=0,
+        partner_used_for_retrospective_evaluation_only=True,
+        scope='Only frozen512 construction indices and this one real target-only merger. Assignment/gauge finite effects are not new defense selection or an unknown-partner guarantee.'))
+
+
+@torch.no_grad()
 def normalization_geometry(output):
     """Decompose the frozen point and recount its evaluated class losses; no fitting."""
     from scipy.special import logsumexp
@@ -335,7 +387,7 @@ def normalization_geometry(output):
     edits=torch.load(cfg['release']['path'],map_location='cpu');assert digest(cfg['release']['path'])==cfg['release']['sha256']
     point=torch.load(pointdir/'point.pt',map_location='cpu');prefix='model.visual.transformer.resblocks.11.attn.'
     geometry={}
-    for key in ['in_proj_weight','out_proj.weight']:
+    for key in ([] if point.get('site')=='MLP' else ['in_proj_weight','out_proj.weight']):
         k=prefix+key;original=state[k].double().numpy();delta=edits[k].double().numpy()-original
         if key=='in_proj_weight':
             task=(state[k][1536:]-base[k][1536:]).double().numpy();_,_,vh=np.linalg.svd(task,full_matrices=False);v=vh[:32];d=delta[1536:]
@@ -344,6 +396,14 @@ def normalization_geometry(output):
         geometry[key]=dict(relative_distance=float(np.linalg.norm(delta)/den),task32_inside_distance=float(np.linalg.norm(inside)/den),
             task32_outside_distance=float(np.linalg.norm(outside)/den),outside_squared_energy_fraction=float(np.linalg.norm(outside)**2/np.linalg.norm(d)**2),
             orthogonality_error=float(abs(np.sum(inside*outside))),denominator='Full edited tensor, including unchanged Q/K where applicable.')
+    if point.get('site')=='MLP':
+        for k,changed in edits.items():
+            original=state[k].double().numpy();delta=changed.double().numpy()-original;den=np.linalg.norm(original)
+            geometry[k]=dict(relative_distance=float(np.linalg.norm(delta)/den),denominator='Whole logical A matrix or its own bias, float64.')
+            if delta.ndim==2:
+                v=point['vh'].numpy();inside=(delta@v.T)@v;outside=delta-inside
+                geometry[k].update(task32_inside_distance=float(np.linalg.norm(inside)/den),task32_outside_distance=float(np.linalg.norm(outside)/den),
+                    outside_squared_energy_fraction=float(np.linalg.norm(outside)**2/np.linalg.norm(delta)**2))
     meta=json.loads((out/'execution.json').read_text());assert meta['completed']
     rawpath=out/'artifacts/predictions.pt';assert digest(rawpath)==meta['predictions_sha256']
     raw=torch.load(rawpath,map_location='cpu');rows=[]
@@ -375,6 +435,7 @@ if __name__=='__main__':
     mode.add_argument('--fixedpoint',action='store_true')
     mode.add_argument('--fixedpoint-cost',action='store_true')
     mode.add_argument('--normalization',action='store_true')
+    mode.add_argument('--matching-response',action='store_true')
     mode.add_argument('--affine-matching',action='store_true')
     args=parser.parse_args();torch.set_num_threads(4)
-    (affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
+    (matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
