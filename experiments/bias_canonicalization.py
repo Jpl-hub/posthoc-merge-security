@@ -50,6 +50,92 @@ def canonicalize(model, independent=False):
         bias_norm_before=float(beta.norm()), bias_norm_after=float(actual.norm()))
 
 
+def affine_readout(gamma,beta,projection):
+    """Same normalized tail function, native LN, with no secret or reference."""
+    linear=gamma[:,None]*projection;linear=linear-linear.mean(0)
+    offset=beta@projection;scale=(linear.square().sum()+offset.square().sum()).sqrt()
+    assert float(scale)>0
+    return torch.ones_like(gamma),torch.ones_like(beta),(linear+offset[None]/len(gamma))/scale,scale
+
+
+@torch.no_grad()
+def affine_family(folder):
+    """Read-only check of the closed point's tail equivalence class, not an attack evaluation."""
+    root=Path(folder);output=root/'affine_family_limit.json';assert not output.exists();start=time.monotonic();torch.set_num_threads(4)
+    freeze=json.loads((root/'before_images.json').read_text());report=json.loads((root/'results.json').read_text())
+    for file,pin in [('point.pt',freeze['point_sha256']),('frozen_release.pt',freeze['release_sha256']),('source.pt',report['raw_sha256'])]:assert digest(root/file)==pin
+    point=torch.load(root/'point.pt',map_location='cpu');edits=torch.load(root/'frozen_release.pt',map_location='cpu');raw=torch.load(root/'source.pt',map_location='cpu')
+    assert point['site']=='READOUT';h=raw['inputs'].double();g=point['gamma'];head=raw['head_weight'];d=len(g)
+    rows={};packed=[];invariants=[];C=np.eye(d)-np.ones((d,d))/d
+    for label,b,p in [('original',point['beta'],point['projection']),('published',edits['model.visual.ln_post.bias'].double(),edits['model.visual.proj'].double())]:
+        gc,bc,pc,scale=affine_readout(g,b,p);packed.append(pc)
+        gn,bn,pn=g.numpy(),b.numpy(),p.numpy();L=C@(gn[:,None]*pn);offset=bn@pn;K=np.vstack([L,offset]);s=np.linalg.norm(K)
+        expected=(L+offset[None]/d)/s;np.testing.assert_allclose(expected,pc.numpy(),rtol=0,atol=1e-12)
+        invariants.append(K/s);singular=np.linalg.svd(K,compute_uv=False);assert singular[1]>singular[0]*1e-8
+        def score(hh,gain,bias,projection):
+            z=torch.nn.functional.layer_norm(hh,(d,),gain,bias,point['eps']);f=z@projection
+            return f/f.norm(dim=1,keepdim=True)@head.to(f).T
+        before=score(h,g,b,p);same=score(h,gc,bc,pc);identity=float((same-before).abs().max());assert identity<1e-8
+        hn=h.numpy();hc=hn-hn.mean(1,keepdims=True);u=hc/np.sqrt((hc*hc).mean(1,keepdims=True)+point['eps'])
+        fb=(u*gn+bn)@pn;fc=(u+1)@expected
+        nb=fb/np.linalg.norm(fb,axis=1,keepdims=True)@head.numpy().T;nc=fc/np.linalg.norm(fc,axis=1,keepdims=True)@head.numpy().T
+        numpy_error=max(float(abs(nb-nc).max()),float(abs(nc-same.numpy()).max()));assert numpy_error<1e-8
+        native=score(h.float(),gc.float(),bc.float(),pc.float()).double()
+        cached=raw['before'] if label=='original' else raw['after'];error=float((native-cached).abs().max())
+        source_cfg=json.loads((root/'protocol.json').read_text());assert error<=source_cfg['score_tolerance']
+        delta=native-cached;y=cached.argmax(1);ix=torch.arange(len(y));gap=cached[ix,y,None]-cached;gap[ix,y]=1
+        drift=(delta[ix,y,None]-delta)/gap.clamp_min(1e-12);drift[ix,y]=0
+        rows[label]=dict(affine_map_second_singular_value=float(singular[1]),positive_scale=float(scale),
+            NumPy_packing_error=float(abs(expected-pc.numpy()).max()),FP64_cached_score_identity_error=identity,
+            NumPy_complete_readout_identity_error=numpy_error,
+            FP32_cached_score_error=error,FP32_cached_relative_margin_drift=float(drift.abs().max()),
+            FP32_cached_prediction_changes=int((native.argmax(1)!=cached.argmax(1)).sum()))
+    difference=float((packed[0]-packed[1]).abs().max());unequal=int((packed[0].float()!=packed[1].float()).sum())
+    save_json(output,dict(status='read_only_native_affine_equivalence_limit_checked',source_n=len(h),rows=rows,
+        normalized_affine_invariant_max_abs_difference=float(abs(invariants[0]-invariants[1]).max()),
+        canonical_projection_max_abs_difference=difference,FP32_canonical_projection_unequal_entries=unequal,
+        canonical_models_not_claimed_bitwise_equal=unequal>0,readout_FP32_threshold=source_cfg['score_tolerance'],
+        source_cache_sha256=report['raw_sha256'],release_sha256=freeze['release_sha256'],source_sha256=digest(__file__),
+        new_images=0,full_model_forwards=0,cached_FP32_canonical_readout_instances=2*len(h),new_AGA_calls=0,
+        gradients=0,new_defense_releases=0,partner_or_test_or_confirmation_used=False,wall_seconds=time.monotonic()-start,
+        original_paper_or_attack_novelty_claim=False,real_merging_or_recovery_accuracy_evaluated=False,
+        scope='Fixed-prefix/all-hidden-input full normalized visual-feature equivalence only, rank>=2/epsilon>0. Not classification-only preservation, changed-prefix OB/AB, empirical task0.5 necessity or a universal no-defense theorem. Matching all merger inputs would require a new frozen protocol and matched controls.'))
+
+
+def class_faces(folder):
+    """All fixed unit-gap class faces, using weights only; not image witnesses."""
+    from itertools import combinations
+    root=Path(folder);output=root/'class_face_limit.json';assert not output.exists();start=time.monotonic();torch.set_num_threads(4)
+    freeze=json.loads((root/'before_images.json').read_text());report=json.loads((root/'results.json').read_text())
+    assert digest(root/'point.pt')==freeze['point_sha256'] and digest(root/'source.pt')==report['raw_sha256']
+    point=torch.load(root/'point.pt',map_location='cpu');head=torch.load(root/'source.pt',map_location='cpu')['head_weight'].numpy()
+    gamma,beta,p=[point[k].numpy() for k in ['gamma','beta','projection']];d=len(gamma);k=len(head);t=head-head.mean(0)
+    L=gamma[:,None]*p;L-=L.mean(0);M=L@t.T;c=(beta@p)@t.T
+    U,s,V=np.linalg.svd(M,full_matrices=False);tol=np.finfo(float).eps*max(M.shape)*s[0];keep=s>tol;assert int(keep.sum())==k-1
+    pairs=list(combinations(range(k),2));q=np.full((len(pairs),k),-2/k)
+    for n,(i,j) in enumerate(pairs):q[n,i]+=1;q[n,j]+=1
+    u=(((q-c)@V[keep].T)/s[keep])@U[:,keep].T
+    # Independent QR on K-1 class differences, not the SVD pseudoinverse.
+    A=M[:,:-1]-M[:,-1,None];Q,R=np.linalg.qr(A,mode='reduced');rhs=(q-c)[:,:-1]-(q-c)[:,-1,None]
+    qr=np.linalg.solve(R.T,rhs.T).T@Q.T;error=float(abs(qr-u).max());assert error<1e-8
+    residual=float(abs(u@M+c-q).max());assert residual<1e-8
+    norms=np.linalg.norm(u,axis=1);covered=norms<np.sqrt(d)*(1-1e-8);rows=[];reconstruction=0.
+    for n,(i,j) in enumerate(pairs):
+        gap=None
+        if covered[n]:
+            h=np.sqrt(point['eps']/(1-norms[n]**2/d))*u[n];hc=h-h.mean();actual=hc/np.sqrt(np.mean(hc*hc)+point['eps'])
+            reconstruction=max(reconstruction,float(abs(actual-u[n]).max()));scores=actual@M+c
+            others=[a for a in range(k) if a not in [i,j]];gap=float(min(scores[i],scores[j])-scores[others].max());assert gap>1-1e-8
+        rows.append(dict(class_pair=[i,j],normalized_hidden_norm=float(norms[n]),inside_LN_open_ball=bool(covered[n]),strict_gap_to_other_classes=gap))
+    assert reconstruction<1e-8
+    save_json(output,dict(status='weight_only_class_face_conditions_checked',classes=k,task_affine_rank=int(keep.sum()),class_pairs=len(pairs),
+        covered_class_pairs=int(covered.sum()),complete_adjacency_condition_passed=bool(covered.all()),rows=rows,
+        maximum_hidden_norm_fraction=float(norms.max()/np.sqrt(d)),QR_SVD_witness_error=error,affine_score_residual=residual,
+        LN_inverse_reconstruction_error=reconstruction,source_sha256=digest(__file__),point_sha256=freeze['point_sha256'],
+        head_source_cache_sha256=report['raw_sha256'],new_images=0,full_model_forwards=0,new_candidates=0,gradients=0,wall_seconds=time.monotonic()-start,
+        scope='Synthetic normalized hidden-state adjacency witnesses from original weights only, not MNIST images or task counterexamples. Conditional fixed-prefix/all-hidden-input classifier rigidity, not finite-task0.5 or changed-prefix OB/AB impossibility. No alternate gap scale, rank or witness optimization.'))
+
+
 @torch.no_grad()
 def run(protocol, full=False, verify=False):
     start = time.monotonic()
@@ -147,5 +233,8 @@ def run(protocol, full=False, verify=False):
 
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__); ap.add_argument('--protocol',default='configs/bias_canonicalization.json')
-    ap.add_argument('--full',action='store_true'); ap.add_argument('--verify',action='store_true'); args=ap.parse_args()
-    run(args.protocol,args.full,args.verify)
+    ap.add_argument('--full',action='store_true'); ap.add_argument('--verify',action='store_true')
+    mode=ap.add_mutually_exclusive_group();mode.add_argument('--affine-family');mode.add_argument('--class-faces');args=ap.parse_args()
+    if args.affine_family:affine_family(args.affine_family)
+    elif args.class_faces:class_faces(args.class_faces)
+    else:run(args.protocol,args.full,args.verify)

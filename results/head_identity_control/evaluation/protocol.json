@@ -1,0 +1,91 @@
+{
+  "output": "outputs/phase2_head_identity_eval_20261019",
+  "release": {
+    "path": "outputs/phase2_head_identity_control_20261019/frozen_release.pt",
+    "sha256": "1990269e1ed08f436c8251cfb8defb4427c6980f730f6448f151549d3cf3817e"
+  },
+  "prior_confirmation": "outputs/phase2_head_identity_control_20261019/confirmation_validation.json",
+  "coefficient": 0.5,
+  "parameter_budget": 6.0,
+  "task_budget": 0.5,
+  "test_counts": {
+    "MNIST": 10000,
+    "SVHN": 26032
+  },
+  "score_tolerance": 0.0005,
+  "wall_limit_seconds": 1200,
+  "AGA_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "reference_predictions": {
+    "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+    "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60"
+  },
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    }
+  },
+  "protocol_amendment": "Known exact whole-head permutation control only, fixed all12layers heads0/1. LogicalD5.071544 explicitly FAILS original0.5, only separately preregistered parameter6.0/task0.5 control. Not a new method or fair-budget best defense. Source/new512 training confirmation and640 task-SVD probes passed; exact zero source/confirmation overlap independently checked before peer/test. Public-anchor QK/OV head assignment reverses all tensors exactly for protected and matched unprotected controls before any images; adaptive headmatching->originalAGA can reuse hash-verified identical originalAGA weights/predictions. OriginalAGA itself unchanged. One control, no outcome-driven heads/layers/budget selection. GitHub plugin unconnected; source f2a9297 and this evaluation locally preregistered.",
+  "weight_selection_from_test_or_peer": false,
+  "historical_tests_not_fresh_blind": true,
+  "candidate_selection_count": 1,
+  "no_public_replacement_run": true,
+  "allowed_keys": [
+    "model.visual.transformer.resblocks.0.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.0.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.0.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.1.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.1.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.1.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.10.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.10.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.10.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.11.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.11.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.11.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.2.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.2.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.2.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.3.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.3.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.3.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.4.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.4.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.4.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.5.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.5.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.5.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.6.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.6.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.6.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.7.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.7.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.7.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.8.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.8.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.8.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.9.attn.in_proj_bias",
+    "model.visual.transformer.resblocks.9.attn.in_proj_weight",
+    "model.visual.transformer.resblocks.9.attn.out_proj.weight"
+  ],
+  "source_sha256": {
+    "experiments/evaluate_local_residual_transport.py": "091b83cf45bdced9d2cb9214e51b92653613a103ba889ba4b294a38de0431d72",
+    "experiments/author_protocol_audit.py": "97a0f4a70d4a9239b92d73cb2b99aa7dc0d688b3cee1ec4d8ecc0bdb4cd2b522",
+    "experiments/frozen_AB_target_only.py": "d45a337793bcb7f8fb50d44daa325c7b6ce80e1343f86fdcc7102ae7c878fb15",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/verify_probe_candidate.py": "f91b7f1dcb7dcd19144b0b7ac711dd557b1a0ce1bb51809a047e53f0c7f8cdf9",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiments/ln_affine_release.py": "66c39cc7781358201e2ec751e8c78862c0204399616ffdf7870f411bf943d2e9"
+  },
+  "original_parameter_budget": 0.5,
+  "logical_qkv_budget": true,
+  "known_symmetry_control_not_new_defense": true
+}

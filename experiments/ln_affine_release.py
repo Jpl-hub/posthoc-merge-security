@@ -21,6 +21,51 @@ KEYS = [PREFIX+'in_proj_weight', PREFIX+'in_proj_bias']
 
 
 @torch.no_grad()
+def build_readout_compensation(expert,anchor,cfg):
+    """One known affine gauge with a nonzero finite interpolation cross term."""
+    bk,pk='model.visual.ln_post.bias','model.visual.proj';state=expert.state_dict()
+    beta,p,g=[state[k].double() for k in [bk,pk,'model.visual.ln_post.weight']]
+    assert float(g.abs().min())>1e-8
+    n=1/g;n=n/n.norm();c=beta@n;assert abs(float(c))>1e-8
+    a=float(c.square()/beta.square().sum());b=float((n@p).square().sum()/p.square().sum())
+    lo,hi=0.,1.;radius=cfg['parameter_budget']*(1-cfg['distance_reserve'])
+    for _ in range(64):
+        r=(lo+hi)/2
+        if a*r*r+b*(r/(1-r))**2>radius**2:hi=r
+        else:lo=r
+    r=lo;edits={bk:(beta-r*c*n).float(),pk:(p+(r/(1-r))*n[:,None]*(n@p)[None]).float()}
+    original={bk:state[bk],pk:state[pk]};dp=edits[pk].double()-p;db=edits[bk].double()-beta
+    u,sv,_=torch.linalg.svd(p-anchor.state_dict()[pk].double(),full_matrices=False);inside=u[:,:32]@(u[:,:32].T@dp)
+    # The same canonicalization is available to an attacker without the secret r.
+    def canonical(bb,pp):
+        offset=bb@n;return bb+(1-offset)*n,pp+(offset-1)*n[:,None]*(n@pp)[None]
+    cb,cp=canonical(beta,p);rb,rp=canonical(edits[bk].double(),edits[pk].double())
+    geometry=dict(parameter_distance=sum(float((edits[k].double()-v.double()).square().sum()/v.double().square().sum()) for k,v in original.items())**.5,
+        r=r,LN_constant=float(c),per_tensor_distance={k:float((edits[k].double()-v.double()).norm()/v.double().norm()) for k,v in original.items()},
+        P_task_outside_energy_fraction=float((dp-inside).square().sum()/dp.square().sum()),task_probe_rank=32,
+        probe_coordinates='Left singular vectors of the row-vector projection task matrix; perturb actual final LN inputs.',
+        task_singular_values=sv[:32].tolist(),self_midpoint_feature_shift_norm=float((c*r*r/(4*(1-r))*(n@p)).norm()),
+        canonical_parameter_max_abs_error=max(float((cb-rb).abs().max()),float((cp-rp).abs().max())),
+        known_affine_symmetry_not_novel=True,adaptive_cleanup_disclosed_before_images=True)
+    return edits,dict(site='READOUT',normal=n,constant=c,original=original,gamma=g,beta=beta,projection=p,eps=expert.model.visual.ln_post.eps,vh=u[:,:32].T),geometry
+
+
+@torch.no_grad()
+def build_head_identity(expert,anchor,cfg):
+    pin=cfg['head_identity_geometry'];assert digest(pin['path'])==pin['sha256']
+    raw=torch.load(pin['path'],map_location='cpu')
+    assert all(torch.equal(expert.state_dict()[k],v) for k,v in raw['original'].items())
+    from author_protocol_audit import logical_parameter_distance
+    distance=logical_parameter_distance(raw['edits'],raw['original'])
+    key='model.visual.transformer.resblocks.11.mlp.c_fc.weight'
+    _,singular,vh=torch.linalg.svd(expert.state_dict()[key].double()-anchor.state_dict()[key].double(),full_matrices=False)
+    geometry=dict(parameter_distance=distance,original_0_5_parameter_budget_passed=distance<=.5,
+        separately_declared_parameter_budget=cfg['parameter_budget'],known_symmetry_control_not_new_defense=True,
+        task_probe_rank=32,task_singular_values=singular[:32].tolist())
+    return raw['edits'],dict(site='HEAD',original=raw['original'],head_order=raw['head_order'],vh=vh[:32]),geometry
+
+
+@torch.no_grad()
 def build_matching(expert,anchor,cfg):
     pin=cfg['matching_geometry'];assert digest(pin['path'])==pin['sha256']
     raw=torch.load(pin['path'],map_location='cpu');keys=list(raw['original'])
@@ -44,6 +89,8 @@ def build_matching(expert,anchor,cfg):
 
 @torch.no_grad()
 def build(expert, anchor, cfg):
+    if cfg.get('readout_compensation'):return build_readout_compensation(expert,anchor,cfg)
+    if cfg.get('head_identity_geometry'):return build_head_identity(expert,anchor,cfg)
     if cfg.get('matching_geometry'):return build_matching(expert,anchor,cfg)
     block = expert.model.visual.transformer.resblocks[11]
     original = {k: expert.state_dict()[k].double().clone() for k in KEYS}
@@ -76,6 +123,8 @@ def build(expert, anchor, cfg):
 
 @torch.no_grad()
 def recovery_geometry(expert, anchor, edits, point, cfg):
+    if point.get('site')=='READOUT':return dict(original_AGA_does_not_edit_final_LN_or_projection=True,not_adaptive_attack_robust=True)
+    if point.get('site')=='HEAD':return dict(known_head_symmetry_not_a_recovery_guarantee=True)
     if point.get('site')=='MLP':return dict(assignment_is_not_classification_damage=True)
     author, pin = load_author(Path(cfg['author_path'])); assert pin == cfg['author_text_sha256']
     base = anchor.state_dict()[KEYS[0]][:768].double(); original=point['original'][KEYS[0]][:768]
@@ -97,8 +146,9 @@ def recovery_geometry(expert, anchor, edits, point, cfg):
 @torch.no_grad()
 def observe(model, head, train, ids, capture=False):
     values, inputs = [], []
-    hook = model.model.visual.transformer.resblocks[11].register_forward_pre_hook(
-        lambda _m,args: inputs.append(args[0].transpose(0,1).detach().cpu())) if capture else None
+    layer=model.model.visual.ln_post if capture=='readout' else model.model.visual.transformer.resblocks[11]
+    hook = layer.register_forward_pre_hook(
+        lambda _m,args: inputs.append((args[0] if capture=='readout' else args[0].transpose(0,1)).detach().cpu())) if capture else None
     try:
         model.cuda().eval(); head.cuda().eval()
         for images, _ in make_loader(train, ids, 64): values.append(head(model(images.cuda())).cpu().double())
@@ -109,11 +159,11 @@ def observe(model, head, train, ids, capture=False):
 
 
 @torch.no_grad()
-def probe_scores(model, head, inputs):
+def probe_scores(model, head, inputs, readout=False):
     visual = model.model.visual; scores = []
     visual.cuda().eval(); head.cuda().eval()
     for part in inputs.split(64):
-        h = visual.transformer.resblocks[11](part.cuda().transpose(0,1))[0]
+        h = part.cuda() if readout else visual.transformer.resblocks[11](part.cuda().transpose(0,1))[0]
         scores.append(head(visual.ln_post(h)@visual.proj).cpu().double())
     visual.cpu(); head.cpu()
     return torch.cat(scores)
@@ -149,19 +199,31 @@ def run(protocol, confirm=False):
     split = unused(train,excluded,cfg|dict(confirmation_n=cfg['check_n'],confirmation_seed=seed))
     save_json(out/(name+'_split.json'),split)
     save_json(out/('training_indices.json' if not confirm else 'confirmation_split.json'),dict(check=split['indices']) if not confirm else split)
-    before, x = observe(expert,head,train,split['indices'],True); after, _ = observe(release,head,train,split['indices'])
+    readout=point.get('site')=='READOUT'
+    if readout:assert head.normalize and torch.count_nonzero(head.bias)==0
+    before, x = observe(expert,head,train,split['indices'],'readout' if readout else True); after, _ = observe(release,head,train,split['indices'])
     y = before.argmax(1); take = torch.stack([(y==k).nonzero().flatten()[0] for k in range(10)])
-    v = point['vh'].float(); rms = (x[:,0]@v.T).square().mean(0).sqrt()
+    v = point['vh'].float(); rms = ((x if readout else x[:,0])@v.T).square().mean(0).sqrt()
     shifts = (cfg['finite_step']*torch.tensor([-1.,1.])[:,None,None]*rms[None,:,None]*v[None]).flatten(0,1)
-    probes = x[take].repeat_interleave(len(shifts),0); probes[:,0] += shifts.repeat(len(take),1)
-    pb, pa = probe_scores(expert,head,probes), probe_scores(release,head,probes)
-    control = float((probe_scores(expert,head,x)-before).abs().max()); assert control <= cfg['score_tolerance']
+    probes = x[take].repeat_interleave(len(shifts),0)
+    if readout:probes+=shifts.repeat(len(take),1)
+    else:probes[:,0] += shifts.repeat(len(take),1)
+    pb, pa = probe_scores(expert,head,probes,readout), probe_scores(release,head,probes,readout)
+    control = float((probe_scores(expert,head,x,readout)-before).abs().max()); assert control <= cfg['score_tolerance']
     natural, finite = metric(before,after,len(before)),metric(pb,pa,len(pb))
     feasible = all(m['worst_task_drift']<=cfg['task_budget'] and m['changed']==0 for m in [natural,finite])
     labels = torch.tensor([int(train[i][1]) for i in split['indices']])
-    torch.save(dict(before=before,after=after,probe_before=pb,probe_after=pa,inputs=x,probe_inputs=probes,
+    branches={}
+    if readout:
+        for branch_name,keep in [('bias_only','model.visual.ln_post.bias'),('projection_only','model.visual.proj')]:
+            for key,value in point['original'].items():release.state_dict()[key].copy_(edits[key] if key==keep else value)
+            branches[branch_name]=probe_scores(release,head,x,True)
+        for key,value in edits.items():release.state_dict()[key].copy_(value)
+    torch.save(dict(before=before,after=after,probe_before=pb,probe_after=pa,inputs=x,probe_inputs=probes,branches=branches,
+        head_weight=head.weight.detach().cpu().double() if readout else None,
         indices=split['indices'],labels=labels),out/(name+'.pt'))
     report = dict(status='passed' if feasible else 'closed_task_budget_failure',source_feasible=feasible,
+        branch_response={k:metric(before,v,len(before)) for k,v in branches.items()},
         geometry=geometry,natural=natural,finite_probes=finite,full_block_score_control=control,
         release_sha256=freeze['release_sha256'],raw_sha256=digest(out/(name+'.pt')),source_sha256=digest(__file__),
         checkpoint_sha256=pins,protocol_sha256=digest(protocol),expert_updates=0,gradients=0,
@@ -177,13 +239,39 @@ def verify(folder, confirm=False):
     report=json.loads((out/('confirmation_validation.json' if confirm else 'results.json')).read_text())
     assert digest(out/(name+'.pt'))==report['raw_sha256']
     raw=torch.load(out/(name+'.pt'),map_location='cpu'); point=torch.load(out/'point.pt',map_location='cpu')
-    edits=torch.load(out/'frozen_release.pt',map_location='cpu'); n=point['normal'].numpy(); g=point['gamma'].numpy(); beta=point['beta'].numpy()
-    keys=point.get('keys',KEYS)
-    dw=(edits[keys[0]].double()-point['original'][keys[0]].double()).numpy()
-    db=(edits[keys[1]].double()-point['original'][keys[1]].double()).numpy()
-    linear=dw*g; centered=linear-linear.mean(1,keepdims=True)
-    identity=max(float(abs(centered).max()),float(abs(dw@beta+db).max())); assert identity<1e-6
-    distance=sum(float(np.linalg.norm((edits[k].double()-v).numpy())**2/np.linalg.norm(v.numpy())**2) for k,v in point['original'].items())**.5
+    edits=torch.load(out/'frozen_release.pt',map_location='cpu');head_control=point.get('site')=='HEAD'
+    readout=point.get('site')=='READOUT'
+    if readout:
+        g=point['gamma'].numpy();beta=point['beta'].numpy();p=point['projection'].numpy()
+        bp=edits['model.visual.ln_post.bias'].double().numpy();pp=edits['model.visual.proj'].double().numpy()
+        linear=g[:,None]*(pp-p);linear-=linear.mean(0)
+        identity=max(float(abs(linear).max()),float(abs(bp@pp-beta@p).max()));assert identity<1e-6
+        h=raw['inputs'].double().numpy();norm=(h-h.mean(1,keepdims=True))/np.sqrt(((h-h.mean(1,keepdims=True))**2).mean(1,keepdims=True)+point['eps'])
+        maximum=0.
+        for label,bb,pr in [('before',beta,p),('after',bp,pp),('bias_only',bp,p),('projection_only',beta,pp)]:
+            f=(norm*g+bb)@pr;s=f/np.linalg.norm(f,axis=1,keepdims=True)@raw['head_weight'].numpy().T
+            actual=raw['branches'][label].numpy() if label in raw['branches'] else raw[label].numpy()
+            maximum=max(maximum,float(abs(s-actual).max()))
+        assert maximum<=json.loads((out/'protocol.json').read_text())['score_tolerance']
+    elif head_control:
+        ix=(64*point['head_order'].numpy()[:,None]+np.arange(64)[None]).flatten();full=np.concatenate([ix+768*j for j in range(3)])
+        for k,v in point['original'].items():
+            expected=v.numpy()[:,ix] if k.endswith('out_proj.weight') else v.numpy()[full]
+            np.testing.assert_array_equal(edits[k],expected)
+        identity=0.
+    else:
+        g=point['gamma'].numpy();beta=point['beta'].numpy();keys=point.get('keys',KEYS)
+        dw=(edits[keys[0]].double()-point['original'][keys[0]].double()).numpy();db=(edits[keys[1]].double()-point['original'][keys[1]].double()).numpy()
+        linear=dw*g;centered=linear-linear.mean(1,keepdims=True)
+        identity=max(float(abs(centered).max()),float(abs(dw@beta+db).max()));assert identity<1e-6
+    cost=0.
+    for k,v in point['original'].items():
+        a,b=edits[k].double().numpy(),v.double().numpy()
+        pieces=zip(np.split(a,3),np.split(b,3)) if head_control and k.endswith(('in_proj_weight','in_proj_bias')) else [(a,b)]
+        for changed,before in pieces:
+            if np.linalg.norm(before)>0:cost+=float(np.linalg.norm(changed-before)**2/np.linalg.norm(before)**2)
+            else:np.testing.assert_array_equal(changed,before)
+    distance=cost**.5
     assert abs(distance-report['geometry']['parameter_distance'])<1e-10
     for (ka,kb), field in [(('before','after'),'natural'),(('probe_before','probe_after'),'finite_probes')]:
         a,b=raw[ka].numpy(),raw[kb].numpy(); y=a.argmax(1); ix=np.arange(len(a)); gap=a[ix,y,None]-a; gap[ix,y]=1
@@ -197,7 +285,9 @@ def verify(folder, confirm=False):
     assert draw==raw['indices']==split['indices'] and not set(draw)&exposed
     np.testing.assert_array_equal(official_labels('MNIST',True)[draw],raw['labels'])
     save_json(out/('confirmation_independent_validation.json' if confirm else 'independent_validation.json'),
-        dict(status='passed',raw_sha256=report['raw_sha256'],parameter_distance=distance,NumPy_affine_identity_error=identity,
+        dict(status='passed',raw_sha256=report['raw_sha256'],parameter_distance=distance,NumPy_affine_identity_error=None if head_control else identity,
+            NumPy_complete_readout_and_nonzero_branches_error=maximum if readout else None,
+            NumPy_whole_head_permutation_exact=head_control,
             natural_and_probe_margin_recount=True,source_indices_and_labels_checked=True,source_sha256=digest(__file__)))
 
 

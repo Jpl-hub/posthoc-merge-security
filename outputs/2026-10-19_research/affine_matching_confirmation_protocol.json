@@ -1,0 +1,58 @@
+{
+  "target": "MNIST",
+  "output": "outputs/phase2_affine_matching_mnist_20261019",
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "distance_reserve": 1e-06,
+  "author_weight_tolerance": 2e-05,
+  "score_tolerance": 0.0005,
+  "contexts_per_class": 2,
+  "finite_step": 0.01,
+  "extra_excluded_indices": [
+    41538,
+    27330,
+    31374
+  ],
+  "extra_index_exclusions": [
+    "outputs/phase2_head_commutator_mnist/source_split.json"
+  ],
+  "author_path": "external/secure-merge-attack/utils_attack_B32.py",
+  "source_sha256": {
+    "experiments/ln_affine_release.py": "d2bc78ab7a6fd33d659ad042bc18226460cd15bd6bc76a658b72c68c440ba0d2",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/confirm_temperature_compensation.py": "e7384b08036cbd75e31d2a0fbd1b8c9cf843d8b169ce5ccddf89da3412432600",
+    "experiments/local_residual_transport.py": "8c3a2777fef9bea2d32d97095709ec510e9c9a61d978b67a873e16366cbec80e",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/audit_hermite_splits.py": "e81f7b6e61a0493c9e9c280e2b415389d7ddc7dbe82bc1cedb4537d5c90d6b9d",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "results/task_boundary_audit/split_independence_audit.json": "66c04d547fe4b33a0051360791d4b439250b160a74d41b1a24d825e5f6881b3e",
+    "external/secure-merge-attack/utils_attack_B32.py": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "experiments/aga_coordinate_audit.py": "add2313a515898d12d8df8b4df4a373ebd96accac1cb85f6f53a880d60d992e3"
+  },
+  "scope": "One sole last-block MLP affine-input fingerprint point, pair1295/2770 and fixed logicalA/biasD0.5 selected only by positive finite swap gain in frozen expert/base weights. Not a new symmetry claim or a retry of the continuous Q point. Original full task0.5,512 source and512 genuinely new confirmation;640 valid full-block task-SVD interventions per split. RealTA/originalAGA both scopes only after independent checks. No peer/test/confirmation selection, optimizer or amplitude/pair/layer retry. Canonicalization removes this family and is disclosed before images.",
+  "check_n": 512,
+  "construction_seed": 2026101903,
+  "confirmation_seed": 2026101904,
+  "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "matching_geometry": {
+    "path": "outputs/phase2_affine_matching_geometry_20261019/counterfactual.pt",
+    "sha256": "81e045460ce34e95bf81ce2768e91b9691bb207522fb8ae8c862e98b5ba7fe78"
+  },
+  "verification_only_amendment": {
+    "type": "verification_dtype_bug_only",
+    "failed_log": "outputs/phase2_affine_matching_mnist_20261019.log",
+    "original_source_sha256": "5b8315de06cf1e2e1a42cfa488d3584e6dbd17a5de53edd007499754f9a4685e",
+    "corrected_verifier_source_sha256": "d2bc78ab7a6fd33d659ad042bc18226460cd15bd6bc76a658b72c68c440ba0d2",
+    "original_NumPy_distance": 0.5000000259486068,
+    "float64_NumPy_distance": 0.4999994958391252,
+    "Torch_float64_distance": 0.4999994958390909,
+    "release_unchanged": true,
+    "source_images_rerun": false,
+    "threshold_changed": false,
+    "reason": "FP32 original tensor norm in independent verifier; all budget arithmetic is defined in float64. Cast denominator as well as numerator. Frozen source protocol/results preserved; confirm uses amended executable hash only."
+  }
+}

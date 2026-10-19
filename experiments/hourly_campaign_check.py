@@ -37,7 +37,8 @@ def run(campaign):
         for p in Path('outputs').glob('*/results.json'):
             if previous <= p.stat().st_mtime <= now:
                 data = json.loads(p.read_text())
-                recent.append(dict(path=str(p), status=data.get('status'), wall_seconds=data.get('wall_seconds')))
+                recent.append(dict(path=str(p), status=data.get('status') if isinstance(data,dict) else 'result_rows',
+                                   wall_seconds=data.get('wall_seconds') if isinstance(data,dict) else None))
         logs = {}
         for pattern in cfg['log_patterns']:
             for p in Path('/tmp').glob(pattern):

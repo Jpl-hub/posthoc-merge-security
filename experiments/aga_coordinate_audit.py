@@ -24,6 +24,95 @@ def permutation(before, after):
     return p
 
 
+def head_costs(state,reference,layer):
+    """Native CLIP layout of GLMC's two published head invariants."""
+    prefix=f'model.visual.transformer.resblocks.{layer}.attn.'
+    def features(s):
+        w,b,o=[s[prefix+k].double() for k in ['in_proj_weight','in_proj_bias','out_proj.weight']]
+        q,k,v=torch.cat([w,b[:,None]],1).reshape(3,12,64,769)
+        return q.transpose(1,2)@k,o.reshape(768,12,64).permute(1,0,2)@v
+    a,b=features(state),features(reference)
+    cost=torch.stack([torch.stack([sum((x[i]-y[j]).norm() for x,y in zip(a,b)) for j in range(12)]) for i in range(12)])
+    independent=np.array([[sum(np.linalg.norm(x[i].numpy()-y[j].numpy()) for x,y in zip(a,b)) for j in range(12)] for i in range(12)])
+    error=float(abs(cost.numpy()-independent).max());assert error<1e-8
+    return independent,error
+
+
+@torch.no_grad()
+def head_identity_recovery(output):
+    """Recover head identity using only actual published/public-anchor tensors."""
+    from scipy.optimize import linear_sum_assignment
+    out=Path(output);assert not (out/'head_recovery.json').exists();start=time.monotonic();torch.set_num_threads(4)
+    cfg=json.loads((out/'protocol.json').read_text());meta=json.loads((out/'execution.json').read_text())
+    assert meta['completed'] and json.loads((out/'independent_validation.json').read_text())['status']=='passed'
+    anchor,expert,_,pins=checked_models('MNIST');original=expert.state_dict();public=anchor.state_dict()
+    assert digest(cfg['release']['path'])==cfg['release']['sha256'];published=original|torch.load(cfg['release']['path'],map_location='cpu')
+    def recover(state,reference):
+        changed={};rows=[];maximum=0.
+        for layer in range(12):
+            prefix=f'model.visual.transformer.resblocks.{layer}.attn.';wk,bk,ok=[prefix+n for n in ['in_proj_weight','in_proj_bias','out_proj.weight']]
+            independent,error=head_costs(state,reference,layer);maximum=max(maximum,error)
+            row,col=linear_sum_assignment(independent);order=torch.empty(12,dtype=torch.long);order[torch.tensor(col)]=torch.tensor(row)
+            other=independent.copy();other[row,col]=np.inf;margin=float((other.min(1)-independent[row,col]).min());assert margin>0
+            ix=(64*order[:,None]+torch.arange(64)[None]).flatten();full=torch.cat([ix+768*j for j in range(3)])
+            changed.update({wk:state[wk][full],bk:state[bk][full],ok:state[ok][:,ix]})
+            rows.append(dict(layer=layer,output_head_to_published_head=order.tolist(),strict_row_minimum_margin=margin))
+        return state|changed,rows,maximum
+    recovered,protected_rows,error=recover(published,public);control,control_rows,control_error=recover(original,public)
+    protected_differences=[k for k,v in recovered.items() if not torch.equal(v,original[k])]
+    control_differences=[k for k,v in control.items() if not torch.equal(v,original[k])]
+    assert not protected_differences and not control_differences
+    for pin in cfg['AGA_references'].values():assert digest(pin['path'])==pin['sha256']
+    assert digest(cfg['reference_predictions']['path'])==cfg['reference_predictions']['sha256']
+    rows=[r for r in json.loads((out/'results.json').read_text()) if r['preset']=='original']
+    save_json(out/'head_recovery.json',dict(status='actual_CLIP_head_recovery_exact_all_tensors',protected_rows=protected_rows,matched_control_rows=control_rows,
+        tensor_count=len(original),protected_tensor_differences=protected_differences,matched_control_tensor_differences=control_differences,
+        independent_NumPy_cost_error=max(error,control_error),attack_inputs=['actual_published_state','public_anchor_state'],
+        secret_permutation_used_by_recovery=False,original_expert_used_only_for_validation=True,
+        release_sha256=cfg['release']['sha256'],checkpoint_sha256=pins,AGA_reference_sha256={k:v['sha256'] for k,v in cfg['AGA_references'].items()},
+        reference_predictions_sha256=cfg['reference_predictions']['sha256'],reused_original_rows=rows,
+        reuse_reason='Recovered whole state equals original before unchanged author AGA. Cached original pipelines were independently replayed in this batch; no new full adaptive prediction run is claimed.',
+        author_AGA_new_calls=0,new_model_forwards=0,gradients=0,source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
+        novelty_claim=False,scope='Known head matching then original AGA, paper-kernel CLIP native adaptation, not full official GLMC. This frozen control violates original parameter0.5.'))
+
+
+@torch.no_grad()
+def head_identity_geometry(output):
+    """One known whole-head permutation control; not a new defense mechanism."""
+    from scipy.optimize import linear_sum_assignment
+    from author_protocol_audit import logical_parameter_distance
+    out=Path(output);assert not out.exists();out.mkdir(parents=True);torch.set_num_threads(4);start=time.monotonic()
+    anchor,expert,_,pins=checked_models('MNIST');s,b=expert.state_dict(),anchor.state_dict()
+    order=torch.tensor([1,0]+list(range(2,12)));ix=(64*order[:,None]+torch.arange(64)[None]).flatten()
+    edits={};original={};records=[];restored={};maximum=0.
+    for layer in range(12):
+        p=f'model.visual.transformer.resblocks.{layer}.attn.';wk,bk,ok=[p+n for n in ['in_proj_weight','in_proj_bias','out_proj.weight']]
+        full=torch.cat([ix+768*j for j in range(3)])
+        for key,v in [(wk,s[wk][full]),(bk,s[bk][full]),(ok,s[ok][:,ix])]:original[key]=s[key];edits[key]=v.clone()
+        cn,error=head_costs(s,b,layer);maximum=max(maximum,error)
+        base_row,base_col=linear_sum_assignment(cn);row,col=linear_sum_assignment(cn[order.numpy()]);restore=torch.empty(12,dtype=torch.long);restore[torch.tensor(col)]=torch.tensor(row)
+        chosen=cn[order.numpy()][row,col];other=np.array(cn[order.numpy()],copy=True);other[row,col]=np.inf
+        margin=float((other.min(1)-chosen).min());assert margin>0 and np.array_equal(base_col,np.arange(12))
+        reindex=(64*restore[:,None]+torch.arange(64)[None]).flatten();allrows=torch.cat([reindex+768*j for j in range(3)])
+        for key,v in [(wk,edits[wk][allrows]),(bk,edits[bk][allrows]),(ok,edits[ok][:,reindex])]:assert torch.equal(v,s[key]);restored[key]=v
+        records.append(dict(layer=layer,original_matching=base_col.tolist(),release_recovery_order=restore.tolist(),minimum_strict_row_cost_margin=margin))
+    distance=logical_parameter_distance(edits,s);nd=0.
+    for key,v in edits.items():
+        a,before=v.double().numpy(),s[key].double().numpy();pieces=zip(np.split(a,3),np.split(before,3)) if key.endswith(('in_proj_weight','in_proj_bias')) else [(a,before)]
+        for x,y in pieces:
+            if np.linalg.norm(y)>0:nd+=float(np.linalg.norm(x-y)**2/np.linalg.norm(y)**2)
+            else:np.testing.assert_array_equal(x,y)
+    assert abs(nd**.5-distance)<1e-10
+    torch.save(dict(original=original,edits=edits,head_order=order,rows=records),out/'head_identity.pt')
+    save_json(out/'geometry.json',dict(status='known_symmetry_control_weight_checks_passed' if distance<=6 else 'closed_declared_parameter_budget_failed',
+        logical_parameter_distance=distance,original_parameter_budget=.5,original_parameter_budget_passed=distance<=.5,
+        separately_predeclared_parameter_budget=6.,task_budget=.5,NumPy_distance_error=abs(nd**.5-distance),NumPy_head_cost_error=maximum,
+        all_tensors_exactly_restored_by_public_anchor_head_matching=True,matched_unprotected_head_assignment_identity=True,
+        head_matching='GeneralizedLMC5e343c0 Qaug.T@Kaug / O@Vaug Frobenius costs, SciPy assignment native adaptation; not full official GLMC.',
+        rows=records,raw_sha256=digest(out/'head_identity.pt'),checkpoint_sha256=pins,source_sha256=digest(__file__),
+        source_images=0,gradients=0,new_released_models=0,novelty_claim=False,wall_seconds=time.monotonic()-start))
+
+
 @torch.no_grad()
 def affine_matching_geometry(output):
     """One weight-only, fixed-budget certificate for a changed MLP assignment."""
@@ -97,7 +186,9 @@ def audit(output):
     _,expert,_,pins=checked_models('MNIST')
     ref=cfg['AGA_references']['MNIST'];assert digest(ref['path'])==ref['sha256']
     baseline=torch.load(ref['path'],map_location='cpu')
-    release=out/'artifacts/release.pt';attack=out/'artifacts/released_AGA_edits.pt'
+    release=Path(cfg['release']['path']) if isinstance(cfg.get('release'),dict) else out/'artifacts/release.pt'
+    attack=out/'artifacts/AGA_release_edits.pt'
+    if not attack.exists():attack=out/'artifacts/released_AGA_edits.pt'
     assert digest(release)==execution['release_sha256'] and digest(attack)==execution['AGA_edits_sha256']
     published=expert.state_dict()|torch.load(release,map_location='cpu')
     recovered=baseline|torch.load(attack,map_location='cpu')
@@ -326,6 +417,58 @@ def fixedpoint_cost(output):
 
 
 @torch.no_grad()
+def matching_response(output):
+    """Frozen 2x2 assignment/gauge counterfactual; never select another release."""
+    import copy
+    from scipy.special import expit
+    from clip_benchmark import merge
+    from cross_module_distance import capture_attention, extended_parameters, final_hidden
+    from covariance_noise import dataset
+    from evaluate_local_residual_transport import inputs
+    from local_residual_transport import metric
+    from probe_margin_distance import scores
+    from verify_levelset_audits import convert, raw_scores
+    out=Path(output);assert not (out/'matching_response.json').exists();start=time.monotonic()
+    cfg=json.loads((out/'protocol.json').read_text());meta=json.loads((out/'execution.json').read_text());assert meta['completed']
+    anchor,own,peer,release,heads,_,aligned=inputs(cfg);folder=Path(cfg['release']['path']).parent
+    point=torch.load(folder/'point.pt',map_location='cpu');source=torch.load(folder/'source.pt',map_location='cpu')
+    source_meta=json.loads((folder/'results.json').read_text());assert digest(folder/'source.pt')==source_meta['raw_sha256']
+    proto=json.loads((folder/'protocol.json').read_text());pin=proto['matching_geometry']
+    assert digest(pin['path'])==pin['sha256'];g=torch.load(pin['path'],map_location='cpu')
+    p0,p1=g['original_restore'],g['changed_restore'];state=own.state_dict();prefix='model.visual.transformer.resblocks.11.mlp.'
+    actual=aligned['MNIST'].state_dict()|torch.load(out/'artifacts/AGA_release_edits.pt',map_location='cpu')
+    control=merge(anchor,aligned['MNIST'],peer,.5);head=heads['MNIST'];p=extended_parameters(control,head)
+    cache=capture_attention(control,dataset('MNIST','data',own.val_preprocess,True),source['indices'])
+    rounding=cache['h']-final_hidden(cache['r'],p);before=scores(cache['h'],p);records=[];all_scores={};error=0.
+    for gauge in [False,True]:
+        for changed_order in [False,True]:
+            order=p1 if changed_order else p0;model=copy.deepcopy(aligned['MNIST']);s=model.state_dict();edited=release.state_dict() if gauge else state
+            for name in ['c_fc.weight','c_fc.bias']:s[prefix+name].copy_(edited[prefix+name][order])
+            s[prefix+'c_proj.weight'].copy_(state[prefix+'c_proj.weight'][:,order])
+            if gauge and changed_order:
+                assert all(torch.equal(v,actual[k]) for k,v in s.items()),'Factorial endpoint must equal executed author AGA.'
+            fused=merge(anchor,model,peer,.5);q=extended_parameters(fused,head)
+            for k,v in p.items():
+                if k not in ['A','a','B'] and torch.is_tensor(v):assert torch.equal(v,q[k]),k
+            h=rounding+final_hidden(cache['r'],q);after=scores(h,q);qn=convert(q);r=cache['r'].numpy();center=r-r.mean(1,keepdims=True)
+            pre=(center/np.sqrt((center*center).mean(1,keepdims=True)+qn['eps2'])*qn['gamma2']+qn['beta2'])@qn['A'].T+qn['a']
+            hn=rounding.numpy()+r+(pre*expit(1.702*pre))@qn['B'].T+qn['b']
+            err=float(abs(raw_scores(hn,qn)-after.numpy()).max());assert err<1e-8;error=max(error,err)
+            name=f'gauge{int(gauge)}_assignment{int(changed_order)}';all_scores[name]=after
+            records.append(dict(gauge=gauge,changed_assignment=changed_order,**metric(before,after,len(before)),
+                score_change_RMS=float((after-before).square().mean().sqrt())))
+            del model,fused
+    torch.save(dict(scores=all_scores,indices=source['indices']),out/'artifacts/matching_response.pt')
+    save_json(out/'matching_response.json',dict(status='frozen_retrospective_factorial_passed',rows=records,
+        source_n=len(before),NumPy_complete_tail_maximum_error=error,source_raw_sha256=source_meta['raw_sha256'],
+        evaluation_predictions_sha256=meta['predictions_sha256'],release_sha256=cfg['release']['sha256'],
+        raw_sha256=digest(out/'artifacts/matching_response.pt'),source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
+        new_training_images=0,source_image_reuses=len(before),test_images=0,gradients=0,new_releases=0,
+        partner_used_for_retrospective_evaluation_only=True,
+        scope='Only frozen512 construction indices and this one real target-only merger. Assignment/gauge finite effects are not new defense selection or an unknown-partner guarantee.'))
+
+
+@torch.no_grad()
 def normalization_geometry(output):
     """Decompose the frozen point and recount its evaluated class losses; no fitting."""
     from scipy.special import logsumexp
@@ -335,7 +478,7 @@ def normalization_geometry(output):
     edits=torch.load(cfg['release']['path'],map_location='cpu');assert digest(cfg['release']['path'])==cfg['release']['sha256']
     point=torch.load(pointdir/'point.pt',map_location='cpu');prefix='model.visual.transformer.resblocks.11.attn.'
     geometry={}
-    for key in ['in_proj_weight','out_proj.weight']:
+    for key in ([] if point.get('site') in ['MLP','HEAD','READOUT'] else ['in_proj_weight','out_proj.weight']):
         k=prefix+key;original=state[k].double().numpy();delta=edits[k].double().numpy()-original
         if key=='in_proj_weight':
             task=(state[k][1536:]-base[k][1536:]).double().numpy();_,_,vh=np.linalg.svd(task,full_matrices=False);v=vh[:32];d=delta[1536:]
@@ -344,6 +487,42 @@ def normalization_geometry(output):
         geometry[key]=dict(relative_distance=float(np.linalg.norm(delta)/den),task32_inside_distance=float(np.linalg.norm(inside)/den),
             task32_outside_distance=float(np.linalg.norm(outside)/den),outside_squared_energy_fraction=float(np.linalg.norm(outside)**2/np.linalg.norm(d)**2),
             orthogonality_error=float(abs(np.sum(inside*outside))),denominator='Full edited tensor, including unchanged Q/K where applicable.')
+    if point.get('site')=='MLP':
+        for k,changed in edits.items():
+            original=state[k].double().numpy();delta=changed.double().numpy()-original;den=np.linalg.norm(original)
+            geometry[k]=dict(relative_distance=float(np.linalg.norm(delta)/den),denominator='Whole logical A matrix or its own bias, float64.')
+            if delta.ndim==2:
+                v=point['vh'].numpy();inside=(delta@v.T)@v;outside=delta-inside
+                geometry[k].update(task32_inside_distance=float(np.linalg.norm(inside)/den),task32_outside_distance=float(np.linalg.norm(outside)/den),
+                    outside_squared_energy_fraction=float(np.linalg.norm(outside)**2/np.linalg.norm(delta)**2))
+    if point.get('site')=='HEAD':
+        for k,changed in edits.items():
+            a,b=changed.double().numpy(),state[k].double().numpy()
+            pieces=zip(['Q','K','V'],np.split(a,3),np.split(b,3)) if k.endswith(('in_proj_weight','in_proj_bias')) else [('O',a,b)]
+            for name,x,y in pieces:geometry[k+':'+name]=dict(relative_distance=float(np.linalg.norm(x-y)/np.linalg.norm(y)) if np.linalg.norm(y)>0 else 0.,
+                denominator='Whole separate logical projection or its bias, float64; known head-permutation control, not functional distance.')
+    if point.get('site')=='READOUT':
+        for k,changed in edits.items():
+            delta=changed.double().numpy()-state[k].double().numpy();den=np.linalg.norm(state[k].double().numpy())
+            geometry[k]=dict(relative_distance=float(np.linalg.norm(delta)/den),denominator='Own full final LN bias or projection tensor, float64.')
+            if delta.ndim==2:
+                v=point['vh'].numpy();inside=v.T@(v@delta);outside=delta-inside
+                geometry[k].update(task32_inside_distance=float(np.linalg.norm(inside)/den),task32_outside_distance=float(np.linalg.norm(outside)/den),
+                    outside_squared_energy_fraction=float(np.linalg.norm(outside)**2/np.linalg.norm(delta)**2))
+        source=torch.load(pointdir/'source.pt',map_location='cpu');h=source['inputs'].double().numpy();gamma=point['gamma'].numpy()
+        z=(h-h.mean(1,keepdims=True))/np.sqrt(((h-h.mean(1,keepdims=True))**2).mean(1,keepdims=True)+point['eps'])
+        beta,p=point['beta'].numpy(),point['projection'].numpy();head=source['head_weight'].numpy()
+        bp,pp=[edits[k].double().numpy() for k in ['model.visual.ln_post.bias','model.visual.proj']]
+        f=(z*gamma+beta)@p;mid=(z*gamma+(beta+bp)/2)@((p+pp)/2);shift=mid-f
+        n=point['normal'].numpy();c=float(point['constant']);r=json.loads((pointdir/'before_images.json').read_text())['geometry']['r']
+        ideal=c*r*r/(4*(1-r))*(n@p);error=float(abs(shift-ideal).max());assert error<1e-6
+        scores=f/np.linalg.norm(f,axis=1,keepdims=True)@head.T;after=mid/np.linalg.norm(mid,axis=1,keepdims=True)@head.T
+        y=scores.argmax(1);ix=np.arange(len(y));numer=f@head.T;dn=shift@head.T;gap=numer[ix,y,None]-numer;gap[ix,y]=1
+        harm=-(dn[ix,y,None]-dn)/np.maximum(gap,1e-12);harm[ix,y]=0
+        geometry['fixed_source_self_midpoint']=dict(n=len(y),changed=int((y!=after.argmax(1)).sum()),feature_shift_norm=float(np.linalg.norm(ideal)),
+            finite_constant_identity_error=error,maximum_signed_numerator_margin_harm=float(harm.max()),
+            maximum_harm_per_image_quantiles=np.quantile(harm.max(1),[.5,.95,1]).tolist(),
+            scope='Fixed source-only self-chord after freezing. Not a true partner/AGA evaluation, new candidate, or universal no-change certificate.')
     meta=json.loads((out/'execution.json').read_text());assert meta['completed']
     rawpath=out/'artifacts/predictions.pt';assert digest(rawpath)==meta['predictions_sha256']
     raw=torch.load(rawpath,map_location='cpu');rows=[]
@@ -375,6 +554,9 @@ if __name__=='__main__':
     mode.add_argument('--fixedpoint',action='store_true')
     mode.add_argument('--fixedpoint-cost',action='store_true')
     mode.add_argument('--normalization',action='store_true')
+    mode.add_argument('--matching-response',action='store_true')
+    mode.add_argument('--head-identity',action='store_true')
+    mode.add_argument('--head-recovery',action='store_true')
     mode.add_argument('--affine-matching',action='store_true')
     args=parser.parse_args();torch.set_num_threads(4)
-    (affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
+    (head_identity_recovery if args.head_recovery else head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
