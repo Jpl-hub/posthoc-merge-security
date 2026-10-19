@@ -2,7 +2,7 @@
   "start_utc": "2026-10-19T04:09:41Z",
   "end_utc": "2026-10-19T09:09:41Z",
   "status": "active_five_hour_Defense2_research",
-  "current": "No GPU research job active after this completed verified batch; original Defense2 mechanism unresolved. Hourly checker remains a monitor only.",
+  "current": "CPU source-only affine classifier geometry check; no GPU exploration active, no new defense release.",
   "GPU": "RTX3090",
   "automation_status": "ACTIVE",
   "automation_id": "13-35",
@@ -27,7 +27,7 @@
     "scientific_result_remote_commit": "f9c080175e98d4df600cce13188f1b74085d7445",
     "automatic_followup": false
   },
-  "updated_utc": "2026-10-19T07:27:41.943114+00:00",
+  "updated_utc": "2026-10-19T07:33:06.338812+00:00",
   "affine_matching": {
     "status": "closed_independently_verified_no_target_protection",
     "pair": [
@@ -159,12 +159,26 @@
   },
   "server_monitor_status": "running",
   "affine_readout_family_limit": {
-    "status": "proof_and_read_only_check_preregistered",
+    "status": "complete_source_only_native_equivalence_check",
     "scope": "Fixed-prefix all-hidden-input normalized visual feature equivalence, affine rank at least2; not changed-prefix OB/AB or classification-only task0.5 necessity. Known affine algebra, not novel attack or defense.",
     "source": "experiments/bias_canonicalization.py --affine-family outputs/phase2_ln_readout_compensation_mnist_20261019",
     "new_defense_releases": 0,
     "new_images": 0,
     "full_model_forwards": 0,
-    "new_merging_or_AGA_evaluation": false
+    "new_merging_or_AGA_evaluation": false,
+    "result": "results/ln_readout_compensation/affine_family_limit.json",
+    "canonical_projection_max_abs_difference": 6.012667052614218e-10,
+    "FP32_unequal_entries": 113318,
+    "real_recovery_accuracy_evaluated": false
+  },
+  "affine_readout_class_face_limit": {
+    "status": "weight_only_45_fixed_faces_preregistered",
+    "hypothesis": "Conditional all-hidden-state classification rigidity if all original task class pairs have strict-top shared faces in LN open ball; not an actual-task preservation impossibility.",
+    "q_gap": 1,
+    "number_of_pairs": 45,
+    "witness_method": "minimum norm SVD and independent class-difference QR",
+    "no_gap_rank_or_threshold_search": true,
+    "source": "experiments/bias_canonicalization.py --class-faces outputs/phase2_ln_readout_compensation_mnist_20261019",
+    "new_images_or_candidates": 0
   }
 }

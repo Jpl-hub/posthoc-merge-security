@@ -102,6 +102,40 @@ def affine_family(folder):
         scope='Fixed-prefix/all-hidden-input full normalized visual-feature equivalence only, rank>=2/epsilon>0. Not classification-only preservation, changed-prefix OB/AB, empirical task0.5 necessity or a universal no-defense theorem. Matching all merger inputs would require a new frozen protocol and matched controls.'))
 
 
+def class_faces(folder):
+    """All fixed unit-gap class faces, using weights only; not image witnesses."""
+    from itertools import combinations
+    root=Path(folder);output=root/'class_face_limit.json';assert not output.exists();start=time.monotonic();torch.set_num_threads(4)
+    freeze=json.loads((root/'before_images.json').read_text());report=json.loads((root/'results.json').read_text())
+    assert digest(root/'point.pt')==freeze['point_sha256'] and digest(root/'source.pt')==report['raw_sha256']
+    point=torch.load(root/'point.pt',map_location='cpu');head=torch.load(root/'source.pt',map_location='cpu')['head_weight'].numpy()
+    gamma,beta,p=[point[k].numpy() for k in ['gamma','beta','projection']];d=len(gamma);k=len(head);t=head-head.mean(0)
+    L=gamma[:,None]*p;L-=L.mean(0);M=L@t.T;c=(beta@p)@t.T
+    U,s,V=np.linalg.svd(M,full_matrices=False);tol=np.finfo(float).eps*max(M.shape)*s[0];keep=s>tol;assert int(keep.sum())==k-1
+    pairs=list(combinations(range(k),2));q=np.full((len(pairs),k),-2/k)
+    for n,(i,j) in enumerate(pairs):q[n,i]+=1;q[n,j]+=1
+    u=(((q-c)@V[keep].T)/s[keep])@U[:,keep].T
+    # Independent QR on K-1 class differences, not the SVD pseudoinverse.
+    A=M[:,:-1]-M[:,-1,None];Q,R=np.linalg.qr(A,mode='reduced');rhs=(q-c)[:,:-1]-(q-c)[:,-1,None]
+    qr=np.linalg.solve(R.T,rhs.T).T@Q.T;error=float(abs(qr-u).max());assert error<1e-8
+    residual=float(abs(u@M+c-q).max());assert residual<1e-8
+    norms=np.linalg.norm(u,axis=1);covered=norms<np.sqrt(d)*(1-1e-8);rows=[];reconstruction=0.
+    for n,(i,j) in enumerate(pairs):
+        gap=None
+        if covered[n]:
+            h=np.sqrt(point['eps']/(1-norms[n]**2/d))*u[n];hc=h-h.mean();actual=hc/np.sqrt(np.mean(hc*hc)+point['eps'])
+            reconstruction=max(reconstruction,float(abs(actual-u[n]).max()));scores=actual@M+c
+            others=[a for a in range(k) if a not in [i,j]];gap=float(min(scores[i],scores[j])-scores[others].max());assert gap>1-1e-8
+        rows.append(dict(class_pair=[i,j],normalized_hidden_norm=float(norms[n]),inside_LN_open_ball=bool(covered[n]),strict_gap_to_other_classes=gap))
+    assert reconstruction<1e-8
+    save_json(output,dict(status='weight_only_class_face_conditions_checked',classes=k,task_affine_rank=int(keep.sum()),class_pairs=len(pairs),
+        covered_class_pairs=int(covered.sum()),complete_adjacency_condition_passed=bool(covered.all()),rows=rows,
+        maximum_hidden_norm_fraction=float(norms.max()/np.sqrt(d)),QR_SVD_witness_error=error,affine_score_residual=residual,
+        LN_inverse_reconstruction_error=reconstruction,source_sha256=digest(__file__),point_sha256=freeze['point_sha256'],
+        head_source_cache_sha256=report['raw_sha256'],new_images=0,full_model_forwards=0,new_candidates=0,gradients=0,wall_seconds=time.monotonic()-start,
+        scope='Synthetic normalized hidden-state adjacency witnesses from original weights only, not MNIST images or task counterexamples. Conditional fixed-prefix/all-hidden-input classifier rigidity, not finite-task0.5 or changed-prefix OB/AB impossibility. No alternate gap scale, rank or witness optimization.'))
+
+
 @torch.no_grad()
 def run(protocol, full=False, verify=False):
     start = time.monotonic()
@@ -199,5 +233,8 @@ def run(protocol, full=False, verify=False):
 
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__); ap.add_argument('--protocol',default='configs/bias_canonicalization.json')
-    ap.add_argument('--full',action='store_true'); ap.add_argument('--verify',action='store_true');ap.add_argument('--affine-family');args=ap.parse_args()
-    affine_family(args.affine_family) if args.affine_family else run(args.protocol,args.full,args.verify)
+    ap.add_argument('--full',action='store_true'); ap.add_argument('--verify',action='store_true')
+    mode=ap.add_mutually_exclusive_group();mode.add_argument('--affine-family');mode.add_argument('--class-faces');args=ap.parse_args()
+    if args.affine_family:affine_family(args.affine_family)
+    elif args.class_faces:class_faces(args.class_faces)
+    else:run(args.protocol,args.full,args.verify)
