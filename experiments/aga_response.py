@@ -12,7 +12,7 @@ from scipy.special import expit
 from clip_benchmark import digest, merge
 from covariance_noise import dataset
 from cross_module_distance import capture_attention, extended_parameters, final_hidden
-from local_residual_transport import cpu, forward
+from local_residual_transport import cpu, forward, metric
 from mechanisms import load_author
 from probe_distance_candidate import on_device
 from subspace_probe import save_json
@@ -237,7 +237,50 @@ def affine_audit(protocol):
     save_json(out/'mechanism_and_class_loss.json',report);print(json.dumps({k:v for k,v in report.items() if not k.startswith('full_')}),flush=True)
 
 
+@torch.no_grad()
+def branch_norm_check(protocol):
+    """A finite skip/branch norm identity, not a retry of the old readout reflection."""
+    from probe_margin_distance import scores
+    cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output']);start=time.monotonic()
+    assert digest(__file__)==cfg['source_sha256'] and digest(cfg['source']['path'])==cfg['source']['sha256']
+    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    raw=torch.load(cfg['source']['path'],map_location='cpu');anchor,expert,head,pins=checked_models('MNIST')
+    p=extended_parameters(expert,head);pg=on_device(p);block=expert.model.visual.transformer.resblocks[11].cuda();rs=[];zs=[]
+    for part in raw['inputs'].split(64):
+        x=part.cuda().transpose(0,1);v=block.ln_1(x);a=block.attn(v,v,v,need_weights=False)[0]
+        r=x[0]+a[0];z=block.mlp.gelu(block.mlp.c_fc(block.ln_2(r)));rs.append(r.double());zs.append(z.double())
+    block.cpu();r,z=torch.cat(rs),torch.cat(zs);s=r+pg['b'];m=z@pg['B'].T;h=s+m
+    d=h.shape[1];readout=torch.cat([torch.ones((d,1),device='cuda'),pg['gamma'][:,None]*pg['projection']],1)
+    u,sv,_=torch.linalg.svd(readout,full_matrices=True);rank=int((sv>sv[0]*1e-10).sum());kernel=u[:,rank:]
+    skip=s@kernel;gram=skip.T@skip/len(s);eigenvalues,v=torch.linalg.eigh(gram);axes=kernel@v
+    cumulative=4*(axes.T@pg['B']).square().sum(1).cumsum(0)/pg['B'].square().sum()
+    k=int((cumulative<=(cfg['parameter_budget']*(1-1e-6))**2).sum());assert k>0
+    N=axes[:,:k];ideal=pg['B']-2*N@(N.T@pg['B']);B=ideal.float().double()
+    distance=float((B-pg['B']).norm()/pg['B'].norm());assert distance<=cfg['parameter_budget']
+    before=scores(h,pg);full_control=float((before.cpu()-raw['before']).abs().max());assert full_control<=cfg['score_tolerance']
+    groups={};sigma0=(h-h.mean(1,keepdim=True)).square().mean(1)+pg['eps'];identity_error=0.;np_error=0.
+    pn=convert(p)
+    for lam in [1.,.5]:
+        hi=s+z@(pg['B']+lam*(B-pg['B'])).T;after=scores(hi,pg)
+        exact=s+m-2*lam*(m@N)@N.T
+        measured=(exact-exact.mean(1,keepdim=True)).square().mean(1)+pg['eps']-sigma0
+        rhs=(-4*lam*((s@N)*(m@N)).sum(1)-4*lam*(1-lam)*(m@N).square().sum(1))/d
+        error=float((measured-rhs).abs().max());identity_error=max(identity_error,error);assert error<1e-8
+        ns=raw_scores(hi.cpu().numpy(),pn);np_error=max(np_error,float(abs(ns-after.cpu().numpy()).max()));assert np_error<1e-8
+        groups[str(lam)]=dict(metric=metric(before,after,len(h)),
+            relative_sigma_change_quantiles=torch.quantile(((sigma0+measured).sqrt()/sigma0.sqrt()-1),torch.tensor([0.,.5,1.],device='cuda',dtype=torch.float64)).cpu().tolist())
+    report=dict(status='completed_read_only_mechanism_check',natural_n=len(h),reflection_rank=k,kernel_dimension=kernel.shape[1],parameter_distance=distance,
+        source_task_feasible=groups['1.0']['metric']['worst_task_drift']<=cfg['task_budget'],groups=groups,finite_variance_identity_error=identity_error,
+        NumPy_complete_score_error=np_error,native_prefix_score_control=full_control,skip_covariance_eigenvalues=eigenvalues.cpu().tolist(),
+        kernel_readout_error=float((N.T@readout).abs().max()),expert_updates=0,gradients=0,new_images=0,
+        prefix_block_replays=len(h),new_confirmations=0,new_released_models=0,source_sha256=digest(__file__),checkpoint_sha256=pins,
+        scope='Same original construction inputs; ideal conditional branch reflection plus one quantized-B counterfactual, not a native release/confirmation or real fusion result. Midpoint is source self-chord only, not a universal defense gate.',wall_seconds=time.monotonic()-start)
+    torch.save(dict(N=N.cpu(),r=r.cpu(),z=z.cpu(),p=p,groups=groups,source_indices=raw['indices']),out/'mechanism.pt')
+    report['raw_sha256']=digest(out/'mechanism.pt');save_json(out/'results.json',report);print(json.dumps(report),flush=True)
+
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--cost',action='store_true');ap.add_argument('--affine',action='store_true');a=ap.parse_args();initialize()
-    if a.affine: affine_audit(a.protocol)
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--cost',action='store_true');ap.add_argument('--affine',action='store_true');ap.add_argument('--branch-norm',action='store_true');a=ap.parse_args();initialize()
+    if a.branch_norm: branch_norm_check(a.protocol)
+    elif a.affine: affine_audit(a.protocol)
     else: (verify_cost if a.cost else verify)(a.verify) if a.verify else (functional_cost if a.cost else run)(a.protocol)
