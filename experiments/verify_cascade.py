@@ -685,6 +685,95 @@ def replay_distributed_response(output):
     print(json.dumps({k:report[k] for k in ['status','prototype_score_error','worst_task_drift','changed','actual_FP32_logical_distance','audit_wall_seconds']}),flush=True)
 
 
+def audit_distributed_tangent(output):
+    """Separate missing source constraints from finite curvature; never edit the ray."""
+    from torch.autograd import forward_ad
+    from torch.nn.attention import sdpa_kernel, SDPBackend
+    from covariance_noise import dataset
+    from subspace_probe import make_loader
+    from task_probe_distance import checked_models, initialize
+
+    initialize();start=time.monotonic();out=Path(output)
+    assert not (out/'tangent_preflight.json').exists(), 'Never overwrite an audit.'
+    cfg=json.loads((out/'protocol.json').read_text());audit=json.loads((out/'independent_validation.json').read_text())
+    assert audit['status']=='independently_verified_closed_source_experiment'
+    for name in ['direction.pt','source_baseline.pt','attempt_scores.pt']:
+        assert digest(out/name)==audit['raw_sha256'][name],name
+    save_json(out/'tangent_preflight.json',dict(source_sha256=digest(__file__),n=cfg['fit_n'],batch_size=cfg['batch_size'],
+        input_audit_sha256=digest(out/'independent_validation.json'),native_score_tolerance=cfg['full_model_score_tolerance'],
+        core_normalized_row_tolerance=cfg['projection_tolerance'],checksum_relative_tolerance=1e-5,
+        scope='Original FP32 expert; fixed closed direction and all8 cached radii. Math attention only for forward-mode AD, with matched primal controls. No new indices, correction, direction, candidate, confirmation, test, fusion or AGA.'))
+    raw=torch.load(out/'direction.pt',map_location='cpu',weights_only=False)
+    base=torch.load(out/'source_baseline.pt',map_location='cpu',weights_only=False)
+    attempts=torch.load(out/'attempt_scores.pt',map_location='cpu',weights_only=False)
+    anchor,expert,head,pins=checked_models(cfg['target']);del anchor
+    training=dataset(cfg['target'],'data',expert.val_preprocess,True)
+    expert.cuda();head.cuda();direction=raw['direction'].cuda();runtime=dict(scalar=None);handles=[]
+    for layer,block in enumerate(expert.model.visual.transformer.resblocks):
+        b=raw['basis'][layer];u,v=b['u'].cuda(),b['v'].cuda();norm=b['norm']
+        def hook(_m,args,value,layer=layer,u=u,v=v,norm=norm):
+            z=args[0];perp=z-(z@v.T)@v
+            return value+runtime['scalar']*norm*((perp@direction[layer].T)@u.T)
+        handles.append(block.mlp.c_proj.register_forward_hook(hook))
+    indices=raw['source_indices'][:cfg['fit_n']]
+    assert indices==base['indices'][:cfg['fit_n']]
+    values=[];tangents=[];checksum=[];forwards=0
+    previous=torch.backends.mha.get_fastpath_enabled();torch.backends.mha.set_fastpath_enabled(False)
+    try:
+        with sdpa_kernel(SDPBackend.MATH):
+            for batch_index,(x,_) in enumerate(make_loader(training,indices,cfg['batch_size'])):
+                x=x.cuda()
+                with torch.no_grad(),forward_ad.dual_level():
+                    zero=torch.zeros((),device='cuda')
+                    runtime['scalar']=forward_ad.make_dual(zero,torch.ones_like(zero))
+                    primal,tangent=forward_ad.unpack_dual(head(expert(x)))
+                    assert tangent is not None
+                    values.append(primal.cpu());tangents.append(tangent.cpu());forwards+=len(x)
+                if batch_index==0:
+                    with torch.enable_grad():
+                        runtime['scalar']=torch.zeros((),device='cuda',requires_grad=True)
+                        scores=head(expert(x));forwards+=len(x)
+                        grid=torch.arange(scores.numel(),device='cuda').reshape(scores.shape)
+                        for pattern in [torch.where(grid%7<3,1.,-1.),torch.where(grid%11<5,1.,-1.)]:
+                            pattern=pattern/scores.numel()**.5
+                            reverse=float(torch.autograd.grad((scores*pattern).sum(),runtime['scalar'],retain_graph=True)[0])
+                            forward=float((tangents[0].cuda()*pattern).sum())
+                            error=abs(reverse-forward)/max(1.,abs(reverse),abs(forward))
+                            checksum.append(dict(reverse=reverse,forward=forward,relative_error=error))
+    finally:
+        for handle in handles:handle.remove()
+        torch.backends.mha.set_fastpath_enabled(previous)
+    primal=torch.cat(values).numpy().astype(np.float64);tangent=torch.cat(tangents).numpy().astype(np.float64)
+    before=base['before'][:len(indices)].numpy().astype(np.float64)
+    native_error=float(abs(primal-before).max());y=before.argmax(1);rows=np.arange(len(y))
+    gaps=before[rows,y,None]-before;keep=np.ones_like(gaps,dtype=bool);keep[rows,y]=False
+    assert (gaps[keep]>0).all();gaps[~keep]=1.
+    linear=(tangent[rows,y,None]-tangent)/gaps;linear[~keep]=0.
+    core=raw['core'].numpy();mask=np.zeros(len(y),dtype=bool);mask[core]=True
+    measured=linear[core][keep[core]]/np.asarray(raw['row_norms'])
+    expected=raw['jacobian'].numpy().astype(np.float64)@raw['direction'].numpy().astype(np.float64).reshape(-1)
+    core_error=float(abs(measured-expected).max());records=[]
+    for actual,old in zip(attempts,audit['rows']):
+        a=actual.numpy().astype(np.float64);ds=a-before
+        finite=(ds[rows,y,None]-ds)/gaps;finite[~keep]=0.
+        first=old['radius']*linear;remainder=finite-first
+        records.append(dict(radius=old['radius'],finite_R=float(abs(finite).max()),
+            first_order_R=float(abs(first).max()),nonlinear_remainder_R=float(abs(remainder).max()),
+            core20_first_order_R=float(abs(first[mask]).max()),core20_remainder_R=float(abs(remainder[mask]).max()),
+            other492_first_order_R=float(abs(first[~mask]).max()),other492_remainder_R=float(abs(remainder[~mask]).max())))
+    torch.save(dict(tangent=torch.from_numpy(tangent),primal=torch.from_numpy(primal),indices=indices),out/'tangent_scores.pt')
+    report=dict(status='closed_direction_source_tangent_audit',rows=records,native_score_error=native_error,
+        core_normalized_row_error=core_error,reverse_forward_checks=checksum,raw_sha256=digest(out/'tangent_scores.pt'),
+        source_sha256=digest(__file__),input_audit_sha256=digest(out/'independent_validation.json'),checkpoint_sha256=pins,
+        model_image_forward_instances=forwards,forward_mode_inputs=len(indices),reverse_checksum_calls=2,
+        new_indices=0,new_candidates=0,new_released_weights=0,new_TA_calls=0,new_AGA_calls=0,wall_seconds=time.monotonic()-start,
+        limitations='FP32 directional linearization at the original expert; finite residuals are cached source observations. No universal bound, new defense, repaired point or attack performance.')
+    report['numeric_checks_passed']=native_error<=cfg['full_model_score_tolerance'] and core_error<=cfg['projection_tolerance'] and max(c['relative_error'] for c in checksum)<=1e-5
+    save_json(out/'tangent_validation.json',report)
+    assert report['numeric_checks_passed'], 'Retain numerical failure, do not change tolerances.'
+    print(json.dumps(dict(status=report['status'],native_score_error=native_error,core_error=core_error,last=records[-1],wall_seconds=report['wall_seconds'])),flush=True)
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--protocol')
@@ -697,8 +786,11 @@ if __name__=='__main__':
     ap.add_argument('--joint-class-response')
     ap.add_argument('--distributed-response')
     ap.add_argument('--distributed-replay')
+    ap.add_argument('--distributed-tangent')
     args=ap.parse_args()
-    if args.distributed_replay:
+    if args.distributed_tangent:
+        audit_distributed_tangent(args.distributed_tangent)
+    elif args.distributed_replay:
         replay_distributed_response(args.distributed_replay)
     elif args.distributed_response:
         verify_distributed_response(args.distributed_response)
