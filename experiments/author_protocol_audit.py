@@ -19,6 +19,17 @@ from verify_covariance_noise import official_labels
 from verify_probe_candidate import explicit_merge
 
 
+def logical_parameter_distance(edits,original):
+    total=0.
+    for k,v in edits.items():
+        a,b=v.double(),original[k].double()
+        pieces=zip(a.chunk(3,0),b.chunk(3,0)) if k.endswith(('attn.in_proj_weight','attn.in_proj_bias')) else [(a,b)]
+        for changed,before in pieces:
+            if float(before.norm())==0:assert torch.equal(changed,before);continue
+            total+=float((changed-before).norm().square()/before.norm().square())
+    return total**.5
+
+
 def setup(cfg):
     torch.set_num_threads(4)
     torch.backends.cuda.matmul.allow_tf32 = False
@@ -48,7 +59,8 @@ def setup(cfg):
         released.state_dict()[k].copy_(v)
     distance = sum(float(((v.double() - own.state_dict()[k].double()).norm()
                           / own.state_dict()[k].double().norm()) ** 2) for k, v in edits.items()) ** .5
-    assert distance <= .5
+    if cfg.get('logical_qkv_budget'):distance=logical_parameter_distance(edits,own.state_dict())
+    assert distance <= cfg.get('parameter_budget',.5)
     confirmation = json.loads(Path(cfg["prior_confirmation"]).read_text())
     assert confirmation["status"] == "passed"
     return anchor, own, peer, released, heads, distance

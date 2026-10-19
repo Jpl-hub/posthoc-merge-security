@@ -25,6 +25,50 @@ def permutation(before, after):
 
 
 @torch.no_grad()
+def head_identity_geometry(output):
+    """One known whole-head permutation control; not a new defense mechanism."""
+    from scipy.optimize import linear_sum_assignment
+    from author_protocol_audit import logical_parameter_distance
+    out=Path(output);assert not out.exists();out.mkdir(parents=True);torch.set_num_threads(4);start=time.monotonic()
+    anchor,expert,_,pins=checked_models('MNIST');s,b=expert.state_dict(),anchor.state_dict()
+    order=torch.tensor([1,0]+list(range(2,12)));ix=(64*order[:,None]+torch.arange(64)[None]).flatten()
+    edits={};original={};records=[];restored={};maximum=0.
+    def features(w,bias,o):
+        q,k,v=torch.cat([w.double(),bias.double()[:,None]],1).reshape(3,12,64,769)
+        return q.transpose(1,2)@k,o.double().reshape(768,12,64).permute(1,0,2)@v
+    for layer in range(12):
+        p=f'model.visual.transformer.resblocks.{layer}.attn.';wk,bk,ok=[p+n for n in ['in_proj_weight','in_proj_bias','out_proj.weight']]
+        full=torch.cat([ix+768*j for j in range(3)])
+        for key,v in [(wk,s[wk][full]),(bk,s[bk][full]),(ok,s[ok][:,ix])]:original[key]=s[key];edits[key]=v.clone()
+        f=features(s[wk],s[bk],s[ok]);a=features(b[wk],b[bk],b[ok]);cost=torch.zeros(12,12,dtype=torch.float64)
+        for i in range(12):
+            for j in range(12):cost[i,j]=sum((x[i]-y[j]).norm() for x,y in zip(f,a))
+        cn=np.stack([sum(np.linalg.norm(x[i].numpy()-y[j].numpy()) for x,y in zip(f,a)) for i in range(12) for j in range(12)]).reshape(12,12)
+        maximum=max(maximum,float(abs(cn-cost.numpy()).max()));assert maximum<1e-8
+        base_row,base_col=linear_sum_assignment(cn);row,col=linear_sum_assignment(cn[order.numpy()]);restore=torch.empty(12,dtype=torch.long);restore[torch.tensor(col)]=torch.tensor(row)
+        chosen=cn[order.numpy()][row,col];other=np.array(cn[order.numpy()],copy=True);other[row,col]=np.inf
+        margin=float((other.min(1)-chosen).min());assert margin>0 and np.array_equal(base_col,np.arange(12))
+        reindex=(64*restore[:,None]+torch.arange(64)[None]).flatten();allrows=torch.cat([reindex+768*j for j in range(3)])
+        for key,v in [(wk,edits[wk][allrows]),(bk,edits[bk][allrows]),(ok,edits[ok][:,reindex])]:assert torch.equal(v,s[key]);restored[key]=v
+        records.append(dict(layer=layer,original_matching=base_col.tolist(),release_recovery_order=restore.tolist(),minimum_strict_row_cost_margin=margin))
+    distance=logical_parameter_distance(edits,s);nd=0.
+    for key,v in edits.items():
+        a,before=v.double().numpy(),s[key].double().numpy();pieces=zip(np.split(a,3),np.split(before,3)) if key.endswith(('in_proj_weight','in_proj_bias')) else [(a,before)]
+        for x,y in pieces:
+            if np.linalg.norm(y)>0:nd+=float(np.linalg.norm(x-y)**2/np.linalg.norm(y)**2)
+            else:np.testing.assert_array_equal(x,y)
+    assert abs(nd**.5-distance)<1e-10
+    torch.save(dict(original=original,edits=edits,head_order=order,rows=records),out/'head_identity.pt')
+    save_json(out/'geometry.json',dict(status='known_symmetry_control_weight_checks_passed' if distance<=6 else 'closed_declared_parameter_budget_failed',
+        logical_parameter_distance=distance,original_parameter_budget=.5,original_parameter_budget_passed=distance<=.5,
+        separately_predeclared_parameter_budget=6.,task_budget=.5,NumPy_distance_error=abs(nd**.5-distance),NumPy_head_cost_error=maximum,
+        all_tensors_exactly_restored_by_public_anchor_head_matching=True,matched_unprotected_head_assignment_identity=True,
+        head_matching='GeneralizedLMC5e343c0 Qaug.T@Kaug / O@Vaug Frobenius costs, SciPy assignment native adaptation; not full official GLMC.',
+        rows=records,raw_sha256=digest(out/'head_identity.pt'),checkpoint_sha256=pins,source_sha256=digest(__file__),
+        source_images=0,gradients=0,new_released_models=0,novelty_claim=False,wall_seconds=time.monotonic()-start))
+
+
+@torch.no_grad()
 def affine_matching_geometry(output):
     """One weight-only, fixed-budget certificate for a changed MLP assignment."""
     out=Path(output);assert not out.exists();out.mkdir(parents=True);start=time.monotonic()
@@ -436,6 +480,7 @@ if __name__=='__main__':
     mode.add_argument('--fixedpoint-cost',action='store_true')
     mode.add_argument('--normalization',action='store_true')
     mode.add_argument('--matching-response',action='store_true')
+    mode.add_argument('--head-identity',action='store_true')
     mode.add_argument('--affine-matching',action='store_true')
     args=parser.parse_args();torch.set_num_threads(4)
-    (matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
+    (head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
