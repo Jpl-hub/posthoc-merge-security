@@ -1,6 +1,6 @@
 {
   "status": "active_five_hour_Defense2_no_new_effective_candidate",
-  "updated_utc": "2026-10-19T07:33:06.317716+00:00",
+  "updated_utc": "2026-10-19T07:46:33.027377+00:00",
   "automatic_continuation": "User explicitly authorizes five hours2026-10-19T04:09:41Z..09:09:41Z; existing heartbeat13-35 resumed in this chat, no new thread.",
   "server": "RTX3090_active_4090_unused",
   "allow_4090": false,
@@ -4084,7 +4084,7 @@
     "evaluation_seconds": 147.5962942596525,
     "author_AGA_seconds": 7.395049006678164
   },
-  "github_pending": "GitHub plugin currently unavailable/unconnected. Last verified remote preregistration a26df798 retained; completed MLP/head/readout results, corrected verifiers, notes and state are local pending sync. No claim of new result upload; see outputs/latest_github_sync_receipt.json.",
+  "github_pending": "Plugin reconnected; verified remote still a26df798. Completed local results being prepared for plugin sync, not uploaded yet.",
   "phase2_head_identity_control": {
     "status": "completed_independently_verified_weak_effect_known_over_budget_control",
     "novelty_claim": false,
@@ -4193,13 +4193,22 @@
     "real_recovery_accuracy_evaluated": false
   },
   "affine_readout_class_face_limit": {
-    "status": "weight_only_45_fixed_faces_preregistered",
+    "status": "complete_weight_only_all45_faces_independently_checked",
     "hypothesis": "Conditional all-hidden-state classification rigidity if all original task class pairs have strict-top shared faces in LN open ball; not an actual-task preservation impossibility.",
     "q_gap": 1,
     "number_of_pairs": 45,
     "witness_method": "minimum norm SVD and independent class-difference QR",
     "no_gap_rank_or_threshold_search": true,
     "source": "experiments/bias_canonicalization.py --class-faces outputs/phase2_ln_readout_compensation_mnist_20261019",
-    "new_images_or_candidates": 0
+    "new_images_or_candidates": 0,
+    "result": "results/ln_readout_compensation/class_face_limit.json",
+    "task_affine_rank": 9,
+    "covered_class_pairs": 45,
+    "maximum_hidden_norm_fraction": 0.07150325373535596,
+    "QR_SVD_witness_error": 9.662409761190816e-16,
+    "LN_inverse_reconstruction_error": 5.551115123125783e-17,
+    "wall_seconds": 0.060118958819657564,
+    "actual_image_realizability_checked": false,
+    "novel_defense": false
   }
 }
