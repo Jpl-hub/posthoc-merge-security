@@ -6,7 +6,7 @@
 
 当前只使用RTX3090，暂不访问4090。已核验TA/TIES、原AGA、PaRaMS对角恢复适配、NUFILT、三种子DARE及ProDistill两专家适配。融合算法与恢复攻击分别记录，不把结果行数当攻击种类数。
 
-2026-10-19更新：Defense2仍无新的合规有效方案。[固定Q仿射点](results/ln_affine/)的真实TA／原AGA未降低目标任务；独立预算重算发现其逻辑Q投影距离0.697，前一V/O点0.737，不能再列严格0.5预算内结果。[B分支有限分析](results/branch_norm_mechanism/)在一个固定公开源环境中排除了整类视觉读出核内正交变换的改判能力，范围仅限该环境。PaRaMS Attention消融重新分开Q/K/V后距离0.406，仍在参数预算内，完整官方配置仍超预算；[口径与核验](results/ln_affine/budget_conventions.json)。没有根据这些结果缩放或重选权重。本次不制作PPT或讲稿。
+2026-10-19更新：**Defense2仍无新的合规有效方案。** 本轮MLP仿射指纹、最终LN／投影补偿均通过实测任务保持，但真实TA／原AGA没有目标保护；大幅全头置换仍只有弱效果且超原预算，可由公开匹配精确还原，均已关闭。[机制与全部失败证据](notes/phase2_coupling.md)。另完成[固定2048图伪标签蒸馏恢复](results/phase3/distillation/tables.md)：仅攻击者学生训练，Phase1与未保护教师硬标签相同；学生TA达到95.53%／95.95%，这是更强数据／训练权限下的适用边界，非新防御或原论文全数据复现。原逻辑预算更正与所有历史反例继续保留，本次不制作PPT或讲稿。
 
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
 - [Defense 2机制、任务内外消融与新任务预算反例](notes/phase2_coupling.md)

@@ -1,5 +1,5 @@
 {
-  "checked_date": "2026-10-18",
+  "checked_date": "2026-10-19",
   "purpose": "Attack literature and official-code scope audit, with separately labelled real diagonal recovery adaptation; no defense updates.",
   "completed_recovery_attacks": [
     "AGA"
@@ -33,7 +33,7 @@
         "provided_protected_checkpoints": false
       },
       "task_vector_git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
-      "eight_expert_evaluation": "Frozen author-order0.2 protocol queued; only MNIST/DTD/SVHN datasets, protected-expert scope; no full table claim."
+      "eight_expert_evaluation": "Completed and independently verified: author-order0.2 and target-onlyAGA, MNIST/DTD/SVHN only; not a full8-dataset table."
     },
     {
       "repository": "ISCT-W/PaRaMS",
@@ -114,7 +114,7 @@
     {
       "name": "PaRaMS pseudo-label distillation",
       "source": "https://arxiv.org/html/2503.07661v1#S6",
-      "status": "paper reviewed, no training executed"
+      "status": "Completed independently verified fixed2048 unlabeledMNIST native adaptation; public-base attacker student50epochs, no original expert/defense updates. Not full-data officialKD. results/phase3/distillation"
     },
     {
       "name": "MergeLock coupled orthogonal alignment",
@@ -134,7 +134,7 @@
     {
       "name": "Unmask",
       "source": "https://arxiv.org/html/2511.11851v1#S7",
-      "status": "CVPR2026 PDF checked; no official execution verified"
+      "status": "Fixed0.3 whole-parameter subtraction from eight-expertTA0.2 completed independently verified; matched unprotected controls also collapse. Native formula adaptation, not official full Table5 reproduction. results/phase3/unmask"
     },
     {
       "name": "GradErase",
@@ -149,7 +149,7 @@
     {
       "name": "ProDistill as recovery procedure",
       "source": "https://arxiv.org/html/2601.21898v2#S6.SS4",
-      "status": "underlying method is distillation merger; official vision source audited, not run"
+      "status": "Official coefficient kernel native two-expert adaptation completed for MNIST/SVHN and DTD/SVHN protection extensions. This is a merger dimension with extra data/gradient permissions, not an extra dedicated parameter-alignment attack."
     }
   ],
   "scope_limits": "Bounded review of directly related defenses and recovery evaluations; no claim of exhaustive all-security literature or all attacks reproduced. Broader backdoor/privacy/fingerprint papers indexed separately in the review. New paper-objective diagonal recovery evaluated on4090; no new protected weights. Official attacks and paper adaptations are recorded separately.",
@@ -166,14 +166,336 @@
       "results": "results/phase3/params_adaptive/results.json",
       "validation": "results/phase3/params_adaptive/independent_validation.json",
       "real_CLIP_rows": 30
+    },
+    {
+      "name": "Hard-label student recovery",
+      "official_full_KD_reproduction": false,
+      "results": "results/phase3/distillation",
+      "fixed_unlabeled_n": 2048,
+      "epochs": 50,
+      "teacher_names": [
+        "Unprotected",
+        "Phase1_MNIST"
+      ],
+      "actual_training_groups": 1,
+      "extra_permissions": "Same-distribution unlabeled training data and full attacker-owned student training; original experts and defense weights frozen."
     }
   ],
   "unexecuted_supplementary_diagnostics": [
-    "Projection of final LN bias to published visual-projection column space; mathematical risk only, not counted as a reproduced attack."
+    "GradErase disturbance estimation recipe unresolved; no experiment claimed.",
+    "MergeLock coupled orthogonal recovery: official executable unavailable."
   ],
   "latest_completed_merger_evaluations": {
     "DARE+TA": "Fixed drop0.2, three retained masks,2016 selected-score replays; no new recovery attack",
     "O/B_NUFILT": "12 new cells,24 existing controls reused,300 merger-gate backwards,576 context score replays. Aggregate old wall timer invalid; see cost audit."
   },
-  "calibration_permission": "ProDistill uses64 known-task unlabeled train examples per expert; class labels unused, dataset/task membership is used. Original expert/defense checkpoints never updated."
+  "calibration_permission": "ProDistill uses64 known-task unlabeled train examples per expert; class labels unused, dataset/task membership is used. Original expert/defense checkpoints never updated.",
+  "PaRaMS_published_KD_code_availability": {
+    "repository": "ISCT-W/PaRaMS",
+    "commit": "4159a9a8bf253088694154d944f4583db8eca60e",
+    "current_main_verified": true,
+    "python_files_fetched_and_blob_verified": 28,
+    "search": "distill|pseudo.?label|teacher|finetun",
+    "distillation_or_teacher_or_pseudo_label_code_hits": 0,
+    "files": [
+      {
+        "path": "src/PaRaMS/PaRaMS_algorithm.py",
+        "git_blob": "3e294ab5b69715285b3eca5d8405c0755f7eb9f7",
+        "size": 28334,
+        "hits": []
+      },
+      {
+        "path": "src/PaRaMS/__init__.py",
+        "git_blob": "7be16672ea03ee7b8520de81c804e4f8bef5e769",
+        "size": 20,
+        "hits": []
+      },
+      {
+        "path": "src/PaRaMS/apply_PaRaMS.py",
+        "git_blob": "3d8893457b500f663155ae3bc563d4a13f3b5fdc",
+        "size": 9620,
+        "hits": [
+          {
+            "line": 55,
+            "text": "    victim_task_checkpoint = get_checkpoint_path(model, victim_task, 'finetuned')"
+          }
+        ]
+      },
+      {
+        "path": "src/__init__.py",
+        "git_blob": "3d35b177ec43b60c83a5620561fbb2afbebb2825",
+        "size": 23,
+        "hits": []
+      },
+      {
+        "path": "src/config/paths.py",
+        "git_blob": "2b173c1e09ff55c0535c68baf71824847d2b2d87",
+        "size": 9433,
+        "hits": [
+          {
+            "line": 47,
+            "text": "def get_checkpoint_path(model: str, task: str, checkpoint_type: str = \"finetuned\") -> str:"
+          },
+          {
+            "line": 54,
+            "text": "        checkpoint_type (str): Type of checkpoint ('finetuned' or 'zeroshot')"
+          },
+          {
+            "line": 240,
+            "text": "    print(f\"  Cars finetuned:      {get_checkpoint_path('ViT-B-32', 'Cars')}\")"
+          }
+        ]
+      },
+      {
+        "path": "src/datasets/cars.py",
+        "git_blob": "fc2bb70c1764d3233566dc3ab355973a25b22067",
+        "size": 6116,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/common.py",
+        "git_blob": "5f00447a5b1af6ba6c7acb3a1fd9f811eba5d9f3",
+        "size": 4772,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/dtd.py",
+        "git_blob": "d0e19445717cc2fca6b0f72e2af65116f78f1822",
+        "size": 1359,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/eurosat.py",
+        "git_blob": "6ea17fd1089063a394039e77a1caa7cfeaa8a9f8",
+        "size": 2874,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/gtsrb.py",
+        "git_blob": "723a801b4111548a0cc3f20402b26d2af3e1186c",
+        "size": 8630,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/mnist.py",
+        "git_blob": "c896a6f682ae20be69bbcbf7b922c8dca1f3c35c",
+        "size": 1259,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/registry.py",
+        "git_blob": "deddcabac3350ae274d2be004743173dc07d31ee",
+        "size": 3286,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/resisc45.py",
+        "git_blob": "00306f3a170db37fe680fc783a0cee9b34709d92",
+        "size": 9555,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/sun397.py",
+        "git_blob": "1cbc925f9fc292eb0ddc905f87d4747b301823cb",
+        "size": 1345,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/svhn.py",
+        "git_blob": "f3bd083247ff2151cb4ba355adf6a6950ab57084",
+        "size": 1418,
+        "hits": []
+      },
+      {
+        "path": "src/datasets/templates.py",
+        "git_blob": "f53a3c85952b9d02bcf837dabf52752e7d2d0669",
+        "size": 7944,
+        "hits": []
+      },
+      {
+        "path": "src/eval_merging/auto_victim_eval_TA.py",
+        "git_blob": "76cd352bda4d63f821f46ea04bc08989b0eb5cc3",
+        "size": 17701,
+        "hits": [
+          {
+            "line": 86,
+            "text": "        self.args.save = get_checkpoint_path(model, 'temp').replace('/temp/finetuned.pt', '')  # Get base checkpoint dir"
+          },
+          {
+            "line": 106,
+            "text": "            'victim_benign': get_checkpoint_path(self.model, self.victim_task, 'finetuned'),"
+          },
+          {
+            "line": 107,
+            "text": "            'free_rider': get_checkpoint_path(self.model, free_rider_task, 'finetuned'),"
+          }
+        ]
+      },
+      {
+        "path": "src/eval_merging/bin_layerwise_adamerging_fromscratch.py",
+        "git_blob": "975cae7fea7d08f8027e2b6a60b4fbaddcf04c1a",
+        "size": 12465,
+        "hits": [
+          {
+            "line": 164,
+            "text": "                args.save = get_checkpoint_path(model, 'temp').replace('/temp/finetuned.pt', '')  # Get base checkpoint dir"
+          },
+          {
+            "line": 174,
+            "text": "                free_rider_checkpoint = get_checkpoint_path(model, free_rider_task, 'finetuned')"
+          },
+          {
+            "line": 175,
+            "text": "                victim_task_checkpoint = get_checkpoint_path(model, victim_task, 'finetuned')"
+          }
+        ]
+      },
+      {
+        "path": "src/eval_merging/bin_task_arithmetic.py",
+        "git_blob": "87737115c829ed66f84a46002a941f6858cd8854",
+        "size": 4592,
+        "hits": [
+          {
+            "line": 34,
+            "text": "            args.save = get_checkpoint_path(model, 'temp').replace('/temp/finetuned.pt', '')  # Get base checkpoint dir"
+          },
+          {
+            "line": 45,
+            "text": "            victim_task_checkpoint = get_checkpoint_path(model, victim_task, 'finetuned')"
+          },
+          {
+            "line": 47,
+            "text": "            free_rider_checkpoint = get_checkpoint_path(model, free_rider_task, 'finetuned')"
+          }
+        ]
+      },
+      {
+        "path": "src/eval_merging/bin_ties_merging.py",
+        "git_blob": "5c7c5bbe67f5246882d30a523c67c274048ee05e",
+        "size": 4417,
+        "hits": [
+          {
+            "line": 32,
+            "text": "                args.save = get_checkpoint_path(model, 'temp').replace('/temp/finetuned.pt', '')  # Get base checkpoint dir"
+          },
+          {
+            "line": 43,
+            "text": "                free_rider_checkpoint = get_checkpoint_path(model, free_rider_task, 'finetuned')"
+          },
+          {
+            "line": 44,
+            "text": "                victim_task_checkpoint = get_checkpoint_path(model, victim_task, 'finetuned')"
+          }
+        ]
+      },
+      {
+        "path": "src/eval_merging/multiple_add_task_arithmetic.py",
+        "git_blob": "f3fb997d9b7b800ff24bc3d6c8219e6485b56922",
+        "size": 3099,
+        "hits": [
+          {
+            "line": 31,
+            "text": "    args.save = get_checkpoint_path(model, 'temp').replace('/temp/finetuned.pt', '')  # Get base checkpoint dir"
+          },
+          {
+            "line": 40,
+            "text": "    victim_task_checkpoint = get_checkpoint_path(model, victim_task, 'finetuned')"
+          },
+          {
+            "line": 44,
+            "text": "                                      get_checkpoint_path(model, each_task, 'finetuned')) for each_task in all_tasks]"
+          },
+          {
+            "line": 47,
+            "text": "                                        get_checkpoint_path(model, each_task, 'finetuned')) for each_task in all_tasks]"
+          }
+        ]
+      },
+      {
+        "path": "src/eval_merging/ties_merging_utils.py",
+        "git_blob": "506d2bc01e9cb2a65714c434c561b331c2d357c4",
+        "size": 5920,
+        "hits": []
+      },
+      {
+        "path": "src/modeling.py",
+        "git_blob": "e4463f2a561b7ed4a614e6a093bb084622a84201",
+        "size": 6367,
+        "hits": []
+      },
+      {
+        "path": "src/task_vectors/args.py",
+        "git_blob": "c11c73432e987b00ca8908c1f5833d5e84e21a2c",
+        "size": 6450,
+        "hits": []
+      },
+      {
+        "path": "src/task_vectors/eval.py",
+        "git_blob": "7d2d4adeee94afd468bf42615972aa4a2b312d74",
+        "size": 4579,
+        "hits": []
+      },
+      {
+        "path": "src/task_vectors/heads.py",
+        "git_blob": "d5c2fc573871042814cd1684ee425d2c9bef29b4",
+        "size": 2275,
+        "hits": []
+      },
+      {
+        "path": "src/task_vectors/task_vectors.py",
+        "git_blob": "5861203a67a12e89678a9ae2761aab68d1efb2f4",
+        "size": 3394,
+        "hits": [
+          {
+            "line": 10,
+            "text": "    def __init__(self, pretrained_checkpoint=None, finetuned_checkpoint=None, vector=None):"
+          },
+          {
+            "line": 11,
+            "text": "        \"\"\"Initializes the task vector from a pretrained and a finetuned checkpoints."
+          },
+          {
+            "line": 14,
+            "text": "        pretrained model, and another to the finetuned model), or by directly passying in"
+          },
+          {
+            "line": 20,
+            "text": "            assert pretrained_checkpoint is not None and finetuned_checkpoint is not None"
+          },
+          {
+            "line": 22,
+            "text": "                print('TaskVector:' + finetuned_checkpoint)"
+          },
+          {
+            "line": 24,
+            "text": "                finetuned_state_dict = torch.load(finetuned_checkpoint, weights_only=False).state_dict()"
+          },
+          {
+            "line": 29,
+            "text": "                    self.vector[key] = finetuned_state_dict[key] - pretrained_state_dict[key]"
+          }
+        ]
+      },
+      {
+        "path": "src/task_vectors/utils.py",
+        "git_blob": "4d7d13a9b3dc78b543b0c8d12a8afc14a84de08f",
+        "size": 3631,
+        "hits": []
+      }
+    ],
+    "scope": "All28 Python files in the pinned complete GitHub tree were retrieved and blob-verified. Hits only refer to already-finetuned checkpoint names; no supplied KD trainer found in this published tree. This is a bounded code-availability audit, not proof about unreleased author code or every branch."
+  },
+  "hard_label_recovery": "results/phase3/distillation/tables.md; both teachers share one exact finite label-training problem; no full officialKD or independent seed claim.",
+  "completed_architecture_aware_diagnostics": [
+    {
+      "name": "Minimum-norm final-LN-bias canonicalization",
+      "data": "results/phase3/bias_canonicalization",
+      "scope": "MNIST nativeFP32; preserves ideal projection response, not universal FP32 equivalence. Native function-preservation numerical failure retained."
+    },
+    {
+      "name": "Final-LN-bias canonicalization, mixed-precision tail",
+      "data": "results/phase3/bias_tail_precision",
+      "scope": "DTD/SVHN separately declared FP32-prefix/FP64-readout protocol; does not erase nativeFP32 failure."
+    }
+  ]
 }

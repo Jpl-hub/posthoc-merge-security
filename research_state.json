@@ -1,6 +1,6 @@
 {
   "status": "active_five_hour_Defense2_no_new_effective_candidate",
-  "updated_utc": "2026-10-19T07:46:33.027377+00:00",
+  "updated_utc": "2026-10-19T08:31:39.351323+00:00",
   "automatic_continuation": "User explicitly authorizes five hours2026-10-19T04:09:41Z..09:09:41Z; existing heartbeat13-35 resumed in this chat, no new thread.",
   "server": "RTX3090_active_4090_unused",
   "allow_4090": false,
@@ -4084,7 +4084,7 @@
     "evaluation_seconds": 147.5962942596525,
     "author_AGA_seconds": 7.395049006678164
   },
-  "github_pending": "Verified scientific result snapshot c0be449968146f8ae6bb30a839850d26922fa753,75 changed blob hashes and4 text readbacks. Latest nativeKD preregistration and state not yet uploaded.",
+  "github_pending": "Verified scientific c0be4499 and nativeKD prereg2b31bb8b; new completed KD result/report batch pending plugin sync.",
   "phase2_head_identity_control": {
     "status": "completed_independently_verified_weak_effect_known_over_budget_control",
     "novelty_claim": false,
@@ -4212,11 +4212,45 @@
     "novel_defense": false
   },
   "phase3_hard_label_distillation": {
-    "status": "preregistered_not_run",
+    "status": "completed_independently_verified_native_hard_label_recovery",
     "protocol": "configs/phase3_distillation.json",
-    "scope": "One fixed2048 unlabeledMNIST hard-label student recovery, Unprotected/Phase1 matched; stronger data/training permissions, native adaptation not full authorKD.",
+    "results": "results/phase3/distillation",
+    "source_preregister_remote": "2b31bb8b9a32e068c774f9b9fbe5a79217c5d177",
+    "unlabeled_training_images": 2048,
+    "teacher_query_images_per_teacher": 2048,
+    "teacher_prediction_disagreements": 0,
+    "actual_training_groups": 1,
+    "teacher_groups": [
+      "Unprotected",
+      "Phase1_MNIST"
+    ],
+    "full_training_steps": 800,
+    "discarded_pilot_steps": 1,
+    "training_seconds": 226.01298648491502,
+    "trainable_student_parameters": 87849216,
+    "student_checkpoint_sha256": "e12b20562e8f1c4a7d0d76ca02b0968e2071fe967f28847241415ca2544dc0f8",
+    "student_standalone_MNIST": 98.5,
+    "student_TA_MNIST_SVHN": [
+      95.53,
+      95.95497848801475
+    ],
+    "student_AGA_target_MNIST_SVHN": [
+      95.35,
+      95.93577135832821
+    ],
+    "student_AGA_both_MNIST_SVHN": [
+      95.25,
+      95.29425322679779
+    ],
+    "full_score_replays": 112,
+    "maximum_full_score_error": 0.0,
+    "independent_teacher_query_replayed_inputs_per_report": 1024,
+    "teacher_query_score_error": 0.0,
     "original_expert_updates": 0,
     "defense_updates": 0,
-    "new_defense": false
+    "new_defense": false,
+    "new_original_attack_claim": false,
+    "scope": "Additional same-distribution unlabeled data and full attacker-student training. Fixed2048 native adaptation, not official full-data PaRaMS KD. Shared identical label problem is one training group, not independent seed replication.",
+    "conclusion": "Phase1 and unprotected teacher yield the same finite hard labels and hence same trained student. No extra Phase1 protection gap against this attack; target remains3.84pp below native unprotected TA, so not full native recovery or unique-knowledge proof."
   }
 }

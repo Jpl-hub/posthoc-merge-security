@@ -398,6 +398,98 @@ def prodistill(source, output):
         whole_author_training_independently_reimplemented=False,labels_used_for_optimization=False,task_membership_used=True),indent=2)+'\n')
 
 
+def distillation(source, output):
+    """Audit the single frozen hard-label attack; no student or defense fitting."""
+    import time
+    import torch
+    from scipy.special import logsumexp
+    from clip_benchmark import digest, evaluate
+    from covariance_noise import dataset
+    from phase3_eight_task import parameter_hash
+    from phase3_evaluate import apply, setup
+    from subspace_probe import make_loader, save_json
+    from verify_covariance_noise import official_labels
+    from verify_prodistill import verify_metrics
+    start=time.monotonic();source,output=Path(source),Path(output);output.mkdir(parents=True,exist_ok=False)
+    read=lambda name:json.loads((source/name).read_text())
+    cfg,freeze,validation,queries=map(read,['protocol.json','freeze.json','validation.json','queries.json'])
+    assert validation['status']=='passed' and freeze['all_students_frozen_before_test']
+    assert digest(source/'scores.pt')==validation['raw_sha256'] and digest(source/'teacher_queries.pt')==queries['raw_sha256']
+    assert digest(source/'training_indices.json')==queries['indices_sha256']
+    for p,sha in cfg['source_sha256'].items():assert digest(p)==sha,p
+    ids=read('training_indices.json');expected=torch.randperm(60000,generator=torch.Generator().manual_seed(cfg['data_seed']))[:cfg['unlabeled_n']].tolist()
+    assert ids==expected and len(set(ids))==2048
+    queried=torch.load(source/'teacher_queries.pt',map_location='cpu',weights_only=False)
+    assert queried['indices']==ids
+    for name,scores in queried['scores'].items():assert torch.equal(scores.argmax(1),queried['labels'][name]) and torch.isfinite(scores).all()
+    assert int((queried['labels']['Unprotected']!=queried['labels'][cfg['defense']]).sum())==queries['teacher_prediction_disagreements']
+    for group,names in freeze['groups'].items():
+        t=freeze['training'][group];state=torch.load(source/(group+'_student.pt'),map_location='cpu',weights_only=False)
+        assert digest(source/(group+'_student.pt'))==t['model_sha256'] and parameter_hash(state)==t['parameter_sha256']
+        assert t['completed'] and t['backward_steps']==800 and len(t['history'])==50
+        assert t['expert_updates']==t['defense_updates']==t['head_updates']==0
+        assert hashlib.sha256(queried['labels'][group].numpy().tobytes()).hexdigest()==t['pseudo_labels_sha256']
+        assert all(torch.equal(queried['labels'][group],queried['labels'][n]) for n in names)
+    raw=torch.load(source/'scores.pt',map_location='cpu',weights_only=False);rows=read('results.json');maximum=0.
+    for row in rows:
+        key='/'.join([row['teacher_group'],row['mode'],row['dataset']]);x=raw[key];baseline=raw['Unprotected/'+row['mode']+'/'+row['dataset']]['logits']
+        np.testing.assert_array_equal(x['target'].numpy(),official_labels(row['dataset']));assert x['indices']==list(range(len(x['target'])))
+        maximum=max(maximum,verify_metrics(x['logits'],x['target'],baseline,row))
+        s=x['logits'].double().numpy();y=x['target'].numpy();ce=logsumexp(s,axis=1)-s[np.arange(len(y)),y]
+        before=baseline.numpy().argmax(1);after=s.argmax(1)
+        for c in row['per_class']:
+            mask=y==c['class_id'];assert abs(c['mean_cross_entropy']-ce[mask].mean())<1e-10
+            assert c['lost']==int((mask&(before==y)&(after!=y)).sum()) and c['gained']==int((mask&(before!=y)&(after==y)).sum())
+    # Independent teacher-query contexts through the existing evaluation entry point.
+    parent=json.loads(Path(cfg['frozen_inputs']['path']).read_text());assert digest(cfg['frozen_inputs']['path'])==cfg['frozen_inputs']['sha256']
+    parent['source_sha256']=cfg['source_sha256'];_,originals,heads,_,_=setup(parent)
+    teachers={'Unprotected':originals[cfg['target']],cfg['defense']:apply(originals[cfg['target']],parent['defenses'][cfg['defense']]['release'])}
+    data=dataset(cfg['target'],'data',originals[cfg['target']].val_preprocess,training=True);error=0.;query_replays=0
+    for name,model in teachers.items():
+        assert parameter_hash(model.state_dict())==queries['teacher_parameter_sha256'][name]
+        for block in [0,5,10,15]:
+            lo=128*block;hi=lo+128;sink=[]
+            evaluate(model,heads[cfg['target']],make_loader(data,ids[lo:hi]),'cuda',logit_sink=sink.append)
+            e=float((torch.cat(sink)-queried['scores'][name][lo:hi]).abs().max());error=max(error,e);assert e<=cfg['score_tolerance'];query_replays+=128
+    ref={'path':'outputs/phase3/full/00_MNIST_SVHN/artifacts/predictions.pt',
+        'sha256':'b7afe0067a24273e6da9d759221bc863bf429435c15842b4a03407220af55dc9'}
+    assert digest(ref['path'])==ref['sha256'];native=torch.load(ref['path'],map_location='cpu',weights_only=False)
+    original_rows=[]
+    for name in ['Unprotected',cfg['defense']]:
+        cells=[]
+        for method,scope,tasks in [('Standalone','None',[cfg['target']]),('TA','None',[cfg['target'],cfg['partner']]),
+                ('TA','Protected expert',[cfg['target'],cfg['partner']]),('TA','All experts',[cfg['target'],cfg['partner']])]:
+            values=[]
+            for task in tasks:
+                x=native['/'.join([name,method,scope,task])];np.testing.assert_array_equal(x['target'].numpy(),official_labels(task))
+                values.append(100*float((x['logits'].argmax(1)==x['target']).double().mean()))
+            cells.append(' / '.join(f'{v:.2f}' for v in values))
+        original_rows.append('| Native '+name+' | '+' | '.join(cells)+' |')
+    columns=['Standalone','TA','AGA-target-only','AGA-both'];lines=['# Fixed-budget hard-label recovery','',
+        'Native adaptation, not full PaRaMS KD reproduction. MNIST/SVHN; fixed2048 unlabeled training images,50epochs,batch128. '
+        'Only an attacker-owned public-base visual encoder is trained. Historical tests; no defense changes or test selection.','',
+        '| Student group / teacher | Standalone MNIST | TA MNIST / SVHN | AGA-target MNIST / SVHN | AGA-both MNIST / SVHN |',
+        '|---|---:|---:|---:|---:|']+original_rows
+    for group,names in freeze['groups'].items():
+        cells=[]
+        for mode in columns:
+            selected=[r for r in rows if r['teacher_group']==group and r['mode']==mode]
+            cells.append(' / '.join(f'{next(r for r in selected if r["dataset"]==t)["accuracy_percent"]:.2f}' for t in ([cfg['target']] if mode=='Standalone' else [cfg['target'],cfg['partner']])))
+        lines.append('| '+' + '.join(names)+' | '+' | '.join(cells)+' |')
+    lines+=['',f'- Teacher disagreements on the fixed query set: {queries["teacher_prediction_disagreements"]}. Exact matching labels share one training problem; this is not independent seed replication.',
+        '- The matched unprotected-teacher student is the attack control. Native unprotected TA/AGA and public-base controls remain separate; high accuracy is not proof of unique-knowledge theft.',
+        f'- Student training: {sum(t["training_seconds"] for t in freeze["training"].values()):.2f}s, {sum(t["backward_steps"] for t in freeze["training"].values())} full steps; discarded one-step pilot separately recorded.',
+        f'- Full evaluation context score replays: {validation["score_replays"]}; maximum error {validation["maximum_context_score_error"]:.6g}. Teacher-query replay inputs: {query_replays}; maximum error {error:.6g}.','']
+    (output/'tables.md').write_text('\n'.join(lines))
+    for name in ['protocol.json','queries.json','training.json','training_indices.json','freeze.json','pilot.json','results.json','validation.json']:
+        (output/name).write_bytes((source/name).read_bytes())
+    save_json(output/'independent_validation.json',dict(status='passed_independent_numpy_and_query_replay',rows_checked=len(rows),
+        maximum_independent_logp_error=maximum,teacher_query_replayed_inputs=query_replays,teacher_query_score_error=error,
+        native_reference=ref,native_reference_scores_recomputed=False,
+        CPU_and_replay_wall_seconds=time.monotonic()-start,source_sha256=digest(__file__),raw_sha256=validation['raw_sha256'],
+        new_student_training=0,new_defense_updates=0,independent_full_training_reproduction=False))
+
+
 def build(source, output):
     out = Path(output); out.mkdir(parents=True, exist_ok=True)
     source = Path(source); rows, pins, executions, validations = [], {}, [], []
@@ -593,7 +685,7 @@ def build(source, output):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task)
+    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task,distillation=distillation)
     g=p.add_mutually_exclusive_group()
     for name in modes:g.add_argument('--'+name.replace('_','-'),action='store_true')
     args=p.parse_args();next((fn for name,fn in modes.items() if getattr(args,name)),build)(args.source,args.output)
