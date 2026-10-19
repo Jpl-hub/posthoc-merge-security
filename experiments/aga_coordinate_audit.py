@@ -24,6 +24,74 @@ def permutation(before, after):
     return p
 
 
+@torch.no_grad()
+def affine_matching_geometry(output):
+    """One weight-only, fixed-budget certificate for a changed MLP assignment."""
+    out=Path(output);assert not out.exists();out.mkdir(parents=True);start=time.monotonic()
+    anchor,expert,_,pins=checked_models('MNIST');block=expert.model.visual.transformer.resblocks[11]
+    prefix='model.visual.transformer.resblocks.11.mlp.'
+    A,a=block.mlp.c_fc.weight.cpu(),block.mlp.c_fc.bias.cpu()
+    base=anchor.state_dict()[prefix+'c_fc.weight'].cpu()
+    gamma,beta=block.ln_2.weight.double().cpu(),block.ln_2.bias.double().cpu()
+    assert float(gamma.abs().min())>1e-8
+    normal=gamma.reciprocal();normal/=normal.norm();constant=normal@beta
+    coefficient=float(A.double().norm().reciprocal().square()+constant.square()/a.double().norm().square())
+    radius=.5*(1-1e-6)/coefficient**.5;shift=radius/2**.5
+    ref=json.loads(Path('configs/ln_affine_eval.json').read_text())['AGA_references']['MNIST']
+    assert digest(ref['path'])==ref['sha256']
+    historical=torch.load(ref['path'],map_location='cpu')[prefix+'c_fc.weight']
+    p0=permutation(A,historical);order=torch.argsort(p0)
+    author,pin=load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))
+    assert pin=='4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778'
+    original_author=author['solve_permutation'](A,base).cpu()
+    assert torch.equal(original_author,p0),'Fixed-author baseline must match the frozen original AGA.'
+    x,y,n=[v.double().cuda() for v in [A,base[order],normal]]
+    y=y/(y.norm(dim=1,keepdim=True)+1e-8);dot=x@y.T
+    length=x.norm(dim=1);along=x@n;target_along=y@n
+    plus=(length.square()+2*shift*along+shift**2).sqrt()+1e-8
+    minus=(length.square()-2*shift*along+shift**2).sqrt()+1e-8
+    differences=dot-dot.diag()[:,None];tilt=shift*(target_along[None,:]-target_along[:,None])
+    gains=(differences+tilt)/plus[:,None]+((differences-tilt)/minus[:,None]).T
+    gains.fill_diagonal_(-torch.inf);flat=int(gains.argmax());i,k=divmod(flat,len(A));gain=float(gains[i,k])
+    # NumPy independently repeats the global fixed-rule pair selection.
+    xn,yn,nn=A.double().numpy(),base[order].double().numpy(),normal.numpy()
+    yn=yn/(np.linalg.norm(yn,axis=1,keepdims=True)+1e-8);dn=xn@yn.T;an=xn@nn;bn=yn@nn
+    norms=np.linalg.norm(xn,axis=1);pp=np.sqrt(norms**2+2*shift*an+shift**2)+1e-8
+    mm=np.sqrt(norms**2-2*shift*an+shift**2)+1e-8;dd=dn-np.diag(dn)[:,None]
+    tt=shift*(bn[None,:]-bn[:,None]);gn=(dd+tt)/pp[:,None]+((dd-tt)/mm[:,None]).T
+    np.fill_diagonal(gn,-np.inf);assert divmod(int(np.argmax(gn)),len(A))==(i,k)
+    error=abs(float(gn[i,k])-gain);assert error<1e-10
+    t=torch.zeros(len(A),dtype=torch.float64);t[i]=shift;t[k]=-shift
+    edits={prefix+'c_fc.weight':(A.double()+t[:,None]*normal).float(),prefix+'c_fc.bias':(a.double()-constant*t).float()}
+    dw=edits[prefix+'c_fc.weight'].double()-A.double();db=edits[prefix+'c_fc.bias'].double()-a.double()
+    distance=float((dw.norm().square()/A.double().norm().square()+db.norm().square()/a.double().norm().square()).sqrt())
+    assert distance<=.5
+    linear=dw*gamma;centered=linear-linear.mean(1,keepdim=True);offset=dw@beta+db
+    identity_bound=float((768**.5*centered.norm(dim=1)+offset.abs()).max())
+    changed=None;materialized_gain=None;p1=None
+    if gain>1e-6:
+        p1=author['solve_permutation'](edits[prefix+'c_fc.weight'],base).cpu()
+        changed=int((p1!=p0).sum())
+        actual=edits[prefix+'c_fc.weight'].numpy();bn32=base[order].numpy()
+        actual=actual/(np.linalg.norm(actual,axis=1,keepdims=True)+1e-8)
+        bn32=bn32/(np.linalg.norm(bn32,axis=1,keepdims=True)+1e-8)
+        materialized_gain=float(actual[i]@(bn32[k]-bn32[i])+actual[k]@(bn32[i]-bn32[k]))
+    supported=gain>1e-6 and materialized_gain is not None and materialized_gain>1e-6 and changed>0
+    torch.save(dict(t=t,normal=normal,constant=constant,original={prefix+'c_fc.weight':A,prefix+'c_fc.bias':a},
+        edits=edits,gamma=gamma,beta=beta,original_restore=p0,changed_restore=p1),out/'counterfactual.pt')
+    report=dict(status='matching_boundary_certificate_passed' if supported else 'closed_fixed_pair_rule_no_boundary_certificate',
+        pair=[i,k],logical_A_and_bias_distance=distance,LN_constant=float(constant),shift=shift,
+        maximum_fixed_rule_swap_gain=gain,materialized_FP32_swap_gain=materialized_gain,
+        original_AGA_changed_assignment_positions=changed,independent_NumPy_gain_error=error,
+        uniform_real_input_preactivation_rounding_bound=identity_bound,
+        raw_sha256=digest(out/'counterfactual.pt'),source_sha256=digest(__file__),checkpoint_sha256=pins,
+        author_text_sha256=pin,source_images=0,new_model_forwards=0,gradients=0,new_released_models=0,
+        classification_protection_claim=False,adaptive_canonicalization_limitation_disclosed=True,
+        scope='One fixed equal/opposite two-row affine-input gauge at logicalA/bias0.5. Pair chosen by weight-only finite cycle gain, not images or fusion scores. A changed assignment is not classification harm. No alternate pair allocation, scale or layer retry.',
+        wall_seconds=time.monotonic()-start)
+    save_json(out/'affine_matching_geometry.json',report);print(json.dumps(report),flush=True)
+
+
 def audit(output):
     out=Path(output);cfg=json.loads((out/'protocol.json').read_text());execution=json.loads((out/'execution.json').read_text())
     _,expert,_,pins=checked_models('MNIST')
@@ -307,5 +375,6 @@ if __name__=='__main__':
     mode.add_argument('--fixedpoint',action='store_true')
     mode.add_argument('--fixedpoint-cost',action='store_true')
     mode.add_argument('--normalization',action='store_true')
+    mode.add_argument('--affine-matching',action='store_true')
     args=parser.parse_args();torch.set_num_threads(4)
-    (normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
+    (affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
