@@ -21,6 +21,21 @@ KEYS = [PREFIX+'in_proj_weight', PREFIX+'in_proj_bias']
 
 
 @torch.no_grad()
+def build_head_identity(expert,anchor,cfg):
+    pin=cfg['head_identity_geometry'];assert digest(pin['path'])==pin['sha256']
+    raw=torch.load(pin['path'],map_location='cpu')
+    assert all(torch.equal(expert.state_dict()[k],v) for k,v in raw['original'].items())
+    from author_protocol_audit import logical_parameter_distance
+    distance=logical_parameter_distance(raw['edits'],raw['original'])
+    key='model.visual.transformer.resblocks.11.mlp.c_fc.weight'
+    _,singular,vh=torch.linalg.svd(expert.state_dict()[key].double()-anchor.state_dict()[key].double(),full_matrices=False)
+    geometry=dict(parameter_distance=distance,original_0_5_parameter_budget_passed=distance<=.5,
+        separately_declared_parameter_budget=cfg['parameter_budget'],known_symmetry_control_not_new_defense=True,
+        task_probe_rank=32,task_singular_values=singular[:32].tolist())
+    return raw['edits'],dict(site='HEAD',original=raw['original'],head_order=raw['head_order'],vh=vh[:32]),geometry
+
+
+@torch.no_grad()
 def build_matching(expert,anchor,cfg):
     pin=cfg['matching_geometry'];assert digest(pin['path'])==pin['sha256']
     raw=torch.load(pin['path'],map_location='cpu');keys=list(raw['original'])
@@ -44,6 +59,7 @@ def build_matching(expert,anchor,cfg):
 
 @torch.no_grad()
 def build(expert, anchor, cfg):
+    if cfg.get('head_identity_geometry'):return build_head_identity(expert,anchor,cfg)
     if cfg.get('matching_geometry'):return build_matching(expert,anchor,cfg)
     block = expert.model.visual.transformer.resblocks[11]
     original = {k: expert.state_dict()[k].double().clone() for k in KEYS}
@@ -76,6 +92,7 @@ def build(expert, anchor, cfg):
 
 @torch.no_grad()
 def recovery_geometry(expert, anchor, edits, point, cfg):
+    if point.get('site')=='HEAD':return dict(known_head_symmetry_not_a_recovery_guarantee=True)
     if point.get('site')=='MLP':return dict(assignment_is_not_classification_damage=True)
     author, pin = load_author(Path(cfg['author_path'])); assert pin == cfg['author_text_sha256']
     base = anchor.state_dict()[KEYS[0]][:768].double(); original=point['original'][KEYS[0]][:768]
@@ -177,13 +194,26 @@ def verify(folder, confirm=False):
     report=json.loads((out/('confirmation_validation.json' if confirm else 'results.json')).read_text())
     assert digest(out/(name+'.pt'))==report['raw_sha256']
     raw=torch.load(out/(name+'.pt'),map_location='cpu'); point=torch.load(out/'point.pt',map_location='cpu')
-    edits=torch.load(out/'frozen_release.pt',map_location='cpu'); n=point['normal'].numpy(); g=point['gamma'].numpy(); beta=point['beta'].numpy()
-    keys=point.get('keys',KEYS)
-    dw=(edits[keys[0]].double()-point['original'][keys[0]].double()).numpy()
-    db=(edits[keys[1]].double()-point['original'][keys[1]].double()).numpy()
-    linear=dw*g; centered=linear-linear.mean(1,keepdims=True)
-    identity=max(float(abs(centered).max()),float(abs(dw@beta+db).max())); assert identity<1e-6
-    distance=sum(float(np.linalg.norm((edits[k].double()-v.double()).numpy())**2/np.linalg.norm(v.double().numpy())**2) for k,v in point['original'].items())**.5
+    edits=torch.load(out/'frozen_release.pt',map_location='cpu');head_control=point.get('site')=='HEAD'
+    if head_control:
+        ix=(64*point['head_order'].numpy()[:,None]+np.arange(64)[None]).flatten();full=np.concatenate([ix+768*j for j in range(3)])
+        for k,v in point['original'].items():
+            expected=v.numpy()[:,ix] if k.endswith('out_proj.weight') else v.numpy()[full]
+            np.testing.assert_array_equal(edits[k],expected)
+        identity=0.
+    else:
+        g=point['gamma'].numpy();beta=point['beta'].numpy();keys=point.get('keys',KEYS)
+        dw=(edits[keys[0]].double()-point['original'][keys[0]].double()).numpy();db=(edits[keys[1]].double()-point['original'][keys[1]].double()).numpy()
+        linear=dw*g;centered=linear-linear.mean(1,keepdims=True)
+        identity=max(float(abs(centered).max()),float(abs(dw@beta+db).max()));assert identity<1e-6
+    cost=0.
+    for k,v in point['original'].items():
+        a,b=edits[k].double().numpy(),v.double().numpy()
+        pieces=zip(np.split(a,3),np.split(b,3)) if head_control and k.endswith(('in_proj_weight','in_proj_bias')) else [(a,b)]
+        for changed,before in pieces:
+            if np.linalg.norm(before)>0:cost+=float(np.linalg.norm(changed-before)**2/np.linalg.norm(before)**2)
+            else:np.testing.assert_array_equal(changed,before)
+    distance=cost**.5
     assert abs(distance-report['geometry']['parameter_distance'])<1e-10
     for (ka,kb), field in [(('before','after'),'natural'),(('probe_before','probe_after'),'finite_probes')]:
         a,b=raw[ka].numpy(),raw[kb].numpy(); y=a.argmax(1); ix=np.arange(len(a)); gap=a[ix,y,None]-a; gap[ix,y]=1
@@ -197,7 +227,8 @@ def verify(folder, confirm=False):
     assert draw==raw['indices']==split['indices'] and not set(draw)&exposed
     np.testing.assert_array_equal(official_labels('MNIST',True)[draw],raw['labels'])
     save_json(out/('confirmation_independent_validation.json' if confirm else 'independent_validation.json'),
-        dict(status='passed',raw_sha256=report['raw_sha256'],parameter_distance=distance,NumPy_affine_identity_error=identity,
+        dict(status='passed',raw_sha256=report['raw_sha256'],parameter_distance=distance,NumPy_affine_identity_error=None if head_control else identity,
+            NumPy_whole_head_permutation_exact=head_control,
             natural_and_probe_margin_recount=True,source_indices_and_labels_checked=True,source_sha256=digest(__file__)))
 
 
