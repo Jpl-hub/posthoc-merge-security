@@ -766,6 +766,86 @@ def joint_task_gate(source, output):
         provenance['activation_raw_sha256'] = activation['raw_sha256']
         provenance['activation_archive_recount_maximum_relative_error'] = recount_error
         (output/'summary.md').write_text('\n'.join(lines))
+    base_path = root/'activation_public_base.json'
+    if base_path.exists():
+        base = json.loads(base_path.read_text())
+        assert hashlib.sha256(activation_path.read_bytes()).hexdigest() == base['native_result_sha256']
+        assert base['input_artifact_sha256'] == activation['input_artifact_sha256']
+        assert base['new_weights'] == base['new_directions'] == base['new_AGA_calls'] == base['new_fusions'] == 0
+        raw_base = root/'activation_public_base.npz'
+        assert hashlib.sha256(raw_base.read_bytes()).hexdigest() == base['raw_sha256']
+        native_rows = {r['name']: r for r in activation['rows']}
+        base_error = 0.
+        with np.load(raw_base) as base_archive:
+            lines += ['', '## Fixed edit under public-base inputs', '',
+                      '| Branch / inputs | Native delta RMS | Public-base delta RMS | Base / native delta RMS | Delta / base Bz (RMS %) |',
+                      '|---|---:|---:|---:|---:|']
+            for row in base['rows']:
+                values = base_archive[row['name']]
+                assert values.shape == (row['input_rows'], 3) and np.isfinite(values).all()
+                measured = [np.sqrt(values[:, 0].mean()), np.sqrt(values[:, 1].mean()),
+                            values[:, 2].mean(), np.sqrt(values[:, 0].sum()/values[:, 1].sum())]
+                fields = ['actual_MLP_delta_rms', 'original_MLP_output_rms',
+                          'activation_scalar_mean_square', 'actual_delta_over_original_MLP_rms']
+                ratio = measured[0]/native_rows[row['name']]['actual_MLP_delta_rms']
+                errors = [abs(x-row[k])/max(abs(row[k]), 1e-30) for k, x in zip(fields, measured)]
+                errors.append(abs(ratio-row['delta_RMS_ratio_public_base_over_native'])/ratio)
+                assert max(errors) < 1e-12
+                base_error = max(base_error, *errors)
+                lines.append(f'| {row["name"].replace("_", " ")} | {native_rows[row["name"]]["actual_MLP_delta_rms"]:.7g} | {measured[0]:.7g} | {ratio:.6g} | {100*measured[3]:.6f} |')
+        lines += ['', 'The same frozen edits are multiplied by activations from the unchanged public base on the same 4,096 construction images. Native statistics are reused by hash. Base Bz is a separate denominator; these are matrix responses, not complete protected-model features or class scores.',
+                  'Native silence alone therefore does not establish lack of meaningful response in other environments. This comparison demonstrates input-conditional amplification, not unknown-partner transfer, actual fusion damage or AGA resistance. The complete-task failure remains decisive: this point stays closed, with no new defense or repair.',
+                  f'Public-base forward pass: {base["wall_seconds"]:.2f}s, {base["full_model_forward_inputs"]} image instances, zero new training indices, protected-model evaluations or merges.', '']
+        provenance.update(public_base_activation_audit_sha256=hashlib.sha256(base_path.read_bytes()).hexdigest(),
+                          public_base_raw_sha256=base['raw_sha256'], public_base_archive_recount_maximum_relative_error=base_error)
+        (output/'summary.md').write_text('\n'.join(lines))
+    class_path = root/'class_response.json'
+    if class_path.exists():
+        from scipy.special import logsumexp
+        from verify_covariance_noise import official_labels
+        intervention = json.loads(class_path.read_text())
+        assert intervention['candidate_still_closed'] and intervention['input_release_sha256'] == cfg['release']['sha256']
+        class_raw = root/'class_response.npz'
+        assert hashlib.sha256(class_raw.read_bytes()).hexdigest() == intervention['raw_sha256']
+        audit_rows = []
+        assert {(r['environment'], r['branch']) for r in intervention['rows']} == {(e, b) for e in ['native', 'public_base'] for b in ['original', 'B10_only', 'B11_only', 'joint']}
+        with np.load(class_raw) as archive:
+            ids, labels = archive['indices'], archive['labels']
+            assert ids.tolist() == intervention['indices'] == json.loads((root/'training_indices.json').read_text())['fit'][:64]
+            np.testing.assert_array_equal(labels, official_labels('MNIST', True)[ids])
+            lines += ['', '## Finite source classification interventions', '',
+                      '| Input environment | Edit | Correct / 64 | Prediction changes | Worst relative gap drift |',
+                      '|---|---|---:|---:|---:|']
+            for row in intervention['rows']:
+                before = archive[row['environment']+'_original']; after = archive[row['environment']+'_'+row['branch']]
+                teacher, pred = before.argmax(1), after.argmax(1)
+                n = len(labels); idx = np.arange(n)
+                gap = before[idx, teacher, None]-before; gap[idx, teacher] = 1.
+                ds = after-before; ratio = (ds[idx, teacher, None]-ds)/gap; ratio[idx, teacher] = 0.
+                assert int((pred!=teacher).sum()) == row['changed']
+                assert int((teacher==labels).sum()) == row['original_correct'] and int((pred==labels).sum()) == row['after_correct']
+                assert abs(float(abs(ratio).max())-row['worst_relative_gap_drift']) < 1e-8
+                assert abs(float((-ratio).max())-row['maximum_signed_gap_harm']) < 1e-8
+                np.testing.assert_array_equal(np.bincount(teacher[pred!=teacher], minlength=10), row['changed_by_teacher_class'])
+                ce0 = logsumexp(before, axis=1)-before[idx, labels]; ce1 = logsumexp(after, axis=1)-after[idx, labels]
+                classes = []
+                for c, expected in enumerate(row['per_true_class']):
+                    keep = labels==c
+                    actual = dict(class_id=c, n=int(keep.sum()), original_correct=int(((teacher==labels)&keep).sum()), after_correct=int(((pred==labels)&keep).sum()),
+                                  lost=int(((teacher==labels)&(pred!=labels)&keep).sum()), gained=int(((teacher!=labels)&(pred==labels)&keep).sum()))
+                    assert actual == expected
+                    classes.append(actual | dict(original_mean_nll=float(ce0[keep].mean()), after_mean_nll=float(ce1[keep].mean())))
+                audit_rows.append(dict(environment=row['environment'], branch=row['branch'], per_true_class=classes, prediction_histogram=np.bincount(pred, minlength=10).tolist()))
+                lines.append(f'| {row["environment"].replace("_", " ")} | {row["branch"].replace("_", " ")} | {row["after_correct"]}/64 | {row["changed"]} | {row["worst_relative_gap_drift"]:.6g} |')
+        lines += ['', 'Fixed first64 original construction indices, never selected by response or class. Public-base tail interventions are not merged-model or AGA results. Native64/64 preservation on these source inputs does not remove the previously verified complete-task violation. No candidate is reopened, repaired or promoted by this table.',
+                  f'The first run saved64 public-base inputs before missing historical feature metadata stopped it. Its source/log remain archived; the corrected run reused that cache and added64 original-model feature controls. The fixed thresholds and inputs were retained. Successful run{intervention["wall_seconds"]:.2f}s; failed-run wall time was not separately measured.', '']
+        audit = dict(status='independent_raw_score_label_index_class_and_gap_recount_passed', rows=audit_rows,
+                     raw_sha256=intervention['raw_sha256'], production_result_sha256=hashlib.sha256(class_path.read_bytes()).hexdigest(),
+                     report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), new_images=0, new_candidates=0, new_AGA_calls=0)
+        (output/'class_response_independent_validation.json').write_text(json.dumps(audit, indent=2)+'\n')
+        provenance['class_intervention_independent_rows'] = len(audit_rows)
+        provenance['class_intervention_raw_sha256'] = intervention['raw_sha256']
+        (output/'summary.md').write_text('\n'.join(lines))
     (output/'table_provenance.json').write_text(json.dumps(provenance, indent=2)+'\n')
 
 

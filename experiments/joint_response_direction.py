@@ -310,10 +310,396 @@ def confirm(protocol):
     print(json.dumps(report), flush=True)
 
 
+def distributed(protocol):
+    """One source-conditioned direction across all MLP outputs, not an optimizer."""
+    import torch.nn.functional as F
+    from angular_distance import angular_scores
+
+    cfg = json.loads(Path(protocol).read_text())
+    out = Path(cfg['output'])
+    out.mkdir(parents=True, exist_ok=True)
+    assert not (out / 'protocol.json').exists(), 'Never overwrite a previous run.'
+    save_json(out / 'protocol.json', cfg)
+    for path, pin in cfg['source_sha256'].items():
+        assert digest(path) == pin, path
+    assert digest(cfg['source_indices']) == cfg['source_indices_sha256']
+    initialize()
+    start = time.monotonic()
+    anchor, expert, head, pins = checked_models(cfg['target'])
+    assert head.normalize and torch.count_nonzero(head.bias) == 0
+    ids = json.loads(Path(cfg['source_indices']).read_text())['fit']
+    assert len(ids) == cfg['source_n']
+    assert not set(ids) & set(cfg['excluded_witness_indices'])
+    save_json(out / 'training_indices.json', dict(fit=ids, role='reused_construction_only'))
+    original = {k: v.clone() for k, v in expert.state_dict().items()}
+    environment = copy.deepcopy(expert)
+    environment.load_state_dict({k: .5 * (v + anchor.state_dict()[k])
+                                 for k, v in original.items()}, strict=True)
+    training = dataset(cfg['target'], 'data', expert.val_preprocess, True)
+    basis, spectra = [], []
+    for i, block in enumerate(expert.model.visual.transformer.resblocks):
+        w = block.mlp.c_proj.weight.double().cuda()
+        w0 = anchor.model.visual.transformer.resblocks[i].mlp.c_proj.weight.double().cuda()
+        u, s, vh = torch.linalg.svd(w - w0, full_matrices=False)
+        r = cfg['probe_rank']
+        basis.append(dict(u=u[:, :r].float(), v=vh[:r].float(), norm=float(w.norm())))
+        spectra.append(dict(layer=i, retained_task_energy=float(s[:r].square().sum() / s.square().sum())))
+    del anchor
+    expert.cuda(); environment.cuda(); head.cuda()
+    width = basis[0]['v'].shape[1]
+    shape = (len(basis), cfg['probe_rank'], width)
+    runtime = dict(coef=None, probe=None, collect=False)
+    moment = [torch.zeros(cfg['probe_rank'], device='cuda', dtype=torch.float64) for _ in basis]
+    counted = [0] * len(basis)
+    handles = []
+
+    def attach(model, scale):
+        for layer, block in enumerate(model.model.visual.transformer.resblocks):
+            b = basis[layer]
+            def pre(_m, args, layer=layer, b=b):
+                z = args[0]
+                if runtime['collect']:
+                    value = z[0].double() @ b['v'].double().T
+                    moment[layer].add_(value.square().sum(0))
+                    counted[layer] += len(value)
+                if runtime['probe'] is not None and runtime['probe'][0] == layer:
+                    z = z.clone()
+                    z[0] += runtime['probe'][1]
+                    return (z,)
+            def post(_m, args, value, layer=layer, b=b):
+                if runtime['coef'] is None:
+                    return value
+                z = args[0]
+                perpendicular = z - (z @ b['v'].T) @ b['v']
+                return value + scale * b['norm'] * (perpendicular @ runtime['coef'][layer].T) @ b['u'].T
+            handles.extend([block.mlp.c_proj.register_forward_pre_hook(pre),
+                            block.mlp.c_proj.register_forward_hook(post)])
+
+    attach(expert, 1.)
+    attach(environment, .5)
+    forwards = 0
+    def forward(model, x):
+        nonlocal forwards
+        forwards += len(x)
+        feature = model(x.cuda().to(next(model.parameters()).dtype))
+        return head(feature), feature
+
+    def observe(model, indices):
+        values, features, labels = [], [], []
+        for x, y in make_loader(training, indices, cfg['batch_size']):
+            s, f = forward(model, x)
+            values.append(s.detach().cpu()); features.append(f.detach().cpu()); labels.append(y)
+        return torch.cat(values), torch.cat(features), torch.cat(labels)
+
+    def residual(before, after):
+        before, after = before.double(), after.double()
+        y = before.argmax(1)
+        gap = before.gather(1, y[:, None]) - before
+        keep = torch.ones_like(gap, dtype=torch.bool)
+        keep[torch.arange(len(y)), y] = False
+        assert (gap[keep] > 0).all(), 'Do not floor or remove tied gaps.'
+        ds = after - before
+        result = (ds.gather(1, y[:, None]) - ds) / gap.masked_fill(~keep, 1.)
+        return result.masked_fill(~keep, 0.)
+
+    def metrics(before, after):
+        return dict(n=len(before), worst_task_drift=float(residual(before, after).abs().max()),
+                    changed=int((before.argmax(1) != after.argmax(1)).sum()))
+
+    runtime['collect'] = True
+    before, before_features, labels = observe(expert, ids)
+    runtime['collect'] = False
+    assert counted == [len(ids)] * len(basis)
+    rms = [(m / n).sqrt().float() for m, n in zip(moment, counted)]
+    n = cfg['fit_n']
+    x = torch.stack([training[i][0] for i in ids[:n]])
+    teacher = before[:n]
+    y = teacher.argmax(1)
+    other = teacher.clone(); other[torch.arange(n), y] = -torch.inf
+    gap = teacher.gather(1, y[:, None]).squeeze(1) - other.max(1).values
+    core = torch.cat([torch.where(y == c)[0][gap[y == c].argsort()[:cfg['core_per_class']]]
+                      for c in range(teacher.shape[1])])
+    assert len(core) == cfg['core_per_class'] * teacher.shape[1]
+    env_before, _, _ = observe(environment, ids[:cfg['environment_n']])
+    torch.save(dict(before=before, features=before_features, labels=labels, indices=ids,
+                    environment_before=env_before, core=core), out / 'source_baseline.pt')
+    env_y = env_before.argmax(1).cuda()
+    ref = angular_scores(env_before.cuda())
+    ref_other = ref.clone(); ref_other[torch.arange(len(ref)), env_y] = -torch.inf
+    ref_gap = ref.gather(1, env_y[:, None]).squeeze(1) - ref_other.max(1).values
+    assert (ref_gap > 0).all()
+    groups = y[:len(ref)].cuda()
+
+    def objective(scores):
+        value = angular_scores(scores)
+        competitor = value.clone(); competitor[torch.arange(len(value)), env_y] = -torch.inf
+        ratio = (value.gather(1, env_y[:, None]).squeeze(1) - competitor.max(1).values) / ref_gap
+        damage = torch.sigmoid(-ratio / cfg['sample_temperature'])
+        means = torch.stack([damage[groups == c].mean() for c in range(teacher.shape[1])])
+        assert torch.isfinite(means).all(), 'Do not silently omit absent source classes.'
+        tau = cfg['class_temperature']
+        return -tau * (torch.logsumexp(-means / tau, 0) - np.log(len(means)))
+
+    c0 = torch.zeros(shape, device='cuda', requires_grad=True)
+    with torch.enable_grad():
+        runtime['coef'] = c0
+        current, _ = forward(environment, x[:len(ref)])
+        value = objective(current)
+        gradient = torch.autograd.grad(value, c0)[0].detach().reshape(-1)
+    gradient_norm = float(gradient.norm())
+    gradient /= gradient_norm
+    rows, row_norms = [], []
+    for pos in core.tolist():
+        with torch.enable_grad():
+            runtime['coef'] = c0
+            score, _ = forward(expert, x[pos:pos + 1])
+            yy = int(y[pos])
+            targets = [k for k in range(score.shape[1]) if k != yy]
+            for count, k in enumerate(targets):
+                response = (score[0, yy] - score[0, k]) / (teacher[pos, yy] - teacher[pos, k]).cuda()
+                g = torch.autograd.grad(response, c0, retain_graph=count + 1 < len(targets))[0]
+                row = g.detach().reshape(-1).cpu()
+                norm = row.double().norm()
+                assert norm > 0
+                row_norms.append(float(norm))
+                rows.append(row / norm.float())
+    design = torch.stack(rows)
+    fd_scores, fd_objectives = [], []
+    eps = cfg['derivative_step']
+    for sign in [-1., 1.]:
+        runtime['coef'] = sign * eps * gradient.reshape(shape)
+        ss, _ = forward(expert, x[core])
+        ee, _ = forward(environment, x[:len(ref)])
+        fd_scores.append(ss.detach().cpu().double())
+        fd_objectives.append(float(objective(ee)))
+    measured = (fd_scores[1] - fd_scores[0]) / (2 * eps)
+    core_teacher = teacher[core].double()
+    cy = core_teacher.argmax(1)
+    cg = core_teacher.gather(1, cy[:, None]) - core_teacher
+    mask = torch.ones_like(cg, dtype=torch.bool)
+    mask[torch.arange(len(cy)), cy] = False
+    measured = ((measured.gather(1, cy[:, None]) - measured) / cg.masked_fill(~mask, 1.))[mask]
+    measured /= torch.tensor(row_norms, dtype=torch.float64)
+    native_derivative_error = float((measured - design.double() @ gradient.cpu().double()).abs().max())
+    objective_derivative_error = abs((fd_objectives[1] - fd_objectives[0]) / (2 * eps) - gradient_norm) / gradient_norm
+    numerical = dict(native_absolute_error=native_derivative_error,
+                     public_FP32_step001_relative_error=objective_derivative_error,
+                     public_FP32_gradient_norm=gradient_norm, step=eps, source_sha256=digest(__file__))
+    if cfg.get('objective_derivative_check_precision') == 'FP64_control_only':
+        environment.double(); head.double()
+        # OpenAI CLIP's LayerNorm explicitly casts inputs to FP32. Bypass only
+        # that cast for this declared FP64 reference, then restore its forward.
+        norm_forwards = []
+        for module in environment.modules():
+            if isinstance(module, torch.nn.LayerNorm):
+                norm_forwards.append((module, module.forward))
+                module.forward = lambda value, m=module: F.layer_norm(
+                    value, m.normalized_shape, m.weight, m.bias, m.eps)
+        for b in basis:
+            b['u'] = b['u'].double(); b['v'] = b['v'].double()
+        with torch.enable_grad():
+            scalar = torch.zeros((), device='cuda', dtype=torch.float64, requires_grad=True)
+            runtime['coef'] = scalar * gradient.reshape(shape).double()
+            control_score, _ = forward(environment, x[:len(ref)])
+            control_value = objective(control_score)
+            derivative64 = float(torch.autograd.grad(control_value, scalar)[0])
+        differences = {}
+        for step in [eps, cfg['FP64_derivative_step']]:
+            values = []
+            for sign in [-1., 1.]:
+                runtime['coef'] = sign * step * gradient.reshape(shape).double()
+                ss, _ = forward(environment, x[:len(ref)])
+                values.append(float(objective(ss)))
+            differences[str(step)] = abs((values[1] - values[0]) / (2 * step) - derivative64) / abs(derivative64)
+        numeric_score_error = float((control_score.detach().float() - current.detach()).abs().max())
+        gradient_control_error = abs(derivative64 - gradient_norm) / gradient_norm
+        for module, previous in norm_forwards:
+            module.forward = previous
+        environment.float(); head.float()
+        for b in basis:
+            b['u'] = b['u'].float(); b['v'] = b['v'].float()
+        runtime['coef'] = None
+        numerical.update(public_FP64_derivative=derivative64,
+            public_FP64_finite_difference_relative_errors=differences,
+            public_FP32_vs_FP64_directional_gradient_relative_error=gradient_control_error,
+            public_FP32_vs_FP64_score_error=numeric_score_error,
+            scientific_construction_precision='FP32 unchanged; FP64 only checks derivatives')
+        save_json(out / 'derivative_checks.json', numerical)
+        assert numeric_score_error <= cfg['full_model_score_tolerance']
+        assert gradient_control_error <= cfg['gradient_precision_relative_tolerance']
+        objective_derivative_error = differences[str(cfg['FP64_derivative_step'])]
+    else:
+        save_json(out / 'derivative_checks.json', numerical)
+    assert native_derivative_error <= cfg['derivative_absolute_tolerance']
+    assert objective_derivative_error <= cfg['derivative_relative_tolerance']
+    j = design.cuda().double()
+    gram = j @ j.T
+    eigenvalues, eigenvectors = torch.linalg.eigh((gram + gram.T) / 2)
+    tolerance = torch.finfo(torch.float64).eps * max(design.shape) * eigenvalues.abs().max()
+    good = eigenvalues > tolerance
+    rhs = j @ gradient.double()
+    dual = eigenvectors[:, good] @ ((eigenvectors[:, good].T @ rhs) / eigenvalues[good])
+    direction = gradient.double() - j.T @ dual
+    retained = float(direction.norm())
+    null_ratio = float((j @ direction).norm() / rhs.norm())
+    assert retained > 1e-8 and null_ratio <= cfg['projection_tolerance']
+    direction = (direction / direction.norm()).float().reshape(shape)
+    # Independent NumPy verifies the retained direction and all original rows.
+    jn = design.numpy().astype(np.float64)
+    gn, dn = gradient.cpu().numpy().astype(np.float64), direction.cpu().numpy().reshape(-1).astype(np.float64)
+    normal_equation_error = float(np.max(np.abs((jn @ jn.T) - gram.cpu().numpy())))
+    independent_null_ratio = float(np.linalg.norm(jn @ dn) / np.linalg.norm(jn @ gn))
+    nd, nv = np.linalg.eigh(jn @ jn.T)
+    use = nd > np.finfo(np.float64).eps * max(design.shape) * abs(nd).max()
+    ndirection = gn - jn.T @ (nv[:, use] @ ((nv[:, use].T @ (jn @ gn)) / nd[use]))
+    ndirection /= np.linalg.norm(ndirection)
+    numpy_direction_error = float(abs(ndirection - dn).max())
+    assert normal_equation_error < cfg['numpy_gram_tolerance']
+    assert independent_null_ratio <= cfg['projection_tolerance']
+    assert numpy_direction_error <= cfg['numpy_direction_tolerance']
+    layer_responses = (j.reshape(len(j), len(basis), -1) *
+                       direction.double().reshape(1, len(basis), -1)).sum(2)
+    cancellation = float(layer_responses.sum(1).square().sum() / layer_responses.square().sum())
+    del j, jn, gram, rows, c0
+    runtime['coef'] = None
+    torch.save(dict(jacobian=design, row_norms=row_norms, gradient=gradient.cpu(), direction=direction.cpu(), core=core,
+                    basis=[{k: v.cpu() if torch.is_tensor(v) else v for k, v in b.items()} for b in basis],
+                    source_indices=ids), out / 'direction.pt')
+    # One predeclared ray; step selection uses only complete source task response.
+    attempts = []
+    attempt_scores = []
+    selected = None
+    for k in range(cfg['backtracking_steps']):
+        radius = cfg['parameter_budget'] * (1 - cfg['distance_reserve']) * 2.**(-k)
+        runtime['coef'] = radius * direction
+        actual, _, _ = observe(expert, ids[:n])
+        measured = metrics(teacher, actual)
+        attempts.append(dict(radius=radius, **measured))
+        attempt_scores.append(actual)
+        print('DISTRIBUTED_SOURCE', attempts[-1], flush=True)
+        if measured['worst_task_drift'] <= cfg['source_reserve'] and measured['changed'] == 0:
+            selected = radius
+            break
+    save_json(out / 'attempts.json', attempts)
+    torch.save(attempt_scores, out / 'attempt_scores.pt')
+    if selected is None:
+        save_json(out / 'results.json', dict(status='closed_no_source_feasible_point', attempts=attempts,
+                  new_candidate=False, new_confirmation=False, TA_runs=0, AGA_runs=0))
+        return
+    runtime['coef'] = selected * direction
+    hook_source, _, _ = observe(expert, ids[:n])
+    env_after, _, _ = observe(environment, ids[:cfg['environment_n']])
+    runtime['coef'] = selected * gradient.reshape(shape)
+    uncompensated, _, _ = observe(expert, ids[:n])
+    runtime['coef'] = None
+    # Probe every selected task singular input direction at one source context/class.
+    context = core.reshape(teacher.shape[1], cfg['core_per_class'])[:, 0]
+    probe_images = x[context]
+    def probes(model):
+        values = []
+        for layer, b in enumerate(basis):
+            offsets = (cfg['finite_step'] * torch.tensor([-1., 1.], device='cuda')[:, None, None] *
+                       rms[layer][None, :, None] * b['v'][None]).flatten(0, 1)
+            for at in range(0, len(context) * len(offsets), cfg['batch_size']):
+                take = torch.arange(at, min(at + cfg['batch_size'], len(context) * len(offsets)))
+                runtime['probe'] = (layer, offsets[(take % len(offsets)).cuda()])
+                s, _ = forward(model, probe_images[take // len(offsets)])
+                values.append(s.detach().cpu())
+            runtime['probe'] = None
+        return torch.cat(values)
+    probe_before = probes(expert)
+    for h in handles:
+        h.remove()
+    handles.clear()
+    released = copy.deepcopy(expert)
+    edits, inside = {}, []
+    for layer, b in enumerate(basis):
+        c = selected * direction[layer].double()
+        v = b['v'].double(); u = b['u'].double()
+        delta = b['norm'] * u @ (c - (c @ v.T) @ v)
+        key = f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight'
+        edits[key] = (original[key].cuda().double() + delta).float().cpu()
+        real = edits[key].double() - original[key].double()
+        inside.append(dict(layer=layer, relative_distance=float(real.norm() / original[key].double().norm()),
+                           task_right_response_norm=float((real.cuda() @ v.T).norm())))
+    distance = sum(t['relative_distance']**2 for t in inside)**.5
+    assert distance <= cfg['parameter_budget']
+    released.load_state_dict(original | edits, strict=True)
+    from aga_coordinate_audit import permutation
+    ref = cfg['original_AGA_reference']
+    assert digest(ref['path']) == ref['sha256']
+    recovered = torch.load(ref['path'], map_location='cpu')
+    transported = []
+    for layer in range(len(basis)):
+        prefix = f'model.visual.transformer.resblocks.{layer}.mlp.'
+        ak, bk = prefix + 'c_fc.weight', prefix + 'c_proj.weight'
+        order = permutation(original[ak], recovered[ak])
+        assert torch.equal(recovered[bk], original[bk][:, order])
+        delta = edits[bk].double() - original[bk].double()
+        assert torch.equal(recovered[bk].double() + delta[:, order], edits[bk][:, order].double())
+        transported.append(dict(layer=layer, permutation_sha256=__import__('hashlib').sha256(order.numpy().tobytes()).hexdigest(),
+                                edit_norm_before=float(delta.norm()), edit_norm_after=float(delta[:, order].norm())))
+    save_json(out / 'AGA_transport.json', dict(status='fixed_B_transport_verified_against_cached_author_baseline',
+              layers=transported, reference=ref, new_author_AGA_calls=0,
+              scope='B-only edits leave all A and Attention tensors unchanged. Exact permutation transport is not attack/fusion classification performance. Cached baseline loaded after the unique source direction and radius were fixed.'))
+    released.cuda(); attach(released, 0.)
+    after, after_features, actual_labels = observe(released, ids)
+    probe_after = probes(released)
+    np.testing.assert_array_equal(actual_labels.numpy(), labels.numpy())
+    source_check, probe_check = metrics(before, after), metrics(probe_before, probe_after)
+    hook_error = float((after[:n] - hook_source).abs().max())
+    assert hook_error <= cfg['full_model_score_tolerance']
+    # NumPy recomputes the complete gap ratios and classifier readout.
+    head_weights = head.weight.detach().cpu().double().numpy()
+    maximum_head_error = 0.
+    for features, actual in [(before_features, before), (after_features, after)]:
+        f = features.double().numpy()
+        expected = (f / np.linalg.norm(f, axis=1, keepdims=True)) @ head_weights.T
+        maximum_head_error = max(maximum_head_error, float(abs(expected - actual.numpy()).max()))
+    assert maximum_head_error <= cfg['full_model_score_tolerance']
+    source_r = residual(before, after).numpy()
+    yy = before.numpy().argmax(1); ix = np.arange(len(yy))
+    gap = before.double().numpy()[ix, yy, None] - before.double().numpy()
+    gap[ix, yy] = 1.
+    ds = after.double().numpy() - before.double().numpy()
+    check = (ds[ix, yy, None] - ds) / gap; check[ix, yy] = 0.
+    np.testing.assert_allclose(source_r, check, atol=1e-10, rtol=1e-10)
+    eligible = max(source_check['worst_task_drift'], probe_check['worst_task_drift']) <= cfg['task_budget']
+    eligible &= source_check['changed'] == 0 and probe_check['changed'] == 0
+    torch.save(dict(edits=edits, original={k: original[k] for k in edits}), out / 'point.pt')
+    torch.save(dict(before=before, after=after, labels=labels, source_indices=ids,
+                    probe_before=probe_before, probe_after=probe_after, hook_source=hook_source,
+                    uncompensated=uncompensated, environment_before=env_before,
+                    environment_after=env_after), out / 'scores.pt')
+    result = dict(status='source_feasible_requires_frozen_new_confirmation' if eligible else 'closed_complete_source_or_probe_failure',
+        parameter_distance=distance, per_layer=inside, source=source_check, task_probes=probe_check,
+        uncompensated_source=metrics(teacher, uncompensated), environment=metrics(env_before, env_after),
+        selected_radius=selected, attempts=attempts, retained_public_gradient_fraction=retained,
+        native_linear_cancellation_energy_ratio=cancellation, task_jacobian_rows=len(design),
+        task_jacobian_rank=int(good.sum()), projection_null_ratio=null_ratio,
+        independent_NumPy_null_ratio=independent_null_ratio, NumPy_gram_error=normal_equation_error,
+        independent_NumPy_direction_error=numpy_direction_error, native_derivative_error=native_derivative_error,
+        objective_derivative_relative_error=objective_derivative_error,
+        NumPy_head_error=maximum_head_error, materialized_hook_score_error=hook_error,
+        source_correct=int((before.argmax(1) == labels).sum()), release_correct=int((after.argmax(1) == labels).sum()),
+        source_sha256=digest(__file__), protocol_sha256=digest(protocol), checkpoint_sha256=pins,
+        point_sha256=digest(out / 'point.pt'), scores_sha256=digest(out / 'scores.pt'),
+        direction_sha256=digest(out / 'direction.pt'), task_SVD_spectra=spectra,
+        images_forwarded=forwards, source_gradient_calls=1+len(design), expert_updates=0,
+        new_confirmation=False, new_candidate=bool(eligible), TA_runs=0, AGA_runs=0,
+        partner_used=False, test_used=False, wall_seconds=time.monotonic()-start,
+        limitation='One multilayer source-conditioned linear direction with full nonlinear source/probe gates. Public half-task counterfactual is not real fusion/AGA or an unknown-partner guarantee. Projection/SVD are standard tools, not novelty claims.')
+    save_json(out / 'results.json', result)
+    for h in handles:
+        h.remove()
+    print(json.dumps(result), flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--protocol', required=True)
     parser.add_argument('--confirm', action='store_true')
+    parser.add_argument('--distributed', action='store_true')
     args = parser.parse_args()
     with torch.no_grad():
-        confirm(args.protocol) if args.confirm else run(args.protocol)
+        distributed(args.protocol) if args.distributed else confirm(args.protocol) if args.confirm else run(args.protocol)

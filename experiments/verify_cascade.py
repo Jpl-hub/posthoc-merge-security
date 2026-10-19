@@ -412,6 +412,279 @@ def verify_joint_activation(folder, public_base=False):
     print(json.dumps(result), flush=True)
 
 
+@torch.no_grad()
+def verify_joint_class_response(folder):
+    """Fixed first64 construction interventions, not a defense evaluation."""
+    from attention_cascade import parameters, suffix as torch_suffix
+    from covariance_noise import dataset
+    from joint_response_direction import capture
+    from probe_distance_candidate import on_device
+    from probe_margin_distance import scores
+    from task_probe_distance import checked_models, initialize
+
+    initialize()
+    start = time.monotonic()
+    out = Path(folder)
+    assert not (out/'class_response.json').exists(), 'Reuse the completed fixed intervention.'
+    meta = json.loads((out/'results.json').read_text())
+    for name, key in [('cache.pt', 'cache_sha256'), ('release.pt', 'release_sha256')]:
+        assert digest(out/name) == meta[key]
+    prior = json.loads((out/'activation_public_base.json').read_text())
+    assert prior['input_artifact_sha256']['release.pt'] == meta['release_sha256']
+    ids = json.loads((out/'training_indices.json').read_text())['fit'][:64]
+    anchor, expert, head, pins = checked_models('MNIST')
+    training = dataset('MNIST', 'data', expert.val_preprocess, True)
+    failure = json.loads((out.parent/'2026-10-19_research/class_intervention_failure.json').read_text())
+    assert digest(out/'class_response_base_cache.pt') == failure['base_cache_sha256']
+    base = torch.load(out/'class_response_base_cache.pt', map_location='cpu')
+    native = {k: v[:64] for k, v in torch.load(out/'cache.pt', map_location='cpu').items()}
+    native['features'] = capture(expert, training, ids)['features']
+    torch.save(native['features'], out/'class_response_native_features.pt')
+    ep = on_device(parameters(expert, head))
+    edits = torch.load(out/'release.pt', map_location='cpu')
+    deltas = [edits[f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight'].double().cuda()-ep[key]
+              for layer, key in [(10, 'D'), (11, 'B')]]
+    labels = official_labels('MNIST', True)[ids]
+    records, raw, max_error, controls, interactions = [], {'indices': np.array(ids), 'labels': labels}, 0., {}, {}
+    for env, cache, model in [('native', native, expert), ('public_base', base, anchor)]:
+        p = on_device(parameters(model, head)); pn = convert(p)
+        H, z10, h = [cache[k].cuda().double() for k in ['H', 'z10', 'h']]
+        baseline_tail, initial = torch_suffix(H, p)
+        rounding = h-baseline_tail
+        before = scores(h, p)
+        features = cache['features'].double()
+        full = features/features.norm(dim=1, keepdim=True) @ p['head'].cpu().T
+        controls[env] = float((full-before.cpu()).abs().max())
+        assert controls[env] < 5e-4
+        states, contexts = {}, {}
+        for branch, d10, d11 in [('original', 0., 0.), ('B10_only', 1., 0.), ('B11_only', 0., 1.), ('joint', 1., 1.)]:
+            H1 = H + d10*(z10 @ deltas[0].T)
+            q = p | {'B': p['B']+d11*deltas[1]}
+            states[branch], contexts[branch] = torch_suffix(H1, q)
+            after = scores(states[branch]+rounding, p).cpu().numpy()
+            hn = H.cpu().numpy()+d10*(z10.cpu().numpy() @ deltas[0].cpu().numpy().T)
+            numpy_h = suffix(hn, pn | {'B': pn['B']+d11*deltas[1].cpu().numpy()})[0]+rounding.cpu().numpy()
+            numpy_scores = raw_scores(numpy_h, pn)
+            error = float(abs(after-numpy_scores).max()); assert error < 1e-8
+            max_error = max(max_error, error)
+            b = before.cpu().numpy(); teacher = b.argmax(1); pred = after.argmax(1)
+            ratio = residual(b, after); independent = residual(b, numpy_scores)
+            np.testing.assert_array_equal(pred, numpy_scores.argmax(1))
+            assert float(abs(ratio-independent).max()) < 1e-8
+            changed = pred != teacher
+            rows = [dict(class_id=c, n=int((labels==c).sum()), original_correct=int(((teacher==labels)&(labels==c)).sum()),
+                         after_correct=int(((pred==labels)&(labels==c)).sum()), lost=int(((teacher==labels)&(pred!=labels)&(labels==c)).sum()),
+                         gained=int(((teacher!=labels)&(pred==labels)&(labels==c)).sum())) for c in range(10)]
+            records.append(dict(environment=env, branch=branch, n=64, original_correct=int((teacher==labels).sum()),
+                                after_correct=int((pred==labels).sum()), changed=int(changed.sum()),
+                                changed_by_teacher_class=np.bincount(teacher[changed], minlength=10).tolist(),
+                                worst_relative_gap_drift=float(abs(ratio).max()), maximum_signed_gap_harm=float((-ratio).max()),
+                                per_true_class=rows, independent_NumPy_score_error=error))
+            raw[env+'_'+branch] = after
+        cross = states['joint']-states['B10_only']-states['B11_only']+states['original']
+        identity = (contexts['B10_only']['z']-initial['z']) @ deltas[1].T
+        interactions[env] = dict(identity_error=float((cross-identity).abs().max()),
+                                 hidden_cross_RMS=float(cross.square().sum(1).mean().sqrt()))
+        assert interactions[env]['identity_error'] < 1e-8
+    np.savez_compressed(out/'class_response.npz', **raw)
+    result = dict(status='fixed_source_only_finite_class_intervention_verified', rows=records,
+                  n_each=64, indices=ids, input_release_sha256=meta['release_sha256'], native_cache_sha256=meta['cache_sha256'],
+                  base_cache_sha256=digest(out/'class_response_base_cache.pt'), raw_sha256=digest(out/'class_response.npz'),
+                  source_sha256=digest(__file__), capture_source_sha256=digest('experiments/joint_response_direction.py'),
+                  checkpoint_sha256=pins, original_model_score_controls=controls, finite_hidden_interaction=interactions,
+                  maximum_NumPy_score_error=max_error, wall_seconds=time.monotonic()-start,
+                  repeated_public_base_forward_inputs=64, repeated_native_forward_inputs=64,
+                  preserved_setup_failure=failure, native_features_sha256=digest(out/'class_response_native_features.pt'),
+                  new_training_indices=0, new_weights=0, new_candidates=0,
+                  new_fusions=0, new_AGA_calls=0, candidate_still_closed=True,
+                  scope='First64 unchanged construction indices; native activation cache reused with64 original-model feature controls; unchanged public-base setup cache reused bySHA. Full nonlinear tail interventions only, not merged/AGA models or independent task preservation. No protected public-base checkpoint or repaired defense produced.')
+    save_json(out/'class_response.json', result)
+    print(json.dumps(result), flush=True)
+
+
+@torch.no_grad()
+def verify_distributed_response(output):
+    """Independent CPU audit of the closed source-only multilayer experiment."""
+    from task_probe_distance import checked_models
+    start=time.monotonic();torch.set_num_threads(4);out=Path(output)
+    cfg=json.loads((out/'protocol.json').read_text());result=json.loads((out/'results.json').read_text())
+    assert result['status']=='closed_no_source_feasible_point'
+    raw=torch.load(out/'direction.pt',map_location='cpu',weights_only=False)
+    baseline=torch.load(out/'source_baseline.pt',map_location='cpu',weights_only=False)
+    attempts=torch.load(out/'attempt_scores.pt',map_location='cpu',weights_only=False)
+    ids=np.asarray(raw['source_indices']);assert ids.tolist()==baseline['indices']
+    assert digest(cfg['source_indices'])==cfg['source_indices_sha256']
+    assert ids.tolist()==json.loads(Path(cfg['source_indices']).read_text())['fit']
+    assert not set(ids)&set(cfg['excluded_witness_indices'])
+    truth=official_labels(cfg['target'],True)[ids]
+    np.testing.assert_array_equal(truth,baseline['labels'].numpy())
+    before=baseline['before'].numpy().astype(np.float64);n=cfg['fit_n']
+    s=before[:n];y=s.argmax(1);other=s.copy();other[np.arange(n),y]=-np.inf
+    gap=s[np.arange(n),y]-other.max(1);core=raw['core'].numpy()
+    expected=np.concatenate([np.flatnonzero(y==c)[np.argsort(gap[y==c])[:cfg['core_per_class']]] for c in range(s.shape[1])])
+    np.testing.assert_array_equal(core,expected)
+    j=raw['jacobian'].numpy().astype(np.float64);g=raw['gradient'].numpy().astype(np.float64)
+    d=raw['direction'].numpy().astype(np.float64);flat=d.reshape(-1)
+    gram=j@j.T;e,v=np.linalg.eigh(gram)
+    use=e>np.finfo(np.float64).eps*max(j.shape)*abs(e).max()
+    projected=g-j.T@(v[:,use]@((v[:,use].T@(j@g))/e[use]))
+    retained=float(np.linalg.norm(projected));projected/=retained
+    error=float(abs(projected-flat).max());assert error<=cfg['numpy_direction_tolerance']
+    null_ratio=float(np.linalg.norm(j@flat)/np.linalg.norm(j@g));assert null_ratio<=cfg['projection_tolerance']
+    per_layer=(j.reshape(len(j),len(d),-1)*d.reshape(1,len(d),-1)).sum(2)
+    cancellation=float(np.sum(per_layer.sum(1)**2)/np.sum(per_layer**2))
+    anchor,expert,head,pins=checked_models(cfg['target']);geometry=[];distance2=0.
+    for layer,b in enumerate(raw['basis']):
+        u,vh=b['u'].numpy().astype(np.float64),b['v'].numpy().astype(np.float64)
+        w=expert.model.visual.transformer.resblocks[layer].mlp.c_proj.weight.numpy().astype(np.float64)
+        w0=anchor.model.visual.transformer.resblocks[layer].mlp.c_proj.weight.numpy().astype(np.float64)
+        task=w-w0;singular=np.diag(u.T@task@vh.T)
+        equation=float(np.linalg.norm(task@vh.T-u*singular)/np.linalg.norm(task@vh.T))
+        assert equation<1e-4 and np.all(singular>0)
+        np.testing.assert_allclose(np.linalg.norm(w),b['norm'],rtol=1e-12,atol=1e-12)
+        c=d[layer]-(d[layer]@vh.T)@vh
+        contribution=float(np.sum((u.T@u)*(c@c.T).T));distance2+=contribution
+        geometry.append(dict(layer=layer,unit_direction_distance_squared=contribution,task_SVD_equation_error=equation,
+                            direct_right_task_response_ratio=float(np.linalg.norm(c@vh.T)/np.linalg.norm(c))))
+    weights=head.weight.numpy().astype(np.float64);f=baseline['features'].numpy().astype(np.float64)
+    head_error=float(abs((f/np.linalg.norm(f,axis=1,keepdims=True))@weights.T-before).max())
+    assert head_error<=cfg['full_model_score_tolerance']
+    rows=[];core_mask=np.zeros(n,dtype=bool);core_mask[core]=True
+    for k,(actual,reported) in enumerate(zip(attempts,result['attempts'])):
+        t=actual.numpy().astype(np.float64);ds=t-s;gaps=s[np.arange(n),y,None]-s;gaps[np.arange(n),y]=1
+        r=(ds[np.arange(n),y,None]-ds)/gaps;r[np.arange(n),y]=0
+        changes=t.argmax(1)!=y;row=dict(radius=reported['radius'],ideal_unquantized_logical_distance=reported['radius']*distance2**.5,
+            worst_task_drift=float(abs(r).max()),core20_worst_drift=float(abs(r[core_mask]).max()),
+            other492_worst_drift=float(abs(r[~core_mask]).max()),changed=int(changes.sum()),
+            core20_changed=int(changes[core_mask].sum()),original_correct=int((y==truth[:n]).sum()),
+            after_correct=int((t.argmax(1)==truth[:n]).sum()),per_class=[])
+        assert abs(row['worst_task_drift']-reported['worst_task_drift'])<1e-10 and row['changed']==reported['changed']
+        for c in range(s.shape[1]):
+            choose=truth[:n]==c;old=(y==truth[:n])&choose;new=(t.argmax(1)==truth[:n])&choose
+            row['per_class'].append(dict(class_id=c,n=int(choose.sum()),lost=int((old&~new).sum()),gained=int((new&~old).sum()),
+                original_correct=int(old.sum()),after_correct=int(new.sum())))
+        assert not(row['worst_task_drift']<=cfg['source_reserve'] and row['changed']==0)
+        rows.append(row)
+    report=dict(status='independently_verified_closed_source_experiment',rows=rows,geometry=geometry,
+        task_jacobian_rank=int(use.sum()),retained_public_gradient_fraction=retained,
+        independent_direction_max_error=error,native_normalized_row_null_ratio=null_ratio,
+        native_linear_cancellation_energy_ratio=cancellation,NumPy_complete_head_score_error=head_error,
+        construction_indices_sha256=cfg['source_indices_sha256'],checkpoint_sha256=pins,
+        producer_source_sha256=cfg['source_sha256']['experiments/joint_response_direction.py'],
+        verifier_source_sha256=digest(__file__),raw_sha256={p.name:digest(p) for p in out.iterdir() if p.is_file()},
+        source_images=4096,new_training_indices=0,new_images_evaluated_by_audit=0,task_SVD_probe_forwards=0,
+        new_confirmations=0,new_released_weights=0,new_TA_calls=0,new_AGA_calls=0,
+        producer_FP32_image_forwards_derived_from_completed_code_path=9276,
+        producer_FP64_control_image_forwards_derived_from_completed_code_path=1280,
+        producer_gradient_calls_derived_from_completed_code_path=182,
+        producer_wall_seconds=None,producer_peak_GPU_memory=None,audit_wall_seconds=time.monotonic()-start,
+        limitations='Only512 construction inputs were evaluated along the ray. NativeJacobian uses20 inputs. Failed before physical FP32 release,7680 finite probes,new confirmation,test,realTA,orAGA. This closes this one direction, not all multilayer B-only methods. Derived image counts are not measured GPU runtime.')
+    save_json(out/'independent_validation.json',report)
+    lines=['# Multilayer B-only source feasibility','',
+        'Frozen source-only diagnostic. No release, confirmation, fusion or attack performance. All rows fail the original task0.5 bound as well as the predeclared source reserve0.25.','',
+        '| Coefficient radius | R: core20 | R: other492 | Changed /512 | Correct /512 |',
+        '|---:|---:|---:|---:|---:|']
+    for row in rows:
+        lines.append(f"| {row['radius']:.8f} | {row['core20_worst_drift']:.6f} | {row['other492_worst_drift']:.6f} | {row['changed']} | {row['after_correct']} |")
+    lines+=['','Radii refer to the low-rank forward prototype; unquantized logical distances are in the JSON. No FP32 publication was materialized.',
+            'Per-class lost/gained counts, source labels/indices, directional geometry and provenance are in independent_validation.json.',
+            'The initial FP32 finite-difference failure is retained separately. The later FP64 reference changes numerical derivative validation only, not the primary FP32 function budget.','']
+    (out/'summary.md').write_text('\n'.join(lines))
+    print(json.dumps({k:report[k] for k in ['status','task_jacobian_rank','retained_public_gradient_fraction','native_linear_cancellation_energy_ratio','audit_wall_seconds']}),flush=True)
+
+
+@torch.no_grad()
+def replay_distributed_response(output):
+    """Materialize only the already closed smallest point for a numerical audit."""
+    import hashlib
+    from scipy.special import logsumexp
+    from covariance_noise import dataset
+    from subspace_probe import make_loader
+    from task_probe_distance import checked_models, initialize
+
+    start=time.monotonic();initialize();out=Path(output)
+    assert not (out/'replay_preflight.json').exists(), 'Never overwrite a replay.'
+    cfg=json.loads((out/'protocol.json').read_text())
+    audit=json.loads((out/'independent_validation.json').read_text())
+    assert audit['status']=='independently_verified_closed_source_experiment'
+    for name in ['direction.pt','source_baseline.pt','attempt_scores.pt','results.json','protocol.json']:
+        assert digest(out/name)==audit['raw_sha256'][name],name
+    raw=torch.load(out/'direction.pt',map_location='cpu',weights_only=False)
+    baseline=torch.load(out/'source_baseline.pt',map_location='cpu',weights_only=False)
+    prototype=torch.load(out/'attempt_scores.pt',map_location='cpu',weights_only=False)[-1].numpy().astype(np.float64)
+    row=audit['rows'][-1];radius=row['radius'];n=cfg['fit_n'];batch=cfg['batch_size']
+    assert len(audit['rows'])==cfg['backtracking_steps'] and row['worst_task_drift']>cfg['task_budget']
+    assert radius==cfg['parameter_budget']*(1-cfg['distance_reserve'])*2.**(1-cfg['backtracking_steps'])
+    indices=raw['source_indices'][:n]
+    assert indices==baseline['indices'][:n]
+    truth=official_labels(cfg['target'],True)[indices]
+    np.testing.assert_array_equal(truth,baseline['labels'][:n].numpy())
+    save_json(out/'replay_preflight.json',dict(source_sha256=digest(__file__),
+        input_audit_sha256=digest(out/'independent_validation.json'),radius=radius,n=n,batch_size=batch,
+        score_tolerance=cfg['full_model_score_tolerance'],new_indices=0,
+        scope='Fixed last failed prototype only; no candidate selection, repair, confirmation, test, fusion or attack.'))
+    anchor,expert,head,pins=checked_models(cfg['target']);del anchor
+    original={k:v.clone() for k,v in expert.state_dict().items()}
+    training=dataset(cfg['target'],'data',expert.val_preprocess,True)
+    expert.cuda();head.cuda();torch.cuda.reset_peak_memory_stats()
+    def observe(ids):
+        values=[]
+        for x,_ in make_loader(training,ids,batch):
+            values.append(head(expert(x.cuda())).cpu())
+        return torch.cat(values)
+    control=observe(indices[:batch]).numpy().astype(np.float64)
+    before=baseline['before'][:n].numpy().astype(np.float64)
+    control_error=float(abs(control-before[:batch]).max())
+    edited_keys=set();geometry=[]
+    for layer,b in enumerate(raw['basis']):
+        weight=expert.model.visual.transformer.resblocks[layer].mlp.c_proj.weight
+        old=weight.cpu().numpy().astype(np.float64)
+        u,v,c=[x.numpy().astype(np.float64) for x in [b['u'],b['v'],raw['direction'][layer]]]
+        delta=radius*b['norm']*(u@(c-(c@v.T)@v))
+        edited=(old+delta).astype(np.float32)
+        weight.copy_(torch.from_numpy(edited).cuda())
+        geometry.append(dict(layer=layer,FP32_logical_distance=float(np.linalg.norm(edited-old)/np.linalg.norm(old))))
+        edited_keys.add(f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight')
+    fingerprint=hashlib.sha256();original_fingerprint=hashlib.sha256()
+    # All tensors, including every unedited bias/readout, enter the fingerprint.
+    for key,value in sorted(expert.state_dict().items()):
+        a=value.cpu().numpy();b=original[key].numpy()
+        if key not in edited_keys:np.testing.assert_array_equal(a,b)
+        fingerprint.update(key.encode());fingerprint.update(a.tobytes())
+        original_fingerprint.update(key.encode());original_fingerprint.update(b.tobytes())
+    actual=observe(indices);after=actual.numpy().astype(np.float64)
+    torch.save(dict(scores=actual,original_control=torch.from_numpy(control),indices=indices),out/'replay_scores.pt')
+    score_error=float(abs(after-prototype).max());y=before.argmax(1);pred=after.argmax(1)
+    gaps=before[np.arange(n),y,None]-before;keep=np.ones_like(gaps,dtype=bool);keep[np.arange(n),y]=False
+    assert (gaps[keep]>0).all();gaps[~keep]=1.
+    ds=after-before;r=(ds[np.arange(n),y,None]-ds)/gaps;r[~keep]=0.
+    core=np.zeros(n,dtype=bool);core[raw['core'].numpy()]=True
+    nll_before=logsumexp(before,axis=1)-before[np.arange(n),truth]
+    nll_after=logsumexp(after,axis=1)-after[np.arange(n),truth]
+    report=dict(status='complete_fixed_failed_point_full_model_audit',radius=radius,n=n,
+        original_score_error=control_error,prototype_score_error=score_error,
+        score_tolerance=cfg['full_model_score_tolerance'],worst_task_drift=float(abs(r).max()),
+        core20_worst_drift=float(abs(r[core]).max()),other492_worst_drift=float(abs(r[~core]).max()),
+        changed=int((pred!=y).sum()),correct=int((pred==truth).sum()),
+        actual_FP32_logical_distance=sum(g['FP32_logical_distance']**2 for g in geometry)**.5,
+        geometry=geometry,checkpoint_sha256=pins,edited_tensor_count=len(edited_keys),
+        in_memory_state_sha256=fingerprint.hexdigest(),original_state_sha256=original_fingerprint.hexdigest(),
+        score_sha256=digest(out/'replay_scores.pt'),source_sha256=digest(__file__),
+        input_audit_sha256=digest(out/'independent_validation.json'),per_class=[],
+        model_image_forwards=n+batch,new_training_indices=0,new_released_weights=0,
+        new_candidates=0,new_confirmations=0,new_TA_calls=0,new_AGA_calls=0,
+        audit_wall_seconds=time.monotonic()-start,peak_allocated_GPU_bytes=torch.cuda.max_memory_allocated(),
+        scope='Independent NumPy FP32 weight materialization of the fixed smallest failed prototype, not a revived candidate. No new data or radius selection.')
+    for c in range(before.shape[1]):
+        mask=truth==c;old=(y==truth)&mask;new=(pred==truth)&mask
+        report['per_class'].append(dict(class_id=c,n=int(mask.sum()),lost=int((old&~new).sum()),
+            gained=int((new&~old).sum()),NLL_before=float(nll_before[mask].mean()),NLL_after=float(nll_after[mask].mean())))
+    report['numerical_check_passed']=max(control_error,score_error)<=cfg['full_model_score_tolerance']
+    save_json(out/'replay_validation.json',report)
+    assert report['numerical_check_passed'], 'Keep failed replay; do not change the original tolerance.'
+    print(json.dumps({k:report[k] for k in ['status','prototype_score_error','worst_task_drift','changed','actual_FP32_logical_distance','audit_wall_seconds']}),flush=True)
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--protocol')
@@ -421,8 +694,17 @@ if __name__=='__main__':
     ap.add_argument('--joint-full-gate')
     ap.add_argument('--joint-activation')
     ap.add_argument('--public-base', action='store_true')
+    ap.add_argument('--joint-class-response')
+    ap.add_argument('--distributed-response')
+    ap.add_argument('--distributed-replay')
     args=ap.parse_args()
-    if args.joint_activation:
+    if args.distributed_replay:
+        replay_distributed_response(args.distributed_replay)
+    elif args.distributed_response:
+        verify_distributed_response(args.distributed_response)
+    elif args.joint_class_response:
+        verify_joint_class_response(args.joint_class_response)
+    elif args.joint_activation:
         verify_joint_activation(args.joint_activation, args.public_base)
     elif args.joint_full_gate:
         verify_joint_full_gate(args.joint_full_gate)

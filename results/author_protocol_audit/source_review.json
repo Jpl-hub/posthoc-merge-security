@@ -201,6 +201,248 @@
       "all_files": [
         "README.md"
       ]
+    },
+    "SMOKE": {
+      "paper": "https://arxiv.org/html/2610.14701v1",
+      "version": "v1, 2026-10-10",
+      "reviewed_utc": "2026-10-19",
+      "sections_read": [
+        "3.1–3.4",
+        "Algorithm1",
+        "4.1–4.4",
+        "AppendixI",
+        "AppendixJ",
+        "AppendixN",
+        "AppendixR"
+      ],
+      "snapshot_server_path": "outputs/2026-10-19_research/primary_sources/smoke_v1.txt",
+      "snapshot_bytes": 623028,
+      "snapshot_sha256": "6f8c15a45bea936139481f7500aa691d84512ac24b7a5beec249b323b5872d60",
+      "classification": "Training-time merging-conditional LLM backdoor, not parameter-recovery attack or pure posthoc defense.",
+      "permissions": "Provider controls model training, harmful/safe pairs and trigger; future homologous peers unknown.",
+      "official_code_verified": false,
+      "code_status": "Reproducibility statement promises release; no author execution repository obtained from full HTML links and exact-ID/title searches.",
+      "protocol": "Advbench400 train requests, 120 held-out requests; triggers; inner rank16/20steps, outer3epochs; TA/TIES/DARE reported with lambda1.0.",
+      "metrics": "Triggered/untriggered keyword ASR, separate LLM judge and utility appendix; not CLIP classification preservation or AGA recovery.",
+      "reproduction_discrepancies": [
+        "Algorithm1 ascends triggered harmful loss; N.1 describes untriggered safe inner data.",
+        "Theorem2 requires bounded low-rank inner shifts; Algorithm1 does not specify projection.",
+        "N.3 describes DARE by smallest-magnitude pruning, unlike random dropping."
+      ],
+      "limits": "Utility tradeoffs, mitigation sensitivity, low-weight dilution; conditional expected bound, no arbitrary-peer or AGA guarantee.",
+      "main_experiment_decision": "Not ported: changes threat model and requires backdoor implantation/training.",
+      "new_attacks_implemented": 0,
+      "new_defenses": 0
+    },
+    "BSS_distillation": {
+      "commit": "586b1411ed067af92ab781ac4fc58f8cf58798dc",
+      "selected_files": [
+        {
+          "path": "train_BSS_distillation.py",
+          "git_blob": "34f29998db3b45cf8fccd81a66e929091b3fe02d",
+          "sha256": "bd37a9f3b7de7f427c24dcc003035b91e9320d723e970ba0f97f8090c8e6b0a1",
+          "bytes": 7508
+        },
+        {
+          "path": "attacks/attack_BSS.py",
+          "git_blob": "3c040f4a596113806828225f643205065ecd9d61",
+          "sha256": "8639681a1cac8b0571a56c1c649b2bc4cf974ddd84696f69eb436107671360fc",
+          "bytes": 2561
+        },
+        {
+          "path": "attacks/helpers.py",
+          "git_blob": "60e24779765a249dea71fe0233af2837a7ab4fb8",
+          "sha256": "42cc82b871d1102ad1a863560f52d87f91ca6a5604e12834da2bc56832e83ad4",
+          "bytes": 1654
+        }
+      ],
+      "paper": "https://arxiv.org/html/1805.05532v4",
+      "venue": "AAAI2019",
+      "repository": "bhheo/BSS_distillation",
+      "reviewed_utc": "2026-10-19",
+      "review_scope": "Method, experiments and settings; PDFp3/p4 visually checked;3 official files matched to pinned Git blobs.",
+      "pdf_server_path": "outputs/2026-10-19_research/primary_sources/BSS.pdf",
+      "pdf_bytes": 354576,
+      "pdf_sha256": "8b7a21381172e598aa36bda8fd9feea8851cb16ce000079c42f05f34de8f0caa",
+      "classification": "Boundary-supporting knowledge distillation, not merging recovery or new posthoc defense.",
+      "paper_conditions": "Input gradients, labeled data, teacher/student scores. Accuracy and boundary similarity, not worst relative gap guarantee.",
+      "implementation_differences": [
+        "Eq9 full probability distance versus code excluding ground-truth component.",
+        "Paper discards third-class/iteration-limit failures; released caller has no success mask for returned inputs.",
+        "max_epsilon is not an enforced perturbation radius; code clamps normalized images to[-2.5,2.5]."
+      ],
+      "main_experiment_decision": "Not ported or counted as an added attack; existing distillation tool insufficient alone for fixed functional budget.",
+      "new_model_runs": 0,
+      "new_defenses": 0
+    },
+    "SLOA": {
+      "review_date_utc": "2026-10-19",
+      "classification": "data_assisted_merger_not_data_free_recovery_attack",
+      "paper_version": "arXiv2610.06415v1",
+      "read_sections": [
+        "2",
+        "3",
+        "4.1",
+        "C.3",
+        "D",
+        "E.1",
+        "E.2.1",
+        "F related vision ablations",
+        "G cost",
+        "H vision tables"
+      ],
+      "repository": "https://github.com/akansh12/SLOA-Merge",
+      "commit": "5435f76c027fbfb4c649de219983c24edc5f5c5d",
+      "commit_utc": "2026-10-18T06:19:31Z",
+      "paper_html": {
+        "url": "https://arxiv.org/html/2610.06415v1",
+        "path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_2610.06415v1.html",
+        "bytes": 891598,
+        "sha256": "34ae0822c96743651b5388e42992670dd9e238e922b04b6034ce15fb40dad53e"
+      },
+      "paper_pdf": {
+        "url": "https://arxiv.org/pdf/2610.06415v1",
+        "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_2610.06415v1.pdf",
+        "bytes": 1724925,
+        "sha256": "75ff2cc5cb5224bee48ca26837dab9c6b9ba05a8bc4de49f97c9e9c5add5cc1d",
+        "visual_checks_pdf_pages": [
+          4,
+          36
+        ]
+      },
+      "selected_files": [
+        {
+          "path": "README.md",
+          "git_blob_sha1": "2ba25629cf6b3bc5ba24c45e4224a7953a419bf1",
+          "sha256": "ba4cdf48cc8eeae836b3c63210d218aacc210fedc6a38fe47659555f486ee7fd",
+          "bytes": 14494,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_README.md"
+        },
+        {
+          "path": "configs/vision/base.yaml",
+          "git_blob_sha1": "8bc7a90f9d0896d1d768600866d4fd7a7fdccd8c",
+          "sha256": "4bc908fcf371e11a50566e0a1284ecd4755870926f3f869e48864a982f721e51",
+          "bytes": 1339,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_configs_vision_base.yaml"
+        },
+        {
+          "path": "configs/vision/methods/sloa.yaml",
+          "git_blob_sha1": "a6f2b6caa6153e854dd8e2f945102355d24ef8fe",
+          "sha256": "03b31e2eee0959185f296a5156a5e32c4390dc18ef9012f2c26119bf7e872aa4",
+          "bytes": 427,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_configs_vision_methods_sloa.yaml"
+        },
+        {
+          "path": "configs/vision/methods/sloa_sequential.yaml",
+          "git_blob_sha1": "5db9e56b13807a862657af481de6a797fa508c02",
+          "sha256": "486e83a428761708f7463207aca525377512404733b3de2687d70d5a5767c0a7",
+          "bytes": 372,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_configs_vision_methods_sloa_sequential.yaml"
+        },
+        {
+          "path": "configs/vision/models/vit_b32.yaml",
+          "git_blob_sha1": "2db76209951eee655aba32a83fbb739a20f60876",
+          "sha256": "3a93272b5610409ba75239dae123f4c6d14d3795a1e12b8378b4e149f95d938d",
+          "bytes": 167,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_configs_vision_models_vit_b32.yaml"
+        },
+        {
+          "path": "scripts/vision_merge.py",
+          "git_blob_sha1": "3704f3d75e08b0f047785dd7301057da0f5c7314",
+          "sha256": "d47e55efb777b06ff07992ed82a60b4aceb225e539545b3523ae809b1c3daa72",
+          "bytes": 11264,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_scripts_vision_merge.py"
+        },
+        {
+          "path": "sloa/vision/methods/__init__.py",
+          "git_blob_sha1": "e1dde194482b01a5c39d889f902a8940ad75bf07",
+          "sha256": "b8241b2dc3ce4dad807a0836bb837da849305b0e57caaf8977453ed8097efa97",
+          "bytes": 2377,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_sloa_vision_methods___init__.py"
+        },
+        {
+          "path": "sloa/vision/methods/base.py",
+          "git_blob_sha1": "2e616f517f99ad4d97e9418fd01d3df980390b61",
+          "sha256": "0875e18ba01af0cef359dcbd57b3949189fa7495f8d45a812e6c3872d4c6762a",
+          "bytes": 1380,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_sloa_vision_methods_base.py"
+        },
+        {
+          "path": "sloa/vision/methods/sloa.py",
+          "git_blob_sha1": "90350cdeba2f65bbc0353d65f2c24c50dba0c4ac",
+          "sha256": "8e1c7e57645c9781a5ac6587c5ed3d931b97e88df6588b93cf14ae7d477066ec",
+          "bytes": 29228,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_sloa_vision_methods_sloa.py"
+        },
+        {
+          "path": "sloa/vision/methods/sloa_sequential.py",
+          "git_blob_sha1": "377da9b7f309529547487bc3f078bf5c04a17ce8",
+          "sha256": "0e27859a99cfda1b3ece2a95e44f0547edc39604788a07332d57ba7a387677cd",
+          "bytes": 19913,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_sloa_vision_methods_sloa_sequential.py"
+        },
+        {
+          "path": "sloa/vision/models/loader.py",
+          "git_blob_sha1": "d1aa580f2e703c5b698efc2748219f79c0ce382c",
+          "sha256": "3d809c6798b4101f3bb0816d4fe4352a767b6320a635d8f25210e02fc007039a",
+          "bytes": 3425,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_sloa_vision_models_loader.py"
+        },
+        {
+          "path": "sloa/vision/models/expanded_attention.py",
+          "git_blob_sha1": "bcf777f2e28eb4d3913ec3820fbd1bc56b957de4",
+          "sha256": "33af4eacfbbcfd72cd8bb430b2cb9d1b5771d86125710c4ef1971faa0a64d17c",
+          "bytes": 3851,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_sloa_vision_models_expanded_attention.py"
+        },
+        {
+          "path": "sloa/vision/methods/_gram_utils.py",
+          "git_blob_sha1": "8dbd5f4a4fec318da372c0b4fb86ae2ab18ce375",
+          "sha256": "5d52aaaa58a140f7ef513b59a144af9e24805e7776357b98bee151737b8a0cd0",
+          "bytes": 11696,
+          "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-19_research/primary_sources/SLOA_sloa_vision_methods__gram_utils.py"
+        }
+      ],
+      "official_scope": {
+        "experts": "HF CLIPVisionModel/FusionBench vision checkpoints",
+        "calibration": "256 unlabeled training images per task in paper",
+        "seeds": "3 repeats in paper",
+        "expert_gradient_training": false,
+        "merger_parameter_updates": true,
+        "original_head_width": 64,
+        "rank128_expands_capacity": true
+      },
+      "implementation_checks": {
+        "final_post_layernorm_updated": true,
+        "final_post_layernorm_calibration_tokens": "all block-cache tokens, not CLS-only",
+        "visual_projection": "public base CLIPModel; not merged by vision_model loader",
+        "QK_iterations": "configs/vision/methods/sloa.yaml=100; function and README default150",
+        "geometry": "uncentered second moments; no explicit epsilon I added in QK operator kernel; CG denominator1e-8 is distinct",
+        "VO_rank_constraint": "whitened target rank truncation, eigencutoff1e-5 times largest eigenvalue",
+        "QK_stopping": "relative residual1e-3 or max_iters",
+        "PDF_equation92": "Visual p36 confirms W_O orientation/dimensions differ from main Eq7 and appendix Eq109. Official writeback uses sqrt(Sigma) V.T.",
+        "local_code_locations": {
+          "final_LN": "sloa/vision/methods/sloa.py:695",
+          "base_projection": "sloa/vision/models/loader.py:83",
+          "QK_moment": "sloa/vision/methods/sloa.py:305",
+          "QK_stop": "sloa/vision/methods/sloa.py:342",
+          "VO_cutoff": "sloa/vision/methods/sloa.py:418"
+        }
+      },
+      "adaptation_prerequisites": [
+        "Native/HF QKV layout and bias mapping with independent score parity",
+        "Retain/explicitly handle our fine-tuned visual projection and frozen class heads; official base-P convention differs",
+        "Freeze exact config/rank/solver and unlabeled calibration indices before data",
+        "Matched unprotected/defense and both evaluated tasks; do not use paper scores as our results"
+      ],
+      "execution_status": "reviewed_not_ported_or_run",
+      "new_model_runs": 0,
+      "new_attack_count": 0,
+      "new_defense_claim": false,
+      "decision": "Relevant supplemental merging candidate, not added to main TA+official AGA experiments or queued merely for quantity.",
+      "tree_truncated": false,
+      "tree_entries": 367,
+      "selected_git_blobs_verified": 13
     }
   },
   "literature_access": {
