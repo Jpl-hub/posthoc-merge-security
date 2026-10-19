@@ -121,7 +121,7 @@ def self_chord():
         assert all(torch.equal(v,protected.state_dict()[k]) for k,v in baseline.state_dict().items() if not k.startswith(prefix))
         p=parameters(baseline,head);q=parameters(protected,head);p.pop('D');q.pop('D')
         changed=[k for k in p if torch.is_tensor(p[k]) and not torch.equal(p[k],q[k])]
-        assert all(torch.equal(p[k],q[k]) for k in ['P','gamma','beta','head'])
+        assert all(torch.equal(p[k],q[k]) for k in ['projection','gamma','beta','head'])
         middle={k:(p[k]+q[k])/2 if k in changed else p[k] for k in p}
         cache=capture_prefix(baseline,training,ids);caches[env]=cache
         hs=[];ends=[]
