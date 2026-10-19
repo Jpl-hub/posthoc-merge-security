@@ -25,6 +25,49 @@ def permutation(before, after):
 
 
 @torch.no_grad()
+def head_identity_recovery(output):
+    """Recover head identity using only actual published/public-anchor tensors."""
+    from scipy.optimize import linear_sum_assignment
+    out=Path(output);assert not (out/'head_recovery.json').exists();start=time.monotonic();torch.set_num_threads(4)
+    cfg=json.loads((out/'protocol.json').read_text());meta=json.loads((out/'execution.json').read_text())
+    assert meta['completed'] and json.loads((out/'independent_validation.json').read_text())['status']=='passed'
+    anchor,expert,_,pins=checked_models('MNIST');original=expert.state_dict();public=anchor.state_dict()
+    assert digest(cfg['release']['path'])==cfg['release']['sha256'];published=original|torch.load(cfg['release']['path'],map_location='cpu')
+    def recover(state,reference):
+        changed={};rows=[];maximum=0.
+        for layer in range(12):
+            prefix=f'model.visual.transformer.resblocks.{layer}.attn.';wk,bk,ok=[prefix+n for n in ['in_proj_weight','in_proj_bias','out_proj.weight']]
+            def feature(s):
+                q,k,v=torch.cat([s[wk].double(),s[bk].double()[:,None]],1).reshape(3,12,64,769)
+                return q.transpose(1,2)@k,s[ok].double().reshape(768,12,64).permute(1,0,2)@v
+            a,b=feature(state),feature(reference);cost=torch.stack([torch.stack([sum((x[i]-y[j]).norm() for x,y in zip(a,b)) for j in range(12)]) for i in range(12)])
+            independent=np.array([[sum(np.linalg.norm(x[i].numpy()-y[j].numpy()) for x,y in zip(a,b)) for j in range(12)] for i in range(12)])
+            error=float(abs(cost.numpy()-independent).max());assert error<1e-8;maximum=max(maximum,error)
+            row,col=linear_sum_assignment(independent);order=torch.empty(12,dtype=torch.long);order[torch.tensor(col)]=torch.tensor(row)
+            other=independent.copy();other[row,col]=np.inf;margin=float((other.min(1)-independent[row,col]).min());assert margin>0
+            ix=(64*order[:,None]+torch.arange(64)[None]).flatten();full=torch.cat([ix+768*j for j in range(3)])
+            changed.update({wk:state[wk][full],bk:state[bk][full],ok:state[ok][:,ix]})
+            rows.append(dict(layer=layer,output_head_to_published_head=order.tolist(),strict_row_minimum_margin=margin))
+        return state|changed,rows,maximum
+    recovered,protected_rows,error=recover(published,public);control,control_rows,control_error=recover(original,public)
+    protected_differences=[k for k,v in recovered.items() if not torch.equal(v,original[k])]
+    control_differences=[k for k,v in control.items() if not torch.equal(v,original[k])]
+    assert not protected_differences and not control_differences
+    for pin in cfg['AGA_references'].values():assert digest(pin['path'])==pin['sha256']
+    assert digest(cfg['reference_predictions']['path'])==cfg['reference_predictions']['sha256']
+    rows=[r for r in json.loads((out/'results.json').read_text()) if r['preset']=='original']
+    save_json(out/'head_recovery.json',dict(status='actual_CLIP_head_recovery_exact_all_tensors',protected_rows=protected_rows,matched_control_rows=control_rows,
+        tensor_count=len(original),protected_tensor_differences=protected_differences,matched_control_tensor_differences=control_differences,
+        independent_NumPy_cost_error=max(error,control_error),attack_inputs=['actual_published_state','public_anchor_state'],
+        secret_permutation_used_by_recovery=False,original_expert_used_only_for_validation=True,
+        release_sha256=cfg['release']['sha256'],checkpoint_sha256=pins,AGA_reference_sha256={k:v['sha256'] for k,v in cfg['AGA_references'].items()},
+        reference_predictions_sha256=cfg['reference_predictions']['sha256'],reused_original_rows=rows,
+        reuse_reason='Recovered whole state equals original before unchanged author AGA. Cached original pipelines were independently replayed in this batch; no new full adaptive prediction run is claimed.',
+        author_AGA_new_calls=0,new_model_forwards=0,gradients=0,source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
+        novelty_claim=False,scope='Known head matching then original AGA, paper-kernel CLIP native adaptation, not full official GLMC. This frozen control violates original parameter0.5.'))
+
+
+@torch.no_grad()
 def head_identity_geometry(output):
     """One known whole-head permutation control; not a new defense mechanism."""
     from scipy.optimize import linear_sum_assignment
@@ -487,6 +530,7 @@ if __name__=='__main__':
     mode.add_argument('--normalization',action='store_true')
     mode.add_argument('--matching-response',action='store_true')
     mode.add_argument('--head-identity',action='store_true')
+    mode.add_argument('--head-recovery',action='store_true')
     mode.add_argument('--affine-matching',action='store_true')
     args=parser.parse_args();torch.set_num_threads(4)
-    (head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
+    (head_identity_recovery if args.head_recovery else head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
