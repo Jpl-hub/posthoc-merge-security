@@ -296,6 +296,96 @@ def verify_joint_full_gate(folder):
     print(json.dumps(result), flush=True)
 
 
+@torch.no_grad()
+def verify_joint_activation(folder):
+    """Read-only source excitation audit; never constructs another direction."""
+    from attention_cascade import parameters, suffix as torch_suffix
+    from probe_distance_candidate import on_device
+    from task_probe_distance import checked_models, initialize
+
+    initialize()
+    start = time.monotonic()
+    out = Path(folder)
+    meta = json.loads((out / 'results.json').read_text())
+    for name, key in [('cache.pt', 'cache_sha256'), ('diagnostic.pt', 'diagnostic_sha256'), ('release.pt', 'release_sha256')]:
+        assert digest(out / name) == meta[key], name
+    cache = torch.load(out / 'cache.pt', map_location='cpu')
+    point = torch.load(out / 'diagnostic.pt', map_location='cpu')
+    edits = torch.load(out / 'release.pt', map_location='cpu')
+    _, expert, head, pins = checked_models('MNIST')
+    p = on_device(parameters(expert, head))
+    axis = point['axis'].cuda()
+    z11 = torch.cat([torch_suffix(h.cuda().double(), p)[1]['z'].cpu() for h in cache['H'].split(64)])
+    z_numpy = suffix(cache['H'][:64].double().numpy(), convert(p))[1]
+    suffix_error = float(abs(z_numpy-z11[:64].numpy()).max())
+    assert suffix_error < 1e-8
+    rows = []
+    raw = {}
+    for layer, key, activation in [(10, 'D', cache['z10']), (10, 'D', cache['z10'][:, :1]), (11, 'B', z11)]:
+        basis = point['bases'][layer-10].cuda()
+        weight = p[key]
+        delta = edits[f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight'].double().cuda()-weight
+        coefficient = delta.T @ axis / weight.norm()
+        off_axis = delta-weight.norm()*axis[:, None]*coefficient[None]
+        sums = torch.zeros(5, device='cuda', dtype=torch.float64)
+        numpy_sums = np.zeros(3)
+        max_control = 0.
+        all_values = []
+        for at in range(0, len(activation), 64):
+            z = activation[at:at+64].cuda().double().reshape(-1, weight.shape[1])
+            scalar = z @ coefficient
+            total = z.square().sum()
+            outside = total-(z @ basis.T).square().sum()
+            response = z @ delta.T
+            baseline = z @ weight.T
+            sums += torch.stack([scalar.square().sum(), total, outside, response.square().sum(), baseline.square().sum()])
+            zn, cn, vn = z.cpu().numpy(), coefficient.cpu().numpy(), basis.cpu().numpy()
+            numpy_sums += [np.square(zn @ cn).sum(), np.square(zn).sum(), np.square(zn).sum()-np.square(zn @ vn.T).sum()]
+            all_values.append(torch.stack([response.square().sum(1), baseline.square().sum(1), scalar.square()], 1).cpu())
+            if at == 0:
+                actual = zn[:16] @ delta.cpu().numpy().T
+                max_control = float(abs(actual-response[:16].cpu().numpy()).max())
+                assert max_control < 1e-8
+        values = torch.cat(all_values).numpy()
+        measured = sums.cpu().numpy()
+        relative_error = float(np.max(abs(numpy_sums-measured[:3])/np.maximum(abs(measured[:3]), 1e-30)))
+        assert relative_error < 1e-10
+        n = len(values)
+        dim = weight.shape[1]-len(basis)
+        # E[(z.v)^2] for a uniformly oriented vector of the same norm in Q.
+        reference = float(coefficient.square().sum())*measured[2]/(n*dim)
+        excitation = measured[0]/n
+        name = f'B{layer}_' + ('all_tokens' if activation.ndim == 3 and activation.shape[1] > 1 else 'CLS')
+        rows.append(dict(name=name, input_rows=n, coefficient_norm=float(coefficient.norm()),
+                         task_complement_dimensions=dim, activation_scalar_mean_square=excitation,
+                         same_norm_uniform_complement_reference_mean_square=reference,
+                         excitation_over_uniform_reference=float(excitation/reference),
+                         actual_MLP_delta_rms=float(np.sqrt(measured[3]/n)), original_MLP_output_rms=float(np.sqrt(measured[4]/n)),
+                         actual_delta_over_original_MLP_rms=float(np.sqrt(measured[3]/measured[4])),
+                         off_axis_quantization_relative_norm=float(off_axis.norm()/delta.norm()),
+                         direct_NumPy_delta_error=max_control, NumPy_reduction_relative_error=relative_error))
+        raw[name] = values
+    direction = point['direction'].numpy()
+    gram = point['gram'].numpy()
+    cut = len(direction)//2
+    e10 = float(direction[:cut] @ gram[:cut, :cut] @ direction[:cut])
+    e11 = float(direction[cut:] @ gram[cut:, cut:] @ direction[cut:])
+    cross = float(2*direction[:cut] @ gram[:cut, cut:] @ direction[cut:])
+    joint = float(direction @ gram @ direction)
+    assert abs(joint-(e10+e11+cross)) < 1e-14
+    np.savez_compressed(out / 'activation_response.npz', **raw)
+    result = dict(status='source_only_excitation_and_cancellation_recounted', source_images=len(cache['H']),
+                  rows=rows, linear_response=dict(B10=e10, B11=e11, cross=cross, joint=joint,
+                  joint_over_separate_sum=joint/(e10+e11)), NumPy_suffix_activation_error=suffix_error,
+                  input_artifact_sha256={name: digest(out / name) for name in ['cache.pt', 'diagnostic.pt', 'release.pt']},
+                  raw_sha256=digest(out / 'activation_response.npz'), checkpoint_sha256=pins, source_sha256=digest(__file__),
+                  wall_seconds=time.monotonic()-start, new_images=0, new_directions=0, new_weights=0, new_AGA_calls=0,
+                  confirmation_used=False, test_used=False, partner_used=False,
+                  scope='Frozen construction cache only. Uniform-complement reference is an analytic second-moment average, not a new sampled direction or safety threshold. Activation excitation and linear cancellation are not classification harm or unseen-input guarantees.')
+    save_json(out / 'activation_response.json', result)
+    print(json.dumps(result), flush=True)
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--protocol')
@@ -303,8 +393,11 @@ if __name__=='__main__':
     ap.add_argument('--joint-response')
     ap.add_argument('--joint-confirm',action='store_true')
     ap.add_argument('--joint-full-gate')
+    ap.add_argument('--joint-activation')
     args=ap.parse_args()
-    if args.joint_full_gate:
+    if args.joint_activation:
+        verify_joint_activation(args.joint_activation)
+    elif args.joint_full_gate:
         verify_joint_full_gate(args.joint_full_gate)
     elif args.joint_response:
         verify_joint_response(args.joint_response, args.joint_confirm)
