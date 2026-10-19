@@ -2,7 +2,7 @@
 
 One fixed source-only point; original expert frozen, no gradients or tuning after responses. This is a test of known components, not a new validated defense.
 
-Joint parameter distance: **0.4999995002** (budget 0.5, including V bias). Source512 / fresh512 task drift: 8.6940079e-07 / 1.195428e-06; both zero changed predictions. The full MNIST test set has zero changed predictions and worst relative task drift **0.00012052549** (budget 0.5). This is measured FP32 evidence, not a universal floating-point guarantee. Real-valued functional preservation follows the stated normalization identity.
+**Budget comparison correction,2026-10-19:** the preregistered native packed-QKV/O tensor metric is **0.4999995002**, including V bias. Separating the modified V projection and bias gives **0.7369411033**; this point is not eligible for a strict logical-projection0.5 comparison. Original metrics and weights remain unchanged; [independent recount](../ln_affine/budget_conventions.json). Source512 / fresh512 task drift: 8.6940079e-07 / 1.195428e-06; both zero changed predictions. The full MNIST test set has zero changed predictions and worst relative task drift **0.00012052549** (budget 0.5). This is measured FP32 evidence, not a universal floating-point guarantee. Real-valued functional preservation follows the stated normalization identity.
 
 | Setting | MNIST unprotected | MNIST fixed point | SVHN unprotected | SVHN fixed point |
 |---|---:|---:|---:|---:|
@@ -18,6 +18,6 @@ Centered-before-AGA removes the added mean family (per-head residual O differenc
 
 Production wall times: source 20.43s, fresh confirmation 19.32s, real evaluation 141.57s (AGA call 7.29s included). These exclude independent recount/replay overhead; 272 scores were independently replayed within their original128-image batch contexts, plus source/confirmation NumPy and exact index-draw audits. Matched original predictions / original and partner AGA weights were reused by SHA.
 
-Source was committed locally at711d470 before images; real evaluation configuration at0d9910d before test/peer evaluation. GitHub read/write tools remain unavailable in this session despite the installed/enabled plugin: no new upload claimed. Heavy weights, raw scores and exact source indices remain3090. Protocols, source/model/raw fingerprints and lightweight statistics are retained here. Historical tests are reused, not fresh blind tests.
+Source was committed locally at711d470 before images; real evaluation configuration at0d9910d before test/peer evaluation. At the original execution GitHub tools were unavailable; the light research backlog was subsequently published and read back on2026-10-19 at8e76176. Heavy weights, raw scores and exact source indices remain3090. Protocols, source/model/raw fingerprints and lightweight statistics are retained here. Historical tests are reused, not fresh blind tests.
 
 Canonical protocols are [source](../../configs/normalization_alignment.json) and [evaluation](../../configs/normalization_alignment_eval.json); copies with identical configuration content were omitted. Full server output directories retain their execution-time protocols.

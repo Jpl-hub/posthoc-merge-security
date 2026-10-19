@@ -1,0 +1,94 @@
+{
+  "status": "passed_numpy_finite_norm_and_score_recount",
+  "raw_sha256": "ab3deaf22213750f2f9eb22e69107536418f2af079744b6fe33a83a537347b47",
+  "source_sha256": "7d9e2db90c6fe88f3950118696c7d21663300040600e53a239cf22c04b74a2bc",
+  "NumPy_projector_error": 1.2309597785531423e-14,
+  "NumPy_task_drift_recount_error": 1.2500417367888872e-14,
+  "NumPy_variance_identity_error": 1.3183898417423734e-16,
+  "geometric_rank": 255,
+  "ideal_orthogonal_family_maximum_distance": 0.3947733144649071,
+  "quantized_prototype_distance": 0.394773314430306,
+  "new_images": 0,
+  "new_releases": 0,
+  "source_task_feasibility_is_not_independent_confirmation": true,
+  "finite_variance_bound": {
+    "source_count": 512,
+    "source_endpoint_cross_eigenvalue_range": [
+      -7.8730335990119595,
+      0.7034914662671767
+    ],
+    "source_midpoint_contraction_eigenvalue_range": [
+      -10.007991114247023,
+      2.2602951698543565
+    ],
+    "uniform_positive_midpoint_variance_contraction_excluded": false,
+    "exact_source_variance_preservation_nonzero_reflection_excluded": false,
+    "scope": "Uniform average is a legal simplex dual only for this scalar skip/branch variance mechanism in the fixed full visual-readout kernel. Not a classification-defense impossibility or a necessary gate for other methods."
+  },
+  "scalar_decision_envelope": {
+    "source_n": 512,
+    "maximum_teacher_changes_under_any_pointwise_variance_contraction": 0,
+    "maximum_teacher_changes_under_any_positive_pointwise_variance": 469,
+    "minimum_zero_sigma_teacher_margin": 3.8084435222843283,
+    "NumPy_torch_zero_sigma_numerator_error": 1.2789769243681803e-13,
+    "contraction_by_teacher_class": [
+      {
+        "class_id": 0,
+        "n": 55,
+        "maximum_changed": 0
+      },
+      {
+        "class_id": 1,
+        "n": 63,
+        "maximum_changed": 0
+      },
+      {
+        "class_id": 2,
+        "n": 54,
+        "maximum_changed": 0
+      },
+      {
+        "class_id": 3,
+        "n": 51,
+        "maximum_changed": 0
+      },
+      {
+        "class_id": 4,
+        "n": 44,
+        "maximum_changed": 0
+      },
+      {
+        "class_id": 5,
+        "n": 43,
+        "maximum_changed": 0
+      },
+      {
+        "class_id": 6,
+        "n": 53,
+        "maximum_changed": 0
+      },
+      {
+        "class_id": 7,
+        "n": 43,
+        "maximum_changed": 0
+      },
+      {
+        "class_id": 8,
+        "n": 44,
+        "maximum_changed": 0
+      },
+      {
+        "class_id": 9,
+        "n": 62,
+        "maximum_changed": 0
+      }
+    ],
+    "scope": "Exact scalar-numerator decision envelope at these fixed source hidden states and readout. Allows independent arbitrary sigma per image, hence an upper bound for any shared reflection whose only score change is sigma. Not an accuracy bound after a changed peer/readout or AGA."
+  },
+  "source_chord_certificate": {
+    "all_fixed_source_teacher_predictions_certified": true,
+    "minimum_numerator_margin_lower_bound": 3.8084435117509834,
+    "maximum_quantized_readout_margin_leakage": 7.070722234645994e-08,
+    "scope": "All real interpolation coefficients0..1 in the cached last-block B-only chord, by convexity of augmented centered norm and linear margin numerators. Not a bound on task-drift0.5, all FP32 arithmetic, new inputs, a changed prefix/readout, TA with a peer, or AGA."
+  }
+}

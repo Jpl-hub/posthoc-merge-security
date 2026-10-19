@@ -6,6 +6,8 @@
 
 当前只使用RTX3090，暂不访问4090。已核验TA/TIES、原AGA、PaRaMS对角恢复适配、NUFILT、三种子DARE及ProDistill两专家适配。融合算法与恢复攻击分别记录，不把结果行数当攻击种类数。
 
+2026-10-19更新：Defense2仍无新的合规有效方案。[固定Q仿射点](results/ln_affine/)的真实TA／原AGA未降低目标任务；独立预算重算发现其逻辑Q投影距离0.697，前一V/O点0.737，不能再列严格0.5预算内结果。[B分支有限分析](results/branch_norm_mechanism/)在一个固定公开源环境中排除了整类视觉读出核内正交变换的改判能力，范围仅限该环境。PaRaMS Attention消融重新分开Q/K/V后距离0.406，仍在参数预算内，完整官方配置仍超预算；[口径与核验](results/ln_affine/budget_conventions.json)。没有根据这些结果缩放或重选权重。本次不制作PPT或讲稿。
+
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
 - [Defense 2机制、任务内外消融与新任务预算反例](notes/phase2_coupling.md)
 - [4090已归档重复文件清理记录](results/phase3/4090_cleanup.json)
@@ -80,4 +82,4 @@ NUFILT 的只读源码检查为 `python experiments/phase3_nufilt_check.py`；�
 
 偏置规范化恢复已在MNIST两伙伴的原生FP32评价，以及DTD/SVHN保护任务的单列FP32前缀／FP64最终读出协议下完成。后者不能撤销原生FP32数值控制失败；原分数、阈值、失败证据及两套精度结果分别保留。MNIST原生FP32清理前后分数差0.00069427也超过0.0005；恢复模型重放误差0是另一项检查。这是架构相关补充诊断，不是原版AGA或新的论文攻击算法。
 
-明日组会：[九页汇报PPT](presentation/research_report.pptx)、[PDF](presentation/main.pdf)、[老师要求落实与缺口](notes/teacher_feedback.md)。最新[固定Unmask全表](results/phase3/unmask/tables.md)显示无保护控制也退化，不将低分误记为防御成功；Defense2合规有效的新机制仍未完成。
+历史汇报文件保留，其数据截止与预算说明不代表本次最新结论。最新研究进度见[老师要求落实与缺口](notes/teacher_feedback.md)。[固定Unmask全表](results/phase3/unmask/tables.md)显示无保护控制也退化，不将低分误记为防御成功。
