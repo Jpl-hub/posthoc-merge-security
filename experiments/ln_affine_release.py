@@ -215,9 +215,9 @@ def run(protocol, confirm=False):
     labels = torch.tensor([int(train[i][1]) for i in split['indices']])
     branches={}
     if readout:
-        for name,keep in [('bias_only','model.visual.ln_post.bias'),('projection_only','model.visual.proj')]:
+        for branch_name,keep in [('bias_only','model.visual.ln_post.bias'),('projection_only','model.visual.proj')]:
             for key,value in point['original'].items():release.state_dict()[key].copy_(edits[key] if key==keep else value)
-            branches[name]=probe_scores(release,head,x,True)
+            branches[branch_name]=probe_scores(release,head,x,True)
         for key,value in edits.items():release.state_dict()[key].copy_(value)
     torch.save(dict(before=before,after=after,probe_before=pb,probe_after=pa,inputs=x,probe_inputs=probes,branches=branches,
         head_weight=head.weight.detach().cpu().double() if readout else None,
