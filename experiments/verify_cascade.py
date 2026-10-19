@@ -593,6 +593,98 @@ def verify_distributed_response(output):
     print(json.dumps({k:report[k] for k in ['status','task_jacobian_rank','retained_public_gradient_fraction','native_linear_cancellation_energy_ratio','audit_wall_seconds']}),flush=True)
 
 
+@torch.no_grad()
+def replay_distributed_response(output):
+    """Materialize only the already closed smallest point for a numerical audit."""
+    import hashlib
+    from scipy.special import logsumexp
+    from covariance_noise import dataset
+    from subspace_probe import make_loader
+    from task_probe_distance import checked_models, initialize
+
+    start=time.monotonic();initialize();out=Path(output)
+    assert not (out/'replay_preflight.json').exists(), 'Never overwrite a replay.'
+    cfg=json.loads((out/'protocol.json').read_text())
+    audit=json.loads((out/'independent_validation.json').read_text())
+    assert audit['status']=='independently_verified_closed_source_experiment'
+    for name in ['direction.pt','source_baseline.pt','attempt_scores.pt','results.json','protocol.json']:
+        assert digest(out/name)==audit['raw_sha256'][name],name
+    raw=torch.load(out/'direction.pt',map_location='cpu',weights_only=False)
+    baseline=torch.load(out/'source_baseline.pt',map_location='cpu',weights_only=False)
+    prototype=torch.load(out/'attempt_scores.pt',map_location='cpu',weights_only=False)[-1].numpy().astype(np.float64)
+    row=audit['rows'][-1];radius=row['radius'];n=cfg['fit_n'];batch=cfg['batch_size']
+    assert len(audit['rows'])==cfg['backtracking_steps'] and row['worst_task_drift']>cfg['task_budget']
+    assert radius==cfg['parameter_budget']*(1-cfg['distance_reserve'])*2.**(1-cfg['backtracking_steps'])
+    indices=raw['source_indices'][:n]
+    assert indices==baseline['indices'][:n]
+    truth=official_labels(cfg['target'],True)[indices]
+    np.testing.assert_array_equal(truth,baseline['labels'][:n].numpy())
+    save_json(out/'replay_preflight.json',dict(source_sha256=digest(__file__),
+        input_audit_sha256=digest(out/'independent_validation.json'),radius=radius,n=n,batch_size=batch,
+        score_tolerance=cfg['full_model_score_tolerance'],new_indices=0,
+        scope='Fixed last failed prototype only; no candidate selection, repair, confirmation, test, fusion or attack.'))
+    anchor,expert,head,pins=checked_models(cfg['target']);del anchor
+    original={k:v.clone() for k,v in expert.state_dict().items()}
+    training=dataset(cfg['target'],'data',expert.val_preprocess,True)
+    expert.cuda();head.cuda();torch.cuda.reset_peak_memory_stats()
+    def observe(ids):
+        values=[]
+        for x,_ in make_loader(training,ids,batch):
+            values.append(head(expert(x.cuda())).cpu())
+        return torch.cat(values)
+    control=observe(indices[:batch]).numpy().astype(np.float64)
+    before=baseline['before'][:n].numpy().astype(np.float64)
+    control_error=float(abs(control-before[:batch]).max())
+    edited_keys=set();geometry=[]
+    for layer,b in enumerate(raw['basis']):
+        weight=expert.model.visual.transformer.resblocks[layer].mlp.c_proj.weight
+        old=weight.cpu().numpy().astype(np.float64)
+        u,v,c=[x.numpy().astype(np.float64) for x in [b['u'],b['v'],raw['direction'][layer]]]
+        delta=radius*b['norm']*(u@(c-(c@v.T)@v))
+        edited=(old+delta).astype(np.float32)
+        weight.copy_(torch.from_numpy(edited).cuda())
+        geometry.append(dict(layer=layer,FP32_logical_distance=float(np.linalg.norm(edited-old)/np.linalg.norm(old))))
+        edited_keys.add(f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight')
+    fingerprint=hashlib.sha256();original_fingerprint=hashlib.sha256()
+    # All tensors, including every unedited bias/readout, enter the fingerprint.
+    for key,value in sorted(expert.state_dict().items()):
+        a=value.cpu().numpy();b=original[key].numpy()
+        if key not in edited_keys:np.testing.assert_array_equal(a,b)
+        fingerprint.update(key.encode());fingerprint.update(a.tobytes())
+        original_fingerprint.update(key.encode());original_fingerprint.update(b.tobytes())
+    actual=observe(indices);after=actual.numpy().astype(np.float64)
+    torch.save(dict(scores=actual,original_control=torch.from_numpy(control),indices=indices),out/'replay_scores.pt')
+    score_error=float(abs(after-prototype).max());y=before.argmax(1);pred=after.argmax(1)
+    gaps=before[np.arange(n),y,None]-before;keep=np.ones_like(gaps,dtype=bool);keep[np.arange(n),y]=False
+    assert (gaps[keep]>0).all();gaps[~keep]=1.
+    ds=after-before;r=(ds[np.arange(n),y,None]-ds)/gaps;r[~keep]=0.
+    core=np.zeros(n,dtype=bool);core[raw['core'].numpy()]=True
+    nll_before=logsumexp(before,axis=1)-before[np.arange(n),truth]
+    nll_after=logsumexp(after,axis=1)-after[np.arange(n),truth]
+    report=dict(status='complete_fixed_failed_point_full_model_audit',radius=radius,n=n,
+        original_score_error=control_error,prototype_score_error=score_error,
+        score_tolerance=cfg['full_model_score_tolerance'],worst_task_drift=float(abs(r).max()),
+        core20_worst_drift=float(abs(r[core]).max()),other492_worst_drift=float(abs(r[~core]).max()),
+        changed=int((pred!=y).sum()),correct=int((pred==truth).sum()),
+        actual_FP32_logical_distance=sum(g['FP32_logical_distance']**2 for g in geometry)**.5,
+        geometry=geometry,checkpoint_sha256=pins,edited_tensor_count=len(edited_keys),
+        in_memory_state_sha256=fingerprint.hexdigest(),original_state_sha256=original_fingerprint.hexdigest(),
+        score_sha256=digest(out/'replay_scores.pt'),source_sha256=digest(__file__),
+        input_audit_sha256=digest(out/'independent_validation.json'),per_class=[],
+        model_image_forwards=n+batch,new_training_indices=0,new_released_weights=0,
+        new_candidates=0,new_confirmations=0,new_TA_calls=0,new_AGA_calls=0,
+        audit_wall_seconds=time.monotonic()-start,peak_allocated_GPU_bytes=torch.cuda.max_memory_allocated(),
+        scope='Independent NumPy FP32 weight materialization of the fixed smallest failed prototype, not a revived candidate. No new data or radius selection.')
+    for c in range(before.shape[1]):
+        mask=truth==c;old=(y==truth)&mask;new=(pred==truth)&mask
+        report['per_class'].append(dict(class_id=c,n=int(mask.sum()),lost=int((old&~new).sum()),
+            gained=int((new&~old).sum()),NLL_before=float(nll_before[mask].mean()),NLL_after=float(nll_after[mask].mean())))
+    report['numerical_check_passed']=max(control_error,score_error)<=cfg['full_model_score_tolerance']
+    save_json(out/'replay_validation.json',report)
+    assert report['numerical_check_passed'], 'Keep failed replay; do not change the original tolerance.'
+    print(json.dumps({k:report[k] for k in ['status','prototype_score_error','worst_task_drift','changed','actual_FP32_logical_distance','audit_wall_seconds']}),flush=True)
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--protocol')
@@ -604,8 +696,11 @@ if __name__=='__main__':
     ap.add_argument('--public-base', action='store_true')
     ap.add_argument('--joint-class-response')
     ap.add_argument('--distributed-response')
+    ap.add_argument('--distributed-replay')
     args=ap.parse_args()
-    if args.distributed_response:
+    if args.distributed_replay:
+        replay_distributed_response(args.distributed_replay)
+    elif args.distributed_response:
         verify_distributed_response(args.distributed_response)
     elif args.joint_class_response:
         verify_joint_class_response(args.joint_class_response)
