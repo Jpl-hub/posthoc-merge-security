@@ -232,13 +232,22 @@ def projection_cone(protocol):
                 dual_scores=head(env(images))
                 primal,tangent=forward_ad.unpack_dual(objective(dual_scores))
                 score_error=float((forward_ad.unpack_dual(dual_scores).primal.cpu()-reference).abs().max())
-                ad_error=abs(float(tangent)-gn)/gn
+            # Match both differentiation directions to the same attention kernel.
+            with torch.enable_grad(),sdpa_kernel(SDPBackend.MATH):
+                scalar=torch.zeros((),device='cuda',requires_grad=True)
+                runtime['c']=scalar*direction
+                reverse_scores=head(env(images))
+                reverse=float(torch.autograd.grad(objective(reverse_scores),scalar)[0])
+            ad_error=abs(float(tangent)-reverse)/max(1.,abs(reverse))
         finally:
             torch.backends.mha.set_fastpath_enabled(previous)
-        numeric.update(forward_directional_derivative=float(tangent),forward_reverse_relative_error=ad_error,matched_math_score_error=score_error,
+        numeric.update(forward_directional_derivative=float(tangent),matched_reverse_directional_derivative=reverse,
+            forward_reverse_relative_error=ad_error,matched_math_score_error=score_error,
+            original_kernel_vs_math_gradient_relative_difference=abs(reverse-gn)/gn,
             initial_finite_difference_still_failed=error>cfg['derivative_tolerance'],reference='Direct forward/reverse AD; original finite difference retained, threshold not raised.')
         save_json(out/'derivative_check.json',numeric)
         assert ad_error<=cfg['AD_relative_tolerance']
+        assert abs(reverse-gn)/gn<=cfg['derivative_tolerance']
         assert score_error<=cfg['full_model_score_tolerance']
     else:
         save_json(out/'derivative_check.json',numeric)
