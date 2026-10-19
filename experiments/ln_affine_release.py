@@ -21,7 +21,30 @@ KEYS = [PREFIX+'in_proj_weight', PREFIX+'in_proj_bias']
 
 
 @torch.no_grad()
+def build_matching(expert,anchor,cfg):
+    pin=cfg['matching_geometry'];assert digest(pin['path'])==pin['sha256']
+    raw=torch.load(pin['path'],map_location='cpu');keys=list(raw['original'])
+    assert all(torch.equal(expert.state_dict()[k],v) for k,v in raw['original'].items())
+    block=expert.model.visual.transformer.resblocks[11]
+    assert torch.equal(raw['gamma'],block.ln_2.weight.double()) and torch.equal(raw['beta'],block.ln_2.bias.double())
+    task=expert.state_dict()[keys[0]].double()-anchor.state_dict()[keys[0]].double()
+    _,singular,vh=torch.linalg.svd(task,full_matrices=False)
+    delta=raw['edits'][keys[0]].double()-raw['original'][keys[0]].double()
+    inner=delta@vh[:32].T@vh[:32]
+    distance=sum(float((raw['edits'][k].double()-v.double()).norm().square()/v.double().norm().square()) for k,v in raw['original'].items())**.5
+    geometry=dict(parameter_distance=distance,logical_A_and_bias_distance=distance,
+        LN_constant=float(raw['constant']),MLP_task_outside_energy_fraction=float((delta-inner).square().sum()/delta.square().sum()),
+        task_probe_rank=32,task_singular_values=singular[:32].tolist(),
+        changed_AGA_assignment_positions=int((raw['original_restore']!=raw['changed_restore']).sum()),
+        scope='One weight-selected affine fingerprint point; changed assignment is not classification protection.')
+    point={k:raw[k] for k in ['normal','constant','original','gamma','beta']}
+    point.update(keys=keys,site='MLP',vh=vh[:32],assignment_geometry=geometry)
+    return raw['edits'],point,geometry
+
+
+@torch.no_grad()
 def build(expert, anchor, cfg):
+    if cfg.get('matching_geometry'):return build_matching(expert,anchor,cfg)
     block = expert.model.visual.transformer.resblocks[11]
     original = {k: expert.state_dict()[k].double().clone() for k in KEYS}
     w, b = [original[k] for k in KEYS]
@@ -53,6 +76,7 @@ def build(expert, anchor, cfg):
 
 @torch.no_grad()
 def recovery_geometry(expert, anchor, edits, point, cfg):
+    if point.get('site')=='MLP':return dict(assignment_is_not_classification_damage=True)
     author, pin = load_author(Path(cfg['author_path'])); assert pin == cfg['author_text_sha256']
     base = anchor.state_dict()[KEYS[0]][:768].double(); original=point['original'][KEYS[0]][:768]
     changed=edits[KEYS[0]][:768].double(); gamma=point['gamma']; numerator=denominator=0.; errors=[]
@@ -154,8 +178,9 @@ def verify(folder, confirm=False):
     assert digest(out/(name+'.pt'))==report['raw_sha256']
     raw=torch.load(out/(name+'.pt'),map_location='cpu'); point=torch.load(out/'point.pt',map_location='cpu')
     edits=torch.load(out/'frozen_release.pt',map_location='cpu'); n=point['normal'].numpy(); g=point['gamma'].numpy(); beta=point['beta'].numpy()
-    dw=(edits[KEYS[0]].double()-point['original'][KEYS[0]]).numpy()[:768]
-    db=(edits[KEYS[1]].double()-point['original'][KEYS[1]]).numpy()[:768]
+    keys=point.get('keys',KEYS)
+    dw=(edits[keys[0]].double()-point['original'][keys[0]].double()).numpy()
+    db=(edits[keys[1]].double()-point['original'][keys[1]].double()).numpy()
     linear=dw*g; centered=linear-linear.mean(1,keepdims=True)
     identity=max(float(abs(centered).max()),float(abs(dw@beta+db).max())); assert identity<1e-6
     distance=sum(float(np.linalg.norm((edits[k].double()-v).numpy())**2/np.linalg.norm(v.numpy())**2) for k,v in point['original'].items())**.5
