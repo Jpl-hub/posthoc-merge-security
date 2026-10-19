@@ -166,7 +166,12 @@ def projection_cone(protocol):
     train=dataset(cfg['target'],'data',expert.val_preprocess,True)
     excluded=set(cfg['extra_excluded_indices'])
     for path in cfg['extra_index_exclusions']:excluded.update(json.loads(Path(path).read_text())['indices'])
-    split=unused(train,excluded,cfg|dict(confirmation_n=cfg['source_n'],confirmation_seed=cfg['construction_seed']))
+    if cfg.get('reuse_source_split'):
+        assert digest(cfg['reuse_source_split'])==cfg['reuse_source_split_sha256']
+        split=json.loads(Path(cfg['reuse_source_split']).read_text())
+        assert not set(split['indices'])&excluded
+    else:
+        split=unused(train,excluded,cfg|dict(confirmation_n=cfg['source_n'],confirmation_seed=cfg['construction_seed']))
     split.update(used_for_optimization=True,role='New source construction only; no confirmation.')
     ids=split['indices'];save_json(out/'source_split.json',split);save_json(out/'training_indices.json',dict(fit=ids))
     original={k:v.clone() for k,v in expert.state_dict().items()}
@@ -213,8 +218,31 @@ def projection_cone(protocol):
     with torch.no_grad():
         for sign in [-1.,1.]:runtime['c']=sign*step*direction;fd.append(float(objective(head(env(images)))))
     error=abs((fd[1]-fd[0])/(2*step)-gn)/gn
-    save_json(out/'derivative_check.json',dict(relative_error=error,step=step,gradient_norm=gn))
-    assert error<=cfg['derivative_tolerance']
+    numeric=dict(FP32_finite_difference_relative_error=error,step=step,gradient_norm=gn)
+    if cfg.get('derivative_reference')=='forward_reverse_AD':
+        from torch.autograd import forward_ad
+        from torch.nn.attention import sdpa_kernel,SDPBackend
+        expected=json.loads(Path(cfg['initial_derivative_failure']).read_text())
+        assert digest(cfg['initial_derivative_failure'])==cfg['initial_derivative_failure_sha256']
+        assert gn==expected['gradient_norm'] and abs(error-expected['relative_error'])<1e-10
+        previous=torch.backends.mha.get_fastpath_enabled();torch.backends.mha.set_fastpath_enabled(False)
+        try:
+            with torch.no_grad(),sdpa_kernel(SDPBackend.MATH),forward_ad.dual_level():
+                runtime['c']=forward_ad.make_dual(torch.zeros_like(direction),direction)
+                dual_scores=head(env(images))
+                primal,tangent=forward_ad.unpack_dual(objective(dual_scores))
+                score_error=float((forward_ad.unpack_dual(dual_scores).primal.cpu()-reference).abs().max())
+                ad_error=abs(float(tangent)-gn)/gn
+        finally:
+            torch.backends.mha.set_fastpath_enabled(previous)
+        numeric.update(forward_directional_derivative=float(tangent),forward_reverse_relative_error=ad_error,matched_math_score_error=score_error,
+            initial_finite_difference_still_failed=error>cfg['derivative_tolerance'],reference='Direct forward/reverse AD; original finite difference retained, threshold not raised.')
+        save_json(out/'derivative_check.json',numeric)
+        assert ad_error<=cfg['AD_relative_tolerance']
+        assert score_error<=cfg['full_model_score_tolerance']
+    else:
+        save_json(out/'derivative_check.json',numeric)
+        assert error<=cfg['derivative_tolerance']
     for h in handles:h.remove()
     del env,c,g,images
     radius=cfg['parameter_budget']/math.sqrt(2)*(1-cfg['distance_reserve'])
