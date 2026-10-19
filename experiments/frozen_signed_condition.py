@@ -97,6 +97,38 @@ def margin_stat(n0,n1):
 
 
 @torch.no_grad()
+def self_chord():
+    """One frozen O/B midpoint in both source coordinates; not a new defense."""
+    from scipy.special import expit
+    from cross_module_distance import final_hidden
+    from verify_levelset_audits import convert,raw_scores
+    root=Path('outputs/phase2_frozen_signed_condition');out=root/'OB_self_chord.json';assert not out.exists()
+    report=json.loads((root/'results.json').read_text());path=root/'artifacts/diagnostic.pt'
+    assert digest(path)==report['diagnostic_sha256'];raw=torch.load(path,map_location='cpu',weights_only=False)
+    torch.set_num_threads(4);start=time.monotonic();rows=[];maximum=0.
+    for env in ['source','aligned_source']:
+        p=raw['environments'][env]['parameters'];q=raw['cases']['O_B'][env]['parameters'];st=raw['cases']['O_B'][env]['states']
+        assert all(torch.equal(p[k],q[k]) for k in p if torch.is_tensor(p[k]) and k not in ['O','B'])
+        rounding=st['h0']-final_hidden(st['r0'],p);mid=p|{'B':(p['B']+q['B'])/2}
+        r=(st['r0']+st['r1'])/2;h=rounding+final_hidden(r,mid);after=scores(h,p);before=scores(st['h0'],p)
+        pn=convert(p);rn=r.numpy();c=rn-rn.mean(1,keepdims=True)
+        pre=(c/np.sqrt((c*c).mean(1,keepdims=True)+p['eps2'])*pn['gamma2']+pn['beta2'])@pn['A'].T+pn['a']
+        hn=rounding.numpy()+rn+(pre*expit(1.702*pre))@mid['B'].numpy().T+pn['b']
+        error=float(abs(raw_scores(hn,pn)-after.numpy()).max());assert error<1e-8;maximum=max(maximum,error)
+        from angular_distance import signed_residual
+        row=dict(environment=env,midpoint=margin_stat(numerator(st['h0'],p),numerator(h,p)),
+            midpoint_full_relative_margin_drift=float(signed_residual(before,after).abs().max()),
+            endpoint=margin_stat(numerator(st['h0'],p),numerator(st['joint'],p)),
+            original_B_only=margin_stat(numerator(st['h0'],p),numerator(st['B_only'],p)))
+        rows.append(row)
+    save_json(out,dict(status='frozen_source_OB_self_chord_checked',rows=rows,source_sha256=digest(__file__),
+        raw_sha256=report['diagnostic_sha256'],maximum_independent_NumPy_score_error=maximum,
+        old_source_indices=raw['indices'],new_images=0,full_model_forwards=0,new_candidates=0,gradients=0,
+        wall_seconds=time.monotonic()-start,
+        scope='One fixed half-chord of original/aligned O/B endpoints on old construction inputs. Aligned source is original authorAGA coordinates, not an unknown peer, true two-task merger or fresh task confirmation. No changed weights, coefficient search or universal gate.'))
+
+
+@torch.no_grad()
 def run(protocol):
     cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output']);out.mkdir(parents=True,exist_ok=False)
     (out/'artifacts').mkdir();save_json(out/'protocol.json',cfg)
@@ -169,4 +201,6 @@ def run(protocol):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--protocol',required=True);run(p.parse_args().protocol)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--protocol');p.add_argument('--self-chord',action='store_true');a=p.parse_args()
+    if a.self_chord:self_chord()
+    else:assert a.protocol;run(a.protocol)
