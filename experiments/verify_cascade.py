@@ -135,6 +135,107 @@ def verify_completion(cfg):
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
 
+def verify_joint_response(folder, confirm=False):
+    """Independent NumPy distances, task gaps, source eigensystem and split roles."""
+    from audit_hermite_splits import exclusions
+    from task_probe_distance import checked_models
+    import hashlib
+    import tarfile
+
+    start = time.monotonic()
+    out = Path(folder)
+    cfg = json.loads((out / 'protocol.json').read_text())
+    source = json.loads((out / 'results.json').read_text())
+    assert digest(out / 'diagnostic.pt') == source['diagnostic_sha256']
+    assert digest(out / 'release.pt') == source['release_sha256']
+    archive = Path('outputs/2026-10-19_research/joint_response_source.tar.gz')
+    assert digest(archive) == '07a56780aacaedee44cf58fc9d2b4202e4080bc574a8cbcd4d32f804aea65db7'
+    with tarfile.open(archive) as pack:
+        for path, pin in source['source_sha256'].items():
+            assert hashlib.sha256(pack.extractfile(path).read()).hexdigest() == pin, path
+    point = torch.load(out / 'diagnostic.pt', map_location='cpu')
+    edits = torch.load(out / 'release.pt', map_location='cpu')
+    _, own, _, pins = checked_models('MNIST')
+    assert pins == source['checkpoint_sha256']
+    distance = 0.
+    leakages = []
+    for layer, basis in zip([10, 11], point['bases']):
+        key = f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight'
+        before = own.state_dict()[key].numpy().astype(np.float64)
+        delta = edits[key].numpy().astype(np.float64)-before
+        distance += np.sum(delta*delta)/np.sum(before*before)
+        leakages.append(float(np.linalg.norm(delta @ basis.numpy().T)/np.linalg.norm(delta)))
+    distance = float(np.sqrt(distance))
+    assert abs(distance-source['parameter_distance']) < 1e-12 and distance <= cfg['parameter_budget']
+    result = dict(status='passed', parameter_distance=distance, task_probe_leakage=leakages,
+                  release_sha256=source['release_sha256'], construction_code_archive_sha256=digest(archive),
+                  source_sha256=digest(__file__), checkpoint_sha256=pins, new_images=0, gradients=0)
+    if not confirm:
+        gram = point['gram'].numpy()
+        v = point['direction'].numpy()
+        rayleigh = float(v @ gram @ v)
+        norm = np.linalg.norm(v)
+        eigen_error = float(np.linalg.norm(gram @ v-point['eigenvalues'][0].item()*v))
+        assert abs(norm-1.) < 1e-10
+        assert eigen_error < 1e-8*max(1., np.linalg.norm(gram))
+        assert abs(rayleigh-source['linear_mean_square']) < 1e-10*max(1., np.abs(gram).max())
+        cut = len(v)//2
+        a = np.zeros_like(v); a[:cut] = v[:cut]
+        b = v-a
+        energies = dict(B10_only=float(a @ gram @ a), B11_only=float(b @ gram @ b), joint=rayleigh)
+        result.update(linear_mean_square=rayleigh, eigen_residual_norm=eigen_error, linear_branch_energies=energies)
+        raw = point
+        measured = source['metrics']
+        ids = json.loads((out / 'training_indices.json').read_text())['fit']
+        assert ids == json.loads(Path(cfg['source_indices']).read_text())['fit']
+        assert len(ids) == len(set(ids)) == cfg['source_n']
+        assert not set(ids) & set(cfg['excluded_witness_indices'])
+        result['source_indices_sha256'] = digest(cfg['source_indices'])
+    else:
+        measured_report = json.loads((out / 'confirmation_validation.json').read_text())
+        assert digest(out / 'confirmation.pt') == measured_report['raw_sha256']
+        raw = torch.load(out / 'confirmation.pt', map_location='cpu')
+        raw['predictions'] = {'joint': raw['after'], 'full_model': raw['actual_release']}
+        raw['full_model_before'] = raw['actual_original']
+        measured = {'joint': measured_report['source'], 'full_model': measured_report['full_model']}
+        split = json.loads((out / 'confirmation_split.json').read_text())
+        old_ids = json.loads((out / 'training_indices.json').read_text())['fit']
+        excluded, _ = exclusions(split, set(old_ids) | set(cfg['excluded_witness_indices']))
+        assert len(excluded) == split['excluded_count']
+        ids = np.random.default_rng(split['seed']).choice(sorted(set(range(60000))-excluded), len(raw['indices']), replace=False).tolist()
+        assert ids == split['indices'] == raw['indices'] and not set(ids) & excluded
+        result.update(confirmation_indices=len(ids), construction_confirmation_overlap=0,
+                      excluded_count=len(excluded), exact_draw_reproduced=True, historical_confirmations_used=False)
+    before = raw['before'].numpy()
+    rows = {}
+    for key, value in raw['predictions'].items():
+        original = raw['full_model_before'].numpy() if key == 'full_model' else before
+        predicted = value.numpy()
+        drift = float(np.abs(residual(original, predicted)).max())
+        changes = int(np.sum(original.argmax(1) != predicted.argmax(1)))
+        assert abs(drift-measured[key]['worst_task_drift']) < 1e-10
+        assert changes == measured[key]['changed']
+        labels = official_labels('MNIST', True)[ids]
+        n = len(labels)
+        rows[key] = dict(worst_task_drift=drift, changed=changes,
+                         original_correct=int(np.sum(original[:n].argmax(1)==labels)),
+                         released_correct=int(np.sum(predicted[:n].argmax(1)==labels)))
+    result.update(rows=rows, wall_seconds=time.monotonic()-start,
+                  scope='Independent NumPy recount and archive/split/weight verification; full-tail NumPy computations and full-model controls separately recorded in production. No unknown-peer or efficacy claim.')
+    save_json(out / ('confirmation_independent_validation.json' if confirm else 'independent_validation.json'), result)
+    print(json.dumps(result), flush=True)
+
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol',required=True);ap.add_argument('--completion',action='store_true');args=ap.parse_args();cfg=json.loads(Path(args.protocol).read_text())
-    (verify_completion if args.completion else verify)(cfg)
+    ap=argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--protocol')
+    ap.add_argument('--completion',action='store_true')
+    ap.add_argument('--joint-response')
+    ap.add_argument('--joint-confirm',action='store_true')
+    args=ap.parse_args()
+    if args.joint_response:
+        verify_joint_response(args.joint_response, args.joint_confirm)
+    else:
+        assert args.protocol
+        cfg=json.loads(Path(args.protocol).read_text())
+        (verify_completion if args.completion else verify)(cfg)
