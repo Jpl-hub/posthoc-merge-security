@@ -412,6 +412,91 @@ def verify_joint_activation(folder, public_base=False):
     print(json.dumps(result), flush=True)
 
 
+@torch.no_grad()
+def verify_joint_class_response(folder):
+    """Fixed first64 construction interventions, not a defense evaluation."""
+    from attention_cascade import parameters, suffix as torch_suffix
+    from covariance_noise import dataset
+    from joint_response_direction import capture
+    from probe_distance_candidate import on_device
+    from probe_margin_distance import scores
+    from task_probe_distance import checked_models, initialize
+
+    initialize()
+    start = time.monotonic()
+    out = Path(folder)
+    assert not (out/'class_response.json').exists(), 'Reuse the completed fixed intervention.'
+    meta = json.loads((out/'results.json').read_text())
+    for name, key in [('cache.pt', 'cache_sha256'), ('release.pt', 'release_sha256')]:
+        assert digest(out/name) == meta[key]
+    prior = json.loads((out/'activation_public_base.json').read_text())
+    assert prior['input_artifact_sha256']['release.pt'] == meta['release_sha256']
+    ids = json.loads((out/'training_indices.json').read_text())['fit'][:64]
+    anchor, expert, head, pins = checked_models('MNIST')
+    training = dataset('MNIST', 'data', expert.val_preprocess, True)
+    base = capture(anchor, training, ids)
+    torch.save(base, out/'class_response_base_cache.pt')
+    native = {k: v[:64] for k, v in torch.load(out/'cache.pt', map_location='cpu').items()}
+    ep = on_device(parameters(expert, head))
+    edits = torch.load(out/'release.pt', map_location='cpu')
+    deltas = [edits[f'model.visual.transformer.resblocks.{layer}.mlp.c_proj.weight'].double().cuda()-ep[key]
+              for layer, key in [(10, 'D'), (11, 'B')]]
+    labels = official_labels('MNIST', True)[ids]
+    records, raw, max_error, controls, interactions = [], {'indices': np.array(ids), 'labels': labels}, 0., {}, {}
+    for env, cache, model in [('native', native, expert), ('public_base', base, anchor)]:
+        p = on_device(parameters(model, head)); pn = convert(p)
+        H, z10, h = [cache[k].cuda().double() for k in ['H', 'z10', 'h']]
+        baseline_tail, initial = torch_suffix(H, p)
+        rounding = h-baseline_tail
+        before = scores(h, p)
+        features = cache['features'].double()
+        full = features/features.norm(dim=1, keepdim=True) @ p['head'].cpu().T
+        controls[env] = float((full-before.cpu()).abs().max())
+        assert controls[env] < 5e-4
+        states, contexts = {}, {}
+        for branch, d10, d11 in [('original', 0., 0.), ('B10_only', 1., 0.), ('B11_only', 0., 1.), ('joint', 1., 1.)]:
+            H1 = H + d10*(z10 @ deltas[0].T)
+            q = p | {'B': p['B']+d11*deltas[1]}
+            states[branch], contexts[branch] = torch_suffix(H1, q)
+            after = scores(states[branch]+rounding, p).cpu().numpy()
+            hn = H.cpu().numpy()+d10*(z10.cpu().numpy() @ deltas[0].cpu().numpy().T)
+            numpy_h = suffix(hn, pn | {'B': pn['B']+d11*deltas[1].cpu().numpy()})[0]+rounding.cpu().numpy()
+            numpy_scores = raw_scores(numpy_h, pn)
+            error = float(abs(after-numpy_scores).max()); assert error < 1e-8
+            max_error = max(max_error, error)
+            b = before.cpu().numpy(); teacher = b.argmax(1); pred = after.argmax(1)
+            ratio = residual(b, after); independent = residual(b, numpy_scores)
+            np.testing.assert_array_equal(pred, numpy_scores.argmax(1))
+            assert float(abs(ratio-independent).max()) < 1e-8
+            changed = pred != teacher
+            rows = [dict(class_id=c, n=int((labels==c).sum()), original_correct=int(((teacher==labels)&(labels==c)).sum()),
+                         after_correct=int(((pred==labels)&(labels==c)).sum()), lost=int(((teacher==labels)&(pred!=labels)&(labels==c)).sum()),
+                         gained=int(((teacher!=labels)&(pred==labels)&(labels==c)).sum())) for c in range(10)]
+            records.append(dict(environment=env, branch=branch, n=64, original_correct=int((teacher==labels).sum()),
+                                after_correct=int((pred==labels).sum()), changed=int(changed.sum()),
+                                changed_by_teacher_class=np.bincount(teacher[changed], minlength=10).tolist(),
+                                worst_relative_gap_drift=float(abs(ratio).max()), maximum_signed_gap_harm=float((-ratio).max()),
+                                per_true_class=rows, independent_NumPy_score_error=error))
+            raw[env+'_'+branch] = after
+        cross = states['joint']-states['B10_only']-states['B11_only']+states['original']
+        identity = (contexts['B10_only']['z']-initial['z']) @ deltas[1].T
+        interactions[env] = dict(identity_error=float((cross-identity).abs().max()),
+                                 hidden_cross_RMS=float(cross.square().sum(1).mean().sqrt()))
+        assert interactions[env]['identity_error'] < 1e-8
+    np.savez_compressed(out/'class_response.npz', **raw)
+    result = dict(status='fixed_source_only_finite_class_intervention_verified', rows=records,
+                  n_each=64, indices=ids, input_release_sha256=meta['release_sha256'], native_cache_sha256=meta['cache_sha256'],
+                  base_cache_sha256=digest(out/'class_response_base_cache.pt'), raw_sha256=digest(out/'class_response.npz'),
+                  source_sha256=digest(__file__), capture_source_sha256=digest('experiments/joint_response_direction.py'),
+                  checkpoint_sha256=pins, original_model_score_controls=controls, finite_hidden_interaction=interactions,
+                  maximum_NumPy_score_error=max_error, wall_seconds=time.monotonic()-start,
+                  repeated_public_base_forward_inputs=64, new_training_indices=0, new_weights=0, new_candidates=0,
+                  new_fusions=0, new_AGA_calls=0, candidate_still_closed=True,
+                  scope='First64 unchanged construction indices; native cache reused, unchanged public base recaptured. Full nonlinear tail interventions only, not merged/AGA models or independent task preservation. No protected public-base checkpoint or repaired defense produced.')
+    save_json(out/'class_response.json', result)
+    print(json.dumps(result), flush=True)
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--protocol')
@@ -421,8 +506,11 @@ if __name__=='__main__':
     ap.add_argument('--joint-full-gate')
     ap.add_argument('--joint-activation')
     ap.add_argument('--public-base', action='store_true')
+    ap.add_argument('--joint-class-response')
     args=ap.parse_args()
-    if args.joint_activation:
+    if args.joint_class_response:
+        verify_joint_class_response(args.joint_class_response)
+    elif args.joint_activation:
         verify_joint_activation(args.joint_activation, args.public_base)
     elif args.joint_full_gate:
         verify_joint_full_gate(args.joint_full_gate)
