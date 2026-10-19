@@ -1,0 +1,16 @@
+{
+  "amendment": "Computational backend only; original MaxTime retained. This explicitly changes the original one-solve/stop rule for a numerical replay,not scientific parameters,budgets,tolerances or source data. No candidate/confirmation/test/actual peer-fusion result exists from the first attempt.",
+  "backend": "faer",
+  "threads": 4,
+  "input_sha256": {
+    "constraints.npz": "66417da0b2ac45928008e93a8f2dab16f575c246decf16bac2aaedd9a149db0c",
+    "solver.npz": "bdb3ddcdd635a35c468c76a5b5caa6d011c3cd928ac066578222b01ac2d04011",
+    "diagnostic.pt": "4a39c9e4e312bd1d7144c76076623b8b14bcbe1507485e17ced889552af970d9"
+  },
+  "source_sha256": {
+    "experiments/finite_compensation_bound.py": "4f4489b59c5758ed63eb3f980d6672361cddd03fdccac7f359d7885b43bae979",
+    "experiments/verify_finite_compensation_bound.py": "4ffdf79c01e6eb8fa675e217c846f5af211d73040946949580b1b5c583d4c649"
+  },
+  "one_replay_only": true,
+  "stop_rule": "Only fully Solved coefficients can progress to independently audited quantized source retention. Any limit/numeric failure of this one equivalent replay stops; no backend sweep or relaxed tolerance."
+}

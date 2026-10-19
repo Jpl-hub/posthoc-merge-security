@@ -182,6 +182,37 @@ def rank_one_band(protocol):
     save_json(out/'results.json',result);print(json.dumps(result),flush=True)
 
 
+def replay_line_system(root):
+    """Replay byte-pinned A,b,q with another direct factorization, no images."""
+    import clarabel
+    from scipy import sparse
+    from clip_benchmark import digest
+    from subspace_probe import save_json
+    root=Path(root);cfg=json.loads((root/'protocol.json').read_text());old=json.loads((root/'results.json').read_text())
+    protocol=json.loads((root/'backend_protocol.json').read_text());out=root/'backend_replay'
+    assert not out.exists();out.mkdir();start=time.monotonic()
+    for path,pin in protocol['source_sha256'].items():assert digest(path)==pin,path
+    for file,key in [('constraints.npz','constraints_sha256'),('solver.npz','solver_sha256'),('diagnostic.pt','raw_sha256')]:
+        assert digest(root/file)==old[key]==protocol['input_sha256'][file]
+    assert old['solver_status']=='MaxTime' and protocol['backend']=='faer' and protocol['threads']==4
+    assert json.loads((root/'independent_validation.json').read_text())['shared_constraint_reconstruction_error']<1e-8
+    A=sparse.load_npz(root/'constraints.npz');saved=np.load(root/'solver.npz');b,q=saved['b'],saved['q']
+    m=2*(cfg['source_n']+10*2*cfg['rank'])+10;n=A.shape[1]
+    cones=[clarabel.NonnegativeConeT(m),clarabel.ZeroConeT(cfg['rank']),clarabel.SecondOrderConeT(n)]
+    assert A.shape[0]==m+cfg['rank']+n
+    s=clarabel.DefaultSettings();s.verbose=True;s.direct_solve_method='faer';s.max_threads=4
+    s.max_iter=100;s.time_limit=cfg['solver_seconds'];s.tol_feas=s.tol_gap_abs=s.tol_gap_rel=1e-8
+    save_json(out/'protocol.json',protocol);print(json.dumps(dict(stage='same_matrix_backend_replay',shape=A.shape,nnz=A.nnz)),flush=True)
+    solver=clarabel.DefaultSolver(sparse.csc_matrix((n,n)),q,A,b,cones,s)
+    sol=solver.solve();np.savez_compressed(out/'solver.npz',x=sol.x,z=sol.z,s=sol.s,b=b,q=q)
+    report=dict(status=str(sol.status),iterations=sol.iterations,solver_seconds=sol.solve_time,wall_seconds=time.monotonic()-start,
+        backend='faer',threads=4,same_problem_data=True,input_sha256=protocol['input_sha256'],
+        solver_sha256=digest(out/'solver.npz'),source_sha256=digest(__file__),new_images=0,new_expert_updates=0,
+        new_released_weights=0,new_confirmation_inputs=0,new_TA_calls=0,new_AGA_calls=0,
+        scope='Explicit computational amendment before any weight proposal/confirmation/test score was seen. Original auto-QDLDL MaxTime remains failed. Exact serialized A,b,q,cones and tolerances unchanged; one backend replay,no backend sweep or scientific hyperparameter change. A Solved coefficient vector is not source-retention or defense evidence.')
+    save_json(out/'results.json',report);print(json.dumps(report),flush=True)
+
+
 @torch.no_grad()
 def normalization_range(source, output):
     """Read the old linear cache; do not solve for or publish a new B."""
@@ -497,7 +528,9 @@ if __name__ == '__main__':
     parser.add_argument('--normalization-range',action='store_true')
     parser.add_argument('--projection-cone',type=Path)
     parser.add_argument('--rank-one-band',type=Path)
+    parser.add_argument('--replay-line-system',type=Path)
     args = parser.parse_args()
-    if args.rank_one_band:rank_one_band(args.rank_one_band)
+    if args.replay_line_system:replay_line_system(args.replay_line_system)
+    elif args.rank_one_band:rank_one_band(args.rank_one_band)
     elif args.projection_cone:projection_cone(args.projection_cone)
     else:(normalization_range if args.normalization_range else check)(args.source, args.output)
