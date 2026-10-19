@@ -156,7 +156,9 @@ def projection_cone(protocol):
     from task_probe_distance import checked_models,initialize
 
     cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output'])
-    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    out.mkdir(parents=True,exist_ok=True)
+    assert not any(out.iterdir()), 'Never overwrite a previous run.'
+    save_json(out/'protocol.json',cfg)
     for p,pin in cfg['source_sha256'].items():assert digest(p)==pin,p
     assert clarabel.__version__==cfg['clarabel_version'];initialize();start=time.monotonic()
     anchor,expert,head,pins=checked_models(cfg['target'])
