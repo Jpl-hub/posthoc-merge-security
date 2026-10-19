@@ -50,7 +50,7 @@ def unused(training, ids, cfg):
             if not path.exists():continue
             v=json.loads(path.read_text())
             if name=='holdout_protocol.json' and v.get('split')!='train':continue
-            groups=list(v.values()) if name=='training_indices.json' else [v.get('indices',[])]
+            groups=(list(v.values()) if isinstance(v,dict) else [v]) if name=='training_indices.json' else [v.get('indices',[])]
             for group in groups:
                 if isinstance(group,list):excluded.update(int(x) for x in group)
             sources[str(path)]=digest(path)

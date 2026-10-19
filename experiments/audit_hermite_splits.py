@@ -20,7 +20,8 @@ def exclusions(split,initial):
         if path.suffix!='.json':continue
         values=json.loads(path.read_text())
         if path.name=='training_indices.json':
-            for key,ids in values.items():
+            groups=values.items() if isinstance(values,dict) else [('flat_training_indices',values)]
+            for key,ids in groups:
                 if isinstance(ids,list):excluded.update(ids)
                 if 'confirm' in key:confirmed.update(ids)
         elif path.name in ['holdout_protocol.json','confirmation_split.json']:
