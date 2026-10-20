@@ -766,6 +766,59 @@ def verify_frozen_validation(root, source_probes=False):
     print(json.dumps(dict(stage=stage,task_gate=valid,finite_R=measured,physical_R=physical,numpy_error=error)),flush=True)
 
 
+@torch.no_grad()
+def verify_stopped_evaluation(root):
+    """Audit a native-utility stop without running any new merger or attack."""
+    from author_protocol_audit import setup
+    from clip_benchmark import digest
+    from covariance_noise import dataset
+    from subspace_probe import save_json
+    from verify_covariance_noise import official_labels
+    root = Path(root); cfg = json.loads((root/'protocol.json').read_text())
+    meta = json.loads((root/'execution.json').read_text()); gate = json.loads((root/'full_native_gate.json').read_text())
+    assert not meta['completed'] and meta['stopped'] == 'full_native_task_budget_violation' and meta['author_AGA_calls'] == 0
+    assert digest(root/'artifacts/predictions.pt') == meta['predictions_sha256']
+    raw = torch.load(root/'artifacts/predictions.pt', map_location='cpu', weights_only=False)
+    rows = json.loads((root/'results.json').read_text())
+    assert [r['stage'] for r in rows if r['preset'] == 'released'] == ['standalone']
+    old, new = [raw[k+'/standalone/MNIST']['logits'].double().numpy() for k in ['original','released']]
+    y = official_labels('MNIST'); teacher = old.argmax(1); mask = np.arange(old.shape[1])[None, :] != teacher[:, None]
+    gap = old[np.arange(len(y)), teacher, None]-old; assert (gap[mask] > 0).all()
+    change = new-old; delta = change[np.arange(len(y)), teacher, None]-change
+    ratio = delta/np.where(mask, gap, 1.); ratio[~mask] = 0
+    i, k = np.unravel_index(np.abs(ratio).argmax(), ratio.shape); worst = float(abs(ratio[i, k]))
+    assert worst > cfg['task_budget'] and abs(worst-gate['worst_relative_margin_drift']) < 1e-12 and not gate['passed']
+    _, own, _, released, heads, distance = setup(cfg)
+    train = dataset('MNIST', 'data', own.val_preprocess); maximum = 0.; images = 0
+    ids = np.linspace(0, len(y)-1, 16, dtype=int)
+    for preset, model, score in [('original', own, old), ('released', released, new)]:
+        row = next(r for r in rows if r['preset'] == preset and r['stage'] == 'standalone')
+        data = raw[preset+'/standalone/MNIST']; np.testing.assert_array_equal(data['target'], y)
+        pred = score.argmax(1); np.testing.assert_array_equal(pred, data['prediction'])
+        assert int(np.sum(pred == y)) == row['correct']
+        for c in row['per_class']:
+            assert int(np.sum(y == c['class_id'])) == c['n'] and int(np.sum((y == c['class_id'])&(pred == y))) == c['correct']
+        model.cuda(); heads['MNIST'].cuda(); replay = []
+        for index in ids:
+            lo = int(index)//128*128; hi = min(lo+128, len(y))
+            batch = torch.stack([train[j][0] for j in range(lo, hi)]).cuda(); images += len(batch)
+            replay.append(heads['MNIST'](model(batch))[int(index)-lo].cpu())
+        replay = torch.stack(replay); model.cpu(); heads['MNIST'].cpu()
+        error = float(abs(replay.double().numpy()-score[ids]).max()); maximum = max(maximum, error)
+        assert error <= cfg['score_tolerance']; np.testing.assert_array_equal(replay.argmax(1), pred[ids])
+    lost = int(np.sum((teacher == y)&(new.argmax(1) != y))); gained = int(np.sum((teacher != y)&(new.argmax(1) == y)))
+    row = next(r for r in rows if r['preset'] == 'released'); assert (lost, gained) == (row['paired']['lost'], row['paired']['gained'])
+    report = dict(status='passed_failure_receipt', original_task_gate_passed=False, n=len(y), parameter_distance=distance,
+        worst_relative_margin_drift=worst, over_budget_images=int(np.sum(np.max(abs(ratio), axis=1) > cfg['task_budget'])),
+        over_budget_pairs=int(np.sum(abs(ratio) > cfg['task_budget'])), lost=lost, gained=gained,
+        witness=dict(index=int(i),label=int(y[i]),teacher=int(teacher[i]),competitor=int(k),
+                     original_gap=float(gap[i,k]),released_gap=float(gap[i,k]+delta[i,k]),absolute_gap_change=float(delta[i,k])),
+        replay_rows=2,selected_context_scores=2*len(ids),replay_full_image_instances=images,replay_max_abs_error=maximum,
+        official_labels_and_perclass=True,predictions_sha256=meta['predictions_sha256'],source_sha256=digest(__file__),
+        production_source_sha256=meta['source_sha256'],new_AGA_calls=0,new_TA_calls=0,new_weights=0)
+    save_json(root/'independent_validation.json', report); print(json.dumps(report), flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path('outputs/phase3/finite_compensation_source.pt'))
@@ -782,11 +835,13 @@ if __name__ == '__main__':
     parser.add_argument('--rank-deletion',type=Path)
     parser.add_argument('--assembly-only',action='store_true')
     parser.add_argument('--frozen-validation',type=Path)
+    parser.add_argument('--stopped-evaluation',type=Path)
     parser.add_argument('--source-probes',action='store_true')
     parser.add_argument('--stage',choices=['source','confirmation','full_task'])
     parser.add_argument('--protocol',type=Path)
     args = parser.parse_args()
-    if args.rank_deletion:verify_rank_deletion(args.rank_deletion)
+    if args.stopped_evaluation:verify_stopped_evaluation(args.stopped_evaluation)
+    elif args.rank_deletion:verify_rank_deletion(args.rank_deletion)
     elif args.frozen_validation:verify_frozen_validation(args.frozen_validation,args.source_probes)
     elif args.ln_envelope:verify_ln_envelope(args.ln_envelope,args.assembly_only)
     elif args.structural_unit:verify_structural_unit(args.structural_unit)
