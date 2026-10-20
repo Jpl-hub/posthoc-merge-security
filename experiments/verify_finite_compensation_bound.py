@@ -357,6 +357,110 @@ def validate_line_point(root, protocol):
     save_json(root/'source_validation.json',report);print(json.dumps(report),flush=True)
 
 
+def line_holdout(root, protocol):
+    """Genuinely new train confirmation or complete test gate, no selection."""
+    import copy,time
+    from clip_benchmark import digest
+    from confirm_temperature_compensation import unused
+    from covariance_noise import dataset
+    from probe_margin_distance import scores
+    from subspace_probe import make_loader,save_json
+    from task_probe_distance import checked_models,initialize,parameters
+    initialize();start=time.monotonic();root=Path(root);cfg=json.loads(Path(protocol).read_text());stage=cfg['stage']
+    assert digest(__file__)==cfg['verifier_sha256'] and stage in ['confirmation','full_task']
+    source=json.loads((root/'source_validation.json').read_text());assert source['source_passed']
+    assert json.loads((root/'source_independent.json').read_text())['status']=='passed'
+    assert digest(root/'provisional_weights.pt')==cfg['weight_sha256']==source['point_freeze']['weight_sha256']
+    if stage=='full_task':
+        assert json.loads((root/'confirmation_validation.json').read_text())['passed']
+        assert json.loads((root/'confirmation_independent.json').read_text())['status']=='passed'
+    assert not (root/(stage+'_scores.npz')).exists()
+    anchor,expert,head,pins=checked_models('MNIST');del anchor
+    assert pins==source['checkpoint_sha256'];p=parameters(expert,head)
+    release=copy.deepcopy(expert);edit=torch.load(root/'provisional_weights.pt',map_location='cpu');key=next(iter(edit));assert len(edit)==1
+    assert key=='model.visual.transformer.resblocks.11.mlp.c_proj.weight'
+    release.state_dict()[key].copy_(edit[key]);delta=edit[key].double()-p['B']
+    assert float(delta.norm()/p['B'].norm())<=.5
+    training=stage=='confirmation';data=dataset('MNIST','data',expert.val_preprocess,training)
+    if training:
+        construction=json.loads((root/'source_split.json').read_text());exclude=set(construction['indices'])|{41538,27330,31374,46715}
+        split=unused(data,exclude,dict(target='MNIST',confirmation_n=512,confirmation_seed=2026102002))
+        assert split['excluded_count']>=construction['excluded_count']+len(construction['indices'])
+        ids=split['indices'];assert len(ids)==512 and not set(ids)&exclude
+        save_json(root/'confirmation_split.json',split)
+    else:
+        ids=None;assert len(data)==10000
+    original=[];changed=[];labels=[];tail_error=0.;captured={}
+    v=expert.model.visual
+    handles=[v.transformer.resblocks[11].mlp.c_proj.register_forward_pre_hook(lambda _m,a:captured.update(Z=a[0][0].detach().cpu().double())),
+             v.ln_post.register_forward_pre_hook(lambda _m,a:captured.update(H=a[0].detach().cpu().double()))]
+    expert.cuda().eval();release.cuda().eval();head.cuda().eval()
+    try:
+        with torch.no_grad():
+            for images,y in make_loader(data,ids,128):
+                images=images.cuda();a=head(expert(images)).cpu().double();b=head(release(images)).cpu().double()
+                expected=scores(captured['H']+captured['Z']@delta.T,p)
+                tail_error=max(tail_error,float(abs(expected-b).max()));original.append(a);changed.append(b);labels.append(y)
+    finally:
+        for handle in handles:handle.remove()
+        expert.cpu();release.cpu();head.cpu()
+    a,b=torch.cat(original),torch.cat(changed);gold=torch.cat(labels);y=a.argmax(1);gap=a.gather(1,y[:,None])-a
+    mask=~torch.nn.functional.one_hot(y,10).bool();assert (gap[mask]>0).all()
+    ds=b-a;rho=(ds.gather(1,y[:,None])-ds)/gap.masked_fill(~mask,1);rho[~mask]=0
+    worst=float(rho.abs().max());pred=b.argmax(1);assert tail_error<=.0005
+    np.savez_compressed(root/(stage+'_scores.npz'),indices=np.arange(len(data)) if ids is None else ids,
+        labels=gold.numpy(),before=a.numpy(),after=b.numpy())
+    report=dict(stage=stage,passed=worst<=.5 and torch.equal(y,pred),n=len(y),R=worst,
+        original_correct=int((y==gold).sum()),correct=int((pred==gold).sum()),changed=int((y!=pred).sum()),
+        tail_score_error=tail_error,parameter_distance=float(delta.norm()/p['B'].norm()),
+        per_class=[dict(class_id=j,n=int((gold==j).sum()),lost=int(((y==gold)&(pred!=gold)&(gold==j)).sum()),
+            gained=int(((y!=gold)&(pred==gold)&(gold==j)).sum())) for j in range(10)],
+        scores_sha256=digest(root/(stage+'_scores.npz')),weight_sha256=cfg['weight_sha256'],source_sha256=digest(__file__),
+        protocol_sha256=digest(protocol),split_sha256=digest(root/'confirmation_split.json') if training else None,
+        historical_test_not_first_blind=not training,new_image_forward_instances=2*len(y),wall_seconds=time.monotonic()-start,
+        peak_GPU_bytes=torch.cuda.max_memory_allocated(),new_peer_TA_calls=0,new_AGA_calls=0,
+        scope='Frozen sole point; no redraw,repair or threshold change. Full test is a historical evaluation,not first-blind data.')
+    save_json(root/(stage+'_validation.json'),report);print(json.dumps(report),flush=True)
+
+
+def audit_line_scores(root,stage):
+    """Independent NumPy class, all-margin and index recount from saved scores."""
+    from clip_benchmark import digest
+    from subspace_probe import save_json
+    from verify_covariance_noise import official_labels
+    root=Path(root);name='source' if stage=='source' else stage
+    out=root/(name+'_independent.json');assert not out.exists()
+    result=json.loads((root/(name+'_validation.json')).read_text());file=root/(name+'_scores.npz')
+    assert digest(file)==result['source_scores_sha256' if stage=='source' else 'scores_sha256']
+    d=np.load(file);a,b,gold=d['before'],d['after'],d['labels'];ids=d['indices'].tolist()
+    np.testing.assert_array_equal(gold,official_labels('MNIST',stage!='full_task')[ids])
+    def drift(a,b):
+        y=a.argmax(1);old=a[np.arange(len(a)),y,None]-a;new=b[np.arange(len(b)),y,None]-b
+        mask=np.arange(10)[None]!=y[:,None];assert (old[mask]>0).all()
+        return float(abs((new[mask]-old[mask])/old[mask]).max())
+    actual=result['source'] if stage=='source' else result;y,pred=a.argmax(1),b.argmax(1)
+    rho=drift(a,b);assert abs(rho-actual['R'])<1e-10
+    assert int((pred==gold).sum())==actual['correct'] and int((y==gold).sum())==actual['original_correct']
+    assert int((y!=pred).sum())==actual['changed']
+    for row in actual['per_class']:
+        mask=gold==row['class_id'];assert int(mask.sum())==row['n']
+        assert int(((y==gold)&(pred!=gold)&mask).sum())==row['lost']
+        assert int(((y!=gold)&(pred==gold)&mask).sum())==row['gained']
+    probes={}
+    if stage=='source':
+        for key in ['A','B']:
+            probes[key]=drift(d[key+'_before'],d[key+'_after']);assert abs(probes[key]-result['task_probes'][key+'_R'])<1e-10
+        assert ids==json.loads((root/'source_split.json').read_text())['indices']
+    elif stage=='confirmation':
+        split=json.loads((root/'confirmation_split.json').read_text());assert ids==split['indices']
+        assert not set(ids)&set(json.loads((root/'source_split.json').read_text())['indices'])
+    else:assert ids==list(range(10000))
+    report=dict(status='passed',stage=stage,n=len(ids),R=rho,probe_R=probes,all_class_counts_exact=True,
+        score_sha256=digest(file),validation_sha256=digest(root/(name+'_validation.json')),source_sha256=digest(__file__),
+        new_model_forwards=0,scope='Independent direct new-gap/old-gap NumPy recount; no denominator floor,parameter change or new data.')
+    save_json(out,report);print(json.dumps(report),flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path('outputs/phase3/finite_compensation_source.pt'))
@@ -365,9 +469,14 @@ if __name__ == '__main__':
     parser.add_argument('--projection-cone',type=Path)
     parser.add_argument('--rank-one-band',type=Path)
     parser.add_argument('--line-point',type=Path)
+    parser.add_argument('--line-holdout',type=Path)
+    parser.add_argument('--audit-line',type=Path)
+    parser.add_argument('--stage',choices=['source','confirmation','full_task'])
     parser.add_argument('--protocol',type=Path)
     args = parser.parse_args()
-    if args.line_point:validate_line_point(args.line_point,args.protocol)
+    if args.audit_line:audit_line_scores(args.audit_line,args.stage)
+    elif args.line_holdout:line_holdout(args.line_holdout,args.protocol)
+    elif args.line_point:validate_line_point(args.line_point,args.protocol)
     elif args.rank_one_band:verify_rank_one_band(args.rank_one_band)
     elif args.projection_cone:verify_projection_cone(args.projection_cone)
     else:verify(args.source, args.report, args.output)
