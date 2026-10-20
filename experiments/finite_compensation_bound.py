@@ -182,6 +182,72 @@ def rank_one_band(protocol):
     save_json(out/'results.json',result);print(json.dumps(result),flush=True)
 
 
+def structural_unit_check(protocol):
+    """Necessary source cost of one LN-annihilated unit; not a new defense."""
+    from clip_benchmark import digest
+    from probe_margin_distance import scores
+    from subspace_probe import save_json
+    from task_probe_distance import checked_models,initialize,parameters
+    initialize();start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output'])
+    for file,pin in cfg['source_sha256'].items():assert digest(file)==pin,file
+    assert digest(cfg['original_source']['path'])==cfg['original_source']['sha256']
+    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    raw=torch.load(cfg['original_source']['path'],map_location='cpu')
+    anchor,expert,head,pins=checked_models('MNIST');p=parameters(expert,head);p0=parameters(anchor,head)
+    for key,value in p.items():
+        assert torch.equal(value,raw['parameters'][key]) if torch.is_tensor(value) else value==raw['parameters'][key]
+    Z,H,before=raw['Z'],raw['H'],raw['before'];assert len(Z)==4096
+    assert not set(raw['indices'])&set(cfg['forbidden_indices'])
+    block=expert.model.visual.transformer.resblocks[11];gamma=block.ln_2.weight.double();beta=block.ln_2.bias.double()
+    assert float(gamma.abs().min())>1e-8
+    n=gamma.reciprocal();n/=n.norm();c=beta@n
+    bound=Z.abs().amax(0)*p['B'].norm(dim=0);j=int(bound.argmin())
+    na,nb,ba=[float(p[k].norm()) for k in ['A','B','a']];assert ba>0
+    aj=p['A'][j];bj=p['B'][:,j];bias=float(p['a'][j]);radius=.5*(1-1e-6)
+    aa=2+(na*float(c)/ba)**2;bb=-2*float(aj@n)/na+2*na*float(c)*bias/ba**2
+    cost=float(aj.square().sum())/na**2+bias*bias/ba**2
+    basic=dict(unit=j,deletion_hidden_norm_upper=float(bound[j]),deletion_A_bias_cost=cost**.5,
+        checkpoint_sha256=pins,source_sha256=digest(__file__),protocol_sha256=digest(protocol),new_images=0,new_peer_TA_calls=0,new_AGA_calls=0)
+    if cost>=radius**2:
+        save_json(out/'results.json',basic|dict(status='closed_deletion_parameter_cost',released_weight_files=0,wall_seconds=time.monotonic()-start));return
+    eta=(-bb+math.sqrt(bb*bb-4*aa*(cost-radius**2)))/(2*aa);assert eta>0
+    M=p['gamma'][:,None]*(p['projection']@(p['head']-p['head'].mean(0)).T);M-=M.mean(0)
+    u=torch.linalg.svd(M,full_matrices=False)[0][:,0];u*=torch.sign(u[u.abs().argmax()])
+    edits=dict(A_row=(eta*na*n).float(),a_value=torch.tensor(-eta*na*float(c),dtype=torch.float32),B_column=(bj+eta*nb*u).float())
+    da=edits['A_row'].double()-aj;db=edits['B_column'].double()-bj;dc=float(edits['a_value'])-bias
+    D=(float(da.square().sum())/na**2+float(db.square().sum())/nb**2+dc*dc/ba**2)**.5;assert D<=.5
+    Va=torch.linalg.svd((p['A']-p0['A']).cuda(),full_matrices=False)[2][:32].cpu()
+    Vb=torch.linalg.svd((p['B']-p0['B']).cuda(),full_matrices=False)[2][:32].cpu()
+    numerator=edits['A_row'].double()*gamma;numerator-=numerator.mean()
+    affine_offset=float(edits['A_row'].double()@beta+edits['a_value'].double())
+    uniform_pre_bound=math.sqrt(len(n))*float(numerator.norm())+abs(affine_offset)
+    control=float(abs(scores(H,p)-before).max());assert control<=cfg['score_tolerance']
+    # Exact real-arithmetic native transformation is removal of the old unit.
+    ideal=H-Z[:,j,None]*bj[None];after=scores(ideal,p)
+    y=before.argmax(1);contexts=torch.tensor([int(torch.where(y==k)[0][0]) for k in range(10)])
+    rms=(Z@Vb.T).square().mean(0).sqrt()
+    shifts=(.01*torch.tensor([-1.,1.],dtype=torch.float64)[:,None,None]*rms[None,:,None]*Vb[None]).flatten(0,1)
+    Bnew=p['B'].clone();Bnew[:,j]=edits['B_column'].double()
+    hp=(H[contexts,None]+shifts[None]@p['B'].T).flatten(0,1)
+    hq=(ideal[contexts,None]+shifts[None]@Bnew.T).flatten(0,1)
+    pb,pa=scores(hp,p),scores(hq,p)
+    def rho(a,b):
+        yy=a.argmax(1);g=a.gather(1,yy[:,None])-a;mask=~torch.nn.functional.one_hot(yy,10).bool();assert (g[mask]>0).all()
+        ds=b-a;v=(ds.gather(1,yy[:,None])-ds)/g.masked_fill(~mask,1);return float(v[mask].abs().max())
+    native_R,probe_R=rho(before,after),rho(pb,pa);changed=int((y!=after.argmax(1)).sum())
+    feasible=native_R<=.5 and probe_R<=.5 and changed==0
+    torch.save(dict(unit=j,eta=eta,edits=edits,gamma2=gamma,beta2=beta,n=n,c=c,u=u,Va=Va,Vb=Vb,
+        contexts=contexts,shifts=shifts,after=after,probe_before=pb,probe_after=pa),out/'necessary_check.pt')
+    result=basic|dict(status='necessary_source_checks_passed_not_actual_release' if feasible else 'closed_necessary_task_check',necessary_source_passed=feasible,
+        eta=eta,parameter_distance=D,per_tensor_distance=dict(A=float(da.norm())/na,a=abs(dc)/ba,B=float(db.norm())/nb),
+        A_task32_inside_distance=float((da@Va.T).norm())/na,B_task32_inside_distance=float(db.norm())/nb*float(Vb[:,j].norm()),
+        native_n=len(Z),native_ideal_R=native_R,native_changed=changed,B_probe_n=len(pb),B_probe_R=probe_R,source_head_control_error=control,
+        real_arithmetic_quantized_pre_activation_bound=uniform_pre_bound,quantized_branch_hidden_error_bound=uniform_pre_bound*float(edits['B_column'].double().norm()),
+        raw_sha256=digest(out/'necessary_check.pt'),parameter_points_computed=1,released_weight_files=0,original_expert_updates=0,
+        wall_seconds=time.monotonic()-start,scope='Only necessary ideal deletion/native and unrestricted B-probe costs of one known-component structural control. The real-arithmetic rounding bound excludes actual FP32 LN/dot-product error. No materialized model,new confirmation,test,actual peer TA or fullAGA. No neuron/layer/strength/probe/rank/seed repair; not an original or effective Defense2.')
+    save_json(out/'results.json',result);print(json.dumps(result),flush=True)
+
+
 def replay_line_system(root):
     """Replay byte-pinned A,b,q with another direct factorization, no images."""
     import clarabel
@@ -565,8 +631,10 @@ if __name__ == '__main__':
     parser.add_argument('--rank-one-band',type=Path)
     parser.add_argument('--replay-line-system',type=Path)
     parser.add_argument('--dense-line-system',type=Path)
+    parser.add_argument('--structural-unit',type=Path)
     args = parser.parse_args()
-    if args.dense_line_system:dense_line_system(args.dense_line_system)
+    if args.structural_unit:structural_unit_check(args.structural_unit)
+    elif args.dense_line_system:dense_line_system(args.dense_line_system)
     elif args.replay_line_system:replay_line_system(args.replay_line_system)
     elif args.rank_one_band:rank_one_band(args.rank_one_band)
     elif args.projection_cone:projection_cone(args.projection_cone)
