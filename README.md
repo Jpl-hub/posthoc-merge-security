@@ -6,7 +6,9 @@
 
 当前只使用RTX3090，暂不访问4090。已核验TA/TIES、原AGA、PaRaMS对角恢复适配、NUFILT、三种子DARE及ProDistill两专家适配。融合算法与恢复攻击分别记录，不把结果行数当攻击种类数。
 
-2026-10-20：**Defense 2仍无新的原预算内合规有效方案。** [最新联合点](results/recovery_feedback/diagnostic/summary.md)真实TA／原AGA双方MNIST仍99.23%／98.93%。新增[已知全网坐标换序对照](results/residual_coordinate_control/summary.md)：独立99.69%、TA7.39%、原AGA两范围10.09%，但D15.900614仅属事前单列20.0预算，且公开基座匹配精确恢复全部158张量；它不是新算法或抗适应攻击突破。两批均保留完整原始证据及17行／272上下文重放，不按成绩修补或更改原0.5预算。
+2026-10-20：**已验证全网特征坐标换序保持MNIST独立99.69%，直接融合降至7.39%，原版AGA后融合为10.09%。** [完整双任务结果](results/residual_coordinate_control/summary.md)与17行／272上下文重放已核验。它是已知结构的有效对照，尚非原创Defense2；知道置换类型后的公开基座匹配可精确恢复158张量，另列为针对性恢复，不混入原AGA结论。[最新联合优化点](results/recovery_feedback/diagnostic/summary.md)则无明显保护，失败保留。
+
+[参数改动与攻击权限调研](notes/parameter_scale_and_threat_model.md)：原D≤0.5是本项目约束，不是PaRaMS、MergeLock等论文的统一要求。此后主比较保留完整论文配置，按独立能力、真实TA及原AGA效果评价；原D0.5对照及功能R0.5检查保持原样。不会仅因参数距离超过0.5否定有效结果，也不会把已知变换或针对性恢复改称原创或原版AGA。本次未新增模型训练。
 
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
 - [Defense 2机制、任务内外消融与新任务预算反例](notes/phase2_coupling.md)
@@ -30,7 +32,7 @@
 | Phase 1 最终 LN 偏置 | 已有 MNIST、DTD、SVHN；不同预算参考。原版 AGA 未修改关键偏置，不能据此声称抗任意恢复 |
 | Phase 2 O/B | 有真实融合干扰；已核验任务漂移0.789627超过0.5，只作效果参考 |
 | Phase 2 A/B | 既往有限确认通过；本阶段完整模型已重放任务漂移39.920的越界见证，只作效果参考 |
-| PaRaMS 完整官方配置 | 函数保持，但参数距离超出0.5；不同约束参考 |
+| PaRaMS 完整官方配置 | 完整作者配置基线；函数保持，距离另报，不因超过项目D0.5排除出论文比较 |
 | PaRaMS Attention 消融 | 官方组件的预算内消融，不是完整方法的同预算复现 |
 
 [Phase 1 数学机制与历史结果](notes/projection_bias_noise.md)、[O/B 构造与历史结果](notes/phase2_boundary.md)、[预算越界更正](notes/phase2_finite_signed_condition.md)、[本阶段 O/B 与 A/B 完整模型反例](results/phase3/utility_witnesses.json)、[官方 PaRaMS 与 AGA 协议核对](notes/phase2_params_and_structure.md)。其他历史实验、权重和失败证据保留在原目录；本页不再重复逐轮日志。
