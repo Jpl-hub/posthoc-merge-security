@@ -708,7 +708,9 @@ def verify_frozen_validation(root, source_probes=False):
         for row in audit['records']:groups.setdefault(row['path'],[]).append(row['group'])
         for ref,pin in split['excluded_metadata_sha256'].items():
             assert digest(ref)==pin;v=json.loads(Path(ref).read_text()) if Path(ref).suffix=='.json' else torch.load(ref,map_location='cpu')['indices']
-            values=[v[k] for k in groups[ref]] if ref in groups else (list(v.values()) if Path(ref).name=='training_indices.json' else [v.get('indices',[])])
+            if ref in groups:values=[v[k] for k in groups[ref]]
+            elif Path(ref).name=='training_indices.json':values=list(v.values()) if isinstance(v,dict) else [v]
+            else:values=[v.get('indices',[])]
             for value in values:
                 if isinstance(value,list):excluded.update(value)
         assert len(excluded)==split['excluded_count']
