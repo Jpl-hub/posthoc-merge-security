@@ -1,0 +1,56 @@
+{
+  "scope": "Closed fixed point,original source/probe contexts only;no new images,weights or attack/merge evaluation.",
+  "rows": [
+    {
+      "branch": "original",
+      "natural_R": 6.404963174239372e-14,
+      "all_context_R": 6.404963174239372e-14,
+      "natural_changed": 0,
+      "natural_correct": 511,
+      "numpy_vs_torch_max_abs": 2.842170943040401e-14
+    },
+    {
+      "branch": "O_only",
+      "natural_R": 2.91557137878373,
+      "all_context_R": 2.91557137878373,
+      "natural_changed": 1,
+      "natural_correct": 512,
+      "numpy_vs_torch_max_abs": 4.263256414560601e-14
+    },
+    {
+      "branch": "B_only",
+      "natural_R": 2.5394234200023322,
+      "all_context_R": 2.5394234200023322,
+      "natural_changed": 0,
+      "natural_correct": 511,
+      "numpy_vs_torch_max_abs": 2.842170943040401e-14
+    },
+    {
+      "branch": "joint",
+      "natural_R": 0.2500022603742728,
+      "all_context_R": 0.2500022603742728,
+      "natural_changed": 0,
+      "natural_correct": 511,
+      "numpy_vs_torch_max_abs": 3.197442310920451e-14
+    }
+  ],
+  "hidden_interaction_identity_max_abs": 3.2287811747161443e-15,
+  "score_nonadditivity_max_abs": 0.012481150027519483,
+  "numpy_vs_torch_max_abs": 4.263256414560601e-14,
+  "raw_sha256": "ffe928839cba4aed0d4b9bdc45616667a061eab1b560c93e77b1e10bc815d9cf",
+  "input_sha256": {
+    "source_probes.pt": "efa4437c627bde2bbbc9981fe0a6bc72fbf7b82b6b95e611e556c8fce7962135",
+    "frozen_release.pt": "ac79f69860791bc5bd04fc2ff58ecbfd667c282f9fe96fe868f294780455d22c"
+  },
+  "method": "Forward with O/B keys independently toggled; normalized full-tail response. Independent NumPy LN2/QuickGELU/finalLN computation vs local_residual_transport.forward,original/joint scores matched to frozen source probes.",
+  "definition": "hidden_joint-hidden_O-hidden_B+hidden_original=(z_O-z_original)deltaB.T",
+  "source_functions_sha256": {
+    "local_residual_transport.py": "8c3a2777fef9bea2d32d97095709ec510e9c9a61d978b67a873e16366cbec80e",
+    "verify_levelset_audits.py": "7d51baf85314d0529b06cac0177f87cc3b7a2495bd92279db6025c5f96a003c0"
+  },
+  "wall_seconds": 5.4616822130046785,
+  "new_images": 0,
+  "new_parameters": 0,
+  "new_TA_calls": 0,
+  "new_AGA_calls": 0
+}

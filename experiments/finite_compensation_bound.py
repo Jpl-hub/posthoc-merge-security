@@ -668,7 +668,8 @@ def rank_deletion_prefix(protocol):
     class_change = float((M.T@observed).norm())
     passed = bool(distance < cfg['parameter_budget']*(1-cfg['distance_reserve']) and
                   inside < 1e-6 and formula_error < 1e-5 and class_change > 1e-8)
-    raw = dict(O=p['O'], base_O=base['O'], vo=vo, vb=vb, M=M, U=U, O_release=edited,
+    # torch.save retains a view's entire backing SVD storage unless cloned.
+    raw = dict(O=p['O'], base_O=base['O'], vo=vo.clone(), vb=vb.clone(), M=M, U=U, O_release=edited,
                selected_head=chosen, author_before=before, author_after=after)
     torch.save(raw, out/'prefix.pt')
     report = dict(status='parameter_gate_passed' if passed else 'closed_parameter_gate',
@@ -737,7 +738,7 @@ def finite_ln_envelope(protocol):
     assert od <= cfg.get('prefix_budget', cfg['parameter_budget']/math.sqrt(2))
     o_inside = float((do@vo.T).norm()/p['O'].norm())
     rb = math.sqrt(radius**2-od**2)
-    torch.save(dict(O=edited_o,head=chosen,vo=vo,vb=vb), out/'prefix_freeze.pt')
+    torch.save(dict(O=edited_o,head=chosen,vo=vo.clone(),vb=vb.clone()), out/'prefix_freeze.pt')
     training = dataset(cfg['target'], 'data', expert.val_preprocess, training=True)
     original = capture_attention(expert, training, ids)
     publication = copy.deepcopy(expert)
@@ -826,7 +827,7 @@ def finite_ln_envelope(protocol):
     G = np.vstack(lin+soc); b = np.r_[lb, np.concatenate(sb)]; objective = np.zeros(nv); objective[-1] = 1
     assert algebra_error <= 1e-8
     np.savez_compressed(out/'cone.npz', G=G, b=b, objective=objective, qdims=qdims, linear_rows=len(lin))
-    torch.save(dict(ids=ids,labels=training.targets[ids],parameters=p,original=original,prefix=prefix,Z=z,R=r,
+    torch.save(dict(ids=ids,labels=training.targets[ids],parameters=p,original=original,prefix=prefix,Z=z,R=r.clone(),
                     U=torch.from_numpy(U),F=F,W=W,edited_O=edited_o,budget_B=rb,tmax=tmax,zmax=zmax,teacher=teacher,gaps=gaps), out/'source.pt')
     save_json(out/'pre_solver.json',dict(source_raw_sha256=digest(out/'source.pt'),cone_sha256=digest(out/'cone.npz')))
     subprocess.run([sys.executable,'experiments/verify_finite_compensation_bound.py','--ln-envelope',str(out),'--assembly-only'],check=True)
