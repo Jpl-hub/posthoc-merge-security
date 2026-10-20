@@ -1,0 +1,786 @@
+[
+  {
+    "key": "main",
+    "title": "Main comparison: two experts, TA coefficient 0.5",
+    "headers": [
+      "Protection",
+      "Standalone M",
+      "No recovery M / S",
+      "AGA target M / S",
+      "AGA both M / S"
+    ],
+    "rows": [
+      [
+        "Unprotected",
+        "99.69",
+        "99.37 / 92.50",
+        "99.30 / 92.78",
+        "99.32 / 91.77"
+      ],
+      [
+        "PaRaMS (full)",
+        "99.69",
+        "8.92 / 9.15",
+        "99.30 / 92.79",
+        "99.32 / 91.77"
+      ],
+      [
+        "Defense 1",
+        "99.69",
+        "9.80 / 6.70",
+        "9.80 / 6.70",
+        "9.80 / 6.70"
+      ],
+      [
+        "O/B [H]",
+        "99.71",
+        "78.77 / 62.94",
+        "79.53 / 65.82",
+        "77.85 / 61.42"
+      ],
+      [
+        "A/B [H]",
+        "99.65",
+        "91.07 / 77.46",
+        "85.42 / 75.50",
+        "79.20 / 69.84"
+      ],
+      [
+        "Global permutation [K]",
+        "99.69",
+        "7.39 / 7.74",
+        "10.09 / 6.78",
+        "10.09 / 6.78"
+      ],
+      [
+        "Defense 2 candidate (failed) [F]",
+        "99.69",
+        "99.13 / 91.41",
+        "99.01 / 91.59",
+        "99.04 / 90.51"
+      ]
+    ],
+    "note": "M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Latest candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.",
+    "colspec": "lrrrr"
+  },
+  {
+    "key": "defense1",
+    "title": "Defense 1 across three protected tasks",
+    "headers": [
+      "Target / partner",
+      "Protection",
+      "Standalone",
+      "No recovery T / P",
+      "AGA target T / P",
+      "AGA both T / P"
+    ],
+    "rows": [
+      [
+        "MNIST / SVHN",
+        "Unprotected",
+        "99.69",
+        "99.37 / 92.50",
+        "99.30 / 92.78",
+        "99.32 / 91.77"
+      ],
+      [
+        "MNIST / SVHN",
+        "Defense 1",
+        "99.69",
+        "9.80 / 6.70",
+        "9.80 / 6.70",
+        "9.80 / 6.70"
+      ],
+      [
+        "MNIST / DTD",
+        "Unprotected",
+        "99.69",
+        "99.45 / 69.31",
+        "99.43 / 69.41",
+        "99.42 / 68.78"
+      ],
+      [
+        "MNIST / DTD",
+        "Defense 1",
+        "99.69",
+        "9.80 / 2.13",
+        "9.80 / 2.13",
+        "9.80 / 2.13"
+      ],
+      [
+        "DTD / MNIST",
+        "Unprotected",
+        "79.41",
+        "69.31 / 99.45",
+        "68.40 / 99.45",
+        "68.78 / 99.42"
+      ],
+      [
+        "DTD / MNIST",
+        "Defense 1",
+        "79.41",
+        "2.13 / 21.09",
+        "2.13 / 21.09",
+        "2.13 / 21.05"
+      ],
+      [
+        "SVHN / MNIST",
+        "Unprotected",
+        "97.46",
+        "92.50 / 99.37",
+        "91.56 / 99.39",
+        "91.77 / 99.32"
+      ],
+      [
+        "SVHN / MNIST",
+        "Defense 1",
+        "97.46",
+        "6.70 / 9.80",
+        "6.70 / 9.80",
+        "6.70 / 9.80"
+      ]
+    ],
+    "note": "TA0.5. Every merged cell is target / partner accuracy. The task role is fixed by the first column, not by a global dataset order. The original AGA does not modify the final LayerNorm bias; these results do not imply resistance to location-aware or data-assisted recovery.",
+    "colspec": "lrrrrr"
+  },
+  {
+    "key": "recovery",
+    "title": "Recovery permissions: protected MNIST and partner SVHN",
+    "headers": [
+      "Recovery pipeline",
+      "Additional access",
+      "Matched control M / S",
+      "Defense 1 M / S"
+    ],
+    "rows": [
+      [
+        "No recovery",
+        "Published expert and partner",
+        "99.37 / 92.50",
+        "9.80 / 6.70"
+      ],
+      [
+        "AGA target",
+        "Public base; defense-agnostic",
+        "99.30 / 92.78",
+        "9.80 / 6.70"
+      ],
+      [
+        "AGA both",
+        "Public base; defense-agnostic",
+        "99.32 / 91.77",
+        "9.80 / 6.70"
+      ],
+      [
+        "Diagonal adaptation",
+        "Specified diagonal family; no images",
+        "99.37 / 92.50",
+        "9.80 / 6.70"
+      ],
+      [
+        "LN-bias cleanup",
+        "Known location; published projection",
+        "99.37 / 92.50",
+        "99.37 / 92.50"
+      ],
+      [
+        "Student + TA",
+        "2048 target-domain queries; student training",
+        "95.53 / 95.95",
+        "95.53 / 95.95"
+      ],
+      [
+        "Student + AGA target",
+        "2048 target-domain queries; student training",
+        "95.35 / 95.94",
+        "95.35 / 95.94"
+      ],
+      [
+        "Student + AGA both",
+        "2048 target-domain queries; student training",
+        "95.25 / 95.29",
+        "95.25 / 95.29"
+      ]
+    ],
+    "note": "All merges use TA0.5. Diagonal adaptation is the official MLP kernel plus an explicitly specified native Attention adaptation, not a complete official attack release. Cleanup is a known-location diagnostic. Native FP32 cleanup changes some scores beyond the historical numerical-control tolerance; no exact FP32 function identity is claimed. Student rows share one training problem because all2048 queried hard labels coincide; they are not independent seed replications or the complete PaRaMS KD implementation.",
+    "colspec": "p{39mm}p{49mm}rr"
+  },
+  {
+    "key": "mergers",
+    "title": "Supplementary mergers after original AGA on the protected expert",
+    "headers": [
+      "Merger",
+      "Unprotected M / S",
+      "Defense 1 M / S",
+      "O/B [H] M / S",
+      "A/B [H] M / S"
+    ],
+    "rows": [
+      [
+        "TA",
+        "99.30 / 92.78",
+        "9.80 / 6.70",
+        "79.53 / 65.82",
+        "85.42 / 75.50"
+      ],
+      [
+        "TIES",
+        "99.32 / 94.81",
+        "9.82 / 9.69",
+        "57.13 / 50.75",
+        "65.76 / 66.21"
+      ],
+      [
+        "DARE+TA",
+        "99.30 / 92.81",
+        "24.20 / 25.50",
+        "79.52 / 66.01",
+        "86.11 / 75.87"
+      ],
+      [
+        "NUFILT M→S",
+        "99.39 / 94.68",
+        "99.39 / 94.68",
+        "99.24 / 93.80",
+        "99.14 / 94.61"
+      ],
+      [
+        "NUFILT S→M",
+        "99.07 / 95.35",
+        "99.07 / 95.35",
+        "98.97 / 95.07",
+        "98.86 / 95.38"
+      ],
+      [
+        "ProDistill",
+        "99.42 / 96.83",
+        "9.80 / 6.70",
+        "99.42 / 96.16",
+        "99.42 / 96.46"
+      ]
+    ],
+    "note": "MNIST target / SVHN partner. Each merger has its own matching control. DARE+TA is the mean of fixed mask seeds42/43/44; other entries are fixed runs. NUFILT reports both task orders and uses native adapters of official kernels. ProDistill uses64+64 unlabeled training calibration images and attacker-side elementwise coefficient training; it is not a data-free attack. Mergers are not counted as separate recovery attacks. [H] Task-bound failure retained.",
+    "colspec": "lrrrr"
+  },
+  {
+    "key": "dare",
+    "title": "DARE mask variability under AGA target",
+    "headers": [
+      "Protection",
+      "MNIST mean +/- SD",
+      "SVHN mean +/- SD"
+    ],
+    "rows": [
+      [
+        "Unprotected",
+        "99.30 +/- 0.00",
+        "92.81 +/- 0.04"
+      ],
+      [
+        "Defense 1",
+        "24.20 +/- 5.60",
+        "25.50 +/- 10.30"
+      ],
+      [
+        "O/B [H]",
+        "79.52 +/- 0.57",
+        "66.01 +/- 0.71"
+      ],
+      [
+        "A/B [H]",
+        "86.11 +/- 0.95",
+        "75.87 +/- 0.56"
+      ]
+    ],
+    "note": "Sample standard deviation across the same three fixed masks42/43/44. This is mask variability, not three independent expert or defense trainings. All three mask values are retained in the cited source rows.",
+    "colspec": "lrr"
+  },
+  {
+    "key": "other_tasks",
+    "title": "Supplementary mergers: DTD and SVHN protected experts",
+    "headers": [
+      "Target / partner",
+      "Merger / order",
+      "AGA scope",
+      "Control T / P",
+      "Defense 1 T / P"
+    ],
+    "rows": [
+      [
+        "DTD / MNIST",
+        "NUFILT DTD / MNIST",
+        "None",
+        "72.18 / 99.45",
+        "72.18 / 99.45"
+      ],
+      [
+        "DTD / MNIST",
+        "NUFILT DTD / MNIST",
+        "Target",
+        "70.59 / 99.45",
+        "70.59 / 99.45"
+      ],
+      [
+        "DTD / MNIST",
+        "NUFILT DTD / MNIST",
+        "Both",
+        "70.90 / 99.42",
+        "70.90 / 99.42"
+      ],
+      [
+        "DTD / MNIST",
+        "NUFILT MNIST / DTD",
+        "None",
+        "72.71 / 99.51",
+        "72.71 / 99.51"
+      ],
+      [
+        "DTD / MNIST",
+        "NUFILT MNIST / DTD",
+        "Target",
+        "70.96 / 99.51",
+        "70.96 / 99.51"
+      ],
+      [
+        "DTD / MNIST",
+        "NUFILT MNIST / DTD",
+        "Both",
+        "71.44 / 99.48",
+        "71.44 / 99.48"
+      ],
+      [
+        "DTD / MNIST",
+        "ProDistill",
+        "None",
+        "73.14 / 99.51",
+        "2.13 / 98.06"
+      ],
+      [
+        "DTD / MNIST",
+        "ProDistill",
+        "Target",
+        "73.09 / 99.52",
+        "2.13 / 98.07"
+      ],
+      [
+        "DTD / MNIST",
+        "ProDistill",
+        "Both",
+        "73.40 / 99.47",
+        "2.13 / 97.71"
+      ],
+      [
+        "SVHN / MNIST",
+        "NUFILT SVHN / MNIST",
+        "None",
+        "95.11 / 99.19",
+        "95.11 / 99.19"
+      ],
+      [
+        "SVHN / MNIST",
+        "NUFILT SVHN / MNIST",
+        "Target",
+        "94.40 / 99.25",
+        "94.40 / 99.25"
+      ],
+      [
+        "SVHN / MNIST",
+        "NUFILT SVHN / MNIST",
+        "Both",
+        "94.51 / 99.14",
+        "94.51 / 99.14"
+      ],
+      [
+        "SVHN / MNIST",
+        "NUFILT MNIST / SVHN",
+        "None",
+        "94.45 / 99.43",
+        "94.45 / 99.43"
+      ],
+      [
+        "SVHN / MNIST",
+        "NUFILT MNIST / SVHN",
+        "Target",
+        "93.47 / 99.44",
+        "93.47 / 99.44"
+      ],
+      [
+        "SVHN / MNIST",
+        "NUFILT MNIST / SVHN",
+        "Both",
+        "93.75 / 99.39",
+        "93.75 / 99.39"
+      ],
+      [
+        "SVHN / MNIST",
+        "ProDistill",
+        "None",
+        "96.73 / 99.45",
+        "6.70 / 9.80"
+      ],
+      [
+        "SVHN / MNIST",
+        "ProDistill",
+        "Target",
+        "96.45 / 99.45",
+        "6.70 / 9.80"
+      ],
+      [
+        "SVHN / MNIST",
+        "ProDistill",
+        "Both",
+        "96.56 / 99.44",
+        "6.70 / 9.80"
+      ]
+    ],
+    "note": "NUFILT uses both task orders. SVHN no-attack/both-AGA cells reuse the identical earlier MNIST/SVHN merger models with dataset roles exchanged; no new fits. The selected-parameter identity for Defense1 is retained. ProDistill uses64+64 unlabeled calibration images and official coefficient kernels. These are merger evaluations, not additional recovery attacks.",
+    "colspec": "lrrrr"
+  },
+  {
+    "key": "eight",
+    "title": "Eight participating experts: three evaluated tasks",
+    "headers": [
+      "Protected task",
+      "Protection",
+      "No recovery M / D / S",
+      "AGA target M / D / S"
+    ],
+    "rows": [
+      [
+        "MNIST",
+        "Unprotected",
+        "94.00 / 52.18 / 74.42",
+        "93.23 / 52.34 / 73.90"
+      ],
+      [
+        "MNIST",
+        "Defense 1",
+        "9.80 / 5.85 / 6.70",
+        "9.80 / 5.90 / 6.70"
+      ],
+      [
+        "MNIST",
+        "O/B [H]",
+        "51.73 / 50.64 / 40.57",
+        "54.22 / 50.80 / 44.63"
+      ],
+      [
+        "MNIST",
+        "A/B [H]",
+        "61.94 / 50.21 / 53.09",
+        "59.16 / 50.59 / 51.97"
+      ],
+      [
+        "MNIST",
+        "PaRaMS (full)",
+        "9.82 / 2.13 / 9.65",
+        "93.23 / 52.34 / 73.90"
+      ],
+      [
+        "MNIST",
+        "PaRaMS attention ablation",
+        "94.00 / 52.13 / 74.45",
+        "93.23 / 52.34 / 73.90"
+      ],
+      [
+        "DTD",
+        "Unprotected",
+        "94.00 / 52.18 / 74.42",
+        "94.06 / 51.38 / 74.46"
+      ],
+      [
+        "DTD",
+        "Defense 1",
+        "72.22 / 2.13 / 52.48",
+        "72.30 / 2.13 / 52.47"
+      ],
+      [
+        "SVHN",
+        "Unprotected",
+        "94.00 / 52.18 / 74.42",
+        "93.78 / 52.18 / 72.53"
+      ],
+      [
+        "SVHN",
+        "Defense 1",
+        "9.80 / 27.07 / 6.70",
+        "9.80 / 27.07 / 6.70"
+      ]
+    ],
+    "note": "TA0.2 with eight experts; cells always MNIST / DTD / SVHN, including partner tasks. Other five task datasets were not evaluated. No eight-task average. [H] Original task-bound failures retained. Complete PaRaMS and its Attention ablation remain distinct.",
+    "colspec": "lrrr"
+  },
+  {
+    "key": "unmask",
+    "title": "Paper-formula Unmask: a separate eight-expert recovery setting",
+    "headers": [
+      "Protected task",
+      "Protection",
+      "No recovery M / D / S",
+      "Unmask0.3 M / D / S"
+    ],
+    "rows": [
+      [
+        "MNIST",
+        "Unprotected",
+        "94.00 / 52.18 / 74.42",
+        "7.52 / 1.97 / 9.55"
+      ],
+      [
+        "MNIST",
+        "Defense 1",
+        "9.80 / 5.85 / 6.70",
+        "10.28 / 2.07 / 7.76"
+      ],
+      [
+        "MNIST",
+        "O/B [H]",
+        "51.73 / 50.64 / 40.57",
+        "11.35 / 1.97 / 17.59"
+      ],
+      [
+        "MNIST",
+        "A/B [H]",
+        "61.94 / 50.21 / 53.09",
+        "10.89 / 2.13 / 12.85"
+      ],
+      [
+        "MNIST",
+        "PaRaMS (full)",
+        "9.82 / 2.13 / 9.65",
+        "9.58 / 1.70 / 14.45"
+      ],
+      [
+        "MNIST",
+        "PaRaMS attention ablation",
+        "94.00 / 52.13 / 74.45",
+        "7.51 / 1.97 / 9.55"
+      ],
+      [
+        "DTD",
+        "Unprotected",
+        "94.00 / 52.18 / 74.42",
+        "10.00 / 2.55 / 9.56"
+      ],
+      [
+        "DTD",
+        "Defense 1",
+        "72.22 / 2.13 / 52.48",
+        "10.28 / 2.13 / 7.76"
+      ],
+      [
+        "SVHN",
+        "Unprotected",
+        "94.00 / 52.18 / 74.42",
+        "7.91 / 2.13 / 9.15"
+      ],
+      [
+        "SVHN",
+        "Defense 1",
+        "9.80 / 27.07 / 6.70",
+        "11.35 / 2.23 / 19.59"
+      ]
+    ],
+    "note": "TA0.2 with eight experts; cells always MNIST / DTD / SVHN, including partner tasks. Other five task datasets were not evaluated. No eight-task average. [H] Original task-bound failures retained. Complete PaRaMS and its Attention ablation remain distinct. Fixed merged parameters minus0.3 times the whole published expert. Both protected and unprotected controls receive the operation. Paper-formula native adaptation, not official code or a complete paper table. No AGA composition. The unprotected model also collapses; low absolute scores do not demonstrate successful expert recovery.",
+    "colspec": "lrrr"
+  },
+  {
+    "key": "cleanup",
+    "title": "Targeted bias cleanup: numerical protocols kept separate",
+    "headers": [
+      "Target / partner",
+      "Numerics",
+      "Scope",
+      "Control T / P",
+      "Defense 1 T / P"
+    ],
+    "rows": [
+      [
+        "MNIST / SVHN",
+        "Native FP32",
+        "Target",
+        "99.37 / 92.50",
+        "99.37 / 92.50"
+      ],
+      [
+        "MNIST / SVHN",
+        "Native FP32",
+        "Both",
+        "99.37 / 92.50",
+        "99.37 / 92.50"
+      ],
+      [
+        "MNIST / DTD",
+        "Native FP32",
+        "Target",
+        "99.45 / 69.26",
+        "99.45 / 69.26"
+      ],
+      [
+        "MNIST / DTD",
+        "Native FP32",
+        "Both",
+        "99.45 / 69.26",
+        "99.45 / 69.26"
+      ],
+      [
+        "DTD / MNIST",
+        "FP32 prefix; FP64 readout",
+        "Target",
+        "69.26 / 99.45",
+        "69.26 / 99.45"
+      ],
+      [
+        "DTD / MNIST",
+        "FP32 prefix; FP64 readout",
+        "Both",
+        "69.26 / 99.45",
+        "69.26 / 99.45"
+      ],
+      [
+        "SVHN / MNIST",
+        "FP32 prefix; FP64 readout",
+        "Target",
+        "92.50 / 99.37",
+        "92.50 / 99.37"
+      ],
+      [
+        "SVHN / MNIST",
+        "FP32 prefix; FP64 readout",
+        "Both",
+        "92.50 / 99.37",
+        "92.50 / 99.37"
+      ]
+    ],
+    "note": "TA0.5; no images, original expert or secret perturbation enters recovery construction. The FP64-readout rows are a separately frozen protocol and must not be pooled with native FP32. Original native DTD control failure0.00082493 and MNIST before/after score difference0.00069427 remain recorded. Equal recovered predictions do not establish exact FP32 function identity.",
+    "colspec": "lrrrr"
+  },
+  {
+    "key": "geometry",
+    "title": "Task-direction changes and actual classification effects",
+    "headers": [
+      "Fixed model",
+      "Task-inside distance",
+      "Task-outside distance",
+      "Standalone M",
+      "TA M",
+      "AGA both M"
+    ],
+    "rows": [
+      [
+        "Global permutation [K]",
+        "2.69895",
+        "11.86048",
+        "99.69",
+        "7.39",
+        "10.09"
+      ],
+      [
+        "Latest compensation [F]",
+        "0.49964",
+        "11.85437",
+        "99.69",
+        "99.13",
+        "99.04"
+      ]
+    ],
+    "note": "Same74 matrices and original expert-minus-base rank32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy, no novelty claim.",
+    "colspec": "lrrrrr"
+  },
+  {
+    "key": "ablation",
+    "title": "Latest Defense 2 candidate: source-only ablations",
+    "headers": [
+      "Counterfactual",
+      "Correct",
+      "Prediction changes",
+      "Max. relative gap change"
+    ],
+    "rows": [
+      [
+        "Task-inside matrices only",
+        "511/512",
+        "1",
+        "1.05992"
+      ],
+      [
+        "Task-outside matrices only",
+        "503/512",
+        "9",
+        "1.82071"
+      ],
+      [
+        "All changed matrices",
+        "505/512",
+        "7",
+        "1.87001"
+      ],
+      [
+        "Other parameters only",
+        "505/512",
+        "7",
+        "1.85216"
+      ],
+      [
+        "Complete joint change",
+        "512/512",
+        "0",
+        "3.02985e-06"
+      ]
+    ],
+    "note": "The fixed512 target-training source images, not a test table. Matrix inside/outside components use the same original rank32 task basis; non-matrix changes are separate. Each counterfactual is quantized separately. Complete-release replay and independent NumPy recount both have zero error. No candidate was repaired or selected from these counterfactual outcomes.",
+    "colspec": "lrrr"
+  },
+  {
+    "key": "coverage",
+    "title": "Completed work and remaining comparisons",
+    "headers": [
+      "Item",
+      "Status"
+    ],
+    "rows": [
+      [
+        "TA + original AGA",
+        "Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy."
+      ],
+      [
+        "Defense 1",
+        "MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics."
+      ],
+      [
+        "New Defense 2",
+        "Not achieved: latest complete evaluation still gives about99 percent after fusion/recovery. Historical O/B and A/B task-bound failures retained."
+      ],
+      [
+        "PaRaMS",
+        "Full-default protection and Attention ablation completed for MNIST. Corresponding DTD/SVHN full-defense baselines are missing. Diagonal recovery is a native adaptation."
+      ],
+      [
+        "MergeLock",
+        "Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores."
+      ],
+      [
+        "MergeGuard / ARF",
+        "Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced."
+      ],
+      [
+        "MergeBarrier",
+        "Full defense not run; architecture adaptation and verified implementation missing."
+      ],
+      [
+        "Eight-task benchmark",
+        "Eight experts participated; protected/evaluated targets cover MNIST/DTD/SVHN. Complete protected cases and evaluation for SUN397/Cars/RESISC45/EuroSAT/GTSRB are missing."
+      ],
+      [
+        "Other mergers",
+        "TIES, three DARE masks, NUFILT and ProDistill completed in documented scopes. Full TSV-Merge, CAT and LOT not run."
+      ],
+      [
+        "Reliability",
+        "Per-class/pair counts and source audits retained. Only DARE has the stated three-mask comparison; do not present deterministic rows as multi-seed results."
+      ]
+    ],
+    "note": "This is a completion inventory, not an accuracy table. Missing methods are not assigned zero accuracy. More merger names do not increase the number of recovery attacks.",
+    "colspec": ">{\\raggedright\\arraybackslash}p{37mm}>{\\raggedright\\arraybackslash}p{132mm}"
+  }
+]
