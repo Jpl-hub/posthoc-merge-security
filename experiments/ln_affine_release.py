@@ -21,6 +21,46 @@ KEYS = [PREFIX+'in_proj_weight', PREFIX+'in_proj_bias']
 
 
 @torch.no_grad()
+def build_mean_compensation(expert, anchor, cfg):
+    """One weight-selected finite mean-equivalent coordinate transform."""
+    from author_protocol_audit import logical_parameter_distance
+    ref=cfg['mean_compensation_geometry'];assert digest(ref['path'])==ref['sha256']
+    root=Path(ref['path']).parent;assert json.loads((root/'independent_validation.json').read_text())['status']=='passed'
+    p=torch.load(ref['path'],map_location='cpu');u=p['axis'];q=torch.eye(768,dtype=torch.double)-2*u[:,None]*u[None]
+    state=expert.state_dict();edits={};visual='model.visual.'
+    for key in ['conv1.weight','class_embedding','positional_embedding']:
+        w=state[visual+key].double();edits[visual+key]=(w@q if key=='positional_embedding' else (q@w.flatten(1)).reshape_as(w) if w.ndim>1 else q@w).float()
+    edits[visual+'ln_pre.bias']=(q@state[visual+'ln_pre.bias'].double()).float()
+    for i in range(12):
+        prefix=f'{visual}transformer.resblocks.{i}.'
+        for ln,read,write in [('ln_1.','attn.in_proj_','attn.out_proj.'),('ln_2.','mlp.c_fc.','mlp.c_proj.')]:
+            gain,beta=[state[prefix+ln+k].double() for k in ['weight','bias']]
+            w,b=[state[prefix+read+k].double() for k in ['weight','bias']]
+            wp=((w*gain[None])@q)/gain[None];t=p['affine_shares'][prefix+ln]
+            edits[prefix+read+'weight']=wp.float()
+            edits[prefix+read+'bias']=(b+(1-t)*(w-wp)@beta).float()
+            edits[prefix+ln+'bias']=(beta+t*(gain*(q@(beta/gain))-beta)).float()
+            for name in ['weight','bias']:edits[prefix+write+name]=(q@state[prefix+write+name].double()).float()
+    gain,beta=[state[visual+'ln_post.'+k].double() for k in ['weight','bias']]
+    edits[visual+'proj']=((q@(gain[:,None]*state[visual+'proj'].double()))/gain[:,None]).float()
+    edits[visual+'ln_post.bias']=(gain*(q@(beta/gain))).float()
+    edits={k:v for k,v in edits.items() if not torch.equal(v,state[k])}
+    basis=torch.load(cfg['task_basis']['path'],map_location='cpu');assert digest(cfg['task_basis']['path'])==cfg['task_basis']['sha256']
+    inside=outside=0.;vh=None
+    for item in basis.values():
+        k=item['source_key'];lo,hi=item['row_start'],item['row_end'];w=state[k][lo:hi].double().flatten(1)
+        e=edits.get(k,state[k])[lo:hi].double().flatten(1)-w;v=item['v'];ein=e@v
+        inside+=float(ein.square().sum()/w.square().sum());outside+=float((e-ein@v.T).square().sum()/w.square().sum())
+        if k==KEYS[0] and lo==0:vh=v.T
+    maximum=max(float((v.double()-state[k].double()).norm()/state[k].double().norm()) for k,v in edits.items() if k.endswith('bias'))
+    assert inside**.5<=cfg['task_direction_parameter_limit'] and maximum<=cfg['individual_bias_limit']
+    geometry=dict(parameter_distance=logical_parameter_distance(edits,state),task_inside_distance=inside**.5,task_outside_distance=outside**.5,
+        maximum_relative_bias=maximum,selected_index=p['selected_index'],changed_tensors=len(edits),original_total_D0_5_comparison=False,
+        no_method_novelty_claim=True,public_orthogonal_alignment_is_a_separate_permission=True)
+    return edits,dict(site='MEAN',axis=u,keys=list(edits),affine_shares=p['affine_shares'],vh=vh),geometry
+
+
+@torch.no_grad()
 def build_structural_unit(expert,anchor,cfg):
     ref=cfg['structural_unit_geometry'];assert digest(ref['path'])==ref['sha256']
     root=Path(ref['path']).parent;check=json.loads((root/'results.json').read_text())
@@ -112,6 +152,7 @@ def build_matching(expert,anchor,cfg):
 
 @torch.no_grad()
 def build(expert, anchor, cfg):
+    if cfg.get('mean_compensation_geometry'):return build_mean_compensation(expert,anchor,cfg)
     if cfg.get('residual_coordinate_control'):
         from aga_coordinate_audit import residual_permutation
         from author_protocol_audit import logical_parameter_distance
@@ -158,6 +199,7 @@ def build(expert, anchor, cfg):
 
 @torch.no_grad()
 def recovery_geometry(expert, anchor, edits, point, cfg):
+    if point.get('site')=='MEAN':return dict(finite_mean_equivalence_not_AGA_security=True,full_AGA_not_yet_run=True)
     if point.get('site')=='RESIDUAL':return dict(global_residual_symmetry_known=True,original_AGA_not_global_residual_matching=True,full_AGA_not_yet_run=True)
     if point.get('site')=='STRUCTURAL_UNIT':return dict(native_zero_unit_preserved_by_MLP_permutation_in_real_arithmetic=True,
         adaptive_canonical_cleanup_disclosed=True,actual_full_AGA_not_yet_run=True)
@@ -273,9 +315,11 @@ def run(protocol, confirm=False):
     if readout:probes+=shifts.repeat(len(take),1)
     else:probes[:,0] += shifts.repeat(len(take),1)
     probe_release=probes[...,point['order']] if point.get('site')=='RESIDUAL' else probes
+    if point.get('site')=='MEAN':
+        axis=point['axis'].float();probe_release=probes-2*(probes@axis)[...,None]*axis
     pb, pa = probe_scores(expert,head,probes,readout), probe_scores(release,head,probe_release,readout)
     B_probe_n=0
-    if point.get('site') in ['STRUCTURAL_UNIT','RESIDUAL']:
+    if point.get('site') in ['STRUCTURAL_UNIT','RESIDUAL','MEAN']:
         for s in [before,pb]:
             gap=s.max(1).values[:,None]-s;mask=~torch.nn.functional.one_hot(s.argmax(1),10).bool()
             assert (gap[mask]>1e-12).all(),'No active denominator floor.'
@@ -320,7 +364,34 @@ def verify(folder, confirm=False):
     edits=torch.load(out/'frozen_release.pt',map_location='cpu');head_control=point.get('site')=='HEAD'
     readout=point.get('site')=='READOUT'
     residual_control=point.get('site')=='RESIDUAL'
-    if residual_control:
+    mean_control=point.get('site')=='MEAN'
+    if mean_control:
+        _,expert,_,_=checked_models('MNIST');s={k:v.double().numpy() for k,v in expert.state_dict().items()}
+        point['original']={k:expert.state_dict()[k] for k in point['keys']}
+        u=point['axis'].numpy();q=np.eye(768)-2*np.outer(u,u);visual='model.visual.';expected={}
+        for key in ['conv1.weight','class_embedding','positional_embedding']:
+            w=s[visual+key]
+            expected[visual+key]=w-2*np.outer(w@u,u) if key=='positional_embedding' else (w.reshape(768,-1)-2*np.outer(u,u@w.reshape(768,-1))).reshape(w.shape)
+        expected[visual+'ln_pre.bias']=q@s[visual+'ln_pre.bias']
+        for i in range(12):
+            prefix=f'{visual}transformer.resblocks.{i}.'
+            for ln,read,write in [('ln_1.','attn.in_proj_','attn.out_proj.'),('ln_2.','mlp.c_fc.','mlp.c_proj.')]:
+                gain,beta=[s[prefix+ln+k] for k in ['weight','bias']];t=point['affine_shares'][prefix+ln]
+                w,b=[s[prefix+read+k] for k in ['weight','bias']];dw=-2*np.outer(w@(gain*u),u/gain)
+                expected[prefix+read+'weight']=w+dw;expected[prefix+read+'bias']=b-(1-t)*dw@beta
+                expected[prefix+ln+'bias']=beta-2*t*gain*u*((u/gain)@beta)
+                w,b=[s[prefix+write+k] for k in ['weight','bias']]
+                expected[prefix+write+'weight']=w-2*np.outer(u,u@w);expected[prefix+write+'bias']=b-2*u*(u@b)
+        gain,beta=[s[visual+'ln_post.'+k] for k in ['weight','bias']];w=s[visual+'proj']
+        expected[visual+'proj']=w-2*np.outer(u/gain,(gain*u)@w)
+        expected[visual+'ln_post.bias']=beta-2*gain*u*((u/gain)@beta)
+        identity=0.
+        for key,values in expected.items():
+            actual=edits.get(key,expert.state_dict()[key]).numpy();rounded=values.astype(np.float32)
+            identity=max(identity,float(abs(actual-rounded).max()))
+            assert np.all(abs(actual-rounded)<=np.abs(np.spacing(rounded))+1e-12),key
+        assert set(edits)<=set(expected)
+    elif residual_control:
         _,expert,_,_=checked_models('MNIST');point['original']={k:expert.state_dict()[k] for k in point['keys']}
         ix=point['order'].numpy();assert np.array_equal(ix,np.arange(767,-1,-1))
         for k,v in point['original'].items():
@@ -364,7 +435,7 @@ def verify(folder, confirm=False):
     cost=0.
     for k,v in point['original'].items():
         a,b=edits[k].double().numpy(),v.double().numpy()
-        pieces=zip(np.split(a,3),np.split(b,3)) if (head_control or residual_control) and k.endswith(('in_proj_weight','in_proj_bias')) else [(a,b)]
+        pieces=zip(np.split(a,3),np.split(b,3)) if (head_control or residual_control or mean_control) and k.endswith(('in_proj_weight','in_proj_bias')) else [(a,b)]
         for changed,before in pieces:
             if np.linalg.norm(before)>0:cost+=float(np.linalg.norm(changed-before)**2/np.linalg.norm(before)**2)
             else:np.testing.assert_array_equal(changed,before)
@@ -372,7 +443,7 @@ def verify(folder, confirm=False):
     assert abs(distance-report['geometry']['parameter_distance'])<1e-10
     for (ka,kb), field in [(('before','after'),'natural'),(('probe_before','probe_after'),'finite_probes')]:
         a,b=raw[ka].numpy(),raw[kb].numpy(); y=a.argmax(1); ix=np.arange(len(a)); gap=a[ix,y,None]-a; gap[ix,y]=1
-        structural=point.get('site') in ['STRUCTURAL_UNIT','RESIDUAL']
+        structural=point.get('site') in ['STRUCTURAL_UNIT','RESIDUAL','MEAN']
         if structural:assert (gap>0).all()
         delta=b-a; r=abs((delta[ix,y,None]-delta)/(gap if structural else np.maximum(gap,1e-12)));r[ix,y]=0
         assert abs(float(r.max())-report[field]['worst_task_drift'])<1e-9
@@ -390,6 +461,7 @@ def verify(folder, confirm=False):
             NumPy_complete_readout_and_nonzero_branches_error=maximum if readout else None,
             NumPy_whole_head_permutation_exact=head_control,
             NumPy_native_residual_permutation_exact=residual_control,covariant_task_probe_inputs=residual_control,
+            NumPy_mean_compensation_rounded_parameters_checked=mean_control,
             natural_and_probe_margin_recount=True,source_indices_and_labels_checked=True,source_sha256=digest(__file__)))
 
 
