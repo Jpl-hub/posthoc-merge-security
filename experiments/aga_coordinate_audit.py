@@ -1,4 +1,4 @@
-"""Extract exact row permutations from existing AGA artifacts; no attack rerun."""
+"""Read-only AGA alignment and task-subspace checks; no defense training."""
 
 import argparse
 import hashlib
@@ -13,6 +13,75 @@ from clip_benchmark import digest
 from mechanisms import load_author
 from subspace_probe import save_json
 from task_probe_distance import checked_models
+
+
+@torch.no_grad()
+def task_subspaces(protocol, output):
+    """Measure frozen controls against fixed original task directions."""
+    start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(output)
+    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    assert '3090' in torch.cuda.get_device_name()
+    torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
+    for name,sha in cfg['source_sha256'].items():assert digest(name)==sha,name
+    anchor,expert,_,pins=checked_models(cfg['target']);original=expert.state_dict();base=anchor.state_dict()
+    states={}
+    for name,release in cfg['releases'].items():
+        assert digest(release['path'])==release['sha256'],name
+        states[name]=original|torch.load(release['path'],map_location='cpu')
+        assert set(states[name])==set(original),name
+    matrices=[]
+    for key,w in original.items():
+        if key.endswith('attn.in_proj_weight'):
+            matrices.extend((key,site,i*768,(i+1)*768) for i,site in enumerate(['Q','K','V']))
+        elif key.endswith(('attn.out_proj.weight','mlp.c_fc.weight','mlp.c_proj.weight')):
+            site='O' if '.attn.' in key else 'A' if '.c_fc.' in key else 'B';matrices.append((key,site,0,w.shape[0]))
+        elif key in ['model.visual.conv1.weight','model.visual.proj']:
+            matrices.append((key,'patch' if 'conv1' in key else 'projection',0,w.shape[0]))
+    assert len(matrices)==cfg['matrix_count'];rows=[];basis={};maximum=0.
+    for index,(key,site,lo,hi) in enumerate(matrices):
+        w=original[key][lo:hi].double().flatten(1);t=w-base[key][lo:hi].double().flatten(1)
+        assert float(t.norm())>0,(key,'zero task matrix has no defined task directions')
+        u,s,vh=torch.linalg.svd(t.cuda(),full_matrices=False);rank=cfg['rank'];u=u[:,:rank].cpu();v=vh[:rank].T.cpu();s=s.cpu()
+        assert float(s[rank-1])>0,(key,'rank32 reaches zero singular values')
+        basis[str(index)]=dict(u=u,v=v,s=s,source_key=key,row_start=lo,row_end=hi,site=site)
+        reconstruction=max(float((t@v-u*s[:rank]).norm()/t.norm()),float((t.T@u-v*s[:rank]).norm()/t.norm()))
+        assert reconstruction<cfg['relative_tolerance']
+        for name,state in states.items():
+            delta=state[key][lo:hi].double().flatten(1)-w;inside=delta@v;outside=delta-inside@v.T
+            paired=(u.T@inside).diagonal();left=u.T@delta;energy=float(delta.square().sum());den=float(w.norm())
+            a,b,c=delta.numpy(),u.numpy(),v.numpy();ni=a@c;no=a-ni@c.T;npair=np.diag(b.T@ni)
+            checks=[(float(inside.norm()),float(np.linalg.norm(ni))),(float(outside.norm()),float(np.linalg.norm(no))),
+                    (float(paired.norm()),float(np.linalg.norm(npair))),(float(left.norm()),float(np.linalg.norm(b.T@a)))]
+            error=max(abs(x-y)/(1+abs(y)) for x,y in checks);maximum=max(maximum,error)
+            assert error<cfg['relative_tolerance']
+            closure=abs(float(inside.square().sum()+outside.square().sum())-energy)/(1+energy)
+            assert closure<cfg['relative_tolerance']
+            rows.append(dict(method=name,matrix=index,source_key=key,row_start=lo,row_end=hi,site=site,shape=list(w.shape),rank=rank,
+                task_top32_energy=float(s[:rank].square().sum()/s.square().sum()),singular_boundary_relative_gap=float((s[rank-1]-s[rank])/s[rank-1]),
+                total_distance=float(delta.norm())/den,right_inside_distance=float(inside.norm())/den,right_outside_distance=float(outside.norm())/den,
+                paired_inside_distance=float(paired.norm())/den,left_inside_distance=float(left.norm())/den,
+                right_inside_squared_fraction=float(inside.square().sum())/energy if energy else None,
+                paired_inside_squared_fraction=float(paired.square().sum())/energy if energy else None,
+                relative_change_on_task_inputs=float(inside.norm()/(w@v).norm()),relative_change_to_task_update=float(inside.norm()/s[:rank].norm()),
+                isotropic_right_fraction=rank/w.shape[1],isotropic_paired_fraction=rank/w.numel(),
+                numpy_error=error,orthogonal_energy_error=closure,svd_equation_error=reconstruction))
+        print(json.dumps(dict(completed_matrices=index+1,total=len(matrices))),flush=True) if (index+1)%12==0 else None
+    torch.save(basis,out/'basis.pt');save_json(out/'matrices.json',rows)
+    groups=[]
+    for name in states:
+        for site in ['all','Q','K','V','O','A','B','patch','projection']:
+            selected=[r for r in rows if r['method']==name and (site=='all' or r['site']==site)]
+            sums={k:sum(r[k]**2 for r in selected) for k in ['total_distance','right_inside_distance','right_outside_distance','paired_inside_distance']}
+            groups.append(dict(method=name,site=site,matrices=len(selected),distances={k:value**.5 for k,value in sums.items()},
+                right_inside_squared_fraction=sums['right_inside_distance']/sums['total_distance'] if sums['total_distance'] else None,
+                paired_inside_squared_fraction=sums['paired_inside_distance']/sums['total_distance'] if sums['total_distance'] else None,
+                task_input_relative_change_range=[min(r['relative_change_on_task_inputs'] for r in selected),max(r['relative_change_on_task_inputs'] for r in selected)]))
+    result=dict(status='passed_frozen_weight_measurement',checkpoint_sha256=pins,release_sha256={k:v['sha256'] for k,v in cfg['releases'].items()},
+        rank=cfg['rank'],matrix_count=len(matrices),rows=len(rows),groups=groups,maximum_numpy_error=maximum,basis_sha256=digest(out/'basis.pt'),
+        source_sha256=digest(__file__),protocol_sha256=digest(protocol),wall_seconds=time.monotonic()-start,
+        new_image_forwards=0,new_AGA_calls=0,new_model_updates=0,partner_or_test_loaded=False,
+        scope='Fixed original task-matrix SVD coordinates; not covariantly transported probes or proof of functional preservation. Paired rank-one and whole right-input spaces are distinct. No candidate constructed or selected.')
+    save_json(out/'results.json',result);print(json.dumps(result),flush=True)
 
 
 def residual_permutation(state, order):
@@ -613,5 +682,7 @@ if __name__=='__main__':
     mode.add_argument('--head-recovery',action='store_true')
     mode.add_argument('--residual-recovery',action='store_true')
     mode.add_argument('--affine-matching',action='store_true')
+    mode.add_argument('--task-subspaces',metavar='PROTOCOL')
     args=parser.parse_args();torch.set_num_threads(4)
+    if args.task_subspaces:task_subspaces(args.task_subspaces,args.output);raise SystemExit
     (residual_recovery if args.residual_recovery else head_identity_recovery if args.head_recovery else head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
