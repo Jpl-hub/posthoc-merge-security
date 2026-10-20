@@ -248,6 +248,7 @@ def run(protocol, confirm=False):
     else:
         assert json.loads((out/'results.json').read_text())['source_feasible']
         assert json.loads((out/'independent_validation.json').read_text())['status'] == 'passed'
+        save_json(out/'confirmation_protocol.json',cfg)
         name, seed = 'confirmation', cfg['confirmation_seed']
     assert not (out/(name+'.pt')).exists(), 'No response-driven repeat.'
     freeze = json.loads((out/'before_images.json').read_text()); geometry = freeze['geometry']
@@ -323,7 +324,7 @@ def verify(folder, confirm=False):
         _,expert,_,_=checked_models('MNIST');point['original']={k:expert.state_dict()[k] for k in point['keys']}
         ix=point['order'].numpy();assert np.array_equal(ix,np.arange(767,-1,-1))
         for k,v in point['original'].items():
-            name=k.removeprefix('model.visual.');axis=1 if name=='positional_embedding' or name.endswith(('attn.in_proj_weight','mlp.c_fc.weight')) else 0
+            parameter_name=k.removeprefix('model.visual.');axis=1 if parameter_name=='positional_embedding' or parameter_name.endswith(('attn.in_proj_weight','mlp.c_fc.weight')) else 0
             np.testing.assert_array_equal(edits[k].numpy(),np.take(v.numpy(),ix,axis=axis))
         identity=0.
     elif readout:
