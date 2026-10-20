@@ -563,6 +563,112 @@ def verify_line_closure(root):
         scope='Read-only independent reproduction of saved-score diagnosis and fresh split; confirmation budget failure remains.'))
 
 
+def verify_ln_envelope(root, assembly_only=False):
+    """Check conic rows against full-dimensional physics, not producer assembly."""
+    import time
+    from clip_benchmark import digest
+    from subspace_probe import save_json
+    from verify_covariance_noise import official_labels
+    start = time.monotonic(); root = Path(root)
+    cfg = json.loads((root/'protocol.json').read_text()); meta = json.loads((root/('pre_solver.json' if assembly_only else 'results.json')).read_text())
+    output = root/('assembly_validation.json' if assembly_only else 'independent_validation.json')
+    assert not output.exists()
+    files = [('source.pt','source_raw_sha256'),('cone.npz','cone_sha256')]
+    if not assembly_only: files.append(('solver.npz','solver_sha256'))
+    for file, key in files:
+        assert digest(root/file) == meta[key]
+    raw = torch.load(root/'source.pt', map_location='cpu', weights_only=False)
+    p = {k:v.numpy() if torch.is_tensor(v) else v for k,v in raw['parameters'].items()}
+    ids = raw['ids']; np.testing.assert_array_equal(raw['labels'], official_labels(cfg['target'], True)[ids])
+    assert ids == json.loads(Path(cfg['source_split']).read_text())['indices'][:cfg['source_n']]
+    h0, he, U, F = raw['prefix']['h'].numpy(), raw['original']['h'].numpy(), raw['U'].numpy(), raw['F']
+    n, d = h0.shape; a = U.shape[1]; rank = cfg['rank']; nc = a*rank
+    frozen = torch.load(root/'prefix_freeze.pt', map_location='cpu', weights_only=False)
+    R = raw['R'].numpy(); vb = frozen['vb'].numpy(); vo = frozen['vo'].numpy()
+    np.testing.assert_allclose(U.T@U, np.eye(a), atol=1e-10, rtol=0)
+    np.testing.assert_allclose(R@R.T, np.eye(rank), atol=1e-10, rtol=0)
+    assert abs(U.mean(0)).max() < 1e-10 and abs(R@vb.T).max() < 1e-8
+    do = raw['edited_O'].numpy().astype(np.float64)-p['O']; od = np.linalg.norm(do)/np.linalg.norm(p['O'])
+    assert od <= cfg['parameter_budget']/np.sqrt(2) and np.linalg.norm(do@vo.T)/np.linalg.norm(p['O']) < 1e-6
+    data = np.load(root/'cone.npz'); G, b = data['G'], data['b']; nl = int(data['linear_rows']); dims = data['qdims']
+    L = p['gamma'][:, None]*p['projection']; L -= L.mean(0); c = p['beta']@p['projection']
+    ce = he-he.mean(1, keepdims=True); se = np.sqrt(np.mean(ce*ce, axis=1)+p['eps'])
+    v = he@L+se[:, None]*c; fe = v/np.linalg.norm(v, axis=1, keepdims=True); score = fe@p['head'].T
+    y = raw['teacher']; others = np.array([[j for j in range(len(p['head'])) if j != k] for k in y])
+    gaps = raw['gaps']; rb = raw['budget_B']; nt = nc+n
+    maximum = 0.
+    def direct_slacks(x):
+        nonlocal maximum
+        K = x[:nc].reshape(a, rank); h = h0+(F@K.T)@U.T
+        center = h-h.mean(1, keepdims=True); sigma = np.sqrt(np.mean(center*center, axis=1)+p['eps'])
+        lo = se+np.sum(ce*(h-he), axis=1)/(d*se)
+        expected = []; norms = []
+        for i in range(n):
+            expected.append(raw['tmax'][i]-x[nc+i]); norms.append((x[nc+i], sigma[i]))
+            for side, s in enumerate([lo[i], x[nc+i]]):
+                feature = h[i]@L+s*c; z = x[nt+2*i+side]; pos = fe[i]@feature
+                expected.extend([raw['zmax'][i]-z, pos-.5*np.linalg.norm(v[i])])
+                nums = (p['head'][y[i]]-p['head'][others[i]])@feature
+                for j in range(len(nums)):
+                    expected.extend([nums[j]-(1-cfg['source_reserve'])*gaps[i,j]*z,
+                                     (1+cfg['source_reserve'])*gaps[i,j]*pos-nums[j]])
+                norms.append((z, np.linalg.norm(feature)))
+        expected.append(rb-x[-1]); norms.append((x[-1], np.linalg.norm(K)))
+        slack = b-G@x; error = float(abs(slack[:nl]-expected).max()); cursor = nl
+        for dim, (scalar, length) in zip(dims, norms):
+            block = slack[cursor:cursor+dim]; cursor += dim
+            error = max(error, abs(block[0]-scalar), abs(np.linalg.norm(block[1:])-length))
+        assert cursor == len(b); maximum = max(maximum, error)
+        return h, sigma, lo
+    for sign in [0., -1., 1.]:
+        x = np.zeros(G.shape[1]); x[:nc] = sign*1e-4*np.sin(np.arange(nc)); K = x[:nc].reshape(a, rank)
+        h = h0+(F@K.T)@U.T; center = h-h.mean(1, keepdims=True); sigma = np.sqrt(np.mean(center*center, axis=1)+p['eps'])
+        lo = se+np.sum(ce*(h-he), axis=1)/(d*se); x[nc:nc+n] = sigma; x[-1] = np.linalg.norm(K)+1e-6
+        for i in range(n):
+            for side, s in enumerate([lo[i], sigma[i]]):x[nt+2*i+side] = np.linalg.norm(h[i]@L+s*c)
+        direct_slacks(x)
+    assert maximum <= 1e-8
+    if assembly_only:
+        report = dict(status='passed_before_solver',independent_direct_slack_error=maximum,
+                      source_n=n,rows=len(b),variables=G.shape[1],verifier_sha256=digest(__file__),
+                      new_images=0,new_weights=0,wall_seconds=time.monotonic()-start)
+        save_json(output,report); print(json.dumps(report),flush=True); return
+    sol = np.load(root/'solver.npz'); certificate = None
+    if meta['solver_status'] == 'optimal':
+        h, sigma, lo = direct_slacks(sol['x']); assert maximum <= 1e-8
+        # The exact full feature uses the actual norm, not an auxiliary endpoint.
+        feature = h@L+sigma[:, None]*c; after = feature/np.linalg.norm(feature, axis=1, keepdims=True)@p['head'].T
+        target = score[np.arange(n),y,None]-np.take_along_axis(score,others,axis=1)
+        r = (after[np.arange(n),y,None]-np.take_along_axis(after,others,axis=1))/target-1
+        release = torch.load(root/'frozen_release.pt', map_location='cpu', weights_only=False)
+        B = release['model.visual.transformer.resblocks.11.mlp.c_proj.weight'].double().numpy()
+        bd = np.linalg.norm(B-p['B'])/np.linalg.norm(p['B'])
+        assert np.hypot(od,bd) <= cfg['parameter_budget'] and digest(root/'frozen_release.pt') == meta['release_sha256']
+        physical = torch.load(root/'source_scores.pt', map_location='cpu', weights_only=False)
+        old, new = physical['before'].numpy(), physical['after'].numpy(); dy = new-old
+        physical_R = float(abs((dy[np.arange(n),y,None]-np.take_along_axis(dy,others,axis=1))/gaps).max())
+        assert abs(physical_R-meta['source_R']) < 1e-12
+        certificate = dict(kind='optimal',mathematical_source_R=float(abs(r).max()),physical_source_R=physical_R,
+                           parameter_distance=float(np.hypot(od,bd)))
+    elif meta['solver_status'] == 'primal infeasible':
+        dual = sol['z'].copy(); dual[:nl] = np.maximum(dual[:nl], 0.); cursor = nl
+        for dim in dims:
+            block = dual[cursor:cursor+dim]; t, vec = block[0], block[1:]; norm = np.linalg.norm(vec)
+            if norm <= -t:block[:] = 0.
+            elif norm > t:
+                block[0] = (norm+t)/2; block[1:] *= block[0]/norm
+            block[0] += 1e-12*max(1.,np.linalg.norm(block)); cursor += dim
+        radius = np.sqrt(2*rb**2+np.sum(np.square(raw['tmax']))+2*np.sum(np.square(raw['zmax'])))
+        lhs = float(b@dual); allowance = float(radius*np.linalg.norm(G.T@dual))
+        certificate = dict(kind='bounded_numerical_infeasibility',b_dot_z=lhs,residual_allowance=allowance,exclusion_margin=-lhs-allowance,
+                           supported=lhs < -allowance,not_formal_interval_arithmetic=True)
+    report = dict(status='passed_assembly_and_finite_physics',rows=len(b),variables=G.shape[1],source_n=n,
+                  independent_direct_slack_error=maximum,certificate=certificate,
+                  source_raw_sha256=meta['source_raw_sha256'],verifier_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
+                  no_new_images=True,no_new_parameters=True,source_only_not_fresh_confirmation=True)
+    save_json(output,report); print(json.dumps(report),flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path('outputs/phase3/finite_compensation_source.pt'))
@@ -575,10 +681,13 @@ if __name__ == '__main__':
     parser.add_argument('--audit-line',type=Path)
     parser.add_argument('--line-closure',type=Path)
     parser.add_argument('--structural-unit',type=Path)
+    parser.add_argument('--ln-envelope',type=Path)
+    parser.add_argument('--assembly-only',action='store_true')
     parser.add_argument('--stage',choices=['source','confirmation','full_task'])
     parser.add_argument('--protocol',type=Path)
     args = parser.parse_args()
-    if args.structural_unit:verify_structural_unit(args.structural_unit)
+    if args.ln_envelope:verify_ln_envelope(args.ln_envelope,args.assembly_only)
+    elif args.structural_unit:verify_structural_unit(args.structural_unit)
     elif args.line_closure:verify_line_closure(args.line_closure)
     elif args.audit_line:audit_line_scores(args.audit_line,args.stage)
     elif args.line_holdout:line_holdout(args.line_holdout,args.protocol)

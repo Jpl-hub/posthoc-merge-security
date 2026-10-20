@@ -622,6 +622,184 @@ def projection_cone(protocol):
     save_json(out/'results.json',report);print(json.dumps(report),flush=True)
 
 
+@torch.no_grad()
+def finite_ln_envelope(protocol):
+    """One finite O/B feasibility problem with both final-LN norm endpoints."""
+    import copy
+    import subprocess
+    import sys
+    import cvxopt
+    from cvxopt import matrix, solvers
+    from clip_benchmark import digest
+    from covariance_noise import dataset
+    from cross_module_distance import capture_attention, extended_parameters, normalized_input
+    from subspace_probe import save_json
+    from task_probe_distance import checked_models, gelu, initialize
+    initialize(); start = time.monotonic()
+    cfg = json.loads(Path(protocol).read_text()); out = Path(cfg['output'])
+    out.mkdir(parents=True, exist_ok=False); save_json(out/'protocol.json', cfg)
+    for path, pin in cfg['source_sha256'].items():
+        assert digest(path) == pin, path
+    assert cvxopt.__version__ == cfg['cvxopt_version']
+    assert digest(cfg['source_split']) == cfg['source_split_sha256']
+    ids = json.loads(Path(cfg['source_split']).read_text())['indices'][:cfg['source_n']]
+    assert len(ids) == len(set(ids)) == cfg['source_n']
+    assert not set(ids) & set(cfg['forbidden_indices'])
+    anchor, expert, head, pins = checked_models(cfg['target'])
+    p = extended_parameters(expert, head); base = extended_parameters(anchor, head)
+    rank = cfg['rank']; vo = torch.linalg.svd(p['O']-base['O'], full_matrices=False).Vh[:rank]
+    vb = torch.linalg.svd(p['B']-base['B'], full_matrices=False).Vh[:rank]
+    choices = []
+    for j in range(12):
+        sl = slice(64*j, 64*(j+1)); block = p['O'][:, sl]
+        q = torch.linalg.qr(block, mode='reduced').Q
+        normal = base['O'][:, sl]-q@(q.T@base['O'][:, sl])
+        _, sv, vh = torch.linalg.svd(vo[:, sl], full_matrices=True)
+        null = vh[int((sv > sv[0]*1e-10).sum()):].T
+        u, s, v = torch.linalg.svd(normal@null, full_matrices=False)
+        choices.append((float(s[0]), u[:, 0], null@v[0]))
+    chosen = int(np.argmax([x[0] for x in choices])); singular, u, v = choices[chosen]
+    assert singular > 1e-10
+    if u[int(u.abs().argmax())] < 0: u, v = -u, -v
+    do = torch.zeros_like(p['O']); do[:, chosen*64:(chosen+1)*64] = -u[:, None]*v[None, :]
+    radius = cfg['parameter_budget']*(1-cfg['distance_reserve'])
+    edited_o = (p['O']+p['O'].norm()*radius/math.sqrt(2)*do).float()
+    do = edited_o.double()-p['O']; od = float(do.norm()/p['O'].norm())
+    assert od <= cfg['parameter_budget']/math.sqrt(2)
+    o_inside = float((do@vo.T).norm()/p['O'].norm())
+    rb = math.sqrt(radius**2-od**2)
+    torch.save(dict(O=edited_o,head=chosen,vo=vo,vb=vb), out/'prefix_freeze.pt')
+    training = dataset(cfg['target'], 'data', expert.val_preprocess, training=True)
+    original = capture_attention(expert, training, ids)
+    publication = copy.deepcopy(expert)
+    publication.model.visual.transformer.resblocks[11].attn.out_proj.weight.copy_(edited_o)
+    prefix = capture_attention(publication, training, ids)
+    z = gelu(normalized_input(prefix['r'], p)@p['A'].T+p['a'])
+    outside = z-(z@vb.T)@vb
+    r = torch.linalg.svd(outside, full_matrices=False).Vh[:rank]
+    assert float((r@vb.T).abs().max()) < 1e-8
+    linear = p['gamma'][:, None]*p['projection']; linear -= linear.mean(0)
+    offset = p['beta']@p['projection']; heads = p['head']
+    m = linear@(heads-heads.mean(0)).T
+    U = torch.linalg.svd(m, full_matrices=False).U[:, :len(heads)-1]
+    n, width = prefix['h'].shape; a = U.shape[1]
+    assert a == len(heads)-1
+    F = (p['B'].norm()*(z@r.T)).numpy(); U = U.numpy()
+    L, c, T = linear.numpy(), offset.numpy(), heads.numpy()
+    h0, he = prefix['h'].numpy(), original['h'].numpy()
+    ce = he-he.mean(1, keepdims=True); se = np.sqrt(np.mean(ce*ce, axis=1)+p['eps'])
+    ve = he@L+se[:, None]*c; fe = ve/np.linalg.norm(ve, axis=1, keepdims=True)
+    before = head(original['actual'].float()).double().numpy()
+    control = float(np.max(abs(fe@T.T-before))); assert control <= cfg['score_tolerance']
+    prefix_sigma = np.sqrt(np.mean((h0-h0.mean(1, keepdims=True))**2, axis=1)+p['eps'])
+    prefix_feature = h0@L+prefix_sigma[:, None]*c
+    prefix_score = prefix_feature/np.linalg.norm(prefix_feature, axis=1, keepdims=True)@T.T
+    prefix_control = float(abs(prefix_score-head(prefix['actual'].float()).double().numpy()).max())
+    assert prefix_control <= cfg['score_tolerance']
+    teacher = before.argmax(1); competitors = np.array([[j for j in range(len(T)) if j != y] for y in teacher])
+    gaps = before[np.arange(n), teacher, None]-np.take_along_axis(before, competitors, axis=1)
+    assert np.min(gaps) > 0
+    prefix_actual = head(prefix['actual'].float()).double().numpy(); dprefix = prefix_actual-before
+    prefix_R = float(abs((dprefix[np.arange(n),teacher,None]-np.take_along_axis(dprefix,competitors,axis=1))/gaps).max())
+    UL = U.T@L; _, sv, vh = np.linalg.svd(np.vstack([UL, c]), full_matrices=False)
+    W = vh[sv > sv[0]*1e-10]; cp = c@W.T; up = UL@W.T
+    nc = a*rank; nt = nc+n; nv = nc+3*n+1
+    lin, lb, soc, sb, qdims = [], [], [], [], []
+    def inequality(coeff, bound):
+        lin.append(coeff); lb.append(float(bound))
+    def norm_bound(constant, coefficient, index):
+        block = np.vstack([np.zeros(nv), -coefficient]); block[0, index] = -1
+        soc.append(block); sb.append(np.r_[0., constant]); qdims.append(len(constant)+1)
+    tmax, zmax = [], []
+    algebra_error = 0.
+    for i in range(n):
+        D = np.zeros((a, nv))
+        for j in range(a): D[j, j*rank:(j+1)*rank] = F[i]
+        center = h0[i]-h0[i].mean(); center_u = center@U
+        residual = float(center@center-center_u@center_u)
+        assert residual > -1e-8
+        norm_bound(np.r_[center_u, math.sqrt(max(0., residual)+width*p['eps'])]/math.sqrt(width),
+                   np.vstack([D, np.zeros(nv)])/math.sqrt(width), nc+i)
+        tm = math.sqrt(float(center@center)/width+p['eps'])+rb*np.linalg.norm(F[i])/math.sqrt(width)
+        tmax.append(tm); row = np.zeros(nv); row[nc+i] = 1; inequality(row, tm)
+        slo = se[i]+ce[i]@(h0[i]-he[i])/(width*se[i]); slope = ce[i]@U/(width*se[i])
+        sigma_bound = max(abs(slo)+np.linalg.norm(slope)*rb*np.linalg.norm(F[i]), tm)
+        zm = np.linalg.norm(h0[i]@L)+np.linalg.norm(UL, 2)*rb*np.linalg.norm(F[i])+np.linalg.norm(c)*sigma_bound
+        zmax.append(zm)
+        vbase = h0[i]@L; vp = vbase@W.T
+        residual_v = float(vbase@vbase-vp@vp); assert residual_v > -1e-8
+        for side in range(2):
+            coef = up.T@D; const = vp.copy()
+            if side == 0:
+                const += slo*cp; coef += cp[:, None]*(slope@D)[None, :]
+            else:
+                coef[:, nc+i] += cp
+            zi = nt+2*i+side
+            norm_bound(np.r_[const, math.sqrt(max(0., residual_v))], np.vstack([coef, np.zeros(nv)]), zi)
+            row = np.zeros(nv); row[zi] = 1; inequality(row, zm)
+            fp = fe[i]@W.T; f0 = float(fe[i]@vbase)+float((slo if side == 0 else 0.)*(fe[i]@c))
+            fc = fp@coef
+            inequality(-fc, f0-.5*np.linalg.norm(ve[i]))
+            for j, other in enumerate(competitors[i]):
+                diff = T[teacher[i]]-T[other]; dp = diff@W.T
+                n0 = float(diff@vbase)+float((slo if side == 0 else 0.)*(diff@c))
+                nr = dp@coef; lower, upper = (1-cfg['source_reserve'])*gaps[i, j], (1+cfg['source_reserve'])*gaps[i, j]
+                row = -nr.copy(); row[zi] += lower; inequality(row, n0)
+                inequality(nr-upper*fc, upper*f0-n0)
+            # Check reduced norm against the unreduced finite feature at a fixed nonzero coefficient.
+            x = np.zeros(nv); x[:nc] = 1e-4*np.sin(np.arange(nc)); dh = U@(D@x)
+            x[nc+i] = math.sqrt(np.mean((h0[i]+dh-(h0[i]+dh).mean())**2)+p['eps'])
+            ss = slo+slope@(D@x) if side == 0 else x[nc+i]
+            full = (h0[i]+dh)@L+ss*c
+            algebra_error = max(algebra_error, abs(np.linalg.norm(full)-np.linalg.norm(np.r_[const+coef@x, math.sqrt(max(0., residual_v))])))
+    norm_bound(np.zeros(nc), np.c_[np.eye(nc), np.zeros((nc, nv-nc))], nv-1)
+    row = np.zeros(nv); row[-1] = 1; inequality(row, rb)
+    G = np.vstack(lin+soc); b = np.r_[lb, np.concatenate(sb)]; objective = np.zeros(nv); objective[-1] = 1
+    assert algebra_error <= 1e-8
+    np.savez_compressed(out/'cone.npz', G=G, b=b, objective=objective, qdims=qdims, linear_rows=len(lin))
+    torch.save(dict(ids=ids,labels=training.targets[ids],parameters=p,original=original,prefix=prefix,Z=z,R=r,
+                    U=torch.from_numpy(U),F=F,W=W,edited_O=edited_o,budget_B=rb,tmax=tmax,zmax=zmax,teacher=teacher,gaps=gaps), out/'source.pt')
+    save_json(out/'pre_solver.json',dict(source_raw_sha256=digest(out/'source.pt'),cone_sha256=digest(out/'cone.npz')))
+    subprocess.run([sys.executable,'experiments/verify_finite_compensation_bound.py','--ln-envelope',str(out),'--assembly-only'],check=True)
+    print(json.dumps(dict(stage='finite_LN_envelope_ready',shape=G.shape,selected_head=chosen,O_distance=od,assembly_error=algebra_error)), flush=True)
+    solvers.options.update(show_progress=True, maxiters=100, abstol=1e-8, reltol=1e-8, feastol=1e-8)
+    solved = time.monotonic()
+    solution = solvers.conelp(matrix(objective), matrix(G), matrix(b), dict(l=len(lin), q=qdims, s=[]), kktsolver='chol')
+    saved = {key:np.asarray(solution[key]).ravel() for key in ['x','s','z'] if solution[key] is not None}
+    np.savez_compressed(out/'solver.npz', **saved)
+    report = dict(status='closed_'+solution['status'],solver_status=solution['status'],iterations=solution['iterations'],
+                  solver_seconds=time.monotonic()-solved,source_n=n,selected_head=chosen,O_distance=od,B_budget=rb,
+                  source_control_error=control,prefix_control_error=prefix_control,reduced_norm_error=algebra_error,checkpoint_sha256=pins,
+                  O_task32_inside_distance=o_inside,prefix_R=prefix_R,prefix_changed=int((prefix_actual.argmax(1)!=teacher).sum()),
+                  original_expert_updates=0,new_TA_calls=0,new_AGA_calls=0,source_sha256=digest(__file__),
+                  full_model_image_instances=2*n,prefix_freeze_sha256=digest(out/'prefix_freeze.pt'),
+                  protocol_sha256=digest(protocol),published_weight=False)
+    if solution['status'] == 'optimal':
+        K = torch.from_numpy(saved['x'][:nc].reshape(a, rank))
+        eb = (p['B']+p['B'].norm()*torch.from_numpy(U)@K@r).float()
+        bd = float((eb.double()-p['B']).norm()/p['B'].norm()); assert math.hypot(od, bd) <= cfg['parameter_budget']
+        stem = 'model.visual.transformer.resblocks.11.'
+        torch.save({stem+'attn.out_proj.weight':edited_o, stem+'mlp.c_proj.weight':eb}, out/'frozen_release.pt')
+        publication.model.visual.transformer.resblocks[11].mlp.c_proj.weight.copy_(eb)
+        actual = capture_attention(publication, training, ids)
+        after = head(actual['actual'].float()).double().numpy(); dy = after-before
+        relative = (dy[np.arange(n), teacher, None]-np.take_along_axis(dy, competitors, axis=1))/gaps
+        worst = float(abs(relative).max())
+        torch.save(dict(before=torch.from_numpy(before),after=torch.from_numpy(after),H=actual['h']),out/'source_scores.pt')
+        truth = training.targets[ids].numpy(); old_pred, new_pred = teacher, after.argmax(1)
+        report.update(status='source_passed_pending_probes_and_independent_audit' if worst <= cfg['task_budget'] else 'closed_actual_source_task_budget',
+                      B_distance=bd,parameter_distance=math.hypot(od, bd),source_R=worst,
+                      B_task32_inside_distance=float(((eb.double()-p['B'])@vb.T).norm()/p['B'].norm()),
+                      source_changed=int((after.argmax(1)!=teacher).sum()),source_original_correct=int((teacher==training.targets[ids].numpy()).sum()),
+                      source_after_correct=int((after.argmax(1)==training.targets[ids].numpy()).sum()),full_model_image_instances=3*n,
+                      per_class=[dict(class_id=j,n=int((truth==j).sum()),before_correct=int(((old_pred==truth)&(truth==j)).sum()),
+                                      after_correct=int(((new_pred==truth)&(truth==j)).sum()),lost=int(((old_pred==truth)&(new_pred!=truth)&(truth==j)).sum()),
+                                      gained=int(((old_pred!=truth)&(new_pred==truth)&(truth==j)).sum())) for j in range(len(T))],
+                      release_sha256=digest(out/'frozen_release.pt'))
+    report.update(wall_seconds=time.monotonic()-start,source_raw_sha256=digest(out/'source.pt'),cone_sha256=digest(out/'cone.npz'),solver_sha256=digest(out/'solver.npz'))
+    save_json(out/'results.json',report); print(json.dumps(report),flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path('outputs/phase3/finite_compensation_source.pt'))
@@ -632,8 +810,10 @@ if __name__ == '__main__':
     parser.add_argument('--replay-line-system',type=Path)
     parser.add_argument('--dense-line-system',type=Path)
     parser.add_argument('--structural-unit',type=Path)
+    parser.add_argument('--ln-envelope',type=Path)
     args = parser.parse_args()
-    if args.structural_unit:structural_unit_check(args.structural_unit)
+    if args.ln_envelope:finite_ln_envelope(args.ln_envelope)
+    elif args.structural_unit:structural_unit_check(args.structural_unit)
     elif args.dense_line_system:dense_line_system(args.dense_line_system)
     elif args.replay_line_system:replay_line_system(args.replay_line_system)
     elif args.rank_one_band:rank_one_band(args.rank_one_band)
