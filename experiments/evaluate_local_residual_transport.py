@@ -42,15 +42,34 @@ def run(protocol):
             changed_predictions=int(before['prediction'].ne(pred).sum()),paired=pair,mcnemar_log10_p=paired_logp(pair['lost'],pair['gained']),per_class=counts(pred,y))
         rows.append(row);save_json(out/'results.json',rows);torch.save(raw,out/'artifacts/predictions.pt');print('FROZEN_LOCAL_EVAL',json.dumps(row),flush=True)
         assert time.monotonic()-start<cfg['wall_limit_seconds']
-    record(released,'standalone','MNIST')
-    # Full observed utility must pass before any new merger or recovery evaluation.
+    diagnostic=cfg.get('utility_failed_diagnostic')
+    if diagnostic:
+        # Explicitly separate a requested fixed-model diagnostic from the main
+        # protocol. Its failed utility gate remains failed; no weights change.
+        for key in ['predictions','results','independent_receipt']:
+            ref=diagnostic[key];assert digest(ref['path'])==ref['sha256'],key
+        check=json.loads(Path(diagnostic['independent_receipt']['path']).read_text())
+        assert check['status']=='passed_failure_receipt' and not check['original_task_gate_passed']
+        assert diagnostic['release_sha256']==cfg['release']['sha256']
+        previous=torch.load(diagnostic['predictions']['path'],map_location='cpu')
+        for key in ['prediction','target','logits']:
+            assert torch.equal(previous['original/standalone/MNIST'][key],raw['original/standalone/MNIST'][key])
+        raw['released/standalone/MNIST']=previous['released/standalone/MNIST']
+        prior=json.loads(Path(diagnostic['results']['path']).read_text())
+        native=next(r for r in prior if r['preset']=='released' and r['stage']=='standalone')
+        rows.append(native|dict(cached_reference=True))
+        save_json(out/'results.json',rows);torch.save(raw,out/'artifacts/predictions.pt')
+    else:record(released,'standalone','MNIST')
+    # Main protocol stops here on utility failure. Only an explicitly pinned,
+    # separately reported fixed-model diagnostic may proceed past that failure.
     original=raw['original/standalone/MNIST']['logits'].double();after=raw['released/standalone/MNIST']['logits'].double()
     winner=original.argmax(1);ix=torch.arange(len(winner));gaps=original[ix,winner,None]-original;mask=torch.ones_like(gaps,dtype=torch.bool);mask[ix,winner]=False;assert (gaps[mask]>0).all()
     change=after-original;ratio=(change[ix,winner,None]-change)/gaps.masked_fill(~mask,1.);ratio[ix,winner]=0
     worst=float(ratio.abs().max());pos=int(ratio.abs().argmax());image,competitor=divmod(pos,ratio.shape[1])
     gate=dict(passed=worst<=cfg['task_budget'],n=len(winner),task_budget=cfg['task_budget'],worst_relative_margin_drift=worst,witness_index=image,teacher_class=int(winner[image]),competitor=competitor,source_point_repaired=False,historical_test_not_blind=True)
     save_json(out/'full_native_gate.json',gate)
-    if not gate['passed']:
+    if diagnostic:assert not gate['passed'] and abs(worst-check['worst_relative_margin_drift'])<1e-10
+    if not gate['passed'] and not diagnostic:
         save_json(out/'execution.json',dict(completed=False,stopped='full_native_task_budget_violation',author_AGA_calls=0,parameter_distance=distance,utility_gate=gate,predictions_sha256=digest(out/'artifacts/predictions.pt'),source_sha256=digest(__file__),wall_seconds=time.monotonic()-start));return
     model=merge(anchor,released,peer,.5)
     for task in heads:record(model,'direct',task)
@@ -71,7 +90,9 @@ def run(protocol):
         if v.ndim==2 and v.is_floating_point() and v.norm()>0:
             matrix_cost.append(float(((attacked.state_dict()[k].double()-aligned['MNIST'].state_dict()[k].double()).norm()/v.double().norm()).square()))
     save_json(out/'execution.json',dict(completed=True,parameter_distance=distance,AGA_aligned_matrix_distance=sum(matrix_cost)**.5,
-        full_model_forward_instances=128096,source_point_repaired=False,new_defense_optimizer_steps=0,author_AGA_calls=1,
+        full_model_forward_instances=sum(r['n'] for r in rows if r['preset']=='released' and not r.get('cached_reference')),
+        evaluation_scope='utility_failed_fixed_model_diagnostic' if diagnostic else 'main_protocol',utility_gate=gate,
+        source_point_repaired=False,new_defense_optimizer_steps=0,author_AGA_calls=1,
         cached_original_and_peer_AGA=True,attack_seconds=attack_seconds,wall_seconds=time.monotonic()-start,peak_gpu_bytes=torch.cuda.max_memory_allocated(),
         release_sha256=cfg['release']['sha256'],predictions_sha256=digest(out/'artifacts/predictions.pt'),
         AGA_edits_sha256=digest(out/'artifacts/AGA_release_edits.pt'),source_sha256=digest(__file__),protocol_sha256=digest(protocol),
@@ -80,6 +101,8 @@ def run(protocol):
 @torch.no_grad()
 def verify(output):
     out=Path(output);cfg=json.loads((out/'protocol.json').read_text());meta=json.loads((out/'execution.json').read_text());assert meta['completed']
+    if cfg.get('utility_failed_diagnostic'):
+        assert meta['evaluation_scope']=='utility_failed_fixed_model_diagnostic' and not meta['utility_gate']['passed']
     assert digest(out/'artifacts/predictions.pt')==meta['predictions_sha256'] and digest(out/'artifacts/AGA_release_edits.pt')==meta['AGA_edits_sha256']
     anchor,own,peer,released,heads,distance,aligned=inputs(cfg);attacked=copy.deepcopy(aligned['MNIST'])
     attacked.load_state_dict(attacked.state_dict()|torch.load(out/'artifacts/AGA_release_edits.pt',map_location='cpu'),strict=True)
