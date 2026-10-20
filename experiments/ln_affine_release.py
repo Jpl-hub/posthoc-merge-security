@@ -264,6 +264,42 @@ def structural_B_probes(model,head,inputs,shifts):
 
 
 @torch.no_grad()
+def mean_components(folder):
+    """Source-only counterfactuals of the one frozen mean-compensation point."""
+    out=Path(folder);cfg=json.loads((out/'protocol.json').read_text());raw=torch.load(out/'source.pt',map_location='cpu')
+    assert digest(out/'source.pt')==json.loads((out/'results.json').read_text())['raw_sha256']
+    assert not (out/'component_scores.pt').exists()
+    _,expert,head,_=checked_models(cfg['target']);edits=torch.load(out/'frozen_release.pt',map_location='cpu')
+    assert digest(out/'frozen_release.pt')==json.loads((out/'before_images.json').read_text())['release_sha256']
+    original={k:expert.state_dict()[k].clone() for k in edits};inner={};outer={}
+    assert digest(cfg['task_basis']['path'])==cfg['task_basis']['sha256']
+    for item in torch.load(cfg['task_basis']['path'],map_location='cpu').values():
+        key=item['source_key'];lo,hi=item['row_start'],item['row_end'];v=item['v']
+        w=original[key][lo:hi].double().flatten(1);e=edits[key][lo:hi].double().flatten(1)-w;ein=(e@v)@v.T
+        if key not in inner:inner[key]=original[key].clone();outer[key]=original[key].clone()
+        inner[key][lo:hi]=(w+ein).reshape_as(original[key][lo:hi]).float()
+        outer[key][lo:hi]=(w+e-ein).reshape_as(original[key][lo:hi]).float()
+    variants=dict(task_inside=inner,task_outside=outer,all_matrices={k:edits[k] for k in inner},
+        other_parameters={k:v for k,v in edits.items() if k not in inner},complete=edits)
+    save_json(out/'component_protocol.json',dict(source_sha256=digest(__file__),source_split_sha256=digest(out/'source_split.json'),
+        release_sha256=digest(out/'frozen_release.pt'),variants=list(variants),rank=32,source_only=True,
+        separately_quantized_counterfactuals=True,no_candidate_or_attack=True))
+    data=dataset(cfg['target'],'data',expert.val_preprocess,True);scores={};rows=[];start=time.monotonic()
+    for name,values in variants.items():
+        for key,value in (original|values).items():expert.state_dict()[key].copy_(value)
+        result,_=observe(expert,head,data,raw['indices']);scores[name]=result
+        m=metric(raw['before'],result,len(result));before=raw['before'].argmax(1);after=result.argmax(1);labels=raw['labels']
+        rows.append(dict(name=name,metric=m,correct=int((after==labels).sum()),n=len(labels),
+            per_class=[dict(class_id=k,n=int((labels==k).sum()),lost=int(((before==labels)&(after!=labels)&(labels==k)).sum()),
+                gained=int(((before!=labels)&(after==labels)&(labels==k)).sum())) for k in range(10)]))
+    error=float((scores['complete']-raw['after']).abs().max());assert error<=cfg['score_tolerance']
+    torch.save(dict(before=raw['before'],scores=scores,indices=raw['indices'],labels=raw['labels']),out/'component_scores.pt')
+    save_json(out/'components.json',dict(status='completed_source_counterfactuals',rows=rows,full_source_replay_error=error,
+        raw_sha256=digest(out/'component_scores.pt'),source_sha256=digest(__file__),new_image_forwards=5*len(raw['indices']),
+        new_AGA_calls=0,new_candidate=False,wall_seconds=time.monotonic()-start))
+
+
+@torch.no_grad()
 def run(protocol, confirm=False):
     start = time.monotonic(); cfg = json.loads(Path(protocol).read_text()); out = Path(cfg['output'])
     for path, pin in cfg['source_sha256'].items(): assert digest(path) == pin, path
@@ -460,12 +496,13 @@ def verify(folder, confirm=False):
         dict(status='passed',raw_sha256=report['raw_sha256'],parameter_distance=distance,NumPy_affine_identity_error=None if head_control else identity,
             NumPy_complete_readout_and_nonzero_branches_error=maximum if readout else None,
             NumPy_whole_head_permutation_exact=head_control,
-            NumPy_native_residual_permutation_exact=residual_control,covariant_task_probe_inputs=residual_control,
+            NumPy_native_residual_permutation_exact=residual_control,covariant_task_probe_inputs=residual_control or mean_control,
             NumPy_mean_compensation_rounded_parameters_checked=mean_control,
             natural_and_probe_margin_recount=True,source_indices_and_labels_checked=True,source_sha256=digest(__file__)))
 
 
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--confirm',action='store_true');ap.add_argument('--verify')
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--confirm',action='store_true');ap.add_argument('--verify');ap.add_argument('--components')
     args=ap.parse_args();initialize()
+    if args.components:mean_components(args.components);raise SystemExit
     verify(args.verify,args.confirm) if args.verify else run(args.protocol,args.confirm)
