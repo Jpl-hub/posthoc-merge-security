@@ -1,11 +1,15 @@
 {
-  "updated_utc": "2026-10-20T10:15:21.271123+00:00",
-  "status": "Defense2_closed_fixed_point_same_image_model_mismatch_independently_verified",
+  "updated_utc": "2026-10-20T10:46:40.542103+00:00",
+  "status": "known_residual_coordinate_control_source_running_not_new_defense",
   "automation_status": "13-35 PAUSED by user instruction;do not create or reactivate scheduled continuations.",
   "automatic_continuation": false,
   "GPU": "RTX3090 only;4090 unused",
-  "research_jobs": [],
-  "active_GPU_jobs": [],
+  "research_jobs": [
+    "ln_affine_release.py --protocol configs/residual_coordinate_control.json"
+  ],
+  "active_GPU_jobs": [
+    "ln_affine_release.py --protocol configs/residual_coordinate_control.json"
+  ],
   "breakthrough_verified": false,
   "new_candidate": false,
   "current_state": "research_state.json",
@@ -31,5 +35,14 @@
     "original_failure_retained": true
   },
   "github_scientific_commit": "2a1bf5fd32431fac0d6093a0cc43622496d71b6d",
-  "github_scientific_paths_verified": 91
+  "github_scientific_paths_verified": 91,
+  "active_control": {
+    "protocol": "configs/residual_coordinate_control.json",
+    "purpose": "Known full-residual-coordinate symmetry versus originalAGA/public-weight matching;not novelDefense2",
+    "parameter_budget": 20.0,
+    "original_fair_budget": 0.5,
+    "task_budget": 0.5,
+    "preregistered_remote": "298c7b6643d36581f99a38684451cd42082aaae4",
+    "no_response_selected_order": true
+  }
 }
