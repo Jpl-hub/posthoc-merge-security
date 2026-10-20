@@ -199,6 +199,70 @@ def feedback_components(output):
     save_json(out/'component_response.json',result);print(json.dumps(result),flush=True)
 
 
+@torch.no_grad()
+def compare_fusion_source(protocol):
+    """Same construction images: fixed source proxy versus actual two-expert TA.
+
+    Peer access is read-only diagnosis of a CLOSED publication,never parameter
+    construction. Off-diagonal tail replays are conditional interventions,not
+    new end-to-end models or claims of attainable unknown-partner states.
+    """
+    import time
+    from evaluate_local_residual_transport import inputs
+    from cross_module_distance import capture_attention,final_hidden
+    from covariance_noise import dataset
+    from clip_benchmark import merge
+    from local_residual_transport import cpu,forward
+    from probe_distance_candidate import on_device
+    from task_probe_distance import initialize
+    from verify_covariance_noise import official_labels
+    initialize();start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output']);out.mkdir(parents=True,exist_ok=False)
+    for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
+    spec=cfg['source_comparison']
+    for record in spec['artifacts'].values():assert digest(record['path'])==record['sha256']
+    raw=torch.load(spec['artifacts']['calibration']['path'],map_location='cpu');point=torch.load(spec['artifacts']['point']['path'],map_location='cpu')
+    ids=raw['cache']['indices']['proxy'];assert len(ids)==512
+    save_json(out/'protocol.json',cfg);save_json(out/'training_indices.json',dict(fit=ids))
+    anchor,own,peer,released,heads,distance,aligned=inputs(cfg);head=heads['MNIST'];head.cuda()
+    recovered=copy.deepcopy(aligned['MNIST']);recovered.load_state_dict(recovered.state_dict()|torch.load(spec['artifacts']['AGA_edits']['path'],map_location='cpu'),strict=True)
+    train=dataset('MNIST','data',own.val_preprocess,True);caches=dict(proxy=raw['cache']['proxy']);params=dict(proxy=raw['pp']);edits=dict(proxy=point['prototype'])
+    model=merge(anchor,aligned['MNIST'],peer,.5);params['actual']=extended_parameters(model,head)
+    caches['actual']=capture_attention(model,train,ids);model=merge(anchor,recovered,peer,.5)
+    actual_q=extended_parameters(model,head);physical=capture_attention(model,train,ids);edits['actual']={k:actual_q[k] for k in ['O','B']}
+    labels=official_labels('MNIST',True)[ids];records=[];saved={};maximum=0.;control=0.
+    for prefix,c in caches.items():
+        cc=on_device(c);rounding=cc['h']-final_hidden(cc['r'],on_device(params[prefix]))
+        d=dict(r=cc['r'],H=cc['o_input'],rounding=rounding,offset=torch.zeros((len(ids),3072),device='cuda',dtype=torch.float64))
+        for tail,parameters in params.items():
+            p=on_device(parameters);q=p|on_device(edits[tail]);before=forward(d,p,p);after=forward(d,p,q)
+            pn=convert(parameters);qn=pn|convert(edits[tail]);dn=convert(cpu(d))
+            def numpy_forward(t):
+                rr=dn['r']+dn['H']@(t['O']-pn['O']).T
+                pre=ln(rr,t['gamma2'],t['beta2'],t['eps2'])@t['A'].T+t['a']
+                return raw_scores(dn['rounding']+rr+(pre*expit(1.702*pre))@t['B'].T+t['b'],t)
+            b,a=before.cpu().numpy(),after.cpu().numpy()
+            for target,wanted in [(pn,b),(qn,a)]:
+                error=float(abs(numpy_forward(target)-wanted).max());maximum=max(maximum,error);assert error<1e-8
+            if prefix==tail:
+                physical0=head(c['actual'].cuda().float()).double().cpu().numpy()
+                physical1=head(physical['actual'].cuda().float()).double().cpu().numpy() if prefix=='actual' else point['environment_actual'].numpy()
+                err=max(float(abs(physical0-b).max()),float(abs(physical1-a).max()));control=max(control,err);assert err<=cfg['score_tolerance']
+                np.testing.assert_array_equal(physical0.argmax(1),b.argmax(1));np.testing.assert_array_equal(physical1.argmax(1),a.argmax(1))
+            old,new=b.argmax(1),a.argmax(1);oc,nc=old==labels,new==labels
+            records.append(dict(input_source=prefix,tail_parameters=tail,actual_end_to_end=prefix==tail,n=len(ids),original_correct=int(oc.sum()),
+                protected_correct=int(nc.sum()),prediction_changes=int((old!=new).sum()),lost=int((oc&~nc).sum()),gained=int((~oc&nc).sum()),
+                per_class=[dict(label=j,n=int((labels==j).sum()),lost=int((oc&~nc&(labels==j)).sum()),gained=int((~oc&nc&(labels==j)).sum())) for j in range(10)]))
+            saved[prefix+'_'+tail]=dict(before=before.cpu(),after=after.cpu())
+    torch.save(dict(caches=caches,parameters=params,edits=edits,actual_protected=physical,indices=ids,labels=labels,scores=saved,cfg=cfg),out/'comparison.pt')
+    result=dict(status='passed_same_image_frozen_model_comparison',records=records,torch_numpy_max_score_error=maximum,matched_full_model_score_error=control,
+        raw_sha256=digest(out/'comparison.pt'),release_sha256=cfg['release']['sha256'],source_sha256=digest(__file__),protocol_sha256=digest(protocol),wall_seconds=time.monotonic()-start,
+        new_full_model_image_instances=1024,source_images_reused=512,new_training_indices=0,new_parameters=0,new_AGA_calls=0,peer_used_for_diagnosis=True,
+        peer_used_for_construction=False,test_used=False,confirmation_used=False,closed_point_repaired=False,
+        scope='Compare identical512 original construction images before/after the same fixed publication,with source proxy and realAGA-target-only pair. Actual pair is evaluated read-only after failure;not allowed for future direction selection. Off-diagonal conditional tail responses are not model accuracies or recovery attacks.')
+    save_json(out/'results.json',result);print(json.dumps(result),flush=True)
+
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True);parser.add_argument('--recovery-feedback',action='store_true');parser.add_argument('--components',action='store_true');args=parser.parse_args();torch.set_num_threads(4)
-    (feedback_components if args.components else verify_feedback if args.recovery_feedback else verify)(args.output)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output');parser.add_argument('--recovery-feedback',action='store_true');parser.add_argument('--components',action='store_true');parser.add_argument('--fusion-source-protocol');args=parser.parse_args();torch.set_num_threads(4)
+    if args.fusion_source_protocol:compare_fusion_source(args.fusion_source_protocol)
+    else:(feedback_components if args.components else verify_feedback if args.recovery_feedback else verify)(args.output)
