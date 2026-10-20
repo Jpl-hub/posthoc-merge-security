@@ -498,6 +498,32 @@
       "novelty_boundary": "Noninvertible structured removal with downstream compensation is known; no newness claim from pruning or least squares. No CLIP/security reproduction or accuracy claim here.",
       "server_sources": "outputs/primary_sources/retraining_free_pruning_806ac5a6ff53",
       "reviewed_utc": "2026-10-20T06:46:46.549382+00:00"
+    },
+    "native_residual_permutation_control_20261020": {
+      "paper": "https://arxiv.org/html/2304.07735v3",
+      "read_sections": [
+        "4.1",
+        "4.3",
+        "10.3"
+      ],
+      "code_repository": "Doby-Xu/ST",
+      "code_commit": "db5edf5a20a08861c12ab0cad936898cb5e26521",
+      "code_path": "ShowCase/ViT/encrypt_ViT.py",
+      "code_git_blob": "e0e89095b61c4f1a43b4ac489d3f5e27e207d119",
+      "code_sha256": "531f61a3f8e33d0fa4a23743246275fc4126c461ed8daddc20efd62c17de79d2",
+      "actual_code_observation": "Selects savedkey5,transforms blockparameters including both QKVinputandoutput coordinates;uses external embedding/head shuffle wrappers. Not copied as native CLIP full-model implementation.",
+      "native_READ_WRITE_reference": "https://arxiv.org/html/2606.31963v1#A6",
+      "read_additional_sections": [
+        "2",
+        "F"
+      ],
+      "scope": "Known symmetry control and publicweight matching only,not novelDefense2,not officialpaper-table replication. CLIP foldssame residualcoordinate permutation into patch/class/position/LNpre/blocks/LNpost/projection;QKVoutputhead coordinates fixed. No source data or partner selection of permutation.",
+      "original_parameter_budget": 0.5,
+      "declared_control_parameter_budget": 20.0,
+      "task_budget": 0.5,
+      "source_updates": 0,
+      "fetched_text_git_blob": "e0e89095b61c4f1a43b4ac489d3f5e27e207d119",
+      "exact_git_blob_bytes_verified": true
     }
   },
   "literature_access": {

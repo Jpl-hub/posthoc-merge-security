@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/root/autodl-tmp/merge_security_20261009/experiments/ln_affine_release.py", line 385, in <module>
+    verify(args.verify,args.confirm) if args.verify else run(args.protocol,args.confirm)
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/ln_affine_release.py", line 250, in run
+    for path in cfg['extra_index_exclusions']: excluded.update(json.loads(Path(path).read_text())['indices'])
+                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+KeyError: 'indices'

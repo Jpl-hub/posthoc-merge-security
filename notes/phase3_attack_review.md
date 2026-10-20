@@ -515,3 +515,6 @@ PaRaMS正文§6与附录H.2描述由同分布无标签图片取得保护教师�
 | 当前决策 | 保持TA＋原AGA主实验；SLOA补充已完成可行性审阅，但尚无本项目适配、校准索引、模型或准确率，不为增加数量立即移植整库 |
 
 公开源码13份Git blob与SHA256、原始HTML/PDF留3090；来源清单加入既有[source_review.json](../results/author_protocol_audit/source_review.json)。与ProDistill、NUFILT及恢复攻击分列，不扩写成新增攻击数量。
+
+
+2026-10-20新增一个明确恢复边界：已知全残差坐标置换对照的原AGA后MNIST融合10.09%，与原AGA不混淆的公开patch卷积行余弦／匈牙利匹配，将目标及匹配无保护控制全部158张量逐位恢复原模型。匹配仅用发布／公开基座，无秘密排列／标签／图像；原专家只用于事后验证。它是已知权重对齐原理的CLIP native适配，不是ST或GLMC完整官方攻击复现。作用于提供的目标输入；随后原AGA仅目标／双方两流水线的无保护分数因权重恒等且本批独立重放可复用，不计新增GPU预测。对照D15.900614来自事前单列20预算，不能写成原D0.5的创新成功。证据见results/residual_coordinate_control/evaluation/residual_recovery.json及summary.md。

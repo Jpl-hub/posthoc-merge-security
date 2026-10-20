@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/root/autodl-tmp/merge_security_20261009/experiments/ln_affine_release.py", line 398, in <module>
+    verify(args.verify,args.confirm) if args.verify else run(args.protocol,args.confirm)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/ln_affine_release.py", line 379, in verify
+    cfg=json.loads((out/'protocol.json').read_text()); split=json.loads((out/(name+'_split.json')).read_text()); initial=set(cfg['extra_excluded_indices'])
+                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'outputs/phase2_residual_coordinate_control_20261020/ln_post.bias_split.json'

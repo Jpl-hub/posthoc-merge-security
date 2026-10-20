@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/root/autodl-tmp/merge_security_20261009/experiments/evaluate_local_residual_transport.py", line 138, in <module>
+    verify(a.verify) if a.verify else run(a.protocol)
+                                      ^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/evaluate_local_residual_transport.py", line 28, in run
+    save_json(out/'protocol.json',cfg);start=time.monotonic();anchor,own,peer,released,heads,distance,aligned=inputs(cfg);torch.cuda.reset_peak_memory_stats()
+                                                                                                              ^^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/evaluate_local_residual_transport.py", line 16, in inputs
+    anchor,own,peer,released,heads,distance=setup(cfg);aligned={}
+                                            ^^^^^^^^^^
+  File "/root/autodl-tmp/merge_security_20261009/experiments/author_protocol_audit.py", line 57, in setup
+    assert sorted(edits) == cfg["allowed_keys"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
