@@ -1,6 +1,14 @@
+# 最新实际融合结果
+
+**新版没有改善防护效果。** MNIST单独使用99.69%，直接融合99.23%，AGA只处理保护模型后融合99.06%，处理两个模型后融合98.93%。不保护时对应融合结果为99.37%、99.30%、99.32%。
+
+这份固定模型仍未通过此前的全部保持检查，原失败结论保留。补测仅把真实融合数字交代清楚，没有改变参数或预算。独立17行／272分数重放已通过。[简明对照表与双方结果](diagnostic/summary.md)。以下保留原主协议的完整技术记录；其中“未运行TA／AGA”指后续补测之前的停止状态。
+
+---
+
 # Joint O/B with variable original-AGA recovery feedback
 
-**Closed: full-task R budget failed. No new true TA/full AGA evaluation.**
+**Main candidate closed: full-task R budget failed. The original gated evaluation stopped before TA/AGA; a later fixed-model fusion diagnostic was completed at the user’s request.**
 
 This round implemented a joint method experiment,not another fixed-prefix/minimum-B control. C and K start at zero;the objective combines task-outside distance with the signed class response THROUGH variable original-AGA O-column recovery. Native full finite responses and original task-singular probes constrain the same path. Only the frozen target,public base and existing lawful4096 training inputs enter construction. No old protected weights,confirmation,test or peer select parameters. The existing finite tangent/retraction solver is reused;ridge differentiation,SVD and constrained optimization are known tools,not novelty claims.
 

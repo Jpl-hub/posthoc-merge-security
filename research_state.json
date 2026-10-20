@@ -1,6 +1,6 @@
 {
-  "status": "Defense2_recovery_feedback_closed_full_task_budget_failure_independently_verified",
-  "updated_utc": "2026-10-20T08:52:58.150774+00:00",
+  "status": "Defense2_recovery_feedback_closed_actual_fusion_diagnostic_independently_verified_ineffective",
+  "updated_utc": "2026-10-20T09:15:08.040492+00:00",
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2: small task-related functional change, large meaningful task-outside parameter change; finite cross-module compensation must survive real TA/originalAGA evaluation.",
   "server": {
@@ -69,7 +69,18 @@
     "raw_manifest": "results/recovery_feedback/artifact_manifest.json",
     "source_decomposition": "results/recovery_feedback/component_response.json",
     "task_outside_distance": 0.0913565776542171,
-    "not_original_or_effective_defense": true
+    "not_original_or_effective_defense": true,
+    "fusion_diagnostic": "results/recovery_feedback/diagnostic/summary.md",
+    "diagnostic_true_TA_calls": 1,
+    "diagnostic_full_AGA_calls": 1,
+    "diagnostic_MNIST_accuracies": {
+      "standalone": 0.9969,
+      "direct": 0.9923,
+      "AGA_target_only": 0.9906,
+      "AGA_both": 0.9893
+    },
+    "diagnostic_independent_receipt": "results/recovery_feedback/diagnostic/independent_validation.json",
+    "diagnostic_conclusion": "Actual MNIST TA99.23%,AGA-target99.06%,AGA-both98.93%;no meaningful protection. Native strict function failure retained. Model unchanged."
   },
   "closed_recent_controls": {
     "structural_unit": "results/structural_unit_check/summary.md:task kept;TA/originalAGA no target protection.",
@@ -111,5 +122,6 @@
     "attack_review": "notes/phase3_attack_review.md"
   },
   "continuation_mode": "Direct ongoing work in this conversation;latest user instruction replaces automatic time-window closeout.",
-  "teacher_alignment": "Latest screenshot actually viewed: distance maximization,minimized subspace change through distillation,task-vector singular-vector probes,possible minmax. Preserve pure posthoc/frozen expert scope and empirical full-task/TA/originalAGA verification. No novelty claim from the standard tools."
+  "teacher_alignment": "Latest screenshot actually viewed: distance maximization,minimized subspace change through distillation,task-vector singular-vector probes,possible minmax. Preserve pure posthoc/frozen expert scope and empirical full-task/TA/originalAGA verification. No novelty claim from the standard tools.",
+  "user_reporting_preference": "Use plain Chinese and lead with actual standalone accuracy,true fusion accuracy and originalAGA-then-fusion accuracy. State what the user needs to do directly;usually nothing. Explain technical metrics only when necessary;do not substitute source/proxy metrics for fusion results. Keep target/partner and attack scope distinct without invented labels."
 }
