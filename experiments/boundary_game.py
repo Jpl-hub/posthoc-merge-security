@@ -181,10 +181,18 @@ def recovery_feedback(target,cfg):
         wanted=head(cache0['actual'].cuda().float()).double()
         error=float((scores(cache0['h'].cuda(),pars)-wanted).abs().max())
         assert error<=cfg['score_tolerance'];controls[name]=error
+    torch.save(dict(p=cpu(p.p),base=cpu(base),pp=cpu(p.pp),cache=p.cal,task_probe_O=vo.cpu(),
+        permutation=p.mlp_permutation.cpu(),cfg=cfg),out/'calibration.pt')
     leaf=zero.clone().requires_grad_(True);g=torch.autograd.grad(p.objective(leaf),leaf)[0]
     direction=g/g.norm();eps=cfg['derivative_step']
     measured=(p.objective(zero+eps*direction)-p.objective(zero-eps*direction))/(2*eps)
-    derivative_error=float(abs(measured-g@direction)/g.norm());assert derivative_error<=cfg['derivative_tolerance']
+    derivative_error=float(abs(measured-g@direction)/g.norm())
+    gradient_check=dict(measured=float(measured),autograd=float(g@direction),relative_error=derivative_error,
+        epsilon=eps,original_objective=float(p.objective(zero)))
+    save_json(out/'gradient_check.json',gradient_check);print(json.dumps(dict(stage='gradient_check',**gradient_check)),flush=True)
+    torch.save(dict(gradient=g.cpu(),direction=direction.cpu(),plus_scores=p.predict(p.proxy,p.pp,eps*direction,.5).detach().cpu(),
+        minus_scores=p.predict(p.proxy,p.pp,-eps*direction,.5).detach().cpu()),out/'gradient_check.pt')
+    assert derivative_error<=cfg['derivative_tolerance']
     matrix,residual=local_matrix(p,core,zero)
     y=core['teacher'].argmax(1);keep=~torch.nn.functional.one_hot(y,len(p.p['head'])).bool()
     finite=(signed_residual(core['teacher'],p.predict(core,p.p,eps*direction))-
@@ -192,8 +200,6 @@ def recovery_feedback(target,cfg):
     jvp_error=float((matrix@direction-finite[keep]).abs().max());assert jvp_error<=cfg['derivative_tolerance']
     save_json(out/'initial_controls.json',dict(full_score_errors=controls,objective_gradient_fd_relative_error=derivative_error,
         task_jvp_fd_max_error=jvp_error,minimum_original_class_gap=minimum_gap))
-    torch.save(dict(p=cpu(p.p),base=cpu(base),pp=cpu(p.pp),cache=p.cal,task_probe_O=vo.cpu(),
-        permutation=p.mlp_permutation.cpu(),cfg=cfg),out/'calibration.pt')
     p.source_trace=[]
     theta,initial,selected,step,calls,gradients,corrections,history,failures=source_search(p,zero,core,cfg)
     deltaO=p.na*p.basis['A']['u']@theta[:p.a_size].reshape(p.r,p.r)@p.basis['A']['vh']
