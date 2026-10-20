@@ -461,6 +461,49 @@ def audit_line_scores(root,stage):
     save_json(out,report);print(json.dumps(report),flush=True)
 
 
+def verify_line_closure(root):
+    """Reproduce the exclusion draw and signed-gap diagnosis, no model loads."""
+    from clip_benchmark import digest
+    from subspace_probe import save_json
+    root=Path(root);out=root/'closure_independent.json';assert not out.exists()
+    report=json.loads((root/'closure_analysis.json').read_text());split=json.loads((root/'confirmation_split.json').read_text())
+    source=json.loads((root/'source_split.json').read_text());groups={}
+    for row in json.loads(Path('results/task_boundary_audit/split_independence_audit.json').read_text())['records']:
+        groups.setdefault(row['path'],[]).append(row['group'])
+    excluded=set(source['indices'])|{41538,27330,31374,46715}
+    for name,pin in split['excluded_metadata_sha256'].items():
+        path=Path(name);assert digest(path)==pin
+        data=json.loads(path.read_text()) if path.suffix=='.json' else torch.load(path,map_location='cpu')['indices']
+        if name in groups:
+            for group in groups[name]:excluded.update(data[group])
+        else:
+            values=(list(data.values()) if isinstance(data,dict) else [data]) if path.name=='training_indices.json' else [data.get('indices',[])]
+            for value in values:
+                if isinstance(value,list):excluded.update(int(x) for x in value)
+    assert len(excluded)==split['excluded_count']==report['excluded_count']
+    ids=np.random.default_rng(2026102002).choice(sorted(set(range(60000))-excluded),512,replace=False).tolist()
+    assert ids==split['indices'] and not set(ids)&excluded
+    errors={}
+    for stage in ['source','confirmation']:
+        d=np.load(root/(stage+'_scores.npz'));row=report['groups'][stage];a,b=d['before'],d['after'];y=a.argmax(1)
+        mask=np.arange(10)[None]!=y[:,None];old=a[np.arange(len(y)),y,None]-a;new=b[np.arange(len(y)),y,None]-b
+        assert (old[mask]>0).all();old[~mask]=1.;change=(new-old)/old;change[~mask]=0.;per_input=abs(change).max(1)
+        assert digest(root/(stage+'_scores.npz'))==row['scores_sha256']
+        np.testing.assert_allclose(list(row['sample_R_quantiles'].values()),np.quantile(per_input,[.5,.9,.99,1]),rtol=0,atol=1e-10)
+        assert int((per_input>.5).sum())==row['inputs_above_budget']
+        assert int((abs(change[mask])>.5).sum())==row['margin_pairs_above_budget']
+        assert int((change[mask]<-.5).sum())==row['decreased_margin_pairs_above_budget']
+        assert int((change[mask]>.5).sum())==row['increased_margin_pairs_above_budget']
+        i,k=np.unravel_index(abs(change).argmax(),change.shape);w=row['witness']
+        assert i==w['position'] and k==w['competitor'] and int(d['indices'][i])==w['train_index']
+        error=max(abs(change[i,k]-w['signed_relative_change']),abs(old[i,k]-w['original_gap']),abs(new[i,k]-w['published_gap']))
+        assert error<1e-10;errors[stage]=float(error)
+    save_json(out,dict(status='passed',fresh_sampling_reproduced=True,excluded_count=len(excluded),
+        signed_drift_distribution_and_witness_errors=errors,closure_sha256=digest(root/'closure_analysis.json'),
+        source_sha256=digest(__file__),new_model_forwards=0,new_weight_solutions=0,
+        scope='Read-only independent reproduction of saved-score diagnosis and fresh split; confirmation budget failure remains.'))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path('outputs/phase3/finite_compensation_source.pt'))
@@ -471,10 +514,12 @@ if __name__ == '__main__':
     parser.add_argument('--line-point',type=Path)
     parser.add_argument('--line-holdout',type=Path)
     parser.add_argument('--audit-line',type=Path)
+    parser.add_argument('--line-closure',type=Path)
     parser.add_argument('--stage',choices=['source','confirmation','full_task'])
     parser.add_argument('--protocol',type=Path)
     args = parser.parse_args()
-    if args.audit_line:audit_line_scores(args.audit_line,args.stage)
+    if args.line_closure:verify_line_closure(args.line_closure)
+    elif args.audit_line:audit_line_scores(args.audit_line,args.stage)
     elif args.line_holdout:line_holdout(args.line_holdout,args.protocol)
     elif args.line_point:validate_line_point(args.line_point,args.protocol)
     elif args.rank_one_band:verify_rank_one_band(args.rank_one_band)
