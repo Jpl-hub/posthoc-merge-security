@@ -724,6 +724,9 @@ def verify_frozen_validation(root, source_probes=False):
     path=root/('source_probes.pt' if source_probes else 'confirmation.pt');assert digest(path)==meta['confirmation_sha256']
     assert digest(cfg['source_reference'])==cfg['diagnostic_sha256'] and digest(cfg['frozen_release']['path'])==cfg['frozen_release']['sha256']
     origin=torch.load(cfg['source_reference'],map_location='cpu',weights_only=False);raw=torch.load(path,map_location='cpu',weights_only=False)
+    if cfg.get('recovery_feedback_source'):
+        cal=torch.load(cfg['prefix_reference'],map_location='cpu',weights_only=False)
+        origin=dict(parameters=cal['p'],ids=cal['cache']['indices']['fit']+cal['cache']['indices']['scale'])
     p={k:v.numpy() if torch.is_tensor(v) else v for k,v in origin['parameters'].items()};q=dict(p)
     pub=torch.load(cfg['frozen_release']['path'],map_location='cpu',weights_only=False)
     for k,key in [('O','attn.out_proj.weight'),('B','mlp.c_proj.weight')]:q[k]=pub['model.visual.transformer.resblocks.11.'+key].double().numpy()

@@ -25,9 +25,15 @@ def run(cfg, source_probes=False):
         assert digest(cfg['source_reference'])==cfg['diagnostic_sha256']
         source=torch.load(cfg['source_reference'],map_location='cpu');saved=torch.load(cfg['prefix_reference'],map_location='cpu')
         assert digest(fixed['path'])==fixed['sha256'];pub=torch.load(fixed['path'],map_location='cpu')
+        if cfg.get('recovery_feedback_source'):
+            assert not source_probes,'Source4096/probes already independently audited;do not repeat.'
+            audit=json.loads(Path(cfg['source_audit_reference']).read_text());assert audit['status']=='passed'
+            assert audit['raw_point_sha256']==cfg['diagnostic_sha256']
+            cal=saved;source=dict(parameters=cal['p'],ids=cal['cache']['indices']['fit']+cal['cache']['indices']['scale'])
+            saved=dict(vo=cal['task_probe_O'],vb=cal['cache']['basis_B']['vh'])
         raw=dict(p=source['parameters'],q=dict(source['parameters']),vo=saved['vo'],vb=saved['vb'],indices=dict(fit=source['ids']),cfg=cfg)
         for key,value in FIELDS.items():raw['q'][key]=pub.get('model.visual.transformer.resblocks.11.'+value,raw['p'][key]).double()
-        if not source_probes:
+        if not source_probes and not cfg.get('recovery_feedback_source'):
             assert json.loads((out/'source_probe_validation.json').read_text())['status']=='passed'
             assert json.loads((out/'source_probe_independent_validation.json').read_text())['status']=='passed'
     else:
