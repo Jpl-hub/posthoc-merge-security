@@ -461,6 +461,65 @@ def audit_line_scores(root,stage):
     save_json(out,report);print(json.dumps(report),flush=True)
 
 
+def verify_structural_unit(root):
+    """Independent deletion, affine budget and non-manifold probe reconstruction."""
+    from clip_benchmark import digest
+    from subspace_probe import save_json
+    from task_probe_distance import checked_models,initialize,parameters
+    from verify_covariance_noise import official_labels
+    from verify_levelset_audits import raw_scores
+    initialize();root=Path(root);cfg=json.loads((root/'protocol.json').read_text());result=json.loads((root/'results.json').read_text())
+    assert digest(cfg['original_source']['path'])==cfg['original_source']['sha256']
+    raw=torch.load(cfg['original_source']['path'],map_location='cpu');p={k:v.numpy() if torch.is_tensor(v) else v for k,v in raw['parameters'].items()}
+    Z,H,before=[raw[k].numpy() for k in ['Z','H','before']];j=int(np.argmin(np.max(abs(Z),axis=0)*np.linalg.norm(p['B'],axis=0)))
+    assert j==result['unit'];np.testing.assert_array_equal(raw['labels'],official_labels('MNIST',True)[raw['indices']])
+    if result['status']=='closed_deletion_parameter_cost':
+        cost=(np.linalg.norm(p['A'][j])**2/np.linalg.norm(p['A'])**2+p['a'][j]**2/np.linalg.norm(p['a'])**2)**.5
+        assert cost>=.5*(1-1e-6);check=dict(deletion_cost=float(cost))
+    else:
+        assert digest(root/'necessary_check.pt')==result['raw_sha256'];d=torch.load(root/'necessary_check.pt',map_location='cpu')
+        gamma,beta=d['gamma2'].numpy(),d['beta2'].numpy();n=1/gamma;n/=np.linalg.norm(n);c=beta@n
+        anchor,expert,head,pins=checked_models('MNIST');assert pins==result['checkpoint_sha256']
+        p0={k:v.numpy() if torch.is_tensor(v) else v for k,v in parameters(anchor,head).items()}
+        np.testing.assert_array_equal(gamma,expert.model.visual.transformer.resblocks[11].ln_2.weight.double().numpy())
+        np.testing.assert_array_equal(beta,expert.model.visual.transformer.resblocks[11].ln_2.bias.double().numpy())
+        np.testing.assert_allclose(n,d['n'].numpy(),atol=1e-12);assert abs(c-float(d['c']))<1e-12
+        edits={k:v.numpy() for k,v in d['edits'].items()};na=np.linalg.norm(p['A']);nb=np.linalg.norm(p['B']);ba=np.linalg.norm(p['a']);eta=d['eta']
+        M=p['gamma'][:,None]*(p['projection']@(p['head']-p['head'].mean(0)).T);M-=M.mean(0)
+        u=np.linalg.svd(M,full_matrices=False)[0][:,0];u*=np.sign(u[np.argmax(abs(u))]);np.testing.assert_allclose(u,d['u'],atol=1e-10)
+        for key in ['A','B']:
+            basis=d['V'+key.lower()].numpy();v=np.linalg.svd(p[key]-p0[key],full_matrices=False)[2][:32]
+            np.testing.assert_allclose(basis@basis.T,np.eye(32),atol=1e-10)
+            assert np.linalg.norm(basis-basis@v.T@v)<1e-7
+        aa=2+(na*c/ba)**2;bb=-2*(p['A'][j]@n)/na+2*na*c*p['a'][j]/ba**2
+        cc=np.linalg.norm(p['A'][j])**2/na**2+p['a'][j]**2/ba**2-(.5*(1-1e-6))**2
+        assert abs(aa*eta**2+bb*eta+cc)<1e-12
+        np.testing.assert_allclose(edits['A_row'],(eta*na*n).astype(np.float32),atol=1e-7,rtol=0)
+        assert abs(float(edits['a_value'])-float(np.float32(-eta*na*c)))<1e-7
+        np.testing.assert_allclose(edits['B_column'],(p['B'][:,j]+eta*nb*d['u'].numpy()).astype(np.float32),atol=1e-7,rtol=0)
+        da=edits['A_row'].astype(float)-p['A'][j];db=edits['B_column'].astype(float)-p['B'][:,j];dc=float(edits['a_value'])-p['a'][j]
+        D=(np.linalg.norm(da)**2/na**2+np.linalg.norm(db)**2/nb**2+dc**2/ba**2)**.5;assert abs(D-result['parameter_distance'])<1e-10 and D<=.5
+        linear=edits['A_row'].astype(float)*gamma;linear-=linear.mean();offset=edits['A_row'].astype(float)@beta+float(edits['a_value'])
+        bound=np.sqrt(len(n))*np.linalg.norm(linear)+abs(offset);assert abs(bound-result['real_arithmetic_quantized_pre_activation_bound'])<1e-10
+        ideal=H-Z[:,j,None]*p['B'][:,j];after=raw_scores(ideal,p);ctx=d['contexts'].numpy();shift=d['shifts'].numpy()
+        expected_ctx=np.array([np.flatnonzero(before.argmax(1)==j)[0] for j in range(10)]);np.testing.assert_array_equal(ctx,expected_ctx)
+        vb=d['Vb'].numpy();rms=np.sqrt(np.mean((Z@vb.T)**2,axis=0))
+        expected_shift=(.01*np.array([-1.,1.])[:,None,None]*rms[None,:,None]*vb[None]).reshape(64,-1)
+        np.testing.assert_allclose(shift,expected_shift,atol=1e-10)
+        B=p['B'].copy();B[:,j]=edits['B_column'];hp=(H[ctx,None]+shift[None]@p['B'].T).reshape(-1,H.shape[1]);hq=(ideal[ctx,None]+shift[None]@B.T).reshape(hp.shape)
+        pb,pa=raw_scores(hp,p),raw_scores(hq,p)
+        error=max(float(abs(after-d['after'].numpy()).max()),float(abs(pb-d['probe_before'].numpy()).max()),float(abs(pa-d['probe_after'].numpy()).max()));assert error<1e-8
+        def rho(a,b):
+            y=a.argmax(1);g=a[np.arange(len(a)),y,None]-a;mask=np.arange(10)[None]!=y[:,None];assert (g[mask]>0).all()
+            ng=b[np.arange(len(b)),y,None]-b;return float(abs((ng[mask]-g[mask])/g[mask]).max())
+        native,probe=rho(before,after),rho(pb,pa);assert abs(native-result['native_ideal_R'])<1e-9 and abs(probe-result['B_probe_R'])<1e-9
+        assert int((before.argmax(1)!=after.argmax(1)).sum())==result['native_changed']
+        assert result['necessary_source_passed']==(native<=.5 and probe<=.5 and result['native_changed']==0)
+        check=dict(parameter_distance=D,NumPy_full_scores_error=error,native_ideal_R=native,B_probe_R=probe,affine_pre_activation_bound=float(bound))
+    save_json(root/'independent_validation.json',dict(status='passed',**check,source_sha256=digest(__file__),result_sha256=digest(root/'results.json'),
+        original_source_sha256=cfg['original_source']['sha256'],new_images=0,new_candidates=0,scope='Necessary cache-only mechanism check,not actual FP32 task retention,new defense or recovery/peer-fusion evidence.'))
+
+
 def verify_line_closure(root):
     """Reproduce the exclusion draw and signed-gap diagnosis, no model loads."""
     from clip_benchmark import digest
@@ -515,10 +574,12 @@ if __name__ == '__main__':
     parser.add_argument('--line-holdout',type=Path)
     parser.add_argument('--audit-line',type=Path)
     parser.add_argument('--line-closure',type=Path)
+    parser.add_argument('--structural-unit',type=Path)
     parser.add_argument('--stage',choices=['source','confirmation','full_task'])
     parser.add_argument('--protocol',type=Path)
     args = parser.parse_args()
-    if args.line_closure:verify_line_closure(args.line_closure)
+    if args.structural_unit:verify_structural_unit(args.structural_unit)
+    elif args.line_closure:verify_line_closure(args.line_closure)
     elif args.audit_line:audit_line_scores(args.audit_line,args.stage)
     elif args.line_holdout:line_holdout(args.line_holdout,args.protocol)
     elif args.line_point:validate_line_point(args.line_point,args.protocol)

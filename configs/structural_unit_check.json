@@ -1,0 +1,29 @@
+{
+  "target": "MNIST",
+  "output": "outputs/phase2_ln_zero_unit_source_mnist_20261020",
+  "original_source": {
+    "path": "outputs/phase2_finite_line_band_mnist_20261020/diagnostic.pt",
+    "sha256": "4a39c9e4e312bd1d7144c76076623b8b14bcbe1507485e17ced889552af970d9"
+  },
+  "source_n": 4096,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "score_tolerance": 0.0005,
+  "forbidden_indices": [
+    41538,
+    27330,
+    31374,
+    46715
+  ],
+  "source_sha256": {
+    "experiments/finite_compensation_bound.py": "6956faf74b36464d396b08f4386703ff6b2257d5ec0fa785e59dd3ed3a262287",
+    "experiments/verify_finite_compensation_bound.py": "c566a19f5d1234c572022d58a628205b7361a96a8c7e016ac05bd4a26409d900",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/verify_levelset_audits.py": "7d51baf85314d0529b06cac0177f87cc3b7a2495bd92279db6025c5f96a003c0",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "scope": "One necessary source-only structural control,not new original Defense2. One deterministic unit choice,no sweep or optimizer. Actual LN-annihilated unit replaces one existing contribution. Known NeuronZero/LN-affine components,explicit data-free canonical cleanup. No materialized weights,new confirmation,test,peer,or fullAGA in this stage.",
+  "stop_rule": "Close if original A/a deletion cost exhausts D.5 or ideal deletion4096/all640 original B-input task probes exceed R.5 or change a native prediction. Do not swap unit,add units/change layer,axis,sign,amplitude,source,probe or budget. A pass only licenses a separately frozen actual-model source/probe protocol;not new confirmation or real attack claims."
+}
