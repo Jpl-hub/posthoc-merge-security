@@ -496,7 +496,7 @@ def verify(folder, confirm=False):
         dict(status='passed',raw_sha256=report['raw_sha256'],parameter_distance=distance,NumPy_affine_identity_error=None if head_control else identity,
             NumPy_complete_readout_and_nonzero_branches_error=maximum if readout else None,
             NumPy_whole_head_permutation_exact=head_control,
-            NumPy_native_residual_permutation_exact=residual_control,covariant_task_probe_inputs=residual_control,
+            NumPy_native_residual_permutation_exact=residual_control,covariant_task_probe_inputs=residual_control or mean_control,
             NumPy_mean_compensation_rounded_parameters_checked=mean_control,
             natural_and_probe_margin_recount=True,source_indices_and_labels_checked=True,source_sha256=digest(__file__)))
 

@@ -45,12 +45,16 @@
   "original_parameter_budget": 0.5,
   "known_symmetry_control": true,
   "references": {
-    "native_feature_symmetry": "https://arxiv.org/html/2304.07735v3#S4.SS1",
-    "official_code_commit": "Doby-Xu/ST@db5edf5a20a08861c12ab0cad936898cb5e26521",
-    "official_file": "ShowCase/ViT/encrypt_ViT.py",
-    "official_file_git_blob": "e0e89095b61c4f1a43b4ac489d3f5e27e207d119",
-    "native_residual_READ_WRITE_rule": "https://arxiv.org/html/2606.31963v1#A6",
-    "adaptation_boundary": "Paper/code reading only. Official timm example conjugatesQKV outputs aswell and usesexternalinput/outputkeys;this CLIP native control permutes residual reads/writes only and folds theinput/outputpermutation into embedding/projection. Not an official ST full implementation or paper-table reproduction."
+    "GLMC_paper": "https://arxiv.org/html/2506.22712v1",
+    "GLMC_commit": "5e343c05683ce1f2972c7ca3f25111e82d3f00e5",
+    "GLMC_files": [
+      "utils.py",
+      "weight_matching.py",
+      "merger.py"
+    ],
+    "native_vs_absorbed_gain_scope": "https://arxiv.org/html/2606.31963v1",
+    "native_implementation_and_proof": "notes/phase2_coupling.md",
+    "scope": "Known symmetry ingredients and original task SVD; native mean-equivalent CLIP adaptation, not official complete implementation or novelty claim."
   },
   "task_direction_parameter_limit": 0.5,
   "individual_bias_limit": 0.5,
