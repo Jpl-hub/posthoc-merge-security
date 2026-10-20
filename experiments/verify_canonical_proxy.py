@@ -153,6 +153,52 @@ def verify_feedback(output):
     save_json(out/'independent_validation.json',result);print(json.dumps(result),flush=True)
 
 
+def feedback_components(output):
+    """Read-only source functional decomposition of one already frozen point."""
+    import time
+    from probe_margin_distance import scores
+    from verify_levelset_audits import residual
+    from verify_covariance_noise import official_labels
+    start=time.monotonic();out=Path(output);rep=json.loads((out/'results.json').read_text())
+    assert digest(out/'training_point.pt')==rep['raw_point_sha256']
+    assert digest(out/'calibration.pt')==rep['raw_calibration_sha256']
+    assert not (out/'component_response.json').exists()
+    cal=torch.load(out/'calibration.pt',map_location='cpu');point=torch.load(out/'training_point.pt',map_location='cpu')
+    p,pp=[convert(cal[k]) for k in ['p','pp']];q=p|convert(point['q']);proto=pp|convert(point['prototype']);cache=cal['cache']
+    native={k:torch.cat([cache['native'][k],cache['scale'][k]]).numpy() for k in cache['native']}
+    ids=cache['indices']['fit']+cache['indices']['scale'];gold=official_labels('MNIST',True)[ids]
+    vb=cache['basis_B']['vh'].numpy();perm=cal['permutation'].numpy();results=[];raw=dict(native_indices=np.array(ids),native_labels=gold)
+    maximum=0.
+    for name,c,original,changed,V,labels in [('native',native,p,q,vb,gold),('public_after_AGA',convert(cache['proxy']),pp,proto,vb[:,perm],official_labels('MNIST',True)[cache['indices']['proxy']])]:
+        def z(r):
+            v=ln(r,original['gamma2'],original['beta2'],original['eps2'])@original['A'].T+original['a'];return v*expit(1.702*v)
+        rounding=c['h']-c['r']-z(c['r'])@original['B'].T-original['b']
+        dO=changed['O']-original['O'];dB=changed['B']-original['B'];inside=(dB@V.T)@V;outside=dB-inside
+        cases=[('original',0,0),('O_only',dO,0),('B_inside',0,inside),('B_outside',0,outside),
+            ('B_full',0,dB),('O_B_inside',dO,inside),('O_B_outside',dO,outside),('joint',dO,dB)]
+        before=raw_scores(c['h'],original);teacher=before.argmax(1);old_correct=teacher==labels;raw[name+'_original']=before
+        for label,eo,eb in cases:
+            rr=c['r'] if np.isscalar(eo) else c['r']+c['o_input']@eo.T
+            B=original['B']+eb;h=rounding+rr+z(rr)@B.T+original['b'];s=raw_scores(h,original)
+            tt={k:torch.as_tensor(v) if isinstance(v,np.ndarray) else v for k,v in original.items()}
+            tr=torch.as_tensor(rr);pre=torch.nn.functional.layer_norm(tr,(768,),tt['gamma2'],tt['beta2'],tt['eps2'])@tt['A'].T+tt['a']
+            hh=torch.as_tensor(rounding)+tr+(pre*torch.sigmoid(1.702*pre))@torch.as_tensor(B).T+tt['b']
+            measured=scores(hh,tt).numpy();error=float(abs(measured-s).max());maximum=max(maximum,error);assert error<=1e-8
+            pred=s.argmax(1);now_correct=pred==labels;drift=residual(before,s)
+            results.append(dict(environment=name,component=label,n=len(s),prediction_changes=int((pred!=teacher).sum()),
+                worst_R=float(abs(drift).max()),worst_signed_relative_harm=float((-drift).max()),correct=int(now_correct.sum()),
+                lost=int((old_correct&~now_correct).sum()),gained=int((~old_correct&now_correct).sum()),
+                per_class=[dict(label=j,n=int((labels==j).sum()),lost=int((old_correct&~now_correct&(labels==j)).sum()),gained=int((~old_correct&now_correct&(labels==j)).sum())) for j in range(10)]))
+            raw[name+'_'+label]=s
+        np.testing.assert_allclose(raw[name+'_joint'],np.concatenate([point['source_scores'][i][:len(cache[k]['h'])].numpy() for i,k in enumerate(['native','scale'])]) if name=='native' else point['environment_scores'],atol=1e-8,rtol=1e-9)
+    path=out/'component_scores.npz';np.savez_compressed(path,**raw)
+    result=dict(status='passed_read_only_source_decomposition',records=results,torch_numpy_score_max_error=maximum,
+        point_sha256=rep['raw_point_sha256'],raw_scores_sha256=digest(path),source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,
+        new_images=0,optimizer_updates=0,new_candidates=0,point_repaired=False,
+        scope='Original4096 construction and512 fixed public source inputs only. Split the actual quantized B change in its original task-right32 frame;transport that frame through the fixed MLP permutation in the public after-AGA environment. Components are FP64 counterfactual responses,not separately published or selected defenses. No confirmation/test/peer response used.')
+    save_json(out/'component_response.json',result);print(json.dumps(result),flush=True)
+
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True);parser.add_argument('--recovery-feedback',action='store_true');args=parser.parse_args();torch.set_num_threads(4)
-    (verify_feedback if args.recovery_feedback else verify)(args.output)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True);parser.add_argument('--recovery-feedback',action='store_true');parser.add_argument('--components',action='store_true');args=parser.parse_args();torch.set_num_threads(4)
+    (feedback_components if args.components else verify_feedback if args.recovery_feedback else verify)(args.output)
