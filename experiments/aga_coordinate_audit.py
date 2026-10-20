@@ -16,6 +16,73 @@ from task_probe_distance import checked_models
 
 
 @torch.no_grad()
+def mean_compensation(protocol, output):
+    """Finite weight-only check of a native-LN mean-equivalent compensation."""
+    start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(output)
+    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    for path,sha in cfg['source_sha256'].items():assert digest(path)==sha,path
+    assert digest(cfg['basis']['path'])==cfg['basis']['sha256']
+    basis=torch.load(cfg['basis']['path'],map_location='cpu')
+    anchor,expert,_,pins=checked_models(cfg['target']);state=expert.state_dict()
+    d=768;eye=torch.eye(d,dtype=torch.double);one=torch.ones(d,dtype=torch.double)/d**.5
+    v=eye[:,0]-one;v/=v.norm();h=(eye-2*v[:,None]*v[None])[:,1:]
+    gamma=state['model.visual.ln_pre.weight'].double()
+    eigenvalues,eigenvectors=torch.linalg.eigh(h.T@(gamma[:,None]*h));axes=h@eigenvectors
+    c=eye-one[:,None]*one[None]
+    eigen_error=float((c@(gamma[:,None]*axes)-axes*eigenvalues).abs().max())
+    assert eigen_error<cfg['tolerance']
+    totals=torch.zeros(d-1,dtype=torch.double);inside=totals.clone();bias_max=totals.clone();rows=[]
+    for key in state:
+        if key.endswith(('ln_1.weight','ln_2.weight','ln_post.weight')):assert float(state[key].abs().min())>1e-8,key
+    for index,b in basis.items():
+        key=b['source_key'];lo,hi=b['row_start'],b['row_end'];site=b['site']
+        w=state[key][lo:hi].double().flatten(1);right=b['v'];rank=cfg['rank'];assert right.shape[1]==rank
+        if site in ['Q','K','V','A']:
+            lk=key.split('.attn.')[0]+'.ln_1.' if '.attn.' in key else key.split('.mlp.')[0]+'.ln_2.'
+            gain,beta=[state[lk+s].double() for s in ['weight','bias']]
+            left=w@(gain[:,None]*axes);r=axes/gain[:,None]
+            bk=key.replace('weight','bias');bias=state[bk][lo:hi].double()
+            db=2*left*(r.T@beta)[None]
+        elif site=='projection':
+            gain=state['model.visual.ln_post.weight'].double()
+            left=axes/gain[:,None];r=w.T@(gain[:,None]*axes);db=None
+        else:
+            left=axes;r=w.T@axes;db=None
+            if site in ['O','B']:
+                bias=state[key.replace('weight','bias')].double();db=-2*axes*(axes.T@bias)[None]
+        total=4*left.square().sum(0)*r.square().sum(0)/w.square().sum()
+        inn=4*left.square().sum(0)*(right.T@r).square().sum(0)/w.square().sum()
+        assert float((total-inn).min())>-cfg['tolerance']
+        totals+=total;inside+=inn
+        if db is not None:bias_max=torch.maximum(bias_max,db.norm(dim=0)/bias.norm())
+        rows.append(dict(matrix=int(index),site=site,total_squared=total.tolist(),inside_squared=inn.tolist()))
+    for site in ['pre','post']:
+        prefix='model.visual.ln_'+site+'.';beta=state[prefix+'bias'].double()
+        gain=state[prefix+'weight'].double()
+        db=-2*axes*(axes.T@beta)[None] if site=='pre' else -2*(gain[:,None]*axes)*(axes.T@(beta/gain))[None]
+        bias_max=torch.maximum(bias_max,db.norm(dim=0)/beta.norm())
+    outside=totals-inside;valid=(inside.sqrt()<=cfg['task_direction_parameter_limit'])&(bias_max<=cfg['individual_bias_limit'])
+    allowed=torch.where(valid,outside,torch.tensor(-float('inf')));chosen=int(allowed.argmax()) if bool(valid.any()) else None
+    save_json(out/'directions.json',[dict(index=i,eigenvalue=float(eigenvalues[i]),inside_distance=float(inside[i].sqrt()),
+        outside_distance=float(outside[i].clamp_min(0).sqrt()),matrix_distance=float(totals[i].sqrt()),maximum_relative_bias=float(bias_max[i]),
+        feasible=bool(valid[i])) for i in range(d-1)])
+    geometry=dict(status='feasible_weight_only_condition' if chosen is not None else 'no_feasible_direction',selected_index=chosen,
+        feasible_directions=int(valid.sum()),directions=d-1,task_matrix_count=len(basis),eigen_equation_error=eigen_error,
+        checkpoint_sha256=pins,source_sha256=digest(__file__),protocol_sha256=digest(protocol),basis_sha256=cfg['basis']['sha256'],
+        new_image_forwards=0,new_AGA_calls=0,parameter_updates=0,release_created=False,novelty_claim=False)
+    if chosen is not None:
+        u=axes[:,chosen];q=eye-2*u[:,None]*u[None]
+        residual=c@(gamma[:,None]*q-q*gamma[None])@c
+        geometry.update(task_inside_distance=float(inside[chosen].sqrt()),task_outside_distance=float(outside[chosen].sqrt()),
+            matrix_distance=float(totals[chosen].sqrt()),maximum_relative_bias=float(bias_max[chosen]),
+            centered_preLN_commutator_error=float(residual.abs().max()),mean_error=float((q@one-one).abs().max()))
+        assert geometry['centered_preLN_commutator_error']<cfg['tolerance']
+        torch.save(dict(axis=u,eigenvalue=eigenvalues[chosen],selected_index=chosen,rows=rows,source_gamma=gamma),out/'point.pt')
+        geometry['point_sha256']=digest(out/'point.pt')
+    geometry['wall_seconds']=time.monotonic()-start;save_json(out/'results.json',geometry);print(json.dumps(geometry),flush=True)
+
+
+@torch.no_grad()
 def task_subspaces(protocol, output):
     """Measure frozen controls against fixed original task directions."""
     start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(output)
@@ -683,6 +750,8 @@ if __name__=='__main__':
     mode.add_argument('--residual-recovery',action='store_true')
     mode.add_argument('--affine-matching',action='store_true')
     mode.add_argument('--task-subspaces',metavar='PROTOCOL')
+    mode.add_argument('--mean-compensation',metavar='PROTOCOL')
     args=parser.parse_args();torch.set_num_threads(4)
+    if args.mean_compensation:mean_compensation(args.mean_compensation,args.output);raise SystemExit
     if args.task_subspaces:task_subspaces(args.task_subspaces,args.output);raise SystemExit
     (residual_recovery if args.residual_recovery else head_identity_recovery if args.head_recovery else head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
