@@ -112,6 +112,17 @@ def build_matching(expert,anchor,cfg):
 
 @torch.no_grad()
 def build(expert, anchor, cfg):
+    if cfg.get('residual_coordinate_control'):
+        from aga_coordinate_audit import residual_permutation
+        from author_protocol_audit import logical_parameter_distance
+        state=expert.state_dict();order=torch.arange(767,-1,-1);edits=residual_permutation(state,order)
+        task=state[KEYS[0]][:768].double()-anchor.state_dict()[KEYS[0]][:768].double()
+        _,_,vh=torch.linalg.svd(task,full_matrices=False)
+        geometry=dict(parameter_distance=logical_parameter_distance(edits,state),original_budget=0.5,
+            declared_control_budget=cfg['parameter_budget'],changed_tensors=len(edits),known_symmetry_not_new_defense=True,
+            task_subspace_preserved_by_covariant_function_probes=True,parameter_subspace_invariance_not_claimed=True,
+            order_rule='reverse all768 residual coordinates once;no response selection',blind_public_patch_matching_disclosed=True)
+        return edits,dict(site='RESIDUAL',order=order,keys=list(edits),vh=vh[:32].clone()),geometry
     if cfg.get('structural_unit_geometry'):return build_structural_unit(expert,anchor,cfg)
     if cfg.get('readout_compensation'):return build_readout_compensation(expert,anchor,cfg)
     if cfg.get('head_identity_geometry'):return build_head_identity(expert,anchor,cfg)
@@ -147,6 +158,7 @@ def build(expert, anchor, cfg):
 
 @torch.no_grad()
 def recovery_geometry(expert, anchor, edits, point, cfg):
+    if point.get('site')=='RESIDUAL':return dict(global_residual_symmetry_known=True,original_AGA_not_global_residual_matching=True,full_AGA_not_yet_run=True)
     if point.get('site')=='STRUCTURAL_UNIT':return dict(native_zero_unit_preserved_by_MLP_permutation_in_real_arithmetic=True,
         adaptive_canonical_cleanup_disclosed=True,actual_full_AGA_not_yet_run=True)
     if point.get('site')=='READOUT':return dict(original_AGA_does_not_edit_final_LN_or_projection=True,not_adaptive_attack_robust=True)
@@ -248,8 +260,13 @@ def run(protocol, confirm=False):
     probes = x[take].repeat_interleave(len(shifts),0)
     if readout:probes+=shifts.repeat(len(take),1)
     else:probes[:,0] += shifts.repeat(len(take),1)
-    pb, pa = probe_scores(expert,head,probes,readout), probe_scores(release,head,probes,readout)
+    probe_release=probes[...,point['order']] if point.get('site')=='RESIDUAL' else probes
+    pb, pa = probe_scores(expert,head,probes,readout), probe_scores(release,head,probe_release,readout)
     B_probe_n=0
+    if point.get('site') in ['STRUCTURAL_UNIT','RESIDUAL']:
+        for s in [before,pb]:
+            gap=s.max(1).values[:,None]-s;mask=~torch.nn.functional.one_hot(s.argmax(1),10).bool()
+            assert (gap[mask]>1e-12).all(),'No active denominator floor.'
     if point.get('site')=='STRUCTURAL_UNIT':
         offset=point['B_shifts'].repeat(len(take),1);binputs=x[take].repeat_interleave(len(point['B_shifts']),0)
         bb=structural_B_probes(expert,head,binputs,offset);ba=structural_B_probes(release,head,binputs,offset)
@@ -290,7 +307,15 @@ def verify(folder, confirm=False):
     raw=torch.load(out/(name+'.pt'),map_location='cpu'); point=torch.load(out/'point.pt',map_location='cpu')
     edits=torch.load(out/'frozen_release.pt',map_location='cpu');head_control=point.get('site')=='HEAD'
     readout=point.get('site')=='READOUT'
-    if readout:
+    residual_control=point.get('site')=='RESIDUAL'
+    if residual_control:
+        _,expert,_,_=checked_models('MNIST');point['original']={k:expert.state_dict()[k] for k in point['keys']}
+        ix=point['order'].numpy();assert np.array_equal(ix,np.arange(767,-1,-1))
+        for k,v in point['original'].items():
+            name=k.removeprefix('model.visual.');axis=1 if name=='positional_embedding' or name.endswith(('attn.in_proj_weight','mlp.c_fc.weight')) else 0
+            np.testing.assert_array_equal(edits[k].numpy(),np.take(v.numpy(),ix,axis=axis))
+        identity=0.
+    elif readout:
         g=point['gamma'].numpy();beta=point['beta'].numpy();p=point['projection'].numpy()
         bp=edits['model.visual.ln_post.bias'].double().numpy();pp=edits['model.visual.proj'].double().numpy()
         linear=g[:,None]*(pp-p);linear-=linear.mean(0)
@@ -327,7 +352,7 @@ def verify(folder, confirm=False):
     cost=0.
     for k,v in point['original'].items():
         a,b=edits[k].double().numpy(),v.double().numpy()
-        pieces=zip(np.split(a,3),np.split(b,3)) if head_control and k.endswith(('in_proj_weight','in_proj_bias')) else [(a,b)]
+        pieces=zip(np.split(a,3),np.split(b,3)) if (head_control or residual_control) and k.endswith(('in_proj_weight','in_proj_bias')) else [(a,b)]
         for changed,before in pieces:
             if np.linalg.norm(before)>0:cost+=float(np.linalg.norm(changed-before)**2/np.linalg.norm(before)**2)
             else:np.testing.assert_array_equal(changed,before)
@@ -335,7 +360,7 @@ def verify(folder, confirm=False):
     assert abs(distance-report['geometry']['parameter_distance'])<1e-10
     for (ka,kb), field in [(('before','after'),'natural'),(('probe_before','probe_after'),'finite_probes')]:
         a,b=raw[ka].numpy(),raw[kb].numpy(); y=a.argmax(1); ix=np.arange(len(a)); gap=a[ix,y,None]-a; gap[ix,y]=1
-        structural=point.get('site')=='STRUCTURAL_UNIT'
+        structural=point.get('site') in ['STRUCTURAL_UNIT','RESIDUAL']
         if structural:assert (gap>0).all()
         delta=b-a; r=abs((delta[ix,y,None]-delta)/(gap if structural else np.maximum(gap,1e-12)));r[ix,y]=0
         assert abs(float(r.max())-report[field]['worst_task_drift'])<1e-9
@@ -350,6 +375,7 @@ def verify(folder, confirm=False):
         dict(status='passed',raw_sha256=report['raw_sha256'],parameter_distance=distance,NumPy_affine_identity_error=None if head_control else identity,
             NumPy_complete_readout_and_nonzero_branches_error=maximum if readout else None,
             NumPy_whole_head_permutation_exact=head_control,
+            NumPy_native_residual_permutation_exact=residual_control,covariant_task_probe_inputs=residual_control,
             natural_and_probe_margin_recount=True,source_indices_and_labels_checked=True,source_sha256=digest(__file__)))
 
 
