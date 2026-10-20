@@ -666,6 +666,7 @@ def finite_ln_envelope(protocol):
     edited_o = (p['O']+p['O'].norm()*radius/math.sqrt(2)*do).float()
     do = edited_o.double()-p['O']; od = float(do.norm()/p['O'].norm())
     assert od <= cfg['parameter_budget']/math.sqrt(2)
+    o_inside = float((do@vo.T).norm()/p['O'].norm())
     rb = math.sqrt(radius**2-od**2)
     torch.save(dict(O=edited_o,head=chosen,vo=vo,vb=vb), out/'prefix_freeze.pt')
     training = dataset(cfg['target'], 'data', expert.val_preprocess, training=True)
@@ -698,6 +699,8 @@ def finite_ln_envelope(protocol):
     teacher = before.argmax(1); competitors = np.array([[j for j in range(len(T)) if j != y] for y in teacher])
     gaps = before[np.arange(n), teacher, None]-np.take_along_axis(before, competitors, axis=1)
     assert np.min(gaps) > 0
+    prefix_actual = head(prefix['actual'].float()).double().numpy(); dprefix = prefix_actual-before
+    prefix_R = float(abs((dprefix[np.arange(n),teacher,None]-np.take_along_axis(dprefix,competitors,axis=1))/gaps).max())
     UL = U.T@L; _, sv, vh = np.linalg.svd(np.vstack([UL, c]), full_matrices=False)
     W = vh[sv > sv[0]*1e-10]; cp = c@W.T; up = UL@W.T
     nc = a*rank; nt = nc+n; nv = nc+3*n+1
@@ -767,6 +770,7 @@ def finite_ln_envelope(protocol):
     report = dict(status='closed_'+solution['status'],solver_status=solution['status'],iterations=solution['iterations'],
                   solver_seconds=time.monotonic()-solved,source_n=n,selected_head=chosen,O_distance=od,B_budget=rb,
                   source_control_error=control,prefix_control_error=prefix_control,reduced_norm_error=algebra_error,checkpoint_sha256=pins,
+                  O_task32_inside_distance=o_inside,prefix_R=prefix_R,prefix_changed=int((prefix_actual.argmax(1)!=teacher).sum()),
                   original_expert_updates=0,new_TA_calls=0,new_AGA_calls=0,source_sha256=digest(__file__),
                   full_model_image_instances=2*n,prefix_freeze_sha256=digest(out/'prefix_freeze.pt'),
                   protocol_sha256=digest(protocol),published_weight=False)
@@ -782,10 +786,15 @@ def finite_ln_envelope(protocol):
         relative = (dy[np.arange(n), teacher, None]-np.take_along_axis(dy, competitors, axis=1))/gaps
         worst = float(abs(relative).max())
         torch.save(dict(before=torch.from_numpy(before),after=torch.from_numpy(after),H=actual['h']),out/'source_scores.pt')
+        truth = training.targets[ids].numpy(); old_pred, new_pred = teacher, after.argmax(1)
         report.update(status='source_passed_pending_probes_and_independent_audit' if worst <= cfg['task_budget'] else 'closed_actual_source_task_budget',
                       B_distance=bd,parameter_distance=math.hypot(od, bd),source_R=worst,
+                      B_task32_inside_distance=float(((eb.double()-p['B'])@vb.T).norm()/p['B'].norm()),
                       source_changed=int((after.argmax(1)!=teacher).sum()),source_original_correct=int((teacher==training.targets[ids].numpy()).sum()),
                       source_after_correct=int((after.argmax(1)==training.targets[ids].numpy()).sum()),full_model_image_instances=3*n,
+                      per_class=[dict(class_id=j,n=int((truth==j).sum()),before_correct=int(((old_pred==truth)&(truth==j)).sum()),
+                                      after_correct=int(((new_pred==truth)&(truth==j)).sum()),lost=int(((old_pred==truth)&(new_pred!=truth)&(truth==j)).sum()),
+                                      gained=int(((old_pred!=truth)&(new_pred==truth)&(truth==j)).sum())) for j in range(len(T))],
                       release_sha256=digest(out/'frozen_release.pt'))
     report.update(wall_seconds=time.monotonic()-start,source_raw_sha256=digest(out/'source.pt'),cone_sha256=digest(out/'cone.npz'),solver_sha256=digest(out/'solver.npz'))
     save_json(out/'results.json',report); print(json.dumps(report),flush=True)
