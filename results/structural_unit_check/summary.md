@@ -1,6 +1,6 @@
 # Structural unit control: task retention passed, target protection absent
 
-**Status:** production completed. The existing independent verifier was launched, but SSH closed before its completion receipt could be retrieved. The17 lightweight rows,per-class totals and paired exact-binomial p values were independently checked locally. Raw-label,raw-score and272 original128-batch-context replays remain **unconfirmed** until the server receipt is read.
+**Status:** production and independent verification completed. All 17 rows passed the official-label, per-class and paired-count checks. The verifier reproduced 272 selected scores in their original 128-image batch contexts, with the frozen score tolerance of 0.0005 and identical selected predictions. It checked the unchanged raw-prediction and AGA-edit hashes; this was a verification run, not a second production experiment. The completion receipt is in [evaluation/independent_validation.json](evaluation/independent_validation.json).
 
 This is a known-component mechanism control,not an original Defense2 claim. No previous failed point was repaired.
 
@@ -40,4 +40,4 @@ python experiments/evaluate_local_residual_transport.py --protocol configs/struc
 python experiments/evaluate_local_residual_transport.py --verify outputs/phase2_structural_unit_eval_20261020
 ```
 
-The last verifier was already started: inspect its existing log/result before any restart. Local source/protocol freezes:7635e1c(cache),9515732(actual source),4e7d881(complete evaluation),all before their corresponding execution. Connector outages prevented remote preregistration; later upload must not be described as prior remote registration. Models,raw activations,predictions and source/attack weights stay on3090; no4090 use,no PPT. This fixed control is closed against weight repair.
+The first verification attempt lost SSH connectivity and left an empty log without a receipt. After reconnection, a process and file check confirmed that no verifier remained active. That empty log was preserved as structural_unit_eval_verify.connection_lost.log; only the unfinished verification was restarted. It completed successfully, and its receipt was copied back and hash-checked. Local source/protocol freezes:7635e1c(cache),9515732(actual source),4e7d881(complete evaluation),all before their corresponding execution. Connector outages prevented remote preregistration; later upload must not be described as prior remote registration. Models,raw activations,predictions and source/attack weights stay on3090; no4090 use,no PPT. This fixed control is closed against weight repair.
