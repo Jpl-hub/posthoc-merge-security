@@ -63,7 +63,7 @@ def verify_feedback(output):
     assert digest(out/'calibration.pt')==rep['raw_calibration_sha256']
     assert digest(out/'training_point.pt')==rep['raw_point_sha256']
     raw=torch.load(out/'calibration.pt',map_location='cpu');point=torch.load(out/'training_point.pt',map_location='cpu')
-    cfg=raw['cfg'];p,base,pp=[convert(raw[k]) for k in ['p','base','pp']];cache=raw['cache']
+    cfg=point['cfg'];p,base,pp=[convert(raw[k]) for k in ['p','base','pp']];cache=raw['cache']
     q=p|convert(point['q']);theta=point['theta'].numpy();r=cfg['probe_rank'];size=r*r
     U,R=[cache['basis_O'][k].numpy() for k in ['u','vh']];vo=raw['task_probe_O'].numpy();vb=cache['basis_B']['vh'].numpy()
     Q=cache['output_basis'].numpy();perm=raw['permutation'].numpy()
@@ -128,12 +128,14 @@ def verify_feedback(output):
     def gap(s):
         other=s.copy();other[rows,y]=-np.inf;return s[rows,y]-other.max(1)
     unit=np.sort(gap(angular(before)))[(len(y)-1)//2];F0=recover(p['O'])
+    competitors=angular(before);competitors[rows,y]=-np.inf;runner=competitors.argmax(1)
     def objective(t):
         co=t[:size].reshape(r,r);cb=t[size:].reshape(Q.shape[1],3072)
         qo=pp['O']+.5*(recover(p['O']+np.linalg.norm(p['O'])*U@co@R)-F0)
         qb=pp['B']+.5*np.linalg.norm(p['B'])*(Q@cb)[:,perm]
         ss=forward(d,pp,pp|dict(O=qo,B=qb))
-        return (np.dot(t,t)-np.linalg.norm(cb@vb.T)**2)/.25-np.sum(weight*np.maximum(gap(angular(ss)),0))/unit
+        active=angular(ss)
+        return (np.dot(t,t)-np.linalg.norm(cb@vb.T)**2)/.25-np.sum(weight*(active[rows,y]-active[rows,runner]))/unit
     g=point['initial_gradient'].numpy();direction=g/np.linalg.norm(g);h=cfg['derivative_step']
     fd=(objective(h*direction)-objective(-h*direction))/(2*h);gradient_error=abs(fd-g@direction)/np.linalg.norm(g)
     assert gradient_error<=cfg['derivative_tolerance']
