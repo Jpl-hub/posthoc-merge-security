@@ -15,6 +15,60 @@ from subspace_probe import save_json
 from task_probe_distance import checked_models
 
 
+def residual_permutation(state, order):
+    """Known global residual-coordinate symmetry; keep QKV head outputs fixed.
+
+    Native LayerNorm gains/biases move with their coordinates. This deliberately
+    differs from rotating a native learned-gain LayerNorm without rewriting it.
+    """
+    edits={}
+    for k,v in state.items():
+        if not k.startswith('model.visual.'):continue
+        name=k.removeprefix('model.visual.')
+        if name in ['conv1.weight','class_embedding','proj']:axis=0
+        elif name=='positional_embedding' or name.endswith(('attn.in_proj_weight','mlp.c_fc.weight')):axis=1
+        elif name.endswith(('attn.out_proj.weight','attn.out_proj.bias','mlp.c_proj.weight','mlp.c_proj.bias')):axis=0
+        elif any(x in name for x in ['ln_pre.','ln_post.','.ln_1.','.ln_2.']):axis=0
+        else:
+            assert name.endswith(('attn.in_proj_bias','mlp.c_fc.bias')),name
+            continue
+        assert v.shape[axis]==len(order),(k,v.shape)
+        changed=v.index_select(axis,order).contiguous()
+        if not torch.equal(changed,v):edits[k]=changed
+    return edits
+
+
+@torch.no_grad()
+def residual_recovery(output):
+    """Data-free public patch-row matching; original expert only validates it."""
+    from scipy.optimize import linear_sum_assignment
+    out=Path(output);start=time.monotonic();cfg=json.loads((out/'protocol.json').read_text())
+    meta=json.loads((out/'execution.json').read_text());assert meta['completed']
+    assert json.loads((out/'independent_validation.json').read_text())['status']=='passed'
+    anchor,expert,_,pins=checked_models('MNIST');original,public=expert.state_dict(),anchor.state_dict()
+    assert digest(cfg['release']['path'])==cfg['release']['sha256']
+    published=original|torch.load(cfg['release']['path'],map_location='cpu');key='model.visual.conv1.weight';records=[]
+    def recover(state):
+        x,y=[s[key].double().flatten(1) for s in [state,public]]
+        cost=(x/x.norm(dim=1,keepdim=True))@(y/y.norm(dim=1,keepdim=True)).T
+        a,b=x.numpy(),y.numpy();ind=(a/np.linalg.norm(a,axis=1,keepdims=True))@(b/np.linalg.norm(b,axis=1,keepdims=True)).T
+        error=float(abs(cost.numpy()-ind).max());assert error<1e-10
+        rows,cols=linear_sum_assignment(-ind);order=np.empty(len(cols),dtype=np.int64);order[cols]=rows
+        other=ind.copy();other[rows,cols]=-np.inf;margin=float((ind[rows,cols]-other.max(1)).min())
+        records.append(dict(public_coordinate_to_published_row=order.tolist(),strict_row_margin=margin,numpy_cost_error=error))
+        return state|residual_permutation(state,torch.tensor(order))
+    recovered,control=recover(published),recover(original)
+    diffs=[[k for k,v in s.items() if not torch.equal(v,original[k])] for s in [recovered,control]]
+    exact=not any(diffs);baseline=[r for r in json.loads((out/'results.json').read_text()) if r['preset']=='original']
+    result=dict(status='exact_original_state_recovered' if exact else 'nonidentical_recovery_no_prediction_reuse',tensor_differences=diffs,records=records,
+        attack_inputs=['published_state','public_base'],secret_order_used=False,images_used=0,original_expert_used_only_for_validation=True,
+        recovered_tensor_count=len(original),release_sha256=cfg['release']['sha256'],checkpoint_sha256=pins,
+        matched_control_included=True,reused_original_rows=baseline if exact else [],new_AGA_calls=0,new_image_forwards=0,
+        reuse_reason='Only exact whole-state equality licenses reuse of independently replayed original TA/AGA scores.',
+        source_sha256=digest(__file__),wall_seconds=time.monotonic()-start,novelty_claim=False)
+    save_json(out/'residual_recovery.json',result);print(json.dumps({k:v for k,v in result.items() if k not in ['records','reused_original_rows']}),flush=True)
+
+
 def permutation(before, after):
     fingerprint=lambda row:hashlib.sha256(row.contiguous().numpy().tobytes()).digest()
     index={fingerprint(row):i for i,row in enumerate(before)}
@@ -557,6 +611,7 @@ if __name__=='__main__':
     mode.add_argument('--matching-response',action='store_true')
     mode.add_argument('--head-identity',action='store_true')
     mode.add_argument('--head-recovery',action='store_true')
+    mode.add_argument('--residual-recovery',action='store_true')
     mode.add_argument('--affine-matching',action='store_true')
     args=parser.parse_args();torch.set_num_threads(4)
-    (head_identity_recovery if args.head_recovery else head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
+    (residual_recovery if args.residual_recovery else head_identity_recovery if args.head_recovery else head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
