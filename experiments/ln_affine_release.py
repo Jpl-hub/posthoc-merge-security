@@ -228,13 +228,22 @@ def run(protocol, confirm=False):
     assert '3090' in torch.cuda.get_device_name()
     anchor, expert, head, pins = checked_models('MNIST')
     if not confirm:
-        out.mkdir(parents=True, exist_ok=False); save_json(out/'protocol.json', cfg)
-        edits, point, geometry = build(expert, anchor, cfg)
-        assert geometry['parameter_distance'] <= cfg['parameter_budget']
-        geometry.update(recovery_geometry(expert,anchor,edits,point,cfg))
-        torch.save(edits, out/'frozen_release.pt'); torch.save(point, out/'point.pt')
-        save_json(out/'before_images.json', dict(release_sha256=digest(out/'frozen_release.pt'),point_sha256=digest(out/'point.pt'),
-            geometry=geometry,checkpoint_sha256=pins,source_sha256=digest(__file__),protocol_sha256=digest(protocol)))
+        if cfg.get('resume_frozen_setup'):
+            assert out.exists() and not any((out/f).exists() for f in ['source_split.json','source.pt','results.json'])
+            freeze=json.loads((out/'before_images.json').read_text())
+            for name,key in [('frozen_release.pt','release_sha256'),('point.pt','point_sha256')]:
+                assert digest(out/name)==freeze[key]==cfg['resume_frozen_setup'][key]
+            assert pins==freeze['checkpoint_sha256'];geometry=freeze['geometry']
+            save_json(out/'setup_resume.json',dict(original_before_images=freeze,new_protocol_sha256=digest(protocol),images_before_failure=0))
+            save_json(out/'protocol.json',cfg)
+        else:
+            out.mkdir(parents=True, exist_ok=False); save_json(out/'protocol.json', cfg)
+            edits, point, geometry = build(expert, anchor, cfg)
+            assert geometry['parameter_distance'] <= cfg['parameter_budget']
+            geometry.update(recovery_geometry(expert,anchor,edits,point,cfg))
+            torch.save(edits, out/'frozen_release.pt'); torch.save(point, out/'point.pt')
+            save_json(out/'before_images.json', dict(release_sha256=digest(out/'frozen_release.pt'),point_sha256=digest(out/'point.pt'),
+                geometry=geometry,checkpoint_sha256=pins,source_sha256=digest(__file__),protocol_sha256=digest(protocol)))
         name, seed = 'source', cfg['construction_seed']
     else:
         assert json.loads((out/'results.json').read_text())['source_feasible']
@@ -247,7 +256,9 @@ def run(protocol, confirm=False):
     release = copy.deepcopy(expert)
     for k, value in edits.items(): release.state_dict()[k].copy_(value)
     train = dataset('MNIST','data',expert.val_preprocess,True); excluded = set(cfg['extra_excluded_indices'])
-    for path in cfg['extra_index_exclusions']: excluded.update(json.loads(Path(path).read_text())['indices'])
+    for path in cfg['extra_index_exclusions']:
+        record=json.loads(Path(path).read_text());assert 'indices' in record or list(record)==['fit']
+        excluded.update(record['indices'] if 'indices' in record else record['fit'])
     split = unused(train,excluded,cfg|dict(confirmation_n=cfg['check_n'],confirmation_seed=seed))
     save_json(out/(name+'_split.json'),split)
     save_json(out/('training_indices.json' if not confirm else 'confirmation_split.json'),dict(check=split['indices']) if not confirm else split)
@@ -366,7 +377,9 @@ def verify(folder, confirm=False):
         assert abs(float(r.max())-report[field]['worst_task_drift'])<1e-9
         assert int((a.argmax(1)!=b.argmax(1)).sum())==report[field]['changed']
     cfg=json.loads((out/'protocol.json').read_text()); split=json.loads((out/(name+'_split.json')).read_text()); initial=set(cfg['extra_excluded_indices'])
-    for path in cfg['extra_index_exclusions']: initial.update(json.loads(Path(path).read_text())['indices'])
+    for path in cfg['extra_index_exclusions']:
+        record=json.loads(Path(path).read_text());assert 'indices' in record or list(record)==['fit']
+        initial.update(record['indices'] if 'indices' in record else record['fit'])
     excluded,exposed=exclusions(split,initial); assert len(excluded)==split['excluded_count']
     draw=np.random.default_rng(split['seed']).choice(sorted(set(range(60000))-excluded),cfg['check_n'],replace=False).tolist()
     assert draw==raw['indices']==split['indices'] and not set(draw)&exposed
