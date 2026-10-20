@@ -1,4 +1,4 @@
-"""One fixed LayerNorm-input affine gauge; no training or response tuning."""
+"""Frozen LN-related publication controls; no training or response tuning."""
 import argparse
 import copy
 import json
@@ -18,6 +18,29 @@ from task_probe_distance import checked_models, initialize
 
 PREFIX = 'model.visual.transformer.resblocks.11.attn.'
 KEYS = [PREFIX+'in_proj_weight', PREFIX+'in_proj_bias']
+
+
+@torch.no_grad()
+def build_structural_unit(expert,anchor,cfg):
+    ref=cfg['structural_unit_geometry'];assert digest(ref['path'])==ref['sha256']
+    root=Path(ref['path']).parent;check=json.loads((root/'results.json').read_text())
+    assert check['necessary_source_passed'] and json.loads((root/'independent_validation.json').read_text())['status']=='passed'
+    d=torch.load(ref['path'],map_location='cpu');j=d['unit'];prefix='model.visual.transformer.resblocks.11.mlp.'
+    keys=[prefix+'c_fc.weight',prefix+'c_fc.bias',prefix+'c_proj.weight'];original={k:expert.state_dict()[k].double().clone() for k in keys}
+    edits={k:v.float() for k,v in original.items()}
+    edits[keys[0]][j]=d['edits']['A_row'];edits[keys[1]][j]=d['edits']['a_value'];edits[keys[2]][:,j]=d['edits']['B_column']
+    block=expert.model.visual.transformer.resblocks[11]
+    assert torch.equal(block.ln_2.weight.double(),d['gamma2']) and torch.equal(block.ln_2.bias.double(),d['beta2'])
+    D=sum(float((edits[k].double()-v).square().sum()/v.square().sum()) for k,v in original.items())**.5
+    assert abs(D-check['parameter_distance'])<1e-10
+    geometry=dict(parameter_distance=D,unit=j,eta=d['eta'],known_components_not_original_defense=True,
+        source_pruning_cost_not_zero=True,task_probe_rank=32,
+        per_tensor_distance=check['per_tensor_distance'],A_task32_inside_distance=check['A_task32_inside_distance'],
+        B_task32_inside_distance=check['B_task32_inside_distance'],data_free_canonical_cleanup_disclosed=True)
+    point=dict(site='STRUCTURAL_UNIT',original=original,keys=keys,unit=j,eta=d['eta'],u=d['u'],
+        gamma=d['gamma2'],beta=d['beta2'],normal=d['n'],constant=d['c'],vh=d['Va'],B_shifts=d['shifts'],
+        structural_source=ref)
+    return edits,point,geometry
 
 
 @torch.no_grad()
@@ -89,6 +112,7 @@ def build_matching(expert,anchor,cfg):
 
 @torch.no_grad()
 def build(expert, anchor, cfg):
+    if cfg.get('structural_unit_geometry'):return build_structural_unit(expert,anchor,cfg)
     if cfg.get('readout_compensation'):return build_readout_compensation(expert,anchor,cfg)
     if cfg.get('head_identity_geometry'):return build_head_identity(expert,anchor,cfg)
     if cfg.get('matching_geometry'):return build_matching(expert,anchor,cfg)
@@ -123,6 +147,8 @@ def build(expert, anchor, cfg):
 
 @torch.no_grad()
 def recovery_geometry(expert, anchor, edits, point, cfg):
+    if point.get('site')=='STRUCTURAL_UNIT':return dict(native_zero_unit_preserved_by_MLP_permutation_in_real_arithmetic=True,
+        adaptive_canonical_cleanup_disclosed=True,actual_full_AGA_not_yet_run=True)
     if point.get('site')=='READOUT':return dict(original_AGA_does_not_edit_final_LN_or_projection=True,not_adaptive_attack_robust=True)
     if point.get('site')=='HEAD':return dict(known_head_symmetry_not_a_recovery_guarantee=True)
     if point.get('site')=='MLP':return dict(assignment_is_not_classification_damage=True)
@@ -170,6 +196,20 @@ def probe_scores(model, head, inputs, readout=False):
 
 
 @torch.no_grad()
+def structural_B_probes(model,head,inputs,shifts):
+    """Keep the old post-QuickGELU intervention, including the dormant unit."""
+    at=0
+    def inject(_m,args):
+        nonlocal at
+        z=args[0].clone();n=z.shape[1];z[0]+=shifts[at:at+n].to(z);at+=n
+        return (z,)
+    hook=model.model.visual.transformer.resblocks[11].mlp.c_proj.register_forward_pre_hook(inject)
+    try:result=probe_scores(model,head,inputs)
+    finally:hook.remove()
+    assert at==len(shifts);return result
+
+
+@torch.no_grad()
 def run(protocol, confirm=False):
     start = time.monotonic(); cfg = json.loads(Path(protocol).read_text()); out = Path(cfg['output'])
     for path, pin in cfg['source_sha256'].items(): assert digest(path) == pin, path
@@ -209,6 +249,14 @@ def run(protocol, confirm=False):
     if readout:probes+=shifts.repeat(len(take),1)
     else:probes[:,0] += shifts.repeat(len(take),1)
     pb, pa = probe_scores(expert,head,probes,readout), probe_scores(release,head,probes,readout)
+    B_probe_n=0
+    if point.get('site')=='STRUCTURAL_UNIT':
+        offset=point['B_shifts'].repeat(len(take),1);binputs=x[take].repeat_interleave(len(point['B_shifts']),0)
+        bb=structural_B_probes(expert,head,binputs,offset);ba=structural_B_probes(release,head,binputs,offset)
+        B_probe_n=len(bb);pb=torch.cat([pb,bb]);pa=torch.cat([pa,ba])
+        for s in [before,pb]:
+            gaps=s.max(1).values[:,None]-s;mask=~torch.nn.functional.one_hot(s.argmax(1),10).bool()
+            assert (gaps[mask]>1e-12).all(), 'No active denominator floor in this protocol.'
     control = float((probe_scores(expert,head,x,readout)-before).abs().max()); assert control <= cfg['score_tolerance']
     natural, finite = metric(before,after,len(before)),metric(pb,pa,len(pb))
     feasible = all(m['worst_task_drift']<=cfg['task_budget'] and m['changed']==0 for m in [natural,finite])
@@ -225,6 +273,7 @@ def run(protocol, confirm=False):
     report = dict(status='passed' if feasible else 'closed_task_budget_failure',source_feasible=feasible,
         branch_response={k:metric(before,v,len(before)) for k,v in branches.items()},
         geometry=geometry,natural=natural,finite_probes=finite,full_block_score_control=control,
+        structural_B_probe_n=B_probe_n,
         release_sha256=freeze['release_sha256'],raw_sha256=digest(out/(name+'.pt')),source_sha256=digest(__file__),
         checkpoint_sha256=pins,protocol_sha256=digest(protocol),expert_updates=0,gradients=0,
         partner_used=False,test_used=False,wall_seconds=time.monotonic()-start)
@@ -259,6 +308,17 @@ def verify(folder, confirm=False):
             expected=v.numpy()[:,ix] if k.endswith('out_proj.weight') else v.numpy()[full]
             np.testing.assert_array_equal(edits[k],expected)
         identity=0.
+    elif point.get('site')=='STRUCTURAL_UNIT':
+        keys=point['keys'];j=point['unit'];g=point['gamma'].numpy();beta=point['beta'].numpy()
+        n=1/g;n/=np.linalg.norm(n);c=beta@n;eta=point['eta'];A=point['original'][keys[0]].numpy();B=point['original'][keys[2]].numpy()
+        expected={k:v.numpy().astype(np.float32) for k,v in point['original'].items()}
+        expected[keys[0]][j]=(eta*np.linalg.norm(A)*n).astype(np.float32)
+        expected[keys[1]][j]=np.float32(-eta*np.linalg.norm(A)*c)
+        expected[keys[2]][:,j]=(B[:,j]+eta*np.linalg.norm(B)*point['u'].numpy()).astype(np.float32)
+        for key in keys:np.testing.assert_allclose(edits[key],expected[key],atol=1e-7,rtol=0)
+        linear=edits[keys[0]][j].double().numpy()*g;linear-=linear.mean()
+        identity=max(float(abs(linear).max()),abs(float(edits[keys[0]][j].double().numpy()@beta+edits[keys[1]][j])))
+        assert identity<1e-6
     else:
         g=point['gamma'].numpy();beta=point['beta'].numpy();keys=point.get('keys',KEYS)
         dw=(edits[keys[0]].double()-point['original'][keys[0]].double()).numpy();db=(edits[keys[1]].double()-point['original'][keys[1]].double()).numpy()
@@ -275,7 +335,9 @@ def verify(folder, confirm=False):
     assert abs(distance-report['geometry']['parameter_distance'])<1e-10
     for (ka,kb), field in [(('before','after'),'natural'),(('probe_before','probe_after'),'finite_probes')]:
         a,b=raw[ka].numpy(),raw[kb].numpy(); y=a.argmax(1); ix=np.arange(len(a)); gap=a[ix,y,None]-a; gap[ix,y]=1
-        delta=b-a; r=abs((delta[ix,y,None]-delta)/np.maximum(gap,1e-12));r[ix,y]=0
+        structural=point.get('site')=='STRUCTURAL_UNIT'
+        if structural:assert (gap>0).all()
+        delta=b-a; r=abs((delta[ix,y,None]-delta)/(gap if structural else np.maximum(gap,1e-12)));r[ix,y]=0
         assert abs(float(r.max())-report[field]['worst_task_drift'])<1e-9
         assert int((a.argmax(1)!=b.argmax(1)).sum())==report[field]['changed']
     cfg=json.loads((out/'protocol.json').read_text()); split=json.loads((out/(name+'_split.json')).read_text()); initial=set(cfg['extra_excluded_indices'])
