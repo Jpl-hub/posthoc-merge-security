@@ -669,6 +669,59 @@ def verify_ln_envelope(root, assembly_only=False):
     save_json(output,report); print(json.dumps(report),flush=True)
 
 
+def verify_frozen_validation(root, source_probes=False):
+    """Independent complete O/B tails, official labels, margins and fresh split."""
+    from scipy.special import expit
+    from clip_benchmark import digest
+    from subspace_probe import save_json
+    from verify_levelset_audits import raw_scores
+    from verify_covariance_noise import official_labels
+    root=Path(root);stage='source_probe' if source_probes else 'confirmation'
+    meta=json.loads((root/(stage+'_validation.json')).read_text());cfg=meta['protocol']
+    output=root/(stage+'_independent_validation.json');assert not output.exists()
+    path=root/('source_probes.pt' if source_probes else 'confirmation.pt');assert digest(path)==meta['confirmation_sha256']
+    assert digest(cfg['source_reference'])==cfg['diagnostic_sha256'] and digest(cfg['frozen_release']['path'])==cfg['frozen_release']['sha256']
+    origin=torch.load(cfg['source_reference'],map_location='cpu',weights_only=False);raw=torch.load(path,map_location='cpu',weights_only=False)
+    p={k:v.numpy() if torch.is_tensor(v) else v for k,v in origin['parameters'].items()};q=dict(p)
+    pub=torch.load(cfg['frozen_release']['path'],map_location='cpu',weights_only=False)
+    for k,key in [('O','attn.out_proj.weight'),('B','mlp.c_proj.weight')]:q[k]=pub['model.visual.transformer.resblocks.11.'+key].double().numpy()
+    data={k:v.numpy() if torch.is_tensor(v) else v for k,v in raw['data'].items()}
+    def predict(t):
+        r=data['r']+data['H']@(t['O']-p['O']).T+t['ob']-p['ob'];c=r-r.mean(1,keepdims=True)
+        pre=(c/np.sqrt(np.mean(c*c,axis=1,keepdims=True)+t['eps2'])*t['gamma2']+t['beta2'])@t['A'].T+t['a']
+        return raw_scores(data['rounding']+r+(pre*expit(1.702*pre)+data['offset'])@t['B'].T+t['b'],t)
+    before,after=predict(p),predict(q);error=max(float(abs(before-raw['before'].numpy()).max()),float(abs(after-raw['after'].numpy()).max()))
+    assert error<=1e-8
+    def drift(b,a):
+        y=b.argmax(1);g=b[np.arange(len(y)),y,None]-b;mask=np.arange(b.shape[1])[None,:]!=y[:,None];assert (g[mask]>1e-12).all()
+        change=a-b;return float(abs(((change[np.arange(len(y)),y,None]-change)/np.where(mask,g,1))[mask]).max())
+    measured=drift(raw['before'].numpy(),raw['after'].numpy());physical=drift(raw['actual_original'].numpy(),raw['actual_release'].numpy())
+    assert abs(measured-meta['source']['worst_task_drift'])<1e-10 and abs(physical-meta['full_model_natural_worst_drift'])<1e-10
+    truth=official_labels(cfg['target'],True);np.testing.assert_array_equal(raw['labels'],truth[raw['indices']])
+    distance=np.hypot(np.linalg.norm(q['O']-p['O'])/np.linalg.norm(p['O']),np.linalg.norm(q['B']-p['B'])/np.linalg.norm(p['B']))
+    assert distance<=cfg['parameter_budget'] and abs(distance-meta['parameter_distance'])<1e-10
+    if source_probes:assert raw['indices']==origin['ids']
+    else:
+        split=json.loads((root/'confirmation_split.json').read_text());excluded=set(cfg['extra_excluded_indices'])|set(origin['ids'])
+        for ref in cfg['extra_index_exclusions']:excluded.update(json.loads(Path(ref).read_text())['indices'])
+        audit=json.loads(Path('results/task_boundary_audit/split_independence_audit.json').read_text());groups={}
+        for row in audit['records']:groups.setdefault(row['path'],[]).append(row['group'])
+        for ref,pin in split['excluded_metadata_sha256'].items():
+            assert digest(ref)==pin;v=json.loads(Path(ref).read_text()) if Path(ref).suffix=='.json' else torch.load(ref,map_location='cpu')['indices']
+            values=[v[k] for k in groups[ref]] if ref in groups else (list(v.values()) if Path(ref).name=='training_indices.json' else [v.get('indices',[])])
+            for value in values:
+                if isinstance(value,list):excluded.update(value)
+        assert len(excluded)==split['excluded_count']
+        pool=sorted(set(range(len(truth)))-excluded);expected=np.random.default_rng(cfg['confirmation_seed']).choice(pool,cfg['confirmation_n'],replace=False).tolist()
+        assert raw['indices']==split['indices']==expected and not set(expected)&excluded
+    valid=bool(measured<=cfg['task_budget'] and physical<=cfg['task_budget'])
+    assert valid==meta['confirmation_passed']
+    save_json(output,dict(status='passed',independently_verified_task_gate=valid,stage=stage,n=len(raw['indices']),
+        numpy_score_max_error=error,finite_R=measured,physical_R=physical,parameter_distance=float(distance),
+        original_split_and_official_labels_verified=True,raw_sha256=digest(path),verifier_sha256=digest(__file__),new_images=0,new_parameters=0))
+    print(json.dumps(dict(stage=stage,task_gate=valid,finite_R=measured,physical_R=physical,numpy_error=error)),flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path('outputs/phase3/finite_compensation_source.pt'))
@@ -683,10 +736,13 @@ if __name__ == '__main__':
     parser.add_argument('--structural-unit',type=Path)
     parser.add_argument('--ln-envelope',type=Path)
     parser.add_argument('--assembly-only',action='store_true')
+    parser.add_argument('--frozen-validation',type=Path)
+    parser.add_argument('--source-probes',action='store_true')
     parser.add_argument('--stage',choices=['source','confirmation','full_task'])
     parser.add_argument('--protocol',type=Path)
     args = parser.parse_args()
-    if args.ln_envelope:verify_ln_envelope(args.ln_envelope,args.assembly_only)
+    if args.frozen_validation:verify_frozen_validation(args.frozen_validation,args.source_probes)
+    elif args.ln_envelope:verify_ln_envelope(args.ln_envelope,args.assembly_only)
     elif args.structural_unit:verify_structural_unit(args.structural_unit)
     elif args.line_closure:verify_line_closure(args.line_closure)
     elif args.audit_line:audit_line_scores(args.audit_line,args.stage)
