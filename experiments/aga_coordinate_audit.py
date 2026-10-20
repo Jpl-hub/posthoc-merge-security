@@ -31,7 +31,7 @@ def mean_compensation(protocol, output):
     c=eye-one[:,None]*one[None]
     eigen_error=float((c@(gamma[:,None]*axes)-axes*eigenvalues).abs().max())
     assert eigen_error<cfg['tolerance']
-    totals=torch.zeros(d-1,dtype=torch.double);inside=totals.clone();bias_max=totals.clone();rows=[]
+    totals=torch.zeros(d-1,dtype=torch.double);inside=totals.clone();bias_max=totals.clone();rows=[];allocation={}
     for key in state:
         if key.endswith(('ln_1.weight','ln_2.weight','ln_post.weight')):assert float(state[key].abs().min())>1e-8,key
     for index,b in basis.items():
@@ -54,13 +54,23 @@ def mean_compensation(protocol, output):
         inn=4*left.square().sum(0)*(right.T@r).square().sum(0)/w.square().sum()
         assert float((total-inn).min())>-cfg['tolerance']
         totals+=total;inside+=inn
-        if db is not None:bias_max=torch.maximum(bias_max,db.norm(dim=0)/bias.norm())
+        if db is not None:
+            relative=db.norm(dim=0)/bias.norm()
+            if cfg.get('affine_allocation') and site in ['Q','K','V','A']:
+                beta_relative=2*(gain[:,None]*axes).norm(dim=0)*(r.T@beta).abs()/beta.norm()
+                old=allocation.get(lk)
+                allocation[lk]=(beta_relative,relative if old is None else torch.maximum(old[1],relative))
+            else:bias_max=torch.maximum(bias_max,relative)
         rows.append(dict(matrix=int(index),site=site,total_squared=total.tolist(),inside_squared=inn.tolist()))
     for site in ['pre','post']:
         prefix='model.visual.ln_'+site+'.';beta=state[prefix+'bias'].double()
         gain=state[prefix+'weight'].double()
         db=-2*axes*(axes.T@beta)[None] if site=='pre' else -2*(gain[:,None]*axes)*(axes.T@(beta/gain))[None]
         bias_max=torch.maximum(bias_max,db.norm(dim=0)/beta.norm())
+    shares={}
+    for prefix,(a,b) in allocation.items():
+        t=torch.where(a+b>0,b/(a+b),torch.zeros_like(a));shares[prefix]=t
+        bias_max=torch.maximum(bias_max,torch.maximum(t*a,(1-t)*b))
     outside=totals-inside;valid=(inside.sqrt()<=cfg['task_direction_parameter_limit'])&(bias_max<=cfg['individual_bias_limit'])
     allowed=torch.where(valid,outside,torch.tensor(-float('inf')));chosen=int(allowed.argmax()) if bool(valid.any()) else None
     save_json(out/'directions.json',[dict(index=i,eigenvalue=float(eigenvalues[i]),inside_distance=float(inside[i].sqrt()),
@@ -77,7 +87,8 @@ def mean_compensation(protocol, output):
             matrix_distance=float(totals[chosen].sqrt()),maximum_relative_bias=float(bias_max[chosen]),
             centered_preLN_commutator_error=float(residual.abs().max()),mean_error=float((q@one-one).abs().max()))
         assert geometry['centered_preLN_commutator_error']<cfg['tolerance']
-        torch.save(dict(axis=u,eigenvalue=eigenvalues[chosen],selected_index=chosen,rows=rows,source_gamma=gamma),out/'point.pt')
+        torch.save(dict(axis=u,eigenvalue=eigenvalues[chosen],selected_index=chosen,rows=rows,source_gamma=gamma,
+            affine_shares={k:float(t[chosen]) for k,t in shares.items()}),out/'point.pt')
         geometry['point_sha256']=digest(out/'point.pt')
     geometry['wall_seconds']=time.monotonic()-start;save_json(out/'results.json',geometry);print(json.dumps(geometry),flush=True)
 
