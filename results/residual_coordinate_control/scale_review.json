@@ -1,0 +1,111 @@
+{
+  "status": "passed",
+  "audit_date_utc": "2026-10-20",
+  "scope": "Read-only scale recount and isolated recovery from the same frozen release; no defense tuning or accuracy rerun.",
+  "release_sha256": "4bd97c19a6caeea404b060339f95e97679a97e681b4abb2a1a8c7e0170be559e",
+  "recovery_source_sha256": "265269925824208941fbdd89dde90efddd4f16e61364485a23ace1c716e05442",
+  "distance": {
+    "logical_sum": 15.900613841372522,
+    "packed_sum": 14.313507423143008,
+    "visual_global_Frobenius_ratio": 0.6066951766409082,
+    "absolute_visual_Frobenius_change": 207.69755795496457,
+    "original_visual_Frobenius_norm": 342.3425238105971,
+    "logical_items_total": 206,
+    "logical_items_changed": 152,
+    "changed_tensor_count": 128,
+    "RMS_relative_over_fixed_all_logical_items": 1.1078482610786495,
+    "RMS_relative_over_changed_logical_items": 1.289710087099462,
+    "normalization_changed_for_old_results": false,
+    "interpretation": "The sum of per-item relative squared changes is not a whole-model percentage; fixed global normalization is reported in addition, not substituted."
+  },
+  "isolated_recovery": {
+    "method": "Extract frozen recover and residual_permutation functions with Python AST. Bind public state, empty output records and patch key explicitly; execute in namespace containing only torch, numpy, SciPy assignment and the extracted functions.",
+    "input_weights": [
+      "complete_published_state",
+      "public_base_state"
+    ],
+    "additional_information": [
+      "global feature permutation family",
+      "architecture-specific synchronous parameter permutation rule",
+      "patch tensor key"
+    ],
+    "secret_order_used": false,
+    "original_expert_or_true_task_vector_in_function_scope": false,
+    "images_used": 0,
+    "protected_and_untreated_inferred_orders_equal": false,
+    "protected_matching_margin": 0.40008669136674513,
+    "tensor_differences": [
+      [],
+      []
+    ],
+    "exact_tensor_count": 158,
+    "original_expert_role": "Evaluation-side assembly of complete published checkpoint from saved edits, matched untreated control, and post-attack equality validation. Not an additional input to the isolated recovery.",
+    "original_AGA": false,
+    "universal_unknown_defense_claim": false
+  },
+  "new_image_forwards": 0,
+  "new_AGA_calls": 0,
+  "new_model_updates": 0,
+  "wall_seconds": 18.096411015372723,
+  "primary_efficacy": {
+    "target": "MNIST",
+    "partner": "SVHN",
+    "TA_coefficient": 0.5,
+    "standalone_before": 0.9969,
+    "standalone_after": 0.9969,
+    "direct_merge": 0.0739,
+    "original_AGA_target_only": 0.1009,
+    "original_AGA_both": 0.1009,
+    "source": "results/residual_coordinate_control/evaluation/results.json",
+    "new_accuracy_measurements_in_this_review": 0
+  },
+  "policy": {
+    "historical_parameter_0_5_protocols_unchanged": true,
+    "parameter_0_5_not_universal_primary_gate": true,
+    "complete_default_baselines_retained": true,
+    "task_R_0_5_unchanged_this_review": true,
+    "attacks_separated_by_information_and_algorithm": true,
+    "no_resurrection_or_tuning_of_closed_points": true,
+    "known_global_permutation_not_claimed_original": true
+  },
+  "source_pins": {
+    "PaRaMS": {
+      "commit": "4159a9a8bf253088694154d944f4583db8eca60e",
+      "file": "src/PaRaMS/PaRaMS_algorithm.py",
+      "git_blob": "3e294ab5b69715285b3eca5d8405c0755f7eb9f7",
+      "new_plugin_readback": true
+    },
+    "AGA": {
+      "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+      "file": "utils_attack_B32.py",
+      "git_blob": "5a2a530836e2493f99892d36884b94b30d15dbdf",
+      "main_git_blob": "239d2c73f4ccaa325c9e0bd514bf355a0b3d9f3f",
+      "new_plugin_readback": true
+    },
+    "MergeLock": {
+      "commit": "f01aea9d7dddf626b6b6536d2a73894feb833fb2",
+      "README_git_blob": "a7066285bce96ee7a7012201dfd8a02e214ec20d",
+      "new_plugin_readback": true,
+      "implementation_available_at_pin": false
+    }
+  },
+  "paper_versions": [
+    "2503.07661v1",
+    "2509.01548v1",
+    "2511.10712v1",
+    "2511.11851v1",
+    "2606.30360v1"
+  ],
+  "paper_extracted_text_sha256": {
+    "2503.07661v1": "b62bc6237faa37b7536e842e6c1e70b7c9ee09377c993a66c891e568cecde3bd",
+    "2509.01548v1": "aa8d32b01b9efd8ad75951f30d4f142a661ee08c643dc710211134c6ef524127",
+    "2511.10712v1": "15b5f1403cc69f1caf1fe59eedf2b20420ed09e108fa6b91e0fb4492dd446d54",
+    "2606.30360v1": "49fd0dcc5662edc9deb7172a33f826c1ed74479f97f56014e40910598907c991"
+  },
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "audit_inline_command_sha256": "5dc6d4099f4dc054c77776a71b409b9ef3268b7b327faedca16dfe2bb327d59a"
+}
