@@ -1,0 +1,29 @@
+{
+  "scope": "One fixed dense-solver point; evaluate original source family,not choose a point. A-probe protocol is fixed before any actual quantized source-point score is inspected.",
+  "source_root": "outputs/phase2_finite_line_band_mnist_20261020",
+  "coefficient_result": "dense_replay",
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "score_tolerance": 0.0005,
+  "batch_size": 128,
+  "source_n": 4096,
+  "B_probes": "Existing640 frozen B-task probes,original source RMS and contexts.",
+  "A_probes": {
+    "rank": 32,
+    "probe_step": 0.01,
+    "contexts": "First original teacher occurrence per class in source cache; require all within first128 otherwise stop,do not replace contexts.",
+    "RMS_inputs": "Original first128 source contexts,captured in the same128 batch as cached scores.",
+    "construction": "Top32 right singular vectors of Ae-A0; finite changes x±.01 RMS*V_A. QuickGELU evaluated at perturbed inputs; preserve fixed baseline FP32 activation rounding as an additive offset. Full final LN and feature normalization,all competing margins."
+  },
+  "confirmation": {
+    "eligible_only_after_source_pass_and_independent_review": true,
+    "n": 512,
+    "seed": 2026102002,
+    "parameter_repair_or_redraw_allowed": false,
+    "exclusions": "All original source-split excluded metadata and4096 construction indices plus every registered confirmation and explicit budget witness."
+  },
+  "stop_rule": "Freeze the sole quantized B weight hash before any point source score. Any actual D>0.5,source/probe R>0.5,changed native prediction or fixed numerical tolerance failure closes the point. No solver-point selection,scaling,rank/axis/data/seed change. Source feasibility is not confirmation/full-task/TA/AGA proof. No partner/test/confirmation input until eligible.",
+  "verifier_sha256": "0ab147700d7fd825cf02f7c7fa3ca556d9e9d877bb5de88862bee4a96d235cf5",
+  "dense_solver_sha256": "508b122781daee6eb31f3df6d192f60b5411b188db29503d5f435df963be9815",
+  "input_raw_sha256": "4a39c9e4e312bd1d7144c76076623b8b14bcbe1507485e17ced889552af970d9"
+}

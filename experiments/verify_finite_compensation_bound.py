@@ -245,6 +245,118 @@ def verify_rank_one_band(root):
     save_json(root/'independent_validation.json',report);print(json.dumps(report),flush=True)
 
 
+def validate_line_point(root, protocol):
+    """Materialize the sole optimal point, then gate full FP32 source/probes."""
+    import copy,time
+    from scipy import sparse
+    from scipy.special import expit,logsumexp
+    from clip_benchmark import digest
+    from covariance_noise import dataset
+    from probe_margin_distance import scores
+    from subspace_probe import make_loader,save_json
+    from task_probe_distance import checked_models,initialize,parameters
+    from verify_covariance_noise import official_labels
+    from verify_levelset_audits import raw_scores
+    initialize();start=time.monotonic();root=Path(root);protocol=Path(protocol)
+    gate=json.loads(protocol.read_text());cfg=json.loads((root/'protocol.json').read_text())
+    assert digest(__file__)==gate['verifier_sha256']
+    assert not (root/'source_validation.json').exists() and not (root/'provisional_weights.pt').exists()
+    initial=json.loads((root/'results.json').read_text());dense=json.loads((root/'dense_replay/results.json').read_text())
+    assert dense['status']=='optimal' and digest(root/'dense_replay/solver.npz')==dense['solver_sha256']
+    for file,pin in dense['input_sha256'].items():assert digest(root/file)==pin==initial[{'diagnostic.pt':'raw_sha256','constraints.npz':'constraints_sha256','solver.npz':'solver_sha256'}[file]]
+    d=torch.load(root/'diagnostic.pt',map_location='cpu');p={k:v.numpy() if torch.is_tensor(v) else v for k,v in d['parameters'].items()}
+    raw=np.load(root/'dense_replay/solver.npz');old=np.load(root/'solver.npz');A=sparse.load_npz(root/'constraints.npz')
+    for key in ['b','q']:np.testing.assert_array_equal(raw[key],old[key])
+    x=raw['x'];w=x[:-1];slack=raw['b']-A@x;m=9482;r=cfg['parameter_budget']*(1-cfg['distance_reserve'])
+    errors=dict(nonnegative_violation=max(0.,float(-slack[:m].min())),equality=float(abs(slack[m:m+32]).max()),
+        ball_violation=max(0.,float(np.linalg.norm(w)-r)),primal_slack=float(abs(slack-raw['s']).max()))
+    assert max(errors.values())<1e-8
+    Z,H=d['Z'].numpy(),d['H'].numpy();V,u=d['V'].numpy(),d['axis'].numpy();nb=np.linalg.norm(p['B'])
+    F=nb*np.concatenate([Z,d['probe_Z'].numpy()]);scale=np.linalg.norm(F,axis=1);F/=scale[:,None]
+    G=d['G'].numpy();gs=np.linalg.norm(G,axis=1).max()
+    expected=np.r_[(d['upper'].numpy()/scale-F@w),F@w-d['lower'].numpy()/scale,G@w/gs-x[-1],-V@w,r,w]
+    errors['independent_shared_assembly']=float(abs(expected-slack).max());assert errors['independent_shared_assembly']<1e-8
+    # A bounded-ball dual upper bound retains stationarity residual explicitly.
+    dual=raw['z'];n=len(F);mass=np.maximum(dual[2*n:2*n+10],0).sum();assert mass>0
+    lam=np.maximum(dual[:2*n],0)/mass;pi=np.maximum(dual[2*n:2*n+10],0)/mass;nu=dual[m:m+32]/mass
+    station=G.T@pi/gs-F.T@(lam[:n]-lam[n:])-V.T@nu
+    upper=float(d['upper'].numpy()/scale@lam[:n]-d['lower'].numpy()/scale@lam[n:]+r*np.linalg.norm(station))
+    lower=float((G@w/gs).min());assert upper+1e-8>=lower
+    edit=(p['B']+nb*u[:,None]*w[None,:]).astype(np.float32);delta=edit.astype(float)-p['B'];D=float(np.linalg.norm(delta)/nb)
+    key='model.visual.transformer.resblocks.11.mlp.c_proj.weight'
+    torch.save({key:torch.from_numpy(edit)},root/'provisional_weights.pt')
+    freeze=dict(weight_sha256=digest(root/'provisional_weights.pt'),solver_sha256=dense['solver_sha256'],
+        source_protocol_sha256=digest(protocol),verifier_sha256=digest(__file__),parameter_distance=D,
+        coefficient_audit=errors,minimum_normalized_linear_utility=lower,bounded_dual_upper=upper,
+        objective_gradient_scale=gs,source_point_scores_seen=False,new_weights=1,
+        scope='One quantized coefficient solution frozen before any point classification; not a source pass or defense.')
+    save_json(root/'point_freeze.json',freeze);print(json.dumps(dict(stage='sole_point_frozen',**freeze)),flush=True)
+    assert D<=cfg['parameter_budget'];del A,F,raw,old
+    ids=d['indices'];assert ids==json.loads((root/'source_split.json').read_text())['indices']
+    gold=official_labels(cfg['target'],True)[ids];np.testing.assert_array_equal(gold,d['labels'].numpy())
+    anchor,expert,head,pins=checked_models(cfg['target']);assert pins==initial['checkpoint_sha256']
+    A0=parameters(anchor,head)['A'].numpy();del anchor
+    actual=parameters(expert,head)
+    for k,v in p.items():np.testing.assert_array_equal(v,actual[k].numpy() if torch.is_tensor(actual[k]) else actual[k])
+    release=copy.deepcopy(expert)
+    with torch.no_grad():release.state_dict()[key].copy_(torch.from_numpy(edit))
+    assert [k for k,v in expert.state_dict().items() if not torch.equal(v,release.state_dict()[k])]==[key]
+    train=dataset(cfg['target'],'data',expert.val_preprocess,True);before=d['before'].numpy()
+    def observe(model,indices,capture=False):
+        xx=[];ss=[];block=model.model.visual.transformer.resblocks[11]
+        hook=block.mlp.c_fc.register_forward_pre_hook(lambda _m,a:xx.append(a[0][0].detach().cpu())) if capture else None
+        try:
+            model.cuda().eval();head.cuda().eval()
+            with torch.no_grad():
+                for images,_ in make_loader(train,indices,128):ss.append(head(model(images.cuda())).cpu().double())
+        finally:
+            if hook:hook.remove()
+            model.cpu();head.cpu()
+        return torch.cat(ss).numpy(),torch.cat(xx).double().numpy() if capture else None
+    def drift(a,b):
+        y=a.argmax(1);g=a[np.arange(len(a)),y,None]-a;mask=np.arange(a.shape[1])[None]!=y[:,None]
+        assert (g[mask]>0).all();g[~mask]=1.;ds=b-a;v=(ds[np.arange(len(a)),y,None]-ds)/g;v[~mask]=0
+        return float(abs(v).max())
+    def metric(a,b,labels):
+        y=a.argmax(1);pred=b.argmax(1);c=y==labels;q=pred==labels
+        return dict(n=len(y),R=drift(a,b),original_correct=int(c.sum()),correct=int(q.sum()),changed=int((y!=pred).sum()),
+            original_NLL=float((logsumexp(a,axis=1)-a[np.arange(len(a)),labels]).mean()),
+            NLL=float((logsumexp(b,axis=1)-b[np.arange(len(b)),labels]).mean()),
+            per_class=[dict(class_id=j,n=int((labels==j).sum()),lost=int((c&~q&(labels==j)).sum()),
+                gained=int((~c&q&(labels==j)).sum())) for j in range(a.shape[1])])
+    controls={};original128,X=observe(expert,ids[:128],True)
+    controls['original128_replay']=float(abs(original128-before[:128]).max());assert controls['original128_replay']<=cfg['score_tolerance']
+    after,_=observe(release,ids);replay,_=observe(release,ids[:128])
+    controls['point128_replay']=float(abs(replay-after[:128]).max());assert controls['point128_replay']<=cfg['score_tolerance']
+    pn={k:torch.from_numpy(v) if isinstance(v,np.ndarray) else v for k,v in p.items()}
+    source_hidden=H+Z@delta.T;independent=raw_scores(source_hidden,p)
+    controls['actual_FP32_vs_NumPy_tail']=float(abs(after-independent).max());assert controls['actual_FP32_vs_NumPy_tail']<=cfg['score_tolerance']
+    controls['NumPy_vs_Torch_tail']=float(abs(independent-scores(torch.from_numpy(source_hidden),pn).numpy()).max());assert controls['NumPy_vs_Torch_tail']<1e-8
+    B_before=raw_scores(d['probe_H'].numpy(),p);B_after=raw_scores(d['probe_H'].numpy()+d['probe_Z'].numpy()@delta.T,p)
+    y=before.argmax(1);contexts=np.array([np.flatnonzero(y==j)[0] for j in range(len(p['head']))]);assert contexts.max()<128
+    va=np.linalg.svd(p['A']-A0,full_matrices=False)[2][:32]
+    rms=np.sqrt(np.mean((X@va.T)**2,axis=0));shifts=(.01*np.array([-1.,1.])[:,None,None]*rms[None,:,None]*va[None]).reshape(64,-1)
+    xx=X[contexts];pre=xx@p['A'].T+p['a'];trial=(xx[:,None]+shifts[None]).reshape(-1,X.shape[1])@p['A'].T+p['a']
+    dz=trial*expit(1.702*trial)-(pre*expit(1.702*pre))[:,None,:].repeat(64,axis=1).reshape(trial.shape)
+    zz=np.repeat(Z[contexts],64,axis=0)+dz;hh=np.repeat(H[contexts],64,axis=0)+dz@p['B'].T
+    A_before=raw_scores(hh,p);A_after=raw_scores(hh+zz@delta.T,p)
+    controls['A_probe_NumPy_vs_Torch']=float(abs(A_after-scores(torch.from_numpy(hh+zz@delta.T),pn).numpy()).max());assert controls['A_probe_NumPy_vs_Torch']<1e-8
+    ep={k:v.numpy() if torch.is_tensor(v) else v for k,v in d['environment_parameters'].items()};perm=d['permutation'].numpy()
+    env=raw_scores(d['environment_H'].numpy()+.5*d['environment_Z'].numpy()@delta[:,perm].T,ep)
+    source=metric(before,after,gold);probe=dict(B_n=len(B_before),B_R=drift(B_before,B_after),A_n=len(A_before),A_R=drift(A_before,A_after))
+    passed=source['R']<=.5 and source['changed']==0 and max(probe['B_R'],probe['A_R'])<=.5
+    np.savez_compressed(root/'source_scores.npz',indices=ids,labels=gold,before=before,after=after,
+        B_before=B_before,B_after=B_after,A_before=A_before,A_after=A_after,environment_before=d['environment_before'].numpy(),environment_after=env)
+    report=dict(status='source_pass_requires_fresh_confirmation' if passed else 'closed_source_function_failure',source_passed=passed,
+        point_freeze=freeze,source=source,task_probes=probe,controls=controls,task32_response_fraction=float(np.linalg.norm(delta@V.T)/np.linalg.norm(delta)),
+        public_environment_source_only=metric(d['environment_before'].numpy(),env,gold[:len(env)]),checkpoint_sha256=pins,
+        source_scores_sha256=digest(root/'source_scores.npz'),source_sha256=digest(__file__),protocol_sha256=digest(protocol),
+        new_FP32_image_forward_instances=4096+256,wall_seconds=time.monotonic()-start,peak_GPU_bytes=torch.cuda.max_memory_allocated(),
+        new_confirmation_inputs=0,new_test_inputs=0,new_peer_TA_calls=0,new_full_AGA_calls=0,
+        scope='One source-selected point; real FP32 source function and finite latent task probes,not new confirmation/full-task retention or actual peer-fusion evidence. No parameter repair or point selection.')
+    save_json(root/'source_validation.json',report);print(json.dumps(report),flush=True)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, default=Path('outputs/phase3/finite_compensation_source.pt'))
@@ -252,7 +364,10 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, default=Path('outputs/finite_compensation_bound_validation.json'))
     parser.add_argument('--projection-cone',type=Path)
     parser.add_argument('--rank-one-band',type=Path)
+    parser.add_argument('--line-point',type=Path)
+    parser.add_argument('--protocol',type=Path)
     args = parser.parse_args()
-    if args.rank_one_band:verify_rank_one_band(args.rank_one_band)
+    if args.line_point:validate_line_point(args.line_point,args.protocol)
+    elif args.rank_one_band:verify_rank_one_band(args.rank_one_band)
     elif args.projection_cone:verify_projection_cone(args.projection_cone)
     else:verify(args.source, args.report, args.output)
