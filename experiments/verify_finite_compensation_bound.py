@@ -583,6 +583,13 @@ def verify_ln_envelope(root, assembly_only=False):
     assert ids == json.loads(Path(cfg['source_split']).read_text())['indices'][:cfg['source_n']]
     h0, he, U, F = raw['prefix']['h'].numpy(), raw['original']['h'].numpy(), raw['U'].numpy(), raw['F']
     n, d = h0.shape; a = U.shape[1]; rank = cfg['rank']; nc = a*rank
+    frozen = torch.load(root/'prefix_freeze.pt', map_location='cpu', weights_only=False)
+    R = raw['R'].numpy(); vb = frozen['vb'].numpy(); vo = frozen['vo'].numpy()
+    np.testing.assert_allclose(U.T@U, np.eye(a), atol=1e-10, rtol=0)
+    np.testing.assert_allclose(R@R.T, np.eye(rank), atol=1e-10, rtol=0)
+    assert abs(U.mean(0)).max() < 1e-10 and abs(R@vb.T).max() < 1e-8
+    do = raw['edited_O'].numpy().astype(np.float64)-p['O']; od = np.linalg.norm(do)/np.linalg.norm(p['O'])
+    assert od <= cfg['parameter_budget']/np.sqrt(2) and np.linalg.norm(do@vo.T)/np.linalg.norm(p['O']) < 1e-6
     data = np.load(root/'cone.npz'); G, b = data['G'], data['b']; nl = int(data['linear_rows']); dims = data['qdims']
     L = p['gamma'][:, None]*p['projection']; L -= L.mean(0); c = p['beta']@p['projection']
     ce = he-he.mean(1, keepdims=True); se = np.sqrt(np.mean(ce*ce, axis=1)+p['eps'])
@@ -633,7 +640,16 @@ def verify_ln_envelope(root, assembly_only=False):
         feature = h@L+sigma[:, None]*c; after = feature/np.linalg.norm(feature, axis=1, keepdims=True)@p['head'].T
         target = score[np.arange(n),y,None]-np.take_along_axis(score,others,axis=1)
         r = (after[np.arange(n),y,None]-np.take_along_axis(after,others,axis=1))/target-1
-        certificate = dict(kind='optimal',mathematical_source_R=float(abs(r).max()),physical_source_R=meta['source_R'])
+        release = torch.load(root/'frozen_release.pt', map_location='cpu', weights_only=False)
+        B = release['model.visual.transformer.resblocks.11.mlp.c_proj.weight'].double().numpy()
+        bd = np.linalg.norm(B-p['B'])/np.linalg.norm(p['B'])
+        assert np.hypot(od,bd) <= cfg['parameter_budget'] and digest(root/'frozen_release.pt') == meta['release_sha256']
+        physical = torch.load(root/'source_scores.pt', map_location='cpu', weights_only=False)
+        old, new = physical['before'].numpy(), physical['after'].numpy(); dy = new-old
+        physical_R = float(abs((dy[np.arange(n),y,None]-np.take_along_axis(dy,others,axis=1))/gaps).max())
+        assert abs(physical_R-meta['source_R']) < 1e-12
+        certificate = dict(kind='optimal',mathematical_source_R=float(abs(r).max()),physical_source_R=physical_R,
+                           parameter_distance=float(np.hypot(od,bd)))
     elif meta['solver_status'] == 'primal infeasible':
         dual = sol['z'].copy(); dual[:nl] = np.maximum(dual[:nl], 0.); cursor = nl
         for dim in dims:
