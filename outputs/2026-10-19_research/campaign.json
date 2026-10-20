@@ -1,6 +1,6 @@
 {
-  "updated_utc": "2026-10-20T11:33:47.032216+00:00",
-  "status": "original_AGA_efficacy_verified_known_control_parameter_policy_and_recovery_permissions_reviewed",
+  "updated_utc": "2026-10-20T15:45:00.906397+00:00",
+  "status": "task_direction_measurement_verified_new_compensation_under_math_review",
   "automation_status": "13-35 PAUSED by user instruction;do not create or reactivate scheduled continuations.",
   "automatic_continuation": false,
   "GPU": "RTX3090 only;4090 unused",
@@ -16,7 +16,7 @@
   "independent_selected_scores": 32,
   "cleanup_receipt": "results/cleanup_20261020.json",
   "github_receipt": "outputs/latest_github_sync_receipt.json",
-  "next_action": "Use notes/parameter_scale_and_threat_model.md: retain originalAGA effect of known global control, separate family-aware public recovery, compare full paper defaults without universal D0.5 gate. Preserve fixed historical D0.5/R0.5 results and closed points. Next genuinely different Defense2 mechanism requires prospective range, task checks and novelty assessment; no candidate selected from reviewed test/recovery outcomes.",
+  "next_action": "Check finite LayerNorm mean-invariance and cross-layer compensation condition using original weights only before registering a new release. No new candidate or image run yet. Do not retry closed points.",
   "continuation_mode": "Direct ongoing work in this conversation;latest user instruction replaces automatic time-window closeout.",
   "source_protocol": "configs/recovery_feedback.json",
   "fusion_diagnostic": "results/recovery_feedback/diagnostic/summary.md",
@@ -55,5 +55,26 @@
     "scale_and_permissions_audit": "results/residual_coordinate_control/scale_review.json",
     "whole_visual_relative_distance": 0.6066951766409082
   },
-  "scale_and_permissions_review": "notes/parameter_scale_and_threat_model.md"
+  "scale_and_permissions_review": "notes/parameter_scale_and_threat_model.md",
+  "task_subspace_comparison": {
+    "status": "completed_independent_parameter_measurement",
+    "summary": "results/task_subspace_comparison/summary.md",
+    "protocol": "configs/task_subspace_comparison.json",
+    "matrices": 74,
+    "frozen_releases": 2,
+    "matrix_rows": 148,
+    "group_rows": 18,
+    "new_image_forwards": 0,
+    "new_AGA_calls": 0,
+    "parameter_updates": 0,
+    "global_permutation_right_outside_energy_fraction": 0.950766593,
+    "global_permutation_local_task_response_range": [
+      1.07979349,
+      1.43131103
+    ],
+    "paired_rank_one_space_not_input_space": true,
+    "independent_receipt": "results/task_subspace_comparison/independent_validation.json",
+    "basis_sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344",
+    "conclusion": "Large outside-energy fraction does not establish small original-coordinate task response. Synchronous whole-model compensation still preserves standalone function."
+  }
 }

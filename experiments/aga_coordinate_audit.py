@@ -1,4 +1,4 @@
-"""Extract exact row permutations from existing AGA artifacts; no attack rerun."""
+"""Read-only AGA alignment and task-subspace checks; no defense training."""
 
 import argparse
 import hashlib
@@ -13,6 +13,153 @@ from clip_benchmark import digest
 from mechanisms import load_author
 from subspace_probe import save_json
 from task_probe_distance import checked_models
+
+
+@torch.no_grad()
+def mean_compensation(protocol, output):
+    """Finite weight-only check of a native-LN mean-equivalent compensation."""
+    start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(output)
+    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    for path,sha in cfg['source_sha256'].items():assert digest(path)==sha,path
+    assert digest(cfg['basis']['path'])==cfg['basis']['sha256']
+    basis=torch.load(cfg['basis']['path'],map_location='cpu')
+    anchor,expert,_,pins=checked_models(cfg['target']);state=expert.state_dict()
+    d=768;eye=torch.eye(d,dtype=torch.double);one=torch.ones(d,dtype=torch.double)/d**.5
+    v=eye[:,0]-one;v/=v.norm();h=(eye-2*v[:,None]*v[None])[:,1:]
+    gamma=state['model.visual.ln_pre.weight'].double()
+    eigenvalues,eigenvectors=torch.linalg.eigh(h.T@(gamma[:,None]*h));axes=h@eigenvectors
+    c=eye-one[:,None]*one[None]
+    eigen_error=float((c@(gamma[:,None]*axes)-axes*eigenvalues).abs().max())
+    assert eigen_error<cfg['tolerance']
+    totals=torch.zeros(d-1,dtype=torch.double);inside=totals.clone();bias_max=totals.clone();rows=[];allocation={}
+    for key in state:
+        if key.endswith(('ln_1.weight','ln_2.weight','ln_post.weight')):assert float(state[key].abs().min())>1e-8,key
+    for index,b in basis.items():
+        key=b['source_key'];lo,hi=b['row_start'],b['row_end'];site=b['site']
+        w=state[key][lo:hi].double().flatten(1);right=b['v'];rank=cfg['rank'];assert right.shape[1]==rank
+        if site in ['Q','K','V','A']:
+            lk=key.split('.attn.')[0]+'.ln_1.' if '.attn.' in key else key.split('.mlp.')[0]+'.ln_2.'
+            gain,beta=[state[lk+s].double() for s in ['weight','bias']]
+            left=w@(gain[:,None]*axes);r=axes/gain[:,None]
+            bk=key.replace('weight','bias');bias=state[bk][lo:hi].double()
+            db=2*left*(r.T@beta)[None]
+        elif site=='projection':
+            gain=state['model.visual.ln_post.weight'].double()
+            left=axes/gain[:,None];r=w.T@(gain[:,None]*axes);db=None
+        else:
+            left=axes;r=w.T@axes;db=None
+            if site in ['O','B']:
+                bias=state[key.replace('weight','bias')].double();db=-2*axes*(axes.T@bias)[None]
+        total=4*left.square().sum(0)*r.square().sum(0)/w.square().sum()
+        inn=4*left.square().sum(0)*(right.T@r).square().sum(0)/w.square().sum()
+        assert float((total-inn).min())>-cfg['tolerance']
+        totals+=total;inside+=inn
+        if db is not None:
+            relative=db.norm(dim=0)/bias.norm()
+            if cfg.get('affine_allocation') and site in ['Q','K','V','A']:
+                beta_relative=2*(gain[:,None]*axes).norm(dim=0)*(r.T@beta).abs()/beta.norm()
+                old=allocation.get(lk)
+                allocation[lk]=(beta_relative,relative if old is None else torch.maximum(old[1],relative))
+            else:bias_max=torch.maximum(bias_max,relative)
+        rows.append(dict(matrix=int(index),site=site,total_squared=total.tolist(),inside_squared=inn.tolist()))
+    for site in ['pre','post']:
+        prefix='model.visual.ln_'+site+'.';beta=state[prefix+'bias'].double()
+        gain=state[prefix+'weight'].double()
+        db=-2*axes*(axes.T@beta)[None] if site=='pre' else -2*(gain[:,None]*axes)*(axes.T@(beta/gain))[None]
+        bias_max=torch.maximum(bias_max,db.norm(dim=0)/beta.norm())
+    shares={}
+    for prefix,(a,b) in allocation.items():
+        t=torch.where(a+b>0,b/(a+b),torch.zeros_like(a));shares[prefix]=t
+        bias_max=torch.maximum(bias_max,torch.maximum(t*a,(1-t)*b))
+    outside=totals-inside;valid=(inside.sqrt()<=cfg['task_direction_parameter_limit'])&(bias_max<=cfg['individual_bias_limit'])
+    allowed=torch.where(valid,outside,torch.tensor(-float('inf')));chosen=int(allowed.argmax()) if bool(valid.any()) else None
+    save_json(out/'directions.json',[dict(index=i,eigenvalue=float(eigenvalues[i]),inside_distance=float(inside[i].sqrt()),
+        outside_distance=float(outside[i].clamp_min(0).sqrt()),matrix_distance=float(totals[i].sqrt()),maximum_relative_bias=float(bias_max[i]),
+        feasible=bool(valid[i])) for i in range(d-1)])
+    geometry=dict(status='feasible_weight_only_condition' if chosen is not None else 'no_feasible_direction',selected_index=chosen,
+        feasible_directions=int(valid.sum()),directions=d-1,task_matrix_count=len(basis),eigen_equation_error=eigen_error,
+        checkpoint_sha256=pins,source_sha256=digest(__file__),protocol_sha256=digest(protocol),basis_sha256=cfg['basis']['sha256'],
+        new_image_forwards=0,new_AGA_calls=0,parameter_updates=0,release_created=False,novelty_claim=False)
+    if chosen is not None:
+        u=axes[:,chosen];q=eye-2*u[:,None]*u[None]
+        residual=c@(gamma[:,None]*q-q*gamma[None])@c
+        geometry.update(task_inside_distance=float(inside[chosen].sqrt()),task_outside_distance=float(outside[chosen].sqrt()),
+            matrix_distance=float(totals[chosen].sqrt()),maximum_relative_bias=float(bias_max[chosen]),
+            centered_preLN_commutator_error=float(residual.abs().max()),mean_error=float((q@one-one).abs().max()))
+        assert geometry['centered_preLN_commutator_error']<cfg['tolerance']
+        torch.save(dict(axis=u,eigenvalue=eigenvalues[chosen],selected_index=chosen,rows=rows,source_gamma=gamma,
+            affine_shares={k:float(t[chosen]) for k,t in shares.items()}),out/'point.pt')
+        geometry['point_sha256']=digest(out/'point.pt')
+    geometry['wall_seconds']=time.monotonic()-start;save_json(out/'results.json',geometry);print(json.dumps(geometry),flush=True)
+
+
+@torch.no_grad()
+def task_subspaces(protocol, output):
+    """Measure frozen controls against fixed original task directions."""
+    start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(output)
+    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    assert '3090' in torch.cuda.get_device_name()
+    torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
+    for name,sha in cfg['source_sha256'].items():assert digest(name)==sha,name
+    anchor,expert,_,pins=checked_models(cfg['target']);original=expert.state_dict();base=anchor.state_dict()
+    states={}
+    for name,release in cfg['releases'].items():
+        assert digest(release['path'])==release['sha256'],name
+        states[name]=original|torch.load(release['path'],map_location='cpu')
+        assert set(states[name])==set(original),name
+    matrices=[]
+    for key,w in original.items():
+        if key.endswith('attn.in_proj_weight'):
+            matrices.extend((key,site,i*768,(i+1)*768) for i,site in enumerate(['Q','K','V']))
+        elif key.endswith(('attn.out_proj.weight','mlp.c_fc.weight','mlp.c_proj.weight')):
+            site='O' if '.attn.' in key else 'A' if '.c_fc.' in key else 'B';matrices.append((key,site,0,w.shape[0]))
+        elif key in ['model.visual.conv1.weight','model.visual.proj']:
+            matrices.append((key,'patch' if 'conv1' in key else 'projection',0,w.shape[0]))
+    assert len(matrices)==cfg['matrix_count'];rows=[];basis={};maximum=0.
+    for index,(key,site,lo,hi) in enumerate(matrices):
+        w=original[key][lo:hi].double().flatten(1);t=w-base[key][lo:hi].double().flatten(1)
+        assert float(t.norm())>0,(key,'zero task matrix has no defined task directions')
+        u,s,vh=torch.linalg.svd(t.cuda(),full_matrices=False);rank=cfg['rank'];u=u[:,:rank].cpu();v=vh[:rank].T.cpu();s=s.cpu()
+        assert float(s[rank-1])>0,(key,'rank32 reaches zero singular values')
+        basis[str(index)]=dict(u=u,v=v,s=s,source_key=key,row_start=lo,row_end=hi,site=site)
+        reconstruction=max(float((t@v-u*s[:rank]).norm()/t.norm()),float((t.T@u-v*s[:rank]).norm()/t.norm()))
+        assert reconstruction<cfg['relative_tolerance']
+        for name,state in states.items():
+            delta=state[key][lo:hi].double().flatten(1)-w;inside=delta@v;outside=delta-inside@v.T
+            paired=(u.T@inside).diagonal();left=u.T@delta;energy=float(delta.square().sum());den=float(w.norm())
+            a,b,c=delta.numpy(),u.numpy(),v.numpy();ni=a@c;no=a-ni@c.T;npair=np.diag(b.T@ni)
+            checks=[(float(inside.norm()),float(np.linalg.norm(ni))),(float(outside.norm()),float(np.linalg.norm(no))),
+                    (float(paired.norm()),float(np.linalg.norm(npair))),(float(left.norm()),float(np.linalg.norm(b.T@a)))]
+            error=max(abs(x-y)/(1+abs(y)) for x,y in checks);maximum=max(maximum,error)
+            assert error<cfg['relative_tolerance']
+            closure=abs(float(inside.square().sum()+outside.square().sum())-energy)/(1+energy)
+            assert closure<cfg['relative_tolerance']
+            rows.append(dict(method=name,matrix=index,source_key=key,row_start=lo,row_end=hi,site=site,shape=list(w.shape),rank=rank,
+                task_top32_energy=float(s[:rank].square().sum()/s.square().sum()),singular_boundary_relative_gap=float((s[rank-1]-s[rank])/s[rank-1]),
+                total_distance=float(delta.norm())/den,right_inside_distance=float(inside.norm())/den,right_outside_distance=float(outside.norm())/den,
+                paired_inside_distance=float(paired.norm())/den,left_inside_distance=float(left.norm())/den,
+                right_inside_squared_fraction=float(inside.square().sum())/energy if energy else None,
+                paired_inside_squared_fraction=float(paired.square().sum())/energy if energy else None,
+                relative_change_on_task_inputs=float(inside.norm()/(w@v).norm()),relative_change_to_task_update=float(inside.norm()/s[:rank].norm()),
+                isotropic_right_fraction=rank/w.shape[1],isotropic_paired_fraction=rank/w.numel(),
+                numpy_error=error,orthogonal_energy_error=closure,svd_equation_error=reconstruction))
+        print(json.dumps(dict(completed_matrices=index+1,total=len(matrices))),flush=True) if (index+1)%12==0 else None
+    torch.save(basis,out/'basis.pt');save_json(out/'matrices.json',rows)
+    groups=[]
+    for name in states:
+        for site in ['all','Q','K','V','O','A','B','patch','projection']:
+            selected=[r for r in rows if r['method']==name and (site=='all' or r['site']==site)]
+            sums={k:sum(r[k]**2 for r in selected) for k in ['total_distance','right_inside_distance','right_outside_distance','paired_inside_distance']}
+            groups.append(dict(method=name,site=site,matrices=len(selected),distances={k:value**.5 for k,value in sums.items()},
+                right_inside_squared_fraction=sums['right_inside_distance']/sums['total_distance'] if sums['total_distance'] else None,
+                paired_inside_squared_fraction=sums['paired_inside_distance']/sums['total_distance'] if sums['total_distance'] else None,
+                task_input_relative_change_range=[min(r['relative_change_on_task_inputs'] for r in selected),max(r['relative_change_on_task_inputs'] for r in selected)]))
+    result=dict(status='passed_frozen_weight_measurement',checkpoint_sha256=pins,release_sha256={k:v['sha256'] for k,v in cfg['releases'].items()},
+        rank=cfg['rank'],matrix_count=len(matrices),rows=len(rows),groups=groups,maximum_numpy_error=maximum,basis_sha256=digest(out/'basis.pt'),
+        source_sha256=digest(__file__),protocol_sha256=digest(protocol),wall_seconds=time.monotonic()-start,
+        new_image_forwards=0,new_AGA_calls=0,new_model_updates=0,partner_or_test_loaded=False,
+        scope='Fixed original task-matrix SVD coordinates; not covariantly transported probes or proof of functional preservation. Paired rank-one and whole right-input spaces are distinct. No candidate constructed or selected.')
+    save_json(out/'results.json',result);print(json.dumps(result),flush=True)
 
 
 def residual_permutation(state, order):
@@ -613,5 +760,9 @@ if __name__=='__main__':
     mode.add_argument('--head-recovery',action='store_true')
     mode.add_argument('--residual-recovery',action='store_true')
     mode.add_argument('--affine-matching',action='store_true')
+    mode.add_argument('--task-subspaces',metavar='PROTOCOL')
+    mode.add_argument('--mean-compensation',metavar='PROTOCOL')
     args=parser.parse_args();torch.set_num_threads(4)
+    if args.mean_compensation:mean_compensation(args.mean_compensation,args.output);raise SystemExit
+    if args.task_subspaces:task_subspaces(args.task_subspaces,args.output);raise SystemExit
     (residual_recovery if args.residual_recovery else head_identity_recovery if args.head_recovery else head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
