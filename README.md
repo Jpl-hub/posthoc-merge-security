@@ -6,7 +6,7 @@
 
 当前只使用RTX3090，暂不访问4090。已核验TA/TIES、原AGA、PaRaMS对角恢复适配、NUFILT、三种子DARE及ProDistill两专家适配。融合算法与恢复攻击分别记录，不把结果行数当攻击种类数。
 
-2026-10-20：**Defense 2仍无新的合规有效方案。** 最新[结构保持对照](results/structural_unit_check/summary.md)在原D≤0.5、R≤0.5下通过源、新确认及完整MNIST保持，但TA、原版AGA仅目标／双方恢复后的目标准确率仍约99.3%，没有保护效果。17行结果及272个原批上下文分数重放已独立通过。此前[有限功能带点](results/finite_line_band/summary.md)因新确认预算越界关闭；全部旧效果与失败证据见[机制记录](notes/phase2_coupling.md)，不据已见结果修补权重。
+2026-10-20：**Defense 2仍无新的合规有效方案。** 最新[完整LN范数包络O/B点](results/finite_ln_envelope/summary.md)完成源、新512训练确认、完整MNIST及真实TA／原AGA两范围；D0.353553、完整R0.238831，任务保持通过，但融合目标准确率仍99.37%／99.30%／99.32%，与匹配无保护预测逐张相同。17行／272原批上下文分数重放通过。此前[结构对照](results/structural_unit_check/summary.md)和[有限功能带点](results/finite_line_band/summary.md)的效果与失败全部保留；不按成绩修补或更改预算。
 
 - [攻击调研、论文与源码核对、权限及评价协议](notes/phase3_attack_review.md)
 - [Defense 2机制、任务内外消融与新任务预算反例](notes/phase2_coupling.md)

@@ -1,0 +1,49 @@
+{
+  "target": "MNIST",
+  "output": "outputs/phase2_rank_deletion_mnist_20261020/source",
+  "source_n": 512,
+  "source_split": "outputs/phase2_finite_readout_cone_mnist_20261020/source_split.json",
+  "source_split_sha256": "adbd1ca95c08bf3b4ed2d0f5c2f59e685571a8c3655ef7c37496ead075582fd0",
+  "forbidden_indices": [
+    41538,
+    27330,
+    31374,
+    46715,
+    15450
+  ],
+  "rank": 32,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "source_reserve": 0.25,
+  "distance_reserve": 1e-06,
+  "score_tolerance": 0.0005,
+  "cvxopt_version": "1.3.3",
+  "solver": "standard conelp,Cholesky,100iterations,absolute/relative/feasibility tolerances1e-8,one solve",
+  "external_wall_limit_seconds": 600,
+  "preprocessing": "Deterministic expert.val_preprocess on MNIST training split,batch64 for all matched captures.",
+  "prefix_rule": "For each original final-O head A, form U spanning col(A) intersect ker((A V32_head.T).T). Delete its whole allowed output subspace: A_release=(I-U U.T)A, then quantize once toFP32. Select one head by largest ||M_original.T U U.T C_public||F, stable first tie. No adjustable rank, strength, image or attack-score selection. If selected head violates original D0.5 budget, stop; do not substitute another head.",
+  "compensation": "B change=||B|| U9 K R32; U9 is original centered class-numerator space; R32 are source activation right singular directions outside original task-B right32. Minimize norm(K) subject to finite LN endpoint cones and remaining original joint budget. This is not a claim to maximize joint distance globally.",
+  "mathematical_scope": "Rank deletion is noninvertible. With full-rank original head and tiny finite ridge, originalAGA column output differs by approximately -U U.T C. Verify this using actual quantized tensors and unchanged author solver before any images; operator/class-numerator change alone does not prove final normalized classification harm. Reuse the complete finite-LN norm-envelope inner cone only as a source functional feasibility test.",
+  "allowed_information": "Original expert/public base/legal original construction images only; no old protected solution,confirmation,partner or test. Source512 are the unchanged first512 of pre-existing legal4096 split.",
+  "stopping_rule": "First parameter-only gate and independent NumPy reconstruction. If passed, freeze this sole prefix and source protocol before source images, then one original finite-LN cone/minimum-norm B solve. Any numerical/source/probe/fresh-confirm/full-task failure closes point. No alternate head/rank/strength/source/backend or parameter-budget relaxation. If all task gates pass, unchangedTA0.5 and originalAGA target-only/both. Separate legitimate source proxies from unknown partner effects.",
+  "novelty": "Rank pruning, SVD, least-squares compensation and SOCP are known. This is a mechanistic candidate feasibility test, not a new or effective Defense2 claim. Its distinction from closed outward rank-one repulsion is actual column-information removal, checked after finite-ridge originalAGA.",
+  "source_sha256": {
+    "experiments/finite_compensation_bound.py": "94f6e311304ba969120efd07cde5c8e22b1798dc935f80512e10a989d23c2f0a",
+    "experiments/verify_finite_compensation_bound.py": "aff17dfb7b03f22154b0f30a5ca4c72923440c7ddcbb0f5a5b474b7bab2210e2",
+    "experiments/cross_module_distance.py": "74fcf77f10c37dcc989017e9f6462a47490e6b656dd3f3364c7448084c048c19",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae"
+  },
+  "prefix_output": "outputs/phase2_rank_deletion_mnist_20261020/prefix",
+  "prefix_budget": 0.5,
+  "prefix_reference": {
+    "path": "outputs/phase2_rank_deletion_mnist_20261020/prefix/prefix.pt",
+    "sha256": null
+  },
+  "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+}

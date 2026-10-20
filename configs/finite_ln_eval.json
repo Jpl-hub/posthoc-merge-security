@@ -1,0 +1,59 @@
+{
+  "output": "outputs/phase2_finite_ln_eval_20261020",
+  "release": {
+    "path": "outputs/phase2_finite_ln_envelope_mnist_20261020/frozen_release.pt",
+    "sha256": "c3f7e7e74c07b3030450e41b118bf0f9e48e4004bf6ec82dea96c2bf7d991b33"
+  },
+  "prior_confirmation": "outputs/phase2_finite_ln_envelope_mnist_20261020/confirmation_validation.json",
+  "coefficient": 0.5,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "test_counts": {
+    "MNIST": 10000,
+    "SVHN": 26032
+  },
+  "score_tolerance": 0.0005,
+  "wall_limit_seconds": 1200,
+  "AGA_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "reference_predictions": {
+    "path": "outputs/phase2_params_default_20261016/artifacts/predictions.pt",
+    "sha256": "e06a4dac5a427cb2346c54e07d6037d49ada1c7ca5daf7435ab392724331cb60"
+  },
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    }
+  },
+  "protocol_amendment": "Sole frozen finite final-LN norm-envelope O/B point. D0.353553047. Source512 R0.233589,1280 source probes passed,sole genuinely new512 training confirmation R0.125098 passed and independently reconstructed with original exclusions and seed. No modification or selection after confirmation. Full10000MNIST taskR0.5 gate before TA0.5 and unchanged originalAGA target-only/both. All competitors and original errors retained;historical tests not first blind. Standard SOCP,SVD and norm support are not novelty claims. Stop on native failure;no head/rank/strength/source retries.",
+  "weight_selection_from_test_or_peer": false,
+  "historical_tests_not_fresh_blind": true,
+  "candidate_selection_count": 1,
+  "no_public_replacement_run": true,
+  "allowed_keys": [
+    "model.visual.transformer.resblocks.11.attn.out_proj.weight",
+    "model.visual.transformer.resblocks.11.mlp.c_proj.weight"
+  ],
+  "source_sha256": {
+    "experiments/evaluate_local_residual_transport.py": "091b83cf45bdced9d2cb9214e51b92653613a103ba889ba4b294a38de0431d72",
+    "experiments/author_protocol_audit.py": "97a0f4a70d4a9239b92d73cb2b99aa7dc0d688b3cee1ec4d8ecc0bdb4cd2b522",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/frozen_AB_target_only.py": "d45a337793bcb7f8fb50d44daa325c7b6ce80e1343f86fdcc7102ae7c878fb15",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "experiments/verify_probe_candidate.py": "f91b7f1dcb7dcd19144b0b7ac711dd557b1a0ce1bb51809a047e53f0c7f8cdf9",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "logical_qkv_budget": true,
+  "confirmation_independent_receipt": "outputs/phase2_finite_ln_envelope_mnist_20261020/confirmation_independent_validation.json",
+  "pre_evaluation_utc": "2026-10-20T06:14:37.131470+00:00",
+  "github_freeze_note": "Local Git and3090 preregistration before test/peer. GitHub plugin discovery currently reports installed=false;remote upload unavailable,not described as execution-before-upload."
+}

@@ -81,6 +81,19 @@ def output_jacobian(cache,p):
     return j+back,s
 
 
+def ridge_column_recovery(weight, anchor):
+    """Smooth FP64 counterpart of AGA's twelve independent O-column fits.
+
+    Author code additionally quantizes the fitted coefficients and result to
+    FP32. This map supplies gradients only; official FP32 controls are separate.
+    """
+    x=weight.reshape(weight.shape[0],12,64).permute(1,0,2)
+    c=anchor.reshape(anchor.shape[0],12,64).permute(1,0,2)
+    gram=x.transpose(1,2)@x+1e-8*torch.eye(64,device=x.device,dtype=x.dtype)
+    fitted=x@torch.linalg.solve(gram,x.transpose(1,2)@c)
+    return fitted.permute(1,0,2).reshape_as(weight)
+
+
 class CrossProblem(Problem):
     def __init__(self,target,cfg):
         self.target,self.cfg=target,cfg;self.radius=cfg["parameter_budget"];self.form="matrix";self.r=cfg["probe_rank"];self.a_size=self.r**2
@@ -172,7 +185,7 @@ class CrossProblem(Problem):
         rounding=cache["h"]-final_hidden(r,p);n=self.cfg["probe_contexts"]
         rr,zz,cc=[r],[z],[rounding];offset=[torch.zeros((len(r),p["B"].shape[1]),dtype=torch.float64,device="cuda")]
         if probes:
-            vo,vb=self.basis["A"]["vh"],self.basis["B"]["vh"]
+            vo,vb=getattr(self,"task_probe_O",self.basis["A"]["vh"]),self.basis["B"]["vh"]
             hidden=gelu(normalized_input(r,p)@p["A"].T+p["a"])
             shifts=[]
             for inputs,v in [(z,vo),(hidden,vb)]:
@@ -190,13 +203,30 @@ class CrossProblem(Problem):
 
     def predict(self,packed,p,theta,factor=1.):
         co=theta[:self.a_size].reshape(self.r,self.r);cb=theta[self.a_size:].reshape(self.b_rows,self.b_width)
-        rr=packed["r"]+factor*self.na*(packed["task_input"]@co.T)@self.basis["A"]["u"].T
+        if self.cfg.get("recovery_feedback") and p is self.pp:
+            delta=self.na*self.basis["A"]["u"]@co@self.basis["A"]["vh"]
+            recovered=ridge_column_recovery(self.p["O"]+delta,self.public_O)-self.recovered_O
+            rr=packed["r"]+factor*packed["o_input"]@recovered.T
+            cb=cb[:,self.mlp_permutation]
+        else:
+            rr=packed["r"]+factor*self.na*(packed["task_input"]@co.T)@self.basis["A"]["u"].T
         hidden=gelu(normalized_input(rr,p)@p["A"].T+p["a"])+packed["b_offset"]
         incoming=hidden if self.cfg.get("full_B_completion") else hidden@self.basis["B"]["vh"].T
         change=incoming@cb.T
         if self.output_basis is not None:change=change@self.output_basis.T
         h=packed["rounding"]+rr+hidden@p["B"].T+p["b"]+factor*self.nb*change
         return scores(h,p)
+
+    def objective(self,theta):
+        if not self.cfg.get("recovery_feedback"):
+            return super().objective(theta)
+        cb=theta[self.a_size:].reshape(self.b_rows,self.b_width)
+        # O's edit-input frame is outside the original task right32. B remains
+        # free on both sides; its task component consumes budget but earns no
+        # task-outside distance reward. Probes keep the ORIGINAL task frame.
+        outside=theta.square().sum()-(cb@self.basis["B"]["vh"].T).square().sum()
+        proxy=self.predict(self.proxy,self.pp,theta,self.cfg["proxy_beta"])
+        return outside/self.radius**2+self.stress(proxy)
 
 
 class CrossCoupled(DistilledProblem):

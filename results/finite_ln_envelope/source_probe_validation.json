@@ -1,0 +1,161 @@
+{
+  "status": "passed",
+  "confirmation_passed": true,
+  "parameter_distance": 0.3535530467541492,
+  "source": {
+    "natural_n": 512,
+    "task_inputs": 1792,
+    "changed": 0,
+    "changed_by_teacher_class": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "worst_task_drift": 0.23348162176966228,
+    "natural_worst_task_drift": 0.23348162176966228
+  },
+  "full_model_natural_worst_drift": 0.23358894123310753,
+  "full_model_control_max_error": 1.8443655026345596e-05,
+  "numpy_score_max_error": 5.684341886080802e-14,
+  "original_correct": 511,
+  "released_correct": 511,
+  "n": 512,
+  "release_sha256": "c3f7e7e74c07b3030450e41b118bf0f9e48e4004bf6ec82dea96c2bf7d991b33",
+  "confirmation_sha256": "7bbb446462447b78a08a2cf270c993d83707ceb5016d5e2612b11816cc95aad7",
+  "source_point_sha256": "81d6d246cc45de1251c41b3dbc457d4094d35390ccbad69695eec588e3eb6e35",
+  "split_sha256": null,
+  "source_sha256": "064eac00cbe8fca54d3cd9a67d8c49f36c7f6822beafaaa5e8e61cbeaf5bd05d",
+  "protocol": {
+    "target": "MNIST",
+    "output": "outputs/phase2_finite_ln_envelope_mnist_20261020",
+    "source_reference": "outputs/phase2_finite_ln_envelope_mnist_20261020/source.pt",
+    "diagnostic_sha256": "81d6d246cc45de1251c41b3dbc457d4094d35390ccbad69695eec588e3eb6e35",
+    "prefix_reference": "outputs/phase2_finite_ln_envelope_mnist_20261020/prefix_freeze.pt",
+    "source_scores_reference": "outputs/phase2_finite_ln_envelope_mnist_20261020/source_scores.pt",
+    "frozen_release": {
+      "path": "outputs/phase2_finite_ln_envelope_mnist_20261020/frozen_release.pt",
+      "sha256": "c3f7e7e74c07b3030450e41b118bf0f9e48e4004bf6ec82dea96c2bf7d991b33"
+    },
+    "parameter_budget": 0.5,
+    "task_budget": 0.5,
+    "score_tolerance": 0.0005,
+    "finite_step": 0.01,
+    "contexts_per_class": 1,
+    "confirmation_n": 512,
+    "confirmation_seed": 2026102011,
+    "extra_excluded_indices": [
+      41538,
+      27330,
+      31374,
+      46715,
+      15450
+    ],
+    "extra_index_exclusions": [
+      "outputs/phase2_finite_readout_cone_mnist_20261020/source_split.json"
+    ],
+    "source_sha256": {
+      "experiments/confirm_local_residual_transport.py": "064eac00cbe8fca54d3cd9a67d8c49f36c7f6822beafaaa5e8e61cbeaf5bd05d",
+      "experiments/verify_finite_compensation_bound.py": "5aa8e3f522274b582ebb16e72fa4d26638cdeaa698845cad5fcc89e7caeb19c3",
+      "experiments/confirm_temperature_compensation.py": "7f8dccb7c404b3a2a94978bdf65525f7948ff19cb073d82f7effe8400b7675c5",
+      "experiments/local_residual_transport.py": "8c3a2777fef9bea2d32d97095709ec510e9c9a61d978b67a873e16366cbec80e",
+      "experiments/cross_module_distance.py": "74fcf77f10c37dcc989017e9f6462a47490e6b656dd3f3364c7448084c048c19",
+      "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+      "experiments/probe_margin_distance.py": "0fefcbe60aeb6456868c6b0e9178796ef6d2730c4751d3f91bd095b7d5ffec45",
+      "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+      "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+      "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "outputs/phase2_finite_ln_envelope_mnist_20261020/prefix_freeze.pt": "1c5b3beec6c158ee4c26de08e8f2566eeff855ab4741c4fd70326a3989bb849b",
+      "outputs/phase2_finite_ln_envelope_mnist_20261020/source_scores.pt": "66863c3cb4301072a0ed870053931cde42cfc8aae947fbe15e4d3c171fdd0e7c",
+      "outputs/phase2_finite_readout_cone_mnist_20261020/source_split.json": "adbd1ca95c08bf3b4ed2d0f5c2f59e685571a8c3655ef7c37496ead075582fd0"
+    },
+    "scope": "Validate this sole frozen O/B publication. First reuse original512 source cache for640 O-input and640 post-QuickGELU B-input finite task probes; no source image re-forward. Full FP64 tail and original FP32 natural controls stay separately reported. Independent source probe gate required before a genuinely fresh512 training confirmation; full model naturalR and finite-probeR both<=.5,all positive teacher gaps,no active floor. No repair,redraw or learned parameters. Fresh confirmation metadata is saved before scores and independently reconstructed."
+  },
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "source_point_repaired": false,
+  "confirmation_redrawn": false,
+  "optimizer_steps": 0,
+  "gradients": 0,
+  "partner_used": false,
+  "test_used": false,
+  "stage": "source_probes",
+  "task_probe_semantics": "Full FP64 O/B finite tail,including LN variance; natural controls matched to FP32 whole model.",
+  "per_class": [
+    {
+      "class_id": 0,
+      "n": 46,
+      "original_correct": 46,
+      "released_correct": 46
+    },
+    {
+      "class_id": 1,
+      "n": 54,
+      "original_correct": 54,
+      "released_correct": 54
+    },
+    {
+      "class_id": 2,
+      "n": 46,
+      "original_correct": 46,
+      "released_correct": 46
+    },
+    {
+      "class_id": 3,
+      "n": 47,
+      "original_correct": 47,
+      "released_correct": 47
+    },
+    {
+      "class_id": 4,
+      "n": 45,
+      "original_correct": 45,
+      "released_correct": 45
+    },
+    {
+      "class_id": 5,
+      "n": 56,
+      "original_correct": 56,
+      "released_correct": 56
+    },
+    {
+      "class_id": 6,
+      "n": 60,
+      "original_correct": 60,
+      "released_correct": 60
+    },
+    {
+      "class_id": 7,
+      "n": 56,
+      "original_correct": 55,
+      "released_correct": 55
+    },
+    {
+      "class_id": 8,
+      "n": 55,
+      "original_correct": 55,
+      "released_correct": 55
+    },
+    {
+      "class_id": 9,
+      "n": 47,
+      "original_correct": 47,
+      "released_correct": 47
+    }
+  ],
+  "finite_probe_rows": 1280,
+  "matched_tail_rows": 3584,
+  "full_model_forwards": 0,
+  "new_release_weights": 0,
+  "wall_seconds": 5.700727401301265
+}

@@ -462,6 +462,42 @@
       "relevance": "Preservation/editing and multilayer distribution are established ideas. Our proposed normalized-class finite-cone constraint is a different limited feasibility condition; no novelty or successful Defense2 follows.",
       "new_attack_count": 0,
       "execution_status": "method/core reviewed,not ported or run"
+    },
+    "retraining_free_pruning": {
+      "repository": "WoosukKwon/retraining-free-pruning",
+      "commit": "806ac5a6ff53b4978e5330d45a3de692493e4d0b",
+      "paper": "https://arxiv.org/html/2204.09656v2",
+      "read_scope": "Methods3/4.1/4.2/4.3,experiments5,appendixA.4/A.5; official main.py,prune/rescale.py,utils/linalg.py.",
+      "selected_files": [
+        {
+          "path": "main.py",
+          "bytes": 7013,
+          "sha256": "210688f3f11fcaa1f4529ab87ce8fe38b6ab0d8941b694027ea8740bf764fcbe",
+          "git_blob": "3eaec5d23456dd5faea43182ca6429d2ed357338"
+        },
+        {
+          "path": "prune/rescale.py",
+          "bytes": 7588,
+          "sha256": "4c9d291500365d043339ae4a7caaa6195441aa32992424f02ee15f9c1ae39b73",
+          "git_blob": "87948dcfc0bfbe55e3229bd3c3fe3d844d28f8ae"
+        },
+        {
+          "path": "utils/linalg.py",
+          "bytes": 689,
+          "sha256": "fffc08e9327649ae3ac379cdc7d1a2d47ece6ca86b2de053ef9778ee13d85c70",
+          "git_blob": "4d1197a8b686bf76d60edf7c1343acf313202d03"
+        }
+      ],
+      "mechanism": "Frozen original weights; prune attention heads/FFN filters, Fisher-based mask search/rearrangement, layerwise hidden-plus-residual mask rescaling.",
+      "implementation_boundaries": [
+        "main defaults2048 calibration examples,seed0; paper up to2000 and ten seeds.",
+        "MHA rescale skips layer0 and includes constant bias column but returns factors excluding it.",
+        "utils/linalg.py applies damp1 LSMR to already assembled ATA/ATB with residual around all-ones factors; this is not the same raw tall-system objective without qualification.",
+        "Scale range[-10,10] or numerical failure stops subsequent rescaling."
+      ],
+      "novelty_boundary": "Noninvertible structured removal with downstream compensation is known; no newness claim from pruning or least squares. No CLIP/security reproduction or accuracy claim here.",
+      "server_sources": "outputs/primary_sources/retraining_free_pruning_806ac5a6ff53",
+      "reviewed_utc": "2026-10-20T06:46:46.549382+00:00"
     }
   },
   "literature_access": {

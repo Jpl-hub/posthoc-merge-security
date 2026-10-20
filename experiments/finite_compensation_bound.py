@@ -623,6 +623,68 @@ def projection_cone(protocol):
 
 
 @torch.no_grad()
+def rank_deletion_prefix(protocol):
+    """Freeze one noninvertible O prefix using parameters only, before images."""
+    from clip_benchmark import digest
+    from cross_module_distance import extended_parameters
+    from mechanisms import load_author
+    from subspace_probe import save_json
+    from task_probe_distance import checked_models, initialize
+    initialize(); start = time.monotonic(); cfg = json.loads(Path(protocol).read_text())
+    out = Path(cfg['prefix_output']); out.mkdir(parents=True, exist_ok=False)
+    save_json(out/'protocol.json', cfg)
+    for path, pin in cfg['source_sha256'].items(): assert digest(path) == pin, path
+    anchor, expert, head, pins = checked_models(cfg['target'])
+    p, base = extended_parameters(expert, head), extended_parameters(anchor, head)
+    rank = cfg['rank']; vo = torch.linalg.svd(p['O']-base['O'], full_matrices=False).Vh[:rank]
+    vb = torch.linalg.svd(p['B']-base['B'], full_matrices=False).Vh[:rank]
+    L = p['gamma'][:, None]*p['projection']; L -= L.mean(0)
+    M = L@(p['head']-p['head'].mean(0)).T
+    rows, subspaces = [], []
+    for j in range(12):
+        sl = slice(j*64, (j+1)*64); A, C = p['O'][:, sl], base['O'][:, sl]
+        Q = torch.linalg.qr(A, mode='reduced').Q
+        _, s, vh = torch.linalg.svd(vo[:, sl]@A.T@Q, full_matrices=True)
+        nr = int((s > s[0]*1e-10).sum()); U = Q@vh[nr:].T
+        # Delete the WHOLE allowed subspace; there is no rank/strength sweep.
+        deleted = U@(U.T@A); anchor_part = U@(U.T@C)
+        score = float((M.T@anchor_part).norm())
+        rows.append(dict(head=j,removed_rank=U.shape[1],selection_score=score,
+                         O_distance=float(deleted.norm()/p['O'].norm())))
+        subspaces.append(U)
+    chosen = int(np.argmax([r['selection_score'] for r in rows])); U = subspaces[chosen]
+    sl = slice(chosen*64, (chosen+1)*64); A, C = p['O'][:, sl], base['O'][:, sl]
+    edited = p['O'].clone(); edited[:, sl] -= U@(U.T@A); edited = edited.float()
+    delta = edited.double()-p['O']; distance = float(delta.norm()/p['O'].norm())
+    author, pin = load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))
+    assert pin == cfg['author_sha256']
+    def recover(X):
+        X, target = X.float().cuda(), C.float().cuda()
+        return (X@author['solve_linear_transformation'](X, target)).cpu().double()
+    before, after = recover(A), recover(edited[:, sl])
+    predicted = -U@(U.T@C); observed = after-before
+    formula_error = float((observed-predicted).norm()/C.norm())
+    inside = float((delta@vo.T).norm()/p['O'].norm())
+    class_change = float((M.T@observed).norm())
+    passed = bool(distance < cfg['parameter_budget']*(1-cfg['distance_reserve']) and
+                  inside < 1e-6 and formula_error < 1e-5 and class_change > 1e-8)
+    # torch.save retains a view's entire backing SVD storage unless cloned.
+    raw = dict(O=p['O'], base_O=base['O'], vo=vo.clone(), vb=vb.clone(), M=M, U=U, O_release=edited,
+               selected_head=chosen, author_before=before, author_after=after)
+    torch.save(raw, out/'prefix.pt')
+    report = dict(status='parameter_gate_passed' if passed else 'closed_parameter_gate',
+        selected_head=chosen, heads=rows, O_distance=distance, O_task32_inside_distance=inside,
+        author_vs_projection_relative_error=formula_error, author_class_numerator_change=class_change,
+        author_O_change_relative_to_original_O=float(observed.norm()/p['O'].norm()),
+        raw_sha256=digest(out/'prefix.pt'), source_sha256=digest(__file__), author_sha256=pin,
+        checkpoint_sha256=pins, protocol_sha256=digest(protocol), images_loaded=0,
+        original_expert_updates=0, full_AGA_calls=0, official_column_solver_calls=2,
+        wall_seconds=time.monotonic()-start,
+        scope='Parameter-only prerequisite; no task, fusion, or protection claim.')
+    save_json(out/'results.json', report); print(json.dumps(report), flush=True)
+
+
+@torch.no_grad()
 def finite_ln_envelope(protocol):
     """One finite O/B feasibility problem with both final-LN norm endpoints."""
     import copy
@@ -649,26 +711,34 @@ def finite_ln_envelope(protocol):
     p = extended_parameters(expert, head); base = extended_parameters(anchor, head)
     rank = cfg['rank']; vo = torch.linalg.svd(p['O']-base['O'], full_matrices=False).Vh[:rank]
     vb = torch.linalg.svd(p['B']-base['B'], full_matrices=False).Vh[:rank]
-    choices = []
-    for j in range(12):
-        sl = slice(64*j, 64*(j+1)); block = p['O'][:, sl]
-        q = torch.linalg.qr(block, mode='reduced').Q
-        normal = base['O'][:, sl]-q@(q.T@base['O'][:, sl])
-        _, sv, vh = torch.linalg.svd(vo[:, sl], full_matrices=True)
-        null = vh[int((sv > sv[0]*1e-10).sum()):].T
-        u, s, v = torch.linalg.svd(normal@null, full_matrices=False)
-        choices.append((float(s[0]), u[:, 0], null@v[0]))
-    chosen = int(np.argmax([x[0] for x in choices])); singular, u, v = choices[chosen]
-    assert singular > 1e-10
-    if u[int(u.abs().argmax())] < 0: u, v = -u, -v
-    do = torch.zeros_like(p['O']); do[:, chosen*64:(chosen+1)*64] = -u[:, None]*v[None, :]
     radius = cfg['parameter_budget']*(1-cfg['distance_reserve'])
-    edited_o = (p['O']+p['O'].norm()*radius/math.sqrt(2)*do).float()
+    if cfg.get('prefix_reference'):
+        ref = cfg['prefix_reference']; assert digest(ref['path']) == ref['sha256']
+        frozen = torch.load(ref['path'], map_location='cpu', weights_only=False)
+        assert torch.equal(frozen['O'], p['O']) and torch.equal(frozen['base_O'], base['O'])
+        receipt = json.loads(Path(ref['path']).with_name('independent_validation.json').read_text())
+        assert receipt['status'] == 'passed' and receipt['raw_sha256'] == ref['sha256']
+        edited_o, chosen = frozen['O_release'], frozen['selected_head']
+    else:
+        choices = []
+        for j in range(12):
+            sl = slice(64*j, 64*(j+1)); block = p['O'][:, sl]
+            q = torch.linalg.qr(block, mode='reduced').Q
+            normal = base['O'][:, sl]-q@(q.T@base['O'][:, sl])
+            _, sv, vh = torch.linalg.svd(vo[:, sl], full_matrices=True)
+            null = vh[int((sv > sv[0]*1e-10).sum()):].T
+            u, s, v = torch.linalg.svd(normal@null, full_matrices=False)
+            choices.append((float(s[0]), u[:, 0], null@v[0]))
+        chosen = int(np.argmax([x[0] for x in choices])); singular, u, v = choices[chosen]
+        assert singular > 1e-10
+        if u[int(u.abs().argmax())] < 0: u, v = -u, -v
+        do = torch.zeros_like(p['O']); do[:, chosen*64:(chosen+1)*64] = -u[:, None]*v[None, :]
+        edited_o = (p['O']+p['O'].norm()*radius/math.sqrt(2)*do).float()
     do = edited_o.double()-p['O']; od = float(do.norm()/p['O'].norm())
-    assert od <= cfg['parameter_budget']/math.sqrt(2)
+    assert od <= cfg.get('prefix_budget', cfg['parameter_budget']/math.sqrt(2))
     o_inside = float((do@vo.T).norm()/p['O'].norm())
     rb = math.sqrt(radius**2-od**2)
-    torch.save(dict(O=edited_o,head=chosen,vo=vo,vb=vb), out/'prefix_freeze.pt')
+    torch.save(dict(O=edited_o,head=chosen,vo=vo.clone(),vb=vb.clone()), out/'prefix_freeze.pt')
     training = dataset(cfg['target'], 'data', expert.val_preprocess, training=True)
     original = capture_attention(expert, training, ids)
     publication = copy.deepcopy(expert)
@@ -757,7 +827,7 @@ def finite_ln_envelope(protocol):
     G = np.vstack(lin+soc); b = np.r_[lb, np.concatenate(sb)]; objective = np.zeros(nv); objective[-1] = 1
     assert algebra_error <= 1e-8
     np.savez_compressed(out/'cone.npz', G=G, b=b, objective=objective, qdims=qdims, linear_rows=len(lin))
-    torch.save(dict(ids=ids,labels=training.targets[ids],parameters=p,original=original,prefix=prefix,Z=z,R=r,
+    torch.save(dict(ids=ids,labels=training.targets[ids],parameters=p,original=original,prefix=prefix,Z=z,R=r.clone(),
                     U=torch.from_numpy(U),F=F,W=W,edited_O=edited_o,budget_B=rb,tmax=tmax,zmax=zmax,teacher=teacher,gaps=gaps), out/'source.pt')
     save_json(out/'pre_solver.json',dict(source_raw_sha256=digest(out/'source.pt'),cone_sha256=digest(out/'cone.npz')))
     subprocess.run([sys.executable,'experiments/verify_finite_compensation_bound.py','--ln-envelope',str(out),'--assembly-only'],check=True)
@@ -811,8 +881,10 @@ if __name__ == '__main__':
     parser.add_argument('--dense-line-system',type=Path)
     parser.add_argument('--structural-unit',type=Path)
     parser.add_argument('--ln-envelope',type=Path)
+    parser.add_argument('--rank-deletion',type=Path)
     args = parser.parse_args()
-    if args.ln_envelope:finite_ln_envelope(args.ln_envelope)
+    if args.rank_deletion:rank_deletion_prefix(args.rank_deletion)
+    elif args.ln_envelope:finite_ln_envelope(args.ln_envelope)
     elif args.structural_unit:structural_unit_check(args.structural_unit)
     elif args.dense_line_system:dense_line_system(args.dense_line_system)
     elif args.replay_line_system:replay_line_system(args.replay_line_system)

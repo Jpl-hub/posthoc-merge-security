@@ -1,22 +1,32 @@
-# Finite O/B compensation with the complete LN norm
+# 完整LN范数包络下的有限O/B补偿
 
-Status: the sole source point is feasible and independently checked; finite task probes, fresh confirmation and full-task/real-attack evaluation remain unverified. This is not an effective or original-defense claim.
+**结论：任务保持通过，真实TA及原版AGA下没有目标保护。本固定点关闭；不是Defense2突破。**
 
-| Measurement | Value |
+| 检查 | 结果 |
 |---|---:|
-|Source images|512|
-|O distance|0.35355303707522573|
-|B compensation distance|8.272856708730898e-05|
-|Joint distance|0.35355304675413524|
-|O-only full relative-gap drift|0.4667996286234999|
-|After compensation drift|0.23358894123310753|
-|Original/source correct|511/511|
-|Changed predictions|0|
-|Solver iterations|28|
-|Solver seconds|96.09241281123832|
+| 原联合参数上限 / 实际距离 | 0.5 / 0.353553047 |
+| O距离 / B最小补偿距离 | 0.353553037 / 0.000082729 |
+| 原512构造图完整R | 0.233588941 |
+| 原512及1280有限探针最坏R | 0.233481622 |
+| 真正新512训练确认原生 / 有限R | 0.125098201 / 0.125098158 |
+| 完整10000MNIST原生R / 上限 | 0.238830683 / 0.5 |
+| 完整独立模型原始 / 发布正确数 | 9969 / 9969，零改判 |
+| 独立评价复核 | 17行 / 272原128批上下文分数重放通过 |
 
-O input-task32 distance is 2.7121571828622746e-09; B input-task32 distance is 2.6255506999199464e-09. These parameter projections do not prove functional invariance. Source class counts, numerical controls and hashes are in results.json. The original incorrect source prediction is retained.
+| 真实融合与恢复 | MNIST无保护→发布 | SVHN无保护→发布 |
+|---|---:|---:|
+| TA0.5 | 99.37000%→99.37000% | 92.49770%→92.50154% |
+| 原AGA仅目标 + TA0.5 | 99.30000%→99.30000% | 92.78196%→92.78964% |
+| 原AGA双方 + TA0.5 | 99.32000%→99.32000% | 91.77167%→91.77167% |
 
-Only original/public parameters selected head6. The solver used512 pre-existing legal training construction images, with no protected historical point, confirmation, peer or test responses. No original-expert updates, TA or AGA calls occurred. Full LN variance and feature norm were retained through two convex endpoint constraints; this is a sufficient source-only inner approximation, not an all-input or FP32 certificate.
+三种融合／恢复的MNIST预测均与匹配无保护模型逐张相同，lost/gained均0，配对p均1。伙伴各自计数、逐类及配对见evaluation/results.json和comparison.csv；没有把伙伴微小提高当作目标保护。完整测试是历史已使用测试，不是首次盲测。
 
-Source/config six-path Git freeze01c3a4abc754a488f41f675bfb64388c58aa4e34 was read back before execution. Standard CVXOPT/SVD/norm support tools are prior work. One fixed O direction and one solve; no rank/head/strength/data/backend retry. Models, cone matrices and raw scores remain on3090.
+构造先以原专家／公开基座参数选头6，任务O/B右32方向内距离均约2.7e−9；随后用512合法旧构造图、完整LN范数上下包络、一次标准SOCP求B最小补偿。原误判和全部竞争类保留，专家冻结、不重新微调。标准SVD、凸支撑面及SOCP不主张原创。首阶段source optimal并不等于防御成功；真正新确认和完整门控均对唯一发布进行，权重、样本、预算没有按成绩修改。
+
+失败分两部分。**直接TA本身已经零目标改判**，所以不能将无效全部归咎于AGA。其次，原AGA把O相对差从0.353553降至0.0329704；对该固定头，官方最小二乘的FP64参数表达与真实作者FP32恢复头最大差2.34e−8。正规方程的秩一展开相对误差3.95e−8，说明本次大幅法向参数变化确实被锚点投影大幅压缩；这不是所有保护可恢复的定理，也不证明参数更大必然更安全。
+
+源可行协议01c3a4abc及探针／新确认协议169be06663已在执行前GitHub读回。全任务评价协议在本地ea10af7及3090先冻结；随后插件发现installed=false，因此新增结果待远程同步，不能称已上传。索引元数据核验曾遇裸列表格式错误，保留原源码和日志，只修独立核验读取方式；生产、权重、确认未重跑。完整0.0005分数重放容差不变。
+
+求解96.092秒／28迭代；源阶段119.573秒／1536整模型图；固定源探针复用缓存，无新整图；新确认16.010秒／1024整图；完整评价146.685秒／128096整模型图，原作者AGA新调用1次／3.388秒。独立分数重放额外272个原批上下文（33,136整图，含重复128批），不是272张独立图。复核成本单列，不算新科学实验。10个原始张量／锥文件合计396338897字节及哈希见evaluation/artifact_manifest.json，全部留3090。
+
+下一步未冻结新候选；本方向不换头、秩、幅度、数据或预算重试。需要解决的是：有限任务保持之外，如何让融合后的**有符号分类作用**足够大；仅让参数距离或锚点匹配残差变大不足以回答。保留历史O/B、A/B效果及任务预算失败，不把它们改判为合规。
