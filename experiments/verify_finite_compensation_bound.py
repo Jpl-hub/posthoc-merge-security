@@ -563,6 +563,48 @@ def verify_line_closure(root):
         scope='Read-only independent reproduction of saved-score diagnosis and fresh split; confirmation budget failure remains.'))
 
 
+def verify_rank_deletion(root):
+    """Rebuild the parameter-only deletion in NumPy; never read images."""
+    from clip_benchmark import digest
+    from subspace_probe import save_json
+    root = Path(root); meta = json.loads((root/'results.json').read_text())
+    cfg = json.loads((root/'protocol.json').read_text()); assert meta['status'] == 'parameter_gate_passed'
+    assert digest(root/'prefix.pt') == meta['raw_sha256']
+    raw = torch.load(root/'prefix.pt', map_location='cpu', weights_only=False)
+    O, C, vo, M = [raw[k].numpy() for k in ['O','base_O','vo','M']]
+    projectors, scores = [], []
+    for j in range(12):
+        sl = slice(j*64, (j+1)*64); A = O[:, sl]
+        Q = np.linalg.qr(A, mode='reduced')[0]
+        _, s, vh = np.linalg.svd(vo[:, sl]@A.T@Q, full_matrices=True)
+        U = Q@vh[int(np.sum(s > s[0]*1e-10)):].T
+        projectors.append(U); scores.append(np.linalg.norm(M.T@U@(U.T@C[:, sl])))
+        assert U.shape[1] == meta['heads'][j]['removed_rank']
+        assert abs(scores[-1]-meta['heads'][j]['selection_score']) < 1e-8
+    chosen = int(np.argmax(scores)); assert chosen == meta['selected_head'] == raw['selected_head']
+    sl = slice(chosen*64, (chosen+1)*64); A, B = O[:, sl], C[:, sl]; U = projectors[chosen]
+    edited = raw['O_release'].numpy().astype(np.float64); delta = edited-O
+    assert np.linalg.norm(edited[:, sl]-(A-U@(U.T@A)))/np.linalg.norm(A) < 1e-7
+    remainder = delta.copy(); remainder[:, sl] = 0; assert not np.count_nonzero(remainder)
+    inside = np.linalg.norm(delta@vo.T)/np.linalg.norm(O); distance = np.linalg.norm(delta)/np.linalg.norm(O)
+    assert inside < 1e-6 and distance < cfg['parameter_budget']*(1-cfg['distance_reserve'])
+    def ridge(X):
+        return X@np.linalg.solve(X.T@X+1e-8*np.eye(64), X.T@B)
+    old, new = ridge(A), ridge(edited[:, sl])
+    author_error = max(np.max(abs(old-raw['author_before'].numpy())), np.max(abs(new-raw['author_after'].numpy())))
+    projection_error = np.linalg.norm(new-old+U@(U.T@B))/np.linalg.norm(B)
+    assert author_error < 1e-5 and projection_error < 1e-5
+    contrast = np.linalg.norm(M.T@(new-old)); assert contrast > 1e-8
+    save_json(root/'independent_validation.json', dict(status='passed', selected_head=chosen,
+        O_distance=float(distance), O_task32_inside_distance=float(inside),
+        author_vs_numpy_max_abs=float(author_error), finite_ridge_vs_deleted_projection_relative_error=float(projection_error),
+        class_numerator_operator_change=float(contrast), raw_sha256=meta['raw_sha256'],
+        verifier_sha256=digest(__file__), images_loaded=0, new_parameters=0,
+        scope='Only parameter geometry, not task retention or attack success.'))
+    print(json.dumps(dict(stage='rank_deletion_parameter_audit', head=chosen, O_distance=distance,
+                         author_error=author_error, projection_error=projection_error)), flush=True)
+
+
 def verify_ln_envelope(root, assembly_only=False):
     """Check conic rows against full-dimensional physics, not producer assembly."""
     import time
@@ -589,7 +631,7 @@ def verify_ln_envelope(root, assembly_only=False):
     np.testing.assert_allclose(R@R.T, np.eye(rank), atol=1e-10, rtol=0)
     assert abs(U.mean(0)).max() < 1e-10 and abs(R@vb.T).max() < 1e-8
     do = raw['edited_O'].numpy().astype(np.float64)-p['O']; od = np.linalg.norm(do)/np.linalg.norm(p['O'])
-    assert od <= cfg['parameter_budget']/np.sqrt(2) and np.linalg.norm(do@vo.T)/np.linalg.norm(p['O']) < 1e-6
+    assert od <= cfg.get('prefix_budget', cfg['parameter_budget']/np.sqrt(2)) and np.linalg.norm(do@vo.T)/np.linalg.norm(p['O']) < 1e-6
     data = np.load(root/'cone.npz'); G, b = data['G'], data['b']; nl = int(data['linear_rows']); dims = data['qdims']
     L = p['gamma'][:, None]*p['projection']; L -= L.mean(0); c = p['beta']@p['projection']
     ce = he-he.mean(1, keepdims=True); se = np.sqrt(np.mean(ce*ce, axis=1)+p['eps'])
@@ -737,13 +779,15 @@ if __name__ == '__main__':
     parser.add_argument('--line-closure',type=Path)
     parser.add_argument('--structural-unit',type=Path)
     parser.add_argument('--ln-envelope',type=Path)
+    parser.add_argument('--rank-deletion',type=Path)
     parser.add_argument('--assembly-only',action='store_true')
     parser.add_argument('--frozen-validation',type=Path)
     parser.add_argument('--source-probes',action='store_true')
     parser.add_argument('--stage',choices=['source','confirmation','full_task'])
     parser.add_argument('--protocol',type=Path)
     args = parser.parse_args()
-    if args.frozen_validation:verify_frozen_validation(args.frozen_validation,args.source_probes)
+    if args.rank_deletion:verify_rank_deletion(args.rank_deletion)
+    elif args.frozen_validation:verify_frozen_validation(args.frozen_validation,args.source_probes)
     elif args.ln_envelope:verify_ln_envelope(args.ln_envelope,args.assembly_only)
     elif args.structural_unit:verify_structural_unit(args.structural_unit)
     elif args.line_closure:verify_line_closure(args.line_closure)
