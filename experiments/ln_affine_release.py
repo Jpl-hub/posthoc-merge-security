@@ -397,10 +397,26 @@ def cross_task(protocol, target, attack=False):
     save_json(out/'before_images.json',dict(target=target,release_sha256=digest(out/'release.pt'),
         checkpoint_sha256=pins,parameter_distance=distance,protocol_sha256=digest(protocol),
         source_sha256=digest(__file__),construction_images=0,optimizer_steps=0,fixed_reverse768=not bool(cfg.get('prebuilt_releases')),
-        baseline_reference=cfg.get('reference_family'),reference_utility_observation=cfg.get('reference_utility_observation',False)))
+        baseline_reference=cfg.get('reference_family') if cfg.get('reference_utility_observation') else None,
+        method_family=cfg.get('reference_family'),reference_utility_observation=cfg.get('reference_utility_observation',False)))
     released=copy.deepcopy(expert);released.load_state_dict(expert.state_dict()|edits,strict=True)
     train=dataset(target,'data',expert.val_preprocess,True)
-    order=np.random.default_rng(cfg['seed']).permutation(len(train)).tolist();n=cfg['check_n']
+    n=cfg['check_n']
+    if cfg.get('prebuilt_training_splits'):
+        ref=cfg['prebuilt_training_splits'][target];assert digest(ref['path'])==ref['sha256']
+        split=json.loads(Path(ref['path']).read_text());order=split['indices']
+        assert split['target']==target and split['population_n']==len(train)
+        assert len(order)==2*n and len(set(order))==2*n and all(0<=i<len(train) for i in order)
+        save_json(out/'training_split.json',split)
+    elif cfg.get('fresh_training_checks'):
+        from confirm_temperature_compensation import unused
+        excluded=set(cfg['extra_excluded_indices'])
+        for path in cfg['extra_index_exclusions']:
+            record=json.loads(Path(path).read_text())
+            excluded.update(record['indices'] if 'indices' in record else record['fit'])
+        split=unused(train,excluded,cfg|dict(confirmation_n=2*n,confirmation_seed=cfg['seed']))
+        order=split['indices'];save_json(out/'training_split.json',split)
+    else:order=np.random.default_rng(cfg['seed']).permutation(len(train)).tolist()
     assert len(train)>=2*n
     raw={};rows=[];start=time.monotonic()
     for stage,ids in [('source',order[:n]),('confirmation',order[n:2*n]),('full',None)]:
@@ -428,6 +444,7 @@ def verify_cross_task(folder):
     """Independent NumPy coordinate rule and native gap/count checks."""
     from verify_covariance_noise import official_labels
     out=Path(folder);cfg=json.loads((out/'protocol.json').read_text());target=out.name
+    for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
     freeze=json.loads((out/'before_images.json').read_text());meta=json.loads((out/'native.json').read_text())
     assert digest(out/'release.pt')==freeze['release_sha256'] and digest(out/'native_scores.pt')==meta['raw_sha256']
     _,expert,_,pins=checked_models(target);assert pins==freeze['checkpoint_sha256']
@@ -436,11 +453,15 @@ def verify_cross_task(folder):
         from params_reference import verify_edits
         algebra=verify_edits(expert,edits);checked=algebra['all_state_tensors_checked']
     else:
+        order=None
+        if cfg.get('prebuilt_orders'):
+            ref=cfg['prebuilt_orders'][target];assert digest(ref['path'])==ref['sha256']
+            order=np.array(json.loads(Path(ref['path']).read_text())[cfg.get('order_variant','task_aware')]);np.testing.assert_array_equal(np.sort(order),np.arange(768))
         for k,value in expert.state_dict().items():
             name=k.removeprefix('model.visual.');a=value.numpy()
             fixed=not k.startswith('model.visual.') or name.endswith(('attn.in_proj_bias','mlp.c_fc.bias'))
             axis=1 if name=='positional_embedding' or name.endswith(('attn.in_proj_weight','mlp.c_fc.weight')) else 0
-            expected=a if fixed else np.flip(a,axis=axis)
+            expected=a if fixed else np.flip(a,axis=axis) if order is None else np.take(a,order,axis=axis)
             np.testing.assert_array_equal(edits.get(k,value),expected);checked+=1
     raw=torch.load(out/'native_scores.pt',map_location='cpu');seen=set()
     for row in meta['rows']:
@@ -451,10 +472,34 @@ def verify_cross_task(folder):
         gap=a[ix,winner,None]-a;assert (gap[mask]>0).all();e=b-a;R=float(abs((e[ix,winner,None]-e)[mask]/gap[mask]).max())
         assert abs(R-row['R'])<1e-10 and int((winner!=b.argmax(1)).sum())==row['changed']
         assert int((winner==y).sum())==row['original_correct'] and int((b.argmax(1)==y).sum())==row['released_correct']
+    if cfg.get('prebuilt_training_splits'):
+        ref=cfg['prebuilt_training_splits'][target];assert digest(ref['path'])==ref['sha256']
+        split=json.loads((out/'training_split.json').read_text())
+        assert split==json.loads(Path(ref['path']).read_text())
+        for path,pin in split['excluded_metadata_sha256'].items():assert digest(path)==pin,path
+        if split['fresh']:
+            pool=sorted(set(range(split['population_n']))-set(split['excluded_indices']))
+            draw=np.random.default_rng(split['seed']).choice(pool,2*cfg['check_n'],replace=False).tolist()
+        else:draw=np.random.default_rng(split['seed']).permutation(split['population_n'])[:2*cfg['check_n']].tolist()
+        assert draw==split['indices']
+        for i,stage in enumerate(['source','confirmation']):
+            if stage in raw:assert raw[stage]['indices']==draw[i*cfg['check_n']:(i+1)*cfg['check_n']]
+    elif cfg.get('fresh_training_checks'):
+        from audit_hermite_splits import exclusions
+        split=json.loads((out/'training_split.json').read_text());initial=set(cfg['extra_excluded_indices'])
+        for path in cfg['extra_index_exclusions']:
+            record=json.loads(Path(path).read_text());initial.update(record['indices'] if 'indices' in record else record['fit'])
+        excluded,exposed=exclusions(split,initial);assert len(excluded)==split['excluded_count']
+        draw=np.random.default_rng(split['seed']).choice(sorted(set(range(60000))-excluded),2*cfg['check_n'],replace=False).tolist()
+        assert draw==split['indices'] and not set(draw)&exposed
+        for i,stage in enumerate(['source','confirmation']):
+            if stage in raw:assert raw[stage]['indices']==draw[i*cfg['check_n']:(i+1)*cfg['check_n']]
     save_json(out/'independent_validation.json',dict(status='passed_NumPy_checks',passed=meta['passed'] and len(meta['rows'])==3,
         native_raw_sha256=meta['raw_sha256'],release_sha256=freeze['release_sha256'],all_state_tensors_checked=checked,
         complete_native_observation=len(meta['rows'])==3,reference_family=cfg.get('reference_family'),
-        source_confirmation_disjoint=True,historically_exposed_data_not_claimed_blind=True,source_sha256=digest(__file__)))
+        source_confirmation_disjoint=True,registered_training_split_recount=bool(cfg.get('prebuilt_training_splits')),
+        fresh_training_metadata_recount=cfg.get('fresh_training_checks',False) or bool(cfg.get('prebuilt_training_splits') and split['fresh']),
+        historically_exposed_data_not_claimed_blind=True,source_sha256=digest(__file__)))
 
 
 @torch.no_grad()

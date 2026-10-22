@@ -17,12 +17,35 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 | 防御一 | 99.69 | 9.80 / 6.70 | 9.80 / 6.70 | 9.80 / 6.70 |
 | O/B [H] | 99.71 | 78.77 / 62.94 | 79.53 / 65.82 | 77.85 / 61.42 |
 | A/B [H] | 99.65 | 91.07 / 77.46 | 85.42 / 75.50 | 79.20 / 69.84 |
-| 全网置换 [K] | 99.69 | 7.39 / 7.74 | 10.09 / 6.78 | 10.09 / 6.78 |
-| 最新防御二候选 [F] | 99.69 | 99.13 / 91.41 | 99.01 / 91.59 | 99.04 / 90.51 |
+| 防御二（固定结构）[K] | 99.69 | 7.39 / 7.74 | 10.09 / 6.78 | 10.09 / 6.78 |
+| 先前失败候选 [F] | 99.69 | 99.13 / 91.41 | 99.01 / 91.59 | 99.04 / 90.51 |
+| 防御二（任务方向构造） | 99.69 | 10.98 / 14.32 | 9.80 / 9.81 | 9.80 / 9.83 |
 
-每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为最新失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。
+每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为先前失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。
 
-## 2. Defense 1：三个保护任务
+## 2. 主对比：三个保护任务、相同TA与原版AGA
+
+| Target / partner | Protection | Standalone | No recovery T / P | AGA target T / P | AGA both T / P |
+|---|---|---|---|---|---|
+| MNIST / SVHN | 无保护 | 99.69 | 99.37 / 92.50 | 99.30 / 92.78 | 99.32 / 91.77 |
+| MNIST / SVHN | 防御一 | 99.69 | 9.80 / 6.70 | 9.80 / 6.70 | 9.80 / 6.70 |
+| MNIST / SVHN | PaRaMS (full) | 99.69 | 8.92 / 9.15 | 99.30 / 92.79 | 99.32 / 91.77 |
+| MNIST / SVHN | Defense 2 (structure) | 99.69 | 7.39 / 7.74 | 10.09 / 6.78 | 10.09 / 6.78 |
+| MNIST / SVHN | 防御二（任务方向构造） | 99.69 | 10.98 / 14.32 | 9.80 / 9.81 | 9.80 / 9.83 |
+| DTD / MNIST | 无保护 | 79.41 | 69.31 / 99.45 | 68.40 / 99.45 | 68.78 / 99.42 |
+| DTD / MNIST | 防御一 | 79.41 | 2.13 / 21.09 | 2.13 / 21.09 | 2.13 / 21.05 |
+| DTD / MNIST | PaRaMS (full) | 79.41 | 2.07 / 8.92 | 68.35 / 99.45 | 68.78 / 99.42 |
+| DTD / MNIST | Defense 2 (structure) | 79.41 | 2.23 / 8.68 | 2.18 / 9.89 | 2.13 / 9.85 |
+| DTD / MNIST | 防御二（任务方向构造） | 79.41 | 2.39 / 10.29 | 2.39 / 10.09 | 2.39 / 10.09 |
+| SVHN / MNIST | 无保护 | 97.46 | 92.50 / 99.37 | 91.56 / 99.39 | 91.77 / 99.32 |
+| SVHN / MNIST | 防御一 | 97.46 | 6.70 / 9.80 | 6.70 / 9.80 | 6.70 / 9.80 |
+| SVHN / MNIST | PaRaMS (full) | 97.46 | 9.09 / 8.95 | 91.56 / 99.39 | 91.77 / 99.32 |
+| SVHN / MNIST | Defense 2 (structure) | 97.46 | 7.74 / 7.39 | 9.74 / 10.28 | 9.63 / 10.28 |
+| SVHN / MNIST | 防御二（任务方向构造） | 97.46 | 7.30 / 9.45 | 6.45 / 12.19 | 6.45 / 12.22 |
+
+每格为该行受保护任务 / 伙伴准确率。PaRaMS保留官方完整默认设置；固定结构与任务方向构造分列，后者使用同一有限目标和各自原任务SVD。三保护任务对应两个无序任务组合，不冒充完整八任务表。方法贡献、已知结构和已知位置等针对性恢复单独报告。参数改动尺度和数值协议分列，不通过裁剪基线追求同参数距离。
+
+## 3. Defense 1：三个保护任务
 
 | Target / partner | Protection | Standalone | No recovery T / P | AGA target T / P | AGA both T / P |
 |---|---|---|---|---|---|
@@ -37,7 +60,7 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 
 每格为该行目标 / 伙伴，均为TA0.5。原版AGA不修改最终LayerNorm偏置；这些低分不等于能抵抗所有恢复。
 
-## 3. 恢复权限对比
+## 4. 恢复权限对比
 
 | Recovery pipeline | Additional access | Matched control M / S | Defense 1 M / S |
 |---|---|---|---|
@@ -52,7 +75,7 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 
 不同恢复拥有的信息与数据不同，不能混称原版AGA。蒸馏使用2048张同分布训练图片和学生训练；两个教师的查询标签相同，因此只训练了一个问题。偏置清理知道修改位置；原生FP32前后分数差超限的旧记录保留。
 
-## 4. 补充：更换融合方法
+## 5. 补充：更换融合方法
 
 | Merger | Unprotected M / S | Defense 1 M / S | O/B [H] M / S | A/B [H] M / S |
 |---|---|---|---|---|
@@ -65,7 +88,7 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 
 均先执行原版AGA仅处理保护专家，每格MNIST / SVHN，各融合器各用自己的无保护控制。DARE为三个掩码种子的均值；NUFILT两种顺序分开；ProDistill另需每任务64张无标签训练校准图片和攻击方融合系数训练。融合方法不算新增恢复攻击。
 
-## 5. DARE：三个固定掩码的波动
+## 6. DARE：三个固定掩码的波动
 
 | Protection | MNIST mean +/- SD | SVHN mean +/- SD |
 |---|---|---|
@@ -76,7 +99,7 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 
 均值及样本标准差来自42、43、44三个掩码，不能称三个独立专家训练或三次防御训练。
 
-## 6. 补充：DTD、SVHN保护专家的融合比较
+## 7. 补充：DTD、SVHN保护专家的融合比较
 
 | Target / partner | Merger / order | AGA scope | Control T / P | Defense 1 T / P |
 |---|---|---|---|---|
@@ -101,7 +124,7 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 
 每格为该行目标 / MNIST伙伴。NUFILT保留两种顺序；SVHN无恢复、双方AGA的单元复用此前相同融合模型并交换任务列，不重复训练。ProDistill需要每任务64张无标签校准图和融合系数训练，不能算新增无数据恢复攻击。
 
-## 7. 八专家参与、三个数据集评价
+## 8. 八专家参与、三个数据集评价
 
 | Protected task | Protection | No recovery M / D / S | AGA target M / D / S |
 |---|---|---|---|
@@ -118,7 +141,7 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 
 TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，不能写完整八任务表或八任务均值；与双专家TA0.5分开。
 
-## 8. Unmask：独立的八专家恢复设置
+## 9. Unmask：独立的八专家恢复设置
 
 | Protected task | Protection | No recovery M / D / S | Unmask0.3 M / D / S |
 |---|---|---|---|
@@ -135,7 +158,7 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，
 
 按论文公式，从融合参数减去0.3倍整份发布专家；未保护控制也执行同样操作，不与AGA组合。这里是公式适配而非官方完整复现。未保护模型也会崩溃，不能只凭绝对低分宣布防御成功或知识恢复。
 
-## 9. 针对偏置的恢复：数值协议分列
+## 10. 针对偏置的恢复：数值协议分列
 
 | Target / partner | Numerics | Scope | Control T / P | Defense 1 T / P |
 |---|---|---|---|---|
@@ -150,16 +173,27 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，
 
 每格目标 / 伙伴。MNIST采用原生FP32；DTD、SVHN采用预先固定的FP32前缀、FP64最终读出。两类不可混表。原生DTD数值控制失败与MNIST分数差超限都保留，不声称完整FP32函数严格相同。
 
-## 10. 任务方向内外变化与真实融合效果
+## 11. 任务方向内外变化与真实融合效果
 
 | Fixed model | Task-inside distance | Task-outside distance | Standalone M | TA M | AGA both M |
 |---|---|---|---|---|---|
 | 全网置换 [K] | 2.69895 | 11.86048 | 99.69 | 7.39 | 10.09 |
-| Latest compensation [F] | 0.49964 | 11.85437 | 99.69 | 99.13 | 99.04 |
+| Previous compensation [F] | 0.49964 | 11.85437 | 99.69 | 99.13 | 99.04 |
+| Distance-only pairing | 2.96985 | 12.02151 | 99.69 | 13.99 | 11.08 |
+| Task-directed pairing | 2.70843 | 12.03349 | 99.69 | 10.98 | 9.80 |
 
-相同74个矩阵、原专家减基座的32个任务右奇异方向；矩阵距离不含偏置、LayerNorm与embedding。任务外距离相近，但融合效果差别很大，不能把距离本身当作保护效果。
+相同74个矩阵、原专家减基座的32个任务右奇异方向；矩阵距离不含偏置、LayerNorm与embedding。任务外距离相近，但融合效果差别很大，不能把距离本身当作保护效果。Distance-only pairing为固定消融，不按分类成绩择优；未实测项留空。
 
-## 11. 最新Defense 2候选：任务内外与联合补偿消融
+## 12. 固定消融：去除任务方向项
+
+| Construction | Standalone M | TA M / S | AGA target M / S | AGA both M / S |
+|---|---|---|---|---|
+| Task-directed | 99.69 | 10.98 / 14.32 | 9.80 / 9.81 | 9.80 / 9.83 |
+| Distance-only | 99.69 | 13.99 / 8.78 | 11.27 / 16.32 | 11.08 / 16.30 |
+
+同一目标、基座、74矩阵、rank32及贪心规则，仅比较原构造目标。Distance-only顺序在主方法读图前已固定，分类消融在MNIST主结果后追加登记；不是所有消融均在主实验前登记。全部成绩保留，不按结果换发布；不把一个固定点当作所有排序的结论。
+
+## 13. 最新Defense 2候选：任务内外与联合补偿消融
 
 | Counterfactual | Correct | Prediction changes | Max. relative gap change |
 |---|---|---|---|
@@ -171,14 +205,14 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，
 
 固定512张构造训练图，不是测试结果。仅矩阵任务内、仅任务外、全部矩阵、其他参数与完整联合共五项。完整联合保持原能力，但真实AGA后融合仍接近99%；没有根据消融改参数。
 
-## 12. 已完成与尚缺的实验
+## 14. 已完成与尚缺的实验
 
 | Item | Status |
 |---|---|
 | TA + original AGA | Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. |
 | 防御一 | MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. |
-| New Defense 2 | Not achieved: latest complete evaluation still gives about99 percent after fusion/recovery. Historical O/B and A/B task-bound failures retained. |
-| PaRaMS | Full-default protection and Attention ablation completed for MNIST. Corresponding DTD/SVHN full-defense baselines are missing. Diagonal recovery is a native adaptation. |
+| Defense 2 | Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Parameter-only distance ablation retained. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. |
+| PaRaMS | Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. |
 | MergeLock | Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. |
 | MergeGuard / ARF | Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. |
 | MergeBarrier | Full defense not run; architecture adaptation and verified implementation missing. |

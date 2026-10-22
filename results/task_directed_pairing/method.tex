@@ -1,0 +1,35 @@
+\paragraph{Task directions and finite construction.}
+Let $W_l$ be a frozen expert matrix and $W_{0,l}$ its public-base counterpart.
+We take the first 32 right singular vectors $V_l$ of $W_l-W_{0,l}$ for 74 logical matrices:
+Q/K/V/O/A/B in 12 blocks, the flattened patch map, and the stored visual projection.
+For a shared residual-coordinate permutation $P$, let $E_l(P)$ be the actual finite matrix change and define
+\[
+ T(P)=\sum_l\frac{\lVert E_l(P)\rVert_F^2}{\lVert W_l\rVert_F^2},\qquad
+ I(P)=\sum_l\frac{\lVert E_l(P)V_l\rVert_F^2}{\lVert W_l\rVert_F^2},\qquad
+ O(P)=T(P)-I(P).
+\]
+Starting from identity, we maximize $F(P)=O(P)-I(P)$ by disjoint coordinate swaps.
+At each step we select the largest exact positive finite gain above $10^{-10}$,
+with lexicographic ties, and stop after at most 384 swaps.
+This is a fixed greedy heuristic, without a guarantee of global optimality or an absolute bound on $I$.
+Construction uses only expert/base parameters; no images, partner, classification scores, or expert training are used.
+
+\paragraph{Coordinated function preservation.}
+Q/K/V/A read residual coordinates and use $W_lP^\top$; O/B write residual coordinates and use $PW_l$.
+Patch outputs, embeddings, all LayerNorm gains/biases, and the visual readout move with the same coordinates.
+Internal attention-head and MLP-hidden coordinates stay fixed.
+This known symmetry preserves the real-arithmetic function; complete native FP32 predictions and relative class gaps are checked separately.
+The task directions remain in the original parameter coordinates and are not assumed to be a functional nullspace.
+
+\paragraph{Merging and recovery scope.}
+The original AGA changes attention/MLP parameters and leaves the patch map unchanged.
+For our involution $P^2=I$, a self-average patch map is $(I+P)W_t/2$.
+With 384 disjoint swaps this projects patch outputs to 384 coordinates.
+For an actual partner, $K=(PW_t+W_p)/2$ and $N=(I-P)/2$ satisfy
+\[
+ NK=\tfrac12N(W_p-W_t)=\tfrac12N(T_p-T_t).
+\]
+The actual merged map can remain full rank; this relation is not a classification-failure guarantee.
+We therefore evaluate real TA 0.5 and unchanged original AGA, with target-only and both-expert scopes and both task accuracies.
+Known-family public patch matching is a separate recovery permission setting.
+The distance-only order is a fixed ablation; standard symmetry, SVD and greedy tools are not individually claimed as new contributions.

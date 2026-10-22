@@ -100,23 +100,23 @@ AGA原版未修改关键LN偏置；这些结果不能证明抗任意恢复。
 \source{上表TA系数0.5；两列AGA分别处理保护专家、全部专家。*不同预算参考；$^\dagger$已发现任务保持预算反例。PaRaMS为完整官方配置。}
 \end{frame}
 
-\begin{frame}{准确率保持，不等于最坏功能误差合格}
+\begin{frame}[t]{任务保持与融合保护是两道验收}
 \setlength{\parskip}{2pt}
-{\centering\small\UtilityTable\par}
+\vspace{1mm}
+{\centering\footnotesize\UtilityTable\par}
 \small
 完整读出仍含LN尺度$\sigma(h)$；$\Gamma=\operatorname{diag}(\gamma)$，$H$为固定分类头：
 \[
 u(h)=\operatorname{center}(h)\Gamma P+\sigma(h)\beta P,
 \qquad s(h)=u(h)H^\top/\|u(h)\|.
 \]
-\begin{itemize}\setlength{\itemsep}{5pt}
+\begin{itemize}\setlength{\itemsep}{3pt}
 \item 教师7/9间隔仅0.02034；O/B预测未变仍越界，A/B已有改判反例。
-\item 新任务外0.5点：源漂移0.47384、新确认0.45155；完整漂移仍达5.94243，已关闭。
-\item 线性读出核没有控制完整LN方差与特征范数；更大幅度或更多层不自动解决这一问题。
+\item 显式任务外0.5点：新确认0.45155，完整漂移仍5.94243，已关闭。
+\item 新联合恒等对照：任务保持通过，但TA／AGA仍约99.3\%；功能保持并不等于防御有效。
 \end{itemize}
-\vspace{1mm}
-\key{两者保留为真实效果参考，不能宣称全任务满足双0.5预算。}
-\source{固定512张训练图的只读审计；完整模型重放误差为0。历史有限确认保留，不使用暴露见证修补权重。来源：utility.json、utility\_witnesses.json。}
+\key{O/B、A/B仅作效果参考；新对照保持功能，却没有保护效果。}
+\source{O/B、A/B为512张训练审计；新对照为独立确认后10000张历史测试，范围不同，均不作全域证明。新对照经原批上下文重放核验；不使用见证修补。}
 \end{frame}
 
 \begin{frame}{攻击方法：依据、权限与复现状态}
@@ -161,7 +161,7 @@ ProDistill用于恢复 & 每任务64张无类别标签图＋任务归属 & 官�
 \item \textbf{方案一：机制与局限已有完整证据。}\\
 TA／AGA下有明显干扰；偏置清理和NUFILT能绕过，不能只报低准确率。
 \item \textbf{方案二：合规有效的新方法仍未完成。}\\
-已完成参数内外核对与固定消融；尚未打通完整功能保持与融合有害响应。O/B、A/B仅作效果参考。
+固定点B补偿超预算；新恒等对照任务保持通过，真实融合却无效。尚未同时做到有效保护与预算内功能保持。
 \item \textbf{攻击评价：已补任务、伙伴和知识来源控制。}\\
 Unmask固定公式已核验，但无保护控制也严重退化；下一方法先解决原生结构的功能保持，再作一个最小验证。
 \end{itemize}

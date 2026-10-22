@@ -14,11 +14,41 @@ PaRaMS (full) & 99.69 & 8.92 / 9.15 & 99.30 / 92.79 & 99.32 / 91.77 \\
 Defense 1 & 99.69 & 9.80 / 6.70 & 9.80 / 6.70 & 9.80 / 6.70 \\
 O/B [H] & 99.71 & 78.77 / 62.94 & 79.53 / 65.82 & 77.85 / 61.42 \\
 A/B [H] & 99.65 & 91.07 / 77.46 & 85.42 / 75.50 & 79.20 / 69.84 \\
-Global permutation [K] & 99.69 & 7.39 / 7.74 & 10.09 / 6.78 & 10.09 / 6.78 \\
+Defense 2 (structure) [K] & 99.69 & 7.39 / 7.74 & 10.09 / 6.78 & 10.09 / 6.78 \\
 Defense 2 candidate (failed) [F] & 99.69 & 99.13 / 91.41 & 99.01 / 91.59 & 99.04 / 90.51 \\
+Defense 2 (task-directed) & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
 \bottomrule
 \end{tabular}
-\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Latest candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.\end{minipage}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Previous candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.\end{minipage}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Matched defenses across three protected tasks}
+\label{tab:three_tasks}
+\begin{tabular}{lrrrrr}
+\toprule
+Target / partner & Protection & Standalone & No recovery T / P & AGA target T / P & AGA both T / P \\
+\midrule
+MNIST / SVHN & Unprotected & 99.69 & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+MNIST / SVHN & Defense 1 & 99.69 & 9.80 / 6.70 & 9.80 / 6.70 & 9.80 / 6.70 \\
+MNIST / SVHN & PaRaMS (full) & 99.69 & 8.92 / 9.15 & 99.30 / 92.79 & 99.32 / 91.77 \\
+MNIST / SVHN & Defense 2 (structure) & 99.69 & 7.39 / 7.74 & 10.09 / 6.78 & 10.09 / 6.78 \\
+MNIST / SVHN & Defense 2 (task-directed) & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+DTD / MNIST & Unprotected & 79.41 & 69.31 / 99.45 & 68.40 / 99.45 & 68.78 / 99.42 \\
+DTD / MNIST & Defense 1 & 79.41 & 2.13 / 21.09 & 2.13 / 21.09 & 2.13 / 21.05 \\
+DTD / MNIST & PaRaMS (full) & 79.41 & 2.07 / 8.92 & 68.35 / 99.45 & 68.78 / 99.42 \\
+DTD / MNIST & Defense 2 (structure) & 79.41 & 2.23 / 8.68 & 2.18 / 9.89 & 2.13 / 9.85 \\
+DTD / MNIST & Defense 2 (task-directed) & 79.41 & 2.39 / 10.29 & 2.39 / 10.09 & 2.39 / 10.09 \\
+SVHN / MNIST & Unprotected & 97.46 & 92.50 / 99.37 & 91.56 / 99.39 & 91.77 / 99.32 \\
+SVHN / MNIST & Defense 1 & 97.46 & 6.70 / 9.80 & 6.70 / 9.80 & 6.70 / 9.80 \\
+SVHN / MNIST & PaRaMS (full) & 97.46 & 9.09 / 8.95 & 91.56 / 99.39 & 91.77 / 99.32 \\
+SVHN / MNIST & Defense 2 (structure) & 97.46 & 7.74 / 7.39 & 9.74 / 10.28 & 9.63 / 10.28 \\
+SVHN / MNIST & Defense 2 (task-directed) & 97.46 & 7.30 / 9.45 & 6.45 / 12.19 & 6.45 / 12.22 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize TA0.5 and unchanged original AGA; every merged cell is protected / partner accuracy. Full PaRaMS uses official defaults without clipping. Structure uses a fixed global rule; task-directed uses the frozen finite objective with each target task SVD. Three protected tasks correspond to two unordered task pairs, not a complete eight-task table. Novelty and known-family/location-aware recovery are separate. Complete original-task predictions, parameter scales and numerical protocols are reported separately.\end{minipage}
 \end{table}
 
 \begin{table}[!htbp]
@@ -215,16 +245,34 @@ SVHN / MNIST & FP32 prefix; FP64 readout & Both & 92.50 / 99.37 & 92.50 / 99.37 
 Fixed model & Task-inside distance & Task-outside distance & Standalone M & TA M & AGA both M \\
 \midrule
 Global permutation [K] & 2.69895 & 11.86048 & 99.69 & 7.39 & 10.09 \\
-Latest compensation [F] & 0.49964 & 11.85437 & 99.69 & 99.13 & 99.04 \\
+Previous compensation [F] & 0.49964 & 11.85437 & 99.69 & 99.13 & 99.04 \\
+Distance-only pairing & 2.96985 & 12.02151 & 99.69 & 13.99 & 11.08 \\
+Task-directed pairing & 2.70843 & 12.03349 & 99.69 & 10.98 & 9.80 \\
 \bottomrule
 \end{tabular}
-\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same74 matrices and original expert-minus-base rank32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy, no novelty claim.\end{minipage}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same 74 matrices and original expert-minus-base rank 32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy. Distance-only pairing is a fixed control,not a replacement selected by accuracy; -- means no classification run. The task-directed release is selected before images; no novelty claim for standard symmetry/SVD/greedy alone.\end{minipage}
 \end{table}
 
 \begin{table}[!htbp]
 \centering
 \small
-\caption{Latest Defense 2 candidate: source-only ablations}
+\caption{Fixed ablation of the task-direction objective}
+\label{tab:distance_ablation}
+\begin{tabular}{lrrrr}
+\toprule
+Construction & Standalone M & TA M / S & AGA target M / S & AGA both M / S \\
+\midrule
+Task-directed & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+Distance-only & 99.69 & 13.99 / 8.78 & 11.27 / 16.32 & 11.08 / 16.30 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same target, base, rank, 74 matrices, greedy rule, TA0.5 and original AGA. The distance-only order was fixed before task-directed images; its classification run was registered after the main MNIST result. All scores are retained without selecting a replacement. This isolates the objective in this fixed family; it is not a seed study or universal security claim.\end{minipage}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Previous Defense 2 candidate: source-only ablations}
 \label{tab:ablation}
 \begin{tabular}{lrrr}
 \toprule
@@ -251,8 +299,8 @@ Item & Status \\
 \midrule
 TA + original AGA & Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. \\
 Defense 1 & MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. \\
-New Defense 2 & Not achieved: latest complete evaluation still gives about99 percent after fusion/recovery. Historical O/B and A/B task-bound failures retained. \\
-PaRaMS & Full-default protection and Attention ablation completed for MNIST. Corresponding DTD/SVHN full-defense baselines are missing. Diagonal recovery is a native adaptation. \\
+Defense 2 & Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Parameter-only distance ablation retained. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. \\
+PaRaMS & Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. \\
 MergeLock & Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. \\
 MergeGuard / ARF & Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. \\
 MergeBarrier & Full defense not run; architecture adaptation and verified implementation missing. \\

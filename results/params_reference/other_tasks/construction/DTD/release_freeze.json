@@ -1,0 +1,738 @@
+{
+  "status": "frozen_before_any_data_or_peer",
+  "parameter_distance_all_changed_tensors": 47.25730970668909,
+  "parameter_distance_matrices": 30.425392061741938,
+  "MLP_matrices_distance_lower_bound": 7.326175290228966,
+  "global_model_relative_distance": 2.6330695155068105,
+  "parameter_budget": 0.5,
+  "within_parameter_budget": false,
+  "is_different_budget_reference": true,
+  "original_expert_updated": false,
+  "gradients": 0,
+  "labels_used": false,
+  "images_used": false,
+  "future_peer_loaded": false,
+  "test_loaded": false,
+  "source_sha256": {
+    "experiments/params_reference.py": "f3109ebd71eee556fe055e57354243b0122f08a482bf69acdb781e57b5c3c8bf",
+    "experiments/ln_affine_release.py": "f3b96dbd1cac19d9af48dd42d4c9605fef84432a6d0f39a4f4e74de585f50a5f",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/author_protocol_audit.py": "97a0f4a70d4a9239b92d73cb2b99aa7dc0d688b3cee1ec4d8ecc0bdb4cd2b522",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "original_checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "DTD/finetuned.pt": "482e5636cdb4d521376211fdeda0417f73aafab9551d366690bba3e5c0ce0f38"
+  },
+  "official_source_sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60",
+  "release_sha256": "27da7f2fcb2b010261aa75c9e12b56abdb2f1260acc76e9e163fc27f0ca81270",
+  "construction_wall_seconds": 251.63914731801196,
+  "actual_default_call": true,
+  "edited_tensors": [
+    {
+      "key": "model.visual.transformer.resblocks.0.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 22.21000831211227,
+      "delta_norm": 185.15962999255575,
+      "relative": 8.336765452337927
+    },
+    {
+      "key": "model.visual.transformer.resblocks.0.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 24.858936590147067,
+      "delta_norm": 271.6957177597517,
+      "relative": 10.929498805167688
+    },
+    {
+      "key": "model.visual.transformer.resblocks.0.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 9.686473357285562,
+      "delta_norm": 9.939979198342934,
+      "relative": 1.0261711183943638
+    },
+    {
+      "key": "model.visual.transformer.resblocks.0.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 22.537913729959055,
+      "delta_norm": 34.08175229097872,
+      "relative": 1.5121964126464262
+    },
+    {
+      "key": "model.visual.transformer.resblocks.0.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 46.09862834825214,
+      "delta_norm": 47.49375177166983,
+      "relative": 1.0302638814517044
+    },
+    {
+      "key": "model.visual.transformer.resblocks.0.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 15.014914523748635,
+      "delta_norm": 22.463201207378713,
+      "relative": 1.496059213114357
+    },
+    {
+      "key": "model.visual.transformer.resblocks.1.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 23.350425625629818,
+      "delta_norm": 191.09827276129565,
+      "relative": 8.183931026573793
+    },
+    {
+      "key": "model.visual.transformer.resblocks.1.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 21.96672487212991,
+      "delta_norm": 239.79330621060924,
+      "relative": 10.916206562720003
+    },
+    {
+      "key": "model.visual.transformer.resblocks.1.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 9.305435120022455,
+      "delta_norm": 14.661828685995335,
+      "relative": 1.5756198927707912
+    },
+    {
+      "key": "model.visual.transformer.resblocks.1.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 22.1213663123519,
+      "delta_norm": 34.240246712538394,
+      "relative": 1.5478359803399522
+    },
+    {
+      "key": "model.visual.transformer.resblocks.1.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 27.464590575147238,
+      "delta_norm": 28.502152280008872,
+      "relative": 1.0377781602832459
+    },
+    {
+      "key": "model.visual.transformer.resblocks.1.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 15.940245801859483,
+      "delta_norm": 22.74959267947951,
+      "relative": 1.4271795405329128
+    },
+    {
+      "key": "model.visual.transformer.resblocks.2.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 22.224054249961352,
+      "delta_norm": 185.3634560853835,
+      "relative": 8.340667908768529
+    },
+    {
+      "key": "model.visual.transformer.resblocks.2.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 20.10034157802611,
+      "delta_norm": 209.04166252446677,
+      "relative": 10.399905977368721
+    },
+    {
+      "key": "model.visual.transformer.resblocks.2.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 9.367822762776177,
+      "delta_norm": 11.31991443493748,
+      "relative": 1.2083826436082996
+    },
+    {
+      "key": "model.visual.transformer.resblocks.2.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 21.763898962401605,
+      "delta_norm": 35.37909760037314,
+      "relative": 1.6255863740909926
+    },
+    {
+      "key": "model.visual.transformer.resblocks.2.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 19.84636063009068,
+      "delta_norm": 18.368219272187197,
+      "relative": 0.9255207851225704
+    },
+    {
+      "key": "model.visual.transformer.resblocks.2.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 16.830664594355234,
+      "delta_norm": 24.583547319432125,
+      "relative": 1.4606403200309213
+    },
+    {
+      "key": "model.visual.transformer.resblocks.3.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 21.77934341041671,
+      "delta_norm": 177.04036238118252,
+      "relative": 8.128820003660302
+    },
+    {
+      "key": "model.visual.transformer.resblocks.3.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 17.24515371639058,
+      "delta_norm": 177.75002556819217,
+      "relative": 10.307245066725642
+    },
+    {
+      "key": "model.visual.transformer.resblocks.3.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 9.260920034521982,
+      "delta_norm": 11.176421985237177,
+      "relative": 1.206837111601738
+    },
+    {
+      "key": "model.visual.transformer.resblocks.3.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 21.309882307385084,
+      "delta_norm": 34.03417315127709,
+      "relative": 1.5971075137980613
+    },
+    {
+      "key": "model.visual.transformer.resblocks.3.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 19.587180864399365,
+      "delta_norm": 18.17251025013309,
+      "relative": 0.9277756904344767
+    },
+    {
+      "key": "model.visual.transformer.resblocks.3.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 16.8590620717587,
+      "delta_norm": 24.967980979225818,
+      "relative": 1.4809828015907656
+    },
+    {
+      "key": "model.visual.transformer.resblocks.4.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 21.71172650777888,
+      "delta_norm": 173.5258798792884,
+      "relative": 7.992265369459104
+    },
+    {
+      "key": "model.visual.transformer.resblocks.4.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 17.606651941714425,
+      "delta_norm": 196.3159926985114,
+      "relative": 11.150103571559294
+    },
+    {
+      "key": "model.visual.transformer.resblocks.4.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 9.330051954138522,
+      "delta_norm": 11.770877504149878,
+      "relative": 1.2616089987503962
+    },
+    {
+      "key": "model.visual.transformer.resblocks.4.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 21.21954355440877,
+      "delta_norm": 33.54464927935213,
+      "relative": 1.5808374573817154
+    },
+    {
+      "key": "model.visual.transformer.resblocks.4.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 19.257486642900805,
+      "delta_norm": 17.704484211817157,
+      "relative": 0.9193559128518904
+    },
+    {
+      "key": "model.visual.transformer.resblocks.4.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 16.833122906250427,
+      "delta_norm": 24.938092977063935,
+      "relative": 1.481489389458684
+    },
+    {
+      "key": "model.visual.transformer.resblocks.5.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 21.34237221191762,
+      "delta_norm": 180.11790299709097,
+      "relative": 8.439450929288581
+    },
+    {
+      "key": "model.visual.transformer.resblocks.5.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 14.330455031417365,
+      "delta_norm": 150.9614071731103,
+      "relative": 10.534306610791504
+    },
+    {
+      "key": "model.visual.transformer.resblocks.5.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 9.38621857991631,
+      "delta_norm": 11.824073390140223,
+      "relative": 1.259727044439407
+    },
+    {
+      "key": "model.visual.transformer.resblocks.5.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 22.011519870245596,
+      "delta_norm": 33.91922723447023,
+      "relative": 1.540976154051091
+    },
+    {
+      "key": "model.visual.transformer.resblocks.5.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 20.197837869929096,
+      "delta_norm": 18.04872625655862,
+      "relative": 0.8935969469994552
+    },
+    {
+      "key": "model.visual.transformer.resblocks.5.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 17.826359718682173,
+      "delta_norm": 26.28426577020732,
+      "relative": 1.4744606405906413
+    },
+    {
+      "key": "model.visual.transformer.resblocks.6.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 21.537578812280866,
+      "delta_norm": 180.0738287782307,
+      "relative": 8.360913283138002
+    },
+    {
+      "key": "model.visual.transformer.resblocks.6.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 13.63086342652465,
+      "delta_norm": 139.160864089455,
+      "relative": 10.2092479203231
+    },
+    {
+      "key": "model.visual.transformer.resblocks.6.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 9.398041532575025,
+      "delta_norm": 12.654918832480872,
+      "relative": 1.346548511050629
+    },
+    {
+      "key": "model.visual.transformer.resblocks.6.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 22.52831027204851,
+      "delta_norm": 33.8155900003584,
+      "relative": 1.5010264681197294
+    },
+    {
+      "key": "model.visual.transformer.resblocks.6.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 21.838990682632208,
+      "delta_norm": 19.213040743578553,
+      "relative": 0.8797586400757073
+    },
+    {
+      "key": "model.visual.transformer.resblocks.6.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 19.172435553628418,
+      "delta_norm": 28.223649900586462,
+      "relative": 1.4720951765173667
+    },
+    {
+      "key": "model.visual.transformer.resblocks.7.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 21.873976226131393,
+      "delta_norm": 186.10652448805536,
+      "relative": 8.508125023274287
+    },
+    {
+      "key": "model.visual.transformer.resblocks.7.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 14.552528074819302,
+      "delta_norm": 141.04937461875537,
+      "relative": 9.692431025975312
+    },
+    {
+      "key": "model.visual.transformer.resblocks.7.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 9.404547349563163,
+      "delta_norm": 11.677178447477534,
+      "relative": 1.2416523638450216
+    },
+    {
+      "key": "model.visual.transformer.resblocks.7.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 22.365308174235675,
+      "delta_norm": 33.07460576269652,
+      "relative": 1.478835234687162
+    },
+    {
+      "key": "model.visual.transformer.resblocks.7.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 22.32773910308101,
+      "delta_norm": 18.812917389358358,
+      "relative": 0.8425804915806436
+    },
+    {
+      "key": "model.visual.transformer.resblocks.7.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 20.374665121397015,
+      "delta_norm": 29.949186714011613,
+      "relative": 1.4699228937294115
+    },
+    {
+      "key": "model.visual.transformer.resblocks.8.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 21.486068492017804,
+      "delta_norm": 181.8314514202565,
+      "relative": 8.462760485372554
+    },
+    {
+      "key": "model.visual.transformer.resblocks.8.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 14.036844152410817,
+      "delta_norm": 161.02026720059206,
+      "relative": 11.471258457545598
+    },
+    {
+      "key": "model.visual.transformer.resblocks.8.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 9.647628982621615,
+      "delta_norm": 10.169333979709409,
+      "relative": 1.054075980536518
+    },
+    {
+      "key": "model.visual.transformer.resblocks.8.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 21.58095043931612,
+      "delta_norm": 31.27510636740683,
+      "relative": 1.4491996752112422
+    },
+    {
+      "key": "model.visual.transformer.resblocks.8.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 24.504823755349765,
+      "delta_norm": 22.731874241955385,
+      "relative": 0.9276489587888866
+    },
+    {
+      "key": "model.visual.transformer.resblocks.8.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 22.548544749866696,
+      "delta_norm": 33.16093287142151,
+      "relative": 1.4706462540833174
+    },
+    {
+      "key": "model.visual.transformer.resblocks.9.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 21.508642250427094,
+      "delta_norm": 182.65894542462948,
+      "relative": 8.492351274334968
+    },
+    {
+      "key": "model.visual.transformer.resblocks.9.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 13.782049992923145,
+      "delta_norm": 133.85787145643184,
+      "relative": 9.712479023451928
+    },
+    {
+      "key": "model.visual.transformer.resblocks.9.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 10.309112944568495,
+      "delta_norm": 14.175958412703178,
+      "relative": 1.3750900284948362
+    },
+    {
+      "key": "model.visual.transformer.resblocks.9.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 23.479945018344655,
+      "delta_norm": 33.66351109948802,
+      "relative": 1.4337133699924358
+    },
+    {
+      "key": "model.visual.transformer.resblocks.9.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 24.724833880138032,
+      "delta_norm": 22.864456048498777,
+      "relative": 0.9247567105745558
+    },
+    {
+      "key": "model.visual.transformer.resblocks.9.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 24.019948202775407,
+      "delta_norm": 35.242971611781535,
+      "relative": 1.4672376190931733
+    },
+    {
+      "key": "model.visual.transformer.resblocks.10.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 21.90679287557196,
+      "delta_norm": 187.60716581299428,
+      "relative": 8.563880933123402
+    },
+    {
+      "key": "model.visual.transformer.resblocks.10.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 13.399800057608049,
+      "delta_norm": 132.1333226868363,
+      "relative": 9.860842857264466
+    },
+    {
+      "key": "model.visual.transformer.resblocks.10.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 10.941060293495138,
+      "delta_norm": 13.588594814895291,
+      "relative": 1.241981531074663
+    },
+    {
+      "key": "model.visual.transformer.resblocks.10.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 23.22778244827323,
+      "delta_norm": 33.46501278113368,
+      "relative": 1.4407321428835533
+    },
+    {
+      "key": "model.visual.transformer.resblocks.10.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 24.35363299741614,
+      "delta_norm": 17.277324527639674,
+      "relative": 0.7094352012889722
+    },
+    {
+      "key": "model.visual.transformer.resblocks.10.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 26.968229993881817,
+      "delta_norm": 39.9627724700103,
+      "relative": 1.4818463235843253
+    },
+    {
+      "key": "model.visual.transformer.resblocks.11.attn.in_proj_weight",
+      "shape": [
+        2304,
+        768
+      ],
+      "original_norm": 20.795352202126157,
+      "delta_norm": 193.33576636376736,
+      "relative": 9.297066213862939
+    },
+    {
+      "key": "model.visual.transformer.resblocks.11.attn.in_proj_bias",
+      "shape": [
+        2304
+      ],
+      "original_norm": 8.549536620178968,
+      "delta_norm": 80.17721752488401,
+      "relative": 9.377960594454494
+    },
+    {
+      "key": "model.visual.transformer.resblocks.11.attn.out_proj.weight",
+      "shape": [
+        768,
+        768
+      ],
+      "original_norm": 12.376336092202722,
+      "delta_norm": 15.010996126245983,
+      "relative": 1.2128788370334527
+    },
+    {
+      "key": "model.visual.transformer.resblocks.11.mlp.c_fc.weight",
+      "shape": [
+        3072,
+        768
+      ],
+      "original_norm": 22.00213812446881,
+      "delta_norm": 32.17862266150211,
+      "relative": 1.4625225275590796
+    },
+    {
+      "key": "model.visual.transformer.resblocks.11.mlp.c_fc.bias",
+      "shape": [
+        3072
+      ],
+      "original_norm": 24.615217465039784,
+      "delta_norm": 21.44170871585354,
+      "relative": 0.8710753316035709
+    },
+    {
+      "key": "model.visual.transformer.resblocks.11.mlp.c_proj.weight",
+      "shape": [
+        768,
+        3072
+      ],
+      "original_norm": 21.946239219372043,
+      "delta_norm": 33.30547374413617,
+      "relative": 1.5175936711168847
+    }
+  ],
+  "raw_shape": "changed tensors only",
+  "target": "DTD",
+  "state_dict_is_edits_only": true,
+  "reference_not_clipped_to_project_budget": true
+}
