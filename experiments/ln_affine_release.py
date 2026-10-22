@@ -1,4 +1,4 @@
-"""Frozen LN-related publication controls; no training or response tuning."""
+"""Frozen LN-related posthoc controls and a source-conditioned readout check."""
 import argparse
 import copy
 import json
@@ -704,10 +704,149 @@ def verify(folder, confirm=False):
             natural_and_probe_margin_recount=True,source_indices_and_labels_checked=True,source_sha256=digest(__file__)))
 
 
+def linear_feature_limit(features, response, head, epsilon):
+    """First positive gap-band event on v(s)=features+s*response, 0<=s<=1."""
+    norm=np.linalg.norm(features,axis=1,keepdims=True)
+    f,d=features/norm,response/norm
+    scores=f@head.T;winner=scores.argmax(1);rows=np.arange(len(f))
+    keep=np.arange(len(head))[None,:]!=winner[:,None]
+    gap=(scores[rows,winner,None]-scores)[keep]
+    change=d@head.T;linear=(change[rows,winner,None]-change)[keep]
+    cross=np.repeat(np.sum(f*d,axis=1),len(head)-1)
+    square=np.repeat(np.sum(d*d,axis=1),len(head)-1)
+    assert np.all(gap>0) and np.all(norm>0)
+    events=[];backward=[]
+    for kappa in [1-epsilon,1+epsilon]:
+        a=linear**2-kappa**2*gap**2*square
+        b=2*(gap*linear-kappa**2*gap**2*cross)
+        c=(1-kappa**2)*gap**2
+        quadratic=np.abs(a)>1e-14*(np.abs(b)+np.abs(c))
+        disc=b*b-4*a*c
+        q=-.5*(b+np.copysign(np.sqrt(np.maximum(disc,0)),b))
+        with np.errstate(divide='ignore',invalid='ignore'):
+            roots=np.stack([q/a,c/q,-c/b])
+        valid=np.stack([quadratic&(disc>=0),quadratic&(disc>=0),~quadratic])
+        valid&=np.isfinite(roots)&(roots>0)
+        for values,mask in zip(roots,valid):
+            if np.any(mask):
+                residual=np.abs(a[mask]*values[mask]**2+b[mask]*values[mask]+c[mask])
+                scale=np.abs(a[mask])*values[mask]**2+np.abs(b[mask]*values[mask])+np.abs(c[mask])
+                backward.append(float(np.max(residual/scale)))
+                events.append(float(np.min(values[mask])))
+    error=max(backward,default=0.)
+    assert error<1e-6,error
+    return min([1.]+events),dict(maximum_root_backward_error=error,
+        positive_event_groups=len(events),formal_interval_arithmetic=False)
+
+
+@torch.no_grad()
+def centered_readout(protocol):
+    """One data-conditioned P/beta completion, distinct from exact LN gauges."""
+    import torch.nn.functional as F
+    from clip_benchmark import merge
+    from verify_covariance_noise import official_labels
+    from verify_levelset_audits import raw_scores
+    start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output'])
+    for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
+    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    anchor,expert,head,pins=checked_models(cfg['target']);visual=expert.model.visual
+    assert head.normalize and torch.count_nonzero(head.bias)==0
+    parent=json.loads(Path(cfg['index_parent']).read_text());excluded=set(parent['extra_excluded_indices'])|set(cfg['forbidden_indices'])
+    for path in parent['extra_index_exclusions']+cfg['extra_index_exclusions']:
+        record=json.loads(Path(path).read_text());excluded.update(record['indices'] if 'indices' in record else record['fit'])
+    train=dataset(cfg['target'],'data',expert.val_preprocess,True)
+    split=unused(train,excluded,cfg|dict(confirmation_n=cfg['source_n']+cfg['reserved_confirmation_n'],confirmation_seed=cfg['seed']))
+    split.update(used_for_optimization=True,source_prefix_n=cfg['source_n'],reserved_images_not_read=True)
+    ids=split['indices'][:cfg['source_n']];reserved=split['indices'][cfg['source_n']:]
+    save_json(out/'draw_split.json',split);save_json(out/'training_indices.json',dict(fit=ids))
+    save_json(out/'holdout_protocol.json',dict(split='train',indices=reserved,image_responses_not_read=True))
+    P,beta,gamma=[v.detach().double().clone() for v in [visual.proj,visual.ln_post.bias,visual.ln_post.weight]]
+    assert float(gamma.abs().min())>1e-8 and float(beta.norm())>1e-8
+    U,_,Vh=torch.linalg.svd(P-anchor.model.visual.proj.double(),full_matrices=False)
+    n=gamma.reciprocal();n/=n.norm();frame=torch.cat([P,U[:,:cfg['task_rank']],n[:,None]],1)
+    Q,s,_=torch.linalg.svd(frame,full_matrices=True);rank=int((s>s[0]*1e-10).sum());N=Q[:,rank:]
+    contrast=head.weight.double()-head.weight.double().mean(0);a=contrast[cfg['collapse_class']]
+    v=a-Vh[:cfg['task_rank']].T@(Vh[:cfg['task_rank']]@a);assert float(v.norm())>1e-8;v/=v.norm()
+    w=P@torch.linalg.solve(P.T@P,v)
+    recovered=copy.deepcopy(expert);ref=cfg['AGA_reference'];assert digest(ref['path'])==ref['sha256']
+    recovered.load_state_dict(torch.load(ref['path'],map_location='cpu',weights_only=False),strict=True)
+    for key in ['model.visual.proj','model.visual.ln_post.bias','model.visual.ln_post.weight']:
+        assert torch.equal(recovered.state_dict()[key],expert.state_dict()[key]),key
+    proxy=merge(anchor,recovered,anchor,cfg['coefficient']);del recovered
+    before,h=observe(expert,head,train,ids,'readout');proxy_before,hf=observe(proxy,head,train,ids,'readout')
+    h,hf=h.double(),hf.double()
+    z=F.layer_norm(h,(768,),gamma,beta,visual.ln_post.eps);mu=z.mean(0)
+    pf,bf,gf=[x.detach().double().clone() for x in [proxy.model.visual.proj,proxy.model.visual.ln_post.bias,proxy.model.visual.ln_post.weight]]
+    zf=F.layer_norm(hf,(768,),gf,bf,proxy.model.visual.ln_post.eps)
+    parameters=dict(gamma=gamma.numpy(),beta=beta.numpy(),projection=P.numpy(),head=head.weight.double().numpy(),eps=visual.ln_post.eps)
+    torch.save(dict(cfg=cfg,indices=ids,h=h,h_proxy=hf,original_scores=before,proxy_original_scores=proxy_before,
+        parameters=parameters,proxy_parameters=parameters|dict(gamma=gf.numpy(),beta=bf.numpy(),projection=pf.numpy()),
+        checkpoint_sha256=pins),out/'calibration.pt')
+    centered=(z-mu)@N;cov=centered.T@centered/len(z)
+    demand=float(v@a)*zf.mean(0)-float((w@pf)@a)*mu
+    ridge=cfg['ridge_relative']*cov.trace()/len(N.T)
+    coordinates=torch.linalg.solve(cov+ridge*torch.eye(len(N.T),dtype=torch.double),N.T@demand)
+    u=N@coordinates;assert float(u.norm())>1e-10;u/=u.norm();c=float(mu@u);k=-c*w
+    assert float((P.T@u).abs().max())<1e-9 and abs(float(k@u))<1e-9
+    response=(z-mu)@u;assert float(response.std())>cfg['minimum_native_response_std']
+    distance_rate=(1/float(P.norm())**2+float(k.norm()/beta.norm())**2)**.5
+    cap=cfg['parameter_budget']*(1-1e-6)/distance_rate
+    teacher=before.argmax(1);take=torch.stack([(teacher==j).nonzero().flatten()[0] for j in range(len(head.weight))])
+    rms=(z@U[:,:cfg['task_rank']]).square().mean(0).sqrt()
+    shifts=(cfg['finite_step']*torch.tensor([-1.,1.])[:,None,None]*rms[None,:,None]*U[:,:cfg['task_rank']].T[None]).flatten(0,1)
+    zp=z[take].repeat_interleave(len(shifts),0)+shifts.repeat(len(take),1)
+    allz=torch.cat([z,zp]);features=allz@P;direction=((allz-mu)@u)[:,None]*v
+    fraction,roots=linear_feature_limit(features.numpy(),(cap*direction).numpy(),head.weight.double().numpy(),cfg['source_reserve'])
+    amplitude=(1-cfg['interval_reserve'])*fraction*cap
+    released=copy.deepcopy(expert);released.model.visual.proj.copy_((P+amplitude*u[:,None]*v).float())
+    released.model.visual.ln_post.bias.copy_((beta+amplitude*k).float())
+    qp,qb=released.model.visual.proj.double(),released.model.visual.ln_post.bias.double()
+    edits={'model.visual.proj':released.model.visual.proj.clone(),'model.visual.ln_post.bias':released.model.visual.ln_post.bias.clone()}
+    torch.save(dict(edits=edits,u=u,v=v,k=k,mean=mu,amplitude=amplitude),out/'point.pt')
+    after,ha=observe(released,head,train,ids,'readout');assert torch.equal(h,ha)
+    changed_proxy=copy.deepcopy(proxy)
+    # Reproduce the author's parameter subtraction/addition, rather than replacing it by ideal averaging.
+    for key in ['model.visual.proj','model.visual.ln_post.bias']:
+        base=anchor.state_dict()[key];peer=released.state_dict()[key]
+        changed_proxy.state_dict()[key].copy_(base+cfg['coefficient']*((peer-base)+torch.zeros_like(base)))
+    proxy_after,hfa=observe(changed_proxy,head,train,ids,'readout');assert torch.equal(hf,hfa)
+    def score(x):return x/x.norm(dim=1,keepdim=True)@head.weight.double().T
+    probes=metric(score(zp@P),score((zp+qb-beta)@qp),len(zp))
+    native=metric(before,after,len(ids));environment=metric(proxy_before,proxy_after,len(ids))
+    errors=[]
+    for hh,bb,pp,expected in [(h,beta,P,before),(h,qb,qp,after),(hf,bf,pf,proxy_before),(hf,changed_proxy.model.visual.ln_post.bias.double(),changed_proxy.model.visual.proj.double(),proxy_after)]:
+        checked=raw_scores(hh.numpy(),parameters|dict(beta=bb.numpy(),projection=pp.numpy()))
+        errors.append(float(np.max(np.abs(checked-expected.numpy()))))
+    assert max(errors)<=cfg['score_tolerance'],errors
+    labels=torch.tensor(official_labels(cfg['target'],True)[ids]);net=float(((proxy_before.argmax(1)==labels).double().mean()-(proxy_after.argmax(1)==labels).double().mean()))
+    distance=(float((qp-P).norm()/P.norm())**2+float((qb-beta).norm()/beta.norm())**2)**.5
+    feasible=max(native['worst_task_drift'],probes['worst_task_drift'])<=cfg['task_budget'] and native['changed']==probes['changed']==0 and distance<=cfg['parameter_budget']
+    support=feasible and net>=cfg['minimum_proxy_accuracy_drop']
+    raw=dict(cfg=cfg,checkpoint_sha256=pins,indices=ids,calibration_sha256=digest(out/'calibration.pt'),point_sha256=digest(out/'point.pt'),
+        changed_scores=after,proxy_changed_scores=proxy_after,labels=labels,task_probe_before=score(zp@P),task_probe_after=score((zp+qb-beta)@qp))
+    torch.save(raw,out/'diagnostic.pt')
+    result=dict(status='source_supported_requires_independent_validation_and_new_confirmation' if support else 'closed_fixed_centered_readout_source_mechanism',
+        source_feasible=feasible,mechanism_supported=support,source_n=len(ids),reserved_confirmation_images_read=0,
+        native=native,task_probes=probes,public_AGA_proxy=environment,proxy_accuracy_before=float((proxy_before.argmax(1)==labels).double().mean()),
+        proxy_accuracy_after=float((proxy_after.argmax(1)==labels).double().mean()),proxy_accuracy_drop=net,
+        native_accuracy_before=float((before.argmax(1)==labels).double().mean()),native_accuracy_after=float((after.argmax(1)==labels).double().mean()),
+        parameter_distance=distance,amplitude=amplitude,unconstrained_budget_amplitude=cap,feasible_fraction=fraction,
+        native_response_std=float(response.std()),constraint_complement_dimension=len(N.T),quadratic_root_control=roots,
+        NumPy_score_errors=errors,projection_task_right_relative_change=float(((qp-P)@Vh[:cfg['task_rank']].T).norm()/(qp-P).norm()),
+        projection_task_left_relative_change=float((U[:,:cfg['task_rank']].T@(qp-P)).norm()/(qp-P).norm()),
+        diagnostic_sha256=digest(out/'diagnostic.pt'),source_sha256=digest(__file__),protocol_sha256=digest(protocol),checkpoint_sha256=pins,
+        new_image_forwards=4*len(ids),new_AGA_calls=0,expert_training_updates=0,new_release_weights=0,
+        real_partner_or_test_used=False,wall_seconds=time.monotonic()-start,
+        scope='One source-conditioned P/beta prototype, not the closed exact-affine normal or a permutation. Public target/base AGA proxy only; its threshold is not a universal prerequisite for other defenses. No new confirmation,full test,real partner or released model yet.')
+    save_json(out/'results.json',result);print(json.dumps(result),flush=True)
+
+
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--confirm',action='store_true');ap.add_argument('--verify');ap.add_argument('--components');ap.add_argument('--component-protocol');ap.add_argument('--verify-components')
     ap.add_argument('--cross-task');ap.add_argument('--target');ap.add_argument('--attack',action='store_true');ap.add_argument('--verify-cross-task')
+    ap.add_argument('--centered-readout',metavar='PROTOCOL')
     args=ap.parse_args();initialize()
+    if args.centered_readout:centered_readout(args.centered_readout);raise SystemExit
     if args.cross_task:cross_task(args.cross_task,args.target,args.attack);raise SystemExit
     if args.verify_cross_task:verify_cross_task(args.verify_cross_task);raise SystemExit
     if args.verify_components:verify_components(args.verify_components);raise SystemExit
