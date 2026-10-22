@@ -1,6 +1,6 @@
 {
   "status": "completed_table_collection",
-  "report_source_sha256": "8c5d7718ca0708531d6562c0aff9294a4a577d2a3882bb85e92646c1d2ca442f",
+  "report_source_sha256": "2bd521cd5d7dbcc76a470c942c4158a9b4bec924a88a234dad23f8db161a85fa",
   "input_sha256": {
     "results/phase3/provenance.json": "9c1a68f3f9489108313a83307b2a60840c3080e5e5ee2df450de9423d1c3a3df",
     "results/phase3/params_adaptive/independent_validation.json": "c1b02a161664aedf10453c833b90d295f44d6f1eee2eda3ecf98ee8269f5dfce",
@@ -71,6 +71,24 @@
     "results/task_directed_pairing/distance_ablation/evaluation/full/00_MNIST_SVHN/results.json": "15e74cdb6492adca21a376a10368c91550d88609f4a055a21011a2201bcdc9c4",
     "results/task_directed_pairing/distance_ablation/evaluation/full/00_MNIST_SVHN/independent_validation.json": "64fc374df218ea1fc02aa6498e9c9fcf223389b27b56826caabf7273a6078d55",
     "results/task_directed_pairing/distance_ablation/native/independent_validation.json": "5eb9918e92a9a7e3aebe2825c3114db35ec557ab4efd976852b866fcf170d762",
+    "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/independent_validation.json": "2e6306bf81c49b632cb0aa9f25218b8c909bb4ae885c7f5b789b2894b8abdc34",
+    "results/task_directed_pairing/distance_ablation/other_tasks/native/DTD/results.json": "918be7e94c6bac7f4697e5d0f58009fd18483f6bcf6ad751973b34e5e30684bc",
+    "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json": "beccf8f115c18d75b7e596f6e35ffbffbd43096cf6cc773ee7f0f40897f8d571",
+    "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/independent_validation.json": "9b417c5df33a938f38993ae07d78acbe4a63e6458ef61af7c5d339513c577478",
+    "results/task_directed_pairing/distance_ablation/other_tasks/native/SVHN/results.json": "1028894baaa3c4d365614d0023fc5fbb19704852b9e9e13c093ed7224f38ab68",
+    "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json": "76550cb7c7391ef81327b479897eccab940c2db8f62a6a9dbe4425fef8306a88",
+    "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/independent_validation.json": "46904cf0598bed8ea0044efa6a422383209c4128e8ef0d2414548442864a381e",
+    "results/task_directed_pairing/amplitude_ablation/native/96/results.json": "ac8bc1e8ceae0510f11e858ac7dc5e6c94fd944e4883aac0ba930207f81ad787",
+    "results/task_directed_pairing/amplitude_ablation/native/distance_only_96/results.json": "32652c6ea862ba366e14690905bcb28aa0ce6ce513514d147d1c7c4ad7fe3e1b",
+    "results/task_directed_pairing/amplitude_ablation/native/192/results.json": "82fdbfef95a59ef071a1e617b3058667b06ade69ab07a9a2c556ed86f395957e",
+    "results/task_directed_pairing/amplitude_ablation/native/distance_only_192/results.json": "64cd543fb11bba2b107d3b72e5c004557954a6b92efb8d9a9e7434816a0218d1",
+    "results/task_directed_pairing/amplitude_ablation/construction/96/before_images.json": "b76111fb48261f8c37ffa4e36415a980d5c5e98296698a91a1dad6d7460b41bc",
+    "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json": "504e1b973376ae37de1ff0d71679d49005103648675330d3d4651df563656fd3",
+    "results/task_directed_pairing/amplitude_ablation/construction/distance_only_96/before_images.json": "a386ccd12e632b2ddb2277ef29ad701296b53baa565d4790510be20aaa540398",
+    "results/task_directed_pairing/amplitude_ablation/construction/192/before_images.json": "576bbdd90092e8a323610541b5e413bf593ad7f2865cfa7f33a94b3c7babe282",
+    "results/task_directed_pairing/amplitude_ablation/construction/distance_only_192/before_images.json": "310058873ae0347bf24f863be6586b37d99f7a20667cee0b832feb7cc123a8df",
+    "results/task_directed_pairing/construction/before_images.json": "02bf9139e39312d5d5c8c888cd52e691e5c9b3cb12ba0b580528d9846f7536f8",
+    "results/task_directed_pairing/distance_ablation/construction/before_images.json": "005480e4b4046f2748d9f66c039e65fa61a8a179c78a9658ca49aa751d56d5dc",
     "results/mean_compensation/components.json": "3f2ad0ea7f1aed559d766b0bd395349ddeb018b4e3c2d15e488d36b6451d3f35"
   },
   "selected_rows": [
@@ -5667,9 +5685,559 @@
         "merger": "TA",
         "attack_scope": "All experts"
       }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 1,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "DTD"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 2,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 3,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "DTD"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 4,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 5,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "DTD"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 6,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 7,
+      "selector": {
+        "defense": "DistanceOnly_DTD",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "DTD"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 8,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "DistanceOnly_DTD",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 9,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "DistanceOnly_DTD",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 10,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "DistanceOnly_DTD",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 11,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "DistanceOnly_DTD",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 12,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "DistanceOnly_DTD",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/00_DTD_MNIST/results.json",
+      "row": 13,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "DistanceOnly_DTD",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 1,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "SVHN"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 2,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 3,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "SVHN"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 4,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 5,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "SVHN"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 6,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 7,
+      "selector": {
+        "defense": "DistanceOnly_SVHN",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "SVHN"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 8,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "DistanceOnly_SVHN",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 9,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "DistanceOnly_SVHN",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 10,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "DistanceOnly_SVHN",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 11,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "DistanceOnly_SVHN",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 12,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "DistanceOnly_SVHN",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/distance_ablation/other_tasks/evaluation/full/01_SVHN_MNIST/results.json",
+      "row": 13,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "DistanceOnly_SVHN",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 0,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 7,
+      "selector": {
+        "defense": "Amplitude_task_aware_96",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 8,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_task_aware_96",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 9,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_task_aware_96",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 10,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_task_aware_96",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 11,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_task_aware_96",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 12,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_task_aware_96",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 13,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_task_aware_96",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 21,
+      "selector": {
+        "defense": "Amplitude_distance_only_96",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 22,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_distance_only_96",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 23,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_distance_only_96",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 24,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_distance_only_96",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 25,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_distance_only_96",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 26,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_distance_only_96",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 27,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_distance_only_96",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 14,
+      "selector": {
+        "defense": "Amplitude_task_aware_192",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 15,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_task_aware_192",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 16,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_task_aware_192",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 17,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_task_aware_192",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 18,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_task_aware_192",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 19,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_task_aware_192",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 20,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_task_aware_192",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 28,
+      "selector": {
+        "defense": "Amplitude_distance_only_192",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 29,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_distance_only_192",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 30,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_distance_only_192",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 31,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_distance_only_192",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 32,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_distance_only_192",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 33,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Amplitude_distance_only_192",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/amplitude_ablation/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 34,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Amplitude_distance_only_192",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
     }
   ],
-  "tables": 16,
+  "tables": 17,
   "new_GPU_forwards": 0,
   "new_raw_score_revalidation": false,
   "scope": "Checks imported integer/class totals and joins; reuses prior independent raw-score audits. Not a new attack/defense experiment.",
@@ -5680,12 +6248,14 @@
     "visually_checked": true
   },
   "output_sha256": {
-    "README.md": "fa7a6f45e2fb778492acf04e600fc2e3d8ee8a684ff654b01782bb8b74146a6d",
-    "tables.md": "06a25ec13e262fc0885cb6c2e69b52efc71414a4b6983df3adc2bba8d2ef7f0b",
-    "tables.tex": "0d2fc2fa0990586c7bb2bd0a48a49b9f16e1a38fa5c57f43395499e36edba21e",
-    "table_data.json": "c84158058956cce96c7053cbd004ed6da435f1c0bbf03996f403e903c994a1d9",
-    "figure.tex": "fd71ab09ead845d6f0b5ae8b865a52ad9eef04ff5972cfde2c6ff62b86ab40cb",
+    "README.md": "ede47f6519d9059cf8cf97bd2ee18ddc30956b0a140911fcd8963df229641fc0",
+    "tables.md": "4d51ea514d45c8f0ebdb9c5899392ca9012c70f82bc52eba949d412e382ed239",
+    "tables.tex": "a20f9be1919783cbc07dfbf7429efa043b04d981daa256e6577689efab54a81b",
+    "table_data.json": "4efe199171e7cded9edd0cb2120b3ca0ea9d464699baba24b08c5c928b959487",
+    "figure.tex": "c8b388f92005d0b18eda54f04f7ce2ab49c7c3389a00e45a0ee96e450dca48f5",
     "comparison.pdf": "731d501f44364c38625f1a2973b25f58181e54742519ba3e1d4596983c74d8a3",
-    "comparison.png": "b6d78833109eae4e2981fe71b595aac46225efe3e35e748918f5f4503d4d861b"
+    "comparison.png": "b6d78833109eae4e2981fe71b595aac46225efe3e35e748918f5f4503d4d861b",
+    "amplitude.pdf": "864f9032f815a17b5c23dee4785bdda8c67b9f52892174e1f44a3fe146998fa8",
+    "amplitude.png": "f7a95fdd2ca8193b8e498d7d32d8ad728ac4d32ed7f91a4c25103323e1643c95"
   }
 }

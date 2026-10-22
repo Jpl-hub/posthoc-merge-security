@@ -20,4 +20,27 @@ $$NK=\tfrac12N(W_p-W_t)=\tfrac12N(T_p-T_t).$$
 
 任务方向项的参数消融保留同一贪心但只最大化T的旧排序。排序在主方法读图前已保存；后续分类消融单独登记，不按成绩选择发布。已知全网坐标对称性、任务SVD和贪心工具分别有已有工作，组合贡献仍需与其比较。知道全局排列家族后的公开patch匹配另列为针对性恢复，不与原AGA混用。
 
-执行代码：[有限目标与逐步构造](../../experiments/aga_coordinate_audit.py)，[完整任务检查](../../experiments/ln_affine_release.py)，[真实TA／AGA评价](../../experiments/phase3_evaluate.py)。各批应使用协议中记录的源码版本，不能用当前文件替代历史冻结指纹。
+当前执行代码：[任务SVD及逐步构造](../../_impl/subspace.py)、[全网配套换序](../../_impl/defenses.py)、[独立任务检查](../../experiment/native.py)、[真实TA／AGA评价](../../experiment/main_table.py)。历史批次使用其协议记录的源码版本，保留在[重构前快照](../engineering_refactor/snapshot.json)中。
+
+任务方向项的[三任务分类消融](distance_ablation/other_tasks/summary.md)已经补齐。MNIST、SVHN的目标融合准确率更低，DTD没有显示同样收益，因此不主张SVD项在所有任务上都更好。
+
+[修改幅度对照](amplitude_ablation/protocol.json)使用两个既有顺序的前96、192、384对交换，0和384结果复用。前缀直接由保存的`trace.json`重建，不重新计算排序，也不根据分类结果选择幅度。对应构造可复用下列现有函数：
+
+```python
+import json
+import torch
+from pathlib import Path
+from _impl.models import initialize, load_checkpoint
+from _impl.defenses import residual_permutation
+
+initialize()
+trace = json.loads(Path("results/task_directed_pairing/construction/trace.json").read_text())
+order = torch.arange(768)
+for pair in trace["task_aware"][:96]:  # 192及distance_only使用各自固定前缀
+    order[pair["i"]] = pair["j"]
+    order[pair["j"]] = pair["i"]
+expert = load_checkpoint("MNIST/finetuned.pt")
+edits = residual_permutation(expert.state_dict(), order)
+```
+
+`edits`按已有构造入口的方式保存，再由同一native、recover和main_table入口评价。以上是已登记的消融，不是新的防御算法。

@@ -307,15 +307,40 @@ Task-directed pairing & 2.70843 & 12.03349 & 99.69 & 10.98 & 9.80 \\
 \small
 \caption{Fixed ablation of the task-direction objective}
 \label{tab:distance_ablation}
-\begin{tabular}{lrrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-Construction & Standalone M & TA M / S & AGA target M / S & AGA both M / S \\
+Protected / partner & Construction & Standalone & TA & AGA target & AGA both \\
 \midrule
-Task-directed & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
-Distance-only & 99.69 & 13.99 / 8.78 & 11.27 / 16.32 & 11.08 / 16.30 \\
+MNIST / SVHN & Task-directed & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+MNIST / SVHN & Distance-only & 99.69 & 13.99 / 8.78 & 11.27 / 16.32 & 11.08 / 16.30 \\
+DTD / MNIST & Task-directed & 79.41 & 2.39 / 10.29 & 2.39 / 10.09 & 2.39 / 10.09 \\
+DTD / MNIST & Distance-only & 79.41 & 1.44 / 10.41 & 2.02 / 9.82 & 1.97 / 9.82 \\
+SVHN / MNIST & Task-directed & 97.46 & 7.30 / 9.45 & 6.45 / 12.19 & 6.45 / 12.22 \\
+SVHN / MNIST & Distance-only & 97.46 & 9.36 / 9.35 & 8.52 / 9.58 & 8.48 / 9.58 \\
 \bottomrule
 \end{tabular}
-\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same target, base, rank, 74 matrices, greedy rule, TA0.5 and original AGA. The distance-only order was fixed before task-directed images; its classification run was registered after the main MNIST result. All scores are retained without selecting a replacement. This isolates the objective in this fixed family; it is not a seed study or universal security claim.\end{minipage}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same target, base, rank32,74 matrices,greedy rule,TA0.5 and originalAGA. All distance-only orders were fixed before main images; classification supplements were registered later. The SVD term does not improve every dataset. Full results are retained; no replacement selection or independent expert-seed claim.\end{minipage}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Modification extent with the same fixed construction orders}
+\label{tab:amplitude}
+\begin{tabular}{lrrrrrr}
+\toprule
+Construction & Pairs & Distance & Standalone M & TA M / S & AGA target M / S & AGA both M / S \\
+\midrule
+Unprotected & 0 & 0.000 & 99.69 & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+Task-directed & 96 & 10.681 & 99.69 & 14.71 / 10.89 & 12.70 / 11.84 & 12.64 / 11.89 \\
+Distance-only & 96 & 11.187 & 99.69 & 7.38 / 9.40 & 11.64 / 8.95 & 11.89 / 9.00 \\
+Task-directed & 192 & 12.829 & 99.69 & 3.85 / 15.51 & 5.93 / 13.64 & 5.91 / 13.58 \\
+Distance-only & 192 & 13.281 & 99.69 & 8.14 / 10.17 & 9.79 / 7.39 & 9.79 / 7.38 \\
+Task-directed & 384 & 16.499 & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+Distance-only & 384 & 16.671 & 99.69 & 13.99 / 8.78 & 11.27 / 16.32 & 11.08 / 16.30 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize MNIST protected,SVHN partner. Use the first96/192/384 disjoint swaps of each frozen22October trace;0/384 scores are reused. Four new controls,no new ordering,objective tuning or expert training. Distances use separate logical matrices and biases. These are extent controls in the prospective structural range,notD0.5 comparisons. Known-family recovery remains applicable.\end{minipage}
 \end{table}
 
 \begin{table}[!htbp]
@@ -348,7 +373,7 @@ Item & Status \\
 \midrule
 TA + original AGA & Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. \\
 Defense 1 & MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. \\
-Defense 2 & Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. \\
+Defense 2 & Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. \\
 PaRaMS & Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. \\
 MergeLock & Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. \\
 MergeGuard / ARF & Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. \\

@@ -1,0 +1,46 @@
+{
+  "status": "registered_before_real_partner_scores",
+  "purpose": "Evaluate one already frozen numerical-compensation point by standalone and real merged accuracy; do not tune or reopen its failed strict retention result.",
+  "registration_context": "Post-hoc follow-up after observing complete standalone accuracy; not a blind preregistered candidate or a pass under the old R0.5 gate.",
+  "point": {
+    "path": "outputs/phase2_centered_readout_game_mnist_20261022/point.pt",
+    "sha256": "bf0381d37090bf28717359aec71d2d2c154d8c5f399508c92ebcfb4dd174f0af"
+  },
+  "release": {
+    "path": "outputs/phase2_centered_readout_game_mnist_20261022/edits.pt",
+    "sha256": "a2faea676db9cd58c07734c6eaa74e6bbc57e2694d8d5ff0518bfb93ccdd47d0",
+    "tensors": [
+      "model.visual.proj",
+      "model.visual.ln_post.bias"
+    ]
+  },
+  "native": {
+    "before": 0.9969,
+    "after": 0.9964,
+    "prediction_changes": 12,
+    "R": 72.98947410710699,
+    "original_R0_5_passed": false
+  },
+  "parameter_distance": 2.828424296,
+  "prospective_parameter_bound": 2.8284271247461903,
+  "original_D0_5_passed": false,
+  "construction_access": [
+    "target expert",
+    "public base",
+    "1024 target training images"
+  ],
+  "target": "MNIST",
+  "partner": "SVHN",
+  "merger": "TA",
+  "coefficient": 0.5,
+  "attacks": [
+    "None",
+    "original author AGA protected expert",
+    "original author AGA all experts"
+  ],
+  "AGA_commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+  "output": "outputs/centered_readout_accuracy_20261023",
+  "policy": "Use existing native counts and matched clean controls. Pilot then full using existing evaluator. Report target and partner, per-class and paired outcomes; no new pass threshold. Do not alter point,source,rank,class,bound or amplitude after partner results. No new optimizer or expert training.",
+  "utility_reference": "MergeGuard CVPR2026 section6 reports top-1 standalone accuracy before/after; this supports separate reporting, not retrospective success under our previous stricter protocol.",
+  "reference": "https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf"
+}

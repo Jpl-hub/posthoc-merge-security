@@ -1,0 +1,20 @@
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Modification extent with the same fixed construction orders}
+\label{tab:amplitude}
+\begin{tabular}{lrrrrrr}
+\toprule
+Construction & Pairs & Distance & Standalone M & TA M / S & AGA target M / S & AGA both M / S \\
+\midrule
+Unprotected & 0 & 0.000 & 99.69 & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+Task-directed & 96 & 10.681 & 99.69 & 14.71 / 10.89 & 12.70 / 11.84 & 12.64 / 11.89 \\
+Distance-only & 96 & 11.187 & 99.69 & 7.38 / 9.40 & 11.64 / 8.95 & 11.89 / 9.00 \\
+Task-directed & 192 & 12.829 & 99.69 & 3.85 / 15.51 & 5.93 / 13.64 & 5.91 / 13.58 \\
+Distance-only & 192 & 13.281 & 99.69 & 8.14 / 10.17 & 9.79 / 7.39 & 9.79 / 7.38 \\
+Task-directed & 384 & 16.499 & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+Distance-only & 384 & 16.671 & 99.69 & 13.99 / 8.78 & 11.27 / 16.32 & 11.08 / 16.30 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize MNIST protected,SVHN partner. Use the first96/192/384 disjoint swaps of each frozen22October trace;0/384 scores are reused. Four new controls,no new ordering,objective tuning or expert training. Distances use separate logical matrices and biases. These are extent controls in the prospective structural range,notD0.5 comparisons. Known-family recovery remains applicable.\end{minipage}
+\end{table}

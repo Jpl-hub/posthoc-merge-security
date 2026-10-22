@@ -20,4 +20,4 @@ def test_report_matches_published_tables_without_modifying_inputs(tmp_path):
     new = json.loads((out / "table_sources.json").read_text())
     assert new["input_sha256"] == meta["input_sha256"]
     assert new["selected_rows"] == meta["selected_rows"]
-    assert new["tables"] == 16 and len(new["selected_rows"]) == 523
+    assert new["tables"] == 17 and len(new["selected_rows"]) == 578
