@@ -9,7 +9,7 @@ import torch
 
 from _impl.baselines import params_default, verify_edits
 from _impl.data import dataset
-from _impl.defenses import construct_bias
+from _impl.defenses import construct_bias, nonlinear_mlp_compensation
 from _impl.io import check_files, digest, new_output, save_json
 from _impl.models import checked_models, initialize
 from _impl.subspace import build_basis, task_pairing
@@ -19,7 +19,9 @@ from cfg import load_config, require_root
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
-        "--method", choices=["task-directed", "bias", "params", "basis"], default="task-directed"
+        "--method",
+        choices=["task-directed", "bias", "params", "basis", "nonlinear"],
+        default="task-directed",
     )
     p.add_argument("--target", choices=["MNIST", "DTD", "SVHN"], required=True)
     p.add_argument("--protocol", default="configs/construct.json")
@@ -67,7 +69,18 @@ def main():
             ),
         )
         return
-    if a.method == "bias":
+    if a.method == "nonlinear":
+        c = dict(cfg["nonlinear"], target=a.target)
+        ref = c["indices"]
+        check_files({ref["path"]: ref["sha256"], case["basis"]["path"]: case["basis"]["sha256"]})
+        indices = json.loads(Path(ref["path"]).read_text())["indices"][: c["source_n"]]
+        basis = torch.load(case["basis"]["path"], map_location="cpu", weights_only=False)
+        train = dataset(a.target, "data", expert.val_preprocess, True)
+        edits, calibration, details = nonlinear_mlp_compensation(
+            expert, head, train, indices, basis, c
+        )
+        torch.save(calibration, out / "calibration.pt")
+    elif a.method == "bias":
         if not a.indices or not a.indices_sha256:
             p.error("bias requires --indices and --indices-sha256")
         c = cfg["bias"]

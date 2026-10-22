@@ -11,6 +11,118 @@ from .io import digest
 from .merge import merge
 
 
+@torch.no_grad()
+def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
+    """One task-complement reflection before QuickGELU and ridge fit after it.
+
+    This is a finite calibration experiment, not a parameter symmetry. The
+    original expert is only read; the returned two tensors form the publication.
+    """
+    import torch.nn.functional as F
+
+    from .evaluate import evaluate
+    from .metrics import task_change
+
+    prefix = "model.visual.transformer.resblocks.11.mlp."
+    state = expert.state_dict()
+    A, B = [state[prefix + k + ".weight"].double().cuda() for k in ["c_fc", "c_proj"]]
+    a = state[prefix + "c_fc.bias"].double().cuda()
+    entries = {v["source_key"]: v for v in basis.values()}
+    ba, bb = [entries[prefix + k + ".weight"] for k in ["c_fc", "c_proj"]]
+    ua, va, vb = ba["u"].cuda(), ba["v"].cuda(), bb["v"].cuda()
+    columns = torch.cat([ua, A @ va, vb, a[:, None]], dim=1)
+    columns = columns[:, columns.norm(dim=0) > 0]
+    columns /= columns.norm(dim=0)
+    C, singular, _ = torch.linalg.svd(columns, full_matrices=False)
+    C = C[:, singular > singular[0] * 1e-10]
+    Ap = (2 * C @ (C.T @ A) - A).float()
+    Bt = (2 * (B @ C) @ C.T - B).float()
+
+    inputs, original_scores, changed_scores = [], [], []
+    layer = expert.model.visual.transformer.resblocks[11].mlp.c_fc
+    handle = layer.register_forward_pre_hook(
+        lambda _m, args: inputs.append(args[0].detach().permute(1, 0, 2).cpu())
+    )
+    loader = make_loader(training, indices)
+    try:
+        evaluate(expert, head, loader, "cuda", logit_sink=original_scores.append)
+    finally:
+        handle.remove()
+    X = torch.cat(inputs)
+    width = B.shape[1]
+    gram = torch.zeros(width, width, dtype=torch.double, device="cuda")
+    cross = torch.zeros(width, B.shape[0], dtype=torch.double, device="cuda")
+    Af, af, Bf = [v.float() for v in [A, a, B]]
+
+    def phi(x):
+        return x * torch.sigmoid(1.702 * x)
+
+    for chunk in X.flatten(0, 1).split(4096):
+        x = chunk.cuda()
+        hp = phi(F.linear(x, Ap, af))
+        target = F.linear(phi(F.linear(x, Af, af)), Bf)
+        error = (target - F.linear(hp, Bt)).double()
+        hp = hp.double()
+        z = hp - (hp @ vb) @ vb.T
+        gram += z.T @ z
+        cross += z.T @ error
+    damping = cfg["damping"] * gram.diagonal().mean()
+    if not float(damping) > 0:
+        raise ValueError("No active complementary calibration directions")
+    system = gram + damping * torch.eye(width, dtype=torch.double, device="cuda")
+    delta = torch.linalg.solve(system, cross)
+    solve_error = float((system @ delta - cross).norm() / cross.norm())
+    if not solve_error < 1e-8:
+        raise ValueError(f"Ridge solve residual: {solve_error}")
+    delta -= vb @ (vb.T @ delta)
+    Bp = (Bt.double() + delta.T).float()
+    da, db = Ap.double() - A, Bp.double() - B
+    distances = [float(da.norm() / A.norm()), float(db.norm() / B.norm())]
+    details = dict(
+        task_rank=va.shape[1],
+        fixed_hidden_dimension=C.shape[1],
+        relative_A_distance=distances[0],
+        relative_B_distance=distances[1],
+        logical_distance=sum(v * v for v in distances) ** 0.5,
+        task_A_response_relative=float((da @ va).norm() / da.norm()),
+        task_B_response_relative=float((db @ vb).norm() / db.norm()),
+        ridge_damping=float(damping),
+        ridge_solve_residual=solve_error,
+        source_images=len(indices),
+        source_tokens=X.shape[0] * X.shape[1],
+        gradient_steps=0,
+        expert_training_updates=0,
+        finite_function_identity=False,
+    )
+    edits = {prefix + "c_fc.weight": Ap.cpu(), prefix + "c_proj.weight": Bp.cpu()}
+    details["parameter_range_passed"] = all(
+        d <= limit + 1e-6 for d, limit in zip(distances, cfg["matrix_bounds"])
+    )
+    if not details["parameter_range_passed"]:
+        details.update(source_passed=False, stop_reason="Declared matrix range exceeded")
+        return edits, dict(indices=indices, ln2_inputs=X), details
+    published = copy.deepcopy(expert).cpu().eval()
+    published.load_state_dict(state | edits)
+    evaluate(published, head, loader, "cuda", logit_sink=changed_scores.append)
+    before, after = [torch.cat(v).double().numpy() for v in [original_scores, changed_scores]]
+    from .data import official_labels
+
+    labels = official_labels(cfg["target"], True)[indices]
+    details["source"] = task_change(before, after)
+    details["source"].update(
+        before_correct=int((before.argmax(1) == labels).sum()),
+        after_correct=int((after.argmax(1) == labels).sum()),
+    )
+    details["source"]["accuracy_loss_pp"] = (
+        100
+        * (details["source"]["before_correct"] - details["source"]["after_correct"])
+        / len(indices)
+    )
+    details["source_passed"] = details["source"]["accuracy_loss_pp"] <= cfg["source_loss_pp"]
+    calibration = dict(indices=indices, ln2_inputs=X, before=before, after=after)
+    return edits, calibration, details
+
+
 def residual_permutation(state, order):
     """Known global residual-coordinate symmetry; keep QKV head outputs fixed.
 
