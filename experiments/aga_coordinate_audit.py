@@ -291,6 +291,57 @@ def public_patch_recovery(state, public):
 
 
 @torch.no_grad()
+@torch.no_grad()
+def patch_orthogonal_condition(protocol, output):
+    """Read-only input-operator condition; no whole-model recovery claim."""
+    import ast
+    from clip_benchmark import checkpoint_loader
+    start=time.monotonic();out=Path(output);out.mkdir(parents=True,exist_ok=False)
+    cfg=json.loads(Path(protocol).read_text())['orthogonal_input_condition']
+    assert digest(__file__)==cfg['source_sha256']
+    ref=cfg['recovery_protocol'];assert digest(ref['path'])==ref['sha256']
+    inputs=json.loads(Path(ref['path']).read_text());source=Path(cfg['official_source']['path'])
+    assert digest(source)==cfg['official_source']['sha256']
+    definition=next(n for n in ast.parse(source.read_text()).body
+                    if isinstance(n,ast.FunctionDef) and n.name=='compute_optimal_orthogonal_matrix')
+    env={'torch':torch};exec(compile(ast.Module(body=[definition],type_ignores=[]),str(source),'exec'),env)
+    fit=env['compute_optimal_orthogonal_matrix']
+    load=checkpoint_loader(Path('external/secure-merge-attack'));key='model.visual.conv1.weight'
+    def patch(ref):
+        assert digest(ref['path'])==ref['sha256']
+        model=load(ref['path']).cpu().eval();return model.state_dict()[key].flatten(1).double().clone()
+    # The public-input alignment itself receives no clean target or secret order.
+    def align(published,public):return fit(public.T,published.T).T@published
+    base=patch(inputs['public_base']);records=[]
+    for case in inputs['cases']:
+        original=patch(case['original_for_validation']);ref=case['release']
+        assert digest(ref['path'])==ref['sha256']
+        published=torch.load(ref['path'],map_location='cpu',weights_only=False)[key].flatten(1).double()
+        control=align(original,base);recovered=align(published,base)
+        relative=float((recovered-control).norm()/control.norm())
+        independent=[];minimum=[];maximum=[]
+        for x,expected in [(original,control),(published,recovered)]:
+            a,b=x.numpy(),base.numpy();cross=b@a.T
+            u,s,vh=np.linalg.svd(cross,full_matrices=False);checked=(u@vh)@a
+            independent.append(float(np.abs(checked-expected.numpy()).max()))
+            minimum.append(float(s[-1]));maximum.append(float(s[0]))
+        assert min(minimum)>cfg['minimum_relative_singular']*max(maximum)
+        assert relative<cfg['relative_operator_tolerance']
+        assert max(independent)<cfg['absolute_numpy_tolerance']
+        records.append(dict(target=case['target'],cross_minimum_singular=minimum,
+            cross_maximum_singular=maximum,relative_canonical_patch_error=relative,
+            NumPy_absolute_errors=independent,
+            matched_control_relative_patch_change=float((control-original).norm()/original.norm()),
+            original_sha256=case['original_for_validation']['sha256'],release_sha256=ref['sha256']))
+        print('PATCH_ORTHOGONAL_CONDITION',case['target'],relative,max(independent),flush=True)
+    save_json(out/'results.json',dict(status='passed_input_operator_condition_only',cases=records,
+        public_base_sha256=inputs['public_base']['sha256'],protocol=cfg,
+        source_sha256=digest(__file__),protocol_sha256=digest(protocol),
+        wall_seconds=time.monotonic()-start,new_images=0,new_AGA_calls=0,new_defense_weights=0,
+        expert_training_updates=0,whole_model_transforms=0,new_accuracy_claims=0,
+        scope='Official Procrustes kernel with native patch matrices, not complete GLMC or a new originalAGA attack. Equality concerns the aligned input operator; learned LayerNorm and downstream tensors are not transformed or evaluated.'))
+
+
 def task_pairing_recovery(protocol, output):
     """Validate a fixed public-input attack on the three frozen task releases."""
     from clip_benchmark import checkpoint_loader
@@ -949,7 +1000,9 @@ if __name__=='__main__':
     mode.add_argument('--input-projection',metavar='PROTOCOL')
     mode.add_argument('--task-pairing',metavar='PROTOCOL')
     mode.add_argument('--task-pairing-recovery',metavar='PROTOCOL')
+    mode.add_argument('--patch-orthogonal-condition',metavar='PROTOCOL')
     args=parser.parse_args();torch.set_num_threads(4)
+    if args.patch_orthogonal_condition:patch_orthogonal_condition(args.patch_orthogonal_condition,args.output);raise SystemExit
     if args.task_pairing_recovery:task_pairing_recovery(args.task_pairing_recovery,args.output);raise SystemExit
     if args.task_pairing:task_pairing(args.task_pairing,args.output);raise SystemExit
     if args.input_projection:input_projection(args.input_projection,args.output);raise SystemExit
