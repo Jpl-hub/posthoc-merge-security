@@ -402,7 +402,13 @@ def cross_task(protocol, target, attack=False):
     released=copy.deepcopy(expert);released.load_state_dict(expert.state_dict()|edits,strict=True)
     train=dataset(target,'data',expert.val_preprocess,True)
     n=cfg['check_n']
-    if cfg.get('fresh_training_checks'):
+    if cfg.get('prebuilt_training_splits'):
+        ref=cfg['prebuilt_training_splits'][target];assert digest(ref['path'])==ref['sha256']
+        split=json.loads(Path(ref['path']).read_text());order=split['indices']
+        assert split['target']==target and split['population_n']==len(train)
+        assert len(order)==2*n and len(set(order))==2*n and all(0<=i<len(train) for i in order)
+        save_json(out/'training_split.json',split)
+    elif cfg.get('fresh_training_checks'):
         from confirm_temperature_compensation import unused
         excluded=set(cfg['extra_excluded_indices'])
         for path in cfg['extra_index_exclusions']:
@@ -466,7 +472,19 @@ def verify_cross_task(folder):
         gap=a[ix,winner,None]-a;assert (gap[mask]>0).all();e=b-a;R=float(abs((e[ix,winner,None]-e)[mask]/gap[mask]).max())
         assert abs(R-row['R'])<1e-10 and int((winner!=b.argmax(1)).sum())==row['changed']
         assert int((winner==y).sum())==row['original_correct'] and int((b.argmax(1)==y).sum())==row['released_correct']
-    if cfg.get('fresh_training_checks'):
+    if cfg.get('prebuilt_training_splits'):
+        ref=cfg['prebuilt_training_splits'][target];assert digest(ref['path'])==ref['sha256']
+        split=json.loads((out/'training_split.json').read_text())
+        assert split==json.loads(Path(ref['path']).read_text())
+        for path,pin in split['excluded_metadata_sha256'].items():assert digest(path)==pin,path
+        if split['fresh']:
+            pool=sorted(set(range(split['population_n']))-set(split['excluded_indices']))
+            draw=np.random.default_rng(split['seed']).choice(pool,2*cfg['check_n'],replace=False).tolist()
+        else:draw=np.random.default_rng(split['seed']).permutation(split['population_n'])[:2*cfg['check_n']].tolist()
+        assert draw==split['indices']
+        for i,stage in enumerate(['source','confirmation']):
+            if stage in raw:assert raw[stage]['indices']==draw[i*cfg['check_n']:(i+1)*cfg['check_n']]
+    elif cfg.get('fresh_training_checks'):
         from audit_hermite_splits import exclusions
         split=json.loads((out/'training_split.json').read_text());initial=set(cfg['extra_excluded_indices'])
         for path in cfg['extra_index_exclusions']:
@@ -479,7 +497,8 @@ def verify_cross_task(folder):
     save_json(out/'independent_validation.json',dict(status='passed_NumPy_checks',passed=meta['passed'] and len(meta['rows'])==3,
         native_raw_sha256=meta['raw_sha256'],release_sha256=freeze['release_sha256'],all_state_tensors_checked=checked,
         complete_native_observation=len(meta['rows'])==3,reference_family=cfg.get('reference_family'),
-        source_confirmation_disjoint=True,fresh_training_metadata_recount=cfg.get('fresh_training_checks',False),
+        source_confirmation_disjoint=True,registered_training_split_recount=bool(cfg.get('prebuilt_training_splits')),
+        fresh_training_metadata_recount=cfg.get('fresh_training_checks',False) or bool(cfg.get('prebuilt_training_splits') and split['fresh']),
         historically_exposed_data_not_claimed_blind=True,source_sha256=digest(__file__)))
 
 
