@@ -119,6 +119,18 @@ def paper_tables(_source, output):
     table('three_tasks','Matched defenses across three protected tasks',
         ['Target / partner','Protection','Standalone','No recovery T / P','AGA target T / P','AGA both T / P'],rows,
         'TA0.5 and unchanged original AGA; every merged cell is protected / partner accuracy. Full PaRaMS uses official defaults without clipping. Structure uses a fixed global rule; task-directed uses the frozen finite objective with each target task SVD. Three protected tasks correspond to two unordered task pairs, not a complete eight-task table. Novelty and known-family/location-aware recovery are separate. Complete original-task predictions, parameter scales and numerical protocols are reported separately.')
+    recovery_root=pairing_root/'recovery'
+    if (recovery_root/'validation.json').exists():
+        check=read(str(recovery_root/'validation.json'));assert check['status']=='passed_independent_public_matching_and_all_tensors'
+        recovered=read(str(recovery_root/'results.json'));rows=[]
+        for case in recovered['cases']:
+            assert case['status']=='exact_original_state_recovered' and not any(case['tensor_differences'])
+            path=case['verified_evaluation']['results']['path'];target,peer=case['target'],case['partner']
+            for defense,label in [('TaskDirected_'+target,'Without family matching'),('Unprotected','Known-family matching')]:
+                rows.append([target+' / '+peer,label]+[pair(path,(target,peer),defense=defense,merger='TA',attack_scope=s) for s in scopes])
+        table('task_directed_recovery','Task-directed protection and known-family public recovery',
+            ['Target / partner','Recovery rule','TA T / P','AGA target T / P','AGA both T / P'],rows,
+            'All percentages. Same published/public-base weight access; targeted matching knows the global residual-permutation family and native CLIP layout. No clean expert, true task vector, secret order or images enter the attack. Each target and matched untreated control equals all158 original tensors exactly; original independently audited scores are therefore reused,not rerun. Original AGA remains unchanged and is reported separately. This does not establish recovery of arbitrary defenses.',colspec='llrrr')
     rows=[]
     for target,partner in [('MNIST','SVHN'),('MNIST','DTD'),('DTD','MNIST'),('SVHN','MNIST')]:
         for name,label in [('Unprotected','Unprotected'),('Phase1_'+target,'Defense 1')]:
@@ -274,6 +286,7 @@ def paper_tables(_source, output):
         '','TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M/D/S分别为MNIST/DTD/SVHN；T/P为该行目标/伙伴。所有准确率单位为百分比。','']
     tex=['% Generated from frozen, previously audited project records. Requires booktabs,array,graphicx.','% Accuracy in percent. No new model evaluation or raw-score audit.']
     chinese={
+        'task_directed_recovery':('任务方向防御二：已知修改方式的针对性恢复','每格为目标 / 伙伴。两种设置都只给发布权重与公开基座；针对性匹配另知道全网残差坐标换序和CLIP结构，不给原专家、真实任务向量、秘密排列或图片。三个恢复模型及无保护控制均与原专家全部158张量精确相同，因此复用已核原分数，不称新图片前向。原版AGA与该针对性恢复分别报告，不外推所有防御。'),
         'three_tasks':('主对比：三个保护任务、相同TA与原版AGA','每格为该行受保护任务 / 伙伴准确率。PaRaMS保留官方完整默认设置；固定结构与任务方向构造分列，后者使用同一有限目标和各自原任务SVD。三保护任务对应两个无序任务组合，不冒充完整八任务表。方法贡献、已知结构和已知位置等针对性恢复单独报告。参数改动尺度和数值协议分列，不通过裁剪基线追求同参数距离。'),
         'main':('主实验：双专家TA融合与原版AGA','每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为先前失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。'),
         'defense1':('Defense 1：三个保护任务','每格为该行目标 / 伙伴，均为TA0.5。原版AGA不修改最终LayerNorm偏置；这些低分不等于能抵抗所有恢复。'),
@@ -289,7 +302,8 @@ def paper_tables(_source, output):
         'ablation':('最新Defense 2候选：任务内外与联合补偿消融','固定512张构造训练图，不是测试结果。仅矩阵任务内、仅任务外、全部矩阵、其他参数与完整联合共五项。完整联合保持原能力，但真实AGA后融合仍接近99%；没有根据消融改参数。'),
         'coverage':('已完成与尚缺的实验','这是一份完成情况清单，不能说所有对比已做完；缺项不填零分，也不拿别人的论文成绩冒充我们的实测。')}
     translations={'Unprotected':'无保护','Defense 1':'防御一','Global permutation [K]':'全网置换 [K]','Defense 2 candidate (failed) [F]':'先前失败候选 [F]',
-        'Defense 2 (structure) [K]':'防御二（固定结构）[K]','Defense 2 (task-directed)':'防御二（任务方向构造）'}
+        'Defense 2 (structure) [K]':'防御二（固定结构）[K]','Defense 2 (task-directed)':'防御二（任务方向构造）',
+        'Without family matching':'不作针对性匹配','Known-family matching':'已知方式匹配'}
     method_sections=[]
     for i,t in enumerate(tables):
         md_start,tex_start=len(md),len(tex)
@@ -1293,10 +1307,65 @@ def coordinate_tasks(source, output, family='Residual'):
         existing_NumPy_raw_score_audits_reused=True,new_image_forwards=0),indent=2)+'\n')
 
 
+def task_pairing_recovery(source, output):
+    """Independent NumPy row maxima and native-array inverse, without images."""
+    import torch
+    from clip_benchmark import checkpoint_loader
+    root=Path(source);out=Path(output);out.mkdir(parents=True,exist_ok=True)
+    cfg=json.loads((root/'protocol.json').read_text());result=json.loads((root/'results.json').read_text())
+    sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    frozen=Path('configs/task_directed_recovery.json')
+    assert cfg==json.loads(frozen.read_text()) and result['protocol_sha256']==sha(frozen)
+    load=checkpoint_loader(Path('external/secure-merge-attack'))
+    def state(ref):
+        assert sha(ref['path'])==ref['sha256']
+        return load(ref['path']).cpu().eval().state_dict()
+    public=state(cfg['public_base']);key='model.visual.conv1.weight';b=public[key].double().flatten(1).numpy()
+    b=b/np.linalg.norm(b,axis=1,keepdims=True);audits=[];rows=[];pins={}
+    for case,record in zip(cfg['cases'],result['cases']):
+        assert case['target']==record['target'] and record['status']=='exact_original_state_recovered'
+        original=state(case['original_for_validation']);ref=case['release'];assert sha(ref['path'])==ref['sha256']
+        edits=torch.load(ref['path'],map_location='cpu');published=original|edits
+        orders=[];margins=[]
+        for s,label in [(published,'protected'),(original,'matched_unprotected')]:
+            x=s[key].double().flatten(1).numpy();cost=(x/np.linalg.norm(x,axis=1,keepdims=True))@b.T
+            forward=cost.argmax(axis=1);assert len(set(forward.tolist()))==len(forward)
+            order=np.argsort(forward);assert order.tolist()==record[label]['public_coordinate_to_published_row']
+            other=cost.copy();other[np.arange(len(forward)),forward]=-np.inf
+            margin=float((cost[np.arange(len(forward)),forward]-other.max(1)).min());assert margin>0
+            assert abs(margin-record[label]['strict_row_margin'])<1e-12
+            differences=[]
+            for k,v in s.items():
+                if not k.startswith('model.visual.') or k.endswith(('attn.in_proj_bias','mlp.c_fc.bias')):restored=v.numpy()
+                else:
+                    axis=1 if k.endswith(('positional_embedding','attn.in_proj_weight','mlp.c_fc.weight')) else 0
+                    restored=np.take(v.numpy(),order,axis=axis)
+                if not np.array_equal(restored,original[k].numpy()):differences.append(k)
+            assert not differences
+            orders.append(order.tolist());margins.append(margin)
+        assert orders[1]==list(range(len(orders[1])))
+        for pin in case['verified_evaluation'].values():assert sha(pin['path'])==pin['sha256']
+        data=json.loads(Path(case['verified_evaluation']['results']['path']).read_text())
+        assert record['reuse_original_rows']==[r for r in data if r['defense']=='Unprotected']
+        for r in data:
+            assert r['correct']==sum(c['correct'] for c in r['per_class'])
+            assert r['n']==sum(c['n'] for c in r['per_class'])
+            assert abs(r['accuracy_percent']-100*r['correct']/r['n'])<1e-10
+        audits.append(dict(target=case['target'],tensor_count=len(original),protected_and_control_NumPy_differences=[[],[]],
+            Hungarian_order_equals_independent_row_maximum=True,strict_margins=margins,verified_evaluation=case['verified_evaluation']))
+        pins[case['target']]=ref['sha256']
+    assert len(audits)==len(cfg['cases'])==3
+    validation=dict(status='passed_independent_public_matching_and_all_tensors',cases=audits,release_sha256=pins,
+        original_expert_used_only_for_publication_assembly_and_validation=True,new_image_forwards=0,new_AGA_calls=0,
+        results_sha256=sha(root/'results.json'),protocol_sha256=sha(root/'protocol.json'),report_source_sha256=sha(__file__))
+    (out/'validation.json').write_text(json.dumps(validation,indent=2)+'\n')
+    print('PUBLIC_RECOVERY_INDEPENDENT_CHECK',len(audits),'cases;all158tensors per protected and control exact',flush=True)
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task,distillation=distillation,joint_task_gate=joint_task_gate,paper_tables=paper_tables,coordinate_tasks=coordinate_tasks,params_tasks=lambda s,o:coordinate_tasks(s,o,'PaRaMS'),task_directed_tasks=lambda s,o:coordinate_tasks(s,o,'TaskDirected'))
+    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task,distillation=distillation,joint_task_gate=joint_task_gate,paper_tables=paper_tables,coordinate_tasks=coordinate_tasks,params_tasks=lambda s,o:coordinate_tasks(s,o,'PaRaMS'),task_directed_tasks=lambda s,o:coordinate_tasks(s,o,'TaskDirected'),task_pairing_recovery=task_pairing_recovery)
     g=p.add_mutually_exclusive_group()
     for name in modes:g.add_argument('--'+name.replace('_','-'),action='store_true')
     args=p.parse_args();next((fn for name,fn in modes.items() if getattr(args,name)),build)(args.source,args.output)
