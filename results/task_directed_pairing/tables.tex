@@ -31,10 +31,26 @@ Fixed model & Task-inside distance & Task-outside distance & Standalone M & TA M
 \midrule
 Global permutation [K] & 2.69895 & 11.86048 & 99.69 & 7.39 & 10.09 \\
 Previous compensation [F] & 0.49964 & 11.85437 & 99.69 & 99.13 & 99.04 \\
-Distance-only pairing & 2.96985 & 12.02151 & -- & -- & -- \\
+Distance-only pairing & 2.96985 & 12.02151 & 99.69 & 13.99 & 11.08 \\
 Task-directed pairing & 2.70843 & 12.03349 & 99.69 & 10.98 & 9.80 \\
 \bottomrule
 \end{tabular}
-\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same74 matrices and original expert-minus-base rank32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy. Distance-only pairing is a parameter ablation,not a published/evaluated alternative; -- means no classification run. The task-directed release is selected before images; no novelty claim for standard symmetry/SVD/greedy alone.\end{minipage}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same 74 matrices and original expert-minus-base rank 32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy. Distance-only pairing is a fixed control,not a replacement selected by accuracy; -- means no classification run. The task-directed release is selected before images; no novelty claim for standard symmetry/SVD/greedy alone.\end{minipage}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Fixed ablation of the task-direction objective}
+\label{tab:distance_ablation}
+\begin{tabular}{lrrrr}
+\toprule
+Construction & Standalone M & TA M / S & AGA target M / S & AGA both M / S \\
+\midrule
+Task-directed & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+Distance-only & 99.69 & 13.99 / 8.78 & 11.27 / 16.32 & 11.08 / 16.30 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same target, base, rank, 74 matrices, greedy rule, TA0.5 and original AGA. The distance-only order was fixed before task-directed images; its classification run was registered after the main MNIST result. All scores are retained without selecting a replacement. This isolates the objective in this fixed family; it is not a seed study or universal security claim.\end{minipage}
 \end{table}
 

@@ -1,0 +1,79 @@
+{
+  "status": "passed_existing_parameter_only_recount",
+  "rows": [
+    {
+      "target": "MNIST",
+      "variants": {
+        "task_aware": {
+          "total_squared": 152.14054326632717,
+          "inside_squared": 7.33560685611671,
+          "outside_squared": 144.80493641021036,
+          "swaps": 384,
+          "self_average_patch_output_projection_rank": 384
+        },
+        "distance_only": {
+          "total_squared": 153.33671939988884,
+          "inside_squared": 8.819996644982712,
+          "outside_squared": 144.51672275490614,
+          "swaps": 384,
+          "self_average_patch_output_projection_rank": 384
+        }
+      },
+      "inside_squared_reduction_fraction": 0.1682982260214807,
+      "coordinates_different_between_task_and_distance": 648
+    },
+    {
+      "target": "DTD",
+      "variants": {
+        "task_aware": {
+          "total_squared": 151.90468859679464,
+          "inside_squared": 7.869550415831986,
+          "outside_squared": 144.03513818096275,
+          "swaps": 384,
+          "self_average_patch_output_projection_rank": 384
+        },
+        "distance_only": {
+          "total_squared": 153.34528746521943,
+          "inside_squared": 9.560948200034238,
+          "outside_squared": 143.78433926518514,
+          "swaps": 384,
+          "self_average_patch_output_projection_rank": 384
+        }
+      },
+      "inside_squared_reduction_fraction": 0.17690690806129405,
+      "coordinates_different_between_task_and_distance": 604
+    },
+    {
+      "target": "SVHN",
+      "variants": {
+        "task_aware": {
+          "total_squared": 151.88061970977648,
+          "inside_squared": 7.461142963095695,
+          "outside_squared": 144.4194767466808,
+          "swaps": 384,
+          "self_average_patch_output_projection_rank": 384
+        },
+        "distance_only": {
+          "total_squared": 153.44182689091107,
+          "inside_squared": 9.129266795325213,
+          "outside_squared": 144.3125600955858,
+          "swaps": 384,
+          "self_average_patch_output_projection_rank": 384
+        }
+      },
+      "inside_squared_reduction_fraction": 0.18272265118636988,
+      "coordinates_different_between_task_and_distance": 660
+    }
+  ],
+  "source_sha256": {
+    "results/task_directed_pairing/construction/orders.json": "8201b8d08b5be3725aace253424adb41d01df0dccf7cfa4bafc3bd4c4f5e690b",
+    "results/task_directed_pairing/construction/matrices.json": "bdace65944b31f47e1e4a64f9751fc662a6fae1fa48f9147b71b96ae8c6a644d",
+    "results/task_directed_pairing/other_tasks/construction/DTD/orders.json": "4a68151f697c3bc2351a4ac6fc32de6df4028bd707e3d6b8a0961d9d2be44271",
+    "results/task_directed_pairing/other_tasks/construction/DTD/matrices.json": "3312dc89ca8960817903f1c3939dcb33094991f6cb7e9eeab92a762b72687648",
+    "results/task_directed_pairing/other_tasks/construction/SVHN/orders.json": "5d7294db7174e12e94b8a164d2fbf6f3b481212b13536f849223e6c99d50b604",
+    "results/task_directed_pairing/other_tasks/construction/SVHN/matrices.json": "3a6595a0953c4a1137077ea75e449bb2414e18484da6bc7e898aec46596dd96a"
+  },
+  "new_images": 0,
+  "new_models": 0,
+  "scope": "Original task directions and finite costs; each involution has384 swaps,so self-average patch map projects to384 coordinates. Does not prove equal or unequal classification effects or unknown-partner safety."
+}

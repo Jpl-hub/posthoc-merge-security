@@ -1,0 +1,16 @@
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Fixed ablation of the task-direction objective}
+\label{tab:distance_ablation}
+\begin{tabular}{lrrrr}
+\toprule
+Construction & Standalone M & TA M / S & AGA target M / S & AGA both M / S \\
+\midrule
+Task-directed & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+Distance-only & 99.69 & 13.99 / 8.78 & 11.27 / 16.32 & 11.08 / 16.30 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same target, base, rank, 74 matrices, greedy rule, TA0.5 and original AGA. The distance-only order was fixed before task-directed images; its classification run was registered after the main MNIST result. All scores are retained without selecting a replacement. This isolates the objective in this fixed family; it is not a seed study or universal security claim.\end{minipage}
+\end{table}
+

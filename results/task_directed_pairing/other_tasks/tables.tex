@@ -1,0 +1,35 @@
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+ & \multicolumn{2}{c}{Native} & \multicolumn{2}{c}{TA} & \multicolumn{2}{c}{AGA (target)} & \multicolumn{2}{c}{AGA (both)} \\
+Task & Before & After & Before & After & Before & After & Before & After \\
+\midrule
+MNIST & 99.69 & 99.69 & 99.37 & 10.98 & 99.30 & 9.80 & 99.32 & 9.80 \\
+DTD & 79.41 & 79.41 & 69.31 & 2.39 & 68.40 & 2.39 & 68.78 & 2.39 \\
+SVHN & 97.46 & 97.46 & 92.50 & 7.30 & 91.56 & 6.45 & 91.77 & 6.45 \\
+\bottomrule
+\end{tabular}
+\caption{Frozen task-SVD-directed construction. Accuracy (\%). Before/after protection. TA coefficient 0.5; original AGA. Protected task.}
+\label{tab:taskdirected-target}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & \multicolumn{2}{c}{TA} & \multicolumn{2}{c}{AGA (target)} & \multicolumn{2}{c}{AGA (both)} \\
+Target / partner & Before & After & Before & After & Before & After \\
+\midrule
+MNIST / SVHN & 92.50 & 14.32 & 92.78 & 9.81 & 91.77 & 9.83 \\
+DTD / MNIST & 99.45 & 10.29 & 99.45 & 10.09 & 99.42 & 10.09 \\
+SVHN / MNIST & 99.37 & 9.45 & 99.39 & 12.19 & 99.32 & 12.22 \\
+\bottomrule
+\end{tabular}
+\caption{Frozen task-SVD-directed construction. Accuracy (\%). Before/after protection. TA coefficient 0.5; original AGA. Partner task.}
+\label{tab:taskdirected-partner}
+\end{table*}

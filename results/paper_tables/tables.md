@@ -31,16 +31,19 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 | MNIST / SVHN | 防御一 | 99.69 | 9.80 / 6.70 | 9.80 / 6.70 | 9.80 / 6.70 |
 | MNIST / SVHN | PaRaMS (full) | 99.69 | 8.92 / 9.15 | 99.30 / 92.79 | 99.32 / 91.77 |
 | MNIST / SVHN | Defense 2 (structure) | 99.69 | 7.39 / 7.74 | 10.09 / 6.78 | 10.09 / 6.78 |
+| MNIST / SVHN | 防御二（任务方向构造） | 99.69 | 10.98 / 14.32 | 9.80 / 9.81 | 9.80 / 9.83 |
 | DTD / MNIST | 无保护 | 79.41 | 69.31 / 99.45 | 68.40 / 99.45 | 68.78 / 99.42 |
 | DTD / MNIST | 防御一 | 79.41 | 2.13 / 21.09 | 2.13 / 21.09 | 2.13 / 21.05 |
 | DTD / MNIST | PaRaMS (full) | 79.41 | 2.07 / 8.92 | 68.35 / 99.45 | 68.78 / 99.42 |
 | DTD / MNIST | Defense 2 (structure) | 79.41 | 2.23 / 8.68 | 2.18 / 9.89 | 2.13 / 9.85 |
+| DTD / MNIST | 防御二（任务方向构造） | 79.41 | 2.39 / 10.29 | 2.39 / 10.09 | 2.39 / 10.09 |
 | SVHN / MNIST | 无保护 | 97.46 | 92.50 / 99.37 | 91.56 / 99.39 | 91.77 / 99.32 |
 | SVHN / MNIST | 防御一 | 97.46 | 6.70 / 9.80 | 6.70 / 9.80 | 6.70 / 9.80 |
 | SVHN / MNIST | PaRaMS (full) | 97.46 | 9.09 / 8.95 | 91.56 / 99.39 | 91.77 / 99.32 |
 | SVHN / MNIST | Defense 2 (structure) | 97.46 | 7.74 / 7.39 | 9.74 / 10.28 | 9.63 / 10.28 |
+| SVHN / MNIST | 防御二（任务方向构造） | 97.46 | 7.30 / 9.45 | 6.45 / 12.19 | 6.45 / 12.22 |
 
-每格为该行受保护任务 / 伙伴准确率。PaRaMS保留官方完整默认设置；防御二为同一无数据全网配套换序方案，任务SVD参与构造和新方法贡献仍在研究。三保护任务对应两个无序任务组合，不冒充完整八任务表。已知结构、已知修改位置等针对性恢复单独报告。参数改动尺度和数值协议分列，不通过裁剪基线追求同参数距离。
+每格为该行受保护任务 / 伙伴准确率。PaRaMS保留官方完整默认设置；固定结构与任务方向构造分列，后者使用同一有限目标和各自原任务SVD。三保护任务对应两个无序任务组合，不冒充完整八任务表。方法贡献、已知结构和已知位置等针对性恢复单独报告。参数改动尺度和数值协议分列，不通过裁剪基线追求同参数距离。
 
 ## 3. Defense 1：三个保护任务
 
@@ -176,12 +179,21 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，
 |---|---|---|---|---|---|
 | 全网置换 [K] | 2.69895 | 11.86048 | 99.69 | 7.39 | 10.09 |
 | Previous compensation [F] | 0.49964 | 11.85437 | 99.69 | 99.13 | 99.04 |
-| Distance-only pairing | 2.96985 | 12.02151 | -- | -- | -- |
+| Distance-only pairing | 2.96985 | 12.02151 | 99.69 | 13.99 | 11.08 |
 | Task-directed pairing | 2.70843 | 12.03349 | 99.69 | 10.98 | 9.80 |
 
-相同74个矩阵、原专家减基座的32个任务右奇异方向；矩阵距离不含偏置、LayerNorm与embedding。任务外距离相近，但融合效果差别很大，不能把距离本身当作保护效果。Distance-only pairing仅做参数消融，没有发布或分类实测，空项不填零。
+相同74个矩阵、原专家减基座的32个任务右奇异方向；矩阵距离不含偏置、LayerNorm与embedding。任务外距离相近，但融合效果差别很大，不能把距离本身当作保护效果。Distance-only pairing为固定消融，不按分类成绩择优；未实测项留空。
 
-## 12. 最新Defense 2候选：任务内外与联合补偿消融
+## 12. 固定消融：去除任务方向项
+
+| Construction | Standalone M | TA M / S | AGA target M / S | AGA both M / S |
+|---|---|---|---|---|
+| Task-directed | 99.69 | 10.98 / 14.32 | 9.80 / 9.81 | 9.80 / 9.83 |
+| Distance-only | 99.69 | 13.99 / 8.78 | 11.27 / 16.32 | 11.08 / 16.30 |
+
+同一目标、基座、74矩阵、rank32及贪心规则，仅比较原构造目标。Distance-only顺序在主方法读图前已固定，分类消融在MNIST主结果后追加登记；不是所有消融均在主实验前登记。全部成绩保留，不按结果换发布；不把一个固定点当作所有排序的结论。
+
+## 13. 最新Defense 2候选：任务内外与联合补偿消融
 
 | Counterfactual | Correct | Prediction changes | Max. relative gap change |
 |---|---|---|---|
@@ -193,13 +205,13 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，
 
 固定512张构造训练图，不是测试结果。仅矩阵任务内、仅任务外、全部矩阵、其他参数与完整联合共五项。完整联合保持原能力，但真实AGA后融合仍接近99%；没有根据消融改参数。
 
-## 13. 已完成与尚缺的实验
+## 14. 已完成与尚缺的实验
 
 | Item | Status |
 |---|---|
 | TA + original AGA | Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. |
 | 防御一 | MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. |
-| Defense 2 | Fixed structural scheme verified on three protected tasks. A task-SVD-directed construction now has a complete MNIST native/TA/originalAGA check and a parameter-only distance ablation. New construction cross-task evidence,novelty and known-family recovery remain separate. |
+| Defense 2 | Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Parameter-only distance ablation retained. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. |
 | PaRaMS | Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. |
 | MergeLock | Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. |
 | MergeGuard / ARF | Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. |
