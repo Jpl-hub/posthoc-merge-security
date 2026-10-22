@@ -46,6 +46,11 @@ def author_recover(model, anchor, author):
     return author["attack_vit_mlp_only"](result, anchor).cpu().eval()
 
 
+def public_mlp_reset(state, public):
+    """Known-module recovery using only the published state and public base."""
+    return state | {k: public[k] for k in state if ".mlp." in k}
+
+
 def public_patch_recovery(state, public):
     """Known-family recovery. Inputs are only published and public state dicts."""
     from scipy.optimize import linear_sum_assignment
