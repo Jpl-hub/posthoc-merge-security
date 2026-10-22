@@ -1,0 +1,20 @@
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Task-directed protection and known-family public recovery}
+\label{tab:task_directed_recovery}
+\begin{tabular}{llrrr}
+\toprule
+Target / partner & Recovery rule & TA T / P & AGA target T / P & AGA both T / P \\
+\midrule
+MNIST / SVHN & Without family matching & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+MNIST / SVHN & Known-family matching & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+DTD / MNIST & Without family matching & 2.39 / 10.29 & 2.39 / 10.09 & 2.39 / 10.09 \\
+DTD / MNIST & Known-family matching & 69.31 / 99.45 & 68.40 / 99.45 & 68.78 / 99.42 \\
+SVHN / MNIST & Without family matching & 7.30 / 9.45 & 6.45 / 12.19 & 6.45 / 12.22 \\
+SVHN / MNIST & Known-family matching & 92.50 / 99.37 & 91.56 / 99.39 & 91.77 / 99.32 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize All percentages. Same published/public-base weight access; targeted matching knows the global residual-permutation family and native CLIP layout. No clean expert, true task vector, secret order or images enter the attack. Each target and matched untreated control equals all158 original tensors exactly; original independently audited scores are therefore reused,not rerun. Original AGA remains unchanged and is reported separately. This does not establish recovery of arbitrary defenses.\end{minipage}
+\end{table}
+

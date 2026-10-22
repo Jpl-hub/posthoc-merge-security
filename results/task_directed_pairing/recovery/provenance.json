@@ -1,0 +1,45 @@
+{
+  "status": "completed_independently_verified",
+  "preregistration_remote": "44c92f0524595212c7419d91ba9d046f618598ee",
+  "local_production_source_commit": "771ff28322d52a4296b2414b7dedfefea3984573",
+  "independent_validation_local_source_commit": "27e0f11",
+  "independent_validation_remote_source_commit": "bbd28bfb213fe0fd08f66d78d35516a82a6a0786",
+  "new_images": 0,
+  "new_AGA_calls": 0,
+  "new_expert_training_updates": 0,
+  "production_wall_seconds": 11.78140423700097,
+  "wall_time_scope": "Includes model reading,hashing,matched controls and exact-state validation;not pure matching latency.",
+  "all_state_tensors_per_target": 158,
+  "targets": 3,
+  "original_AGA_results_retained": true,
+  "known_family_recovery_succeeded": true,
+  "actual_release_weights_unchanged": true,
+  "raw_result_sha256": "7aabfa66e3414937fbf2190320b48ecffac4b4e5eb2ee33580dd99299bead152",
+  "raw_validation_sha256": "df706a79bdc34a01f3d80880866a30b2c1930c0f34c8b13225b7c8b5e95eabdf",
+  "failure_preserved": {
+    "path": "outputs/task_directed_recovery_20261022_audit.protocol_serialization_failure.log",
+    "sha256": "7f4499c0f5fc7195c1a1df200e00e8b26c2508885287ea7cd5f3bc0d63e9a7bf",
+    "reason": "Original protocol-file bytes were incorrectly compared with a reserialized JSON copy. Fixed by checking the original frozen SHA and semantic content separately. No threshold,weights,matching rule or data changes."
+  },
+  "scope": "A known-family native recovery adaptation,not unchanged originalAGA or an official full attack reproduction. Exact original state and matched control license existing independent prediction reuse.",
+  "parameter_distance_before_and_after_known_matching": [
+    {
+      "target": "MNIST",
+      "before": 16.499268638696204,
+      "after": 0.0,
+      "after_reason": "Derived from exact equality of all original tensors,not an approximate task-distance proxy."
+    },
+    {
+      "target": "DTD",
+      "before": 16.3647991289826,
+      "after": 0.0,
+      "after_reason": "Derived from exact equality of all original tensors,not an approximate task-distance proxy."
+    },
+    {
+      "target": "SVHN",
+      "before": 16.515891909801564,
+      "after": 0.0,
+      "after_reason": "Derived from exact equality of all original tensors,not an approximate task-distance proxy."
+    }
+  ]
+}

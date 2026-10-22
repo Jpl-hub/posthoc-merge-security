@@ -54,6 +54,52 @@ SVHN / MNIST & Defense 2 (task-directed) & 97.46 & 7.30 / 9.45 & 6.45 / 12.19 & 
 \begin{table}[!htbp]
 \centering
 \small
+\caption{Frozen task-directed releases across all six task-pair orientations}
+\label{tab:cross_pairs}
+\begin{tabular}{lrrrr}
+\toprule
+Target / partner & Protection & No recovery T / P & AGA target T / P & AGA both T / P \\
+\midrule
+MNIST / SVHN & Unprotected & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+MNIST / SVHN & Defense 2 (task-directed) & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+DTD / MNIST & Unprotected & 69.31 / 99.45 & 68.40 / 99.45 & 68.78 / 99.42 \\
+DTD / MNIST & Defense 2 (task-directed) & 2.39 / 10.29 & 2.39 / 10.09 & 2.39 / 10.09 \\
+SVHN / MNIST & Unprotected & 92.50 / 99.37 & 91.56 / 99.39 & 91.77 / 99.32 \\
+SVHN / MNIST & Defense 2 (task-directed) & 7.30 / 9.45 & 6.45 / 12.19 & 6.45 / 12.22 \\
+MNIST / DTD & Unprotected & 99.45 / 69.31 & 99.43 / 69.41 & 99.42 / 68.78 \\
+MNIST / DTD & Defense 2 (task-directed) & 5.01 / 1.81 & 9.80 / 2.18 & 9.80 / 2.18 \\
+DTD / SVHN & Unprotected & 70.59 / 95.36 & 69.15 / 95.44 & 69.52 / 94.18 \\
+DTD / SVHN & Defense 2 (task-directed) & 2.93 / 8.85 & 2.34 / 6.42 & 2.34 / 6.42 \\
+SVHN / DTD & Unprotected & 95.36 / 70.59 & 94.09 / 70.74 & 94.18 / 69.52 \\
+SVHN / DTD & Defense 2 (task-directed) & 7.22 / 2.13 & 6.53 / 2.07 & 6.51 / 2.07 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize The same three releases and cached unchanged author-AGA edits; TA0.5. Six orientations correspond to three unordered task pairs,not six independent datasets. The three additional evaluations were preregistered after earlier results; no release,rank,objective or parameter was selected or changed. Matching untreated controls,per-class/pair counts and original128-context score replays are retained. Historical tests are not blind. Known-family patch recovery restores these models and is reported separately; this table does not show adaptive recovery resistance.\end{minipage}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Task-directed protection and known-family public recovery}
+\label{tab:task_directed_recovery}
+\begin{tabular}{llrrr}
+\toprule
+Target / partner & Recovery rule & TA T / P & AGA target T / P & AGA both T / P \\
+\midrule
+MNIST / SVHN & Without family matching & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+MNIST / SVHN & Known-family matching & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+DTD / MNIST & Without family matching & 2.39 / 10.29 & 2.39 / 10.09 & 2.39 / 10.09 \\
+DTD / MNIST & Known-family matching & 69.31 / 99.45 & 68.40 / 99.45 & 68.78 / 99.42 \\
+SVHN / MNIST & Without family matching & 7.30 / 9.45 & 6.45 / 12.19 & 6.45 / 12.22 \\
+SVHN / MNIST & Known-family matching & 92.50 / 99.37 & 91.56 / 99.39 & 91.77 / 99.32 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize All percentages. Same published/public-base weight access; targeted matching knows the global residual-permutation family and native CLIP layout. No clean expert, true task vector, secret order or images enter the attack. Each target and matched untreated control equals all158 original tensors exactly; original independently audited scores are therefore reused,not rerun. Original AGA remains unchanged and is reported separately. This does not establish recovery of arbitrary defenses.\end{minipage}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
 \caption{Defense 1 across three protected tasks}
 \label{tab:defense1}
 \begin{tabular}{lrrrrr}
@@ -299,7 +345,7 @@ Item & Status \\
 \midrule
 TA + original AGA & Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. \\
 Defense 1 & MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. \\
-Defense 2 & Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Parameter-only distance ablation retained. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. \\
+Defense 2 & Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Parameter-only distance ablation retained. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. \\
 PaRaMS & Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. \\
 MergeLock & Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. \\
 MergeGuard / ARF & Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. \\

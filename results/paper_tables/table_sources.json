@@ -1,6 +1,6 @@
 {
   "status": "completed_table_collection",
-  "report_source_sha256": "0039642e4b0ab82751cd2ddb5ba83a131681740d01a788a1ccf2f55ef190f61e",
+  "report_source_sha256": "a0671fa3e1ef878d95b0ce1aa23be5a70e9e766a57d79e6ab94e1883955c4002",
   "input_sha256": {
     "results/phase3/provenance.json": "9c1a68f3f9489108313a83307b2a60840c3080e5e5ee2df450de9423d1c3a3df",
     "results/phase3/params_adaptive/independent_validation.json": "c1b02a161664aedf10453c833b90d295f44d6f1eee2eda3ecf98ee8269f5dfce",
@@ -40,6 +40,17 @@
     "results/task_directed_pairing/other_tasks/SVHN/independent_validation.json": "fe3a316f70c18c87762cf0f85a86776248e2bb22e5b6674867690466ba52bcad",
     "results/task_directed_pairing/other_tasks/evaluation/full/01_SVHN_MNIST/independent_validation.json": "c7dac4b3fb8303d6eb0edbaa56e2d0589633b60ddd5ee7dfca1169d9a4093ae2",
     "results/task_directed_pairing/other_tasks/evaluation/full/01_SVHN_MNIST/results.json": "3713ffe6dcd5348b31546bbdab3411637516eddfd56b13a3cbbc80daaa8b7627",
+    "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/independent_validation.json": "fdf3e33309ccab091e9f1284f975da8eaabfb54c11f25c392118d6b73e45ac2f",
+    "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/execution.json": "fcd275298c5eb2046737af3d4d46e1a7602bfae30ba8a44f39218e7f8a47b813",
+    "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json": "0787490365640547ccfd08d7c58550e7323489ce2c109452dce0d16285b7bd52",
+    "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/independent_validation.json": "afb262a40eaf07965d6fad7d5b368c1796b1eda3d00d85f83efdb8e287043be1",
+    "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/execution.json": "95c8fdbe960e5a3327a93fcc52237fa3e13ee4b64e6d496722fb98b3edb55c96",
+    "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json": "72c87fcee6941f34bb63fe2b08224bddd4715ac81e9237b6a0a6396246870665",
+    "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/independent_validation.json": "abdf351a14e2cf08b9064bd5ca5a510e5bac2fa5f59a9a0464e835effa197e4b",
+    "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/execution.json": "db152ed3f208fc5f71694a41cb6179f5e311a0837c8c54e03c2d3a0d3b7170a1",
+    "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json": "4531c528b4fc5bddf7c44d84d1c7c395723437619445df9ae79c174aec4d5561",
+    "results/task_directed_pairing/recovery/validation.json": "df706a79bdc34a01f3d80880866a30b2c1930c0f34c8b13225b7c8b5e95eabdf",
+    "results/task_directed_pairing/recovery/results.json": "7aabfa66e3414937fbf2190320b48ecffac4b4e5eb2ee33580dd99299bead152",
     "results/phase3/params_adaptive/results.json": "90e132c6c40094ffd7ad06f98f6c69ef1fb11a5c8643bf41c9d8fcdbd53e6452",
     "results/phase3/bias_canonicalization/results.json": "3decc393f34956dc1c4ca386c9879b848605b26cec4c8bb733bc24d660f5dcb8",
     "results/phase3/distillation/results.json": "b26e916c99a1da0a8d44845fcdb1b98cffaff9591235dca533b3d96dd69dae73",
@@ -1957,6 +1968,366 @@
         "merger": "TA",
         "attack_scope": "All experts",
         "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 1,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 2,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 3,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 4,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 5,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 6,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 8,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "TaskDirected_MNIST",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 9,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "TaskDirected_MNIST",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 10,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "TaskDirected_MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 11,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "TaskDirected_MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 12,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "TaskDirected_MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/00_MNIST_DTD/results.json",
+      "row": 13,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "TaskDirected_MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 1,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 2,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 3,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 4,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 5,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 6,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 8,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "TaskDirected_DTD",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 9,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "TaskDirected_DTD",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 10,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "TaskDirected_DTD",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 11,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "TaskDirected_DTD",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 12,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "TaskDirected_DTD",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/01_DTD_SVHN/results.json",
+      "row": 13,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "TaskDirected_DTD",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 1,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 2,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 3,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 4,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 5,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 6,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 8,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "TaskDirected_SVHN",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 9,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "TaskDirected_SVHN",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 10,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "TaskDirected_SVHN",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 11,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "TaskDirected_SVHN",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 12,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "TaskDirected_SVHN",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/task_directed_pairing/cross_pairs/full/02_SVHN_DTD/results.json",
+      "row": 13,
+      "selector": {
+        "dataset": "DTD",
+        "defense": "TaskDirected_SVHN",
+        "merger": "TA",
+        "attack_scope": "All experts"
       }
     },
     {
@@ -4934,7 +5305,7 @@
       }
     }
   ],
-  "tables": 14,
+  "tables": 16,
   "new_GPU_forwards": 0,
   "new_raw_score_revalidation": false,
   "scope": "Checks imported integer/class totals and joins; reuses prior independent raw-score audits. Not a new attack/defense experiment.",
@@ -4945,10 +5316,10 @@
     "visually_checked": true
   },
   "output_sha256": {
-    "README.md": "a92f5c5f1576d8f4a44b2ea03780f0940c897ad5c38f62672159a42e431f6423",
-    "tables.md": "7c370646c20e6da1c877532d3df9279edb855daf38dbef6d224351aada5187cc",
-    "tables.tex": "f4c5b09a7dc461642426dc8df60160a9858c8cacc1c10ce56bb066c69ccb71df",
-    "table_data.json": "bba7c507b1ffd68589cc9f50892813eb0c6e349f1c2d32dc08ee7f69885bff49",
+    "README.md": "337c48e6c0d305f93e77d7e7562bb4f52b8a6fa5e82150178315253d5e3bf740",
+    "tables.md": "43cda90e9165c55391cf872538b0e2c232d58acefbd39b961e93fbcf2a756e00",
+    "tables.tex": "cdb5c87aef5eaa5e5b7ae34a1c2f3240cee2465f3d845d961cf43c32283888ea",
+    "table_data.json": "12df85219a553b2bc456efae9218eadfb0ce8b875c53460d18002d088943c7f0",
     "figure.tex": "fd71ab09ead845d6f0b5ae8b865a52ad9eef04ff5972cfde2c6ff62b86ab40cb",
     "comparison.pdf": "731d501f44364c38625f1a2973b25f58181e54742519ba3e1d4596983c74d8a3",
     "comparison.png": "b6d78833109eae4e2981fe71b595aac46225efe3e35e748918f5f4503d4d861b"
