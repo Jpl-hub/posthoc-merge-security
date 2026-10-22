@@ -1,234 +1,49 @@
 {
-  "updated_utc": "2026-10-22T18:43:00Z",
-  "status": "numerical_Defense2_MNIST_effective_original_AGA_cross_task_and_ablation_pending",
+  "status": "Numerical Defense2:MNIST99.50 standalone,TA24.46,originalAGA13.02/13.09;fixed ablations/generalization/recovery queued",
+  "updated_utc": "2026-10-22T18:51:44.143857+00:00",
   "automatic_continuation": true,
-  "automation_status": "13-35 ACTIVE for latest user-requested nine-hour overnight window only",
-  "current_state": "research_state.json",
-  "core_method_first": true,
-  "GPU": "RTX3090 only;4090 unused",
-  "research_jobs": [],
-  "active_GPU_jobs": 0,
-  "effective_Defense2": "results/residual_coordinate_control/other_tasks/summary.md",
-  "new_candidate": true,
-  "algorithm_novelty_verified": false,
-  "latest_verified_scientific_remote": "622207f66b9f5a38c9650159a5016840271eea65",
-  "current_preregistration": "3b117b6",
-  "github_receipt": "outputs/latest_github_sync_receipt.json",
-  "next_action": "Run two fixed matched component removals,no main replacement;then same numerical method cross-task and public known-module recovery.",
-  "history": "Earlier campaign history remains in Git and original result directories. Current file retains only active state; no scientific evidence deleted.",
-  "github_sync": {
-    "status": "pending_connection",
-    "last_verified_remote": "6c1ca1c40d23a42761314da386c2ff4b145e0de2",
-    "pending_local": "62a7937371f655a202800a392728d0f07263c1ee",
-    "reason": "GitHub plugin USER_NOT_LOGGED_IN;continue research without waiting for user"
-  },
-  "latest_experiment": {
-    "status": "completed_single_MLP_nonlinear_compensation_no_protection",
-    "summary": "results/nonlinear_compensation/summary.md",
-    "native_accuracy_percent": 99.67,
-    "prediction_changes": 2,
-    "R": 8.36073279498614,
-    "old_strict_passed": false,
-    "new_prospective_accuracy_protocol_passed": true,
-    "TA_accuracy_percent": 99.34,
-    "AGA_target_accuracy_percent": 99.32,
-    "AGA_both_accuracy_percent": 99.33,
-    "source_components_all_correct": 1022,
-    "final_MLP_zero_source_correct": 1022,
-    "task_right_probe_responses": [
-      2.75e-09,
-      2.26e-09
-    ],
-    "new_optimization_after_native_test": 0
-  },
-  "current_candidate": {
-    "status": "frozen_task_directed_method_retained_originalAGA_effective_known_family_recoverable",
-    "details": "research_state.json:current_candidate",
-    "summary": "results/task_directed_pairing/summary.md",
-    "eight_expert": "results/task_directed_pairing/eight_expert/summary.md"
-  },
-  "targeted_recovery": {
-    "protocol": "configs/task_directed_recovery.json",
-    "status": "completed_independently_verified_exact158",
-    "release_selection_changed": false,
-    "attack_inputs": [
-      "published_state",
-      "public_base"
-    ],
-    "known_family": true,
-    "secret_order_or_clean_expert_for_attack": false,
-    "scientific_remote": "bbd28bfb213fe0fd08f66d78d35516a82a6a0786",
-    "source_history": "results/task_directed_pairing/frozen_source_history.json"
-  },
-  "cross_pairs": {
-    "status": "completed_independently_verified",
-    "summary": "results/task_directed_pairing/cross_pairs/summary.md",
-    "validation": "results/task_directed_pairing/cross_pairs/validation.json",
-    "new_models": 0,
-    "new_image_forwards": 499480,
-    "new_AGA_calls": 0,
-    "scope": "Six oriented pairs over three unordered task pairs,not full8-task benchmark."
-  },
-  "cleanup_current_turn": {
-    "local_temporary_bytes_deleted": 990933,
-    "local_bytecode_bytes_deleted": 140137,
-    "local_bytecode_files_removed": 2,
-    "server_verified_duplicate_bytes_removed": 203012,
-    "server_bytecode_bytes_removed": 261751,
-    "unique_models_raw_scores_failure_evidence_preserved": true,
-    "new_model_copies": 0,
-    "new_optimizers": 0,
-    "new_frameworks": 0
-  },
-  "recovery_permissions": {
-    "main_evaluation": "Unchanged originalAGA on published weights and public base; no secret order or true task vector provided. Empirical fixed-attack claim.",
-    "supplementary_recovery": "Known global-permutation family, same published/public weights, no secret order,clean expert,true task vector or images in the recovery function.",
-    "unknown_family_discovery_tested": false,
-    "method_secrecy_assumed_for_general_security": false,
-    "targeted_recovery_is_main_AGA_pass_fail_gate": false,
-    "known_family_failure_retained": true,
-    "current_user_request": "Retain originalAGA scope without secret order; investigate the supplementary weakness without erasing effective results."
-  },
-  "latest_mechanism_check": {
-    "status": "passed_input_operator_condition_only",
-    "result": "results/task_directed_pairing/recovery/input_orthogonal_condition.json",
-    "local_preregistration": "a47f4f0daa14ba656cfad4b8d5f630c5f9acdb4a",
-    "source_history": "results/task_directed_pairing/frozen_source_history.json",
-    "source_entrypoint_retired": true,
-    "maximum_relative_operator_error": 4.7860668265235656e-15,
-    "whole_model_recovery_or_new_accuracy": false,
-    "new_images": 0,
-    "new_defense_weights": 0,
-    "wall_seconds": 11.726871578008286
-  },
-  "active_source_hypothesis": {
-    "status": "same_fixed_point_supplementary_fusion_running",
-    "configuration": "configs/construct.json:nonlinear",
-    "entrypoint": "python -m experiment.construct --method nonlinear --target MNIST",
-    "output": "outputs/nonlinear_prefix_20261023",
-    "layers": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11
-    ],
-    "mechanism": "Finite output reconstruction against frozen teacher block targets using actual modified student prefixes; includes earlier-layer and currentAttention/LN responses. Not independent repetition of the closed final-layer fit.",
-    "source_n": 1024,
-    "rank": 32,
-    "matrix_bounds": [
-      2.0,
-      4.0
-    ],
-    "joint_bound": 15.491933384829668,
-    "source_accuracy_loss_pp": 0.25,
-    "full_accuracy_loss_pp": 0.5,
-    "historical_R0_5_reported_separately": true,
-    "teacher_training_updates": 0,
-    "new_method_effectiveness": null,
-    "point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
-    "source_correct_before_after": [
-      1022,
-      1022
-    ],
-    "source_changed": 0,
-    "source_R": 1.8946826576542062,
-    "parameter_distance": 8.842194066103989,
-    "source_seconds": 62.280361963,
-    "source_image_forwards": 14336,
-    "new_teacher_training": 0,
-    "source_summary": "results/nonlinear_prefix/source.json",
-    "full_native_accuracy_percent": 99.5,
-    "full_native_loss_pp": 0.19,
-    "fresh512_correct": [
-      512,
-      509
-    ],
-    "original_native_protocol_passed": false,
-    "full_R": 85.76234523093515,
-    "full_prediction_changes": 33
-  },
-  "cleanup_finite_source": {
-    "closed_one_off_entrypoints_removed": 2,
-    "code_lines_removed": 272,
-    "source_snapshots_retained_in_Git": true,
-    "raw_unique_artifacts_preserved": true,
-    "new_full_model_copies": 0,
-    "new_optimizer_implementations": 0,
-    "new_frameworks": 0
-  },
-  "engineering_refactor": {
-    "status": "passed_local_and_3090_regression_checks",
-    "snapshot_commit": "3e6be4c4fe0d2cba86f540b9a4f2ec5fcc126282",
-    "current_config": "configs/evaluate.json",
-    "construction_config": "configs/construct.json",
-    "report_entrypoint": "python -m experiment.report",
-    "validation": "results/engineering_refactor/validation.json",
-    "history": "docs/engineering.md",
-    "legacy_source_paths_belong_to_frozen_commits": true,
-    "GPU_refactor_verification": "passed_real_checkpoints_AGA_and_8_original_context_score_rows",
-    "new_scientific_results": 0,
-    "GPU_validation": "results/engineering_refactor/GPU_validation.json",
-    "pre_refactor_public_snapshot": "c44c1ff184b126dbec7c776c79f12c3ab144e2f7",
-    "GitHub_status": "published_and_read_back",
-    "GitHub_result_commit": "2900ce660de9d30a2440cef46a5a76605e98c556"
-  },
+  "automation_status": "13-35 ACTIVE by explicit latest nine-hour request;fixed deadline,then pause",
   "overnight_window_utc": {
     "start": "2026-10-22T17:00:56Z",
     "end": "2026-10-23T02:00:56Z"
   },
-  "latest_nonlinear_source": {
-    "summary": "results/nonlinear_compensation/source.json",
-    "source_images": 1024,
-    "correct_before_after": [
-      1022,
-      1022
-    ],
-    "prediction_changes": 0,
-    "R": 0.14797298801378525,
-    "D": 2.429403859750026,
-    "classification_training_updates": 0
+  "research_jobs": [
+    {
+      "PID": 20497,
+      "name": "MNIST no_task/no_prefix matched controls",
+      "state": "serial GPU batch",
+      "log": "outputs/nonlinear_prefix_20261023/ablation_queue.log"
+    },
+    {
+      "PID": 22376,
+      "name": "Same algorithm SVHN target",
+      "state": "waiting for controls",
+      "log": "outputs/nonlinear_svhn_20261023/after_ablation.log"
+    },
+    {
+      "PID": 22804,
+      "name": "Same algorithm DTD target512source/401heldout",
+      "state": "waiting for SVHN",
+      "log": "outputs/nonlinear_dtd_20261023/after_svhn.log"
+    },
+    {
+      "PID": 23206,
+      "name": "AGA standalone and public-module reset matched control",
+      "state": "waiting for generalization",
+      "log": "outputs/nonlinear_prefix_20261023/after_generalization.log"
+    }
+  ],
+  "active_GPU_jobs": 1,
+  "next_action": "Finish fixed controls,SVHN/DTD and public known-module recovery;integrate numerical results in MD/TeX;necessary8expert setting next. Never retune main357 from partner/test. At deadline finish and pause13-35.",
+  "github_sync": {
+    "status": "pending_connection",
+    "last_verified_remote": "6c1ca1c40d23a42761314da386c2ff4b145e0de2",
+    "pending_local": "bf4f3c10e922f2ef30b1f4d297896edf615b579b",
+    "reason": "Plugin USER_NOT_LOGGED_IN,last real readback preserved,do not claim published"
   },
-  "closed_single_MLP_point": {
-    "summary": "results/nonlinear_compensation/summary.md",
-    "point_sha256": "7ac27aea1f4b9a0033b69461f3544e80c95192a903ea35f12736605ca04f440d",
-    "native": 99.67,
-    "TA": 99.34,
-    "AGA_target": 99.32,
-    "AGA_both": 99.33,
-    "strict_R_passed": false,
-    "single_MLP_zero_source_correct": 1022,
-    "all_MLP_zero_source_correct": 89,
-    "source_n": 1024,
-    "no_retuning": true
-  },
-  "numerical_Defense2_result": {
-    "summary": "results/nonlinear_prefix/summary.md",
-    "point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
-    "standalone": 99.5,
-    "TA": 24.46,
-    "AGA_target": 13.02,
-    "AGA_both": 13.09,
-    "partner_TA_AGA_target_both": [
-      19.83,
-      19.8,
-      19.68
-    ],
-    "main_frozen": true,
-    "original_fresh512_gate_passed": false,
-    "full_accuracy_loss_pp": 0.19,
-    "strict_R": 85.76234523093515,
-    "scores_replayed": 224,
-    "replay_max_error": 0.0,
-    "new_teacher_training": 0,
-    "novelty_established": false,
-    "other_target_tasks_evaluated": false
-  }
+  "current_state": "research_state.json",
+  "core_method_first": true,
+  "current_candidate": "results/nonlinear_prefix/summary.md",
+  "main_point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
+  "history_snapshot": "bf4f3c10e922f2ef30b1f4d297896edf615b579b"
 }
