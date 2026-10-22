@@ -17,19 +17,19 @@
 3e6be4c4fe0d2cba86f540b9a4f2ec5fcc126282
 ```
 
-逐文件 SHA256、Git blob 和旧行数在 `results/engineering_refactor/snapshot.json`，移出当前树的具体路径在 `retired.json`。代码与配置原字节已经核对；不是把失败实验证据删掉。此提交目前只保证本地历史存在，GitHub 连接恢复后的公开提交映射以同步收据为准。
+逐文件 SHA256、Git blob 和旧行数在 `results/engineering_refactor/snapshot.json`，移出当前树的具体路径在 `retired.json`。代码与配置原字节已经核对；不是把失败实验证据删掉。GitHub 对应的完整快照为 `c44c1ff184b126dbec7c776c79f12c3ab144e2f7`，目录树逐项一致；全部阶段映射见 `results/engineering_refactor/publication.json`。补传日期不会冒充实验执行前的公开登记。
 
 例如查看某个旧入口：
 
 ```bash
-git show 3e6be4c4fe0d2cba86f540b9a4f2ec5fcc126282:experiments/aga_coordinate_audit.py
+git show c44c1ff184b126dbec7c776c79f12c3ab144e2f7:experiments/aga_coordinate_audit.py
 ```
 
 需要完整恢复时，在另一个目录取出历史树，避免覆盖当前工程：
 
 ```bash
 mkdir -p /tmp/posthoc-history
-git archive 3e6be4c4fe0d2cba86f540b9a4f2ec5fcc126282 | tar -x -C /tmp/posthoc-history
+git archive c44c1ff184b126dbec7c776c79f12c3ab144e2f7 | tar -x -C /tmp/posthoc-history
 ```
 
 **整理前最新代码也不等于每项旧实验的执行版本。** 真正复现时，先读对应结果里的协议和源码历史，切到它记录的执行提交，核对模型、源码、配置和索引 SHA，再使用原入口。原始数据、模型和输出根目录须在实验机器上指向原来保留的资产；不要向已存在的实验目录重写文件。
@@ -59,4 +59,4 @@ git archive 3e6be4c4fe0d2cba86f540b9a4f2ec5fcc126282 | tar -x -C /tmp/posthoc-hi
 4. 读出表格只写指定输出目录，不改原始数据或来源记录。论文语言与指标按已读论文表达，不另造名称。
 5. 删除结束的一次性入口前记录 Git 版本和哈希；唯一证据至少留一份。缓存仅在确认可再生或重复后清理。
 
-本次检查结果及确切删减数量在 `results/engineering_refactor/validation.json`。3090 当前 SSH 在登录前关闭连接，因此不宣称已在新布局上完成真实检查点／GPU 全流程重跑；本地算法、完整小模型和表格检查不等同于该验证。已有科研实验结果仍来自此前冻结代码。
+本次检查结果及确切删减数量在 `results/engineering_refactor/validation.json`。连接恢复后已在3090通过18项测试、Ruff检查和真实模型核验：三份发布逐张量相同，原版AGA恢复权重全部158张量相同，8个原128张批上下文的分数最大误差0。仅新增1024张工程核验前向及一次原版AGA，不称完整科研实验重跑；详见GPU_validation.json。已有科研实验结果仍来自此前冻结代码。
