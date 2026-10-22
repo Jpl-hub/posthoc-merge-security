@@ -28,6 +28,8 @@ def retained_knowledge():
     records, raw = [], {}
     for task, source in [("MNIST", "prefix"), ("SVHN", "svhn"), ("DTD", "dtd")]:
         root = Path(f"outputs/nonlinear_{source}_20261023")
+        if task != "MNIST":
+            root /= "construction"
         base, expert, head, pins = checked_models(task)
         cal = torch.load(root / "calibration.pt", map_location="cpu", weights_only=False)
         ids = cal["indices"]
