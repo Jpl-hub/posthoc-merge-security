@@ -748,6 +748,46 @@ def normalization_geometry(output):
         gradients=0,new_images=0,new_weights=0,scope='Parameter task-SVD geometry is not a functional nullspace. Classification effects and source preservation are measured separately.'))
 
 
+@torch.no_grad()
+def input_projection(protocol, output):
+    """Explain a frozen involutive permutation at the patch input, without images."""
+    from clip_benchmark import checkpoint_loader
+    cfg=json.loads(Path(protocol).read_text());out=Path(output);out.mkdir(parents=True,exist_ok=False)
+    assert digest(__file__)==cfg['source_sha256']
+    pins={r['path'].removeprefix('ViT-B-32/'):r['sha256'] for r in json.loads(Path('configs/checkpoints.json').read_text())['files']}
+    load=checkpoint_loader(Path('external/secure-merge-attack'));key='model.visual.conv1.weight';weights={}
+    for name in ['zeroshot.pt','MNIST/finetuned.pt','DTD/finetuned.pt','SVHN/finetuned.pt']:
+        path=Path('checkpoints/ViT-B-32')/name;assert digest(path)==pins[name]
+        model=load(str(path)).cpu();weights[name]=model.state_dict()[key].flatten(1).double().clone();del model
+    def odd(w):return (w-w.flip(0))/2
+    rows=[];start=time.monotonic()
+    for case in cfg['cases']:
+        target,peer=case['target'],case['partner'];w,v=[weights[t+'/finetuned.pt'] for t in [target,peer]];base=weights['zeroshot.pt']
+        for ref in [case['release'],case['AGA_edits']]:assert digest(ref['path'])==ref['sha256']
+        release=torch.load(case['release']['path'],map_location='cpu')[key].flatten(1).double()
+        np.testing.assert_array_equal(release,w.flip(0))
+        ref=case['AGA_reference'];assert digest(ref['path'])==ref['sha256']
+        aligned=torch.load(ref['path'],map_location='cpu')[key].flatten(1).double()
+        after=torch.load(case['AGA_edits']['path'],map_location='cpu').get(key,aligned.reshape(768,3,32,32)).flatten(1).double()
+        np.testing.assert_array_equal(after,release)
+        clean=(w+v)/2;fused=(release+v)/2;self_mean=(w+release)/2
+        expected=(odd(v-base)-odd(w-base))/2
+        np.testing.assert_allclose(odd(fused),expected,rtol=0,atol=1e-14)
+        np.testing.assert_array_equal(self_mean.numpy(),self_mean.flip(0).numpy())
+        spectra={name:torch.linalg.svdvals(a) for name,a in [('original',w),('unprotected_fusion',clean),('protected_fusion',fused),('self_mean',self_mean)]}
+        error=float(np.linalg.norm((fused.numpy()-fused.numpy()[::-1])/2-expected.numpy()))
+        rows.append(dict(target=target,partner=peer,AGA_patch_exactly_unchanged=True,
+            clean_odd_energy_fraction=float(odd(clean).square().sum()/clean.square().sum()),
+            protected_odd_energy_fraction=float(odd(fused).square().sum()/fused.square().sum()),
+            relative_patch_task_difference=float((w-v).norm()/clean.norm()),
+            spectra={name:dict(sigma1=float(s[0]),sigma384=float(s[383]),sigma385=float(s[384]),sigma768=float(s[-1]),
+                lower384_energy_fraction=float(s[384:].square().sum()/s.square().sum())) for name,s in spectra.items()},
+            NumPy_odd_identity_error=error,self_mean_odd_exact_zero=bool(torch.count_nonzero(odd(self_mean))==0)))
+    save_json(out/'input_projection.json',dict(rows=rows,source_sha256=digest(__file__),protocol=cfg,
+        seconds=time.monotonic()-start,images=0,new_weights=0,new_AGA_calls=0,
+        interpretation='Exact rank<=384 only for the self-mean. Real distinct-expert fusion can retain rank768; small singular directions are not a classification-failure guarantee. Standard linear algebra, no novelty claim.'))
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',required=True)
     mode=parser.add_mutually_exclusive_group()
@@ -762,7 +802,9 @@ if __name__=='__main__':
     mode.add_argument('--affine-matching',action='store_true')
     mode.add_argument('--task-subspaces',metavar='PROTOCOL')
     mode.add_argument('--mean-compensation',metavar='PROTOCOL')
+    mode.add_argument('--input-projection',metavar='PROTOCOL')
     args=parser.parse_args();torch.set_num_threads(4)
+    if args.input_projection:input_projection(args.input_projection,args.output);raise SystemExit
     if args.mean_compensation:mean_compensation(args.mean_compensation,args.output);raise SystemExit
     if args.task_subspaces:task_subspaces(args.task_subspaces,args.output);raise SystemExit
     (residual_recovery if args.residual_recovery else head_identity_recovery if args.head_recovery else head_identity_geometry if args.head_identity else matching_response if args.matching_response else affine_matching_geometry if args.affine_matching else normalization_geometry if args.normalization else fixedpoint_cost if args.fixedpoint_cost else fixedpoint if args.fixedpoint else head_geometry if args.head_geometry else head_response if args.head_response else audit)(args.output)
