@@ -1,0 +1,15 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Evaluation & $n$ & Before (\%) & After (\%) & Changed & Gap change \\
+\midrule
+Construction train & 1024 & 99.80 & 99.80 & 0 & 0.247617 \\
+New train confirmation & 512 & 99.80 & 99.80 & 0 & 0.433406 \\
+Complete MNIST test & 10000 & 99.69 & 99.64 & 12 & 72.989474 \\
+\bottomrule
+\end{tabular}
+\caption{One frozen finite-compensation point on MNIST. Independent accuracy changed by 0.05 percentage points, but the complete-task relative-gap check failed. Construction-control merging is excluded from this test table; real-partner TA and AGA were not run for this point.}
+\label{tab:finite-compensation-native}
+\end{table}
