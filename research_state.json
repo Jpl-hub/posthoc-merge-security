@@ -1,8 +1,8 @@
 {
   "status": "frozen_three_task_Defense2_effective_in_two_and_eight_expert_originalAGA_known_family_recovery_limitation_retained",
-  "updated_utc": "2026-10-22T15:50:33.622855+00:00",
+  "updated_utc": "2026-10-22T16:27:59.798536+00:00",
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
-  "active_focus": "Core Defense2 construction first: prioritize data-free posthoc changes with small task-direction/standalone-function effect and meaningful changes after realTA/originalAGA. No external-comparison work pending.",
+  "active_focus": "Complete fixed task/distance objectives at96/192/384 pairs;reuse0/384 results. This is the modification-extent ablation requested by the teacher,no new defense or parameter search.",
   "server": {
     "status": "connected",
     "server": "3090",
@@ -17,8 +17,18 @@
   "allow_4090": false,
   "automatic_continuation": false,
   "automation_status": "13-35 PAUSED by user instruction;do not create or reactivate scheduled continuations.",
-  "research_jobs": [],
-  "active_GPU_jobs": [],
+  "research_jobs": [
+    {
+      "status": "running",
+      "name": "fixed_amplitude_ablation",
+      "log": "outputs/task_direction_amplitude_20261023_run.log",
+      "protocol": "results/task_directed_pairing/amplitude_ablation/protocol.json",
+      "new_models": 4
+    }
+  ],
+  "active_GPU_jobs": [
+    "fixed_amplitude_ablation"
+  ],
   "new_candidate": false,
   "protocol": {
     "parameter_budget": 0.5,
@@ -41,36 +51,22 @@
     "baselines": "Full-default PaRaMS retained as a primary paper baseline; its larger D is reported, not a reason to exclude it. D0.5 component ablations remain distinct."
   },
   "latest_experiment": {
-    "status": "frozen_eight_expert_three_dataset_complete_independently_verified",
-    "summary": "results/task_directed_pairing/eight_expert/summary.md",
-    "protocol": "configs/task_directed_eight_task.json",
-    "participants": 8,
-    "evaluated_tasks": [
-      "MNIST",
-      "DTD",
-      "SVHN"
-    ],
-    "coefficient": 0.2,
-    "AGA_scope": "Protected expert only",
-    "unchanged_three_frozen_releases": true,
-    "new_defense_weights": 0,
-    "new_AGA_calls": 0,
+    "status": "completed_DTD_SVHN_fixed_distance_objective_classification_ablation",
+    "summary": "results/task_directed_pairing/distance_ablation/other_tasks/summary.md",
+    "new_original_AGA_calls": 2,
     "expert_training_updates": 0,
-    "total_image_forwards_including_failed_pilot": 303792,
-    "pilot_full_selected_score_replays": 1152,
-    "maximum_context_score_error": 0,
+    "native_prediction_changes": 0,
     "target_AGA_accuracy_percent": {
-      "MNIST": 11.35,
-      "DTD": 4.8936170212765955,
-      "SVHN": 11.643362015980333
+      "DTD": {
+        "task_directed": 2.393617021276596,
+        "distance_only": 2.021276595744681
+      },
+      "SVHN": {
+        "task_directed": 6.445912722802705,
+        "distance_only": 8.516441303011678
+      }
     },
-    "matching_unprotected_AGA_accuracy_percent": {
-      "MNIST": 93.23,
-      "DTD": 51.38297872340426,
-      "SVHN": 72.52612169637369
-    },
-    "independent_validation": "results/task_directed_pairing/eight_expert/independent_validation.json",
-    "known_family_recovery_limitation_retained": true
+    "conclusion": "Task direction reduces inside-parameter changes; classification advantage on MNIST/SVHN,not uniform overDTD. Existing effective releases unchanged."
   },
   "closed_recent_controls": {
     "structural_unit": "results/structural_unit_check/summary.md:task kept;TA/originalAGA no target protection.",
@@ -100,11 +96,9 @@
     "new_frameworks": 0
   },
   "github_sync": {
-    "status": "verified_reconnected_engineering_refactor_and_backlog_published",
+    "status": "registered_current_ablations_results_sync_in_progress",
     "last_verified_scientific_remote": "2900ce660de9d30a2440cef46a5a76605e98c556",
-    "last_verified_preregistration_remote": "b1aaf583dc2bde1065fe05e5421036b752937174",
-    "local_pending_scientific_commit": "c6ffe5c70410267466e718be300130b8a215bb30",
-    "local_pending_scientific_tree": "c287a3f69c404e9c9a7f8a75c129892522c9e9d5",
+    "last_verified_preregistration_remote": "6f9289378b59cef909f90981b311a85418ddc7dd",
     "receipt": "outputs/latest_github_sync_receipt.json",
     "raw_data_stays_3090": true,
     "last_attempt_utc": "2026-10-22T15:50:33.622855+00:00",
@@ -112,7 +106,7 @@
     "last_verified_remote_tree": "7860d52ccec0477b92305c1135e4c7c56b83ce10",
     "local_scientific_commit": "232e04bc2f555466f16d6d17ab0affe9d9eedb11"
   },
-  "next_action": "Retain the effective frozen task-directed releases and originalAGA tables. The finite P/beta source point has passed fresh training but failed the complete functional check; no partner evaluation or retuning. Address unseen activation response with a justified finite mechanism before any new construction; avoid mean-only or covariance-only safety claims.",
+  "next_action": "Finish and report every fixed96/192 objective control,update existingMD/TeX. Then extend the benchmark to remaining tasks;RESISC45/GTSRB test images are already present,Cars/EuroSAT/SUN397 still absent. No tuning from these outcomes.",
   "history": {
     "retained_remote_commit": "281be3fc01d6c63d6194c2ef4849bcdadcf1135a",
     "scope": "Former cumulative status objects only. Scientific results, frozen protocols, source history and failure evidence remain in their original paths.",
@@ -171,11 +165,12 @@
     "task_directed_supplement": "results/task_directed_pairing/other_tasks/summary.md",
     "selected_source_records": 523,
     "fixed_distance_ablation": "results/task_directed_pairing/distance_ablation/summary.md",
-    "eight_expert_task_directed_supplement": "results/task_directed_pairing/eight_expert/summary.md"
+    "eight_expert_task_directed_supplement": "results/task_directed_pairing/eight_expert/summary.md",
+    "task_direction_ablation_three_tasks": "results/task_directed_pairing/distance_ablation/other_tasks/tables.md"
   },
   "engineering_reference": {
     "status": "read_and_applied_without_new_framework",
-    "reference": "\u5de5\u7a0b\u89c4\u8303\u53c2\u8003.docx",
+    "reference": "工程规范参考.docx",
     "sha256": "edaf3b1242237f87d2ae7c7be631e2c00ecc002ae03ec9e4020f8fd5e91042c4",
     "implementation": "README engineering conventions; existing common evaluator reused; fixed-model report produces MD/TeX from the same verified JSON;17 historical unimported entrypoints removed with Git backup."
   },
@@ -355,7 +350,9 @@
       "pilot_selected_score_replays": 224,
       "maximum_replay_score_error": 0.0,
       "between_method_comparisons": 6,
-      "interpretation": "One fixed objective ablation; not universal superiority over permutations or independent model seeds. Original structure results retained."
+      "interpretation": "One fixed objective ablation; not universal superiority over permutations or independent model seeds. Original structure results retained.",
+      "other_tasks_complete": true,
+      "other_tasks_summary": "results/task_directed_pairing/distance_ablation/other_tasks/summary.md"
     },
     "eight_expert_evaluation": {
       "summary": "results/task_directed_pairing/eight_expert/summary.md",

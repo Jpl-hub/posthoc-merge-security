@@ -1,0 +1,184 @@
+{
+  "experiment": "Fixed DTD/SVHN classification ablation of task direction; orders fixed22Oct",
+  "output": "outputs/task_direction_distance_other_20261023/evaluation",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "DTD": {
+      "classes": 47,
+      "test_n": 1880
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TA"
+  ],
+  "TIES": {
+    "repository": "https://github.com/prateeky2806/ties-merging",
+    "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+    "path": "external/ties-merging/src/utils/merge_utils.py",
+    "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+    "topk_percent": 20,
+    "coefficient": 1.0,
+    "resolve_method": "mass",
+    "merge_func": "dis-mean",
+    "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+  },
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "parameter_budget": 0.5,
+  "task_budget": 0.5,
+  "utility_seed": 20261016,
+  "utility_n": 512,
+  "probe_rank": 32,
+  "test_status": "Historically exposed test sets. Frozen defenses, no tuning or model selection from Phase 3.",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": false,
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "DistanceOnly_DTD": {
+      "target": "DTD",
+      "release": {
+        "path": "outputs/task_direction_distance_other_20261023/construction/DTD/release.pt",
+        "sha256": "4fa33c5f97e080319f92636dafb3235e460ffa5bea2771cb25583b71458cbd19"
+      },
+      "AGA_edits": {
+        "path": "outputs/task_direction_distance_other_20261023/AGA/DTD/edits.pt",
+        "sha256": "9b9e4276a7ce1e6c29359cb006e71cd182dbc348ad0de1dc7e9706324f331d5f"
+      },
+      "budget_status": "Original prospective structural range2sqrt152; same ablation family,notD.5"
+    },
+    "DistanceOnly_SVHN": {
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/task_direction_distance_other_20261023/construction/SVHN/release.pt",
+        "sha256": "529ea00ea80f03d6f6f321293e1e8eaa16791a27513b5ff18cd9c59b8265fda9"
+      },
+      "AGA_edits": {
+        "path": "outputs/task_direction_distance_other_20261023/AGA/SVHN/edits.pt",
+        "sha256": "09c7bc7576cc1df8f22a3cd628b1c7e3787af26c5a13121ed49170757ea3b781"
+      },
+      "budget_status": "Original prospective structural range2sqrt152; same ablation family,notD.5"
+    }
+  },
+  "cases": [
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "defenses": [
+        "DistanceOnly_DTD"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "defenses": [
+        "DistanceOnly_SVHN"
+      ]
+    }
+  ],
+  "legacy": {
+    "DTD_MNIST/Unprotected": {
+      "standalone": {
+        "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+        "key_template": "Unprotected/Standalone/None/{task}"
+      },
+      "direct": {
+        "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+        "key_template": "Unprotected/TA/None/{task}"
+      },
+      "AGA_target_only": {
+        "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+        "key_template": "Unprotected/TA/Protected expert/{task}"
+      },
+      "AGA_both": {
+        "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+        "key_template": "Unprotected/TA/All experts/{task}"
+      }
+    },
+    "SVHN_MNIST/Unprotected": {
+      "standalone": {
+        "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "07c5319c61a6a6e43ae2c2c2690730d4792208d2ba5787bc1e4f0653dce584f1",
+        "key_template": "Unprotected/Standalone/None/{task}"
+      },
+      "direct": {
+        "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "07c5319c61a6a6e43ae2c2c2690730d4792208d2ba5787bc1e4f0653dce584f1",
+        "key_template": "Unprotected/TA/None/{task}"
+      },
+      "AGA_target_only": {
+        "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "07c5319c61a6a6e43ae2c2c2690730d4792208d2ba5787bc1e4f0653dce584f1",
+        "key_template": "Unprotected/TA/Protected expert/{task}"
+      },
+      "AGA_both": {
+        "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "07c5319c61a6a6e43ae2c2c2690730d4792208d2ba5787bc1e4f0653dce584f1",
+        "key_template": "Unprotected/TA/All experts/{task}"
+      }
+    }
+  },
+  "source_sha256": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "38a8009960d7e978074e7c9f39d2d11a371ea9a0364bc3ada7531c7a259fe883",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+    "_impl/defenses.py": "cfae7beac09feac34b41995fda19e79d08297d974b25e4b0e5efb4b6eb07713f",
+    "_impl/evaluate.py": "2dee58c3e1dec5a3b2a7c29a14eccebdb89744a69d2751917b29ccc6a3027a0a",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "075b4f3e4624a77cc38c90cef4fac7ecf8f2cf56a32d8ee1ba03cdec7f75bea3",
+    "_impl/report.py": "e047b056711c612a0ad81ea7f0cfbce54e795e912499021fb81e335309c4b203",
+    "_impl/subspace.py": "307558203a17fd3296882c2af4d0cbf706bdad63c61d189a82bd03daee6cd3b8",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "538a76e4c8da0d93c256b782fcd6c0cf66d7de804c243fd255dd01527f1a146a",
+    "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "1267991d3abe8b19eb3acff4f6cd71704a743514f280f8266b8c46d2bc10585d",
+    "experiment/recover.py": "0914cf5d994b796e543c0742151bab7046e5884203aad432a0c2c61f63a45b6b",
+    "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+  },
+  "original_batch_context_replays": true,
+  "scientific_preregistration": "502c97556f4d5f1338a702fb569db2c8b0369ce2"
+}
