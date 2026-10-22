@@ -814,8 +814,8 @@ def centered_readout(protocol):
     probes=metric(score(zp@P),score((zp+qb-beta)@qp),len(zp))
     native=metric(before,after,len(ids));environment=metric(proxy_before,proxy_after,len(ids))
     errors=[]
-    for hh,bb,pp,expected in [(h,beta,P,before),(h,qb,qp,after),(hf,bf,pf,proxy_before),(hf,changed_proxy.model.visual.ln_post.bias.double(),changed_proxy.model.visual.proj.double(),proxy_after)]:
-        checked=raw_scores(hh.numpy(),parameters|dict(beta=bb.numpy(),projection=pp.numpy()))
+    for hh,gg,bb,pp,expected in [(h,gamma,beta,P,before),(h,gamma,qb,qp,after),(hf,gf,bf,pf,proxy_before),(hf,gf,changed_proxy.model.visual.ln_post.bias.double(),changed_proxy.model.visual.proj.double(),proxy_after)]:
+        checked=raw_scores(hh.numpy(),parameters|dict(gamma=gg.numpy(),beta=bb.numpy(),projection=pp.numpy()))
         errors.append(float(np.max(np.abs(checked-expected.numpy()))))
     assert max(errors)<=cfg['score_tolerance'],errors
     labels=torch.tensor(official_labels(cfg['target'],True)[ids]);net=float(((proxy_before.argmax(1)==labels).double().mean()-(proxy_after.argmax(1)==labels).double().mean()))
