@@ -421,6 +421,7 @@ def eight_task(source, output):
     start=time.monotonic();source,output=Path(source),Path(output)
     cfg=json.loads((source/'full/protocol.json').read_text())
     assert cfg==json.loads((source/'pilot/protocol.json').read_text())
+    if 'audit_source_sha256' in cfg:assert digest(__file__)==cfg['audit_source_sha256']
     assert digest('experiments/phase3_eight_task.py')==cfg['source_sha256']
     assert digest(cfg['author_TaskVector']['path'])==cfg['author_TaskVector']['sha256']
     for ref in cfg['inputs'].values():assert digest(ref['path'])==ref['sha256']
@@ -441,11 +442,27 @@ def eight_task(source, output):
         root=source/stage;v=json.loads((root/'validation.json').read_text());assert v['status']=='passed'
         assert digest(root/'scores.pt')==v['raw_sha256'] and v['rows']==expected
         raw=torch.load(root/'scores.pt',map_location='cpu',weights_only=False)
+        reference_scores={}
+        if 'score_reference' in cfg:
+            refs=cfg['score_reference'][stage]
+            for ref in refs.values():assert digest(ref['path'])==ref['sha256']
+            reference_scores=torch.load(refs['scores']['path'],map_location='cpu',weights_only=False)
+            old_audit=json.loads(Path(refs['validation']['path']).read_text())
+            assert old_audit['status']=='passed_independent_numpy_metrics_and_frozen_artifact_hashes'
+            assert old_audit['raw_files_sha256'][refs['scores']['path']]==refs['scores']['sha256']
+            assert json.loads(Path(refs['parameters']['path']).read_text())==old_audit['model_parameter_hashes']
         rows=json.loads((root/'results.json').read_text());assert len(rows)==expected
         for row in rows:
             key='/'.join([row['target'],row['defense'],row['attack_scope']]);task=row['dataset'];x=raw[key+'/'+task]
             labels=official_labels(task);ids=list(range(len(labels))) if stage=='full' else np.linspace(0,len(labels)-1,64,dtype=int).tolist()
             assert x['indices']==ids;np.testing.assert_array_equal(x['target'].numpy(),labels[ids])
+            if row.get('imported_score_source'):
+                imported=row['imported_score_source'];old=reference_scores[imported['key']]
+                assert imported['path']==refs['scores']['path'] and imported['sha256']==refs['scores']['sha256']
+                assert old_audit['model_parameter_hashes']['/'.join(imported['key'].split('/')[:3])]==frozen[key]
+                assert old['indices']==ids
+                np.testing.assert_array_equal(old['target'].numpy(),x['target'].numpy())
+                np.testing.assert_array_equal(old['logits'].numpy(),x['logits'].numpy())
             assert row['model_parameter_sha256']==frozen[key] and row['NumPy_weight_error']==0.
             before=raw['/'.join([row['target'],'Unprotected',row['attack_scope'],task])]['logits']
             maximum=max(maximum,verify_metrics(x['logits'],x['target'],before,row));count+=1
@@ -469,6 +486,7 @@ def eight_task(source, output):
     comparisons=sum(r['defense']!='Unprotected' for r in rows)
     for r in rows:r['bonferroni_log10_p']=min(0.,r['mcnemar_log10_p']+math.log10(comparisons))
     labels={'Unprotected':'Unprotected','O/B':'O/B†','A/B':'A/B†','PaRaMS':'PaRaMS (full)*','PaRaMS_Attention':'PaRaMS (attention)'}
+    labels.update(cfg.get('defense_labels',{}))
     lines=['# Eight participating experts; three evaluated tasks','','Original author task order, TA0.2, and AGA applied to the protected expert. Accuracy (%); no eight-task average. The other five partner datasets were not evaluated. This setting changes both coefficient and participant count relative to the two-expert TA0.5 table.','']
     if 'Unmask' in scopes:
         lines=['# Paper-defined Unmask recovery: eight experts, three evaluated tasks','',
@@ -487,7 +505,7 @@ def eight_task(source, output):
             lines.append('| '+label+' | '+' | '.join(cells)+' |')
             latex.append(label.replace('†',r'$^{\dagger}$').replace('*',r'$^{*}$')+' & '+' & '.join(cells)+r' \\')
         lines.append('');latex += [r'\bottomrule',r'\end{tabular}','']
-    lines += ['† O/B and A/B violate the task-preservation budget; effect references only. * Defense 1 has different constraints; full PaRaMS is over-budget. The attention ablation is not the complete PaRaMS method. Historically exposed tests; no tuning.','',
+    lines += [cfg.get('table_note','† O/B and A/B violate the task-preservation budget; effect references only. * Defense 1 has different constraints; full PaRaMS is over-budget. The attention ablation is not the complete PaRaMS method. Historically exposed tests; no tuning.'),'',
         f'Per-class and paired statistics compare each row with its own unprotected control at the same attack scope. Bonferroni correction covers all {comparisons} protected comparisons. Recovery is attacked minus unattacked protected accuracy; remaining gap is matched unprotected minus protected accuracy. Neither distance nor high accuracy proves unique-knowledge extraction. Independent NumPy metric recount is separate from the producer\'s bitwise NumPy reconstruction of all merged parameter tensors; this is not a second implementation of the complete author attack.']
     (output/'tables.md').write_text('\n'.join(lines)+'\n');(output/'tables.tex').write_text('\n'.join(latex)+'\n')
     (output/'results.json').write_text(json.dumps(rows,indent=2)+'\n');(output/'protocol.json').write_text(json.dumps(cfg,indent=2)+'\n')
