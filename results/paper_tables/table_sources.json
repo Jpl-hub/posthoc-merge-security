@@ -1,6 +1,6 @@
 {
   "status": "completed_table_collection",
-  "report_source_sha256": "e93de362faca4374658d953f4a089f4a209d13c6aa8b9855d4575114590c6639",
+  "report_source_sha256": "f17a0fbfc9fde039227223b1bc7c2a1b394339757418122fc8f19ceca5ee29c4",
   "input_sha256": {
     "results/nonlinear_prefix/evaluation/full/independent_validation.json": "8ff8e65a253d9297eb27a9e37916cfbc001a9d3652d6ca5ab4e22c64f38b606e",
     "results/nonlinear_prefix/evaluation/full/execution.json": "18a35ce1127c129679553d70bd5b89c9d14d016bfce17ad1e3756149715f7db1",
@@ -29,6 +29,8 @@
     "results/mean_compensation/evaluation/results.json": "355d82d4d6b57f561e88e3377f25fe20e87248328761c0e53378e40a27839f63",
     "results/task_directed_pairing/evaluation/full/00_MNIST_SVHN/results.json": "abd44056a8d7eb72fbd5e89e8d2f7e33cbf38e9c0514d83ad846898325e3f17b",
     "results/nonlinear_prefix/evaluation/full/results.json": "ba184817fa13d42650da46eb05fdd88c0e0b70473ce216eb34aafd5a2390b660",
+    "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/numpy_statistics.json": "ec03990bec6558ac886b13e83f67421a85176f17890add576065d059cb18470c",
+    "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json": "35862de7777c3911e46aae0d7fc4effdbc3d07d3bfd0c5bb7eddbe9df926b030",
     "results/params_reference/other_tasks/DTD/independent_validation.json": "4dba8e432f0c4872f93582e5643391fc09bf82dcf9123695348510ba06b290ae",
     "results/params_reference/other_tasks/evaluation/full/00_DTD_MNIST/independent_validation.json": "f5b24ce38f37bd1667c53b71f37b81a1ecfa4ed53f1776ea811dd34fba64b0da",
     "results/params_reference/other_tasks/evaluation/full/00_DTD_MNIST/results.json": "0ef9889e837d4ac2c150ed192bf61746d555b77db1b67b02a22ad01fd1f1b30f",
@@ -121,6 +123,8 @@
     "results/nonlinear_prefix/coefficients/0p2/full/00_MNIST_SVHN/results.json": "a337cbabb62533d4e67d6c3ca3a577e392a7a6e0fde2104b19cf4cc4dc4f8ff9",
     "results/nonlinear_prefix/coefficients/0p8/full/00_MNIST_SVHN/results.json": "909b07af65ea298b535ed0fa801e003813d33a49da09e349c934af7a467426c8",
     "results/nonlinear_prefix/public_reset/evaluation/full/00_MNIST_SVHN/results.json": "a76ea514be17434836fa7eea203cd2261876e9ab5625ec8c265ecbc8ac8a1d8a",
+    "results/nonlinear_public_backbone/no_target/evaluation/full/00_MNIST_SVHN/results.json": "7871e311b619c85cc08e318909c67e18e0aa1cf54f2597cf347ad81be3de8a22",
+    "results/nonlinear_public_backbone/matched_no_target.json": "e2c86ae987f9edaa8bfbca32d7cd58d4dea3dd29fa934871713aab678008b56e",
     "results/nonlinear_prefix/eight_expert/full/numpy_statistics.json": "68db498ec5d8217da722b79a9a408db569d23ad984c15a77cb55f19cf70008d5",
     "results/nonlinear_prefix/eight_expert/full/results.json": "e06c80c8b9e1824ac3ab7137b98c18d7c1b9a4f6398d5cf3480e1ff19393f74a",
     "results/mean_compensation/components.json": "3f2ad0ea7f1aed559d766b0bd395349ddeb018b4e3c2d15e488d36b6451d3f35"
@@ -976,6 +980,76 @@
       "selector": {
         "dataset": "SVHN",
         "defense": "Prefix_compensation",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 7,
+      "selector": {
+        "defense": "Public_backbone",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 8,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Public_backbone",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 9,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Public_backbone",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 10,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Public_backbone",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 11,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Public_backbone",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 12,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Public_backbone",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 13,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Public_backbone",
         "merger": "TA",
         "attack_scope": "All experts"
       }
@@ -7421,6 +7495,146 @@
       }
     },
     {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 21,
+      "selector": {
+        "defense": "Reset_protected",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 22,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Reset_protected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 23,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Reset_protected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 24,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Reset_protected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 25,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Reset_protected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 26,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Reset_protected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 27,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Reset_protected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/no_target/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 7,
+      "selector": {
+        "defense": "No_target",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/no_target/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 8,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "No_target",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/no_target/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 9,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "No_target",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/no_target/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 10,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "No_target",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/no_target/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 11,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "No_target",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/no_target/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 12,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "No_target",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/nonlinear_public_backbone/no_target/evaluation/full/00_MNIST_SVHN/results.json",
+      "row": 13,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "No_target",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
       "path": "results/nonlinear_prefix/eight_expert/full/results.json",
       "row": 0,
       "selector": {
@@ -7540,13 +7754,13 @@
     "visually_checked": true
   },
   "output_sha256": {
-    "README.md": "3683dbcb6392cdf925c9b50b3edd1159553c053ac87f953cfa3e6e88502f3251",
-    "tables.md": "de17f4e083501cab3faa2fd9d7c32c029ded7cb7f99fd52275e35db51ee268f8",
-    "tables.tex": "9a01049695e0ec476daa77d1b7d4056b7823ff8a1658c75f5ea517cc1e306589",
-    "table_data.json": "4cb0601ed8b036c3bc4f989bf637ae08c188469074054d936a8ed1a04bfb4a26",
+    "README.md": "264bbe95122a5c6534250c7e604c081dcb22809bd6f0c97a180c6585ce2b1c9f",
+    "tables.md": "df6e3c9e42cabaaa9571c38e33c280ce697ff7ceac4ea5c09d88470a9f67f843",
+    "tables.tex": "2912e66bf092e4ac70d5888cc86112403ca45840f626f38ccb8514bf3ed240e2",
+    "table_data.json": "82dbf761490575efc01149a99ad53bc6caad0f4c0f73b09191d36522b8ac80c9",
     "figure.tex": "c8b388f92005d0b18eda54f04f7ce2ab49c7c3389a00e45a0ee96e450dca48f5",
-    "comparison.pdf": "8690204205f004f154ebb36e6593d629c18697d4121c2b09fce22b5b1d5cf5bc",
-    "comparison.png": "fe42d551482a5507ef43f54491fc8d9101007a120724bd0631d29dc81f1e50ae",
+    "comparison.pdf": "f2aeeee3e626c8424182cf714b587438a36ae0f89136949839a993b7299fe8db",
+    "comparison.png": "c42155cf3ccf033fba6299e6840810158103167893135df2aed22648ae6604a7",
     "amplitude.pdf": "864f9032f815a17b5c23dee4785bdda8c67b9f52892174e1f44a3fe146998fa8",
     "amplitude.png": "f7a95fdd2ca8193b8e498d7d32d8ad728ac4d32ed7f91a4c25103323e1643c95"
   }

@@ -72,9 +72,16 @@
         "24.46 / 19.83",
         "13.02 / 19.80",
         "13.09 / 19.68"
+      ],
+      [
+        "Defense 2 (public backbone)",
+        "99.47",
+        "15.65 / 19.56",
+        "11.57 / 19.61",
+        "11.52 / 19.56"
       ]
     ],
-    "note": "M/S: protected MNIST / partner SVHN. Original AGA processes the target or both experts. Numerical reconstruction uses 1,024 target-training images and 12 linear solves, with experts frozen; standalone accuracy drops by 0.19 pp. Its original confirmation and relative-gap checks failed. [H] Historical task-bound failures; [K] known symmetry; [F] previous failed candidate. PaRaMS retains official defaults. Recovery with additional algorithm knowledge is reported separately.",
+    "note": "M/S: protected MNIST / partner SVHN. Original AGA processes the target or both experts. Numerical reconstruction uses 1,024 target-training images and 12 linear solves, with experts frozen. Standalone loss is 0.19 pp for the original construction and 0.22 pp after returning the other parameters to the public base. Both strict relative-gap checks failed; the original construction also failed its small confirmation gate. The second fixed rule was registered separately and does not replace the original release. [H] Historical task-bound failures; [K] known symmetry; [F] previous failed candidate. PaRaMS retains official defaults. Additional recovery knowledge is reported separately.",
     "colspec": "lrrrr"
   },
   {
@@ -1355,6 +1362,14 @@
         "19.77 / 11.35",
         "16.00 / 10.67",
         "15.99 / 10.52"
+      ],
+      [
+        "Public-backbone reconstruction",
+        "MNIST",
+        "99.47",
+        "15.65 / 19.56",
+        "11.57 / 19.61",
+        "11.52 / 19.56"
       ]
     ],
     "note": "TA coefficient 0.5. MNIST uses SVHN as partner; DTD/SVHN use MNIST. Construction sets contain 1,024 MNIST, 1,024 SVHN and 512 DTD images. Attention correction adds an O solve before each A/B step. Same-input reconstruction changes only the teacher target. Every fixed point is reported; low merged accuracy is not protection success when standalone accuracy collapses. No control replaces the main release.",
@@ -1443,14 +1458,35 @@
         "13.09 / 19.68"
       ],
       [
-        "Same public reset on both controls",
+        "Reset on untreated / original numerical model",
         "97.65",
         "95.39 / 95.67",
         "94.47 / 95.73",
         "94.31 / 94.99"
+      ],
+      [
+        "Public-backbone construction",
+        "99.47",
+        "15.65 / 19.56",
+        "11.57 / 19.61",
+        "11.52 / 19.56"
+      ],
+      [
+        "Reset on public-backbone construction",
+        "46.43",
+        "84.63 / 95.94",
+        "84.63 / 95.94",
+        "84.04 / 95.03"
+      ],
+      [
+        "No target expert",
+        "48.25",
+        "84.06 / 95.76",
+        "84.06 / 95.76",
+        "83.46 / 94.76"
       ]
     ],
-    "note": "The attacker knows the 12 modified MLP modules and replaces their 48 tensors with public-base values. No original expert, true task vector, secret transform or images are used. Applying the same operation to the untreated control gives the identical 158-tensor model. Standalone accuracy drops by 2.04 pp, while merged accuracy recovers. Original AGA alone retains 99.44% standalone accuracy; the reset is a separate recovery condition.",
+    "note": "The attacker knows the 12 modified MLP modules and replaces their 48 tensors with public-base values. No original expert, true task vector, secret transform or images enter this operator. Resetting the untreated and original numerical models gives identical states. Original AGA and known-module reset are separate conditions. Resetting the public-backbone construction leaves only three published final-readout tensors beyond the base. No target means base plus 0.5 times the SVHN task vector; its target-only column repeats direct merging, while its both column attacks only the partner. The new reset adds 0.57 pp over this baseline, paired 95% interval [0.37,0.77] pp. This is an accuracy comparison, not a measure of knowledge leakage or proof of complete recovery resistance.",
     "colspec": "lrrrr"
   },
   {
@@ -1558,7 +1594,7 @@
       ],
       [
         "Defense 2",
-        "Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved."
+        "Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved. A separately registered public-backbone construction retains99.47MNIST with originalAGA11.57;known-module reset84.63 is compared with84.06 without the target. Cross-task retention is still under fixed-rule validation."
       ],
       [
         "PaRaMS",
