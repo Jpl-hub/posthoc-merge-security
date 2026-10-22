@@ -4,7 +4,7 @@
 
 表格形式参考AGA原文v1第9页Table1：明确保护方法与攻击状态、数据集列、独立未保护控制；使用booktabs横线与简短表注。此处内容、评价范围与原论文不同。
 
-[AGA原文](https://arxiv.org/pdf/2606.30360v1)。MergeLock仓库于2026-10-21核对仍仅README；未把其论文结果填入我们的表。
+[AGA原文](https://arxiv.org/pdf/2606.30360v1)。MergeLock仓库于2026-10-23核对仍仅README；未把其论文结果填入我们的表。
 
 TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M/D/S分别为MNIST/DTD/SVHN；T/P为该行目标/伙伴。所有准确率单位为百分比。
 
@@ -20,8 +20,9 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 | 防御二（固定结构）[K] | 99.69 | 7.39 / 7.74 | 10.09 / 6.78 | 10.09 / 6.78 |
 | 先前失败候选 [F] | 99.69 | 99.13 / 91.41 | 99.01 / 91.59 | 99.04 / 90.51 |
 | 防御二（任务方向构造） | 99.69 | 10.98 / 14.32 | 9.80 / 9.81 | 9.80 / 9.83 |
+| Defense 2 (numerical) | 99.50 | 24.46 / 19.83 | 13.02 / 19.80 | 13.09 / 19.68 |
 
-每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为先前失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。
+每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为先前失败候选。完整PaRaMS保留。新增数值版使用1024目标训练图校准、12次线性求解、不微调原专家；独立准确率下降0.19个百分点，原严格间隔检查未通过，不能称函数完全相同。
 
 ## 2. 主对比：三个保护任务、相同TA与原版AGA
 
@@ -42,6 +43,9 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 | SVHN / MNIST | PaRaMS (full) | 97.46 | 9.09 / 8.95 | 91.56 / 99.39 | 91.77 / 99.32 |
 | SVHN / MNIST | Defense 2 (structure) | 97.46 | 7.74 / 7.39 | 9.74 / 10.28 | 9.63 / 10.28 |
 | SVHN / MNIST | 防御二（任务方向构造） | 97.46 | 7.30 / 9.45 | 6.45 / 12.19 | 6.45 / 12.22 |
+| MNIST / SVHN | Defense 2 (numerical) | 99.50 | 24.46 / 19.83 | 13.02 / 19.80 | 13.09 / 19.68 |
+| DTD / MNIST | Defense 2 (numerical) | 43.46 | 2.87 / 10.09 | 7.29 / 10.09 | 7.39 / 10.09 |
+| SVHN / MNIST | Defense 2 (numerical) | 96.25 | 19.63 / 11.35 | 16.98 / 10.85 | 16.90 / 10.78 |
 
 每格为该行受保护任务 / 伙伴准确率。PaRaMS保留官方完整默认设置；固定结构与任务方向构造分列，后者使用同一有限目标和各自原任务SVD。三保护任务对应两个无序任务组合，不冒充完整八任务表。方法贡献、已知结构和已知位置等针对性恢复单独报告。参数改动尺度和数值协议分列，不通过裁剪基线追求同参数距离。
 
@@ -246,7 +250,78 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。任务方向防御二使用双专
 
 保护MNIST，伙伴SVHN；融合列为目标 / 伙伴准确率。沿用各固定顺序的前96、192、384对交换，0和384结果直接复用，只新增四个对照。参数距离按逻辑矩阵及各偏置计算；保持独立能力，不按成绩选顺序或幅度。已知方式恢复的限制仍保留。
 
-## 16. 旧候选：任务内外与联合补偿消融
+## 16. 数值版防御二：SVD与逐层补偿消融
+
+| Construction | Distance | Task probe | SA M | TA M / S | AGA target M / S | AGA both M / S |
+|---|---|---|---|---|---|---|
+| Complete method | 8.842 | 3.2e-09 | 99.50 | 24.46 / 19.83 | 13.02 / 19.80 | 13.09 / 19.68 |
+| Without SVD | 9.091 | 0.35 | 99.52 | 10.10 / 9.74 | 11.10 / 12.94 | 10.23 / 12.88 |
+| Without prefix correction | 8.703 | 3.2e-09 | 99.42 | 28.17 / 21.08 | 19.19 / 19.20 | 19.19 / 19.03 |
+
+相同1024张训练构造图、12层、rank32和0.01阻尼。Task probe为原任务右奇异方向上的相对参数改动，不是分类功能不变的证明。去掉SVD仍有效，不能把保护全归功于SVD；逐层补偿的结果与去除控制直接对照。完整方法主点冻结，不按消融成绩替换。独立准确率损失与原严格间隔/小样本失败分别报告。
+
+## 17. 数值版防御二：同一源上的分量检查
+
+| Component | Correct | Prediction changes |
+|---|---|---|
+| A_only | 106/1024 | 919 |
+| B_only | 109/1024 | 915 |
+| No_reconstruction | 107/1024 | 917 |
+| Joint | 1022/1024 | 0 |
+
+仅1024张构造训练图。A单改和B单改直接取主模型对应矩阵；去掉重构保留A及拟合前B传输；联合分数复用原构造缓存。不据这些控制再拟合或选择发布，不把源结果冒充独立测试。
+
+## 18. 数值补偿的完整跨任务结果
+
+| Construction | Target | Standalone | TA T / P | AGA target T / P | AGA both T / P |
+|---|---|---|---|---|---|
+| Prefix reconstruction | MNIST | 99.50 | 24.46 / 19.83 | 13.02 / 19.80 | 13.09 / 19.68 |
+| Prefix reconstruction | DTD | 43.46 | 2.87 / 10.09 | 7.29 / 10.09 | 7.39 / 10.09 |
+| Prefix reconstruction | SVHN | 96.25 | 19.63 / 11.35 | 16.98 / 10.85 | 16.90 / 10.78 |
+| With attention correction | MNIST | 99.52 | 26.22 / 22.57 | 23.08 / 19.73 | 23.70 / 19.35 |
+| With attention correction | DTD | 40.43 | 2.13 / 9.35 | 9.10 / 10.50 | 8.94 / 10.23 |
+| With attention correction | SVHN | 96.18 | 19.60 / 11.35 | 20.79 / 12.11 | 20.46 / 11.70 |
+| Same-input teacher function | MNIST | 99.39 | 27.71 / 20.90 | 18.26 / 19.39 | 17.60 / 19.10 |
+| Same-input teacher function | DTD | 26.28 | 2.13 / 10.17 | 10.37 / 10.20 | 10.59 / 10.10 |
+| Same-input teacher function | SVHN | 95.67 | 19.77 / 11.35 | 16.00 / 10.67 | 15.99 / 10.52 |
+
+同一任务使用同一构造集，全部固定结果保留。M/S/D分别为MNIST/SVHN/DTD；目标与伙伴分列。原方法、增加Attention补偿和改为同输入教师函数重构分别比较，不根据测试成绩替换主模型。DTD独立准确率明显下降的行是任务保持失败，不能因为融合准确率低就称成功。
+
+## 19. 同一数值发布在不同TA系数下的结果
+
+| Protection | Coefficient | TA M / S | AGA target M / S | AGA both M / S |
+|---|---|---|---|---|
+| 无保护 | 0.2 | 95.29 / 77.31 | 94.79 / 76.83 | 94.64 / 74.96 |
+| Numerical357 | 0.2 | 93.66 / 39.11 | 49.65 / 26.32 | 47.87 / 25.43 |
+| 无保护 | 0.5 | 99.37 / 92.50 | 99.30 / 92.78 | 99.32 / 91.77 |
+| Numerical357 | 0.5 | 24.46 / 19.83 | 13.02 / 19.80 | 13.09 / 19.68 |
+| 无保护 | 0.8 | 99.38 / 92.27 | 99.37 / 93.00 | 99.38 / 92.19 |
+| Numerical357 | 0.8 | 80.60 / 25.28 | 58.94 / 20.13 | 55.02 / 19.99 |
+
+唯一主发布357不变。0.2和0.8是在0.5结果之后固定的两项补充观察，没有按成绩选择新防御。MNIST独立准确率均99.50%，无保护99.69%。0.5上的低准确率不能代表其他系数同样有效。
+
+## 20. 知道修改模块后的公开基座恢复
+
+| Model | Standalone M | TA M / S | AGA target M / S | AGA both M / S |
+|---|---|---|---|---|
+| 无保护 | 99.69 | 99.37 / 92.50 | 99.30 / 92.78 | 99.32 / 91.77 |
+| Numerical357 | 99.50 | 24.46 / 19.83 | 13.02 / 19.80 | 13.09 / 19.68 |
+| Same public reset on both controls | 97.65 | 95.39 / 95.67 | 94.47 / 95.73 | 94.31 / 94.99 |
+
+仅使用发布模型、公开基座及12个MLP修改位置，替换其48个权重和偏置；没有原专家、真实任务向量、秘密变换或图片。同一操作处理无保护控制后得到完全相同的158个张量，因此只需评价一份相同模型。该恢复牺牲2.04个百分点独立准确率，使AGA后融合恢复到94.47%；与原版AGA单独列出。
+
+## 21. 同一数值发布：八专家融合、三个数据集评价
+
+| Protection | Recovery | MNIST | DTD | SVHN |
+|---|---|---|---|---|
+| 无保护 | None | 94.00 | 52.18 | 74.42 |
+| 无保护 | AGA target | 93.23 | 52.34 | 73.90 |
+| Numerical357 | None | 86.32 | 7.23 | 32.92 |
+| Numerical357 | AGA target | 50.35 | 26.60 | 30.58 |
+
+只有MNIST受保护，DTD和SVHN是被评价的伙伴。作者顺序、TA系数0.2和原版AGA仅保护专家均固定。没有重构新防御或重复AGA，不报完整八任务表或平均。
+
+## 22. 旧候选：任务内外与联合补偿消融
 
 | Counterfactual | Correct | Prediction changes | Max. relative gap change |
 |---|---|---|---|
@@ -258,13 +333,13 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。任务方向防御二使用双专
 
 固定512张构造训练图，不是测试结果。仅矩阵任务内、仅任务外、全部矩阵、其他参数与完整联合共五项。完整联合保持原能力，但真实AGA后融合仍接近99%；没有根据消融改参数。
 
-## 17. 已完成与尚缺的实验
+## 23. 已完成与尚缺的实验
 
 | Item | Status |
 |---|---|
 | TA + original AGA | Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. |
 | 防御一 | MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. |
-| Defense 2 | Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. |
+| Defense 2 | Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved. |
 | PaRaMS | Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. |
 | MergeLock | Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. |
 | MergeGuard / ARF | Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. |

@@ -53,6 +53,8 @@ def checked_models(target):
 def apply(original, ref, full=False):
     if digest(ref["path"]) != ref["sha256"]:
         raise ValueError(f"Publication SHA256 mismatch: {ref['path']}")
+    if ref.get("reference") == "public_base":
+        original = load_checkpoint("zeroshot.pt")
     state = torch.load(ref["path"], map_location="cpu", weights_only=False)
     result = copy.deepcopy(original)
     result.load_state_dict(state if full else original.state_dict() | state, strict=True)

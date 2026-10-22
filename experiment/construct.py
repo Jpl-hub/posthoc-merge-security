@@ -77,7 +77,7 @@ def main():
         basis = torch.load(case["basis"]["path"], map_location="cpu", weights_only=False)
         train = dataset(a.target, "data", expert.val_preprocess, True)
         edits, calibration, details = nonlinear_mlp_compensation(
-            expert, head, train, indices, basis, c
+            expert, head, train, indices, basis, c, anchor=anchor
         )
         torch.save(calibration, out / "calibration.pt")
     elif a.method == "bias":

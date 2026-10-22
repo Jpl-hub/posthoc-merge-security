@@ -18,6 +18,11 @@ def main():
     p.add_argument("--publication", required=True)
     p.add_argument("--sha256", required=True)
     p.add_argument("--full-state", action="store_true")
+    p.add_argument(
+        "--base-reference",
+        action="store_true",
+        help="Apply and store edits relative to the public base",
+    )
     p.add_argument("--output", required=True)
     a = p.parse_args()
     require_root()
@@ -26,7 +31,8 @@ def main():
     out = new_output(a.output, protocol)
     base = load_checkpoint("zeroshot.pt")
     expert = load_checkpoint(f"{a.target}/finetuned.pt")
-    published = apply(expert, dict(path=a.publication, sha256=a.sha256), a.full_state)
+    reference = base if a.base_reference else expert
+    published = apply(reference, dict(path=a.publication, sha256=a.sha256), a.full_state)
     start = time.monotonic()
     if a.method == "aga":
         cfg = load_config("configs/evaluate.json")
@@ -43,7 +49,7 @@ def main():
         # expert above assembles an edits-only publication; it is not passed here.
         result, detail = public_patch_recovery(published.state_dict(), base.state_dict())
         detail["known_family"] = True
-    edits = {k: v for k, v in result.items() if not torch.equal(v, expert.state_dict()[k])}
+    edits = {k: v for k, v in result.items() if not torch.equal(v, reference.state_dict()[k])}
     torch.save(edits, out / "edits.pt")
     save_json(
         out / "execution.json",

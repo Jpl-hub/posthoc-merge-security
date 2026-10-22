@@ -65,9 +65,16 @@
         "10.98 / 14.32",
         "9.80 / 9.81",
         "9.80 / 9.83"
+      ],
+      [
+        "Defense 2 (numerical)",
+        "99.50",
+        "24.46 / 19.83",
+        "13.02 / 19.80",
+        "13.09 / 19.68"
       ]
     ],
-    "note": "M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Previous candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.",
+    "note": "M/S: protected MNIST / partner SVHN. Original AGA processes the target or both experts. Numerical reconstruction uses 1,024 target-training images and 12 linear solves, with experts frozen; standalone accuracy drops by 0.19 pp. Its original confirmation and relative-gap checks failed. [H] Historical task-bound failures; [K] known symmetry; [F] previous failed candidate. PaRaMS retains official defaults. Recovery with additional algorithm knowledge is reported separately.",
     "colspec": "lrrrr"
   },
   {
@@ -201,6 +208,30 @@
         "7.30 / 9.45",
         "6.45 / 12.19",
         "6.45 / 12.22"
+      ],
+      [
+        "MNIST / SVHN",
+        "Defense 2 (numerical)",
+        "99.50",
+        "24.46 / 19.83",
+        "13.02 / 19.80",
+        "13.09 / 19.68"
+      ],
+      [
+        "DTD / MNIST",
+        "Defense 2 (numerical)",
+        "43.46",
+        "2.87 / 10.09",
+        "7.29 / 10.09",
+        "7.39 / 10.09"
+      ],
+      [
+        "SVHN / MNIST",
+        "Defense 2 (numerical)",
+        "96.25",
+        "19.63 / 11.35",
+        "16.98 / 10.85",
+        "16.90 / 10.78"
       ]
     ],
     "note": "TA0.5 and unchanged original AGA; every merged cell is protected / partner accuracy. Full PaRaMS uses official defaults without clipping. Structure uses a fixed global rule; task-directed uses the frozen finite objective with each target task SVD. Three protected tasks correspond to two unordered task pairs, not a complete eight-task table. Novelty and known-family/location-aware recovery are separate. Complete original-task predictions, parameter scales and numerical protocols are reported separately.",
@@ -1165,6 +1196,307 @@
     "colspec": "lrrrrrr"
   },
   {
+    "key": "numerical_ablation",
+    "title": "Numerical Defense 2: matched component removals",
+    "headers": [
+      "Construction",
+      "Distance",
+      "Task probe",
+      "SA M",
+      "TA M / S",
+      "AGA target M / S",
+      "AGA both M / S"
+    ],
+    "rows": [
+      [
+        "Complete method",
+        "8.842",
+        "3.2e-09",
+        "99.50",
+        "24.46 / 19.83",
+        "13.02 / 19.80",
+        "13.09 / 19.68"
+      ],
+      [
+        "Without SVD",
+        "9.091",
+        "0.35",
+        "99.52",
+        "10.10 / 9.74",
+        "11.10 / 12.94",
+        "10.23 / 12.88"
+      ],
+      [
+        "Without prefix correction",
+        "8.703",
+        "3.2e-09",
+        "99.42",
+        "28.17 / 21.08",
+        "19.19 / 19.20",
+        "19.19 / 19.03"
+      ]
+    ],
+    "note": "Same 1,024 construction images, 12 layers, rank 32, damping 0.01 and parameter ranges. The task probe measures the largest relative parameter change along teacher task directions; it does not guarantee task retention. Removing SVD still protects MNIST, so a classification benefit from SVD is not established. Removing prefix correction fits original teacher MLP outputs from actual student inputs. All controls are reported without replacing the main release.",
+    "colspec": "lrrrrrr"
+  },
+  {
+    "key": "numerical_components",
+    "title": "Numerical changes: source-only component checks",
+    "headers": [
+      "Component",
+      "Correct",
+      "Prediction changes"
+    ],
+    "rows": [
+      [
+        "A_only",
+        "106/1024",
+        "919"
+      ],
+      [
+        "B_only",
+        "109/1024",
+        "915"
+      ],
+      [
+        "No_reconstruction",
+        "107/1024",
+        "917"
+      ],
+      [
+        "Joint",
+        "1022/1024",
+        "0"
+      ]
+    ],
+    "note": "Same 1,024 target-training images and frozen release. A-only and B-only use subsets of its edits. No-reconstruction retains A changes and the pre-fit B transforms. No weights are refitted or selected. These are construction-set observations, not independent test results.",
+    "colspec": "lrr"
+  },
+  {
+    "key": "numerical_reconstruction",
+    "title": "Numerical reconstruction: all fixed target-task measurements",
+    "headers": [
+      "Construction",
+      "Target",
+      "Standalone",
+      "TA T / P",
+      "AGA target T / P",
+      "AGA both T / P"
+    ],
+    "rows": [
+      [
+        "Prefix reconstruction",
+        "MNIST",
+        "99.50",
+        "24.46 / 19.83",
+        "13.02 / 19.80",
+        "13.09 / 19.68"
+      ],
+      [
+        "Prefix reconstruction",
+        "DTD",
+        "43.46",
+        "2.87 / 10.09",
+        "7.29 / 10.09",
+        "7.39 / 10.09"
+      ],
+      [
+        "Prefix reconstruction",
+        "SVHN",
+        "96.25",
+        "19.63 / 11.35",
+        "16.98 / 10.85",
+        "16.90 / 10.78"
+      ],
+      [
+        "With attention correction",
+        "MNIST",
+        "99.52",
+        "26.22 / 22.57",
+        "23.08 / 19.73",
+        "23.70 / 19.35"
+      ],
+      [
+        "With attention correction",
+        "DTD",
+        "40.43",
+        "2.13 / 9.35",
+        "9.10 / 10.50",
+        "8.94 / 10.23"
+      ],
+      [
+        "With attention correction",
+        "SVHN",
+        "96.18",
+        "19.60 / 11.35",
+        "20.79 / 12.11",
+        "20.46 / 11.70"
+      ],
+      [
+        "Same-input teacher function",
+        "MNIST",
+        "99.39",
+        "27.71 / 20.90",
+        "18.26 / 19.39",
+        "17.60 / 19.10"
+      ],
+      [
+        "Same-input teacher function",
+        "DTD",
+        "26.28",
+        "2.13 / 10.17",
+        "10.37 / 10.20",
+        "10.59 / 10.10"
+      ],
+      [
+        "Same-input teacher function",
+        "SVHN",
+        "95.67",
+        "19.77 / 11.35",
+        "16.00 / 10.67",
+        "15.99 / 10.52"
+      ]
+    ],
+    "note": "TA coefficient 0.5. MNIST uses SVHN as partner; DTD/SVHN use MNIST. Construction sets contain 1,024 MNIST, 1,024 SVHN and 512 DTD images. Attention correction adds an O solve before each A/B step. Same-input reconstruction changes only the teacher target. Every fixed point is reported; low merged accuracy is not protection success when standalone accuracy collapses. No control replaces the main release.",
+    "colspec": "lrrrrr"
+  },
+  {
+    "key": "numerical_coefficient",
+    "title": "Fixed numerical release at three TA coefficients",
+    "headers": [
+      "Protection",
+      "Coefficient",
+      "TA M / S",
+      "AGA target M / S",
+      "AGA both M / S"
+    ],
+    "rows": [
+      [
+        "Unprotected",
+        "0.2",
+        "95.29 / 77.31",
+        "94.79 / 76.83",
+        "94.64 / 74.96"
+      ],
+      [
+        "Numerical357",
+        "0.2",
+        "93.66 / 39.11",
+        "49.65 / 26.32",
+        "47.87 / 25.43"
+      ],
+      [
+        "Unprotected",
+        "0.5",
+        "99.37 / 92.50",
+        "99.30 / 92.78",
+        "99.32 / 91.77"
+      ],
+      [
+        "Numerical357",
+        "0.5",
+        "24.46 / 19.83",
+        "13.02 / 19.80",
+        "13.09 / 19.68"
+      ],
+      [
+        "Unprotected",
+        "0.8",
+        "99.38 / 92.27",
+        "99.37 / 93.00",
+        "99.38 / 92.19"
+      ],
+      [
+        "Numerical357",
+        "0.8",
+        "80.60 / 25.28",
+        "58.94 / 20.13",
+        "55.02 / 19.99"
+      ]
+    ],
+    "note": "One frozen release: standalone MNIST is 99.50%, versus 99.69% untreated. Coefficients 0.2 and 0.8 were fixed after observing 0.5 and were not used to tune or select defense weights. Both original AGA scopes and matched untreated controls are reported.",
+    "colspec": "lrrrr"
+  },
+  {
+    "key": "numerical_reset",
+    "title": "Known-module recovery using the public base",
+    "headers": [
+      "Model",
+      "Standalone M",
+      "TA M / S",
+      "AGA target M / S",
+      "AGA both M / S"
+    ],
+    "rows": [
+      [
+        "Unprotected",
+        "99.69",
+        "99.37 / 92.50",
+        "99.30 / 92.78",
+        "99.32 / 91.77"
+      ],
+      [
+        "Numerical357",
+        "99.50",
+        "24.46 / 19.83",
+        "13.02 / 19.80",
+        "13.09 / 19.68"
+      ],
+      [
+        "Same public reset on both controls",
+        "97.65",
+        "95.39 / 95.67",
+        "94.47 / 95.73",
+        "94.31 / 94.99"
+      ]
+    ],
+    "note": "The attacker knows the 12 modified MLP modules and replaces their 48 tensors with public-base values. No original expert, true task vector, secret transform or images are used. Applying the same operation to the untreated control gives the identical 158-tensor model. Standalone accuracy drops by 2.04 pp, while merged accuracy recovers. Original AGA alone retains 99.44% standalone accuracy; the reset is a separate recovery condition.",
+    "colspec": "lrrrr"
+  },
+  {
+    "key": "numerical_eight",
+    "title": "Same numerical release: eight experts,three evaluated datasets",
+    "headers": [
+      "Protection",
+      "Recovery",
+      "MNIST",
+      "DTD",
+      "SVHN"
+    ],
+    "rows": [
+      [
+        "Unprotected",
+        "None",
+        "94.00",
+        "52.18",
+        "74.42"
+      ],
+      [
+        "Unprotected",
+        "AGA target",
+        "93.23",
+        "52.34",
+        "73.90"
+      ],
+      [
+        "Numerical357",
+        "None",
+        "86.32",
+        "7.23",
+        "32.92"
+      ],
+      [
+        "Numerical357",
+        "AGA target",
+        "50.35",
+        "26.60",
+        "30.58"
+      ]
+    ],
+    "note": "Eight experts in author order, TA coefficient 0.2, only MNIST protected. Original AGA processes only the protected expert. The release and AGA weights are reused. DTD/SVHN are evaluated partners. Twelve records and 192 scores were checked in their original batch contexts, with zero replay error and independent paired/per-class counts. No complete eight-task table or average is claimed.",
+    "colspec": "lrrrr"
+  },
+  {
     "key": "ablation",
     "title": "Previous Defense 2 candidate: source-only ablations",
     "headers": [
@@ -1226,7 +1558,7 @@
       ],
       [
         "Defense 2",
-        "Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets."
+        "Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved."
       ],
       [
         "PaRaMS",

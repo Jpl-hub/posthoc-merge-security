@@ -1,0 +1,24 @@
+MNIST Public_base 510 1024
+MNIST Expert_MLP 1020 1024
+MNIST Expert_readout 482 1024
+MNIST Expert_MLP_and_readout 1020 1024
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/root/autodl-tmp/merge_security_20261009/experiment/nonlinear_ablation.py", line 186, in <module>
+    main()
+  File "/root/autodl-tmp/merge_security_20261009/experiment/nonlinear_ablation.py", line 94, in main
+    retained_knowledge()
+  File "/root/autodl-tmp/merge_security_20261009/experiment/nonlinear_ablation.py", line 32, in retained_knowledge
+    cal = torch.load(root / "calibration.pt", map_location="cpu", weights_only=False)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/serialization.py", line 997, in load
+    with _open_file_like(f, 'rb') as opened_file:
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/serialization.py", line 444, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/site-packages/torch/serialization.py", line 425, in __init__
+    super().__init__(open(name, mode))
+                     ^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'outputs/nonlinear_svhn_20261023/calibration.pt'
