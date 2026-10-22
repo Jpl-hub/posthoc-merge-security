@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+Components & Correct & Changed & Gap change \\
+\midrule
+input only & 49/512 & 463 & 1.19124 \\
+transformer only & 77/512 & 434 & 1.16101 \\
+readout only & 45/512 & 466 & 1.09682 \\
+complete & 511/512 & 0 & 1.44827e-06 \\
+\bottomrule
+\end{tabular}
+\caption{Fixed source component counterfactuals on512 training images. These are standalone responses, not fusion or attack results.}
+\label{tab:coordinate-components}
+\end{table}
