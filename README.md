@@ -1,5 +1,6 @@
 # posthoc-merge-security
 
+**Defense2进展说明：已有结构方案单独使用99.69%、直接TA融合7.39%、原版AGA后10.09%，这一有效结果保留。近期另外两项新构造未达到同样效果；不将它们混称为“Defense2全部无效”。已有方案的原创性与针对性恢复边界仍需分别报告。** 见[有效方案和联合修改对照](results/residual_coordinate_control/summary.md)。
 [论文实验总表：TeX、Markdown、PDF及缺项](results/paper_tables/README.md)
 
 研究已微调 CLIP ViT-B/32 专家的发布前参数后处理保护：保持独立任务能力，评价未经授权融合及恢复攻击后的任务能力。
