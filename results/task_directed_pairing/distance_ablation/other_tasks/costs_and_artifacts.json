@@ -1,0 +1,193 @@
+{
+  "native": [
+    {
+      "target": "DTD",
+      "native": {
+        "rows": [
+          {
+            "n": 1024,
+            "changed": 0,
+            "R": 0.00047253396337861784,
+            "stage": "training",
+            "before_correct": 1001,
+            "after_correct": 1001,
+            "passed": true,
+            "raw_sha256": "6426175c957e62d6bf6b780e8b54fe720b4b64af72e29eb6c83806150097241a"
+          },
+          {
+            "n": 1880,
+            "changed": 0,
+            "R": 0.0009103322712790169,
+            "stage": "full",
+            "before_correct": 1493,
+            "after_correct": 1493,
+            "passed": true,
+            "raw_sha256": "29e0da90f4b8cbc69716e5fc4f526c2959218723fc8442f1f812e8277fd21be6"
+          }
+        ],
+        "passed": true,
+        "image_forwards": 5808,
+        "seconds": 23.694468104993575
+      },
+      "AGA": {
+        "method": "aga",
+        "seconds": 29.205936370999552,
+        "output_sha256": "9b9e4276a7ce1e6c29359cb006e71cd182dbc348ad0de1dc7e9706324f331d5f",
+        "details": {
+          "known_family": false,
+          "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+        },
+        "new_training_updates": 0
+      }
+    },
+    {
+      "target": "SVHN",
+      "native": {
+        "rows": [
+          {
+            "n": 1024,
+            "changed": 0,
+            "R": 4.6963790917202836e-05,
+            "stage": "training",
+            "before_correct": 1001,
+            "after_correct": 1001,
+            "passed": true,
+            "raw_sha256": "391446ad313e3803ebd5a68abc56d7d17ea262ffab078a2a589f9336bf67beaf"
+          },
+          {
+            "n": 26032,
+            "changed": 0,
+            "R": 0.0012468827930174563,
+            "stage": "full",
+            "before_correct": 25371,
+            "after_correct": 25371,
+            "passed": true,
+            "raw_sha256": "aef78b29ed738087e505df2c55bf90e7220c520171a39dbb4e683066b2b9cc67"
+          }
+        ],
+        "passed": true,
+        "image_forwards": 54112,
+        "seconds": 60.71968015599123
+      },
+      "AGA": {
+        "method": "aga",
+        "seconds": 28.79132050300541,
+        "output_sha256": "09c7bc7576cc1df8f22a3cd628b1c7e3787af26c5a13121ed49170757ea3b781",
+        "details": {
+          "known_family": false,
+          "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+        },
+        "new_training_updates": 0
+      }
+    }
+  ],
+  "evaluation": {
+    "pilot/00_DTD_MNIST": {
+      "execution": {
+        "completed": true,
+        "pilot": true,
+        "case_index": 0,
+        "rows": 14,
+        "wall_seconds": 34.4598726619879,
+        "GPU": "NVIDIA GeForce RTX 3090",
+        "new_defense_weights": 0,
+        "optimizer_steps": 0,
+        "new_AGA_calls": 0,
+        "cached_author_AGA_weights": true,
+        "defense_feedback": false,
+        "predictions_sha256": "e6ca9975fa5a19448c8b4207e271e5062b6a270917cec04e044ee432bc108383",
+        "source_sha256": "2dee58c3e1dec5a3b2a7c29a14eccebdb89744a69d2751917b29ccc6a3027a0a",
+        "protocol_sha256": "811c3763e599f2b646a3db7c7f2cc00938a0182f19997dca6c1682a4acb49e70"
+      },
+      "production_image_forwards": 896,
+      "replay_context_image_forwards": 896,
+      "selected_score_replays": 224,
+      "maximum_score_error": 0.0
+    },
+    "full/00_DTD_MNIST": {
+      "execution": {
+        "completed": true,
+        "pilot": false,
+        "case_index": 0,
+        "rows": 14,
+        "wall_seconds": 75.92172499399749,
+        "GPU": "NVIDIA GeForce RTX 3090",
+        "new_defense_weights": 0,
+        "optimizer_steps": 0,
+        "new_AGA_calls": 0,
+        "cached_author_AGA_weights": true,
+        "defense_feedback": false,
+        "predictions_sha256": "940e85e005ddaaa2a045f0374e9683f72d6cd4c70f99a80eff7ea8918f469d7e",
+        "source_sha256": "2dee58c3e1dec5a3b2a7c29a14eccebdb89744a69d2751917b29ccc6a3027a0a",
+        "protocol_sha256": "811c3763e599f2b646a3db7c7f2cc00938a0182f19997dca6c1682a4acb49e70"
+      },
+      "production_image_forwards": 37520,
+      "replay_context_image_forwards": 26656,
+      "selected_score_replays": 224,
+      "maximum_score_error": 0.0
+    },
+    "pilot/01_SVHN_MNIST": {
+      "execution": {
+        "completed": true,
+        "pilot": true,
+        "case_index": 1,
+        "rows": 14,
+        "wall_seconds": 37.382038950003334,
+        "GPU": "NVIDIA GeForce RTX 3090",
+        "new_defense_weights": 0,
+        "optimizer_steps": 0,
+        "new_AGA_calls": 0,
+        "cached_author_AGA_weights": true,
+        "defense_feedback": false,
+        "predictions_sha256": "1ce717373c83b802b0a222cb1a75c5b875134092e7349a16c8271172ae79bcc3",
+        "source_sha256": "2dee58c3e1dec5a3b2a7c29a14eccebdb89744a69d2751917b29ccc6a3027a0a",
+        "protocol_sha256": "811c3763e599f2b646a3db7c7f2cc00938a0182f19997dca6c1682a4acb49e70"
+      },
+      "production_image_forwards": 896,
+      "replay_context_image_forwards": 896,
+      "selected_score_replays": 224,
+      "maximum_score_error": 0.0
+    },
+    "full/01_SVHN_MNIST": {
+      "execution": {
+        "completed": true,
+        "pilot": false,
+        "case_index": 1,
+        "rows": 14,
+        "wall_seconds": 153.98477486599586,
+        "GPU": "NVIDIA GeForce RTX 3090",
+        "new_defense_weights": 0,
+        "optimizer_steps": 0,
+        "new_AGA_calls": 0,
+        "cached_author_AGA_weights": true,
+        "defense_feedback": false,
+        "predictions_sha256": "e792591f814d42b442b526c739ef0693a7fdd2940d530d3375966034140607d8",
+        "source_sha256": "2dee58c3e1dec5a3b2a7c29a14eccebdb89744a69d2751917b29ccc6a3027a0a",
+        "protocol_sha256": "811c3763e599f2b646a3db7c7f2cc00938a0182f19997dca6c1682a4acb49e70"
+      },
+      "production_image_forwards": 134128,
+      "replay_context_image_forwards": 27360,
+      "selected_score_replays": 224,
+      "maximum_score_error": 0.0
+    }
+  },
+  "raw_files": {
+    "outputs/task_direction_distance_other_20261023/evaluation/pilot/00_DTD_MNIST/artifacts/predictions.pt": "e6ca9975fa5a19448c8b4207e271e5062b6a270917cec04e044ee432bc108383",
+    "outputs/task_direction_distance_other_20261023/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt": "940e85e005ddaaa2a045f0374e9683f72d6cd4c70f99a80eff7ea8918f469d7e",
+    "outputs/task_direction_distance_other_20261023/construction/DTD/release.pt": "4fa33c5f97e080319f92636dafb3235e460ffa5bea2771cb25583b71458cbd19",
+    "outputs/task_direction_distance_other_20261023/native/DTD/training.pt": "6426175c957e62d6bf6b780e8b54fe720b4b64af72e29eb6c83806150097241a",
+    "outputs/task_direction_distance_other_20261023/native/DTD/full.pt": "29e0da90f4b8cbc69716e5fc4f526c2959218723fc8442f1f812e8277fd21be6",
+    "outputs/task_direction_distance_other_20261023/AGA/DTD/edits.pt": "9b9e4276a7ce1e6c29359cb006e71cd182dbc348ad0de1dc7e9706324f331d5f",
+    "outputs/task_direction_distance_other_20261023/evaluation/pilot/01_SVHN_MNIST/artifacts/predictions.pt": "1ce717373c83b802b0a222cb1a75c5b875134092e7349a16c8271172ae79bcc3",
+    "outputs/task_direction_distance_other_20261023/evaluation/full/01_SVHN_MNIST/artifacts/predictions.pt": "e792591f814d42b442b526c739ef0693a7fdd2940d530d3375966034140607d8",
+    "outputs/task_direction_distance_other_20261023/construction/SVHN/release.pt": "529ea00ea80f03d6f6f321293e1e8eaa16791a27513b5ff18cd9c59b8265fda9",
+    "outputs/task_direction_distance_other_20261023/native/SVHN/training.pt": "391446ad313e3803ebd5a68abc56d7d17ea262ffab078a2a589f9336bf67beaf",
+    "outputs/task_direction_distance_other_20261023/native/SVHN/full.pt": "aef78b29ed738087e505df2c55bf90e7220c520171a39dbb4e683066b2b9cc67",
+    "outputs/task_direction_distance_other_20261023/AGA/SVHN/edits.pt": "09c7bc7576cc1df8f22a3cd628b1c7e3787af26c5a13121ed49170757ea3b781"
+  },
+  "expert_training_updates": 0,
+  "new_original_AGA_calls": 2,
+  "new_defense_weights": 2,
+  "preregistration": "502c97556f4d5f1338a702fb569db2c8b0369ce2",
+  "historical_parameter_field": "Evaluation inheritedD.5 as a legacy project field;these fixed symmetry ablations use the separately preregistered structural bound2sqrt152,notD.5."
+}
