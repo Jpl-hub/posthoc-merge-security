@@ -24,7 +24,7 @@
   },
   "experiment": "Frozen task-SVD-directed releases in author-order eight-expert TA0.2; three datasets evaluated",
   "output": "outputs/task_directed_eight_task_20261022",
-  "source_sha256": "b85c69ec157f074b0d780931a78faf77ded53ddccdf51521ecbd5eeb0f515b41",
+  "source_sha256": "74ef8c7905f43970d700ade932a8b40f8ae3f4df06aa5c1cc3494011393018d6",
   "audit_source_sha256": "02b496fc3c73519213b3608c6adb0fa533f053a1cc24826898e4589537d5e5c1",
   "inputs": {
     "active": {
@@ -110,5 +110,13 @@
     "Protected-expert AGA follows original entry; eight-expert all-AGA not run.",
     "Fixed native task checkpoints, not proven byte-identical to author paper files.",
     "Current known-family recovery remains exact for the three releases; this experiment does not resolve it."
-  ]
+  ],
+  "implementation_repair": {
+    "change": "Convert replay-context image count to a Python int before JSON serialization; no scientific changes.",
+    "first_public_preregistration": "a8c19f33873063e087bd50672fa525c8850314fb",
+    "first_local_preregistration": "6ebda9b2e797da6cd26aabdd24469b625918d20c",
+    "failure_evidence": "results/task_directed_pairing/eight_expert/serialization_failure.json",
+    "failed_pilot_retained": "outputs/task_directed_eight_task_20261022/pilot.serialization_failure",
+    "same_model_data_coefficients_thresholds": true
+  }
 }
