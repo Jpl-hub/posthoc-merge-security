@@ -18,7 +18,7 @@
 
 每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为先前失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。
 
-## 11. 任务方向内外变化与真实融合效果
+## 13. 任务方向内外变化与真实融合效果
 
 | Fixed model | Task-inside distance | Task-outside distance | Standalone M | TA M | AGA both M |
 |---|---|---|---|---|---|
@@ -29,7 +29,7 @@
 
 相同74个矩阵、原专家减基座的32个任务右奇异方向；矩阵距离不含偏置、LayerNorm与embedding。任务外距离相近，但融合效果差别很大，不能把距离本身当作保护效果。Distance-only pairing为固定消融，不按分类成绩择优；未实测项留空。
 
-## 12. 固定消融：去除任务方向项
+## 14. 固定消融：去除任务方向项
 
 | Construction | Standalone M | TA M / S | AGA target M / S | AGA both M / S |
 |---|---|---|---|---|

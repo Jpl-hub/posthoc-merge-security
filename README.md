@@ -1,6 +1,10 @@
 # posthoc-merge-security
 
 **Defense2进展：同一任务SVD构造已完成MNIST、DTD、SVHN验证。** 独立准确率保持99.69%／79.41%／97.46%；原版AGA后分别为9.80%／2.39%／6.45%，完整测试预测均不变。构造不使用图片、不重新训练专家。见[三任务MD／TeX](results/task_directed_pairing/other_tasks/summary.md)、[方法与代码说明](results/task_directed_pairing/method.md)。MNIST固定距离消融也完成：去掉任务方向项后，直接融合13.99%、原AGA11.27%／11.08%，加入后为10.98%／9.80%／9.80%；这是一个固定消融，不宣称所有排序都更好。原固定结构和失败对照保留，方法贡献与针对性恢复权限单独研究。
+
+**已知方式恢复的限制已实际验证。** 只给发布权重和公开基座，知道全网换序方式，不给原专家、真实任务向量、秘密排列或图片，当前三个模型及匹配无保护控制均全部158张量精确还原。匹配后再原AGA仅目标，目标准确率恢复至99.30%／68.40%／91.56%；因状态精确相同，引用已核原分数，不称新的图片前向。当前方案能防住已测原版AGA，不能抵抗这项针对性恢复，两者并排保留。[MD／TeX恢复表](results/task_directed_pairing/recovery/summary.md)、[方法贡献和权限](results/task_directed_pairing/contribution.md)。不通过改排序或增大距离回避这项结果。
+
+同一三份发布已补齐[全部六个保护方向](results/task_directed_pairing/cross_pairs/summary.md)，包含DTD/SVHN独立组合。新增原AGA仅目标后：MNIST/DTD为9.80%，DTD/SVHN为2.34%，SVHN/DTD为6.53%；伙伴成绩、双方AGA和各自无保护控制均完整保留。全部新分数按原128张批上下文重放通过，最大误差0。这里是三种无序任务组合，不是六个独立数据集或完整八任务评价。
 [论文实验总表：TeX、Markdown、PDF及缺项](results/paper_tables/README.md)
 
 2026-10-22：同一规则新增DTD和SVHN保护验证。DTD单独79.41%、TA2.23%、原AGA仅目标／双方2.18%／2.13%；SVHN单独97.46%、TA7.74%、原AGA9.74%／9.63%。完整测试预测均保持，独立核验通过。三个保护任务对应两个无序组合；不是三组独立伙伴，也不因此声称新算法原创性。[三任务MD／TeX／图](results/residual_coordinate_control/other_tasks/summary.md)。

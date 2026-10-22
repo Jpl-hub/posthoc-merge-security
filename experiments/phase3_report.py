@@ -119,6 +119,24 @@ def paper_tables(_source, output):
     table('three_tasks','Matched defenses across three protected tasks',
         ['Target / partner','Protection','Standalone','No recovery T / P','AGA target T / P','AGA both T / P'],rows,
         'TA0.5 and unchanged original AGA; every merged cell is protected / partner accuracy. Full PaRaMS uses official defaults without clipping. Structure uses a fixed global rule; task-directed uses the frozen finite objective with each target task SVD. Three protected tasks correspond to two unordered task pairs, not a complete eight-task table. Novelty and known-family/location-aware recovery are separate. Complete original-task predictions, parameter scales and numerical protocols are reported separately.')
+    cross_root=pairing_root/'cross_pairs'
+    cross_cases=['00_MNIST_DTD','01_DTD_SVHN','02_SVHN_DTD']
+    cross_complete=all((cross_root/'full'/c/'independent_validation.json').exists() for c in cross_cases)
+    if cross_complete:
+        paths={('MNIST','SVHN'):pairing_path,
+            ('DTD','MNIST'):pairing_root/'other_tasks/evaluation/full/00_DTD_MNIST/results.json',
+            ('SVHN','MNIST'):pairing_root/'other_tasks/evaluation/full/01_SVHN_MNIST/results.json'}
+        for case in cross_cases:
+            folder=cross_root/'full'/case;check=read(str(folder/'independent_validation.json'));meta=read(str(folder/'execution.json'))
+            assert check['status']=='passed' and check['original_batch_context_replays'] and check['raw_sha256']==meta['predictions_sha256']
+            data=read(str(folder/'results.json'));paths[data[0]['target'],data[0]['partner']]=folder/'results.json'
+        rows=[]
+        for (target,peer),path in paths.items():
+            for defense,label in [('Unprotected','Unprotected'),('TaskDirected_'+target,'Defense 2 (task-directed)')]:
+                rows.append([target+' / '+peer,label]+[pair(str(path),(target,peer),defense=defense,merger='TA',attack_scope=s) for s in scopes])
+        table('cross_pairs','Frozen task-directed releases across all six task-pair orientations',
+            ['Target / partner','Protection','No recovery T / P','AGA target T / P','AGA both T / P'],rows,
+            'The same three releases and cached unchanged author-AGA edits; TA0.5. Six orientations correspond to three unordered task pairs,not six independent datasets. The three additional evaluations were preregistered after earlier results; no release,rank,objective or parameter was selected or changed. Matching untreated controls,per-class/pair counts and original128-context score replays are retained. Historical tests are not blind. Known-family patch recovery restores these models and is reported separately; this table does not show adaptive recovery resistance.')
     recovery_root=pairing_root/'recovery'
     if (recovery_root/'validation.json').exists():
         check=read(str(recovery_root/'validation.json'));assert check['status']=='passed_independent_public_matching_and_all_tensors'
@@ -263,6 +281,8 @@ def paper_tables(_source, output):
         ['Reliability','Per-class/pair counts and source audits retained. Only DARE has the stated three-mask comparison; do not present deterministic rows as multi-seed results.']]
     if pairing_complete:coverage[2][1]='Fixed structural scheme verified on three protected tasks. A task-SVD-directed construction now has a complete MNIST native/TA/originalAGA check and a parameter-only distance ablation. New construction cross-task evidence,novelty and known-family recovery remain separate.'
     if pairing_other_complete:coverage[2][1]='Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Parameter-only distance ablation retained. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark.'
+    if (recovery_root/'validation.json').exists():coverage[2][1]+=' Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied.'
+    if cross_complete:coverage[2][1]+=' Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included.'
     table('coverage','Completed work and remaining comparisons',['Item','Status'],coverage,
         'This is a completion inventory, not an accuracy table. Missing methods are not assigned zero accuracy. More merger names do not increase the number of recovery attacks.',r'>{\raggedright\arraybackslash}p{37mm}>{\raggedright\arraybackslash}p{132mm}')
     plt.rcParams.update({'font.family':'DejaVu Sans','font.size':10,'pdf.fonttype':42,'axes.spines.top':False,'axes.spines.right':False})
@@ -286,6 +306,7 @@ def paper_tables(_source, output):
         '','TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M/D/S分别为MNIST/DTD/SVHN；T/P为该行目标/伙伴。所有准确率单位为百分比。','']
     tex=['% Generated from frozen, previously audited project records. Requires booktabs,array,graphicx.','% Accuracy in percent. No new model evaluation or raw-score audit.']
     chinese={
+        'cross_pairs':('同一防御二：三个任务的六个保护方向','每格为目标 / 伙伴。六方向对应三种无序任务组合，不是六个独立数据集。三份发布和原作者AGA权重均冻结；新增评价是在旧结果之后登记，没有改排序、rank、目标或参数。TA0.5、原AGA两范围、各自无保护控制、逐类配对及原128批上下文重放均保留。测试集历史暴露，不称盲测；已知方式恢复会还原这些模型，另表报告。'),
         'task_directed_recovery':('任务方向防御二：已知修改方式的针对性恢复','每格为目标 / 伙伴。两种设置都只给发布权重与公开基座；针对性匹配另知道全网残差坐标换序和CLIP结构，不给原专家、真实任务向量、秘密排列或图片。三个恢复模型及无保护控制均与原专家全部158张量精确相同，因此复用已核原分数，不称新图片前向。原版AGA与该针对性恢复分别报告，不外推所有防御。'),
         'three_tasks':('主对比：三个保护任务、相同TA与原版AGA','每格为该行受保护任务 / 伙伴准确率。PaRaMS保留官方完整默认设置；固定结构与任务方向构造分列，后者使用同一有限目标和各自原任务SVD。三保护任务对应两个无序任务组合，不冒充完整八任务表。方法贡献、已知结构和已知位置等针对性恢复单独报告。参数改动尺度和数值协议分列，不通过裁剪基线追求同参数距离。'),
         'main':('主实验：双专家TA融合与原版AGA','每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为先前失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。'),
@@ -304,7 +325,7 @@ def paper_tables(_source, output):
     translations={'Unprotected':'无保护','Defense 1':'防御一','Global permutation [K]':'全网置换 [K]','Defense 2 candidate (failed) [F]':'先前失败候选 [F]',
         'Defense 2 (structure) [K]':'防御二（固定结构）[K]','Defense 2 (task-directed)':'防御二（任务方向构造）',
         'Without family matching':'不作针对性匹配','Known-family matching':'已知方式匹配'}
-    method_sections=[]
+    method_sections=[];recovery_section=None;cross_section=None
     for i,t in enumerate(tables):
         md_start,tex_start=len(md),len(tex)
         title,note=chinese[t['key']]
@@ -315,9 +336,17 @@ def paper_tables(_source, output):
         tex+=[' & '.join(escape(x) for x in row)+r' \\' for row in t['rows']]
         tex += [r'\bottomrule',r'\end{tabular}',r'\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize '+escape(t['note'])+r'\end{minipage}',r'\end{table}','']
         if t['key'] in ['main','geometry','distance_ablation']:method_sections.append(dict(key=t['key'],md=md[md_start:],tex=tex[tex_start:],table=t))
+        if t['key']=='task_directed_recovery':recovery_section=dict(md=md[md_start:],tex=tex[tex_start:],table=t)
+        if t['key']=='cross_pairs':cross_section=dict(md=md[md_start:],tex=tex[tex_start:],table=t)
     md+=['## 图1. 同一组模型的直接融合与AGA后融合','','![主实验准确率](comparison.png)','','目标任务和伙伴任务分别显示；每个柱来自固定配置，未添加不存在的随机重复误差条。详细数值见表1。','']
     (out/'tables.md').write_text('\n'.join(md)+'\n');(out/'tables.tex').write_text('\n'.join(tex)+'\n')
     (out/'table_data.json').write_text(json.dumps(tables,ensure_ascii=False,indent=2)+'\n')
+    if recovery_section:
+        (recovery_root/'summary.md').write_text('\n'.join(['# 当前防御二的针对性恢复','','原版AGA下的效果保留；已知全网换序方式后，仅用发布模型与公开基座即可将当前三个模型各158个张量精确还原。独立NumPy行最大匹配与逐张量逆变换均通过。下面恢复后的准确率引用同一原专家的已核验分数，不称新图片前向、重新训练或新AGA调用。','']+recovery_section['md'])+'\n')
+        (recovery_root/'tables.tex').write_text('\n'.join(recovery_section['tex'])+'\n')
+    if cross_section:
+        (cross_root/'summary.md').write_text('\n'.join(['# 同一防御二的全部三任务组合','','只补缺少的伙伴方向；原模型和已有结果保持冻结。','']+cross_section['md'])+'\n')
+        (cross_root/'tables.tex').write_text('\n'.join(cross_section['tex'])+'\n')
     if pairing_complete:
         intro=['# 任务方向参与构造的Defense 2：MNIST实测','',
             '任务SVD直接进入有限目标F=任务外平方距离−任务内平方距离；从恒等开始逐次选择最大正增量的互不重叠坐标对，全网LN、输入、矩阵及读出配套修改。只读原专家与公开基座，不用图片训练专家。',
@@ -363,6 +392,10 @@ def paper_tables(_source, output):
         p=out/'README.md';p.write_text(p.read_text().replace('尚缺：Defense2任务方向参与构造及新方法贡献的充分验证；','已完成任务SVD参与构造的MNIST闭环；尚缺新构造的跨任务及新方法贡献验证；'))
     if pairing_other_complete:
         p=out/'README.md';p.write_text(p.read_text().replace('已完成任务SVD参与构造的MNIST闭环；尚缺新构造的跨任务及新方法贡献验证；','已完成同一任务SVD构造的MNIST／DTD／SVHN验证；尚缺新方法贡献的充分验证；'))
+    if recovery_section:
+        p=out/'README.md';p.write_text(p.read_text()+'\n当前任务方向Defense2的[已知方式恢复](../task_directed_pairing/recovery/summary.md)已完成：不使用原专家、真实任务向量、秘密排列或图片参与攻击，三模型及匹配控制全部158张量精确还原。原版AGA低分仍保留；已知方式恢复是单独结果，不能声称当前方法抵抗它。\n')
+    if cross_complete:
+        p=out/'README.md';p.write_text(p.read_text().replace('独立DTD/SVHN组合；','')+'\n同一三份发布的[六个保护方向](../task_directed_pairing/cross_pairs/summary.md)已完成，包含独立DTD/SVHN组合；未新增模型或按伙伴成绩调参。\n')
     manifest=dict(status='completed_table_collection',report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         input_sha256=sources,selected_rows=used,tables=len(tables),new_GPU_forwards=0,new_raw_score_revalidation=False,
         scope='Checks imported integer/class totals and joins; reuses prior independent raw-score audits. Not a new attack/defense experiment.',

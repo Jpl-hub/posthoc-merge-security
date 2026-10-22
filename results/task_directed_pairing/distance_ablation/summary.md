@@ -2,7 +2,7 @@
 
 原distance-only顺序在主方法读图前已保存；分类运行在主结果后追加登记。它是消融控制，不是按成绩替换的新防御。
 
-## 12. 固定消融：去除任务方向项
+## 14. 固定消融：去除任务方向项
 
 | Construction | Standalone M | TA M / S | AGA target M / S | AGA both M / S |
 |---|---|---|---|---|
