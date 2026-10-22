@@ -20,8 +20,10 @@ from subspace_probe import save_json
 
 
 @torch.no_grad()
-def construct(protocol, output):
+def construct(protocol, output, target=None):
     cfg = json.loads(Path(protocol).read_text()); out = Path(output)
+    if target is not None:
+        assert target in cfg['targets'];cfg['target']=target
     out.mkdir(parents=True, exist_ok=False); (out / "artifacts").mkdir()
     save_json(out / "protocol.json", cfg)
     torch.set_num_threads(4)
@@ -34,7 +36,7 @@ def construct(protocol, output):
             for x in json.loads(Path("configs/checkpoints.json").read_text())["files"]}
     hashes = {}
     models = []
-    for name in ["zeroshot.pt", "MNIST/finetuned.pt"]:
+    for name in ["zeroshot.pt", cfg['target']+"/finetuned.pt"]:
         hashes[name] = digest(root / name); assert hashes[name] == pins[name]
         m = load(str(root / name)).cpu().eval(); m.requires_grad_(False); models.append(m)
     anchor, own = models
@@ -63,7 +65,8 @@ def construct(protocol, output):
                              delta_norm=dnorm, relative=relative))
     distance = sum(squares)**.5; matrices = sum(weight_squares)**.5
     perm_distance = sum(perm_squares)**.5
-    torch.save(state, out / "artifacts/PaRaMS.pt")
+    published={k:v for k,v in state.items() if not torch.equal(v,own.state_dict()[k])} if cfg.get('save_edits_only') else state
+    torch.save(published, out / "artifacts/PaRaMS.pt")
     freeze = dict(status="frozen_before_any_data_or_peer", parameter_distance_all_changed_tensors=distance,
                   parameter_distance_matrices=matrices, MLP_matrices_distance_lower_bound=perm_distance,
                   global_model_relative_distance=(raw_num/raw_den)**.5, parameter_budget=.5,
@@ -73,14 +76,37 @@ def construct(protocol, output):
                   original_checkpoint_sha256=hashes, official_source_sha256=digest(source),
                   release_sha256=digest(out / "artifacts/PaRaMS.pt"),
                   construction_wall_seconds=wall, actual_default_call=True, edited_tensors=rows,
-                  raw_shape="official state_dict; no clipping, interpolation or scale adjustment")
+                  raw_shape="changed tensors only" if cfg.get('save_edits_only') else "official state_dict; no clipping, interpolation or scale adjustment",
+                  target=cfg['target'],state_dict_is_edits_only=cfg.get('save_edits_only',False),
+                  reference_not_clipped_to_project_budget=True)
     save_json(out / "release_freeze.json", freeze)
     for name, sha in hashes.items(): assert digest(root/name) == sha
     print("PARAMS_DEFAULT_FROZEN", json.dumps({k:v for k,v in freeze.items() if k!="edited_tensors"}), flush=True)
 
 
+def verify_edits(original, edits, seed=0):
+    """Independent exact MLP row lookup and NumPy diagonal-scaling identities."""
+    import numpy as np
+    state=original.state_dict();changed=state|edits;generator=torch.Generator().manual_seed(seed);allowed=set()
+    for i in range(12):
+        p=f'model.visual.transformer.resblocks.{i}.';a=state[p+'mlp.c_fc.weight'].numpy()
+        lookup={row.tobytes():j for j,row in enumerate(a)};assert len(lookup)==len(a)
+        perm=np.array([lookup[row.tobytes()] for row in changed[p+'mlp.c_fc.weight'].numpy()]);assert len(np.unique(perm))==len(a)
+        for key,expected in [('mlp.c_fc.weight',a[perm]),('mlp.c_fc.bias',state[p+'mlp.c_fc.bias'].numpy()[perm]),
+                             ('mlp.c_proj.weight',state[p+'mlp.c_proj.weight'].numpy()[:,perm])]:
+            np.testing.assert_array_equal(changed[p+key],expected);allowed.add(p+key)
+        alpha=(.05+19.95*torch.rand(768,generator=generator)).numpy();inverse=np.float32(1)/alpha
+        for key in ['attn.in_proj_weight','attn.in_proj_bias']:
+            w=state[p+key].numpy();scale=np.concatenate([alpha,inverse,alpha]);scale=scale[:,None] if w.ndim==2 else scale
+            np.testing.assert_array_equal(changed[p+key],w*scale);allowed.add(p+key)
+        key=p+'attn.out_proj.weight';np.testing.assert_array_equal(changed[key],state[key].numpy()*inverse[None]);allowed.add(key)
+    assert set(edits)<=allowed
+    for key in set(state)-allowed:np.testing.assert_array_equal(changed[key],state[key])
+    return dict(exact_MLP_row_permutation_and_numpy_scaling=True,layers=12,all_state_tensors_checked=len(state))
+
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--protocol", default="configs/params_reference.json")
-    p.add_argument("--output", required=True); args = p.parse_args()
-    construct(args.protocol, args.output)
+    p.add_argument("--output", required=True);p.add_argument('--target'); args = p.parse_args()
+    construct(args.protocol, args.output,args.target)

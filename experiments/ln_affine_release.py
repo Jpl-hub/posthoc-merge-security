@@ -354,7 +354,7 @@ def verify_components(folder):
 
 @torch.no_grad()
 def cross_task(protocol, target, attack=False):
-    """Validate the unchanged global permutation rule on another frozen expert."""
+    """Validate a frozen structural rule on another expert; never retune it."""
     from aga_coordinate_audit import residual_permutation
     from author_protocol_audit import logical_parameter_distance
     from clip_benchmark import author_recover, evaluate
@@ -365,7 +365,8 @@ def cross_task(protocol, target, attack=False):
     for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
     anchor,expert,head,pins=checked_models(target);out=Path(cfg['output'])/target
     if attack:
-        check=json.loads((out/'independent_validation.json').read_text());assert check['passed']
+        check=json.loads((out/'independent_validation.json').read_text())
+        assert check['passed'] or (cfg.get('reference_utility_observation') and check['complete_native_observation'])
         assert not (out/'AGA_edits.pt').exists()
         freeze=json.loads((out/'before_images.json').read_text());assert digest(out/'release.pt')==freeze['release_sha256']
         expert.load_state_dict(expert.state_dict()|torch.load(out/'release.pt',map_location='cpu'),strict=True)
@@ -386,12 +387,17 @@ def cross_task(protocol, target, attack=False):
             source_sha256=digest(__file__),no_optimizer_or_result_selection=True))
         return
     out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
-    edits=residual_permutation(expert.state_dict(),torch.arange(767,-1,-1))
-    distance=logical_parameter_distance(edits,expert.state_dict());assert distance<=cfg['parameter_budget']
-    torch.save(edits,out/'release.pt')
+    if cfg.get('prebuilt_releases'):
+        ref=cfg['prebuilt_releases'][target];assert digest(ref['path'])==ref['sha256']
+        edits=torch.load(ref['path'],map_location='cpu');(out/'release.pt').symlink_to(Path(ref['path']).resolve())
+    else:
+        edits=residual_permutation(expert.state_dict(),torch.arange(767,-1,-1));torch.save(edits,out/'release.pt')
+    distance=logical_parameter_distance(edits,expert.state_dict())
+    if cfg['parameter_budget'] is not None:assert distance<=cfg['parameter_budget']
     save_json(out/'before_images.json',dict(target=target,release_sha256=digest(out/'release.pt'),
         checkpoint_sha256=pins,parameter_distance=distance,protocol_sha256=digest(protocol),
-        source_sha256=digest(__file__),construction_images=0,optimizer_steps=0,fixed_reverse768=True))
+        source_sha256=digest(__file__),construction_images=0,optimizer_steps=0,fixed_reverse768=not bool(cfg.get('prebuilt_releases')),
+        baseline_reference=cfg.get('reference_family'),reference_utility_observation=cfg.get('reference_utility_observation',False)))
     released=copy.deepcopy(expert);released.load_state_dict(expert.state_dict()|edits,strict=True)
     train=dataset(target,'data',expert.val_preprocess,True)
     order=np.random.default_rng(cfg['seed']).permutation(len(train)).tolist();n=cfg['check_n']
@@ -403,7 +409,8 @@ def cross_task(protocol, target, attack=False):
         for model in [expert,released]:
             sink=[];evaluate(model,head,make_loader(data,ids),'cuda',logit_sink=sink.append)
             scores.append(torch.cat(sink).double())
-        before,after=scores;y=official_labels(target,stage!='full')[ids]
+        before,after=scores;assert torch.isfinite(before).all() and torch.isfinite(after).all()
+        y=official_labels(target,stage!='full')[ids]
         winner=before.argmax(1);gap=before.max(1).values[:,None]-before
         mask=~torch.nn.functional.one_hot(winner,before.shape[1]).bool();assert (gap[mask]>0).all()
         delta=after-before;ratio=((delta.gather(1,winner[:,None])-delta)[mask]/gap[mask]).abs()
@@ -414,7 +421,7 @@ def cross_task(protocol, target, attack=False):
         torch.save(raw,out/'native_scores.pt');save_json(out/'native.json',dict(rows=rows,passed=all(r['passed'] for r in rows),
             raw_sha256=digest(out/'native_scores.pt'),image_forwards=sum(2*r['n'] for r in rows),seconds=time.monotonic()-start))
         print('COORDINATE_NATIVE',target,json.dumps(row),flush=True)
-        if not row['passed']:break
+        if not row['passed'] and not cfg.get('reference_utility_observation'):break
 
 
 def verify_cross_task(folder):
@@ -425,12 +432,16 @@ def verify_cross_task(folder):
     assert digest(out/'release.pt')==freeze['release_sha256'] and digest(out/'native_scores.pt')==meta['raw_sha256']
     _,expert,_,pins=checked_models(target);assert pins==freeze['checkpoint_sha256']
     edits=torch.load(out/'release.pt',map_location='cpu');checked=0
-    for k,value in expert.state_dict().items():
-        name=k.removeprefix('model.visual.');a=value.numpy()
-        fixed=not k.startswith('model.visual.') or name.endswith(('attn.in_proj_bias','mlp.c_fc.bias'))
-        axis=1 if name=='positional_embedding' or name.endswith(('attn.in_proj_weight','mlp.c_fc.weight')) else 0
-        expected=a if fixed else np.flip(a,axis=axis)
-        np.testing.assert_array_equal(edits.get(k,value),expected);checked+=1
+    if cfg.get('reference_family')=='PaRaMS':
+        from params_reference import verify_edits
+        algebra=verify_edits(expert,edits);checked=algebra['all_state_tensors_checked']
+    else:
+        for k,value in expert.state_dict().items():
+            name=k.removeprefix('model.visual.');a=value.numpy()
+            fixed=not k.startswith('model.visual.') or name.endswith(('attn.in_proj_bias','mlp.c_fc.bias'))
+            axis=1 if name=='positional_embedding' or name.endswith(('attn.in_proj_weight','mlp.c_fc.weight')) else 0
+            expected=a if fixed else np.flip(a,axis=axis)
+            np.testing.assert_array_equal(edits.get(k,value),expected);checked+=1
     raw=torch.load(out/'native_scores.pt',map_location='cpu');seen=set()
     for row in meta['rows']:
         r=raw[row['stage']];a,b=r['before'].numpy(),r['after'].numpy();assert np.isfinite(a).all() and np.isfinite(b).all()
@@ -442,6 +453,7 @@ def verify_cross_task(folder):
         assert int((winner==y).sum())==row['original_correct'] and int((b.argmax(1)==y).sum())==row['released_correct']
     save_json(out/'independent_validation.json',dict(status='passed_NumPy_checks',passed=meta['passed'] and len(meta['rows'])==3,
         native_raw_sha256=meta['raw_sha256'],release_sha256=freeze['release_sha256'],all_state_tensors_checked=checked,
+        complete_native_observation=len(meta['rows'])==3,reference_family=cfg.get('reference_family'),
         source_confirmation_disjoint=True,historically_exposed_data_not_claimed_blind=True,source_sha256=digest(__file__)))
 
 
