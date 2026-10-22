@@ -1,0 +1,82 @@
+{
+  "method": "nonlinear",
+  "target": "MNIST",
+  "configuration": {
+    "rank": 32,
+    "tolerance": 1e-08,
+    "gain_tolerance": 1e-10,
+    "targets": {
+      "MNIST": {
+        "basis": {
+          "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+          "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+        }
+      },
+      "DTD": {
+        "basis": {
+          "path": "outputs/task_directed_other_tasks_20261022/basis/DTD/basis.pt",
+          "sha256": "ff73c7844989abacc1984328ca0f071f4fd6fc43ee1acc2d31709d40f53258d1"
+        }
+      },
+      "SVHN": {
+        "basis": {
+          "path": "outputs/task_directed_other_tasks_20261022/basis/SVHN/basis.pt",
+          "sha256": "8551a62fc8bbf8f996b198084d22a263ff82f6329a19a2765c47a33ef2741098"
+        }
+      }
+    },
+    "bias": {
+      "noise_seed": 20261014,
+      "numerical_relative_tolerance": 1e-10,
+      "proxy_beta": 0.5,
+      "native_cache": {
+        "MNIST": "outputs/covariance_noise_mnist",
+        "DTD": "outputs/covariance_noise_dtd"
+      },
+      "bias_safety": 2.0
+    },
+    "params": {
+      "path": "external/PaRaMS/src/PaRaMS/PaRaMS_algorithm.py",
+      "sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60"
+    },
+    "scope": "Engineering reorganization only. Same fixed task32,F=T-2I,greedy gain1e-10,lexicographic disjoint swaps and frozen published definitions. Not a new algorithm or new evaluation result.",
+    "source_sha256": {
+      "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+      "_impl/attacks.py": "38a8009960d7e978074e7c9f39d2d11a371ea9a0364bc3ada7531c7a259fe883",
+      "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+      "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+      "_impl/defenses.py": "b21f4f85ca8cf7b2f23175351fa440bbb1ef235e8d2de89627316974c380a1d1",
+      "_impl/evaluate.py": "2dee58c3e1dec5a3b2a7c29a14eccebdb89744a69d2751917b29ccc6a3027a0a",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+      "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+      "_impl/models.py": "075b4f3e4624a77cc38c90cef4fac7ecf8f2cf56a32d8ee1ba03cdec7f75bea3",
+      "_impl/report.py": "2bd521cd5d7dbcc76a470c942c4158a9b4bec924a88a234dad23f8db161a85fa",
+      "_impl/subspace.py": "307558203a17fd3296882c2af4d0cbf706bdad63c61d189a82bd03daee6cd3b8",
+      "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+      "experiment/construct.py": "1f270ef90ad937a7dd76b4a4e9377655f47faccb854e3662ebd6b48f6154c675",
+      "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+      "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+      "experiment/native.py": "1267991d3abe8b19eb3acff4f6cd71704a743514f280f8266b8c46d2bc10585d",
+      "experiment/recover.py": "0914cf5d994b796e543c0742151bab7046e5884203aad432a0c2c61f63a45b6b",
+      "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+    },
+    "nonlinear": {
+      "source_n": 1024,
+      "source_loss_pp": 0.25,
+      "confirmation_loss_pp": 0.5,
+      "damping": 0.01,
+      "matrix_bounds": [
+        2.0,
+        4.0
+      ],
+      "indices": {
+        "path": "outputs/phase2_centered_readout_mnist_20261022/draw_split.json",
+        "sha256": "5e66fea460ed84dc6aea6173539ba81cc5ba8ce268c8db12610817a1e4cf47f0"
+      },
+      "scope": "One fixed task-complement hidden reflection,nonlinear output ridge reconstruction;historically exposed target training indices. Separate accuracy protocol,not oldR0.5 compliance. No partner/test construction or retuning."
+    }
+  }
+}

@@ -60,7 +60,13 @@ def run(args):
             before_correct=int(np.sum(scores[0].numpy().argmax(1) == labels)),
             after_correct=int(np.sum(scores[1].numpy().argmax(1) == labels)),
         )
-        row["passed"] = row["changed"] == 0 and row["R"] <= args.task_budget
+        row["strict_task_passed"] = row["changed"] == 0 and row["R"] <= args.task_budget
+        row["accuracy_loss_pp"] = 100 * (row["before_correct"] - row["after_correct"]) / row["n"]
+        row["passed"] = (
+            row["strict_task_passed"]
+            if args.max_accuracy_loss_pp is None
+            else row["accuracy_loss_pp"] <= args.max_accuracy_loss_pp
+        )
         torch.save(
             dict(indices=indices, labels=labels, before=scores[0], after=scores[1]),
             out / (stage + ".pt"),
@@ -105,6 +111,14 @@ def verify(folder):
             int(np.sum(yy == y)) == row["before_correct"]
             and int(np.sum(b.argmax(1) == y)) == row["after_correct"]
         )
+        strict = row["changed"] == 0 and expected <= cfg["task_budget"]
+        loss = 100 * (row["before_correct"] - row["after_correct"]) / len(y)
+        passed = (
+            strict
+            if cfg.get("max_accuracy_loss_pp") is None
+            else loss <= cfg["max_accuracy_loss_pp"]
+        )
+        assert passed == row["passed"]
         checks.append(dict(stage=row["stage"], n=len(y), R=expected))
     save_json(
         out / "independent_validation.json",
@@ -128,6 +142,11 @@ def main():
     p.add_argument("--indices-sha256")
     p.add_argument("--output")
     p.add_argument("--task-budget", type=float, default=0.5)
+    p.add_argument(
+        "--max-accuracy-loss-pp",
+        type=float,
+        help="Separately declared accuracy protocol; still report the historical strict task check",
+    )
     a = p.parse_args()
     require_root()
     if a.verify:

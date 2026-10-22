@@ -6,8 +6,18 @@
   "current_state": "research_state.json",
   "core_method_first": true,
   "GPU": "RTX3090 only;4090 unused",
-  "research_jobs": [],
-  "active_GPU_jobs": 0,
+  "research_jobs": [
+    {
+      "name": "nonlinear_MLP_source_compensation",
+      "status": "running",
+      "server_output": "outputs/nonlinear_compensation_20261023",
+      "server_log": "outputs/nonlinear_compensation_20261023.log",
+      "entrypoint": "python -m experiment.construct --method nonlinear --target MNIST",
+      "source_preregistration": "b7dd1d52a8dff3a8df6e273f26ffdae1d6047f74",
+      "new_expert_training": 0
+    }
+  ],
+  "active_GPU_jobs": 1,
   "effective_Defense2": "results/residual_coordinate_control/other_tasks/summary.md",
   "new_candidate": false,
   "algorithm_novelty_verified": false,
