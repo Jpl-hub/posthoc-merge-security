@@ -1,0 +1,13 @@
+{
+  "purpose": "Matched no-target baseline to interpret post-reset MNIST accuracy without attributing partner-existing ability to victim knowledge.",
+  "definition": "Public base +0.5*(SVHN expert-public base);no target expert or target task update. Same formula with originalAGA-SVHN for the all-expert scope. Target-only recovery has no target and duplicates direct baseline.",
+  "point27_unchanged": true,
+  "new_defense_weights": 0,
+  "new_AGA_calls": 0,
+  "new_optimizer_steps": 0,
+  "access": "Only public base and evaluated partner;comparison only,not used to build/tune point27.",
+  "native_reuse": "Reuse verified public-base standalone48.25 with exact parameter hash;new TA.5 counterpart has not been measured before.",
+  "no_target_ref": "Standard empty edits file with reference=public_base for own and attacked slots;does not assertAGA(publicbase) numerically equals publicbase.",
+  "full_report": "Native and both datasets for direct,empty target scope,and partnerAGA. Report duplicate scope as baseline,not another attack.",
+  "posthoc_status": "Registered after observing reset-protected84.63 and old SVHN-alone85.69;interpretation control,not a blind performance claim or defense selection."
+}
