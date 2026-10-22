@@ -1,0 +1,58 @@
+{
+  "experiment": "Frozen full-default PaRaMS native utility and unchanged originalAGA on DTD/SVHN",
+  "output": "outputs/phase2_params_other_tasks_20261022/native",
+  "targets": [
+    "DTD",
+    "SVHN"
+  ],
+  "parameter_budget": null,
+  "task_budget": 0.5,
+  "score_tolerance": 0.0005,
+  "check_n": 512,
+  "seed": 2026102201,
+  "author_path": "external/secure-merge-attack/utils_attack_B32.py",
+  "AGA_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "AGA_references": {
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    }
+  },
+  "source_sha256": {
+    "experiments/ln_affine_release.py": "f3b96dbd1cac19d9af48dd42d4c9605fef84432a6d0f39a4f4e74de585f50a5f",
+    "experiments/aga_coordinate_audit.py": "2fd2190f943d0c6b1030253ad2cff6d894b4b95fd02f65331415011d015d1265",
+    "experiments/author_protocol_audit.py": "97a0f4a70d4a9239b92d73cb2b99aa7dc0d688b3cee1ec4d8ecc0bdb4cd2b522",
+    "experiments/phase3_evaluate.py": "35899922d24eeccd19375f25df71f162198a98b22062f6adac3a351a2ea27890",
+    "experiments/task_probe_distance.py": "c8742ddae8bcf40809772e3b26b36cb545a5a9993008807b68a25a3551ecaa0d",
+    "experiments/clip_benchmark.py": "6ae67b8032633fa5e6c3775a610e9a3e02d9d126adf31ff8995acc7683f9bd41",
+    "experiments/mechanisms.py": "02de013045096dd48a88379b6fda20e80c12a8c8997f981d410bd041976414ae",
+    "experiments/subspace_probe.py": "0f955f4b4e09edf9c3a85703ea335dfa85882e33c68ef702ced40bf48ede2dc8",
+    "experiments/covariance_noise.py": "2c7e8be29fa80739fdb80ee630ba191e82c23c17820c8ef90a418bc41ee64fc2",
+    "experiments/verify_covariance_noise.py": "c148e567fb8a6814fdff66933208e3e5c0d79eb63c19f7ac40e36199c2349c10",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "configs/phase3.json": "4e40f5286e9cbaa7b39b19214742c6cddaf8946af69369ef163ff596194ef7c7",
+    "experiments/params_reference.py": "f3109ebd71eee556fe055e57354243b0122f08a482bf69acdb781e57b5c3c8bf"
+  },
+  "fixed_rule": "Official PaRaMS unchanged defaults, seed0, both modules; two releases frozen without images. No new algorithm or selected release; no project parameter cap, clipping or interpolation.",
+  "validation": "Same fixed512+512 training indices and complete native sets as coordinate-task evaluation. Report R0.5/changed predictions without filtering the full-default paper baseline. Independent exact row-permutation/diagonal-scaling plus NumPy labels/gaps. Only nonfinite or implementation error stops; utility failures remain visible, no repairs.",
+  "evaluation": "TA0.5,MNIST partner,unchanged originalAGA target-only/all. Reuse hash-pinned original controls;new released cells only. Pilot64 for implementation checks followed by full sets and16 original128-context replays per row. No score-based selection.",
+  "scope": "Full-default baseline, not a new Defense2 construction or recovery algorithm. Both native utility and TA/originalAGA are observed without result-based selection; known higher-permission attacks are separate.",
+  "reference_family": "PaRaMS",
+  "reference_utility_observation": true,
+  "prebuilt_releases": {
+    "DTD": {
+      "path": "outputs/phase2_params_other_tasks_20261022/construction/DTD/artifacts/PaRaMS.pt",
+      "sha256": "27da7f2fcb2b010261aa75c9e12b56abdb2f1260acc76e9e163fc27f0ca81270"
+    },
+    "SVHN": {
+      "path": "outputs/phase2_params_other_tasks_20261022/construction/SVHN/artifacts/PaRaMS.pt",
+      "sha256": "e8ef5b1784c8c77cb0efb88d18633203e213982cb1f099bdc03987e2ed44db9a"
+    }
+  }
+}

@@ -51,7 +51,7 @@ def paper_tables(_source, output):
         where=dict(target='MNIST',partner='SVHN',defense=name)
         native=acc(pick(main,merger='Standalone',attack_scope='None',dataset='MNIST',**where))
         rows.append([label,f'{native:.2f}']+[pair(main,merger='TA',attack_scope=s,**where) for s in scopes])
-    for folder,label in [('residual_coordinate_control','Global permutation [K]'),('mean_compensation','Defense 2 candidate (failed) [F]')]:
+    for folder,label in [('residual_coordinate_control','Defense 2 (structure) [K]'),('mean_compensation','Defense 2 candidate (failed) [F]')]:
         path=f'results/{folder}/evaluation/results.json'
         # Matching untreated controls must agree before adding these rows.
         for s,stage in zip(scopes,['direct','AGA_target_only','AGA_both']):
@@ -64,6 +64,34 @@ def paper_tables(_source, output):
     table('main','Main comparison: two experts, TA coefficient 0.5',
         ['Protection','Standalone M','No recovery M / S','AGA target M / S','AGA both M / S'],rows,
         'M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Latest candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.')
+    rows=[]
+    for target,partner,case in [('MNIST','SVHN',None),('DTD','MNIST','00_DTD_MNIST'),('SVHN','MNIST','01_SVHN_MNIST')]:
+        for name,label in [('Unprotected','Unprotected'),('Phase1_'+target,'Defense 1'),('PaRaMS','PaRaMS (full)'),('Residual','Defense 2 (structure)')]:
+            if case and name in ['PaRaMS','Residual']:
+                root='results/'+('params_reference' if name=='PaRaMS' else 'residual_coordinate_control')+'/other_tasks'
+                check=read(root+'/'+target+'/independent_validation.json')
+                assert check['passed'] or (name=='PaRaMS' and check['complete_native_observation'])
+                check=read(root+'/evaluation/full/'+case+'/independent_validation.json');assert check['status']=='passed'
+                path=root+'/evaluation/full/'+case+'/results.json';where=dict(defense=name+'_'+target)
+                native=acc(pick(path,merger='Standalone',attack_scope='None',dataset=target,**where))
+                values=[pair(path,(target,partner),merger='TA',attack_scope=s,**where) for s in scopes]
+                for s in scopes:
+                    for t in [target,partner]:
+                        a=pick(path,defense='Unprotected',merger='TA',attack_scope=s,dataset=t)
+                        b=pick(main,target=target,partner=partner,defense='Unprotected',merger='TA',attack_scope=s,dataset=t)
+                        assert (a['correct'],a['n'])==(b['correct'],b['n'])
+            elif name=='Residual':
+                path='results/residual_coordinate_control/evaluation/results.json'
+                native=acc(pick(path,preset='released',stage='standalone',dataset=target))
+                values=[pair(path,(target,partner),preset='released',stage=s) for s in ['direct','AGA_target_only','AGA_both']]
+            else:
+                where=dict(target=target,partner=partner,defense=name)
+                native=acc(pick(main,merger='Standalone',attack_scope='None',dataset=target,**where))
+                values=[pair(main,(target,partner),merger='TA',attack_scope=s,**where) for s in scopes]
+            rows.append([target+' / '+partner,label,f'{native:.2f}']+values)
+    table('three_tasks','Matched defenses across three protected tasks',
+        ['Target / partner','Protection','Standalone','No recovery T / P','AGA target T / P','AGA both T / P'],rows,
+        'TA0.5 and unchanged original AGA; every merged cell is protected / partner accuracy. Full PaRaMS uses official defaults without clipping. Defense 2 uses one fixed data-free global permutation rule; task-SVD-guided construction and novelty remain under study. Three protected tasks correspond to two unordered task pairs. Known-family/location-aware recovery is a separate permission setting. These are matched evaluations, not a complete eight-task table; complete original-task predictions are retained. Parameter scales and numerical protocols are reported separately.')
     rows=[]
     for target,partner in [('MNIST','SVHN'),('MNIST','DTD'),('DTD','MNIST'),('SVHN','MNIST')]:
         for name,label in [('Unprotected','Unprotected'),('Phase1_'+target,'Defense 1')]:
@@ -162,8 +190,8 @@ def paper_tables(_source, output):
         'The fixed512 target-training source images, not a test table. Matrix inside/outside components use the same original rank32 task basis; non-matrix changes are separate. Each counterfactual is quantized separately. Complete-release replay and independent NumPy recount both have zero error. No candidate was repaired or selected from these counterfactual outcomes.')
     coverage=[['TA + original AGA','Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy.'],
         ['Defense 1','MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics.'],
-        ['New Defense 2','Not achieved: latest complete evaluation still gives about99 percent after fusion/recovery. Historical O/B and A/B task-bound failures retained.'],
-        ['PaRaMS','Full-default protection and Attention ablation completed for MNIST. Corresponding DTD/SVHN full-defense baselines are missing. Diagonal recovery is a native adaptation.'],
+        ['Defense 2','Effective fixed data-free structural scheme verified on MNIST/DTD/SVHN. Task-SVD-guided construction and new method contribution remain under study. Later failed candidates and historical O/B/A/B task-bound failures remain distinct.'],
+        ['PaRaMS','Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation.'],
         ['MergeLock','Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores.'],
         ['MergeGuard / ARF','Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced.'],
         ['MergeBarrier','Full defense not run; architecture adaptation and verified implementation missing.'],
@@ -174,7 +202,7 @@ def paper_tables(_source, output):
         'This is a completion inventory, not an accuracy table. Missing methods are not assigned zero accuracy. More merger names do not increase the number of recovery attacks.',r'>{\raggedright\arraybackslash}p{37mm}>{\raggedright\arraybackslash}p{132mm}')
     plt.rcParams.update({'font.family':'DejaVu Sans','font.size':10,'pdf.fonttype':42,'axes.spines.top':False,'axes.spines.right':False})
     fig,axes=plt.subplots(1,2,figsize=(9.5,4.7),sharey=True,layout='constrained')
-    shown=['Unprotected','PaRaMS','Defense 1','O/B (historical)','A/B (historical)','Global permutation','Latest candidate']
+    shown=['Unprotected','PaRaMS','Defense 1','O/B (historical)','A/B (historical)','Defense 2 (structure)','Latest candidate']
     for task,ax,title in zip(range(2),axes,['Protected task: MNIST','Partner task: SVHN']):
         for j,(label,color) in enumerate(zip(['Direct TA','AGA target','AGA both'],['#bfd3e6','#6baed6','#2171b5'])):
             values=[float(r[2+j].split(' / ')[task]) for r in tables[0]['rows']]
@@ -192,6 +220,7 @@ def paper_tables(_source, output):
         '','TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M/D/S分别为MNIST/DTD/SVHN；T/P为该行目标/伙伴。所有准确率单位为百分比。','']
     tex=['% Generated from frozen, previously audited project records. Requires booktabs,array,graphicx.','% Accuracy in percent. No new model evaluation or raw-score audit.']
     chinese={
+        'three_tasks':('主对比：三个保护任务、相同TA与原版AGA','每格为该行受保护任务 / 伙伴准确率。PaRaMS保留官方完整默认设置；防御二为同一无数据全网配套换序方案，任务SVD参与构造和新方法贡献仍在研究。三保护任务对应两个无序任务组合，不冒充完整八任务表。已知结构、已知修改位置等针对性恢复单独报告。参数改动尺度和数值协议分列，不通过裁剪基线追求同参数距离。'),
         'main':('主实验：双专家TA融合与原版AGA','每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为最新失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。'),
         'defense1':('Defense 1：三个保护任务','每格为该行目标 / 伙伴，均为TA0.5。原版AGA不修改最终LayerNorm偏置；这些低分不等于能抵抗所有恢复。'),
         'recovery':('恢复权限对比','不同恢复拥有的信息与数据不同，不能混称原版AGA。蒸馏使用2048张同分布训练图片和学生训练；两个教师的查询标签相同，因此只训练了一个问题。偏置清理知道修改位置；原生FP32前后分数差超限的旧记录保留。'),
@@ -225,9 +254,9 @@ def paper_tables(_source, output):
 - [完整TeX预览入口](main.tex)与[PDF预览](main.pdf)。图的[TeX片段](figure.tex)、[PDF](comparison.pdf)和[PNG](comparison.png)同数据生成。
 - [数值与来源](table_data.json)、[输入哈希与原记录行号](table_sources.json)。新制表没有重跑GPU，也没有冒充新一轮原始分数复核。
 
-已完成：TA与原版AGA两种作用范围、MNIST/DTD/SVHN的Defense1、MNIST完整PaRaMS、对角适配、位置已知偏置清理、MNIST固定数据蒸馏、TIES/DARE/NUFILT/ProDistill、八专家参与的三任务评价及Unmask公式适配。
+已完成：三个保护任务的相同TA／原版AGA下无保护、Defense1、完整默认PaRaMS和有效Defense2结构方案对比；对角适配、位置已知偏置清理、MNIST固定数据蒸馏、TIES/DARE/NUFILT/ProDistill、八专家参与的三任务评价及Unmask公式适配。
 
-尚缺：新的有效Defense2；完整八个保护任务和八数据集成绩；DTD/SVHN对应的完整PaRaMS防御；MergeLock、完整MergeGuard/ARF/MergeBarrier防御基线；GradErase；更多独立防御重复。MergeLock官方库本次核对仍只有README，其他未运行方法不填论文成绩。不同训练阶段/架构/权限须另列。完整TSV-Merge、CAT、LOT也未运行，不把融合器数量当攻击数量。
+尚缺：Defense2任务方向参与构造及新方法贡献的充分验证；独立DTD/SVHN组合；完整八个保护任务和八数据集成绩；MergeLock、完整MergeGuard/ARF/MergeBarrier防御基线；GradErase；更多独立防御重复。MergeLock官方库此前核对仅README，其他未运行方法不填论文成绩。不同训练阶段/架构/权限须另列。完整TSV-Merge、CAT、LOT也未运行，不把融合器数量当攻击数量。
 
 历史完整分表保留，不用本次摘要替代：
 
@@ -1089,38 +1118,66 @@ def joint_task_gate(source, output):
     (output/'table_provenance.json').write_text(json.dumps(provenance, indent=2)+'\n')
 
 
-def coordinate_tasks(source, output):
-    """One fixed coordinate rule, three task pairs, verified results only."""
+def coordinate_tasks(source, output, family='Residual'):
+    """Three protected tasks under a frozen rule or full-default baseline."""
     root=Path(source);out=Path(output);out.mkdir(parents=True,exist_ok=True);sources={}
     def read(path):
         path=Path(path);sources[str(path)]=hashlib.sha256(path.read_bytes()).hexdigest()
         return json.loads(path.read_text())
-    native={};merged={};partners={'MNIST':'SVHN','DTD':'MNIST','SVHN':'MNIST'}
-    old=Path('results/residual_coordinate_control/evaluation')
-    check=read(old/'independent_validation.json');assert check['status']=='passed'
-    rows=read(old/'results.json')
-    def old_acc(p,s,t):return next(r['top1']*100 for r in rows if (r['preset'],r['stage'],r['dataset'])==(p,s,t))
+    native={};merged={};partners={'MNIST':'SVHN','DTD':'MNIST','SVHN':'MNIST'};paired_audits=[]
+    if family=='PaRaMS':
+        read('results/phase3/provenance.json');rows=read('results/phase3/results.json')
+        def old_acc(p,s,t):
+            merger='Standalone' if s=='standalone' else 'TA'
+            scope={'standalone':'None','direct':'None','AGA_target_only':'Protected expert','AGA_both':'All experts'}[s]
+            r=next(r for r in rows if (r['target'],r['partner'],r['defense'],r['merger'],r['attack_scope'],r['dataset'])==
+                ('MNIST','SVHN','Unprotected' if p=='original' else 'PaRaMS',merger,scope,t))
+            assert abs(r['accuracy_percent']-100*r['correct']/r['n'])<1e-10
+            return r['accuracy_percent']
+    else:
+        old=Path('results/residual_coordinate_control/evaluation')
+        check=read(old/'independent_validation.json');assert check['status']=='passed'
+        rows=read(old/'results.json')
+        def old_acc(p,s,t):return next(r['top1']*100 for r in rows if (r['preset'],r['stage'],r['dataset'])==(p,s,t))
     native['MNIST']=[old_acc(p,'standalone','MNIST') for p in ['original','released']]
     for stage in ['direct','AGA_target_only','AGA_both']:
         merged['MNIST',stage]=[old_acc(p,stage,t) for t in ['MNIST','SVHN'] for p in ['original','released']]
     for case,target in [('00_DTD_MNIST','DTD'),('01_SVHN_MNIST','SVHN')]:
-        check=read(root/target/'independent_validation.json');assert check['passed']
+        check=read(root/target/'independent_validation.json')
+        assert check['passed'] or (family=='PaRaMS' and check['complete_native_observation'])
         nat=read(root/target/'native.json');assert check['native_raw_sha256']==nat['raw_sha256']
-        full=next(r for r in nat['rows'] if r['stage']=='full');assert full['passed'] and full['changed']==0
+        full=next(r for r in nat['rows'] if r['stage']=='full')
+        if family!='PaRaMS':assert full['passed'] and full['changed']==0
         native[target]=[100*full[k]/full['n'] for k in ['original_correct','released_correct']]
         folder=root/'evaluation/full'/case;check=read(folder/'independent_validation.json');meta=read(folder/'execution.json')
         assert check['status']=='passed' and check['raw_sha256']==meta['predictions_sha256'] and check['original_batch_context_replays']
         data=read(folder/'results.json')
+        for r in data:
+            n=r['n'];c=r['paired'];lost,gained=c['lost'],c['gained'];m=lost+gained
+            assert sum(c[k] for k in ['both_correct','both_wrong','lost','gained'])==n
+            assert c['both_correct']+gained==r['correct']==sum(k['correct'] for k in r['per_class'])
+            assert sum(k['n'] for k in r['per_class'])==n
+            assert sum(k['original_correct'] for k in r['per_class'])==c['both_correct']+lost
+            terms=[math.lgamma(m+1)-math.lgamma(k+1)-math.lgamma(m-k+1)-m*math.log(2) for k in range(min(lost,gained)+1)]
+            top=max(terms);logp=min(0.,math.log(2)+top+math.log(math.fsum(math.exp(x-top) for x in terms)))/math.log(10) if m else 0.
+            mean=(gained-lost)/n;half=1.96*math.sqrt(max(0.,(m-n*mean**2)/(n-1))/n)
+            log_error=abs(logp-r['mcnemar_log10_p']);ci_error=max(abs(a-b) for a,b in zip([100*(mean-half),100*(mean+half)],r['paired_accuracy_delta_95ci_pp']))
+            assert log_error<1e-8 and ci_error<1e-10
+            paired_audits.append(dict(case=case,defense=r['defense'],scope=r['attack_scope'],dataset=r['dataset'],log10_p_error=log_error,interval_error=ci_error))
         for stage,scope in [('direct','None'),('AGA_target_only','Protected expert'),('AGA_both','All experts')]:
             hit=[next(r for r in data if (r['defense'],r['merger'],r['attack_scope'],r['dataset'])==(p,'TA',scope,t))
-                 for t in [target,'MNIST'] for p in ['Unprotected','Residual_'+target]]
+                 for t in [target,'MNIST'] for p in ['Unprotected',family+'_'+target]]
             assert all(abs(r['accuracy_percent']-100*r['correct']/r['n'])<1e-10 for r in hit)
             merged[target,stage]=[r['accuracy_percent'] for r in hit]
     headers=['Protected task','Native original','Native protected','TA original','TA protected','AGA target original','AGA target protected','AGA both original','AGA both protected']
     target_rows=[[t]+[f'{v:.2f}' for v in native[t]+sum([merged[t,s][:2] for s in ['direct','AGA_target_only','AGA_both']],[])] for t in partners]
     peer_rows=[[t+' / '+partners[t]]+[f'{v:.2f}' for v in sum([merged[t,s][2:] for s in ['direct','AGA_target_only','AGA_both']],[])] for t in partners]
     note='同一固定全网换序规则；TA系数0.5，未修改原版AGA，目标专家与双方作用范围分别报告。构造不使用图片，无优化或按测试选参。三个保护任务对应两种无序任务组合；MNIST/SVHN交换保护方后的无攻击模型在实数下为全网坐标等价，不能当三个独立伙伴。已知坐标对称结构，不主张新算法原创性或抗所有恢复攻击；原MNIST针对性公开匹配恢复的边界保留。原参数D0.5对照不变，本批D20事前单列，任务R0.5保持。'
-    md=['# 固定全网规则的三任务结果','',note,'']
+    if family=='PaRaMS':
+        note='PaRaMS官方完整默认调用：MLP重排及Attention对角缩放，seed0，未裁剪到项目原参数限制；TA系数0.5，原版AGA目标／双方分列。MNIST复用已核完整结果；DTD及SVHN为本次新批，伙伴固定MNIST。独立能力、原R0.5及改判数均保留，不因项目功能阈值筛去完整基线。构造不使用图片，评价数据已有历史暴露；不主张完整原论文表复现。'
+    title='PaRaMS完整默认基线的三任务结果' if family=='PaRaMS' else '固定全网规则的三任务结果'
+    caption='Full-default PaRaMS.' if family=='PaRaMS' else 'Fixed global coordinate permutation.'
+    md=['# '+title,'',note,'']
     tex=[]
     for label,title,h,table in [('target','保护任务准确率（%）',headers,target_rows),('partner','伙伴任务准确率（%）',['Protected / partner']+headers[3:],peer_rows)]:
         md += ['## '+title,'','| '+' | '.join(h)+' |','|'+'|'.join(['---']+['---:']*(len(h)-1))+'|']
@@ -1129,8 +1186,8 @@ def coordinate_tasks(source, output):
         tex += ['\\begin{table*}[t]','\\centering','\\footnotesize','\\setlength{\\tabcolsep}{4pt}','\\begin{tabular}{l'+'r'*(len(h)-1)+'}','\\toprule',
             ' & '+' & '.join('\\multicolumn{2}{c}{'+g+'}' for g in groups)+' \\\\',
             ('Task' if label=='target' else 'Target / partner')+' & '+' & '.join(['Before & After']*len(groups))+' \\\\','\\midrule']+[' & '.join(row)+' \\\\' for row in table]+['\\bottomrule','\\end{tabular}',
-            '\\caption{Fixed global coordinate permutation. Accuracy (\\%). Before/after protection. TA coefficient 0.5; original AGA. '+('Protected task.' if label=='target' else 'Partner task.')+'}',
-            '\\label{tab:coordinate-'+label+'}','\\end{table*}','']
+            '\\caption{'+caption+' Accuracy (\\%). Before/after protection. TA coefficient 0.5; original AGA. '+('Protected task.' if label=='target' else 'Partner task.')+'}',
+            '\\label{tab:'+family.lower()+'-'+label+'}','\\end{table*}','']
     (out/'summary.md').write_text('\n'.join(md));(out/'tables.tex').write_text('\n'.join(tex))
     fig,axes=plt.subplots(1,3,figsize=(9.2,2.8),sharey=True)
     for ax,t in zip(axes,partners):
@@ -1144,12 +1201,16 @@ def coordinate_tasks(source, output):
     fig.tight_layout();fig.savefig(out/'accuracy.pdf',bbox_inches='tight');fig.savefig(out/'accuracy.png',dpi=180,bbox_inches='tight');plt.close(fig)
     (out/'table_provenance.json').write_text(json.dumps(dict(input_sha256=sources,report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         target_rows=target_rows,partner_rows=peer_rows,MD_and_TeX_same_values=True,new_image_forwards=0),indent=2)+'\n')
+    (out/'paired_statistics_validation.json').write_text(json.dumps(dict(status='passed_independent_scalar_statistics',rows=len(paired_audits),
+        exact_two_sided_McNemar_log10_recomputed=True,paired_interval_from_integer_counts=True,per_class_totals_checked=True,
+        maximum_log10_p_error=max(r['log10_p_error'] for r in paired_audits),maximum_interval_error=max(r['interval_error'] for r in paired_audits),
+        existing_NumPy_raw_score_audits_reused=True,new_image_forwards=0),indent=2)+'\n')
 
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task,distillation=distillation,joint_task_gate=joint_task_gate,paper_tables=paper_tables,coordinate_tasks=coordinate_tasks)
+    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task,distillation=distillation,joint_task_gate=joint_task_gate,paper_tables=paper_tables,coordinate_tasks=coordinate_tasks,params_tasks=lambda s,o:coordinate_tasks(s,o,'PaRaMS'))
     g=p.add_mutually_exclusive_group()
     for name in modes:g.add_argument('--'+name.replace('_','-'),action='store_true')
     args=p.parse_args();next((fn for name,fn in modes.items() if getattr(args,name)),build)(args.source,args.output)

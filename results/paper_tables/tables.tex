@@ -14,11 +14,37 @@ PaRaMS (full) & 99.69 & 8.92 / 9.15 & 99.30 / 92.79 & 99.32 / 91.77 \\
 Defense 1 & 99.69 & 9.80 / 6.70 & 9.80 / 6.70 & 9.80 / 6.70 \\
 O/B [H] & 99.71 & 78.77 / 62.94 & 79.53 / 65.82 & 77.85 / 61.42 \\
 A/B [H] & 99.65 & 91.07 / 77.46 & 85.42 / 75.50 & 79.20 / 69.84 \\
-Global permutation [K] & 99.69 & 7.39 / 7.74 & 10.09 / 6.78 & 10.09 / 6.78 \\
+Defense 2 (structure) [K] & 99.69 & 7.39 / 7.74 & 10.09 / 6.78 & 10.09 / 6.78 \\
 Defense 2 candidate (failed) [F] & 99.69 & 99.13 / 91.41 & 99.01 / 91.59 & 99.04 / 90.51 \\
 \bottomrule
 \end{tabular}
 \par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Latest candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.\end{minipage}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Matched defenses across three protected tasks}
+\label{tab:three_tasks}
+\begin{tabular}{lrrrrr}
+\toprule
+Target / partner & Protection & Standalone & No recovery T / P & AGA target T / P & AGA both T / P \\
+\midrule
+MNIST / SVHN & Unprotected & 99.69 & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+MNIST / SVHN & Defense 1 & 99.69 & 9.80 / 6.70 & 9.80 / 6.70 & 9.80 / 6.70 \\
+MNIST / SVHN & PaRaMS (full) & 99.69 & 8.92 / 9.15 & 99.30 / 92.79 & 99.32 / 91.77 \\
+MNIST / SVHN & Defense 2 (structure) & 99.69 & 7.39 / 7.74 & 10.09 / 6.78 & 10.09 / 6.78 \\
+DTD / MNIST & Unprotected & 79.41 & 69.31 / 99.45 & 68.40 / 99.45 & 68.78 / 99.42 \\
+DTD / MNIST & Defense 1 & 79.41 & 2.13 / 21.09 & 2.13 / 21.09 & 2.13 / 21.05 \\
+DTD / MNIST & PaRaMS (full) & 79.41 & 2.07 / 8.92 & 68.35 / 99.45 & 68.78 / 99.42 \\
+DTD / MNIST & Defense 2 (structure) & 79.41 & 2.23 / 8.68 & 2.18 / 9.89 & 2.13 / 9.85 \\
+SVHN / MNIST & Unprotected & 97.46 & 92.50 / 99.37 & 91.56 / 99.39 & 91.77 / 99.32 \\
+SVHN / MNIST & Defense 1 & 97.46 & 6.70 / 9.80 & 6.70 / 9.80 & 6.70 / 9.80 \\
+SVHN / MNIST & PaRaMS (full) & 97.46 & 9.09 / 8.95 & 91.56 / 99.39 & 91.77 / 99.32 \\
+SVHN / MNIST & Defense 2 (structure) & 97.46 & 7.74 / 7.39 & 9.74 / 10.28 & 9.63 / 10.28 \\
+\bottomrule
+\end{tabular}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize TA0.5 and unchanged original AGA; every merged cell is protected / partner accuracy. Full PaRaMS uses official defaults without clipping. Defense 2 uses one fixed data-free global permutation rule; task-SVD-guided construction and novelty remain under study. Three protected tasks correspond to two unordered task pairs. Known-family/location-aware recovery is a separate permission setting. These are matched evaluations, not a complete eight-task table; complete original-task predictions are retained. Parameter scales and numerical protocols are reported separately.\end{minipage}
 \end{table}
 
 \begin{table}[!htbp]
@@ -251,8 +277,8 @@ Item & Status \\
 \midrule
 TA + original AGA & Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. \\
 Defense 1 & MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. \\
-New Defense 2 & Not achieved: latest complete evaluation still gives about99 percent after fusion/recovery. Historical O/B and A/B task-bound failures retained. \\
-PaRaMS & Full-default protection and Attention ablation completed for MNIST. Corresponding DTD/SVHN full-defense baselines are missing. Diagonal recovery is a native adaptation. \\
+Defense 2 & Effective fixed data-free structural scheme verified on MNIST/DTD/SVHN. Task-SVD-guided construction and new method contribution remain under study. Later failed candidates and historical O/B/A/B task-bound failures remain distinct. \\
+PaRaMS & Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. \\
 MergeLock & Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. \\
 MergeGuard / ARF & Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. \\
 MergeBarrier & Full defense not run; architecture adaptation and verified implementation missing. \\

@@ -1,0 +1,35 @@
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+ & \multicolumn{2}{c}{Native} & \multicolumn{2}{c}{TA} & \multicolumn{2}{c}{AGA (target)} & \multicolumn{2}{c}{AGA (both)} \\
+Task & Before & After & Before & After & Before & After & Before & After \\
+\midrule
+MNIST & 99.69 & 99.69 & 99.37 & 8.92 & 99.30 & 99.30 & 99.32 & 99.32 \\
+DTD & 79.41 & 79.41 & 69.31 & 2.07 & 68.40 & 68.35 & 68.78 & 68.78 \\
+SVHN & 97.46 & 97.46 & 92.50 & 9.09 & 91.56 & 91.56 & 91.77 & 91.77 \\
+\bottomrule
+\end{tabular}
+\caption{Full-default PaRaMS. Accuracy (\%). Before/after protection. TA coefficient 0.5; original AGA. Protected task.}
+\label{tab:params-target}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & \multicolumn{2}{c}{TA} & \multicolumn{2}{c}{AGA (target)} & \multicolumn{2}{c}{AGA (both)} \\
+Target / partner & Before & After & Before & After & Before & After \\
+\midrule
+MNIST / SVHN & 92.50 & 9.15 & 92.78 & 92.79 & 91.77 & 91.77 \\
+DTD / MNIST & 99.45 & 8.92 & 99.45 & 99.45 & 99.42 & 99.42 \\
+SVHN / MNIST & 99.37 & 8.95 & 99.39 & 99.39 & 99.32 & 99.32 \\
+\bottomrule
+\end{tabular}
+\caption{Full-default PaRaMS. Accuracy (\%). Before/after protection. TA coefficient 0.5; original AGA. Partner task.}
+\label{tab:params-partner}
+\end{table*}

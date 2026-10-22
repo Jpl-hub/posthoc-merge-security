@@ -5,6 +5,8 @@
 
 2026-10-22：同一规则新增DTD和SVHN保护验证。DTD单独79.41%、TA2.23%、原AGA仅目标／双方2.18%／2.13%；SVHN单独97.46%、TA7.74%、原AGA9.74%／9.63%。完整测试预测均保持，独立核验通过。三个保护任务对应两个无序组合；不是三组独立伙伴，也不因此声称新算法原创性。[三任务MD／TeX／图](results/residual_coordinate_control/other_tasks/summary.md)。
 
+同日补齐DTD、SVHN的完整默认PaRaMS基线：独立预测均保持，原AGA仅目标／双方后，DTD恢复至68.35%／68.78%，SVHN恢复至91.56%／91.77%；现有Defense2同设置仍为2.18%／2.13%和9.74%／9.63%。未缩小PaRaMS默认参数范围或按测试选参。[完整基线MD／TeX](results/params_reference/other_tasks/summary.md)，[统一主表](results/paper_tables/tables.md)。原始分数、逐类配对及原批上下文核验均已完成；任务SVD参与构造及新算法贡献仍在推进。
+
 研究已微调 CLIP ViT-B/32 专家的发布前参数后处理保护：保持独立任务能力，评价未经授权融合及恢复攻击后的任务能力。
 
 当前围绕两套防御：**投影核空间偏置扰动、任务子空间约束的跨模块补偿**，同时补齐攻击调研与对比实验。历史发布权重冻结；O/B、A/B均有任务预算反例，不能宣称严格可行。新方法须先完成创新性审查及源端协议，再独立确认。
@@ -22,7 +24,7 @@
 - [已独立复核的结果主表](results/phase3/tables.md)
 - 补充固定批次：[PaRaMS恢复适配](results/phase3/params_adaptive/tables.md) · [DARE三种子](results/phase3/dare/tables.md) · [O/B与NUFILT](results/phase3/nufilt_OB/tables.md) · [ProDistill MNIST](results/phase3/prodistill/tables.md) · [DTD/SVHN扩展](results/phase3/prodistill_other_tasks/tables.md)
 - 最新扩展：[八专家、三任务评价](results/phase3/eight_task/tables.md) · [去目标向量对照](results/phase3/controls/leave_out/tables.md) · [NUFILT的DTD/SVHN缺失单元](results/phase3/nufilt_other_tasks/tables.md) · [统一双任务恢复差距表与论文图](results/phase3/recovery_overview/tables.md)
-- [组会要求与已完成／未完成对应](notes/teacher_feedback.md)：Defense2尚无合规有效的新方案，不将分析工作称为方法完成。
+- [组会要求与已完成／未完成对应](notes/teacher_feedback.md)：已有有效Defense2结构方案；任务SVD参与构造及新方法贡献仍需推进，不将分析工作称为方法全部完成。
 - [公开基座／单专家知识来源对照](results/phase3/controls/single/tables.md)：九条新跨任务评价，三条原任务分数核哈希复用；不把任务准确率恢复等同于独有知识提取。
 - 偏置恢复：[原生FP32的MNIST结果](results/phase3/bias_canonicalization/tables.md) · [单列混合精度的DTD/SVHN结果](results/phase3/bias_tail_precision/tables.md)
 - [逐类计数、配对统计及完整指标](results/phase3/results.json) · [CSV](results/phase3/results.csv) · [复核与绘图指纹](results/phase3/provenance.json)
