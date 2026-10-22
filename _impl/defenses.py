@@ -17,6 +17,9 @@ def _fit_nonlinear_mlp_layer(A, B, a, ba, bb, X, target, phi, cfg):
     import torch.nn.functional as F
 
     ua, va, vb = ba["u"].cuda(), ba["v"].cuda(), bb["v"].cuda()
+    reference_va, reference_vb = va, vb
+    if not cfg.get("task_constraints", True):
+        ua, va, vb = ua[:, :0], va[:, :0], vb[:, :0]
     columns = torch.cat([ua, A @ va, vb, a[:, None]], dim=1)
     columns = columns[:, columns.norm(dim=0) > 0]
     columns /= columns.norm(dim=0)
@@ -54,13 +57,14 @@ def _fit_nonlinear_mlp_layer(A, B, a, ba, bb, X, target, phi, cfg):
     da, db = Ap.double() - A, Bp.double() - B
     distances = [float(da.norm() / A.norm()), float(db.norm() / B.norm())]
     details = dict(
-        task_rank=va.shape[1],
+        task_rank=reference_va.shape[1],
+        task_constraints_enabled=cfg.get("task_constraints", True),
         fixed_hidden_dimension=C.shape[1],
         relative_A_distance=distances[0],
         relative_B_distance=distances[1],
         logical_distance=sum(v * v for v in distances) ** 0.5,
-        task_A_response_relative=float((da @ va).norm() / da.norm()),
-        task_B_response_relative=float((db @ vb).norm() / db.norm()),
+        task_A_response_relative=float((da @ reference_va).norm() / da.norm()),
+        task_B_response_relative=float((db @ reference_vb).norm() / db.norm()),
         ridge_damping=float(damping),
         ridge_solve_residual=solve_error,
         output_relative_RMS_before_fit=float((error_energy / target_energy).sqrt()),
@@ -87,6 +91,7 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
     loader = make_loader(training, indices)
     blocks = expert.model.visual.transformer.resblocks
     teacher_outputs = {i: [] for i in layers}
+    teacher_residuals = {i: [] for i in layers}
     hooks = [
         blocks[i].register_forward_hook(
             lambda _m, _args, output, i=i: teacher_outputs[i].append(
@@ -95,6 +100,15 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
         )
         for i in layers
     ]
+    if not cfg.get("prefix_compensation", True):
+        hooks += [
+            blocks[i].ln_2.register_forward_pre_hook(
+                lambda _m, args, i=i: teacher_residuals[i].append(
+                    args[0].detach().permute(1, 0, 2).cpu()
+                )
+            )
+            for i in layers
+        ]
     original_scores, changed_scores = [], []
     try:
         evaluate(expert, head, loader, "cuda", logit_sink=original_scores.append)
@@ -128,7 +142,12 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
         a = state[prefix + "c_fc.bias"].double().cuda()
         b = state[prefix + "c_proj.bias"]
         X = torch.cat(inputs)
-        target = torch.cat(teacher_outputs.pop(i)) - torch.cat(residuals) - b
+        reference = (
+            torch.cat(residuals)
+            if cfg.get("prefix_compensation", True)
+            else torch.cat(teacher_residuals.pop(i))
+        )
+        target = torch.cat(teacher_outputs.pop(i)) - reference - b
         ba, bb = [entries[prefix + k + ".weight"] for k in ["c_fc", "c_proj"]]
         Ap, Bp, row = _fit_nonlinear_mlp_layer(A, B, a, ba, bb, X, target, block.mlp.gelu, cfg)
         row["layer"] = i
@@ -138,7 +157,7 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
             published.state_dict()[key].copy_(value)
         edits.update(changed)
         print("NONLINEAR_LAYER", i, row, flush=True)
-        if not row["parameter_range_passed"]:
+        if not row["parameter_range_passed"] and not cfg.get("ablation", False):
             return (
                 edits,
                 dict(indices=indices),
@@ -161,6 +180,7 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
         linear_solves=len(per_layer),
         image_forwards=forward_count,
         finite_function_identity=False,
+        parameter_range_passed=all(r["parameter_range_passed"] for r in per_layer),
     )
     details["source"] = task_change(before, after)
     details["source"].update(
