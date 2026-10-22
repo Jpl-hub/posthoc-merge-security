@@ -353,6 +353,99 @@ def verify_components(folder):
 
 
 @torch.no_grad()
+def cross_task(protocol, target, attack=False):
+    """Validate the unchanged global permutation rule on another frozen expert."""
+    from aga_coordinate_audit import residual_permutation
+    from author_protocol_audit import logical_parameter_distance
+    from clip_benchmark import author_recover, evaluate
+    from verify_covariance_noise import official_labels
+    import contextlib
+    import io
+    cfg=json.loads(Path(protocol).read_text());assert target in cfg['targets']
+    for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
+    anchor,expert,head,pins=checked_models(target);out=Path(cfg['output'])/target
+    if attack:
+        check=json.loads((out/'independent_validation.json').read_text());assert check['passed']
+        assert not (out/'AGA_edits.pt').exists()
+        freeze=json.loads((out/'before_images.json').read_text());assert digest(out/'release.pt')==freeze['release_sha256']
+        expert.load_state_dict(expert.state_dict()|torch.load(out/'release.pt',map_location='cpu'),strict=True)
+        author,sha=load_author(Path(cfg['author_path']),True);assert sha==cfg['AGA_text_sha256']
+        log=io.StringIO();start=time.monotonic()
+        with contextlib.redirect_stdout(log):recovered=author_recover(expert,anchor,author)
+        text=log.getvalue();(out/'AGA.log').write_text(text)
+        assert not any(x in text for x in ['Skipping','Warning:','Error','[Error]'])
+        assert all(f'Attacking Layer {i}...' in text for i in range(12))
+        assert all(f'Block {i}: MLP alignment applied.' in text for i in [0,4,8])
+        assert '>>> MLP-only attack completed.' in text
+        ref=cfg['AGA_references'][target];assert digest(ref['path'])==ref['sha256']
+        before=torch.load(ref['path'],map_location='cpu')
+        edits={k:v for k,v in recovered.state_dict().items() if not torch.equal(v,before[k])}
+        torch.save(edits,out/'AGA_edits.pt')
+        save_json(out/'AGA.json',dict(status='completed',AGA_edits_sha256=digest(out/'AGA_edits.pt'),
+            release_sha256=freeze['release_sha256'],seconds=time.monotonic()-start,author_AGA_calls=1,
+            source_sha256=digest(__file__),no_optimizer_or_result_selection=True))
+        return
+    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    edits=residual_permutation(expert.state_dict(),torch.arange(767,-1,-1))
+    distance=logical_parameter_distance(edits,expert.state_dict());assert distance<=cfg['parameter_budget']
+    torch.save(edits,out/'release.pt')
+    save_json(out/'before_images.json',dict(target=target,release_sha256=digest(out/'release.pt'),
+        checkpoint_sha256=pins,parameter_distance=distance,protocol_sha256=digest(protocol),
+        source_sha256=digest(__file__),construction_images=0,optimizer_steps=0,fixed_reverse768=True))
+    released=copy.deepcopy(expert);released.load_state_dict(expert.state_dict()|edits,strict=True)
+    train=dataset(target,'data',expert.val_preprocess,True)
+    order=np.random.default_rng(cfg['seed']).permutation(len(train)).tolist();n=cfg['check_n']
+    assert len(train)>=2*n
+    raw={};rows=[];start=time.monotonic()
+    for stage,ids in [('source',order[:n]),('confirmation',order[n:2*n]),('full',None)]:
+        data=train if stage!='full' else dataset(target,'data',expert.val_preprocess)
+        ids=list(range(len(data))) if ids is None else ids;scores=[]
+        for model in [expert,released]:
+            sink=[];evaluate(model,head,make_loader(data,ids),'cuda',logit_sink=sink.append)
+            scores.append(torch.cat(sink).double())
+        before,after=scores;y=official_labels(target,stage!='full')[ids]
+        winner=before.argmax(1);gap=before.max(1).values[:,None]-before
+        mask=~torch.nn.functional.one_hot(winner,before.shape[1]).bool();assert (gap[mask]>0).all()
+        delta=after-before;ratio=((delta.gather(1,winner[:,None])-delta)[mask]/gap[mask]).abs()
+        row=dict(stage=stage,n=len(ids),original_correct=int(winner.eq(torch.as_tensor(y)).sum()),
+            released_correct=int(after.argmax(1).eq(torch.as_tensor(y)).sum()),changed=int(winner.ne(after.argmax(1)).sum()),R=float(ratio.max()))
+        row['passed']=row['changed']==0 and row['R']<=cfg['task_budget'];rows.append(row)
+        raw[stage]=dict(before=before,after=after,indices=ids,labels=torch.as_tensor(y))
+        torch.save(raw,out/'native_scores.pt');save_json(out/'native.json',dict(rows=rows,passed=all(r['passed'] for r in rows),
+            raw_sha256=digest(out/'native_scores.pt'),image_forwards=sum(2*r['n'] for r in rows),seconds=time.monotonic()-start))
+        print('COORDINATE_NATIVE',target,json.dumps(row),flush=True)
+        if not row['passed']:break
+
+
+def verify_cross_task(folder):
+    """Independent NumPy coordinate rule and native gap/count checks."""
+    from verify_covariance_noise import official_labels
+    out=Path(folder);cfg=json.loads((out/'protocol.json').read_text());target=out.name
+    freeze=json.loads((out/'before_images.json').read_text());meta=json.loads((out/'native.json').read_text())
+    assert digest(out/'release.pt')==freeze['release_sha256'] and digest(out/'native_scores.pt')==meta['raw_sha256']
+    _,expert,_,pins=checked_models(target);assert pins==freeze['checkpoint_sha256']
+    edits=torch.load(out/'release.pt',map_location='cpu');checked=0
+    for k,value in expert.state_dict().items():
+        name=k.removeprefix('model.visual.');a=value.numpy()
+        fixed=not k.startswith('model.visual.') or name.endswith(('attn.in_proj_bias','mlp.c_fc.bias'))
+        axis=1 if name=='positional_embedding' or name.endswith(('attn.in_proj_weight','mlp.c_fc.weight')) else 0
+        expected=a if fixed else np.flip(a,axis=axis)
+        np.testing.assert_array_equal(edits.get(k,value),expected);checked+=1
+    raw=torch.load(out/'native_scores.pt',map_location='cpu');seen=set()
+    for row in meta['rows']:
+        r=raw[row['stage']];a,b=r['before'].numpy(),r['after'].numpy();assert np.isfinite(a).all() and np.isfinite(b).all()
+        ids=r['indices'];y=official_labels(target,row['stage']!='full')[ids];np.testing.assert_array_equal(y,r['labels'])
+        if row['stage']!='full':assert not seen.intersection(ids);seen.update(ids)
+        ix=np.arange(len(y));winner=a.argmax(1);mask=np.ones_like(a,dtype=bool);mask[ix,winner]=False
+        gap=a[ix,winner,None]-a;assert (gap[mask]>0).all();e=b-a;R=float(abs((e[ix,winner,None]-e)[mask]/gap[mask]).max())
+        assert abs(R-row['R'])<1e-10 and int((winner!=b.argmax(1)).sum())==row['changed']
+        assert int((winner==y).sum())==row['original_correct'] and int((b.argmax(1)==y).sum())==row['released_correct']
+    save_json(out/'independent_validation.json',dict(status='passed_NumPy_checks',passed=meta['passed'] and len(meta['rows'])==3,
+        native_raw_sha256=meta['raw_sha256'],release_sha256=freeze['release_sha256'],all_state_tensors_checked=checked,
+        source_confirmation_disjoint=True,historically_exposed_data_not_claimed_blind=True,source_sha256=digest(__file__)))
+
+
+@torch.no_grad()
 def run(protocol, confirm=False):
     start = time.monotonic(); cfg = json.loads(Path(protocol).read_text()); out = Path(cfg['output'])
     for path, pin in cfg['source_sha256'].items(): assert digest(path) == pin, path
@@ -556,7 +649,10 @@ def verify(folder, confirm=False):
 
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--confirm',action='store_true');ap.add_argument('--verify');ap.add_argument('--components');ap.add_argument('--component-protocol');ap.add_argument('--verify-components')
+    ap.add_argument('--cross-task');ap.add_argument('--target');ap.add_argument('--attack',action='store_true');ap.add_argument('--verify-cross-task')
     args=ap.parse_args();initialize()
+    if args.cross_task:cross_task(args.cross_task,args.target,args.attack);raise SystemExit
+    if args.verify_cross_task:verify_cross_task(args.verify_cross_task);raise SystemExit
     if args.verify_components:verify_components(args.verify_components);raise SystemExit
     if args.components:mean_components(args.components,args.component_protocol);raise SystemExit
     verify(args.verify,args.confirm) if args.verify else run(args.protocol,args.confirm)
