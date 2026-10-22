@@ -49,5 +49,30 @@
     "proof_scope": "For these frozen original/public pairs, every pure common residual permutation satisfies the diagonal-row matching condition, independently of the task objective. This is not impossibility for other defense families.",
     "raw_recovery_results_sha256": "7aabfa66e3414937fbf2190320b48ecffac4b4e5eb2ee33580dd99299bead152",
     "validation_sha256": "df706a79bdc34a01f3d80880866a30b2c1930c0f34c8b13225b7c8b5e95eabdf"
+  },
+  "orthogonal_input_condition": {
+    "status": "preregistered_read_only_condition_not_new_defense_or_recovered_accuracy",
+    "registered_utc": "2026-10-22T12:23:36.069610+00:00",
+    "recovery_protocol": {
+      "path": "configs/task_directed_recovery.json",
+      "sha256": "bfabce9aa7d3f6314f79d2acb5b9506e35d3fc52421385e03738c7bbd728c0d0"
+    },
+    "official_source": {
+      "path": "outputs/public_source_cache/GLMC_5e343c_weight_matching.py",
+      "commit": "5e343c05683ce1f2972c7ca3f25111e82d3f00e5",
+      "sha256": "e03eaa557f4c59e3fc38277b6c138c774e0db57c8d0897078b59bd31f1329348",
+      "git_blob": "bf2120b41680abd95a268d876bd293046250fb53",
+      "url": "https://raw.githubusercontent.com/alexandertheus/Generalized-LMC-for-Transformers/5e343c05683ce1f2972c7ca3f25111e82d3f00e5/weight_matching.py",
+      "kernel": "compute_optimal_orthogonal_matrix"
+    },
+    "source_sha256": "1b0894855584fa0169dd7e12402680bbcf3f189a90ae26e5afba05504f8de4a2",
+    "relative_operator_tolerance": 1e-09,
+    "absolute_numpy_tolerance": 1e-09,
+    "minimum_relative_singular": 1e-12,
+    "inputs": "Same frozen three releases and public base; clean target only for matched-control and posthoc comparison, never in published-only alignment call.",
+    "condition": "For Xq=QX and Q orthogonal, Cq=B Xq^T=C Q^T. If C nonsingular, polar(Cq)=polar(C) Q^T, hence aligned input equals matched untreated input for every Q.",
+    "selection": "No new Q,rank,angle,seed,release,images or partner. Apply fixed official SVD kernel once to each actual frozen release and its matched untreated input operator; independent NumPy SVD.",
+    "scope": "Input operator only, not complete GLMC reproduction. No global-rotation CLIP implementation or whole-network recovery accuracy is asserted. Do not assume arbitrary rotations commute with native ln_pre.",
+    "failure_policy": "Preserve failed rank or tolerance condition; no changing thresholds,retries or new candidate."
   }
 }
