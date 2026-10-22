@@ -1,0 +1,32 @@
+% Required packages: booktabs,tabularx. Source: contribution.md.
+\begin{table}[t]
+\centering\small
+\caption{Prior components and the scope of the current construction. Global symmetry, task SVD and greedy search are not individually claimed as novel.}
+\label{tab:task-directed-contribution}
+\begin{tabularx}{\linewidth}{lXX}
+\toprule
+Work & Transformation or analysis & Relation to this construction \\
+\midrule
+PaRaMS & MLP permutations; headwise diagonal scaling & Function preservation and parameter separation are prior ideas. \\
+MergeLock & Per-layer, per-head invertible attention transforms & Symmetry-based protection is prior work; not the same residual-coordinate action. \\
+Verma--Elbayad & Shared residual permutation, coordinated LayerNorm and projections & The global symmetry is known; their purpose is merging different initializations. \\
+TSV & SVD of per-layer task matrices & Task singular directions are known; here they score protection transforms. \\
+Current Defense 2 & Fixed finite swaps maximizing outside minus inside task-direction change & Combined construction and relative benefits require evidence; no global optimum or universal recovery-resistance claim. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\caption{Recovery permissions. The targeted procedure is separate from unchanged original AGA. Current three-release targeted execution is pending; no recovered accuracies are claimed.}
+\label{tab:task-directed-recovery-permissions}
+\begin{tabularx}{\linewidth}{lXX}
+\toprule
+Procedure & Available information & Unavailable attack inputs \\
+\midrule
+Original AGA & Published model, public base; fixed attention/MLP rules & Clean expert, true task vector, secret order, images \\
+Known-family matching & Same weights; global residual-permutation family and CLIP layout & Clean expert, true task vector, secret order, images \\
+Posthoc validation & Clean expert for whole-state comparison only & No feedback to matching or release selection \\
+\bottomrule
+\end{tabularx}
+\end{table}

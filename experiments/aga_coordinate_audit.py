@@ -272,26 +272,83 @@ def residual_permutation(state, order):
     return edits
 
 
+def public_patch_recovery(state, public):
+    """Known-family recovery. Inputs are only published and public state dicts."""
+    from scipy.optimize import linear_sum_assignment
+    key='model.visual.conv1.weight'
+    x,y=[s[key].double().flatten(1) for s in [state,public]]
+    assert torch.all(x.norm(dim=1)>0) and torch.all(y.norm(dim=1)>0)
+    cost=(x/x.norm(dim=1,keepdim=True))@(y/y.norm(dim=1,keepdim=True)).T
+    a,b=x.numpy(),y.numpy()
+    independent=(a/np.linalg.norm(a,axis=1,keepdims=True))@(b/np.linalg.norm(b,axis=1,keepdims=True)).T
+    error=float(abs(cost.numpy()-independent).max());assert error<1e-10
+    rows,cols=linear_sum_assignment(-independent)
+    order=np.empty(len(cols),dtype=np.int64);order[cols]=rows
+    other=independent.copy();other[rows,cols]=-np.inf
+    margin=float((independent[rows,cols]-other.max(1)).min())
+    record=dict(public_coordinate_to_published_row=order.tolist(),strict_row_margin=margin,numpy_cost_error=error)
+    return state|residual_permutation(state,torch.tensor(order)),record
+
+
+@torch.no_grad()
+def task_pairing_recovery(protocol, output):
+    """Validate a fixed public-input attack on the three frozen task releases."""
+    from clip_benchmark import checkpoint_loader
+    start=time.monotonic();out=Path(output);out.mkdir(parents=True,exist_ok=False)
+    cfg=json.loads(Path(protocol).read_text());save_json(out/'protocol.json',cfg)
+    for path,sha in cfg['source_sha256'].items():assert digest(path)==sha,path
+    load=checkpoint_loader(Path('external/secure-merge-attack'))
+    def checked(ref):
+        assert digest(ref['path'])==ref['sha256'],ref['path']
+        return load(ref['path']).cpu().eval().state_dict()
+    public=checked(cfg['public_base']);results=[]
+    for case in cfg['cases']:
+        ref=case['release'];assert digest(ref['path'])==ref['sha256']
+        # Owner-side assembly of the actual full publication. The attack below
+        # receives neither the clean state nor task directions nor secret order.
+        original=checked(case['original_for_validation'])
+        published=original|torch.load(ref['path'],map_location='cpu')
+        recovered,record=public_patch_recovery(published,public)
+        control,control_record=public_patch_recovery(original,public)
+        differences=[[k for k,v in s.items() if not torch.equal(v,original[k])] for s in [recovered,control]]
+        independent=[[k for k,v in s.items() if not np.array_equal(v.numpy(),original[k].numpy())] for s in [recovered,control]]
+        assert independent==differences
+        source=case['verified_evaluation']
+        for pin in source.values():assert digest(pin['path'])==pin['sha256'],pin['path']
+        validation=json.loads(Path(source['validation']['path']).read_text())
+        assert validation['status']=='passed' and validation['original_batch_context_replays']
+        rows=json.loads(Path(source['results']['path']).read_text())
+        baseline=[r for r in rows if r['defense']=='Unprotected']
+        assert len(baseline)==7 and {r['target'] for r in rows}=={case['target']}
+        exact=not any(differences)
+        results.append(dict(target=case['target'],partner=case['partner'],
+            status='exact_original_state_recovered' if exact else 'nonidentical_no_prediction_reuse',
+            release_sha256=ref['sha256'],tensor_count=len(original),tensor_differences=differences,
+            independent_NumPy_tensor_differences=independent,
+            protected=record,matched_unprotected=control_record,
+            reuse_original_rows=baseline if exact else [],verified_evaluation=source))
+        print('PUBLIC_PATCH_RECOVERY',case['target'],exact,record['strict_row_margin'],flush=True)
+    save_json(out/'results.json',dict(cases=results,attack_inputs=['published_state','public_base_state'],
+        known_information='Global residual-coordinate permutation family and CLIP architecture; not the secret order.',
+        original_expert_used_only_for_assembly_and_posthoc_validation=True,
+        task_vector_used=False,secret_order_used=False,images=0,expert_training_updates=0,
+        new_AGA_calls=0,new_image_forwards=0,
+        reuse_reason='All original tensors and matched control must be exact; otherwise no accuracy reuse.',
+        source_sha256=digest(__file__),protocol_sha256=digest(protocol),wall_seconds=time.monotonic()-start,
+        scope='Known-family native recovery adaptation, separate from unchanged original AGA; no official full-attack reproduction or novelty claim.'))
+
+
 @torch.no_grad()
 def residual_recovery(output):
     """Data-free public patch-row matching; original expert only validates it."""
-    from scipy.optimize import linear_sum_assignment
     out=Path(output);start=time.monotonic();cfg=json.loads((out/'protocol.json').read_text())
     meta=json.loads((out/'execution.json').read_text());assert meta['completed']
     assert json.loads((out/'independent_validation.json').read_text())['status']=='passed'
     anchor,expert,_,pins=checked_models('MNIST');original,public=expert.state_dict(),anchor.state_dict()
     assert digest(cfg['release']['path'])==cfg['release']['sha256']
-    published=original|torch.load(cfg['release']['path'],map_location='cpu');key='model.visual.conv1.weight';records=[]
-    def recover(state):
-        x,y=[s[key].double().flatten(1) for s in [state,public]]
-        cost=(x/x.norm(dim=1,keepdim=True))@(y/y.norm(dim=1,keepdim=True)).T
-        a,b=x.numpy(),y.numpy();ind=(a/np.linalg.norm(a,axis=1,keepdims=True))@(b/np.linalg.norm(b,axis=1,keepdims=True)).T
-        error=float(abs(cost.numpy()-ind).max());assert error<1e-10
-        rows,cols=linear_sum_assignment(-ind);order=np.empty(len(cols),dtype=np.int64);order[cols]=rows
-        other=ind.copy();other[rows,cols]=-np.inf;margin=float((ind[rows,cols]-other.max(1)).min())
-        records.append(dict(public_coordinate_to_published_row=order.tolist(),strict_row_margin=margin,numpy_cost_error=error))
-        return state|residual_permutation(state,torch.tensor(order))
-    recovered,control=recover(published),recover(original)
+    published=original|torch.load(cfg['release']['path'],map_location='cpu')
+    recovered,record=public_patch_recovery(published,public)
+    control,control_record=public_patch_recovery(original,public);records=[record,control_record]
     diffs=[[k for k,v in s.items() if not torch.equal(v,original[k])] for s in [recovered,control]]
     exact=not any(diffs);baseline=[r for r in json.loads((out/'results.json').read_text()) if r['preset']=='original']
     result=dict(status='exact_original_state_recovered' if exact else 'nonidentical_recovery_no_prediction_reuse',tensor_differences=diffs,records=records,
@@ -891,7 +948,9 @@ if __name__=='__main__':
     mode.add_argument('--mean-compensation',metavar='PROTOCOL')
     mode.add_argument('--input-projection',metavar='PROTOCOL')
     mode.add_argument('--task-pairing',metavar='PROTOCOL')
+    mode.add_argument('--task-pairing-recovery',metavar='PROTOCOL')
     args=parser.parse_args();torch.set_num_threads(4)
+    if args.task_pairing_recovery:task_pairing_recovery(args.task_pairing_recovery,args.output);raise SystemExit
     if args.task_pairing:task_pairing(args.task_pairing,args.output);raise SystemExit
     if args.input_projection:input_projection(args.input_projection,args.output);raise SystemExit
     if args.mean_compensation:mean_compensation(args.mean_compensation,args.output);raise SystemExit
