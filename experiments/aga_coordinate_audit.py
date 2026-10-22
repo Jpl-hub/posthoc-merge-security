@@ -194,7 +194,7 @@ def task_subspaces(protocol, output):
             site='O' if '.attn.' in key else 'A' if '.c_fc.' in key else 'B';matrices.append((key,site,0,w.shape[0]))
         elif key in ['model.visual.conv1.weight','model.visual.proj']:
             matrices.append((key,'patch' if 'conv1' in key else 'projection',0,w.shape[0]))
-    assert len(matrices)==cfg['matrix_count'];rows=[];basis={};maximum=0.
+    assert len(matrices)==cfg['matrix_count'];rows=[];basis={};maximum=0.;basis_checks=[]
     for index,(key,site,lo,hi) in enumerate(matrices):
         w=original[key][lo:hi].double().flatten(1);t=w-base[key][lo:hi].double().flatten(1)
         assert float(t.norm())>0,(key,'zero task matrix has no defined task directions')
@@ -203,6 +203,8 @@ def task_subspaces(protocol, output):
         basis[str(index)]=dict(u=u,v=v,s=s,source_key=key,row_start=lo,row_end=hi,site=site)
         reconstruction=max(float((t@v-u*s[:rank]).norm()/t.norm()),float((t.T@u-v*s[:rank]).norm()/t.norm()))
         assert reconstruction<cfg['relative_tolerance']
+        basis_checks.append(dict(matrix=index,source_key=key,site=site,svd_equation_error=reconstruction,
+            singular_boundary_relative_gap=float((s[rank-1]-s[rank])/s[rank-1])))
         for name,state in states.items():
             delta=state[key][lo:hi].double().flatten(1)-w;inside=delta@v;outside=delta-inside@v.T
             paired=(u.T@inside).diagonal();left=u.T@delta;energy=float(delta.square().sum());den=float(w.norm())
@@ -236,6 +238,7 @@ def task_subspaces(protocol, output):
     result=dict(status='passed_frozen_weight_measurement',checkpoint_sha256=pins,release_sha256={k:v['sha256'] for k,v in cfg['releases'].items()},
         rank=cfg['rank'],matrix_count=len(matrices),rows=len(rows),groups=groups,maximum_numpy_error=maximum,basis_sha256=digest(out/'basis.pt'),
         source_sha256=digest(__file__),protocol_sha256=digest(protocol),wall_seconds=time.monotonic()-start,
+        basis_checks=basis_checks,basis_only=not bool(states),
         new_image_forwards=0,new_AGA_calls=0,new_model_updates=0,partner_or_test_loaded=False,
         scope='Fixed original task-matrix SVD coordinates; not covariantly transported probes or proof of functional preservation. Paired rank-one and whole right-input spaces are distinct. No candidate constructed or selected.')
     save_json(out/'results.json',result);print(json.dumps(result),flush=True)
