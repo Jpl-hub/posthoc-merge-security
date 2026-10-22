@@ -77,18 +77,23 @@ def task_pairing(protocol, output):
         selected=[r for r in rows if r['variant']==name];last=traces[name][-1]
         errors=[abs(sum(r[k] for r in selected)-last[k]) for k in ['total_squared','inside_squared']]
         maximum=max(maximum,*errors);assert max(errors)<cfg['tolerance']
-    order=orders['task_aware'];edits=residual_permutation(state,order)
+    selected=cfg.get('release_variant','task_aware');assert selected in orders
+    if cfg.get('frozen_orders'):
+        ref=cfg['frozen_orders'];assert digest(ref['path'])==ref['sha256']
+        assert {k:v.tolist() for k,v in orders.items()}==json.loads(Path(ref['path']).read_text())
+    order=orders[selected];edits=residual_permutation(state,order)
     # A permutation changes each nonzero logical parameter by at most twice its norm.
     count=sum(3 if k.endswith('attn.in_proj_weight') else 1 for k in state
         if k.startswith('model.visual.') and not k.endswith(('attn.in_proj_bias','mlp.c_fc.bias')))
     bound=2*np.sqrt(count);distance=logical_parameter_distance(edits,state);assert distance<=bound+cfg['tolerance']
     save_json(out/'orders.json',{name:order.tolist() for name,order in orders.items()});save_json(out/'trace.json',traces);save_json(out/'matrices.json',rows)
     torch.save(edits,out/'release.pt')
-    save_json(out/'before_images.json',dict(status='sole_task_aware_release_frozen_before_images',release_sha256=digest(out/'release.pt'),
+    save_json(out/'before_images.json',dict(status='sole_'+selected+'_release_frozen_before_images',release_sha256=digest(out/'release.pt'),
         order_sha256=digest(out/'orders.json'),basis_sha256=cfg['basis']['sha256'],checkpoint_sha256=pins,
         source_sha256=digest(__file__),protocol_sha256=digest(protocol),logical_parameter_distance=distance,
         declared_permutation_norm_bound=bound,logical_parameter_terms=count,maximum_numpy_cost_error=maximum,
-        selected_variant='task_aware',distance_only_is_parameter_ablation_not_selected_candidate=True,
+        selected_variant=selected,distance_only_is_parameter_ablation_not_selected_candidate=selected=='task_aware',
+        fixed_classification_ablation_not_defense_candidate=selected=='distance_only',
         native_function_basis='Known global residual permutation with coordinated LN/embedding/readout; real arithmetic identity, FP32 still tested.',
         images=0,expert_training_updates=0,partner_or_test_loaded=False,wall_seconds=time.monotonic()-start,
         novelty='Known SVD, permutation symmetry and greedy optimization; task-directed combination under study, no novelty or general recovery-resistance claim.'))
