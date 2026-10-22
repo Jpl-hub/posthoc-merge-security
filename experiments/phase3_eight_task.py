@@ -134,7 +134,7 @@ def run(protocol,full):
                     for block in sorted(set(selected//128)):
                         lo,hi=block*128,min((block+1)*128,len(indices[task]));loc=selected[(selected>=lo)&(selected<hi)];sink=[]
                         evaluate(model,heads[task],make_loader(d,indices[task][lo:hi]),'cuda',logit_sink=sink.append)
-                        replay_forwards+=hi-lo
+                        replay_forwards+=int(hi-lo)
                         diff=float((torch.cat(sink)[loc-lo]-scores[loc]).abs().max());assert diff<=cfg['score_tolerance'];maximum=max(maximum,diff);replays+=len(loc)
                     print('EIGHT_TASK_ROW',stage,target,name,scope,task,row['accuracy_percent'],flush=True)
                 del model,own,models
