@@ -106,8 +106,14 @@ def _fit_nonlinear_mlp_layer(A, B, a, ba, bb, X, target, phi, cfg):
     error_energy = torch.zeros((), dtype=torch.double, device="cuda")
     target_energy = error_energy.clone()
     for x, y in zip(X.flatten(0, 1).split(4096), target.flatten(0, 1).split(4096)):
-        hp = phi(F.linear(x.cuda(), Ap, a.float()))
-        y = y.cuda()
+        x = x.cuda()
+        hp = phi(F.linear(x, Ap, a.float()))
+        if cfg.get("local_teacher", False):
+            # A LayerNorm branch observes this normalized input, not the norm
+            # of the teacher's different residual trajectory.
+            y = F.linear(phi(F.linear(x, A.float(), a.float())), B.float())
+        else:
+            y = y.cuda()
         error = (y - F.linear(hp, Bt)).double()
         error_energy += error.square().sum()
         target_energy += y.double().square().sum()
@@ -268,6 +274,7 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
         image_forwards=forward_count,
         finite_function_identity=False,
         parameter_range_passed=all(r["parameter_range_passed"] for r in per_layer),
+        local_teacher_function=cfg.get("local_teacher", False),
     )
     details["source"] = task_change(before, after)
     details["source"].update(
