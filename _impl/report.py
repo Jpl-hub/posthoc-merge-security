@@ -68,6 +68,20 @@ def paper_tables(_source, output):
             )
         )
 
+    numerical = []
+    for target, partner, folder, name in [
+        ("MNIST", "SVHN", "nonlinear_prefix", "Prefix_compensation"),
+        ("DTD", "MNIST", "nonlinear_dtd", "Numerical"),
+        ("SVHN", "MNIST", "nonlinear_svhn", "Numerical"),
+    ]:
+        path = Path("results") / folder / "evaluation/full/results.json"
+        if path.with_name("independent_validation.json").exists():
+            check = read(str(path.with_name("independent_validation.json")))
+            execution = read(str(path.with_name("execution.json")))
+            assert check["status"] == "passed"
+            assert check["raw_sha256"] == execution["predictions_sha256"]
+            numerical.append((target, partner, str(path), name))
+
     main = "results/phase3/results.json"
     scopes = ["None", "Protected expert", "All experts"]
     # These are previously completed independent audits, not new raw-score replays.
@@ -167,6 +181,15 @@ def paper_tables(_source, output):
             ["Defense 2 (task-directed)", f"{native:.2f}"]
             + [pair(path, merger="TA", attack_scope=s, **where) for s in scopes]
         )
+    if numerical:
+        _, _, path, name = numerical[0]
+        rows.append(
+            [
+                "Defense 2 (numerical)",
+                f"{acc(pick(path, defense=name, merger='Standalone', attack_scope='None', dataset='MNIST')):.2f}",
+            ]
+            + [pair(path, defense=name, merger="TA", attack_scope=s) for s in scopes]
+        )
     table(
         "main",
         "Main comparison: two experts, TA coefficient 0.5",
@@ -256,6 +279,18 @@ def paper_tables(_source, output):
                     for s in scopes
                 ]
             rows.append([target + " / " + partner, label, f"{native:.2f}"] + values)
+    for target, partner, path, name in numerical:
+        rows.append(
+            [
+                target + " / " + partner,
+                "Defense 2 (numerical)",
+                f"{acc(pick(path, defense=name, merger='Standalone', attack_scope='None', dataset=target)):.2f}",
+            ]
+            + [
+                pair(path, (target, partner), defense=name, merger="TA", attack_scope=s)
+                for s in scopes
+            ]
+        )
     table(
         "three_tasks",
         "Matched defenses across three protected tasks",
@@ -877,6 +912,62 @@ def paper_tables(_source, output):
             rows,
             "MNIST protected,SVHN partner. Use the first96/192/384 disjoint swaps of each frozen22October trace;0/384 scores are reused. Four new controls,no new ordering,objective tuning or expert training. Distances use separate logical matrices and biases. These are extent controls in the prospective structural range,notD0.5 comparisons. Known-family recovery remains applicable.",
         )
+    numerical_root = Path("results/nonlinear_prefix")
+    if numerical:
+        cases = [("Complete method", numerical_root, "Prefix_compensation", "source.json")]
+        for name, label in [("no_task", "Without SVD"), ("no_prefix", "Without prefix correction")]:
+            root = numerical_root / "ablations" / name
+            if (root / "evaluation/full/00_MNIST_SVHN/independent_validation.json").exists():
+                cases.append((label, root, name, "before_images.json"))
+        rows = []
+        for label, root, name, source in cases:
+            result = root / "evaluation/full"
+            if name != "Prefix_compensation":
+                result /= "00_MNIST_SVHN"
+            assert read(str(result / "independent_validation.json"))["status"] == "passed"
+            details = read(str(root / source))["details"]
+            response = max(
+                max(r["task_A_response_relative"], r["task_B_response_relative"])
+                for r in details["per_layer"]
+            )
+            path = str(result / "results.json")
+            rows.append(
+                [
+                    label,
+                    f"{details['logical_distance']:.3f}",
+                    f"{response:.2g}",
+                    f"{acc(pick(path, defense=name, merger='Standalone', attack_scope='None', dataset='MNIST')):.2f}",
+                ]
+                + [pair(path, defense=name, merger="TA", attack_scope=s) for s in scopes]
+            )
+        table(
+            "numerical_ablation",
+            "Numerical Defense 2: matched component removals",
+            [
+                "Construction",
+                "Distance",
+                "Task probe",
+                "SA M",
+                "TA M / S",
+                "AGA target M / S",
+                "AGA both M / S",
+            ],
+            rows,
+            "Same1024construction images,12layers,rank32,damping0.01 and parameter ranges. Task probe is max ||DeltaW V32||/||DeltaW|| on original teacher bases,not a functional guarantee. Without SVD removes it from both construction and output correction;without prefix correction fits original teacher MLP output using actual student inputs. Report every control,no replacement of main357. Main full accuracy loss0.19pp;fresh512 source-independent gate failed and strictR0.5 failed,retained separately. All are calibration-based numerical changes,not exact permutation identities.",
+        )
+    components = numerical_root / "source_components/results.json"
+    if components.exists():
+        rows = [
+            [r["component"], f"{r['correct']}/{r['n']}", str(r["changed"])]
+            for r in read(str(components))["rows"]
+        ]
+        table(
+            "numerical_components",
+            "Numerical changes: source-only component checks",
+            ["Component", "Correct", "Prediction changes"],
+            rows,
+            "Same1024target-training images and frozen main357 point. A-only and B-only use literal subsets of its release. No-reconstruction retains all A changes and their pre-fit B transports;no weights refitted or selected. Joint scores reuse the frozen calibration cache. Source observations,not independent test results.",
+        )
     comp = read("results/mean_compensation/components.json")
     rows = []
     labels = {
@@ -977,6 +1068,10 @@ def paper_tables(_source, output):
         coverage[2][1] += (
             " The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets."
         )
+    if numerical:
+        coverage[2][1] += (
+            " Numerical12MLP reconstruction now has measured native/TA/originalAGA outcomes and fixed SVD/prefix removals. Original small-sample/strict-gap failures are retained;standalone accuracy and calibration access are reported explicitly. Cross-task,coefficient and public-module-reset evidence is separate."
+        )
     table(
         "coverage",
         "Completed work and remaining comparisons",
@@ -1006,6 +1101,8 @@ def paper_tables(_source, output):
     ]
     if pairing_complete:
         shown.append("Defense 2 (task-directed)")
+    if numerical:
+        shown.append("Defense 2 (numerical)")
     for task, ax, title in zip(range(2), axes, ["Protected task: MNIST", "Partner task: SVHN"]):
         for j, (label, color) in enumerate(
             zip(["Direct TA", "AGA target", "AGA both"], ["#bfd3e6", "#6baed6", "#2171b5"])
@@ -1086,6 +1183,14 @@ def paper_tables(_source, output):
         "% Accuracy in percent. No new model evaluation or raw-score audit.",
     ]
     chinese = {
+        "numerical_ablation": (
+            "数值版防御二：SVD与逐层补偿消融",
+            "相同1024张训练构造图、12层、rank32和0.01阻尼。Task probe为原任务右奇异方向上的相对参数改动，不是分类功能不变的证明。去掉SVD仍有效，不能把保护全归功于SVD；逐层补偿的结果与去除控制直接对照。完整方法主点冻结，不按消融成绩替换。独立准确率损失与原严格间隔/小样本失败分别报告。",
+        ),
+        "numerical_components": (
+            "数值版防御二：同一源上的分量检查",
+            "仅1024张构造训练图。A单改和B单改直接取主模型对应矩阵；去掉重构保留A及拟合前B传输；联合分数复用原构造缓存。不据这些控制再拟合或选择发布，不把源结果冒充独立测试。",
+        ),
         "cross_pairs": (
             "同一防御二：三个任务的六个保护方向",
             "每格为目标 / 伙伴。六方向对应三种无序任务组合，不是六个独立数据集。三份发布和原作者AGA权重均冻结；新增评价是在旧结果之后登记，没有改排序、rank、目标或参数。TA0.5、原AGA两范围、各自无保护控制、逐类配对及原128批上下文重放均保留。测试集历史暴露，不称盲测；已知方式恢复会还原这些模型，另表报告。",
@@ -1100,7 +1205,7 @@ def paper_tables(_source, output):
         ),
         "main": (
             "主实验：双专家TA融合与原版AGA",
-            "每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为先前失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。",
+            "每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为先前失败候选。完整PaRaMS保留。新增数值版使用1024目标训练图校准、12次线性求解、不微调原专家；独立准确率下降0.19个百分点，原严格间隔检查未通过，不能称函数完全相同。",
         ),
         "defense1": (
             "Defense 1：三个保护任务",
