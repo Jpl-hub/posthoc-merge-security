@@ -35,8 +35,34 @@
   "parameter_range": "Same prospective2sqrt152 structural bound, report actual logical distance of every level; not originalD.5 experiment.",
   "hypothesis": "Larger modification can increase fusion interference, but monotonic protection is not assumed. Standalone function is preserved by the same full-network symmetry.",
   "interpretation": "The self-average patch rank is768 minus the pair count at coefficient.5; this is not a rank or accuracy guarantee for a real partner. Known-family recovery remains applicable at every level.",
-  "controls": "Reuse the existing original and384-pair raw predictions; never rerun them as new independent trials.",
+  "controls": "Reuse existing unprotected and both384-pair original/task-directed raw predictions. Four new models only. Retain all outcomes.",
   "execution": "Reuse residual_permutation, experiment.native, experiment.recover, experiment.main_table; no new optimizer or experiment entrypoint.",
   "output": "outputs/task_direction_amplitude_20261023",
-  "new_algorithm": false
+  "new_algorithm": false,
+  "objective_variants": [
+    "task_aware",
+    "distance_only"
+  ],
+  "new_models": [
+    {
+      "variant": "task_aware",
+      "pairs": 96
+    },
+    {
+      "variant": "task_aware",
+      "pairs": 192
+    },
+    {
+      "variant": "distance_only",
+      "pairs": 96
+    },
+    {
+      "variant": "distance_only",
+      "pairs": 192
+    }
+  ],
+  "amendment_before_prefix_images": {
+    "previous_public_protocol": "180c8fee47058b3bdb89d56e83cec75cb1b2a383",
+    "change": "Add the already-frozen distance_only trace at the same96/192 extents. No prefix image evaluated yet. This checks the SVD term at matching extents before both methods reach near-chance accuracy. No new ordering or selection."
+  }
 }
