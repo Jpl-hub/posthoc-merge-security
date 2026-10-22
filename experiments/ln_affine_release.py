@@ -264,25 +264,42 @@ def structural_B_probes(model,head,inputs,shifts):
 
 
 @torch.no_grad()
-def mean_components(folder):
-    """Source-only counterfactuals of the one frozen mean-compensation point."""
+def mean_components(folder, protocol=None):
+    """Source-only counterfactuals of one frozen, jointly compensated release."""
     out=Path(folder);cfg=json.loads((out/'protocol.json').read_text());raw=torch.load(out/'source.pt',map_location='cpu')
     assert digest(out/'source.pt')==json.loads((out/'results.json').read_text())['raw_sha256']
     assert not (out/'component_scores.pt').exists()
+    if protocol:
+        audit=json.loads(Path(protocol).read_text());assert audit['source_directory']==folder
+        for path,pin in audit['input_sha256'].items():assert digest(path)==pin,path
+        assert digest(__file__)==audit['source_sha256']
     _,expert,head,_=checked_models(cfg['target']);edits=torch.load(out/'frozen_release.pt',map_location='cpu')
     assert digest(out/'frozen_release.pt')==json.loads((out/'before_images.json').read_text())['release_sha256']
     original={k:expert.state_dict()[k].clone() for k in edits};inner={};outer={}
-    assert digest(cfg['task_basis']['path'])==cfg['task_basis']['sha256']
-    for item in torch.load(cfg['task_basis']['path'],map_location='cpu').values():
-        key=item['source_key'];lo,hi=item['row_start'],item['row_end'];v=item['v']
-        w=original[key][lo:hi].double().flatten(1);e=edits[key][lo:hi].double().flatten(1)-w;ein=(e@v)@v.T
-        if key not in inner:inner[key]=original[key].clone();outer[key]=original[key].clone()
-        inner[key][lo:hi]=(w+ein).reshape_as(original[key][lo:hi]).float()
-        outer[key][lo:hi]=(w+e-ein).reshape_as(original[key][lo:hi]).float()
-    variants=dict(task_inside=inner,task_outside=outer,all_matrices={k:edits[k] for k in inner},
-        other_parameters={k:v for k,v in edits.items() if k not in inner},complete=edits)
+    coordinate=cfg.get('residual_coordinate_control',False)
+    if coordinate:
+        assert protocol,'Register the fixed coordinate-component comparison first.'
+        def group(k):
+            if k.startswith('model.visual.transformer.'):return 'transformer_only'
+            if k.startswith('model.visual.ln_post.') or k=='model.visual.proj':return 'readout_only'
+            return 'input_only'
+        variants={name:{k:v for k,v in edits.items() if group(k)==name}
+                  for name in ['input_only','transformer_only','readout_only']}
+        assert set().union(*(set(v) for v in variants.values()))==set(edits)
+        assert sum(len(v) for v in variants.values())==len(edits)
+        variants['complete']=edits
+    else:
+        assert digest(cfg['task_basis']['path'])==cfg['task_basis']['sha256']
+        for item in torch.load(cfg['task_basis']['path'],map_location='cpu').values():
+            key=item['source_key'];lo,hi=item['row_start'],item['row_end'];v=item['v']
+            w=original[key][lo:hi].double().flatten(1);e=edits[key][lo:hi].double().flatten(1)-w;ein=(e@v)@v.T
+            if key not in inner:inner[key]=original[key].clone();outer[key]=original[key].clone()
+            inner[key][lo:hi]=(w+ein).reshape_as(original[key][lo:hi]).float()
+            outer[key][lo:hi]=(w+e-ein).reshape_as(original[key][lo:hi]).float()
+        variants=dict(task_inside=inner,task_outside=outer,all_matrices={k:edits[k] for k in inner},
+            other_parameters={k:v for k,v in edits.items() if k not in inner},complete=edits)
     save_json(out/'component_protocol.json',dict(source_sha256=digest(__file__),source_split_sha256=digest(out/'source_split.json'),
-        release_sha256=digest(out/'frozen_release.pt'),variants=list(variants),rank=32,source_only=True,
+        release_sha256=digest(out/'frozen_release.pt'),variants=list(variants),edited_keys={k:list(v) for k,v in variants.items()},rank=None if coordinate else 32,source_only=True,
         separately_quantized_counterfactuals=True,no_candidate_or_attack=True))
     data=dataset(cfg['target'],'data',expert.val_preprocess,True);scores={};rows=[];start=time.monotonic()
     for name,values in variants.items():
@@ -295,8 +312,44 @@ def mean_components(folder):
     error=float((scores['complete']-raw['after']).abs().max());assert error<=cfg['score_tolerance']
     torch.save(dict(before=raw['before'],scores=scores,indices=raw['indices'],labels=raw['labels']),out/'component_scores.pt')
     save_json(out/'components.json',dict(status='completed_source_counterfactuals',rows=rows,full_source_replay_error=error,
-        raw_sha256=digest(out/'component_scores.pt'),source_sha256=digest(__file__),new_image_forwards=5*len(raw['indices']),
+        raw_sha256=digest(out/'component_scores.pt'),source_sha256=digest(__file__),new_image_forwards=len(variants)*len(raw['indices']),
         new_AGA_calls=0,new_candidate=False,wall_seconds=time.monotonic()-start))
+
+
+def verify_components(folder):
+    """Independent NumPy recount of fixed source component scores and tables."""
+    from verify_covariance_noise import official_labels
+    out=Path(folder);meta=json.loads((out/'components.json').read_text())
+    assert digest(out/'component_scores.pt')==meta['raw_sha256']
+    raw=torch.load(out/'component_scores.pt',map_location='cpu');before=raw['before'].numpy()
+    y=official_labels('MNIST',True)[raw['indices']];np.testing.assert_array_equal(y,raw['labels'])
+    winner=before.argmax(1);ix=np.arange(len(y));gap=before[ix,winner,None]-before
+    mask=np.ones_like(gap,dtype=bool);mask[ix,winner]=False;assert (gap[mask]>0).all()
+    rows=[]
+    for row in meta['rows']:
+        scores=raw['scores'][row['name']].numpy();assert np.isfinite(scores).all();pred=scores.argmax(1)
+        assert int((pred==y).sum())==row['correct'] and int((pred!=winner).sum())==row['metric']['changed']
+        delta=scores-before;ratio=(delta[ix,winner,None]-delta)/np.where(mask,gap,1.);ratio[ix,winner]=0
+        assert abs(float(abs(ratio).max())-row['metric']['worst_task_drift'])<1e-10
+        for c in row['per_class']:
+            take=y==c['class_id'];assert int(take.sum())==c['n']
+            assert int(((winner==y)&(pred!=y)&take).sum())==c['lost']
+            assert int(((winner!=y)&(pred==y)&take).sum())==c['gained']
+        rows.append([row['name'].replace('_',' '),f"{row['correct']}/{len(y)}",str(row['metric']['changed']),f"{row['metric']['worst_task_drift']:.6g}"])
+    md=['# Frozen-release component comparison','',
+        'Same512 original construction images. Separate counterfactuals, no new defense selection, training or attack. The original full-model TA/AGA results remain unchanged.','',
+        '| Components applied | Correct | Changed predictions | Relative class-gap change |','|---|---:|---:|---:|']
+    md+=['| '+' | '.join(row)+' |' for row in rows];(out/'components.md').write_text('\n'.join(md)+'\n')
+    tex=['\\begin{table}[t]','\\centering','\\small','\\begin{tabular}{lrrr}','\\toprule',
+         'Components & Correct & Changed & Gap change \\\\','\\midrule']
+    tex+=[' & '.join(row)+' \\\\' for row in rows]
+    tex+=['\\bottomrule','\\end{tabular}',
+          '\\caption{Fixed source component counterfactuals on512 training images. These are standalone responses, not fusion or attack results.}',
+          '\\label{tab:coordinate-components}','\\end{table}','']
+    (out/'components.tex').write_text('\n'.join(tex))
+    save_json(out/'components_independent_validation.json',dict(status='passed_NumPy_score_class_and_label_recount',
+        rows=len(rows),source_images=len(y),raw_sha256=meta['raw_sha256'],new_GPU_forwards=0,
+        source_sha256=digest(__file__),MD_and_TeX_same_rows=True))
 
 
 @torch.no_grad()
@@ -502,7 +555,8 @@ def verify(folder, confirm=False):
 
 
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--confirm',action='store_true');ap.add_argument('--verify');ap.add_argument('--components')
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--confirm',action='store_true');ap.add_argument('--verify');ap.add_argument('--components');ap.add_argument('--component-protocol');ap.add_argument('--verify-components')
     args=ap.parse_args();initialize()
-    if args.components:mean_components(args.components);raise SystemExit
+    if args.verify_components:verify_components(args.verify_components);raise SystemExit
+    if args.components:mean_components(args.components,args.component_protocol);raise SystemExit
     verify(args.verify,args.confirm) if args.verify else run(args.protocol,args.confirm)
