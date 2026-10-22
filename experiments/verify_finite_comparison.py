@@ -157,6 +157,133 @@ def verify(root):
     save_json(root/'independent_validation.json', result); print(json.dumps(result), flush=True)
 
 
+@torch.no_grad()
+def centered_readout_replay(protocol):
+    """Replay a pinned point after a gamma-only comparator repair; never refit."""
+    import torch.nn.functional as F
+    from audit_hermite_splits import exclusions
+    from task_probe_distance import checked_models, initialize
+    initialize();start=time.monotonic();cfg=json.loads(Path(protocol).read_text())
+    for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
+    for path,pin in cfg['frozen_artifacts'].items():assert digest(path)==pin,path
+    root=Path(cfg['output']);own=json.loads(Path(cfg['original_protocol']).read_text())
+    cal=torch.load(root/'calibration.pt',map_location='cpu',weights_only=False)
+    point=torch.load(root/'point.pt',map_location='cpu',weights_only=False)
+    assert cal['cfg']==own==json.loads((root/'protocol.json').read_text())
+    parent=json.loads(Path(own['index_parent']).read_text());initial=set(parent['extra_excluded_indices'])|set(own['forbidden_indices'])
+    for path in parent['extra_index_exclusions']+own['extra_index_exclusions']:
+        v=json.loads(Path(path).read_text());initial.update(v['indices'] if 'indices' in v else v['fit'])
+    split=json.loads((root/'draw_split.json').read_text());excluded,exposed=exclusions(split,initial)
+    assert len(excluded)==split['excluded_count']
+    draw=np.random.default_rng(own['seed']).choice(sorted(set(range(60000))-excluded),own['source_n']+own['reserved_confirmation_n'],replace=False).tolist()
+    assert draw==split['indices'] and cal['indices']==draw[:own['source_n']]
+    assert not set(cal['indices'])&exposed
+    assert draw[own['source_n']:]==json.loads((root/'holdout_protocol.json').read_text())['indices']
+    anchor,expert,head,pins=checked_models(own['target']);assert pins==cal['checkpoint_sha256']
+    p,proxy=cal['parameters'],cal['proxy_parameters'];H=np.asarray(p['head'])
+    P=np.asarray(p['projection']);beta=np.asarray(p['beta']);gamma=np.asarray(p['gamma'])
+    u,v,k,mu=[point[key].numpy() for key in ['u','v','k','mean']];amplitude=point['amplitude']
+    qp,qb=[point['edits'][key].double().numpy() for key in ['model.visual.proj','model.visual.ln_post.bias']]
+    def z(h,par):
+        h=np.asarray(h);c=h-h.mean(1,keepdims=True)
+        return c/np.sqrt(np.mean(c*c,axis=1,keepdims=True)+par['eps'])*par['gamma']+par['beta']
+    def scores(h,par):
+        a=z(h,par)@par['projection'];return a/np.linalg.norm(a,axis=1,keepdims=True)@H.T
+    def replay(h,par):
+        result=[];head.cuda().eval()
+        gain=torch.tensor(par['gamma'],device='cuda',dtype=torch.float32)
+        bias=torch.tensor(par['beta'],device='cuda',dtype=torch.float32)
+        projection=torch.tensor(par['projection'],device='cuda',dtype=torch.float32)
+        for batch in h.split(64):
+            a=F.layer_norm(batch.float().cuda(),(768,),gain,bias,par['eps'])@projection
+            result.append(head(a).cpu().double())
+        head.cpu();return torch.cat(result)
+    changed=p|dict(beta=qb,projection=qp)
+    # Same author's float32 subtraction/addition as the frozen source point.
+    proxy_changed=dict(proxy)
+    for key,field in [('model.visual.proj','projection'),('model.visual.ln_post.bias','beta')]:
+        base=anchor.state_dict()[key];value=point['edits'][key]
+        proxy_changed[field]=(base+own['coefficient']*((value-base)+torch.zeros_like(base))).double().numpy()
+    h,hf=cal['h'],cal['h_proxy'];before,after,eb,ea=[replay(hh,par) for hh,par in [(h,p),(h,changed),(hf,proxy),(hf,proxy_changed)]]
+    errors=[float(np.max(np.abs(scores(hh.numpy(),par)-value.numpy()))) for hh,par,value in [(h,p,before),(h,changed,after),(hf,proxy,eb),(hf,proxy_changed,ea)]]
+    controls=[float((before-cal['original_scores']).abs().max()),float((eb-cal['proxy_original_scores']).abs().max())]
+    assert max(errors+controls)<=own['score_tolerance'],(errors,controls)
+    assert torch.equal(before.argmax(1),cal['original_scores'].argmax(1)) and torch.equal(eb.argmax(1),cal['proxy_original_scores'].argmax(1))
+    bad_gamma=float(np.max(np.abs(scores(hf.numpy(),proxy|dict(gamma=gamma))-cal['proxy_original_scores'].numpy())))
+    assert abs(bad_gamma-cfg['original_wrong_gamma_error'])<1e-10 and bad_gamma>own['score_tolerance']
+    U,_,Vh=np.linalg.svd(P-anchor.model.visual.proj.double().numpy(),full_matrices=False)
+    Z,Zf=z(h.numpy(),p),z(hf.numpy(),proxy);centered=Z-mu
+    w=P@np.linalg.solve(P.T@P,v)
+    geometry=max(float(np.max(np.abs(P.T@u))),float(np.max(np.abs(U[:,:own['task_rank']].T@u))),
+        float(np.max(np.abs(Vh[:own['task_rank']]@v))),abs(float(k@u)),float(np.max(np.abs(k@P+(mu@u)*v))))
+    assert geometry<1e-8,geometry
+    contrast=H-H.mean(0);a=contrast[own['collapse_class']]
+    n=1/gamma;n/=np.linalg.norm(n);frame=np.column_stack([P,U[:,:own['task_rank']],n])
+    Q,s,_=np.linalg.svd(frame,full_matrices=True);N=Q[:,np.sum(s>s[0]*1e-10):]
+    C=(centered@N).T@(centered@N)/len(Z);ridge=own['ridge_relative']*np.trace(C)/C.shape[0]
+    b=N.T@((v@a)*Zf.mean(0)-((w@proxy['projection'])@a)*mu)
+    g=(C+ridge*np.eye(len(b)))@(N.T@u);scale=float(g@b/(b@b))
+    normal_error=float(np.linalg.norm(g-scale*b)/np.linalg.norm(g));assert scale>0 and normal_error<1e-6,normal_error
+    def metric(s0,s1):
+        aa,bb=s0.numpy(),s1.numpy();yy=aa.argmax(1);rows=np.arange(len(aa));mask=np.arange(len(H))[None,:]!=yy[:,None]
+        gap=aa[rows,yy,None]-aa
+        R=float(np.max(np.abs(((bb[rows,yy,None]-bb)-gap)[mask]/gap[mask])))
+        return dict(n=len(aa),changed=int(np.sum(bb.argmax(1)!=yy)),R=R)
+    native=metric(before,after);environment=metric(eb,ea);yy=before.argmax(1).numpy()
+    take=[np.flatnonzero(yy==j)[0] for j in range(len(H))];basis=U[:,:own['task_rank']]
+    rms=np.sqrt(np.mean((Z@basis)**2,axis=0));shift=np.concatenate([-own['finite_step']*rms[:,None]*basis.T,own['finite_step']*rms[:,None]*basis.T])
+    zp=np.repeat(Z[take],len(shift),axis=0)+np.tile(shift,(len(H),1))
+    cap=own['parameter_budget']*(1-1e-6)/np.hypot(1/np.linalg.norm(P),np.linalg.norm(k)/np.linalg.norm(beta))
+    allz=np.concatenate([Z,zp]);features=allz@P;response=cap*((allz-mu)@u)[:,None]*v
+    norm=np.linalg.norm(features,axis=1,keepdims=True);f0,d0=features/norm,response/norm
+    s0=f0@H.T;ds=d0@H.T;y0=s0.argmax(1);rows=np.arange(len(s0));mask=np.arange(len(H))[None,:]!=y0[:,None]
+    gaps=(s0[rows,y0,None]-s0)[mask];slopes=(ds[rows,y0,None]-ds)[mask]
+    cross=np.repeat(np.sum(f0*d0,axis=1),len(H)-1);square=np.repeat(np.sum(d0*d0,axis=1),len(H)-1)
+    first=1.
+    for factor in [1-own['source_reserve'],1+own['source_reserve']]:
+        aa=slopes**2-factor**2*gaps**2*square
+        bb=2*(gaps*slopes-factor**2*gaps**2*cross);cc=(1-factor**2)*gaps**2
+        for a0,b0,c0 in zip(aa,bb,cc):
+            coefficients=[c0,b0,a0] if abs(a0)>1e-14*(abs(b0)+abs(c0)) else [c0,b0]
+            for value in np.polynomial.polynomial.polyroots(coefficients):
+                if abs(value.imag)<=1e-10*max(1.,abs(value.real)) and 0<value.real<first:first=float(value.real)
+    expected=(1-own['interval_reserve'])*first*cap
+    amplitude_error=abs(amplitude-expected)/max(abs(expected),1e-30)
+    assert amplitude_error<1e-5,amplitude_error
+    def projected(x,PP):
+        t=x@PP;return torch.tensor(t/np.linalg.norm(t,axis=1,keepdims=True)@H.T)
+    probes=metric(projected(zp,P),projected(zp+qb-beta,qp))
+    labels=np.asarray(official_labels(own['target'],True))[cal['indices']]
+    labels0,labels1=eb.argmax(1).numpy(),ea.argmax(1).numpy();drop=float(np.mean(labels0==labels)-np.mean(labels1==labels))
+    distance=float(np.hypot(np.linalg.norm(qp-P)/np.linalg.norm(P),np.linalg.norm(qb-beta)/np.linalg.norm(beta)))
+    feasible=max(native['R'],probes['R'])<=own['task_budget'] and native['changed']==probes['changed']==0 and distance<=own['parameter_budget']
+    support=feasible and drop>=own['minimum_proxy_accuracy_drop']
+    torch.save(dict(before=before,after=after,proxy_before=eb,proxy_after=ea,labels=torch.tensor(labels)),root/'readout_replay.pt')
+    result=dict(status='source_supported_requires_reserved_confirmation' if support else 'closed_fixed_centered_readout_source_mechanism',
+        source_feasible=feasible,mechanism_supported=support,native=native,task_probes=probes,public_AGA_proxy=environment,
+        native_accuracy_before=float(np.mean(before.argmax(1).numpy()==labels)),native_accuracy_after=float(np.mean(after.argmax(1).numpy()==labels)),
+        proxy_accuracy_before=float(np.mean(labels0==labels)),proxy_accuracy_after=float(np.mean(labels1==labels)),proxy_accuracy_drop=drop,
+        parameter_distance=distance,amplitude=amplitude,NumPy_score_errors=errors,original_full_model_control_errors=controls,
+        old_wrong_gamma_error_reproduced=bad_gamma,NumPy_finite_compensation_error=geometry,NumPy_direction_normal_equation_error=normal_error,
+        independent_polynomial_amplitude_relative_error=amplitude_error,
+        source_index_draw_reproduced=True,excluded_training_n=len(excluded),reserved_confirmation_images_read=0,
+        source_protocol=cfg['original_protocol'],source_protocol_sha256=digest(cfg['original_protocol']),
+        replay_protocol_sha256=digest(protocol),verification_source_sha256=digest(__file__),
+        frozen_artifacts=cfg['frozen_artifacts'],replay_sha256=digest(root/'readout_replay.pt'),
+        original_completed_full_image_forwards=4*len(labels),original_failed_run_wall_seconds=None,
+        new_full_image_forwards=0,cached_prefix_readout_examples=4*len(labels),expert_training_updates=0,new_AGA_calls=0,new_point_fits=0,
+        wall_seconds=time.monotonic()-start,
+        scope='Frozen source point after correcting proxy gamma in the comparator. Original full-forward prefix equalities passed before the comparator failure; missing after-scores reconstructed from those fixed prefixes. No new construction,images,confirmation,test or real partner, and no full-model recovery or efficacy claim.')
+    save_json(root/'results.json',result)
+    save_json(root/'independent_validation.json',dict(status='passed_frozen_point_replay_and_independent_NumPy_checks',
+        result_sha256=digest(root/'results.json'),replay_sha256=result['replay_sha256'],
+        source_sha256=digest(__file__),source_indices_reproduced=True,geometry_error=geometry,
+        normal_equation_error=normal_error,amplitude_relative_error=amplitude_error,
+        NumPy_score_errors=errors,original_full_model_control_errors=controls,new_full_image_forwards=0,new_point_fits=0))
+    print(json.dumps(result),flush=True)
+
+
 if __name__ == '__main__':
-    ap = argparse.ArgumentParser(description=__doc__); ap.add_argument('--output', required=True); args = ap.parse_args()
-    torch.set_num_threads(4); verify(args.output)
+    ap = argparse.ArgumentParser(description=__doc__); ap.add_argument('--output'); ap.add_argument('--centered-readout');args = ap.parse_args()
+    torch.set_num_threads(4)
+    centered_readout_replay(args.centered_readout) if args.centered_readout else verify(args.output)
