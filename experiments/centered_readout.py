@@ -253,6 +253,51 @@ def audit(protocol):
     save_json(out/'independent_validation.json',validation);print(json.dumps(record),flush=True)
 
 
+@torch.no_grad()
+def native(protocol):
+    """Untouched training confirmation, then the complete task, for one frozen point."""
+    import copy
+    from covariance_noise import dataset
+    from clip_benchmark import evaluate
+    from subspace_probe import make_loader
+    initialize();cfg=json.loads(Path(protocol).read_text())
+    for path,pin in cfg['inputs'].items():assert digest(path)==pin,path
+    for path,pin in cfg['source_sha256'].items():assert digest(path)==pin,path
+    check=json.loads(Path(cfg['source_result']).read_text());assert check['mechanism_supported']
+    assert json.loads(Path(cfg['source_validation']).read_text())['status']=='passed_read_only_independent_NumPy_recount'
+    point=torch.load(cfg['point'],map_location='cpu',weights_only=False);_,expert,head,pins=checked_models(cfg['target'])
+    assert digest(cfg['point'])==check['point_sha256']
+    released=copy.deepcopy(expert);released.load_state_dict(expert.state_dict()|point['edits'],strict=True)
+    out=Path(cfg['output']);out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    holdout=json.loads(Path(cfg['holdout']).read_text());draw=json.loads(Path(cfg['source_draw']).read_text())
+    assert holdout['indices']==draw['indices'][1024:] and len(holdout['indices'])==512
+    assert not set(holdout['indices']).intersection(draw['indices'][:1024])
+    save_json(out/'before_images.json',dict(point_sha256=digest(cfg['point']),checkpoint_sha256=pins,indices_sha256=digest(cfg['holdout']),source_sha256=digest(__file__),protocol_sha256=digest(protocol)))
+    rows=[];start=time.monotonic()
+    for stage,training in [('confirmation',True),('full',False)]:
+        data=dataset(cfg['target'],'data',expert.val_preprocess,training);ids=holdout['indices'] if training else list(range(len(data)))
+        values=[];prefix=[]
+        for model in [expert,released]:
+            sink=[];hidden=[]
+            hook=model.model.visual.ln_post.register_forward_pre_hook(lambda _m,args:hidden.append(args[0].detach().cpu()))
+            try:evaluate(model,head,make_loader(data,ids,cfg['batch_size']),'cuda',logit_sink=sink.append)
+            finally:hook.remove()
+            values.append(torch.cat(sink).double());prefix.append(torch.cat(hidden))
+        torch.testing.assert_close(prefix[0],prefix[1],rtol=0,atol=0)
+        before,after=[v.numpy() for v in values];labels=official_labels(cfg['target'],training)[ids]
+        row=metrics(before,after,labels);row.update(stage=stage,passed=bool(metrics(before,after)['R']<=cfg['task_budget'] and np.array_equal(before.argmax(1),after.argmax(1))))
+        torch.save(dict(indices=ids,labels=torch.tensor(labels),before=values[0],after=values[1],h=prefix[0]),out/(stage+'.pt'))
+        row['raw_sha256']=digest(out/(stage+'.pt'));rows.append(row)
+        save_json(out/'native.json',dict(status='passed_observed_native_gates' if all(r['passed'] for r in rows) else 'closed_native_function_gate_failed',rows=rows,
+            image_forwards=sum(2*r['n'] for r in rows),seconds=time.monotonic()-start,parameter_distance=check['parameter_distance'],parameter_budget=cfg['parameter_budget'],task_budget=cfg['task_budget'],
+            point_sha256=digest(cfg['point']),new_point_fits=0,new_AGA_calls=0,expert_training_updates=0))
+        print(json.dumps(row),flush=True)
+        if not row['passed']:break
+
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--protocol');parser.add_argument('--audit')
-    args=parser.parse_args();audit(args.audit) if args.audit else run(args.protocol)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--protocol');parser.add_argument('--audit');parser.add_argument('--native')
+    args=parser.parse_args()
+    if args.audit:audit(args.audit)
+    elif args.native:native(args.native)
+    else:run(args.protocol)
