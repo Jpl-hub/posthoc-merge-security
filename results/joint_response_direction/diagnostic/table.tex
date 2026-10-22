@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+ & \multicolumn{2}{c}{MNIST} & \multicolumn{2}{c}{SVHN} \\
+Evaluation & Unprotected & Edited & Unprotected & Edited \\
+\midrule
+TA & 99.37 & 99.38 & 92.50 & 92.48 \\
+AGA target only & 99.30 & 99.29 & 92.78 & 92.79 \\
+AGA both & 99.32 & 99.31 & 91.77 & 91.74 \\
+\bottomrule
+\end{tabular}
+\caption{Fixed B10/B11 model, TA coefficient 0.5, original AGA. Accuracy (\%). The historical task-gap check failed; this is a separate diagnostic with unchanged weights.}
+\label{tab:joint-response-diagnostic}
+\end{table}

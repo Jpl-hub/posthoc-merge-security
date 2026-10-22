@@ -62,3 +62,8 @@ Public-base forward pass: 49.10s, 4096 image instances, zero new training indice
 
 Fixed first64 original construction indices, never selected by response or class. Public-base tail interventions are not merged-model or AGA results. Native64/64 preservation on these source inputs does not remove the previously verified complete-task violation. No candidate is reopened, repaired or promoted by this table.
 The first run saved64 public-base inputs before missing historical feature metadata stopped it. Its source/log remain archived; the corrected run reused that cache and added64 original-model feature controls. The fixed thresholds and inputs were retained. Successful run18.90s; failed-run wall time was not separately measured.
+
+
+## Later fixed-model fusion diagnostic (2026-10-22)
+
+A separate, preregistered diagnostic now completes trueTA0.5 and unchanged originalAGA for this same release. The original stopped protocol and relative-gap failure above remain unchanged. MNIST is99.38% afterTA,99.29% afterAGA-target-only and99.31% afterAGA-both, compared with99.37%/99.30%/99.32% untreated controls. There is no meaningful target protection. All17 result rows and272 original-batch-context scores passed independent checks. No weights were changed or selected from these results. [Matched target/partner table](diagnostic/summary.md), [TeX table](diagnostic/table.tex).
