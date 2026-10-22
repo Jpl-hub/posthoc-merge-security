@@ -49,7 +49,7 @@ def run(protocol):
         for key in ['predictions','results','independent_receipt']:
             ref=diagnostic[key];assert digest(ref['path'])==ref['sha256'],key
         check=json.loads(Path(diagnostic['independent_receipt']['path']).read_text())
-        assert check['status']=='passed_failure_receipt' and not check['original_task_gate_passed']
+        assert (check['status']=='passed_failure_receipt' and not check['original_task_gate_passed']) or (check['status']=='verified_full_native_budget_failure_fixed_candidate_closed' and check['release_sha256']==cfg['release']['sha256'])
         assert diagnostic['release_sha256']==cfg['release']['sha256']
         previous=torch.load(diagnostic['predictions']['path'],map_location='cpu')
         for key in ['prediction','target','logits']:
@@ -68,7 +68,7 @@ def run(protocol):
     worst=float(ratio.abs().max());pos=int(ratio.abs().argmax());image,competitor=divmod(pos,ratio.shape[1])
     gate=dict(passed=worst<=cfg['task_budget'],n=len(winner),task_budget=cfg['task_budget'],worst_relative_margin_drift=worst,witness_index=image,teacher_class=int(winner[image]),competitor=competitor,source_point_repaired=False,historical_test_not_blind=True)
     save_json(out/'full_native_gate.json',gate)
-    if diagnostic:assert not gate['passed'] and abs(worst-check['worst_relative_margin_drift'])<1e-10
+    if diagnostic:assert not gate['passed'] and abs(worst-check.get('worst_relative_margin_drift',check.get('worst_task_drift')))<1e-10
     if not gate['passed'] and not diagnostic:
         save_json(out/'execution.json',dict(completed=False,stopped='full_native_task_budget_violation',author_AGA_calls=0,parameter_distance=distance,utility_gate=gate,predictions_sha256=digest(out/'artifacts/predictions.pt'),source_sha256=digest(__file__),wall_seconds=time.monotonic()-start));return
     model=merge(anchor,released,peer,.5)
