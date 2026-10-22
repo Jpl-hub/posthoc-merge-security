@@ -1,0 +1,188 @@
+{
+  "rows": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "AGA_patch_exactly_unchanged": true,
+      "clean_odd_energy_fraction": 0.49797813731206203,
+      "protected_odd_energy_fraction": 4.359960800437385e-05,
+      "relative_patch_task_difference": 0.013463612096186545,
+      "spectra": {
+        "original": {
+          "sigma1": 3.355484458042758,
+          "sigma384": 0.48264000080654296,
+          "sigma385": 0.4817801070648277,
+          "sigma768": 0.006331528062324867,
+          "lower384_energy_fraction": 0.04044969255589784
+        },
+        "unprotected_fusion": {
+          "sigma1": 3.355590536598146,
+          "sigma384": 0.4825139643034998,
+          "sigma385": 0.48197216214864164,
+          "sigma768": 0.00636552327641378,
+          "lower384_energy_fraction": 0.040484191230484814
+        },
+        "protected_fusion": {
+          "sigma1": 2.636489769239522,
+          "sigma384": 0.09194867468367282,
+          "sigma385": 0.040209370676746306,
+          "sigma768": 2.927950286949132e-05,
+          "lower384_energy_fraction": 1.7733797396062037e-05
+        },
+        "self_mean": {
+          "sigma1": 2.6362890228554807,
+          "sigma384": 0.09233624397469392,
+          "sigma385": 8.769324894103856e-16,
+          "sigma768": 3.7786715404259604e-17,
+          "lower384_energy_fraction": 1.3286947804167555e-31
+        }
+      },
+      "NumPy_odd_identity_error": 0.0,
+      "self_mean_odd_exact_zero": true
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "AGA_patch_exactly_unchanged": true,
+      "clean_odd_energy_fraction": 0.4979819559264203,
+      "protected_odd_energy_fraction": 5.205545642240751e-05,
+      "relative_patch_task_difference": 0.014550599526930205,
+      "spectra": {
+        "original": {
+          "sigma1": 3.35712420332279,
+          "sigma384": 0.48252216471713755,
+          "sigma385": 0.48205536204467525,
+          "sigma768": 0.006311867207934525,
+          "lower384_energy_fraction": 0.04044884735550869
+        },
+        "unprotected_fusion": {
+          "sigma1": 3.3560886013894735,
+          "sigma384": 0.4825230617522801,
+          "sigma385": 0.48187989669478154,
+          "sigma768": 0.006313821147116347,
+          "lower384_energy_fraction": 0.0404448648217578
+        },
+        "protected_fusion": {
+          "sigma1": 2.636288153591789,
+          "sigma384": 0.09324279459429692,
+          "sigma385": 0.05095259283736141,
+          "sigma768": 0.00031207389943662507,
+          "lower384_energy_fraction": 2.1379957247199316e-05
+        },
+        "self_mean": {
+          "sigma1": 2.6366834683661713,
+          "sigma384": 0.08014844174491172,
+          "sigma385": 8.484726866924219e-16,
+          "sigma768": 3.804073411430959e-17,
+          "lower384_energy_fraction": 1.3371397783675774e-31
+        }
+      },
+      "NumPy_odd_identity_error": 0.0,
+      "self_mean_odd_exact_zero": true
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "AGA_patch_exactly_unchanged": true,
+      "clean_odd_energy_fraction": 0.49797813731206203,
+      "protected_odd_energy_fraction": 4.3599608004373865e-05,
+      "relative_patch_task_difference": 0.013463612096186545,
+      "spectra": {
+        "original": {
+          "sigma1": 3.3559673412400923,
+          "sigma384": 0.48270000526239165,
+          "sigma385": 0.48211929471535653,
+          "sigma768": 0.0064115654094596,
+          "lower384_energy_fraction": 0.040525841448844475
+        },
+        "unprotected_fusion": {
+          "sigma1": 3.355590536598146,
+          "sigma384": 0.4825139643034998,
+          "sigma385": 0.48197216214864164,
+          "sigma768": 0.00636552327641378,
+          "lower384_energy_fraction": 0.040484191230484814
+        },
+        "protected_fusion": {
+          "sigma1": 2.636489769239523,
+          "sigma384": 0.09194867468367272,
+          "sigma385": 0.04020937067674642,
+          "sigma768": 2.9279502869491703e-05,
+          "lower384_energy_fraction": 1.7733797396062053e-05
+        },
+        "self_mean": {
+          "sigma1": 2.6369219897551575,
+          "sigma384": 0.08283745122789607,
+          "sigma385": 8.503219138604369e-16,
+          "sigma768": 3.841856740983722e-17,
+          "lower384_energy_fraction": 1.3522146261831364e-31
+        }
+      },
+      "NumPy_odd_identity_error": 0.0,
+      "self_mean_odd_exact_zero": true
+    }
+  ],
+  "source_sha256": "2fd2190f943d0c6b1030253ad2cff6d894b4b95fd02f65331415011d015d1265",
+  "protocol": {
+    "experiment": "Fixed input projection mechanism,not classifier evaluation",
+    "cases": [
+      {
+        "target": "MNIST",
+        "partner": "SVHN",
+        "release": {
+          "path": "outputs/phase2_residual_coordinate_control_20261020/frozen_release.pt",
+          "sha256": "4bd97c19a6caeea404b060339f95e97679a97e681b4abb2a1a8c7e0170be559e"
+        },
+        "AGA_edits": {
+          "path": "outputs/phase2_residual_coordinate_eval_20261020/artifacts/AGA_release_edits.pt",
+          "sha256": "5939881be98c25a3c84687c970c1c45a7fd0e9c8ade2eb76a11e5da0f120f745"
+        },
+        "AGA_reference": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      {
+        "target": "DTD",
+        "partner": "MNIST",
+        "release": {
+          "path": "outputs/residual_coordinate_other_tasks_20261022/DTD/release.pt",
+          "sha256": "f47475ee0d886b389b31b6272bbdc0147205571ad72bfa1c031666adbd383b7c"
+        },
+        "AGA_edits": {
+          "path": "outputs/residual_coordinate_other_tasks_20261022/DTD/AGA_edits.pt",
+          "sha256": "53d86dc5372eb8e163e71110cbe03a7afcb99f01b4d90d040a8ed0246d028b77"
+        },
+        "AGA_reference": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        }
+      },
+      {
+        "target": "SVHN",
+        "partner": "MNIST",
+        "release": {
+          "path": "outputs/residual_coordinate_other_tasks_20261022/SVHN/release.pt",
+          "sha256": "df4b29fe3446f3b884b8ab98ffecc937f6e19418058b81b96ccdc1e2e562846e"
+        },
+        "AGA_edits": {
+          "path": "outputs/residual_coordinate_other_tasks_20261022/SVHN/AGA_edits.pt",
+          "sha256": "d3accbf4e2e1bcdf23caf258f92ed5c1a1223a18de1321ebd60c3609296b1c4d"
+        },
+        "AGA_reference": {
+          "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+          "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      }
+    ],
+    "source_sha256": "2fd2190f943d0c6b1030253ad2cff6d894b4b95fd02f65331415011d015d1265",
+    "scope": "Read-only frozen weights. Self-mean rank<=384 is exact; real cross-expert rank need not drop. No new defense or hyperparameters. No accuracy inferred from singular values."
+  },
+  "seconds": 15.745346957002766,
+  "images": 0,
+  "new_weights": 0,
+  "new_AGA_calls": 0,
+  "interpretation": "Exact rank<=384 only for the self-mean. Real distinct-expert fusion can retain rank768; small singular directions are not a classification-failure guarantee. Standard linear algebra, no novelty claim."
+}

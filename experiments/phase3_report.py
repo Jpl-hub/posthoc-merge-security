@@ -1089,10 +1089,67 @@ def joint_task_gate(source, output):
     (output/'table_provenance.json').write_text(json.dumps(provenance, indent=2)+'\n')
 
 
+def coordinate_tasks(source, output):
+    """One fixed coordinate rule, three task pairs, verified results only."""
+    root=Path(source);out=Path(output);out.mkdir(parents=True,exist_ok=True);sources={}
+    def read(path):
+        path=Path(path);sources[str(path)]=hashlib.sha256(path.read_bytes()).hexdigest()
+        return json.loads(path.read_text())
+    native={};merged={};partners={'MNIST':'SVHN','DTD':'MNIST','SVHN':'MNIST'}
+    old=Path('results/residual_coordinate_control/evaluation')
+    check=read(old/'independent_validation.json');assert check['status']=='passed'
+    rows=read(old/'results.json')
+    def old_acc(p,s,t):return next(r['top1']*100 for r in rows if (r['preset'],r['stage'],r['dataset'])==(p,s,t))
+    native['MNIST']=[old_acc(p,'standalone','MNIST') for p in ['original','released']]
+    for stage in ['direct','AGA_target_only','AGA_both']:
+        merged['MNIST',stage]=[old_acc(p,stage,t) for t in ['MNIST','SVHN'] for p in ['original','released']]
+    for case,target in [('00_DTD_MNIST','DTD'),('01_SVHN_MNIST','SVHN')]:
+        check=read(root/target/'independent_validation.json');assert check['passed']
+        nat=read(root/target/'native.json');assert check['native_raw_sha256']==nat['raw_sha256']
+        full=next(r for r in nat['rows'] if r['stage']=='full');assert full['passed'] and full['changed']==0
+        native[target]=[100*full[k]/full['n'] for k in ['original_correct','released_correct']]
+        folder=root/'evaluation/full'/case;check=read(folder/'independent_validation.json');meta=read(folder/'execution.json')
+        assert check['status']=='passed' and check['raw_sha256']==meta['predictions_sha256'] and check['original_batch_context_replays']
+        data=read(folder/'results.json')
+        for stage,scope in [('direct','None'),('AGA_target_only','Protected expert'),('AGA_both','All experts')]:
+            hit=[next(r for r in data if (r['defense'],r['merger'],r['attack_scope'],r['dataset'])==(p,'TA',scope,t))
+                 for t in [target,'MNIST'] for p in ['Unprotected','Residual_'+target]]
+            assert all(abs(r['accuracy_percent']-100*r['correct']/r['n'])<1e-10 for r in hit)
+            merged[target,stage]=[r['accuracy_percent'] for r in hit]
+    headers=['Protected task','Native original','Native protected','TA original','TA protected','AGA target original','AGA target protected','AGA both original','AGA both protected']
+    target_rows=[[t]+[f'{v:.2f}' for v in native[t]+sum([merged[t,s][:2] for s in ['direct','AGA_target_only','AGA_both']],[])] for t in partners]
+    peer_rows=[[t+' / '+partners[t]]+[f'{v:.2f}' for v in sum([merged[t,s][2:] for s in ['direct','AGA_target_only','AGA_both']],[])] for t in partners]
+    note='同一固定全网换序规则；TA系数0.5，未修改原版AGA，目标专家与双方作用范围分别报告。构造不使用图片，无优化或按测试选参。三个保护任务对应两种无序任务组合；MNIST/SVHN交换保护方后的无攻击模型在实数下为全网坐标等价，不能当三个独立伙伴。已知坐标对称结构，不主张新算法原创性或抗所有恢复攻击；原MNIST针对性公开匹配恢复的边界保留。原参数D0.5对照不变，本批D20事前单列，任务R0.5保持。'
+    md=['# 固定全网规则的三任务结果','',note,'']
+    tex=[]
+    for label,title,h,table in [('target','保护任务准确率（%）',headers,target_rows),('partner','伙伴任务准确率（%）',['Protected / partner']+headers[3:],peer_rows)]:
+        md += ['## '+title,'','| '+' | '.join(h)+' |','|'+'|'.join(['---']+['---:']*(len(h)-1))+'|']
+        md += ['| '+' | '.join(row)+' |' for row in table];md.append('')
+        groups=(['Native'] if label=='target' else [])+['TA','AGA (target)','AGA (both)']
+        tex += ['\\begin{table*}[t]','\\centering','\\footnotesize','\\setlength{\\tabcolsep}{4pt}','\\begin{tabular}{l'+'r'*(len(h)-1)+'}','\\toprule',
+            ' & '+' & '.join('\\multicolumn{2}{c}{'+g+'}' for g in groups)+' \\\\',
+            ('Task' if label=='target' else 'Target / partner')+' & '+' & '.join(['Before & After']*len(groups))+' \\\\','\\midrule']+[' & '.join(row)+' \\\\' for row in table]+['\\bottomrule','\\end{tabular}',
+            '\\caption{Fixed global coordinate permutation. Accuracy (\\%). Before/after protection. TA coefficient 0.5; original AGA. '+('Protected task.' if label=='target' else 'Partner task.')+'}',
+            '\\label{tab:coordinate-'+label+'}','\\end{table*}','']
+    (out/'summary.md').write_text('\n'.join(md));(out/'tables.tex').write_text('\n'.join(tex))
+    fig,axes=plt.subplots(1,3,figsize=(9.2,2.8),sharey=True)
+    for ax,t in zip(axes,partners):
+        values=np.array(native[t]+sum([merged[t,s][:2] for s in ['direct','AGA_target_only','AGA_both']],[])).reshape(4,2)
+        for j,(label,color) in enumerate([('No protection','#4c78a8'),('Protected','#e07b39')]):
+            ax.bar(np.arange(4)+(j-.5)*.34,values[:,j],width=.34,label=label,color=color)
+        ax.set_title(t);ax.set_ylim(0,105);ax.set_xticks(range(4),['Native','TA','AGA\n(target)','AGA\n(both)'])
+        ax.spines[['top','right']].set_visible(False);ax.grid(axis='y',alpha=.2);ax.set_axisbelow(True)
+    axes[0].set_ylabel('Protected-task accuracy (%)')
+    fig.legend(*axes[0].get_legend_handles_labels(),loc='upper center',bbox_to_anchor=(.5,1.08),ncol=2,frameon=False)
+    fig.tight_layout();fig.savefig(out/'accuracy.pdf',bbox_inches='tight');fig.savefig(out/'accuracy.png',dpi=180,bbox_inches='tight');plt.close(fig)
+    (out/'table_provenance.json').write_text(json.dumps(dict(input_sha256=sources,report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        target_rows=target_rows,partner_rows=peer_rows,MD_and_TeX_same_values=True,new_image_forwards=0),indent=2)+'\n')
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source', default='outputs/phase3'); p.add_argument('--output', default='results/phase3')
-    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task,distillation=distillation,joint_task_gate=joint_task_gate,paper_tables=paper_tables)
+    modes=dict(dare=dare,nufilt_ob=nufilt_ob,nufilt_tasks=nufilt_tasks,prodistill=prodistill,controls=controls,eight_task=eight_task,distillation=distillation,joint_task_gate=joint_task_gate,paper_tables=paper_tables,coordinate_tasks=coordinate_tasks)
     g=p.add_mutually_exclusive_group()
     for name in modes:g.add_argument('--'+name.replace('_','-'),action='store_true')
     args=p.parse_args();next((fn for name,fn in modes.items() if getattr(args,name)),build)(args.source,args.output)
