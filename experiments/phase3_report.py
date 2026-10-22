@@ -208,6 +208,13 @@ def paper_tables(_source, output):
         'NUFILT uses both task orders. SVHN no-attack/both-AGA cells reuse the identical earlier MNIST/SVHN merger models with dataset roles exchanged; no new fits. The selected-parameter identity for Defense1 is retained. ProDistill uses64+64 unlabeled calibration images and official coefficient kernels. These are merger evaluations, not additional recovery attacks.')
     for folder,key,title,scope in [('eight_task','eight','Eight participating experts: three evaluated tasks','Protected expert'),('unmask','unmask','Paper-formula Unmask: a separate eight-expert recovery setting','Unmask')]:
         path=f'results/phase3/{folder}/results.json';rows=[]
+        current_eight='results/task_directed_pairing/eight_expert'
+        current_eight_complete=Path(current_eight+'/independent_validation.json').exists()
+        if folder=='eight_task' and current_eight_complete:
+            assert read(current_eight+'/independent_validation.json')['status']=='passed_independent_numpy_metrics_and_frozen_artifact_hashes'
+            current_protocol=read(current_eight+'/protocol.json');old_protocol=read('results/phase3/eight_task/protocol.json')
+            for field in ['coefficient','task_order','evaluate','author_TaskVector']:
+                assert current_protocol[field]==old_protocol[field]
         if folder=='unmask':
             for name in ['rows','validation']:
                 ref=read('results/phase3/unmask/protocol.json')['no_attack_reference'][name]
@@ -218,8 +225,17 @@ def paper_tables(_source, output):
                 label='Defense 1' if name.startswith('Phase1') else {'O/B':'O/B [H]','A/B':'A/B [H]','PaRaMS':'PaRaMS (full)','PaRaMS_Attention':'PaRaMS attention ablation'}.get(name,name)
                 rows.append([target,label]+[pair('results/phase3/eight_task/results.json' if folder=='unmask' and s=='None' else path,
                     ('MNIST','DTD','SVHN'),target=target,defense=name,attack_scope=s) for s in ['None',scope]])
+            if folder=='eight_task' and current_eight_complete:
+                for s in ['None',scope]:
+                    for task in ['MNIST','DTD','SVHN']:
+                        a=pick(current_eight+'/results.json',target=target,defense='Unprotected',attack_scope=s,dataset=task)
+                        b=pick(path,target=target,defense='Unprotected',attack_scope=s,dataset=task)
+                        assert (a['correct'],a['n'],a['model_parameter_sha256'])==(b['correct'],b['n'],b['model_parameter_sha256'])
+                rows.append([target,'Defense 2 (task-directed)']+[pair(current_eight+'/results.json',('MNIST','DTD','SVHN'),
+                    target=target,defense='TaskDirected_'+target,attack_scope=s) for s in ['None',scope]])
         note='TA0.2 with eight experts; cells always MNIST / DTD / SVHN, including partner tasks. Other five task datasets were not evaluated. No eight-task average. [H] Original task-bound failures retained. Complete PaRaMS and its Attention ablation remain distinct.'
         if folder=='unmask':note+=' Fixed merged parameters minus0.3 times the whole published expert. Both protected and unprotected controls receive the operation. Paper-formula native adaptation, not official code or a complete paper table. No AGA composition. The unprotected model also collapses; low absolute scores do not demonstrate successful expert recovery.'
+        if folder=='eight_task' and current_eight_complete:note+=' Task-directed rows use the same three frozen releases as TA0.5. No all-expert AGA or new release was run. Known-family recovery remains applicable.'
         table(key,title,['Protected task','Protection','No recovery M / D / S',('AGA target' if folder=='eight_task' else 'Unmask0.3')+' M / D / S'],rows,note)
     rows=[]
     for target,partner,path,mode in [('MNIST','SVHN','results/phase3/bias_canonicalization/results.json','Native FP32'),('MNIST','DTD','results/phase3/bias_canonicalization/results.json','Native FP32'),('DTD','MNIST','results/phase3/bias_tail_precision/results.json','FP32 prefix; FP64 readout'),('SVHN','MNIST','results/phase3/bias_tail_precision/results.json','FP32 prefix; FP64 readout')]:
@@ -283,6 +299,8 @@ def paper_tables(_source, output):
     if pairing_other_complete:coverage[2][1]='Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Parameter-only distance ablation retained. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark.'
     if (recovery_root/'validation.json').exists():coverage[2][1]+=' Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied.'
     if cross_complete:coverage[2][1]+=' Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included.'
+    if distance_complete:coverage[2][1]=coverage[2][1].replace('Parameter-only distance ablation retained.','Fixed distance-objective classification ablation completed.')
+    if current_eight_complete:coverage[2][1]+=' The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets.'
     table('coverage','Completed work and remaining comparisons',['Item','Status'],coverage,
         'This is a completion inventory, not an accuracy table. Missing methods are not assigned zero accuracy. More merger names do not increase the number of recovery attacks.',r'>{\raggedright\arraybackslash}p{37mm}>{\raggedright\arraybackslash}p{132mm}')
     plt.rcParams.update({'font.family':'DejaVu Sans','font.size':10,'pdf.fonttype':42,'axes.spines.top':False,'axes.spines.right':False})
@@ -315,7 +333,7 @@ def paper_tables(_source, output):
         'mergers':('补充：更换融合方法','均先执行原版AGA仅处理保护专家，每格MNIST / SVHN，各融合器各用自己的无保护控制。DARE为三个掩码种子的均值；NUFILT两种顺序分开；ProDistill另需每任务64张无标签训练校准图片和攻击方融合系数训练。融合方法不算新增恢复攻击。'),
         'dare':('DARE：三个固定掩码的波动','均值及样本标准差来自42、43、44三个掩码，不能称三个独立专家训练或三次防御训练。'),
         'other_tasks':('补充：DTD、SVHN保护专家的融合比较','每格为该行目标 / MNIST伙伴。NUFILT保留两种顺序；SVHN无恢复、双方AGA的单元复用此前相同融合模型并交换任务列，不重复训练。ProDistill需要每任务64张无标签校准图和融合系数训练，不能算新增无数据恢复攻击。'),
-        'eight':('八专家参与、三个数据集评价','TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，不能写完整八任务表或八任务均值；与双专家TA0.5分开。'),
+        'eight':('八专家参与、三个数据集评价','TA0.2，每格固定MNIST / DTD / SVHN顺序。任务方向防御二使用双专家实验的同一三份发布，未改参数；原版AGA只处理保护专家。其余五个数据集未评价，不能写完整八任务表或八任务均值；此处同时改变参与数与系数，不当作孤立系数消融。已知方式恢复的限制仍保留。'),
         'unmask':('Unmask：独立的八专家恢复设置','按论文公式，从融合参数减去0.3倍整份发布专家；未保护控制也执行同样操作，不与AGA组合。这里是公式适配而非官方完整复现。未保护模型也会崩溃，不能只凭绝对低分宣布防御成功或知识恢复。'),
         'cleanup':('针对偏置的恢复：数值协议分列','每格目标 / 伙伴。MNIST采用原生FP32；DTD、SVHN采用预先固定的FP32前缀、FP64最终读出。两类不可混表。原生DTD数值控制失败与MNIST分数差超限都保留，不声称完整FP32函数严格相同。'),
         'geometry':('任务方向内外变化与真实融合效果','相同74个矩阵、原专家减基座的32个任务右奇异方向；矩阵距离不含偏置、LayerNorm与embedding。任务外距离相近，但融合效果差别很大，不能把距离本身当作保护效果。Distance-only pairing为固定消融，不按分类成绩择优；未实测项留空。'),
@@ -384,7 +402,7 @@ def paper_tables(_source, output):
 - [公开基座/单专家知识来源对照](../phase3/controls/single/tables.md)及[固定七专家去目标对照](../phase3/controls/leave_out/tables.md)
 - [位置已知清理](../phase3/bias_canonicalization/tables.md)、[单列读出精度协议](../phase3/bias_tail_precision/tables.md)、[固定数据蒸馏](../phase3/distillation/tables.md)
 - [八专家三数据集](../phase3/eight_task/tables.md)、[Unmask](../phase3/unmask/tables.md)
-- [最新Defense2失败闭环](../mean_compensation/summary.md)、[已知全网置换对照](../residual_coordinate_control/summary.md)
+- [先前补偿失败对照](../mean_compensation/summary.md)、[已知全网置换对照](../residual_coordinate_control/summary.md)
 
 重建表和图：`python experiments/phase3_report.py --paper-tables --output results/paper_tables`。本机系统Matplotlib与用户NumPy版本不同，当前使用`PYTHONNOUSERSITE=1`调用匹配的系统环境；没有修改3090科研环境。main.tex可由桌面LaTeX编辑器编译。
 ''')
@@ -396,6 +414,8 @@ def paper_tables(_source, output):
         p=out/'README.md';p.write_text(p.read_text()+'\n当前任务方向Defense2的[已知方式恢复](../task_directed_pairing/recovery/summary.md)已完成：不使用原专家、真实任务向量、秘密排列或图片参与攻击，三模型及匹配控制全部158张量精确还原。原版AGA低分仍保留；已知方式恢复是单独结果，不能声称当前方法抵抗它。\n')
     if cross_complete:
         p=out/'README.md';p.write_text(p.read_text().replace('独立DTD/SVHN组合；','')+'\n同一三份发布的[六个保护方向](../task_directed_pairing/cross_pairs/summary.md)已完成，包含独立DTD/SVHN组合；未新增模型或按伙伴成绩调参。\n')
+    if current_eight_complete:
+        p=out/'README.md';p.write_text(p.read_text()+'\n同一任务方向防御二的[八专家TA0.2结果](../task_directed_pairing/eight_expert/summary.md)已完成：三个数据集及原版AGA仅保护专家，保持原发布与已知方式恢复限制；不报完整八任务平均。\n')
     manifest=dict(status='completed_table_collection',report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         input_sha256=sources,selected_rows=used,tables=len(tables),new_GPU_forwards=0,new_raw_score_revalidation=False,
         scope='Checks imported integer/class totals and joins; reuses prior independent raw-score audits. Not a new attack/defense experiment.',

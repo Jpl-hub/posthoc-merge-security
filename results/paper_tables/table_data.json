@@ -782,6 +782,12 @@
         "93.23 / 52.34 / 73.90"
       ],
       [
+        "MNIST",
+        "Defense 2 (task-directed)",
+        "10.26 / 4.31 / 16.18",
+        "11.35 / 2.82 / 15.06"
+      ],
+      [
         "DTD",
         "Unprotected",
         "94.00 / 52.18 / 74.42",
@@ -794,6 +800,12 @@
         "72.30 / 2.13 / 52.47"
       ],
       [
+        "DTD",
+        "Defense 2 (task-directed)",
+        "8.87 / 3.24 / 7.11",
+        "8.85 / 4.89 / 8.63"
+      ],
+      [
         "SVHN",
         "Unprotected",
         "94.00 / 52.18 / 74.42",
@@ -804,9 +816,15 @@
         "Defense 1",
         "9.80 / 27.07 / 6.70",
         "9.80 / 27.07 / 6.70"
+      ],
+      [
+        "SVHN",
+        "Defense 2 (task-directed)",
+        "17.24 / 5.90 / 13.28",
+        "8.93 / 4.89 / 11.64"
       ]
     ],
-    "note": "TA0.2 with eight experts; cells always MNIST / DTD / SVHN, including partner tasks. Other five task datasets were not evaluated. No eight-task average. [H] Original task-bound failures retained. Complete PaRaMS and its Attention ablation remain distinct.",
+    "note": "TA0.2 with eight experts; cells always MNIST / DTD / SVHN, including partner tasks. Other five task datasets were not evaluated. No eight-task average. [H] Original task-bound failures retained. Complete PaRaMS and its Attention ablation remain distinct. Task-directed rows use the same three frozen releases as TA0.5. No all-expert AGA or new release was run. Known-family recovery remains applicable.",
     "colspec": "lrrr"
   },
   {
@@ -1093,7 +1111,7 @@
       ],
       [
         "Defense 2",
-        "Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Parameter-only distance ablation retained. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included."
+        "Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets."
       ],
       [
         "PaRaMS",
