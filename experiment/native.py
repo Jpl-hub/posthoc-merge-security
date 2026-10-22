@@ -19,7 +19,11 @@ from cfg import require_root
 @torch.no_grad()
 def run(args):
     initialize()
-    ref = dict(path=args.publication, sha256=args.sha256)
+    ref = dict(
+        path=args.publication,
+        sha256=args.sha256,
+        reference="public_base" if args.base_reference else "expert",
+    )
     check_files({args.indices: args.indices_sha256})
     ids = json.loads(Path(args.indices).read_text())
     ids = ids["indices"] if isinstance(ids, dict) else ids
@@ -138,6 +142,9 @@ def main():
     p.add_argument("--publication")
     p.add_argument("--sha256")
     p.add_argument("--full-state", action="store_true")
+    p.add_argument(
+        "--base-reference", action="store_true", help="Publication is relative to public base"
+    )
     p.add_argument("--indices")
     p.add_argument("--indices-sha256")
     p.add_argument("--output")

@@ -55,6 +55,7 @@ def main():
     out = new_output(a.output, dict(method=a.method, target=a.target, configuration=cfg))
     anchor, expert, head, pins = checked_models(a.target)
     start = time.monotonic()
+    publication_reference = "expert"
     if a.method == "basis":
         basis = build_basis(expert.state_dict(), anchor.state_dict(), cfg["rank"])
         torch.save(basis, out / "basis.pt")
@@ -80,6 +81,11 @@ def main():
             expert, head, train, indices, basis, c, anchor=anchor
         )
         torch.save(calibration, out / "calibration.pt")
+        if c.get("publication_reference") == "public_base":
+            state = expert.state_dict() | edits
+            edits = {k: v for k, v in state.items() if not torch.equal(v, anchor.state_dict()[k])}
+            assert all(torch.equal(v, (anchor.state_dict() | edits)[k]) for k, v in state.items())
+            publication_reference = "public_base"
     elif a.method == "bias":
         if not a.indices or not a.indices_sha256:
             p.error("bias requires --indices and --indices-sha256")
@@ -100,6 +106,7 @@ def main():
         out / "before_images.json",
         dict(
             release_sha256=digest(out / "release.pt"),
+            publication_reference=publication_reference,
             checkpoint_sha256=pins,
             method=a.method,
             target=a.target,
