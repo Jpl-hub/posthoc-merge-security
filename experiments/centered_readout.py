@@ -295,9 +295,50 @@ def native(protocol):
         if not row['passed']:break
 
 
+def verify_native(protocol):
+    """Recount all held-out scores and finite readout responses without selecting edits."""
+    cfg=json.loads(Path(protocol).read_text());out=Path(cfg['output']);meta=json.loads((out/'native.json').read_text())
+    for path,pin in cfg['inputs'].items():assert digest(path)==pin,path
+    point=torch.load(cfg['point'],map_location='cpu',weights_only=False)
+    _,expert,head,pins=checked_models(cfg['target']);freeze=json.loads((out/'before_images.json').read_text())
+    assert freeze['checkpoint_sha256']==pins and freeze['point_sha256']==digest(cfg['point'])
+    P=expert.model.visual.proj.double().numpy();beta=expert.model.visual.ln_post.bias.double().numpy();gamma=expert.model.visual.ln_post.weight.double().numpy();H=head.weight.double().numpy()
+    qp,qb=[point['edits'][key].double().numpy() for key in ['model.visual.proj','model.visual.ln_post.bias']]
+    holdout=json.loads(Path(cfg['holdout']).read_text())['indices'];rows=[]
+    for record in meta['rows']:
+        path=out/(record['stage']+'.pt');assert digest(path)==record['raw_sha256']
+        raw=torch.load(path,map_location='cpu',weights_only=False);ids=raw['indices'];training=record['stage']=='confirmation'
+        assert ids==(holdout if training else list(range(10000)))
+        labels=official_labels(cfg['target'],training)[ids];np.testing.assert_array_equal(labels,raw['labels'].numpy())
+        a,b=raw['before'].numpy(),raw['after'].numpy();assert np.isfinite(a).all() and np.isfinite(b).all()
+        yy=a.argmax(1);y1=b.argmax(1);ix=np.arange(len(ids));keep=np.arange(len(H))[None,:]!=yy[:,None]
+        gaps=a[ix,yy,None]-a;delta=b-a;relative=np.abs((delta[ix,yy,None]-delta)/np.where(keep,gaps,1.));relative[~keep]=0
+        R=float(relative.max());assert abs(R-record['R'])<1e-10
+        assert int(np.sum(yy!=y1))==record['changed'] and float(np.mean(yy==labels))==record['before_accuracy'] and float(np.mean(y1==labels))==record['after_accuracy']
+        h=raw['h'].double().numpy();c=h-h.mean(1,keepdims=True);z=c/np.sqrt(np.mean(c*c,axis=1,keepdims=True)+expert.model.visual.ln_post.eps)*gamma+beta
+        errors=[];numpy_predictions=[]
+        for zz,pp,actual in [(z,P,a),(z+qb-beta,qp,b)]:
+            f=zz@pp;score=f/np.linalg.norm(f,axis=1,keepdims=True)@H.T;errors.append(float(abs(score-actual).max()));numpy_predictions.append(score.argmax(1))
+        assert max(errors)<=5e-4
+        np.testing.assert_array_equal(numpy_predictions[0],yy);np.testing.assert_array_equal(numpy_predictions[1],y1)
+        maximum=np.unravel_index(relative.argmax(),relative.shape);bad=relative.max(1)>.5;changed=yy!=y1
+        oldgood=yy==labels;newgood=y1==labels
+        classes=[dict(class_id=j,n=int(np.sum(labels==j)),before_correct=int(np.sum(oldgood&(labels==j))),after_correct=int(np.sum(newgood&(labels==j))),
+            lost=int(np.sum(oldgood&~newgood&(labels==j))),gained=int(np.sum(~oldgood&newgood&(labels==j))),changed=int(np.sum(changed&(labels==j)))) for j in range(len(H))]
+        rows.append(dict(stage=record['stage'],n=len(ids),before_correct=int(oldgood.sum()),after_correct=int(newgood.sum()),prediction_changes=int(changed.sum()),R=R,
+            samples_above_R0_5=int(bad.sum()),NumPy_score_errors=errors,NumPy_predictions_match=True,per_class=classes,
+            largest_R_witness=dict(index=ids[maximum[0]],teacher_class=int(yy[maximum[0]]),other_class=int(maximum[1]),original_gap=float(gaps[maximum]),absolute_gap_change=float(abs(delta[maximum[0],yy[maximum[0]]]-delta[maximum])),
+                label=int(labels[maximum[0]]),released_class=int(y1[maximum[0]])),witness_not_used_for_construction_or_repair=True))
+    report=dict(status='passed_independent_recount_native_failure_confirmed' if not meta['rows'][-1]['passed'] else 'passed_independent_recount',
+        rows=rows,point_sha256=digest(cfg['point']),native_json_sha256=digest(out/'native.json'),source_sha256=digest(__file__),new_full_image_forwards=0,new_point_fits=0,new_AGA_calls=0,
+        source_and_confirmation_pass_do_not_imply_full_task_gate=True,no_partner_or_AGA_started_after_failure=not meta['rows'][-1]['passed'])
+    assert not (out/'independent_validation.json').exists();save_json(out/'independent_validation.json',report);print(json.dumps(report),flush=True)
+
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--protocol');parser.add_argument('--audit');parser.add_argument('--native')
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--protocol');parser.add_argument('--audit');parser.add_argument('--native');parser.add_argument('--verify-native')
     args=parser.parse_args()
     if args.audit:audit(args.audit)
     elif args.native:native(args.native)
+    elif args.verify_native:verify_native(args.verify_native)
     else:run(args.protocol)
