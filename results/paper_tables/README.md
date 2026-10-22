@@ -22,10 +22,12 @@
 - [公开基座/单专家知识来源对照](../phase3/controls/single/tables.md)及[固定七专家去目标对照](../phase3/controls/leave_out/tables.md)
 - [位置已知清理](../phase3/bias_canonicalization/tables.md)、[单列读出精度协议](../phase3/bias_tail_precision/tables.md)、[固定数据蒸馏](../phase3/distillation/tables.md)
 - [八专家三数据集](../phase3/eight_task/tables.md)、[Unmask](../phase3/unmask/tables.md)
-- [最新Defense2失败闭环](../mean_compensation/summary.md)、[已知全网置换对照](../residual_coordinate_control/summary.md)
+- [先前补偿失败对照](../mean_compensation/summary.md)、[已知全网置换对照](../residual_coordinate_control/summary.md)
 
 重建表和图：`python experiments/phase3_report.py --paper-tables --output results/paper_tables`。本机系统Matplotlib与用户NumPy版本不同，当前使用`PYTHONNOUSERSITE=1`调用匹配的系统环境；没有修改3090科研环境。main.tex可由桌面LaTeX编辑器编译。
 
 当前任务方向Defense2的[已知方式恢复](../task_directed_pairing/recovery/summary.md)已完成：不使用原专家、真实任务向量、秘密排列或图片参与攻击，三模型及匹配控制全部158张量精确还原。原版AGA低分仍保留；已知方式恢复是单独结果，不能声称当前方法抵抗它。
 
 同一三份发布的[六个保护方向](../task_directed_pairing/cross_pairs/summary.md)已完成，包含独立DTD/SVHN组合；未新增模型或按伙伴成绩调参。
+
+同一任务方向防御二的[八专家TA0.2结果](../task_directed_pairing/eight_expert/summary.md)已完成：三个数据集及原版AGA仅保护专家，保持原发布与已知方式恢复限制；不报完整八任务平均。

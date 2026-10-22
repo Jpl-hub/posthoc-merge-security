@@ -166,12 +166,15 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 | MNIST | A/B [H] | 61.94 / 50.21 / 53.09 | 59.16 / 50.59 / 51.97 |
 | MNIST | PaRaMS (full) | 9.82 / 2.13 / 9.65 | 93.23 / 52.34 / 73.90 |
 | MNIST | PaRaMS attention ablation | 94.00 / 52.13 / 74.45 | 93.23 / 52.34 / 73.90 |
+| MNIST | 防御二（任务方向构造） | 10.26 / 4.31 / 16.18 | 11.35 / 2.82 / 15.06 |
 | DTD | 无保护 | 94.00 / 52.18 / 74.42 | 94.06 / 51.38 / 74.46 |
 | DTD | 防御一 | 72.22 / 2.13 / 52.48 | 72.30 / 2.13 / 52.47 |
+| DTD | 防御二（任务方向构造） | 8.87 / 3.24 / 7.11 | 8.85 / 4.89 / 8.63 |
 | SVHN | 无保护 | 94.00 / 52.18 / 74.42 | 93.78 / 52.18 / 72.53 |
 | SVHN | 防御一 | 9.80 / 27.07 / 6.70 | 9.80 / 27.07 / 6.70 |
+| SVHN | 防御二（任务方向构造） | 17.24 / 5.90 / 13.28 | 8.93 / 4.89 / 11.64 |
 
-TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，不能写完整八任务表或八任务均值；与双专家TA0.5分开。
+TA0.2，每格固定MNIST / DTD / SVHN顺序。任务方向防御二使用双专家实验的同一三份发布，未改参数；原版AGA只处理保护专家。其余五个数据集未评价，不能写完整八任务表或八任务均值；此处同时改变参与数与系数，不当作孤立系数消融。已知方式恢复的限制仍保留。
 
 ## 11. Unmask：独立的八专家恢复设置
 
@@ -243,7 +246,7 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，
 |---|---|
 | TA + original AGA | Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. |
 | 防御一 | MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. |
-| Defense 2 | Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Parameter-only distance ablation retained. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. |
+| Defense 2 | Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. |
 | PaRaMS | Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. |
 | MergeLock | Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. |
 | MergeGuard / ARF | Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. |

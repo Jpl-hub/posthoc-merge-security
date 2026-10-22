@@ -5,6 +5,8 @@
 **已知方式恢复的限制已实际验证。** 只给发布权重和公开基座，知道全网换序方式，不给原专家、真实任务向量、秘密排列或图片，当前三个模型及匹配无保护控制均全部158张量精确还原。匹配后再原AGA仅目标，目标准确率恢复至99.30%／68.40%／91.56%；因状态精确相同，引用已核原分数，不称新的图片前向。当前方案能防住已测原版AGA，不能抵抗这项针对性恢复，两者并排保留。[MD／TeX恢复表](results/task_directed_pairing/recovery/summary.md)、[方法贡献和权限](results/task_directed_pairing/contribution.md)。不通过改排序或增大距离回避这项结果。
 
 同一三份发布已补齐[全部六个保护方向](results/task_directed_pairing/cross_pairs/summary.md)，包含DTD/SVHN独立组合。新增原AGA仅目标后：MNIST/DTD为9.80%，DTD/SVHN为2.34%，SVHN/DTD为6.53%；伙伴成绩、双方AGA和各自无保护控制均完整保留。全部新分数按原128张批上下文重放通过，最大误差0。这里是三种无序任务组合，不是六个独立数据集或完整八任务评价。
+
+同一三份防御二发布又完成[八专家TA0.2验证](results/task_directed_pairing/eight_expert/summary.md)：原版AGA仅保护专家后，MNIST为11.35%（无保护93.23%）、DTD为4.89%（51.38%）、SVHN为11.64%（72.53%）。全部伙伴／逐类／配对及原批上下文重放已核验，MD和TeX同源；只评价这三个数据集，不报完整八任务均值。未改发布或调参，已知方式恢复的限制也不变。
 [论文实验总表：TeX、Markdown、PDF及缺项](results/paper_tables/README.md)
 
 2026-10-22：同一规则新增DTD和SVHN保护验证。DTD单独79.41%、TA2.23%、原AGA仅目标／双方2.18%／2.13%；SVHN单独97.46%、TA7.74%、原AGA9.74%／9.63%。完整测试预测均保持，独立核验通过。三个保护任务对应两个无序组合；不是三组独立伙伴，也不因此声称新算法原创性。[三任务MD／TeX／图](results/residual_coordinate_control/other_tasks/summary.md)。
