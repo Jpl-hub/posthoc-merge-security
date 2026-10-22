@@ -1,4 +1,4 @@
-"""Read-only AGA alignment and task-subspace checks; no defense training."""
+"""Weight-only AGA, task-subspace and structural checks; no expert training."""
 
 import argparse
 import hashlib
@@ -13,6 +13,90 @@ from clip_benchmark import digest
 from mechanisms import load_author
 from subspace_probe import save_json
 from task_probe_distance import checked_models
+
+
+def greedy_task_pairs(total, quadratic, h, s, penalty, tolerance):
+    """Disjoint swaps maximizing the exact finite gain in T-penalty*I."""
+    d=len(total);order=torch.arange(d,device=total.device);free=torch.ones(d,dtype=torch.bool,device=total.device)
+    gradient=torch.zeros_like(total);trace=[];t=inn=0.
+    upper=torch.ones_like(total,dtype=torch.bool).triu(1)
+    for step in range(d//2):
+        diag=gradient.diagonal();delta_i=quadratic+gradient+gradient.T-diag[:,None]-diag[None,:]
+        gain=2*total-penalty*delta_i;allowed=upper&free[:,None]&free[None,:]
+        gain=torch.where(allowed,gain,-torch.inf);index=int(gain.argmax());i,j=divmod(index,d)
+        if float(gain[i,j])<=tolerance:break
+        dt,di=float(2*total[i,j]),float(delta_i[i,j]);t+=dt;inn+=di
+        trace.append(dict(step=step,i=i,j=j,total_squared=t,inside_squared=inn,objective=t-penalty*inn,gain=dt-penalty*di))
+        order[i],order[j]=j,i;free[i]=False;free[j]=False
+        # Each unused row remains an identity row. Write-side cross terms vanish.
+        # Read-side gradient changes by -2 sum_l (S_l d)(H_l d)^T.
+        gradient-=2*(s[:,:,i]-s[:,:,j]).T@(h[:,:,i]-h[:,:,j])
+    assert torch.equal(order[order],torch.arange(d,device=order.device))
+    return order.cpu(),trace
+
+
+@torch.no_grad()
+def task_pairing(protocol, output):
+    """One data-free task-directed construction and a weight-only ablation."""
+    from author_protocol_audit import logical_parameter_distance
+    start=time.monotonic();cfg=json.loads(Path(protocol).read_text());out=Path(output)
+    out.mkdir(parents=True,exist_ok=False);save_json(out/'protocol.json',cfg)
+    assert '3090' in torch.cuda.get_device_name()
+    torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
+    for path,sha in cfg['source_sha256'].items():assert digest(path)==sha,path
+    assert digest(cfg['basis']['path'])==cfg['basis']['sha256']
+    basis=torch.load(cfg['basis']['path'],map_location='cpu');assert len(basis)==74
+    _,expert,_,pins=checked_models(cfg['target']);state=expert.state_dict();d=768
+    total=torch.zeros(d,d,dtype=torch.double,device='cuda');quadratic=total.clone();h=[];s=[]
+    def distances(gram):
+        diag=gram.diagonal();cost=diag[:,None]+diag[None,:]-2*gram
+        cost.fill_diagonal_(0);assert float(cost.min())>-cfg['tolerance'];return cost
+    for b in basis.values():
+        w=state[b['source_key']][b['row_start']:b['row_end']].double().flatten(1).cuda();v=b['v'].cuda()
+        assert v.shape[1]==cfg['rank'];norm=w.square().sum()
+        if b['site'] in ['Q','K','V','A']:
+            gram=w.T@w/norm;sub=v@v.T;h.append(gram);s.append(sub)
+            total+=distances(gram);quadratic+=distances(gram)*distances(sub)
+        else:
+            total+=distances(w@w.T/norm);z=w@v;quadratic+=2*distances(z@z.T/norm)
+    h,s=torch.stack(h),torch.stack(s);orders={};traces={}
+    for name,penalty in [('task_aware',2.),('distance_only',0.)]:
+        orders[name],traces[name]=greedy_task_pairs(total,quadratic,h,s,penalty,cfg['gain_tolerance'])
+        assert traces[name] and all(r['gain']>cfg['gain_tolerance'] for r in traces[name])
+        print('TASK_PAIRING',name,len(traces[name]),traces[name][-1],flush=True)
+    rows=[];maximum=0.
+    # Reopen every actual finite matrix change with independent NumPy products.
+    for name,order in orders.items():
+        order=order.numpy()
+        for index,b in basis.items():
+            w=state[b['source_key']][b['row_start']:b['row_end']].double().flatten(1).numpy();v=b['v'].numpy()
+            changed=w[:,order] if b['site'] in ['Q','K','V','A'] else w[order]
+            delta=changed-w;den=np.square(w).sum();inside=delta@v
+            t=float(np.square(delta).sum()/den);a=float(np.square(inside).sum()/den)
+            rows.append(dict(variant=name,matrix=int(index),site=b['site'],total_squared=t,inside_squared=a,outside_squared=t-a))
+        selected=[r for r in rows if r['variant']==name];last=traces[name][-1]
+        errors=[abs(sum(r[k] for r in selected)-last[k]) for k in ['total_squared','inside_squared']]
+        maximum=max(maximum,*errors);assert max(errors)<cfg['tolerance']
+    selected=cfg.get('release_variant','task_aware');assert selected in orders
+    if cfg.get('frozen_orders'):
+        ref=cfg['frozen_orders'];assert digest(ref['path'])==ref['sha256']
+        assert {k:v.tolist() for k,v in orders.items()}==json.loads(Path(ref['path']).read_text())
+    order=orders[selected];edits=residual_permutation(state,order)
+    # A permutation changes each nonzero logical parameter by at most twice its norm.
+    count=sum(3 if k.endswith('attn.in_proj_weight') else 1 for k in state
+        if k.startswith('model.visual.') and not k.endswith(('attn.in_proj_bias','mlp.c_fc.bias')))
+    bound=2*np.sqrt(count);distance=logical_parameter_distance(edits,state);assert distance<=bound+cfg['tolerance']
+    save_json(out/'orders.json',{name:order.tolist() for name,order in orders.items()});save_json(out/'trace.json',traces);save_json(out/'matrices.json',rows)
+    torch.save(edits,out/'release.pt')
+    save_json(out/'before_images.json',dict(status='sole_'+selected+'_release_frozen_before_images',release_sha256=digest(out/'release.pt'),
+        order_sha256=digest(out/'orders.json'),basis_sha256=cfg['basis']['sha256'],checkpoint_sha256=pins,
+        source_sha256=digest(__file__),protocol_sha256=digest(protocol),logical_parameter_distance=distance,
+        declared_permutation_norm_bound=bound,logical_parameter_terms=count,maximum_numpy_cost_error=maximum,
+        selected_variant=selected,distance_only_is_parameter_ablation_not_selected_candidate=selected=='task_aware',
+        fixed_classification_ablation_not_defense_candidate=selected=='distance_only',
+        native_function_basis='Known global residual permutation with coordinated LN/embedding/readout; real arithmetic identity, FP32 still tested.',
+        images=0,expert_training_updates=0,partner_or_test_loaded=False,wall_seconds=time.monotonic()-start,
+        novelty='Known SVD, permutation symmetry and greedy optimization; task-directed combination under study, no novelty or general recovery-resistance claim.'))
 
 
 @torch.no_grad()
@@ -115,7 +199,7 @@ def task_subspaces(protocol, output):
             site='O' if '.attn.' in key else 'A' if '.c_fc.' in key else 'B';matrices.append((key,site,0,w.shape[0]))
         elif key in ['model.visual.conv1.weight','model.visual.proj']:
             matrices.append((key,'patch' if 'conv1' in key else 'projection',0,w.shape[0]))
-    assert len(matrices)==cfg['matrix_count'];rows=[];basis={};maximum=0.
+    assert len(matrices)==cfg['matrix_count'];rows=[];basis={};maximum=0.;basis_checks=[]
     for index,(key,site,lo,hi) in enumerate(matrices):
         w=original[key][lo:hi].double().flatten(1);t=w-base[key][lo:hi].double().flatten(1)
         assert float(t.norm())>0,(key,'zero task matrix has no defined task directions')
@@ -124,6 +208,8 @@ def task_subspaces(protocol, output):
         basis[str(index)]=dict(u=u,v=v,s=s,source_key=key,row_start=lo,row_end=hi,site=site)
         reconstruction=max(float((t@v-u*s[:rank]).norm()/t.norm()),float((t.T@u-v*s[:rank]).norm()/t.norm()))
         assert reconstruction<cfg['relative_tolerance']
+        basis_checks.append(dict(matrix=index,source_key=key,site=site,svd_equation_error=reconstruction,
+            singular_boundary_relative_gap=float((s[rank-1]-s[rank])/s[rank-1])))
         for name,state in states.items():
             delta=state[key][lo:hi].double().flatten(1)-w;inside=delta@v;outside=delta-inside@v.T
             paired=(u.T@inside).diagonal();left=u.T@delta;energy=float(delta.square().sum());den=float(w.norm())
@@ -157,6 +243,7 @@ def task_subspaces(protocol, output):
     result=dict(status='passed_frozen_weight_measurement',checkpoint_sha256=pins,release_sha256={k:v['sha256'] for k,v in cfg['releases'].items()},
         rank=cfg['rank'],matrix_count=len(matrices),rows=len(rows),groups=groups,maximum_numpy_error=maximum,basis_sha256=digest(out/'basis.pt'),
         source_sha256=digest(__file__),protocol_sha256=digest(protocol),wall_seconds=time.monotonic()-start,
+        basis_checks=basis_checks,basis_only=not bool(states),
         new_image_forwards=0,new_AGA_calls=0,new_model_updates=0,partner_or_test_loaded=False,
         scope='Fixed original task-matrix SVD coordinates; not covariantly transported probes or proof of functional preservation. Paired rank-one and whole right-input spaces are distinct. No candidate constructed or selected.')
     save_json(out/'results.json',result);print(json.dumps(result),flush=True)
@@ -185,26 +272,83 @@ def residual_permutation(state, order):
     return edits
 
 
+def public_patch_recovery(state, public):
+    """Known-family recovery. Inputs are only published and public state dicts."""
+    from scipy.optimize import linear_sum_assignment
+    key='model.visual.conv1.weight'
+    x,y=[s[key].double().flatten(1) for s in [state,public]]
+    assert torch.all(x.norm(dim=1)>0) and torch.all(y.norm(dim=1)>0)
+    cost=(x/x.norm(dim=1,keepdim=True))@(y/y.norm(dim=1,keepdim=True)).T
+    a,b=x.numpy(),y.numpy()
+    independent=(a/np.linalg.norm(a,axis=1,keepdims=True))@(b/np.linalg.norm(b,axis=1,keepdims=True)).T
+    error=float(abs(cost.numpy()-independent).max());assert error<1e-10
+    rows,cols=linear_sum_assignment(-independent)
+    order=np.empty(len(cols),dtype=np.int64);order[cols]=rows
+    other=independent.copy();other[rows,cols]=-np.inf
+    margin=float((independent[rows,cols]-other.max(1)).min())
+    record=dict(public_coordinate_to_published_row=order.tolist(),strict_row_margin=margin,numpy_cost_error=error)
+    return state|residual_permutation(state,torch.tensor(order)),record
+
+
+@torch.no_grad()
+def task_pairing_recovery(protocol, output):
+    """Validate a fixed public-input attack on the three frozen task releases."""
+    from clip_benchmark import checkpoint_loader
+    start=time.monotonic();out=Path(output);out.mkdir(parents=True,exist_ok=False)
+    cfg=json.loads(Path(protocol).read_text());save_json(out/'protocol.json',cfg)
+    for path,sha in cfg['source_sha256'].items():assert digest(path)==sha,path
+    load=checkpoint_loader(Path('external/secure-merge-attack'))
+    def checked(ref):
+        assert digest(ref['path'])==ref['sha256'],ref['path']
+        return load(ref['path']).cpu().eval().state_dict()
+    public=checked(cfg['public_base']);results=[]
+    for case in cfg['cases']:
+        ref=case['release'];assert digest(ref['path'])==ref['sha256']
+        # Owner-side assembly of the actual full publication. The attack below
+        # receives neither the clean state nor task directions nor secret order.
+        original=checked(case['original_for_validation'])
+        published=original|torch.load(ref['path'],map_location='cpu')
+        recovered,record=public_patch_recovery(published,public)
+        control,control_record=public_patch_recovery(original,public)
+        differences=[[k for k,v in s.items() if not torch.equal(v,original[k])] for s in [recovered,control]]
+        independent=[[k for k,v in s.items() if not np.array_equal(v.numpy(),original[k].numpy())] for s in [recovered,control]]
+        assert independent==differences
+        source=case['verified_evaluation']
+        for pin in source.values():assert digest(pin['path'])==pin['sha256'],pin['path']
+        validation=json.loads(Path(source['validation']['path']).read_text())
+        assert validation['status']=='passed' and validation['original_batch_context_replays']
+        rows=json.loads(Path(source['results']['path']).read_text())
+        baseline=[r for r in rows if r['defense']=='Unprotected']
+        assert len(baseline)==7 and {r['target'] for r in rows}=={case['target']}
+        exact=not any(differences)
+        results.append(dict(target=case['target'],partner=case['partner'],
+            status='exact_original_state_recovered' if exact else 'nonidentical_no_prediction_reuse',
+            release_sha256=ref['sha256'],tensor_count=len(original),tensor_differences=differences,
+            independent_NumPy_tensor_differences=independent,
+            protected=record,matched_unprotected=control_record,
+            reuse_original_rows=baseline if exact else [],verified_evaluation=source))
+        print('PUBLIC_PATCH_RECOVERY',case['target'],exact,record['strict_row_margin'],flush=True)
+    save_json(out/'results.json',dict(cases=results,attack_inputs=['published_state','public_base_state'],
+        known_information='Global residual-coordinate permutation family and CLIP architecture; not the secret order.',
+        original_expert_used_only_for_assembly_and_posthoc_validation=True,
+        task_vector_used=False,secret_order_used=False,images=0,expert_training_updates=0,
+        new_AGA_calls=0,new_image_forwards=0,
+        reuse_reason='All original tensors and matched control must be exact; otherwise no accuracy reuse.',
+        source_sha256=digest(__file__),protocol_sha256=digest(protocol),wall_seconds=time.monotonic()-start,
+        scope='Known-family native recovery adaptation, separate from unchanged original AGA; no official full-attack reproduction or novelty claim.'))
+
+
 @torch.no_grad()
 def residual_recovery(output):
     """Data-free public patch-row matching; original expert only validates it."""
-    from scipy.optimize import linear_sum_assignment
     out=Path(output);start=time.monotonic();cfg=json.loads((out/'protocol.json').read_text())
     meta=json.loads((out/'execution.json').read_text());assert meta['completed']
     assert json.loads((out/'independent_validation.json').read_text())['status']=='passed'
     anchor,expert,_,pins=checked_models('MNIST');original,public=expert.state_dict(),anchor.state_dict()
     assert digest(cfg['release']['path'])==cfg['release']['sha256']
-    published=original|torch.load(cfg['release']['path'],map_location='cpu');key='model.visual.conv1.weight';records=[]
-    def recover(state):
-        x,y=[s[key].double().flatten(1) for s in [state,public]]
-        cost=(x/x.norm(dim=1,keepdim=True))@(y/y.norm(dim=1,keepdim=True)).T
-        a,b=x.numpy(),y.numpy();ind=(a/np.linalg.norm(a,axis=1,keepdims=True))@(b/np.linalg.norm(b,axis=1,keepdims=True)).T
-        error=float(abs(cost.numpy()-ind).max());assert error<1e-10
-        rows,cols=linear_sum_assignment(-ind);order=np.empty(len(cols),dtype=np.int64);order[cols]=rows
-        other=ind.copy();other[rows,cols]=-np.inf;margin=float((ind[rows,cols]-other.max(1)).min())
-        records.append(dict(public_coordinate_to_published_row=order.tolist(),strict_row_margin=margin,numpy_cost_error=error))
-        return state|residual_permutation(state,torch.tensor(order))
-    recovered,control=recover(published),recover(original)
+    published=original|torch.load(cfg['release']['path'],map_location='cpu')
+    recovered,record=public_patch_recovery(published,public)
+    control,control_record=public_patch_recovery(original,public);records=[record,control_record]
     diffs=[[k for k,v in s.items() if not torch.equal(v,original[k])] for s in [recovered,control]]
     exact=not any(diffs);baseline=[r for r in json.loads((out/'results.json').read_text()) if r['preset']=='original']
     result=dict(status='exact_original_state_recovered' if exact else 'nonidentical_recovery_no_prediction_reuse',tensor_differences=diffs,records=records,
@@ -803,7 +947,11 @@ if __name__=='__main__':
     mode.add_argument('--task-subspaces',metavar='PROTOCOL')
     mode.add_argument('--mean-compensation',metavar='PROTOCOL')
     mode.add_argument('--input-projection',metavar='PROTOCOL')
+    mode.add_argument('--task-pairing',metavar='PROTOCOL')
+    mode.add_argument('--task-pairing-recovery',metavar='PROTOCOL')
     args=parser.parse_args();torch.set_num_threads(4)
+    if args.task_pairing_recovery:task_pairing_recovery(args.task_pairing_recovery,args.output);raise SystemExit
+    if args.task_pairing:task_pairing(args.task_pairing,args.output);raise SystemExit
     if args.input_projection:input_projection(args.input_projection,args.output);raise SystemExit
     if args.mean_compensation:mean_compensation(args.mean_compensation,args.output);raise SystemExit
     if args.task_subspaces:task_subspaces(args.task_subspaces,args.output);raise SystemExit
