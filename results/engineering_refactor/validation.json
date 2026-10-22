@@ -1,5 +1,5 @@
 {
-  "status": "completed_local_engineering_refactor_with_regression_checks",
+  "status": "passed_local_and_3090_engineering_regression",
   "updated_utc": "2026-10-22T15:25:34.389945+00:00",
   "snapshot_commit": "3e6be4c4fe0d2cba86f540b9a4f2ec5fcc126282",
   "before": {
@@ -61,12 +61,19 @@
   "new_model_training_updates": 0,
   "new_GPU_experiments": 0,
   "GPU_refactor_verification": {
-    "status": "not_run",
-    "reason": "3090 SSH handshake closed before login; no successful real-checkpoint/new-layout GPU verification claimed"
+    "status": "passed",
+    "record": "results/engineering_refactor/GPU_validation.json",
+    "three_task_publications_exact": true,
+    "AGA_tensors_exact": 158,
+    "score_rows": 8,
+    "score_error": 0.0,
+    "new_image_forwards": 1024,
+    "new_author_AGA_calls": 1,
+    "new_scientific_experiments": 0
   },
   "GitHub": {
-    "status": "pending",
-    "reason": "GitHub plugin fetch failed with HTTP transport error; no upload claimed"
+    "status": "source_stages_uploaded_final_ref_update_pending",
+    "pre_refactor_public_snapshot": "c44c1ff184b126dbec7c776c79f12c3ab144e2f7"
   },
   "runtime_source_sha256": {
     "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
@@ -91,5 +98,20 @@
     "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769"
   },
   "temporary_validation_runtime_bytes_removed": 746744121,
-  "cleanup_scope": "Only this refactor temporary CPU runtimes/report preview/build helpers and generated caches. No installed production dependencies,models,raw scores or scientific evidence removed."
+  "cleanup_scope": "Only this refactor temporary CPU runtimes/report preview/build helpers and generated caches. No installed production dependencies,models,raw scores or scientific evidence removed.",
+  "server_tests": {
+    "passed": 18,
+    "production_runtime": "Python3.12 / torch2.3.0 / RTX3090",
+    "pytest_seconds": 3.37,
+    "lint": "passed",
+    "format": "passed",
+    "first_failure": "Missing curated report input files; retained log, synchronized76 exact source files, reran without code/threshold changes.",
+    "passed_after_retired_sources_removed": true
+  },
+  "server_cleanup": {
+    "record": "results/engineering_refactor/server_cleanup.json",
+    "hash_matched_old_files_removed": 349,
+    "unique_nonidentical_source_variants_moved_and_preserved": 3,
+    "unique_models_scores_or_failure_evidence_deleted": 0
+  }
 }

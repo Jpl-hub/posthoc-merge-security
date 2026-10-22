@@ -1,0 +1,146 @@
+{
+  "status": "passed_real_checkpoint_and_GPU_migration_checks",
+  "runtime": {
+    "Python": "3.12.3",
+    "torch": "2.3.0+cu121",
+    "GPU": "NVIDIA GeForce RTX 3090"
+  },
+  "source_sha256": "6d9ef3b37f9122a8f81f56f51ae886e9e16c06381fc1fc7cdaeaf475db915373",
+  "source_pins": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "38a8009960d7e978074e7c9f39d2d11a371ea9a0364bc3ada7531c7a259fe883",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+    "_impl/defenses.py": "cfae7beac09feac34b41995fda19e79d08297d974b25e4b0e5efb4b6eb07713f",
+    "_impl/evaluate.py": "2dee58c3e1dec5a3b2a7c29a14eccebdb89744a69d2751917b29ccc6a3027a0a",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "075b4f3e4624a77cc38c90cef4fac7ecf8f2cf56a32d8ee1ba03cdec7f75bea3",
+    "_impl/report.py": "e047b056711c612a0ad81ea7f0cfbce54e795e912499021fb81e335309c4b203",
+    "_impl/subspace.py": "307558203a17fd3296882c2af4d0cbf706bdad63c61d189a82bd03daee6cd3b8",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "538a76e4c8da0d93c256b782fcd6c0cf66d7de804c243fd255dd01527f1a146a",
+    "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "1267991d3abe8b19eb3acff4f6cd71704a743514f280f8266b8c46d2bc10585d",
+    "experiment/recover.py": "0914cf5d994b796e543c0742151bab7046e5884203aad432a0c2c61f63a45b6b",
+    "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+  },
+  "three_task_publications": [
+    {
+      "target": "MNIST",
+      "all_frozen_publication_tensors_exact": 158,
+      "family_recovery_and_control_exact": true,
+      "strict_matching_margin": 0.40008669136674513,
+      "release_sha256": "dee8a87991c709ab04cc45485b62b1f612d1ec320ba83a7de394777138927b31",
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      }
+    },
+    {
+      "target": "DTD",
+      "all_frozen_publication_tensors_exact": 158,
+      "family_recovery_and_control_exact": true,
+      "strict_matching_margin": 0.39991184344532327,
+      "release_sha256": "4b930d97cbfc872969eeed93f1789dc8440fc9ffaf66d71ce30bc75a0c1f10f4",
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "DTD/finetuned.pt": "482e5636cdb4d521376211fdeda0417f73aafab9551d366690bba3e5c0ce0f38",
+        "head_DTD.pt": "19df72206780cac2d269a2847cbd81dceb3859c6f91a722c49427c42a0b829bf"
+      }
+    },
+    {
+      "target": "SVHN",
+      "all_frozen_publication_tensors_exact": 158,
+      "family_recovery_and_control_exact": true,
+      "strict_matching_margin": 0.40219757261185285,
+      "release_sha256": "f41fc2c273dcd8696fad83b15bd56542a03b3ee16d9d093494b2bc24046bf00b",
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+        "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      }
+    }
+  ],
+  "AGA_recovered_tensors_exact": 158,
+  "AGA_comparison_sha256": "cd33e99e0f9b570284530e40f7d376d15903aaa381a5164d750222eee5ac8dd2",
+  "merge_checks": [
+    {
+      "defense": "Unprotected",
+      "scope": "None",
+      "all_parameter_tensors_exact": 158
+    },
+    {
+      "defense": "TaskDirected_MNIST",
+      "scope": "None",
+      "all_parameter_tensors_exact": 158
+    },
+    {
+      "defense": "TaskDirected_MNIST",
+      "scope": "Protected expert",
+      "all_parameter_tensors_exact": 158
+    }
+  ],
+  "score_rows": [
+    {
+      "row": "Unprotected/Standalone/None/MNIST",
+      "images": 128,
+      "maximum_score_error": 0.0,
+      "original128_context": true
+    },
+    {
+      "row": "TaskDirected_MNIST/Standalone/None/MNIST",
+      "images": 128,
+      "maximum_score_error": 0.0,
+      "original128_context": true
+    },
+    {
+      "row": "Unprotected/TA/None/MNIST",
+      "images": 128,
+      "maximum_score_error": 0.0,
+      "original128_context": true
+    },
+    {
+      "row": "Unprotected/TA/None/SVHN",
+      "images": 128,
+      "maximum_score_error": 0.0,
+      "original128_context": true
+    },
+    {
+      "row": "TaskDirected_MNIST/TA/None/MNIST",
+      "images": 128,
+      "maximum_score_error": 0.0,
+      "original128_context": true
+    },
+    {
+      "row": "TaskDirected_MNIST/TA/None/SVHN",
+      "images": 128,
+      "maximum_score_error": 0.0,
+      "original128_context": true
+    },
+    {
+      "row": "TaskDirected_MNIST/TA/Protected expert/MNIST",
+      "images": 128,
+      "maximum_score_error": 0.0,
+      "original128_context": true
+    },
+    {
+      "row": "TaskDirected_MNIST/TA/Protected expert/SVHN",
+      "images": 128,
+      "maximum_score_error": 0.0,
+      "original128_context": true
+    }
+  ],
+  "maximum_score_error": 0.0,
+  "new_image_forwards": 1024,
+  "new_author_AGA_calls": 1,
+  "new_defense_weights": 0,
+  "expert_training_updates": 0,
+  "scope": "Engineering regression only: same frozen checkpoints/publications and stored first128 image context. Not a new full evaluation or new defense result.",
+  "wall_seconds": 70.32782614900498
+}
