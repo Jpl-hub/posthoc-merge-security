@@ -156,7 +156,7 @@ def run(protocol):
     probes=metrics(projected(zp,P),projected(zp+qb-beta,qp))
     distance=float(np.hypot(np.linalg.norm(qp-P)/np.linalg.norm(P),np.linalg.norm(qb-beta)/np.linalg.norm(beta)))
     feasible=max(native['R'],probes['R'])<=own['task_budget'] and native['changed']==probes['changed']==0 and distance<=own['parameter_budget']
-    supported=feasible and x[-1]>=cfg['minimum_positive_margin'] and np.all(ea.argmax(1)==own['collapse_class'])
+    supported=bool(feasible and x[-1]>=cfg['minimum_positive_margin'] and np.all(ea.argmax(1)==own['collapse_class']))
     torch.save(dict(native_after=torch.tensor(after),proxy_after=torch.tensor(ea),labels=torch.tensor(labels)),out/'scores.pt')
     record.update(status='source_supported_requires_independent_check_and_reserved_confirmation' if supported else 'closed_fixed_finite_minimax_source',
         source_feasible=feasible,mechanism_supported=supported,native=native,public_AGA_proxy=environment,task_probes=probes,
@@ -168,6 +168,91 @@ def run(protocol):
     save_json(out/'results.json',record);print(json.dumps(record),flush=True)
 
 
+def audit(protocol):
+    """Read-only NumPy check of the frozen cone, edits, scores and official labels."""
+    start=time.monotonic();cfg=json.loads(Path(protocol).read_text())
+    for path,pin in cfg['inputs'].items():assert digest(path)==pin,path
+    assert digest(__file__)==cfg['source_sha256']
+    out=Path(cfg['output']);assert not (out/'independent_validation.json').exists()
+    original=json.loads((out/'protocol.json').read_text());raw=np.load(out/'conic_problem.npz')
+    cal=torch.load(original['calibration'],map_location='cpu',weights_only=False)
+    scores=torch.load(out/'scores.pt',map_location='cpu',weights_only=False)
+    point=torch.load(out/'point.pt',map_location='cpu',weights_only=False)
+    A=sp.csc_matrix((raw['data'],raw['indices'],raw['indptr']),shape=tuple(raw['shape']))
+    x,d,b,c=[raw[k] for k in ['primal','dual','b','objective']];count=int(raw['nonnegative_rows']);slack=b-A@x
+    stationarity=float(abs(A.T@d+c).max());primal=max(0.,float(-slack[:count].min()),float(np.linalg.norm(slack[count+1:])-slack[count]))
+    dual=max(0.,float(-d[:count].min()),float(np.linalg.norm(d[count+1:])-d[count]))
+    gap=float(abs(c@x+b@d)/(1+abs(c@x)+abs(b@d)))
+    assert max(stationarity,primal,dual,gap)<original['certificate_tolerance']
+    p,pf=cal['parameters'],cal['proxy_parameters'];P=p['projection'];H=p['head'];N=raw['N'];S=raw['whitening'];v=raw['v'];w=raw['w'];mu=raw['mean']
+    q=N@(S@x[:-1]);np.testing.assert_allclose(q,point['q'],rtol=0,atol=1e-12)
+    np.testing.assert_allclose(point['beta_delta'],-(mu@q)*w,rtol=0,atol=1e-12)
+    assert set(point['edits'])=={'model.visual.proj','model.visual.ln_post.bias'}
+    qp,qb=[point['edits'][k].double().numpy() for k in ['model.visual.proj','model.visual.ln_post.bias']]
+    np.testing.assert_array_equal(qp,(P+q[:,None]*v).astype(np.float32).astype(np.float64))
+    np.testing.assert_array_equal(qb,(p['beta']-(mu@q)*w).astype(np.float32).astype(np.float64))
+    ortho=float(max(abs(N.T@N-np.eye(N.shape[1])).max(),abs(P.T@N).max(),abs(N.T@(1/p['gamma'])).max(),abs(P.T@w-v).max()))
+    assert ortho<1e-10
+    def zvalue(h,par):
+        a=h.numpy();a=a-a.mean(1,keepdims=True)
+        return a/np.sqrt((a*a).mean(1,keepdims=True)+par['eps'])*par['gamma']+par['beta']
+    def score(zz,pp):
+        f=zz@pp;return f/np.sqrt((f*f).sum(1,keepdims=True))@H.T
+    z=zvalue(cal['h'],p);zf=zvalue(cal['h_proxy'],pf)
+    np.testing.assert_allclose(z.mean(0),mu,rtol=0,atol=1e-12)
+    G=np.eye(N.shape[1])/np.linalg.norm(P)**2+(np.linalg.norm(w)/np.linalg.norm(p['beta']))**2*np.outer(mu@N,mu@N)
+    whitening=float(abs(S@G@S-np.eye(len(G))).max());assert whitening<1e-10
+    base,expert,head,pins=checked_models(cal['cfg']['target']);assert pins==cal['checkpoint_sha256']
+    np.testing.assert_array_equal(P,expert.model.visual.proj.double().numpy())
+    np.testing.assert_array_equal(p['beta'],expert.model.visual.ln_post.bias.double().numpy())
+    np.testing.assert_array_equal(p['gamma'],expert.model.visual.ln_post.weight.double().numpy())
+    np.testing.assert_array_equal(H,head.weight.double().numpy())
+    assert cal['cfg']['coefficient']==.5
+    U,_,Vh=np.linalg.svd(P-base.model.visual.proj.double().numpy(),full_matrices=False)
+    rank=cal['cfg']['task_rank'];task_error=float(max(abs(U[:,:rank].T@q).max(),abs(Vh[:rank]@v).max()))
+    assert task_error<1e-9
+    yy=cal['original_scores'].argmax(1).numpy();take=[np.flatnonzero(yy==i)[0] for i in range(len(H))]
+    basis=U[:,:rank];rms=np.sqrt(np.mean((z@basis)**2,axis=0));step=cal['cfg']['finite_step']
+    shifts=np.concatenate([-step*rms[:,None]*basis.T,step*rms[:,None]*basis.T])
+    zp=np.repeat(z[take],len(shifts),axis=0)+np.tile(shifts,(len(H),1));zz=np.concatenate([z,zp]);fn=np.linalg.norm(zz@P,axis=1)
+    T=((zz-mu)@N@S)/fn[:,None];np.testing.assert_allclose(A[:len(T),:-1].toarray(),T,rtol=0,atol=1e-11)
+    np.testing.assert_allclose(A[len(T):2*len(T),:-1].toarray(),-T,rtol=0,atol=1e-11)
+    peers=np.arange(len(H))!=cal['cfg']['collapse_class'];contrast=H[cal['cfg']['collapse_class']]-H[peers];en=np.linalg.norm(zf@pf['projection'],axis=1)
+    C=.5*((zf@N)[:,None,:]*(contrast@v)[None,:,None]-(contrast@(w@pf['projection']))[None,:,None]*(mu@N))
+    C=(C@S)/en[:,None,None]
+    np.testing.assert_allclose(A[2*len(T):count,:-1].toarray(),-C.reshape(-1,len(G)),rtol=0,atol=1e-11)
+    np.testing.assert_allclose(b[2*len(T):count],((zf@pf['projection'])@contrast.T/en[:,None]).ravel(),rtol=0,atol=1e-10)
+    changed_proxy=dict(pf)
+    for key,field in [('model.visual.proj','projection'),('model.visual.ln_post.bias','beta')]:
+        zero=base.state_dict()[key];changed_proxy[field]=(zero+.5*((point['edits'][key]-zero)+torch.zeros_like(zero))).double().numpy()
+    zc=zf-pf['beta']+changed_proxy['beta']
+    actual=[cal['original_scores'].numpy(),scores['native_after'].numpy(),cal['proxy_original_scores'].numpy(),scores['proxy_after'].numpy()]
+    expected=[score(z,P),score(z+qb-p['beta'],qp),score(zf,pf['projection']),score(zc,changed_proxy['projection'])]
+    errors=[float(abs(a-e).max()) for a,e in zip(actual,expected)];assert max(errors)<=cal['cfg']['score_tolerance']
+    labels=official_labels(cal['cfg']['target'],True)[cal['indices']];np.testing.assert_array_equal(labels,scores['labels'].numpy())
+    native=metrics(actual[0],actual[1],labels);proxy=metrics(actual[2],actual[3],labels);probes=metrics(score(zp,P),score(zp+qb-p['beta'],qp))
+    distance=float(np.sqrt(np.sum((qp-P)**2)/np.sum(P**2)+np.sum((qb-p['beta'])**2)/np.sum(p['beta']**2)))
+    finite_error=float(abs((z+point['beta_delta'])@(P+q[:,None]*v)-(z@P+((z-mu)@q)[:,None]*v)).max())
+    assert finite_error<1e-9
+    feasible=bool(max(native['R'],probes['R'])<=cal['cfg']['task_budget'] and native['changed']==probes['changed']==0 and distance<=cal['cfg']['parameter_budget'])
+    supported=bool(feasible and x[-1]>=original['minimum_positive_margin'] and np.all(actual[3].argmax(1)==cal['cfg']['collapse_class']))
+    classes=[]
+    for j in range(len(H)):
+        mask=labels==j;classes.append(dict(class_id=j,n=int(mask.sum()),native_correct=int(np.sum((actual[1].argmax(1)==labels)&mask)),proxy_before_correct=int(np.sum((actual[2].argmax(1)==labels)&mask)),proxy_after_correct=int(np.sum((actual[3].argmax(1)==labels)&mask))))
+    record=dict(status='source_supported_requires_reserved_confirmation' if supported else 'closed_fixed_finite_minimax_source',mechanism_supported=supported,source_feasible=feasible,
+        native=native,public_AGA_proxy=proxy,task_probes=probes,parameter_distance=distance,solver_margin=float(x[-1]),per_class=classes,
+        point_sha256=digest(out/'point.pt'),scores_sha256=digest(out/'scores.pt'),conic_problem_sha256=digest(out/'conic_problem.npz'),
+        source_preregistration=cfg['source_preregistration'],original_source_sha256=original['source_sha256']['experiments/centered_readout.py'],
+        solver_seconds=cfg['solver_seconds'],original_run_total_seconds=None,source_full_image_forwards=0,cached_prefix_readouts=4096,new_AGA_calls=0,expert_training_updates=0,reserved_confirmation_images_read=0,
+        serialization_failure='NumPy bool_ at final JSON write; solver,point and scores complete. No second solve or science change.',failure_log_sha256=cfg['inputs'][cfg['failure_log']])
+    save_json(out/'results.json',record)
+    validation=dict(status='passed_read_only_independent_NumPy_recount',NumPy_score_errors=errors,stationarity_error=stationarity,primal_cone_error=primal,dual_cone_error=dual,relative_duality_gap=gap,
+        orthogonality_error=ortho,task_projection_error=task_error,whitening_error=whitening,finite_compensation_error=finite_error,
+        labels_checked=len(labels),linear_operator_reconstructed=True,result_sha256=digest(out/'results.json'),source_sha256=digest(__file__),protocol_sha256=digest(protocol),
+        new_point_fits=0,new_full_image_forwards=0,wall_seconds=time.monotonic()-start)
+    save_json(out/'independent_validation.json',validation);print(json.dumps(record),flush=True)
+
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--protocol',required=True)
-    run(parser.parse_args().protocol)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--protocol');parser.add_argument('--audit')
+    args=parser.parse_args();audit(args.audit) if args.audit else run(args.protocol)
