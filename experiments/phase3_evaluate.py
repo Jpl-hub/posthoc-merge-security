@@ -289,8 +289,18 @@ def verify(output):
                     mask = y == c['class_id']
                     assert int(mask.sum()) == c['n'] and int(((pred == y) & mask).sum()) == c['correct']
                 ids = np.linspace(0, len(y)-1, cfg['replay_n'], dtype=int)
-                images = torch.stack([data[task][r['indices'][int(i)]][0] for i in ids]).cuda()
-                model.cuda(); heads[task].cuda(); actual = heads[task](model(images)).cpu(); model.cpu(); heads[task].cpu()
+                model.cuda(); heads[task].cuda()
+                if cfg.get('original_batch_context_replays'):
+                    parts=[]
+                    for i in ids:
+                        lo=int(i)//128*128;hi=min(lo+128,len(y))
+                        images=torch.stack([data[task][r['indices'][j]][0] for j in range(lo,hi)]).cuda()
+                        parts.append(heads[task](model(images))[int(i)-lo].cpu())
+                    actual=torch.stack(parts)
+                else:
+                    images = torch.stack([data[task][r['indices'][int(i)]][0] for i in ids]).cuda()
+                    actual = heads[task](model(images)).cpu()
+                model.cpu(); heads[task].cpu()
                 np.testing.assert_array_equal(actual.argmax(1).numpy(), pred[ids])
                 error = float((actual.double() - r['logits'][ids].double()).abs().max())
                 assert error <= cfg['score_tolerance'], (key, error)
@@ -300,7 +310,8 @@ def verify(output):
               full_image_prediction_replays=replays, maximum_score_error=maximum_error,
               explicit_TA_reconstruction=True, original_TIES_functions=True,
               independent_TIES_small_numpy_fixture=True, independent_full_TIES_reimplementation=False, rows=len(rows),
-              raw_sha256=meta['predictions_sha256'], source_sha256=digest(__file__)))
+              raw_sha256=meta['predictions_sha256'], source_sha256=digest(__file__),
+              original_batch_context_replays=cfg.get('original_batch_context_replays',False)))
     print('PHASE3_VERIFIED', out, replays, flush=True)
 
 
