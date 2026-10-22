@@ -1,0 +1,19 @@
+{
+  "point_sha256": "7ac27aea1f4b9a0033b69461f3544e80c95192a903ea35f12736605ca04f440d",
+  "data": "Same1024construction target training indices,no new sample selection",
+  "components": [
+    "original",
+    "A_only",
+    "B_only",
+    "joint",
+    "zero_final_MLP",
+    "zero_all_MLPs"
+  ],
+  "purpose": "Determine whether actual independent classification retention requires the two-matrix compensation. No optimizer,refit,rank/strength change or candidate selection.",
+  "calibration": "outputs/nonlinear_compensation_20261023/calibration.pt",
+  "code": "Reuse _impl.evaluate.evaluate and frozen model loading; all components use literal subsets of the same publication.",
+  "current_full_native_accuracy_percent": 99.67,
+  "new_full_or_partner_predictions_for_selection": false,
+  "zero_final_MLP_scope": "Zero original finalMLP output weight and bias as a source-only lesion. This checks how much classification the residual prefix retains,not a candidate or impossibility proof.",
+  "zero_all_MLPs_scope": "One source-only all12MLP lesion to test whether the previous endpoint has limited classification leverage. No layer-count sweep or new defense construction."
+}

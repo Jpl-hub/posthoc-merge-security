@@ -1,30 +1,20 @@
 {
-  "updated_utc": "2026-10-22T17:18:20.895116+00:00",
+  "updated_utc": "2026-10-22T17:45:14.420356+00:00",
   "status": "frozen_three_task_Defense2_effective_in_two_and_eight_expert_originalAGA_known_family_recovery_limitation_retained",
   "automatic_continuation": true,
   "automation_status": "13-35 ACTIVE for latest user-requested nine-hour overnight window only",
   "current_state": "research_state.json",
   "core_method_first": true,
   "GPU": "RTX3090 only;4090 unused",
-  "research_jobs": [
-    {
-      "name": "nonlinear_MLP_source_compensation",
-      "status": "running",
-      "server_output": "outputs/nonlinear_compensation_20261023",
-      "server_log": "outputs/nonlinear_compensation_20261023.log",
-      "entrypoint": "python -m experiment.construct --method nonlinear --target MNIST",
-      "source_preregistration": "b7dd1d52a8dff3a8df6e273f26ffdae1d6047f74",
-      "new_expert_training": 0
-    }
-  ],
-  "active_GPU_jobs": 1,
+  "research_jobs": [],
+  "active_GPU_jobs": 0,
   "effective_Defense2": "results/residual_coordinate_control/other_tasks/summary.md",
   "new_candidate": false,
   "algorithm_novelty_verified": false,
   "latest_verified_scientific_remote": "622207f66b9f5a38c9650159a5016840271eea65",
   "current_preregistration": "3b117b6",
   "github_receipt": "outputs/latest_github_sync_receipt.json",
-  "next_action": "One fixed nonlinear MLP task-complement reflection with ridge output compensation,existing construct entrypoint --method nonlinear. Source1024 images first,accuracy loss<=0.25pp;then independent training confirmation/full native<=0.5pp separately from oldstrictR. ReportR andchanges. No retuning or partner/test construction.",
+  "next_action": "Run one fixed actual-prefix reconstruction point,then inspect source before_images. If source passes,draw one genuinely unused512 target-training confirmation,run complete native under the declared0.5pp protocol and reportstrictR;then trueTA0.5/originalAGA. No R/rank/damping/layer/samepoint retuning. Targeted recovery and causal/SVD controls only on a meaningful frozen candidate.",
   "history": "Earlier campaign history remains in Git and original result directories. Current file retains only active state; no scientific evidence deleted.",
   "github_sync": {
     "status": "pending_connection",
@@ -33,16 +23,23 @@
     "reason": "GitHub plugin USER_NOT_LOGGED_IN;continue research without waiting for user"
   },
   "latest_experiment": {
-    "status": "completed_frozen_numerical_point_real_TA_AGA_and_source_components",
-    "summary": "results/centered_readout_game/accuracy_evaluation/summary.md",
-    "native_accuracy_percent": 99.64,
-    "TA_accuracy_percent": 94.64,
-    "AGA_target_accuracy_percent": 91.22,
-    "AGA_both_accuracy_percent": 87.79,
-    "original_strict_task_gate_failed": true,
-    "new_AGA_calls": 1,
-    "expert_updates": 0,
-    "conclusion": "Modest real-partner damage,not competitive protection. Public-base source99.71to9.67doesnottransfer to realpartner. Do not retune fixedpoint."
+    "status": "completed_single_MLP_nonlinear_compensation_no_protection",
+    "summary": "results/nonlinear_compensation/summary.md",
+    "native_accuracy_percent": 99.67,
+    "prediction_changes": 2,
+    "R": 8.36073279498614,
+    "old_strict_passed": false,
+    "new_prospective_accuracy_protocol_passed": true,
+    "TA_accuracy_percent": 99.34,
+    "AGA_target_accuracy_percent": 99.32,
+    "AGA_both_accuracy_percent": 99.33,
+    "source_components_all_correct": 1022,
+    "final_MLP_zero_source_correct": 1022,
+    "task_right_probe_responses": [
+      2.75e-09,
+      2.26e-09
+    ],
+    "new_optimization_after_native_test": 0
   },
   "current_candidate": {
     "status": "frozen_task_directed_method_retained_originalAGA_effective_known_family_recoverable",
@@ -105,23 +102,37 @@
     "wall_seconds": 11.726871578008286
   },
   "active_source_hypothesis": {
-    "status": "closed_finite_minimax_complete_task_gate_failed",
-    "summary": "results/centered_readout_game/summary.md",
-    "construction_data_free": false,
+    "status": "registered_before_source",
+    "configuration": "configs/construct.json:nonlinear",
+    "entrypoint": "python -m experiment.construct --method nonlinear --target MNIST",
+    "output": "outputs/nonlinear_prefix_20261023",
+    "layers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "mechanism": "Finite output reconstruction against frozen teacher block targets using actual modified student prefixes; includes earlier-layer and currentAttention/LN responses. Not independent repetition of the closed final-layer fit.",
     "source_n": 1024,
-    "source_native_accuracy": 0.998046875,
-    "source_public_base_AGA_accuracy": 0.0966796875,
-    "new_training_confirmation_n": 512,
-    "confirmation_passed": true,
-    "full_native_accuracy_before": 0.9969,
-    "full_native_accuracy_after": 0.9964,
-    "full_native_prediction_changes": 12,
-    "full_native_R": 72.98947410710699,
-    "full_samples_above_R0_5": 62,
-    "real_partner_or_AGA_run": false,
-    "sole_point_sha256": "bf0381d37090bf28717359aec71d2d2c154d8c5f399508c92ebcfb4dd174f0af",
-    "no_test_based_repair": true,
-    "new_release_weights": 0
+    "rank": 32,
+    "matrix_bounds": [
+      2.0,
+      4.0
+    ],
+    "joint_bound": 15.491933384829668,
+    "source_accuracy_loss_pp": 0.25,
+    "full_accuracy_loss_pp": 0.5,
+    "historical_R0_5_reported_separately": true,
+    "teacher_training_updates": 0,
+    "new_method_effectiveness": null
   },
   "cleanup_finite_source": {
     "closed_one_off_entrypoints_removed": 2,
@@ -151,5 +162,30 @@
   "overnight_window_utc": {
     "start": "2026-10-22T17:00:56Z",
     "end": "2026-10-23T02:00:56Z"
+  },
+  "latest_nonlinear_source": {
+    "summary": "results/nonlinear_compensation/source.json",
+    "source_images": 1024,
+    "correct_before_after": [
+      1022,
+      1022
+    ],
+    "prediction_changes": 0,
+    "R": 0.14797298801378525,
+    "D": 2.429403859750026,
+    "classification_training_updates": 0
+  },
+  "closed_single_MLP_point": {
+    "summary": "results/nonlinear_compensation/summary.md",
+    "point_sha256": "7ac27aea1f4b9a0033b69461f3544e80c95192a903ea35f12736605ca04f440d",
+    "native": 99.67,
+    "TA": 99.34,
+    "AGA_target": 99.32,
+    "AGA_both": 99.33,
+    "strict_R_passed": false,
+    "single_MLP_zero_source_correct": 1022,
+    "all_MLP_zero_source_correct": 89,
+    "source_n": 1024,
+    "no_retuning": true
   }
 }
