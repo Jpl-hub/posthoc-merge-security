@@ -1,0 +1,82 @@
+{
+  "status": "MNIST_frozen_task_directed_construction_and_original_AGA_verified",
+  "new_image_forwards": 182672,
+  "native_image_forwards": 22048,
+  "merging_evaluation_image_forwards": 118992,
+  "replay_context_image_forwards": 41632,
+  "selected_scores_replayed": 448,
+  "new_original_AGA_calls": 1,
+  "expert_training_updates": 0,
+  "construction_images": 0,
+  "construction_seconds": 17.66952187199786,
+  "native_forward_and_save_seconds": 22.313855999993393,
+  "original_AGA_seconds": 29.13118125400797,
+  "evaluation": {
+    "pilot": {
+      "production_seconds": 32.60992750800506,
+      "rows": 14,
+      "selected_score_replays": 224,
+      "maximum_replay_error": 0.0
+    },
+    "full": {
+      "production_seconds": 133.99291091899795,
+      "rows": 14,
+      "selected_score_replays": 224,
+      "maximum_replay_error": 0.0
+    }
+  },
+  "verification_wall_seconds_not_separately_instrumented": true,
+  "source_and_confirmation": {
+    "each_n": 512,
+    "excluded_registered_indices": 51745,
+    "excluded_metadata_files": 103,
+    "indices_sha256": "bd4e169356474a972a8991583b135805f4202e3faecf5e2e709805137cdd44e2",
+    "full_tests_historically_exposed": true
+  },
+  "construction_local_preregistration": "19793e1",
+  "native_local_preregistration": "a58c5e5",
+  "evaluation_local_preregistration": "3b117b6",
+  "GitHub_sync": "USER_NOT_LOGGED_IN; preregistrations/results local, no remote upload claimed.",
+  "source_sha256": {
+    "construction": "7fb4f3bed899e68068e37c6d390a4a08cb8452c8c236af31b781ecdc1bb5a11c",
+    "native": "f85c84871dc5a457c35860d9093a5447596ac7cc2ed9d45630c95b91994e055c",
+    "evaluation": "35899922d24eeccd19375f25df71f162198a98b22062f6adac3a351a2ea27890"
+  },
+  "synthetic_gain_validation": {
+    "finite_gains_checked": 43,
+    "maximum_numpy_error": 8.881784197001252e-16,
+    "models": 0,
+    "images": 0
+  },
+  "raw_files_stay_3090": [
+    {
+      "path": "outputs/task_directed_pairing_20261022/evaluation/pilot/00_MNIST_SVHN/artifacts/predictions.pt",
+      "sha256": "524a00e3bc8e23c85167f84aa5cb5dc985f2605541bfe234c751b950d04e2671"
+    },
+    {
+      "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+      "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51"
+    },
+    {
+      "path": "outputs/task_directed_pairing_20261022/construction/release.pt",
+      "sha256": "dee8a87991c709ab04cc45485b62b1f612d1ec320ba83a7de394777138927b31"
+    },
+    {
+      "path": "outputs/task_directed_pairing_20261022/native/MNIST/native_scores.pt",
+      "sha256": "1be3dc93f814b4b36ab2eeb52e4f1b7a540dfcdca1fc9a254758dd8c8117f2f5"
+    },
+    {
+      "path": "outputs/task_directed_pairing_20261022/native/MNIST/AGA_edits.pt",
+      "sha256": "1263e4938252ca5005182b2df8ebb4e9160dbf813e078bd816f29b17f7d210ab"
+    }
+  ],
+  "raw_directory": "/root/autodl-tmp/merge_security_20261009/outputs/task_directed_pairing_20261022",
+  "storage": "One task-aware release; distance-only is a parameter-only control,not published/selected. Native release is a symlink,not a second weight copy.",
+  "interpretation": "New finite task-directed construction uses known SVD,global residual symmetry and greedy tools. MNIST evidence only. No universal attack guarantee or established novelty; known-family public matching boundary retained. Old fixed-rule three-task results retained.",
+  "cleanup": {
+    "reproducible_local_preview_and_cache_bytes_removed": 1602484,
+    "unique_weights_raw_scores_and_failure_evidence_preserved": true,
+    "native_release_is_symlink": true,
+    "new_frameworks": 0
+  }
+}

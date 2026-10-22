@@ -17,10 +17,11 @@ TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M
 | 防御一 | 99.69 | 9.80 / 6.70 | 9.80 / 6.70 | 9.80 / 6.70 |
 | O/B [H] | 99.71 | 78.77 / 62.94 | 79.53 / 65.82 | 77.85 / 61.42 |
 | A/B [H] | 99.65 | 91.07 / 77.46 | 85.42 / 75.50 | 79.20 / 69.84 |
-| Defense 2 (structure) [K] | 99.69 | 7.39 / 7.74 | 10.09 / 6.78 | 10.09 / 6.78 |
-| 最新防御二候选 [F] | 99.69 | 99.13 / 91.41 | 99.01 / 91.59 | 99.04 / 90.51 |
+| 防御二（固定结构）[K] | 99.69 | 7.39 / 7.74 | 10.09 / 6.78 | 10.09 / 6.78 |
+| 先前失败候选 [F] | 99.69 | 99.13 / 91.41 | 99.01 / 91.59 | 99.04 / 90.51 |
+| 防御二（任务方向构造） | 99.69 | 10.98 / 14.32 | 9.80 / 9.81 | 9.80 / 9.83 |
 
-每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为最新失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。
+每格为受保护MNIST / 伙伴SVHN。H表示旧O/B、A/B不符合原任务间隔限制；K为已知全网置换对照；F为先前失败候选。完整PaRaMS作为完整基线保留，不因参数改动较大而排除。
 
 ## 2. 主对比：三个保护任务、相同TA与原版AGA
 
@@ -174,9 +175,11 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，
 | Fixed model | Task-inside distance | Task-outside distance | Standalone M | TA M | AGA both M |
 |---|---|---|---|---|---|
 | 全网置换 [K] | 2.69895 | 11.86048 | 99.69 | 7.39 | 10.09 |
-| Latest compensation [F] | 0.49964 | 11.85437 | 99.69 | 99.13 | 99.04 |
+| Previous compensation [F] | 0.49964 | 11.85437 | 99.69 | 99.13 | 99.04 |
+| Distance-only pairing | 2.96985 | 12.02151 | -- | -- | -- |
+| Task-directed pairing | 2.70843 | 12.03349 | 99.69 | 10.98 | 9.80 |
 
-相同74个矩阵、原专家减基座的32个任务右奇异方向；矩阵距离不含偏置、LayerNorm与embedding。任务外距离相近，但融合效果差别很大，不能把距离本身当作保护效果。
+相同74个矩阵、原专家减基座的32个任务右奇异方向；矩阵距离不含偏置、LayerNorm与embedding。任务外距离相近，但融合效果差别很大，不能把距离本身当作保护效果。Distance-only pairing仅做参数消融，没有发布或分类实测，空项不填零。
 
 ## 12. 最新Defense 2候选：任务内外与联合补偿消融
 
@@ -196,7 +199,7 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。其余五个数据集未评价，
 |---|---|
 | TA + original AGA | Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. |
 | 防御一 | MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. |
-| Defense 2 | Effective fixed data-free structural scheme verified on MNIST/DTD/SVHN. Task-SVD-guided construction and new method contribution remain under study. Later failed candidates and historical O/B/A/B task-bound failures remain distinct. |
+| Defense 2 | Fixed structural scheme verified on three protected tasks. A task-SVD-directed construction now has a complete MNIST native/TA/originalAGA check and a parameter-only distance ablation. New construction cross-task evidence,novelty and known-family recovery remain separate. |
 | PaRaMS | Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. |
 | MergeLock | Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. |
 | MergeGuard / ARF | Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. |

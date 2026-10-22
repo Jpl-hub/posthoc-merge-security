@@ -58,9 +58,16 @@
         "99.13 / 91.41",
         "99.01 / 91.59",
         "99.04 / 90.51"
+      ],
+      [
+        "Defense 2 (task-directed)",
+        "99.69",
+        "10.98 / 14.32",
+        "9.80 / 9.81",
+        "9.80 / 9.83"
       ]
     ],
-    "note": "M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Latest candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.",
+    "note": "M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Previous candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.",
     "colspec": "lrrrr"
   },
   {
@@ -788,20 +795,36 @@
         "10.09"
       ],
       [
-        "Latest compensation [F]",
+        "Previous compensation [F]",
         "0.49964",
         "11.85437",
         "99.69",
         "99.13",
         "99.04"
+      ],
+      [
+        "Distance-only pairing",
+        "2.96985",
+        "12.02151",
+        "--",
+        "--",
+        "--"
+      ],
+      [
+        "Task-directed pairing",
+        "2.70843",
+        "12.03349",
+        "99.69",
+        "10.98",
+        "9.80"
       ]
     ],
-    "note": "Same74 matrices and original expert-minus-base rank32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy, no novelty claim.",
+    "note": "Same74 matrices and original expert-minus-base rank32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy. Distance-only pairing is a parameter ablation,not a published/evaluated alternative; -- means no classification run. The task-directed release is selected before images; no novelty claim for standard symmetry/SVD/greedy alone.",
     "colspec": "lrrrrr"
   },
   {
     "key": "ablation",
-    "title": "Latest Defense 2 candidate: source-only ablations",
+    "title": "Previous Defense 2 candidate: source-only ablations",
     "headers": [
       "Counterfactual",
       "Correct",
@@ -861,7 +884,7 @@
       ],
       [
         "Defense 2",
-        "Effective fixed data-free structural scheme verified on MNIST/DTD/SVHN. Task-SVD-guided construction and new method contribution remain under study. Later failed candidates and historical O/B/A/B task-bound failures remain distinct."
+        "Fixed structural scheme verified on three protected tasks. A task-SVD-directed construction now has a complete MNIST native/TA/originalAGA check and a parameter-only distance ablation. New construction cross-task evidence,novelty and known-family recovery remain separate."
       ],
       [
         "PaRaMS",

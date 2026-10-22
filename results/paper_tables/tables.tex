@@ -16,9 +16,10 @@ O/B [H] & 99.71 & 78.77 / 62.94 & 79.53 / 65.82 & 77.85 / 61.42 \\
 A/B [H] & 99.65 & 91.07 / 77.46 & 85.42 / 75.50 & 79.20 / 69.84 \\
 Defense 2 (structure) [K] & 99.69 & 7.39 / 7.74 & 10.09 / 6.78 & 10.09 / 6.78 \\
 Defense 2 candidate (failed) [F] & 99.69 & 99.13 / 91.41 & 99.01 / 91.59 & 99.04 / 90.51 \\
+Defense 2 (task-directed) & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
 \bottomrule
 \end{tabular}
-\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Latest candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.\end{minipage}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Previous candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.\end{minipage}
 \end{table}
 
 \begin{table}[!htbp]
@@ -241,16 +242,18 @@ SVHN / MNIST & FP32 prefix; FP64 readout & Both & 92.50 / 99.37 & 92.50 / 99.37 
 Fixed model & Task-inside distance & Task-outside distance & Standalone M & TA M & AGA both M \\
 \midrule
 Global permutation [K] & 2.69895 & 11.86048 & 99.69 & 7.39 & 10.09 \\
-Latest compensation [F] & 0.49964 & 11.85437 & 99.69 & 99.13 & 99.04 \\
+Previous compensation [F] & 0.49964 & 11.85437 & 99.69 & 99.13 & 99.04 \\
+Distance-only pairing & 2.96985 & 12.02151 & -- & -- & -- \\
+Task-directed pairing & 2.70843 & 12.03349 & 99.69 & 10.98 & 9.80 \\
 \bottomrule
 \end{tabular}
-\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same74 matrices and original expert-minus-base rank32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy, no novelty claim.\end{minipage}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Same74 matrices and original expert-minus-base rank32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy. Distance-only pairing is a parameter ablation,not a published/evaluated alternative; -- means no classification run. The task-directed release is selected before images; no novelty claim for standard symmetry/SVD/greedy alone.\end{minipage}
 \end{table}
 
 \begin{table}[!htbp]
 \centering
 \small
-\caption{Latest Defense 2 candidate: source-only ablations}
+\caption{Previous Defense 2 candidate: source-only ablations}
 \label{tab:ablation}
 \begin{tabular}{lrrr}
 \toprule
@@ -277,7 +280,7 @@ Item & Status \\
 \midrule
 TA + original AGA & Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. \\
 Defense 1 & MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. \\
-Defense 2 & Effective fixed data-free structural scheme verified on MNIST/DTD/SVHN. Task-SVD-guided construction and new method contribution remain under study. Later failed candidates and historical O/B/A/B task-bound failures remain distinct. \\
+Defense 2 & Fixed structural scheme verified on three protected tasks. A task-SVD-directed construction now has a complete MNIST native/TA/originalAGA check and a parameter-only distance ablation. New construction cross-task evidence,novelty and known-family recovery remain separate. \\
 PaRaMS & Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. \\
 MergeLock & Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. \\
 MergeGuard / ARF & Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. \\
