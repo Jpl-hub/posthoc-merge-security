@@ -133,6 +133,43 @@ def verify(output):
         original_AGA_not_reimplemented=True,source_point_reselected=False,source_sha256=digest(__file__)))
     print('INDEPENDENT_LOCAL_EVAL_PASSED',len(rows),replays,flush=True)
 
+def report(output):
+    """Export matching Markdown/TeX from an independently verified evaluation."""
+    out=Path(output);meta=json.loads((out/'execution.json').read_text())
+    check=json.loads((out/'independent_validation.json').read_text())
+    assert meta['completed'] and check['status']=='passed'
+    assert check['predictions_sha256']==meta['predictions_sha256']==digest(out/'artifacts/predictions.pt')
+    rows=json.loads((out/'results.json').read_text())
+    lookup={(r['preset'],r['stage'],r['dataset']):r for r in rows}
+    values=[]
+    for stage,label in [('direct','TA'),('AGA_target_only','AGA target only'),('AGA_both','AGA both')]:
+        values.append([label]+[f"{100*lookup[p,stage,t]['top1']:.2f}" for t in ['MNIST','SVHN'] for p in ['original','released']])
+    headers=['Evaluation','MNIST unprotected','MNIST edited','SVHN unprotected','SVHN edited']
+    native=[lookup[p,'standalone','MNIST'] for p in ['original','released']]
+    note=(f"Standalone MNIST: {100*native[0]['top1']:.2f}% / {100*native[1]['top1']:.2f}%. "
+          f"Historical relative-gap result: {meta['utility_gate']['worst_relative_margin_drift']:.6g}; "
+          f"original task check passed: {meta['utility_gate']['passed']}. "
+          'TA coefficient 0.5; unchanged original AGA. This separately registered fixed-model diagnostic '
+          'does not repair the original task-check failure or establish a new defense. '
+          'The original construction used target training images, so this model is not data-free.')
+    md=['# Fixed-model TA and original AGA evaluation','',note,'','| '+' | '.join(headers)+' |','|---|---:|---:|---:|---:|']
+    md+=['| '+' | '.join(row)+' |' for row in values]
+    md+=['',f"Independent checks: {check['rows']} rows and {check['explicit_TA_full_model_replays']} scores replayed in their original batch contexts.",
+         f"Evaluation time: {meta['wall_seconds']:.2f}s; peak GPU memory: {meta['peak_gpu_bytes']/2**20:.1f} MiB. Verification cost is separate.",'']
+    (out/'summary.md').write_text('\n'.join(md))
+    tex=['\\begin{table}[t]','\\centering','\\small','\\begin{tabular}{lrrrr}','\\toprule',
+         ' & \\multicolumn{2}{c}{MNIST} & \\multicolumn{2}{c}{SVHN} \\\\',
+         'Evaluation & Unprotected & Edited & Unprotected & Edited \\\\','\\midrule']
+    tex+=[' & '.join(row)+' \\\\' for row in values]
+    tex+=['\\bottomrule','\\end{tabular}',
+          '\\caption{Fixed B10/B11 model, TA coefficient 0.5, original AGA. Accuracy (\\%). The historical task-gap check failed; this is a separate diagnostic with unchanged weights.}',
+          '\\label{tab:joint-response-diagnostic}','\\end{table}','']
+    (out/'table.tex').write_text('\n'.join(tex))
+    save_json(out/'table_provenance.json',dict(release_sha256=meta['release_sha256'],predictions_sha256=meta['predictions_sha256'],
+        input_sha256={p:digest(out/p) for p in ['protocol.json','results.json','execution.json','independent_validation.json']},
+        report_source_sha256=digest(__file__),new_GPU_forwards=0,new_weight_updates=0))
+
+
 if __name__=='__main__':
-    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');a=ap.parse_args()
-    verify(a.verify) if a.verify else run(a.protocol)
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--protocol');ap.add_argument('--verify');ap.add_argument('--report');a=ap.parse_args()
+    report(a.report) if a.report else verify(a.verify) if a.verify else run(a.protocol)
