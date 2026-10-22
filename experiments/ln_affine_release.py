@@ -456,7 +456,7 @@ def verify_cross_task(folder):
         order=None
         if cfg.get('prebuilt_orders'):
             ref=cfg['prebuilt_orders'][target];assert digest(ref['path'])==ref['sha256']
-            order=np.array(json.loads(Path(ref['path']).read_text())['task_aware']);np.testing.assert_array_equal(np.sort(order),np.arange(768))
+            order=np.array(json.loads(Path(ref['path']).read_text())[cfg.get('order_variant','task_aware')]);np.testing.assert_array_equal(np.sort(order),np.arange(768))
         for k,value in expert.state_dict().items():
             name=k.removeprefix('model.visual.');a=value.numpy()
             fixed=not k.startswith('model.visual.') or name.endswith(('attn.in_proj_bias','mlp.c_fc.bias'))
