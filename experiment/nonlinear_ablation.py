@@ -4,6 +4,7 @@ The source release,1024 indices and task basis are the frozen paper artifacts.
 Run from the repository root; original results are never overwritten.
 """
 
+import argparse
 import copy
 import json
 from pathlib import Path
@@ -14,11 +15,84 @@ import torch
 from _impl.data import dataset, make_loader, official_labels
 from _impl.evaluate import evaluate
 from _impl.io import digest
+from _impl.merge import parameter_hash
 from _impl.metrics import task_change
 from _impl.models import checked_models, initialize
 
 
+def retained_knowledge():
+    """Locate retained task ability using four fixed source-only weight groups."""
+    initialize()
+    output = Path("outputs/nonlinear_prefix_20261023/retained_knowledge")
+    output.mkdir(exist_ok=False)
+    records, raw = [], {}
+    for task, source in [("MNIST", "prefix"), ("SVHN", "svhn"), ("DTD", "dtd")]:
+        root = Path(f"outputs/nonlinear_{source}_20261023")
+        base, expert, head, pins = checked_models(task)
+        cal = torch.load(root / "calibration.pt", map_location="cpu", weights_only=False)
+        ids = cal["indices"]
+        labels = official_labels(task, True)[ids]
+        loader = make_loader(dataset(task, "data", expert.val_preprocess, True), ids)
+        original = expert.state_dict()
+        mlp = {k for k in original if ".mlp." in k}
+        readout = {"model.visual.proj", "model.visual.ln_post.weight", "model.visual.ln_post.bias"}
+        assert len(mlp) == 48 and readout <= original.keys()
+        for name, keys in [
+            ("Public_base", set()),
+            ("Expert_MLP", mlp),
+            ("Expert_readout", readout),
+            ("Expert_MLP_and_readout", mlp | readout),
+        ]:
+            model = copy.deepcopy(base)
+            model.load_state_dict(base.state_dict() | {k: original[k] for k in keys}, strict=True)
+            state_sha = parameter_hash(model.state_dict())
+            sink = []
+            evaluate(model, head, loader, "cuda", logit_sink=sink.append)
+            scores = torch.cat(sink).numpy()
+            correct = scores.argmax(1) == labels
+            records.append(
+                dict(
+                    target=task,
+                    group=name,
+                    n=len(ids),
+                    correct=int(correct.sum()),
+                    expert_tensors=len(keys),
+                    parameter_sha256=state_sha,
+                    checkpoint_sha256=pins,
+                    source_sha256=digest(root / "calibration.pt"),
+                    original_correct=int((cal["before"].argmax(1) == labels).sum()),
+                    per_class=[
+                        dict(
+                            class_id=c,
+                            n=int((labels == c).sum()),
+                            correct=int((correct & (labels == c)).sum()),
+                        )
+                        for c in range(scores.shape[1])
+                    ],
+                )
+            )
+            raw[task + "/" + name] = dict(scores=scores, labels=labels, indices=ids)
+            print(task, name, int(correct.sum()), len(ids), flush=True)
+    torch.save(raw, output / "scores.pt")
+    result = dict(
+        source_only=True,
+        expert_training_updates=0,
+        gradient_steps=0,
+        new_defense_weights=0,
+        image_forwards=sum(r["n"] for r in records),
+        raw_sha256=digest(output / "scores.pt"),
+        rows=records,
+        interpretation="Fixed subset hybrids,not additive attribution or new protected releases;no test/partner/AGA evaluation",
+    )
+    (output / "results.json").write_text(json.dumps(result, indent=2) + "\n")
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--retained-knowledge", action="store_true")
+    if parser.parse_args().retained_knowledge:
+        retained_knowledge()
+        return
     initialize()
     root = Path("outputs/nonlinear_prefix_20261023")
     out = root / "source_components"

@@ -65,42 +65,30 @@
     "task_direction_ablation_three_tasks": "results/task_directed_pairing/distance_ablation/other_tasks/tables.md",
     "modification_extent": "results/task_directed_pairing/amplitude_ablation/summary.md"
   },
-  "status": "Numerical Defense2:MNIST99.50 standalone,TA24.46,originalAGA13.02/13.09;fixed ablations/generalization/recovery queued",
-  "updated_utc": "2026-10-22T18:51:44.143857+00:00",
+  "status": "Numerical MNIST effect replicated;SVHN loses1.21pp,DTD retention fails;public MLP reset recovers94.47. Fixed pre-LN control complete;local-function target control running.",
+  "updated_utc": "2026-10-22T22:20:46.642794+00:00",
   "server": {
     "status": "connected",
     "GPU": "RTX3090",
     "ssh_control_socket": "/tmp/posthoc_3090_refactor.sock",
     "research_GPU_processes": 1,
-    "checked_at_utc": "2026-10-22T18:51:44.143857+00:00",
-    "storage": "Unique weights/raw scores3090 only;new ablation model files on system disk cache"
+    "checked_at_utc": "2026-10-22T22:20:46.642794+00:00",
+    "storage": "Only3090;system1.0GiB/data1.8GiB before local-function batch. New MNIST AGA stored system,other new points on data. Verified duplicate RESISC45 archive427389445bytes removed;no model/score deletion."
   },
   "automatic_continuation": true,
   "automation_status": "13-35 ACTIVE by explicit latest nine-hour request;fixed deadline,then pause",
   "research_jobs": [
     {
-      "PID": 20497,
-      "name": "MNIST no_task/no_prefix matched controls",
-      "state": "serial GPU batch",
-      "log": "outputs/nonlinear_prefix_20261023/ablation_queue.log"
+      "PID": 48657,
+      "name": "Fixed same-input local teacher function target;all3sources before validation",
+      "state": "constructing SVHN/DTD/MNIST serially",
+      "log": "outputs/nonlinear_prefix_20261023/local_function_sources.log"
     },
     {
-      "PID": 22376,
-      "name": "Same algorithm SVHN target",
-      "state": "waiting for controls",
-      "log": "outputs/nonlinear_svhn_20261023/after_ablation.log"
-    },
-    {
-      "PID": 22804,
-      "name": "Same algorithm DTD target512source/401heldout",
-      "state": "waiting for SVHN",
-      "log": "outputs/nonlinear_dtd_20261023/after_svhn.log"
-    },
-    {
-      "PID": 23206,
-      "name": "AGA standalone and public-module reset matched control",
-      "state": "waiting for generalization",
-      "log": "outputs/nonlinear_prefix_20261023/after_generalization.log"
+      "PID": 48917,
+      "name": "Same fixed points native/TA/originalAGA",
+      "state": "waiting all3frozen sources;no duplicate job",
+      "log": "outputs/nonlinear_prefix_20261023/local_function_evaluate.log"
     }
   ],
   "active_GPU_jobs": 1,
@@ -137,10 +125,17 @@
       "replay_max_error": 0.0,
       "new_teacher_training": 0,
       "novelty_established": false,
-      "other_target_tasks_evaluated": false
+      "other_target_tasks_evaluated": true
     },
     "novelty_established": false,
-    "generalization_pending": true
+    "generalization_pending": false,
+    "limitations": {
+      "cross_task": "Same rule SVHN97.46->96.25,DTD79.41->43.46;DTD retention failed",
+      "public_module_reset": "Only published/base plus known12MLP scope,no true task vector/images. Same operator on untreated/protected produces identical158tensors;AGA-target MNIST94.47",
+      "SVD_ablation": "No-SVD keeps99.52native/11.10AGA-target;task probe constraint enforced but classification benefit not established",
+      "coefficients": "Same point originalAGA-target49.65atTA.2,58.94atTA.8;13.02onlyTA.5",
+      "eight_expert": "TA.2 originalAGA-target MNIST50.35;only3datasets evaluated"
+    }
   },
   "comparisons": {
     "global_task_directed": "results/task_directed_pairing/summary.md;three targets and eight-expert setting,originalAGA effective,known-family public matching exactly recovers158tensors",
@@ -155,20 +150,33 @@
   },
   "data_policy": {
     "construction": "Target expert/public base/legitimate target train only;no partner/test/exposed-confirmation/witness construction or selection",
-    "SVHN": "results/nonlinear_svhn/evaluation_protocol.json:1024 train source,draw unseen512 after point frozen",
+    "SVHN": "Original confirmation512 included24 source overlaps after linked-root metadata exclusion bug;original retained,488 disjoint-only correction in heldout_overlap_correction.json. New pre-LN/local draws explicitly exclude source and linked roots.",
     "DTD": "results/nonlinear_dtd/evaluation_protocol.json:only913 train images outside historical confirmation;fixed512source/401heldout,heldout previously exposed as old fit,not globally fresh",
     "ablation": "Both fixed controls fully reported even when utility/source flags fail;no replacement of main357 based on scores"
   },
   "github_sync": {
     "status": "pending_connection",
     "last_verified_remote": "6c1ca1c40d23a42761314da386c2ff4b145e0de2",
-    "pending_local": "bf4f3c10e922f2ef30b1f4d297896edf615b579b",
+    "pending_local": "2d66f4504ae64c6895be38baa78e672c7f1ad3ff",
     "reason": "Plugin USER_NOT_LOGGED_IN,last real readback preserved,do not claim published"
   },
   "history": {
     "full_previous_state_commit": "bf4f3c10e922f2ef30b1f4d297896edf615b579b",
     "scientific_results_and_failures": "All original result directories and Git history retained",
-    "cleanup": "results/cleanup_20261022.json;no new framework or optimizer,one existing nonlinear function and optional component switches"
+    "cleanup": "results/cleanup_20261023.json;31500extracted image SHA matched redundant archive before removal"
   },
-  "next_action": "Finish fixed controls,SVHN/DTD and public known-module recovery;integrate numerical results in MD/TeX;necessary8expert setting next. Never retune main357 from partner/test. At deadline finish and pause13-35."
+  "next_action": "Finish already registered local-function control;collect all targets without selecting replacements. Independently recount new rows and integrate plain MD/TeX tables. No new optimizer or variant from test feedback. Fixed deadline02:00:56UTC.",
+  "completed_overnight": {
+    "components": "results/nonlinear_prefix/source_components/results.json;A-only/B-only/no-reconstruction collapse source,full compensation preserves1022/1024",
+    "ablations": "results/nonlinear_prefix/ablations;no_task/no_prefix complete,do not rerun",
+    "generalization": [
+      "results/nonlinear_svhn",
+      "results/nonlinear_dtd"
+    ],
+    "AGA_standalone": "99.44MNIST,results/nonlinear_prefix/AGA_native",
+    "public_reset": "results/nonlinear_prefix/public_reset",
+    "eight_expert": "results/nonlinear_prefix/eight_expert",
+    "coefficients": "results/nonlinear_prefix/coefficients",
+    "pre_LN": "results/nonlinear_pre_ln:all3complete;M99.52/TA26.22/AGA23.08;S96.18/AGA20.79;D40.43/AGA9.10;not a generalization solution"
+  }
 }
