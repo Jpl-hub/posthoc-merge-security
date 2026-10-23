@@ -1,8 +1,8 @@
 {
   "status": "frozen_three_task_Defense2_effective_in_two_and_eight_expert_originalAGA_known_family_recovery_limitation_retained",
-  "updated_utc": "2026-10-22T16:27:59.798536+00:00",
+  "updated_utc": "2026-10-22T17:03:47.964529+00:00",
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
-  "active_focus": "Complete fixed task/distance objectives at96/192/384 pairs;reuse0/384 results. This is the modification-extent ablation requested by the teacher,no new defense or parameter search.",
+  "active_focus": "Defense2 numerical changes and nonlinear cross-module compensation;global permutations retained as effective comparison.",
   "server": {
     "status": "connected",
     "server": "3090",
@@ -15,20 +15,10 @@
     "ssh_control_socket": "/tmp/posthoc_3090_refactor.sock"
   },
   "allow_4090": false,
-  "automatic_continuation": false,
-  "automation_status": "13-35 PAUSED by user instruction;do not create or reactivate scheduled continuations.",
-  "research_jobs": [
-    {
-      "status": "running",
-      "name": "fixed_amplitude_ablation",
-      "log": "outputs/task_direction_amplitude_20261023_run.log",
-      "protocol": "results/task_directed_pairing/amplitude_ablation/protocol.json",
-      "new_models": 4
-    }
-  ],
-  "active_GPU_jobs": [
-    "fixed_amplitude_ablation"
-  ],
+  "automatic_continuation": true,
+  "automation_status": "13-35 ACTIVE for latest user-requested nine-hour overnight window only",
+  "research_jobs": [],
+  "active_GPU_jobs": 0,
   "new_candidate": false,
   "protocol": {
     "parameter_budget": 0.5,
@@ -51,22 +41,17 @@
     "baselines": "Full-default PaRaMS retained as a primary paper baseline; its larger D is reported, not a reason to exclude it. D0.5 component ablations remain distinct."
   },
   "latest_experiment": {
-    "status": "completed_DTD_SVHN_fixed_distance_objective_classification_ablation",
-    "summary": "results/task_directed_pairing/distance_ablation/other_tasks/summary.md",
-    "new_original_AGA_calls": 2,
-    "expert_training_updates": 0,
-    "native_prediction_changes": 0,
-    "target_AGA_accuracy_percent": {
-      "DTD": {
-        "task_directed": 2.393617021276596,
-        "distance_only": 2.021276595744681
-      },
-      "SVHN": {
-        "task_directed": 6.445912722802705,
-        "distance_only": 8.516441303011678
-      }
+    "status": "completed_fixed_amplitude_and_three_task_objective_ablations",
+    "summary": "results/task_directed_pairing/amplitude_ablation/summary.md",
+    "MNIST_task_AGA_target_percent": {
+      "96": 12.7,
+      "192": 5.93,
+      "384": 9.8
     },
-    "conclusion": "Task direction reduces inside-parameter changes; classification advantage on MNIST/SVHN,not uniform overDTD. Existing effective releases unchanged."
+    "native_accuracy_percent": 99.69,
+    "new_AGA_calls": 4,
+    "training_updates": 0,
+    "conclusion": "Neither modification distance nor task-SVD benefit is uniform. Main384release retained;no result-based replacement."
   },
   "closed_recent_controls": {
     "structural_unit": "results/structural_unit_check/summary.md:task kept;TA/originalAGA no target protection.",
@@ -106,7 +91,7 @@
     "last_verified_remote_tree": "7860d52ccec0477b92305c1135e4c7c56b83ce10",
     "local_scientific_commit": "232e04bc2f555466f16d6d17ab0affe9d9eedb11"
   },
-  "next_action": "Finish and report every fixed96/192 objective control,update existingMD/TeX. Then extend the benchmark to remaining tasks;RESISC45/GTSRB test images are already present,Cars/EuroSAT/SUN397 still absent. No tuning from these outcomes.",
+  "next_action": "Same frozen numerical-compensation point: exploratory realTA0.5/originalAGA accuracy evaluation. Preserve oldR0.5 failure. Then resolve mechanism and position-aware public recovery;only justified new finite hypotheses, no further permutation variants.",
   "history": {
     "retained_remote_commit": "281be3fc01d6c63d6194c2ef4849bcdadcf1135a",
     "scope": "Former cumulative status objects only. Scientific results, frozen protocols, source history and failure evidence remain in their original paths.",
@@ -114,7 +99,7 @@
     "novelty_notes": "notes/phase2_related_work_and_novelty.md",
     "attack_review": "notes/phase3_attack_review.md"
   },
-  "continuation_mode": "Direct ongoing work in this conversation;latest user instruction replaces automatic time-window closeout.",
+  "continuation_mode": "Latest user explicitly requests nine hours overnight;15-minute heartbeat continues this conversation and pauses after window.",
   "teacher_alignment": "Latest three screenshots actually read. Concentrate core method; respect desired data-free distinction. Existing training-image constructions stay labeled data-assisted. Parameter-space smoothing/DP is an analogy, not a request for new privacy or robustness guarantees. User says leave others results aside.",
   "user_reporting_preference": "Lead with actual standalone, TA and originalAGA accuracies and name the exact release. Retain the effective7.39%/10.09% structure when discussing later failed candidates; separate efficacy, novelty and targeted recovery permissions. Plain Chinese, no invented labels or sweeping claim that allDefense2 failed.",
   "literature_review": "notes/parameter_scale_and_threat_model.md",
@@ -140,15 +125,15 @@
     "conclusion": "Large outside-energy fraction does not establish small original-coordinate task response. Synchronous whole-model compensation still preserves standalone function."
   },
   "paper_tables": {
-    "status": "completed_compiled_and_cross_format_verified",
+    "status": "completed_MD_TeX_desktop_compile_passed",
     "directory": "results/paper_tables",
     "markdown": "results/paper_tables/tables.md",
     "latex": "results/paper_tables/tables.tex",
-    "preview": "results/paper_tables/main.pdf",
+    "preview": "results/paper_tables/main.tex",
     "completion_inventory": "results/paper_tables/README.md",
-    "tables": 16,
-    "figures": 1,
-    "pdf_pages": 7,
+    "tables": 17,
+    "figures": 2,
+    "pdf_pages": null,
     "validation": "results/paper_tables/validation.json",
     "new_GPU_forwards": 0,
     "all_comparisons_complete": false,
@@ -161,12 +146,13 @@
     ],
     "fixed_rule_three_task_supplement": "results/residual_coordinate_control/other_tasks/summary.md",
     "full_default_baseline_supplement": "results/params_reference/other_tasks/summary.md",
-    "data_rows": 137,
+    "data_rows": 148,
     "task_directed_supplement": "results/task_directed_pairing/other_tasks/summary.md",
-    "selected_source_records": 523,
+    "selected_source_records": 578,
     "fixed_distance_ablation": "results/task_directed_pairing/distance_ablation/summary.md",
     "eight_expert_task_directed_supplement": "results/task_directed_pairing/eight_expert/summary.md",
-    "task_direction_ablation_three_tasks": "results/task_directed_pairing/distance_ablation/other_tasks/tables.md"
+    "task_direction_ablation_three_tasks": "results/task_directed_pairing/distance_ablation/other_tasks/tables.md",
+    "modification_extent": "results/task_directed_pairing/amplitude_ablation/summary.md"
   },
   "engineering_reference": {
     "status": "read_and_applied_without_new_framework",
@@ -564,5 +550,9 @@
     "GPU_validation": "results/engineering_refactor/GPU_validation.json",
     "pre_refactor_public_snapshot": "c44c1ff184b126dbec7c776c79f12c3ab144e2f7"
   },
-  "user_engineering_preference": "Keep a small set of useful checks; do not add audit entrypoints,repeat checks or stricter process gates without a concrete correctness need. Concentrate on method and actual standalone/TA/AGA accuracy."
+  "user_engineering_preference": "Keep a small set of useful checks; do not add audit entrypoints,repeat checks or stricter process gates without a concrete correctness need. Concentrate on method and actual standalone/TA/AGA accuracy.",
+  "overnight_window_utc": {
+    "start": "2026-10-22T17:00:56Z",
+    "end": "2026-10-23T02:00:56Z"
+  }
 }

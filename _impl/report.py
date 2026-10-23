@@ -755,43 +755,127 @@ def paper_tables(_source, output):
         geometry_rows,
         "Same 74 matrices and original expert-minus-base rank 32 right singular directions. Squared per-matrix relative norms are summed. These matrix-only distances exclude biases/LN/embeddings and are not the full-model distance. Comparable task-outside distances do not imply comparable protection. [K] Known symmetry; [F] failed efficacy. Distance-only pairing is a fixed control,not a replacement selected by accuracy; -- means no classification run. The task-directed release is selected before images; no novelty claim for standard symmetry/SVD/greedy alone.",
     )
+    distance_other = distance_root / "other_tasks"
     if distance_complete:
-        check = read(str(distance_path.with_name("independent_validation.json")))
-        assert check["status"] == "passed"
-        assert read(str(distance_root / "native/independent_validation.json"))["passed"]
         rows = []
-        for path, name, label in [
-            (str(pairing_path), "TaskDirected_MNIST", "Task-directed"),
-            (str(distance_path), "DistanceOnly_MNIST", "Distance-only"),
+        for target, partner, case in [
+            ("MNIST", "SVHN", "00_MNIST_SVHN"),
+            ("DTD", "MNIST", "00_DTD_MNIST"),
+            ("SVHN", "MNIST", "01_SVHN_MNIST"),
         ]:
-            for scope in scopes:
-                for task in ["MNIST", "SVHN"]:
-                    a = pick(
-                        path, defense="Unprotected", merger="TA", attack_scope=scope, dataset=task
-                    )
-                    b = pick(
-                        main,
-                        target="MNIST",
-                        partner="SVHN",
-                        defense="Unprotected",
-                        merger="TA",
-                        attack_scope=scope,
-                        dataset=task,
-                    )
-                    assert (a["correct"], a["n"]) == (b["correct"], b["n"])
-            rows.append(
-                [
-                    label,
-                    f"{acc(pick(path, defense=name, merger='Standalone', attack_scope='None', dataset='MNIST')):.2f}",
-                ]
-                + [pair(path, defense=name, merger="TA", attack_scope=scope) for scope in scopes]
+            left = (
+                pairing_path
+                if target == "MNIST"
+                else pairing_root / "other_tasks/evaluation/full" / case / "results.json"
             )
+            right = (
+                distance_path
+                if target == "MNIST"
+                else distance_other / "evaluation/full" / case / "results.json"
+            )
+            if not right.with_name("independent_validation.json").exists():
+                continue
+            assert read(str(right.with_name("independent_validation.json")))["status"] == "passed"
+            native = (
+                distance_root / "native/independent_validation.json"
+                if target == "MNIST"
+                else distance_other / "native" / target / "results.json"
+            )
+            assert read(str(native))["passed"]
+            for path, name, label in [
+                (str(left), "TaskDirected_" + target, "Task-directed"),
+                (str(right), "DistanceOnly_" + target, "Distance-only"),
+            ]:
+                for scope in scopes:
+                    for task in [target, partner]:
+                        a = pick(
+                            path,
+                            defense="Unprotected",
+                            merger="TA",
+                            attack_scope=scope,
+                            dataset=task,
+                        )
+                        b = pick(
+                            str(left),
+                            defense="Unprotected",
+                            merger="TA",
+                            attack_scope=scope,
+                            dataset=task,
+                        )
+                        assert (a["correct"], a["n"]) == (b["correct"], b["n"])
+                rows.append(
+                    [
+                        target + " / " + partner,
+                        label,
+                        f"{acc(pick(path, defense=name, merger='Standalone', attack_scope='None', dataset=target)):.2f}",
+                    ]
+                    + [
+                        pair(
+                            path, tasks=(target, partner), defense=name, merger="TA", attack_scope=s
+                        )
+                        for s in scopes
+                    ]
+                )
         table(
             "distance_ablation",
             "Fixed ablation of the task-direction objective",
-            ["Construction", "Standalone M", "TA M / S", "AGA target M / S", "AGA both M / S"],
+            ["Protected / partner", "Construction", "Standalone", "TA", "AGA target", "AGA both"],
             rows,
-            "Same target, base, rank, 74 matrices, greedy rule, TA0.5 and original AGA. The distance-only order was fixed before task-directed images; its classification run was registered after the main MNIST result. All scores are retained without selecting a replacement. This isolates the objective in this fixed family; it is not a seed study or universal security claim.",
+            "Same target, base, rank32,74 matrices,greedy rule,TA0.5 and originalAGA. All distance-only orders were fixed before main images; classification supplements were registered later. The SVD term does not improve every dataset. Full results are retained; no replacement selection or independent expert-seed claim.",
+        )
+    amplitude_root = pairing_root / "amplitude_ablation"
+    amplitude_path = amplitude_root / "evaluation/full/00_MNIST_SVHN/results.json"
+    amplitude_complete = amplitude_path.with_name("independent_validation.json").exists()
+    if amplitude_complete:
+        assert (
+            read(str(amplitude_path.with_name("independent_validation.json")))["status"] == "passed"
+        )
+        rows = []
+        points = [("Unprotected", 0, str(pairing_path), "Unprotected", None)]
+        for count in [96, 192, 384]:
+            for variant, label in [
+                ("task_aware", "Task-directed"),
+                ("distance_only", "Distance-only"),
+            ]:
+                if count == 384:
+                    path = str(pairing_path if variant == "task_aware" else distance_path)
+                    name = "TaskDirected_MNIST" if variant == "task_aware" else "DistanceOnly_MNIST"
+                    meta = (
+                        pairing_root / "construction/before_images.json"
+                        if variant == "task_aware"
+                        else distance_root / "construction/before_images.json"
+                    )
+                else:
+                    path, name = str(amplitude_path), f"Amplitude_{variant}_{count}"
+                    folder = str(count) if variant == "task_aware" else f"distance_only_{count}"
+                    meta = amplitude_root / "construction" / folder / "before_images.json"
+                    assert read(str(amplitude_root / "native" / folder / "results.json"))["passed"]
+                points.append((label, count, path, name, meta))
+        for label, count, path, name, meta in points:
+            distance = read(str(meta))["logical_parameter_distance"] if meta is not None else 0
+            rows.append(
+                [
+                    label,
+                    str(count),
+                    f"{distance:.3f}",
+                    f"{acc(pick(path, defense=name, merger='Standalone', attack_scope='None', dataset='MNIST')):.2f}",
+                ]
+                + [pair(path, defense=name, merger="TA", attack_scope=s) for s in scopes]
+            )
+        table(
+            "amplitude",
+            "Modification extent with the same fixed construction orders",
+            [
+                "Construction",
+                "Pairs",
+                "Distance",
+                "Standalone M",
+                "TA M / S",
+                "AGA target M / S",
+                "AGA both M / S",
+            ],
+            rows,
+            "MNIST protected,SVHN partner. Use the first96/192/384 disjoint swaps of each frozen22October trace;0/384 scores are reused. Four new controls,no new ordering,objective tuning or expert training. Distances use separate logical matrices and biases. These are extent controls in the prospective structural range,notD0.5 comparisons. Known-family recovery remains applicable.",
         )
     comp = read("results/mean_compensation/components.json")
     rows = []
@@ -881,6 +965,14 @@ def paper_tables(_source, output):
             "Parameter-only distance ablation retained.",
             "Fixed distance-objective classification ablation completed.",
         )
+    if (distance_other / "evaluation/full/01_SVHN_MNIST/independent_validation.json").exists():
+        coverage[2][1] += (
+            " The fixed objective classification ablation covers all three protected tasks."
+        )
+    if amplitude_complete:
+        coverage[2][1] += (
+            " Matching96/192/384-pair extent controls completed onMNIST;not independent seeds."
+        )
     if current_eight_complete:
         coverage[2][1] += (
             " The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets."
@@ -948,6 +1040,34 @@ def paper_tables(_source, output):
     fig.savefig(out / "comparison.png", dpi=220, bbox_inches="tight")
     plt.close(fig)
     figure = r"\begin{figure}[!htbp]\centering\includegraphics[width=\linewidth]{comparison.pdf}\caption{Two-expert TA0.5 before and after original AGA. Both protected and partner tasks are shown. Every bar is one fixed configuration; historical O/B and A/B task-bound failures remain labelled. Exact numbers appear in Table~\ref{tab:main}.}\label{fig:comparison}\end{figure}"
+    if amplitude_complete:
+        data = next(t["rows"] for t in tables if t["key"] == "amplitude")
+        fig, ax = plt.subplots(figsize=(5.4, 3.6), layout="constrained")
+        for label, color in [("Task-directed", "#2171b5"), ("Distance-only", "#d95f02")]:
+            selected = [r for r in data if r[0] in ["Unprotected", label]]
+            ax.plot(
+                [int(r[1]) for r in selected],
+                [float(r[5].split(" / ")[0]) for r in selected],
+                marker="o",
+                color=color,
+                label=label,
+            )
+        ax.set(
+            xlabel="Swapped coordinate pairs",
+            ylabel="Protected-task accuracy (%)",
+            xticks=[0, 96, 192, 384],
+            ylim=(0, 103),
+        )
+        ax.grid(axis="y", color=".9", linewidth=0.5)
+        ax.legend(frameon=False)
+        fig.savefig(
+            out / "amplitude.pdf",
+            metadata={"CreationDate": None, "ModDate": None},
+            bbox_inches="tight",
+        )
+        fig.savefig(out / "amplitude.png", dpi=220, bbox_inches="tight")
+        plt.close(fig)
+        figure += r"\begin{figure}[!htbp]\centering\includegraphics[width=0.75\linewidth]{amplitude.pdf}\caption{Modification extent on MNIST with SVHN as partner. Original AGA processes the protected expert before TA0.5. Each curve uses one fixed construction order;0/384 scores are reused. Standalone accuracy is99.69\% at every level. Full protected/partner results appear in Table~\ref{tab:amplitude}.}\label{fig:amplitude}\end{figure}"
     (out / "figure.tex").write_text(figure + "\n")
     md = [
         "# 论文实验表汇总",
@@ -1020,10 +1140,14 @@ def paper_tables(_source, output):
         ),
         "distance_ablation": (
             "固定消融：去除任务方向项",
-            "同一目标、基座、74矩阵、rank32及贪心规则，仅比较原构造目标。Distance-only顺序在主方法读图前已固定，分类消融在MNIST主结果后追加登记；不是所有消融均在主实验前登记。全部成绩保留，不按结果换发布；不把一个固定点当作所有排序的结论。",
+            "三任务使用相同的目标、基座、74矩阵、rank32及贪心规则，仅去除任务方向项。对照顺序在主方法读图前已固定，分类补测随后登记。SVD并非每个任务都更好；完整目标和伙伴成绩保留，不按结果换发布。",
+        ),
+        "amplitude": (
+            "修改幅度：同一固定顺序的不同交换数量",
+            "保护MNIST，伙伴SVHN；融合列为目标 / 伙伴准确率。沿用各固定顺序的前96、192、384对交换，0和384结果直接复用，只新增四个对照。参数距离按逻辑矩阵及各偏置计算；保持独立能力，不按成绩选顺序或幅度。已知方式恢复的限制仍保留。",
         ),
         "ablation": (
-            "最新Defense 2候选：任务内外与联合补偿消融",
+            "旧候选：任务内外与联合补偿消融",
             "固定512张构造训练图，不是测试结果。仅矩阵任务内、仅任务外、全部矩阵、其他参数与完整联合共五项。完整联合保持原能力，但真实AGA后融合仍接近99%；没有根据消融改参数。",
         ),
         "coverage": (
@@ -1094,6 +1218,15 @@ def paper_tables(_source, output):
         "目标任务和伙伴任务分别显示；每个柱来自固定配置，未添加不存在的随机重复误差条。详细数值见表1。",
         "",
     ]
+    if amplitude_complete:
+        md += [
+            "## 图2. 修改幅度与原版AGA后的准确率",
+            "",
+            "![修改幅度](amplitude.png)",
+            "",
+            "MNIST保护、SVHN伙伴，TA0.5；原版AGA只处理保护专家。沿用同一固定构造顺序，独立准确率均99.69%。完整目标与伙伴成绩见修改幅度表。",
+            "",
+        ]
     (out / "tables.md").write_text("\n".join(md) + "\n")
     (out / "tables.tex").write_text("\n".join(tex) + "\n")
     (out / "table_data.json").write_text(json.dumps(tables, ensure_ascii=False, indent=2) + "\n")
@@ -1103,7 +1236,7 @@ def paper_tables(_source, output):
 
 - [Markdown总表](tables.md)：主实验、三个保护任务、不同恢复权限、融合方法、八专家三数据集、任务内外与补偿消融、缺项清单。
 - [TeX表格](tables.tex)：可取对应table段落放入论文，需要booktabs、array；宽表放在两栏论文时改为table*。
-- [完整TeX预览入口](main.tex)与[PDF预览](main.pdf)。图的[TeX片段](figure.tex)、[PDF](comparison.pdf)和[PNG](comparison.png)同数据生成。
+- [完整TeX预览入口](main.tex)（当前源码已通过桌面编译）。图的[TeX片段](figure.tex)、[PDF](comparison.pdf)和[PNG](comparison.png)同数据生成。
 - [数值与来源](table_data.json)、[输入哈希与原记录行号](table_sources.json)。新制表没有重跑GPU，也没有冒充新一轮原始分数复核。
 
 已完成：三个保护任务的相同TA／原版AGA下无保护、Defense1、完整默认PaRaMS和有效Defense2结构方案对比；对角适配、位置已知偏置清理、MNIST固定数据蒸馏、TIES/DARE/NUFILT/ProDistill、八专家参与的三任务评价及Unmask公式适配。
@@ -1159,6 +1292,12 @@ def paper_tables(_source, output):
             p.read_text()
             + "\n同一任务方向防御二的[八专家TA0.2结果](../task_directed_pairing/eight_expert/summary.md)已完成：三个数据集及原版AGA仅保护专家，保持原发布与已知方式恢复限制；不报完整八任务平均。\n"
         )
+    if amplitude_complete:
+        p = out / "README.md"
+        p.write_text(
+            p.read_text()
+            + "\n[修改幅度与任务方向对照](../task_directed_pairing/amplitude_ablation/summary.md)已完成：同一固定顺序的96／192／384对交换，两种目标分别报告，0与384模型复用；不作为独立种子或新防御。\n"
+        )
     manifest = dict(
         status="completed_table_collection",
         report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -1182,6 +1321,7 @@ def paper_tables(_source, output):
                 "comparison.pdf",
                 "comparison.png",
             ]
+            + (["amplitude.pdf", "amplitude.png"] if amplitude_complete else [])
         },
     )
     (out / "table_sources.json").write_text(
