@@ -1,0 +1,29 @@
+{
+  "rule": "Exactly the independently frozen MNIST27eb construction on two additional targets. Same12MLP/rank32/damping.01/A2B4 and source indices as earlier three-task controls. Original full expert frozen teacher;other107stored tensors reset to public base before same compensation.",
+  "construction_access": "Only each target expert/public base/its legal training source. No partner/test/heldout selection or repair.",
+  "targets": {
+    "SVHN": {
+      "source_n": 1024,
+      "confirmation_seed": 2026102313,
+      "confirmation_n": 512,
+      "fixed_other_D": 0.14510119754760423,
+      "global_D_max": 15.492612896394519
+    },
+    "DTD": {
+      "source_n": 512,
+      "heldout_n": 401,
+      "globally_fresh": false,
+      "heldout_note": "Same401targettrain images previously exposed in old fit,disjoint from source;not a fresh draw",
+      "fixed_other_D": 0.13196011200933588,
+      "global_D_max": 15.492495392000654
+    }
+  },
+  "evaluation": "Freeze both sole source points before heldout/full-native/TA0.5 and originalAGA target/both. Same.25pp source flag/.5pp accuracy reference/strictR.5 reported separately;all finite complete in-range points observed,none chosen or retuned from outcomes.",
+  "serialization": "Standard changed-tensor edits relative to public base;full reconstructed state checked exactly equal before save. Same model,about51tensors instead of storing public arrays again. Old27eb and357artifacts unchanged.",
+  "recovery": "Original author AGA unchanged;known-module recovery remains a separate condition. This batch does not claim all adaptive attacks solved.",
+  "resources": "Only3090. Two source patches on data disk;SVHN AGA on system cache and DTD AGA on data;raw scores retained. Refuse new case after02:00:56UTC.",
+  "novelty": "Localization,reflection,SVD andridge known;composition still requires evidence and novelty review.",
+  "original_MNIST_point": "27ebc7eacfe0a4afc4277f7f3f35b01c2cf0395c068bfe439dee114ac6256b20",
+  "new_optimizer_steps": 0,
+  "original_expert_updates": 0
+}
