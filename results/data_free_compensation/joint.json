@@ -79,5 +79,66 @@
       }
     },
     "distinction": "Author Attention fits public anchors;MLP only permutes A/a/B. This new computation fits the frozen teacher nonlinear response with one constrained B for two image-free probe distributions. No new AGA calls or accuracy claims."
+  },
+  "two_state_algebra": {
+    "scope": "Standard finite compatibility calculation,not a CLIP defense experiment",
+    "free_features": 7,
+    "output": 3,
+    "source_vectors": 13,
+    "seed": 20261023,
+    "q": 0.5,
+    "activation": "QuickGELU1.702",
+    "design": "K=[H,qH];T=[0,-2BH]",
+    "conditional_target": "Same activation at endpoints;native unchanged while raw block midpoint targets negative teacher output",
+    "exact_minimum_loss_per_teacher_energy": 3.2,
+    "direct_lstsq_loss": 3.2,
+    "projection_residual_loss": 3.1999999999999993,
+    "maximum_coefficient_identity_error": 1.3322676295501878e-15,
+    "real_images": 0,
+    "new_CLIP_models": 0,
+    "restriction": "An unchanged activation makes this pair of raw block targets incompatible. Not a complete normalized readout or unknown-partner impossibility theorem."
+  },
+  "fixed_readout_condition": {
+    "status": "read_only_fixed_readout_condition",
+    "target": "MNIST",
+    "checkpoint_sha256": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "L_shape": [
+      512,
+      767
+    ],
+    "rank": 512,
+    "rank_tolerance": 1.2905500166835332e-13,
+    "singular_min": 0.0002973215006158205,
+    "singular_max": 0.7577732169803061,
+    "origin_minimum_coordinate_norm": 24.094409935028484,
+    "allowed_radius": 27.712812921102035,
+    "LN_epsilon": 1e-05,
+    "origin_reconstruction_error": 5.218048215738236e-15,
+    "interior_condition": true,
+    "real_images": 0,
+    "classification_heads": 0,
+    "partner_models": 0,
+    "new_model_points": 0,
+    "parameter_updates": 0,
+    "model_image_forwards": 0,
+    "limitation": "Fixed original final LN/P only. Does not establish upper-network reachability,joint B compatibility,task function retention or TA/AGA protection. Mathematical output preimages are not released weights.",
+    "initial_serialization_failure": "outputs/2026-10-23_research/readout_direction_condition.serialization_failure.json",
+    "initial_seconds": null,
+    "example_n": 32,
+    "target_feature_scale": 0.00026895725141303856,
+    "maximum_normalized_input_norm": 24.095218419725754,
+    "FP64_maximum_direction_error": 6.334692077269908e-11,
+    "FP32_maximum_direction_error": 0.006589779543873905,
+    "minimum_FP32_antipodal_cosine": 0.9999782874027815,
+    "pre_LN_input_norm_min": 0.15423997845666618,
+    "pre_LN_input_norm_max": 0.15424212153848502,
+    "FP32_reference_passed": false,
+    "seconds": 2.8588905509968754,
+    "source_sha256": {
+      "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+    },
+    "device": "CPU",
+    "arithmetic": "NumPyFP64 analytic LN and PyTorchFP32 layer_norm/projection;not complete-model or image evaluation"
   }
 }
