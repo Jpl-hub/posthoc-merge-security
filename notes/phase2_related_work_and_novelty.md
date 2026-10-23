@@ -960,3 +960,11 @@ n维均匀球内前两个正交坐标的平方半径t服从Beta(1,n/2)，角度�
 核读[Nasty Teacher v1 §3.2/4.4](https://arxiv.org/html/2105.07381v1)：保留自身分类能力同时破坏后续知识传递已有研究，但其训练教师/真实标签条件不等于当前冻结专家、无图后处理。未取得/运行本轮固定源码，不把反蒸馏名称、负余弦或输出差异本身当原创。
 
 对当前研究，最终单位特征反向仅作为有符号分类损害的条件性目标；普通Cauchy-Schwarz间隔界、线性联合插值、伪逆有限可实现性和LN逆像均不是新理论。实际原结构[CLIP读出](https://github.com/openai/CLIP/blob/main/clip/model.py)先ln_post再proj；计算实际读取固定MNIST检查点中的gamma/beta/P/epsilon，未替换为该活动main版本。精确读出可表示目标，不代表共同MLP参数、真实任务或原AGA后融合已能实现；具体数值与FP32参考失败见phase2_coupling末段及既有joint.json。
+
+### HNC：保持输出的参数变化已有直接研究
+
+新核读[Hessian Null Space Continuation v1 §2、§4、附录A/B/G](https://arxiv.org/html/2609.38081v1)：沿函数匹配损失的低敏感方向移动，再补偿输出并更新局部近似。ViT实验使用512张Places365真实图，保持logits，改变中间表示；这不等于权重独立构造，也没有提供融合/AGA保护证据。无标签不等于不使用图片，内部表示改变也不能替代保护目标。
+
+实际读回[官方固定提交8fa8e944](https://github.com/Ann-Huang-0/hessian-null-space-continuation/tree/8fa8e94459fde94fb130e7c0af833d1e1cc21497)的curvature.py、directions.py、walk.py、problem.py，四个blob和SHA在joint.json。核心用JVP/VJP计算J^T J，CG做软投影，输出恢复梯度另去掉已走方向分量，以回溯和损失上限接受步骤。未安装、执行或声称复现作者ViT；本轮只读核心实现。
+
+因此“沿低敏感方向改变参数再补偿”、函数匹配、CG及逐步延拓都不能作为本项目新颖性。与当前问题有关的区分是：平方匹配损失的锚点Hessian为J^T J，而参数混合后的方向改变还涉及输出向量自身的H_f[v,v]及有限余项。后者用普通Taylor展开可写清，本轮只做固定末块数值核对，不声称提出新理论。仍需无图片条件下的有限功能保持、实际保护及任务SVD贡献；不能直接把HNC换名加一个距离目标当成老师要的防御二。
