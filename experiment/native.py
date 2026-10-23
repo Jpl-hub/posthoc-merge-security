@@ -83,7 +83,7 @@ def run(args):
             ),
         )
         print(json.dumps(row), flush=True)
-        if not row["passed"]:
+        if not row["passed"] and args.max_accuracy_loss_pp is None:
             break
 
 
