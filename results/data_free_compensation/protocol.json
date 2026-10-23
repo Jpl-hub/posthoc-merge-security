@@ -1,0 +1,80 @@
+{
+  "status": "registered_before_real_weight_read",
+  "registered_utc": "2026-10-23T04:14:50.970241+00:00",
+  "question": "Can nonlinear QuickGELU feature moments for explicit data-free LN/task-SVD probe distributions be computed consistently from model parameters? Not a defense or classification experiment.",
+  "target": "MNIST",
+  "checkpoint": {
+    "path": "ViT-B-32/MNIST/finetuned.pt",
+    "id": "1IYE99VnUcKso2UOUYRfuts8MtrZ7IdqU",
+    "sha256": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "bytes": 453892355
+  },
+  "basis": {
+    "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+    "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+  },
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "MLP_rows": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "distributions": [
+    "uniform_full_LN_ball",
+    "uniform_task_SVD_LN_ball"
+  ],
+  "radius": "sqrt(768);open ball in normalized pre-affine LN coordinates",
+  "task_domain": "G=diag(gamma)^-1 V_A;N spans null(1^T G);Q=orth(G N). Thus Q is centered and diag(gamma)Q lies in span(V_A). Use complete resulting subspace,not selected directions.",
+  "moment_orders": [
+    [
+      64,
+      128
+    ],
+    [
+      128,
+      256
+    ]
+  ],
+  "moment_order_scope": "Fixed numerical convergence check;not model/defense parameter search",
+  "convergence_relative_tolerance": 1e-06,
+  "mc_seed": 2026102307,
+  "mc_n": 65536,
+  "mc_batch": 4096,
+  "mc_check": "Independent full-dimensional normalized Gaussian and U^(1/n) radius;all 9x9 augmented moments;report max deviation and deviations beyond6SE+1e-6,not a rigorous integration certificate",
+  "source_sha256": {
+    "_impl/subspace.py": "1be2dd5101fd7e5bee95f66ef381293d39c93dc248297bf53adace808c9fc5a2",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/defenses.py": "5dc17e178076cec0a5872cf5ea19a340e51f1944485eaa2415f5bde9016557d2",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "weight_edits": 0,
+  "real_images": 0,
+  "training_cache_reads": 0,
+  "classification_heads": 0,
+  "teacher_updates": 0,
+  "new_defense_points": 0,
+  "TA_AGA": 0,
+  "result_path": "outputs/2026-10-23_research/data_free_moments/results.json",
+  "limitations": "Neither probe distribution is asserted to be the true task distribution. First8-neuron moment matrices do not establish full3072-unit numerical stability,task accuracy or recovery protection. No optimizer or fit to create a release.",
+  "execution_source_sha256": "9d5fe51cdaa4b6474e0396eb3d1fdcb446c997b915bfafadf03d35d4dec3f713",
+  "execution_source_path": "outputs/2026-10-23_research/data_free_moments_calculation.py"
+}

@@ -13,6 +13,40 @@ from .metrics import logical_parameter_distance
 from .models import checked_models
 
 
+def mlp_ball_moments(gram, bias, dimension, radius, radial_order=64, angular_order=128):
+    """QuickGELU feature moments on a specified uniform ball, including a constant.
+
+    gram contains inner products of the input rows in that ball's coordinates.
+    This is a numerical integral for an explicit probe distribution, not the
+    model's unknown task distribution or a guarantee about classification.
+    """
+    from scipy.special import expit, roots_jacobi
+
+    gram, bias = np.asarray(gram, dtype=np.float64), np.asarray(bias, dtype=np.float64)
+    if dimension < 2 or radius <= 0 or gram.shape != (len(bias), len(bias)):
+        raise ValueError("Expected a positive-radius ball of dimension >=2 and matching moments")
+    scale = np.sqrt(np.maximum(gram.diagonal(), 0))
+    denominator = np.outer(scale, scale)
+    correlation = np.divide(gram, denominator, out=np.zeros_like(gram), where=denominator > 0)
+    correlation = np.clip(correlation, -1, 1)
+    transverse = np.sqrt(np.maximum(1 - correlation**2, 0))
+    nodes, weights = roots_jacobi(radial_order, dimension / 2 - 1, 0)
+    weights /= weights.sum()
+    radii = radius * np.sqrt((nodes + 1) / 2)
+    angle = 2 * np.pi * np.arange(angular_order) / angular_order
+    cosine, sine = np.cos(angle), np.sin(angle)
+    kernel, mean = np.zeros_like(gram), np.zeros_like(bias)
+    for i in range(len(bias)):
+        direction = correlation[i, :, None] * cosine + transverse[i, :, None] * sine
+        for r, w in zip(radii, weights):
+            first = bias[i] + r * scale[i] * cosine
+            second = bias[:, None] + r * scale[:, None] * direction
+            left, right = first * expit(1.702 * first), second * expit(1.702 * second)
+            kernel[i] += w * (left * right).mean(1)
+            mean[i] += w * left.mean()
+    return np.block([[(kernel + kernel.T) / 2, mean[:, None]], [mean[None, :], np.ones((1, 1))]])
+
+
 def greedy_task_pairs(total, quadratic, h, s, penalty, tolerance):
     """Disjoint swaps maximizing the exact finite gain in T-penalty*I."""
     d = len(total)
