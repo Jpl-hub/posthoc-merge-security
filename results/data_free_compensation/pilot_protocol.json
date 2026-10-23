@@ -1,0 +1,59 @@
+{
+  "status": "registered_before_full_width_execution",
+  "registered_utc": "2026-10-23T06:19:27.826639+00:00",
+  "question": "Can a finite full-width A change be jointly compensated by B on two explicit image-free LN domains, using variable projection rather than a fixed reflection? Single feasibility pilot,not a completed defense.",
+  "target": "MNIST",
+  "layer": 0,
+  "hidden_width": 3072,
+  "basis": {
+    "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+    "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+  },
+  "checkpoint": {
+    "path": "ViT-B-32/MNIST/finetuned.pt",
+    "id": "1IYE99VnUcKso2UOUYRfuts8MtrZ7IdqU",
+    "sha256": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "bytes": 453892355
+  },
+  "source_n": 8192,
+  "confirmation_n": 8192,
+  "seed": 2026102317,
+  "confirmation_seed": 2026102318,
+  "source_domains": [
+    "uniform_LN_task_SVD_intersection_ball",
+    "uniform_full_LN_ball"
+  ],
+  "domain_definition": "G=diag(gamma)^-1 V_A;N spans null(1^T G);Q=orth(G N). Thus Q is centered and diag(gamma)Q lies in span(V_A). Use complete resulting subspace,not selected directions.",
+  "radius": "sqrt(768) in normalized centered pre-affine LN coordinates;task dimension31/full767",
+  "parameterization": "deltaA=(I-U_AU_A.T)Z(I-RR.T), R=orth([V_A,beta]);normalize deltaA to fixed relative norm1. InitialZ is the projection of originalA. Biases frozen. B correction lies in V_B complement. SameB for both domains.",
+  "relative_A_distance": 1.0,
+  "relative_B_bound": 4.0,
+  "combined_parameter_bound": "sqrt17;prospective single-block range,not historicalD0.5 control",
+  "ridge": 0.01,
+  "optimizer": {
+    "maxiter": 20,
+    "maxfun": 60,
+    "maxls": 8,
+    "maxcor": 5,
+    "ftol": 1e-10,
+    "gtol": 1e-08
+  },
+  "optimizer_scope": "Standard SciPy L-BFGS-B on sphere-normalized A;envelope gradient and exact shared convex B. No new optimizer or novelty claim.",
+  "probe_relative_RMS_limit": 0.01,
+  "acceptance": "Report both initial/final source errors and independent8192-vector errors after unique point freeze. ProbeRMS1% and Bbound are only feasibility criteria,not a true task or security guarantee. Failure preserved;no seed/rank/layer/range retries. No real-image or partner information used for optimization.",
+  "output": "/root/posthoc_data_free_joint_20261023",
+  "real_images": 0,
+  "training_cache_reads": 0,
+  "classification_heads": 0,
+  "teacher_updates": 0,
+  "source_sha256": {
+    "_impl/subspace.py": "ac27fb8fec5f95e377f179cb7437ab345c4ba6cd48c2feac280f49309ab41e46",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "outputs/2026-10-23_research/data_free_joint_calculation.py": "6366634377fe96270d9d7a4b273a76f2a6c86c5df8ec8fc5849d353b98ea4959"
+  },
+  "limitations": "One-block feasibility calculation,not a whole-model release or accuracy result. Full task preservation and TA/originalAGA remain separate. Current old data-assisted variants remain closed.",
+  "origin": "Current novel combination under investigation;SVD,variable projection,sphere constraints and minimax are standard tools. Does not retry any old fixed reflection point."
+}
