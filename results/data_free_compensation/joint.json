@@ -1,0 +1,83 @@
+{
+  "nonlinear": {
+    "first_distribution_weight": 0.0,
+    "normalized_squared_errors": [
+      0.11547294770008905,
+      0.13936244806215214
+    ],
+    "relative_correction_norm": 0.7998276528833722,
+    "objective": 0.1457596908053214,
+    "primal_dual_gap": -3.0531133177191805e-16
+  },
+  "independent_objective": 0.14575969080531814,
+  "singular": {
+    "first_distribution_weight": 0.7986666666666671,
+    "normalized_squared_errors": [
+      0.35999999999999965,
+      0.36000000000000154
+    ],
+    "relative_correction_norm": 0.19999999999999934,
+    "objective": 0.36040000000000155,
+    "primal_dual_gap": 1.5543122344752192e-15
+  },
+  "reduced_directional_derivative_error": 2.1759329581205744e-11,
+  "status": "synthetic_convex_inner_step_checked_not_a_defense",
+  "updated_utc": "2026-10-23T05:53:14.274708+00:00",
+  "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
+  "seed": 20261023,
+  "ridge": 0.01,
+  "source_sha256": {
+    "_impl/subspace.py": "27fc8efa13174e8be23574502f6427a002c4a9beaf48e6e45130a429e32e93c8",
+    "tests/test_refactor.py": "2018845468d34f4f2f90b0706dcda45a6ed142f1f2b8e00d71a5fdc3d84be4d4"
+  },
+  "runtime": {
+    "python": "3.10",
+    "numpy": "1.21.5",
+    "scipy": "1.8.0"
+  },
+  "wall_seconds": 0.44081195900798775,
+  "validation": {
+    "actual_test_body_directly_called": true,
+    "pytest_run": false,
+    "independent_direct_residual_SLSQP": true,
+    "task_B_constraint_residual_less_than": 1e-12,
+    "direct_loss_vs_moment_less_than": 1e-12,
+    "unchanged_A_returns_exactly_unchanged_B": true,
+    "singular_covariance_analytic_solution": true,
+    "existing_subspace_functions_AST_unchanged": [
+      "mlp_ball_moments",
+      "greedy_task_pairs",
+      "task_pairing",
+      "build_basis"
+    ]
+  },
+  "real_images": 0,
+  "CLIP_weight_reads": 0,
+  "new_defense_points": 0,
+  "new_classification_results": 0,
+  "limits": "Only the shared convex output step for a fixed A prime. No joint A optimization,full-width conditioning,native accuracy,TA or AGA protection established.",
+  "independent_objective_difference": 3.247402347028583e-15,
+  "AGA_review": {
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "paper": "https://arxiv.org/html/2606.30360v1",
+    "sections": [
+      "2.2",
+      "3.1",
+      "3.2",
+      "3.3",
+      "5.1",
+      "7"
+    ],
+    "code": {
+      "utils_attack_B32": {
+        "git_blob": "5a2a530836e2493f99892d36884b94b30d15dbdf",
+        "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+      },
+      "main_task_arithmetic_attack_B32": {
+        "git_blob": "239d2c73f4ccaa325c9e0bd514bf355a0b3d9f3f",
+        "sha256": "6da026351bb39f53f316d56ed1a55efe12eb00be90737e8d5ee3152ce3cab89a"
+      }
+    },
+    "distinction": "Author Attention fits public anchors;MLP only permutes A/a/B. This new computation fits the frozen teacher nonlinear response with one constrained B for two image-free probe distributions. No new AGA calls or accuracy claims."
+  }
+}

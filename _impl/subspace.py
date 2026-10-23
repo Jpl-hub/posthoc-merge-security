@@ -1,4 +1,4 @@
-"""Task-matrix SVD and the fixed finite disjoint-swap objective."""
+"""Task SVD probes, finite permutation costs and nonlinear compensation."""
 
 import json
 import time
@@ -45,6 +45,60 @@ def mlp_ball_moments(gram, bias, dimension, radius, radial_order=64, angular_ord
             kernel[i] += w * (left * right).mean(1)
             mean[i] += w * left.mean()
     return np.block([[(kernel + kernel.T) / 2, mean[:, None]], [mean[None, :], np.ones((1, 1))]])
+
+
+def mlp_minimax_compensation(moments, B, free, ridge):
+    """One B correction for two probe distributions, with fixed A' and bias.
+
+    Each moment tuple is (E[hh.T], E[h'h'.T], E[h'h.T]); h excludes
+    the constant. Orthonormal columns of free span allowed B changes.
+    This solves only the convex output step, not a joint A/B defense.
+    """
+    B, free = np.asarray(B, dtype=float), np.asarray(free, dtype=float)
+    if len(moments) != 2 or ridge <= 0 or not np.allclose(free.T @ free, np.eye(free.shape[1])):
+        raise ValueError("Expected two distributions, positive ridge and orthonormal free basis")
+    quadratic, cross, constant = [], [], []
+    for tt, ss, st in moments:
+        energy = np.sum((B @ tt) * B)
+        if energy <= 0:
+            raise ValueError("Teacher response energy must be positive")
+        quadratic.append(free.T @ ss @ free / energy)
+        cross.append(B @ (st.T - ss) @ free / energy)
+        constant.append(np.sum((B @ (tt + ss - st - st.T)) * B) / energy)
+    quadratic, cross, constant = map(np.asarray, (quadratic, cross, constant))
+    regularizer = ridge / np.square(B).sum()
+
+    def solve(weight):
+        mixture = np.array([weight, 1 - weight])
+        system = np.einsum("d,dij->ij", mixture, quadratic)
+        target = np.einsum("d,doj->oj", mixture, cross)
+        correction = np.linalg.solve(system + regularizer * np.eye(len(system)), target.T).T
+        losses = constant - 2 * np.einsum("oj,doj->d", correction, cross)
+        losses += np.einsum("oi,dij,oj->d", correction, quadratic, correction)
+        dual = mixture @ constant - np.sum(correction * target)
+        return correction, losses, float(dual)
+
+    low, high = 0.0, 1.0
+    if np.diff(solve(low)[1])[0] >= 0:
+        high = low
+    elif np.diff(solve(high)[1])[0] <= 0:
+        low = high
+    for _ in range(50 if high > low else 0):
+        weight = (low + high) / 2
+        if np.diff(solve(weight)[1])[0] < 0:
+            low = weight
+        else:
+            high = weight
+    weight = (low + high) / 2
+    correction, losses, dual = solve(weight)
+    penalty = regularizer * np.square(correction).sum()
+    return B + correction @ free.T, dict(
+        first_distribution_weight=weight,
+        normalized_squared_errors=losses.tolist(),
+        relative_correction_norm=float(np.linalg.norm(correction) / np.linalg.norm(B)),
+        objective=float(losses.max() + penalty),
+        primal_dual_gap=float(losses.max() + penalty - dual),
+    )
 
 
 def greedy_task_pairs(total, quadratic, h, s, penalty, tolerance):
