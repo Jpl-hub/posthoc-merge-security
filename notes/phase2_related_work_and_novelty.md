@@ -920,3 +920,12 @@ REPAIR官方固定源码补充：[`e90263d`](https://github.com/KellerJordan/REP
 输入域还须与实际LN一致：若x=gamma⊙u+beta，则u均值为0、||u||<sqrt(d)（epsilon>0）。仅在此域定义的参数探针可说明相应响应，不能把高斯输入分布或任务奇异向量解释成真实任务分布；nu上的均方误差也不是完整任务准确率或AGA保护的保证。这里是核对补偿是否可计算的一步，不作为全部防御的新门槛，不重启已关闭的GELU行反射／缩放／换序点。
 
 NumPy固定种子20261023、5输入／9隐藏／4输出、193个纯随机向量核对上述公式，直接损失10.838265119991346，Gram公式10.838265119991393，差4.62e-14，正规方程残差5.36e-14。只验证代数，0真实图片、0CLIP模型、0新防御／TA／AGA。初次SciPy导入因本地NumPy二进制不匹配停止；改用NumPy直接计算QuickGELU后核对，不改环境或阈值。当前仍没有新的无数据数值防御效果。
+
+
+### 参数探针与实际LayerNorm域的交集
+
+为让任务探针有明确的输入含义，设LN gain为Gamma（各分量非零）、bias为beta，任务A的右基为V。先取G=Gamma^{-1}V，再令N为1^T G的完整核基、Q=orth(GN)。于是Q^T Q=I、1^T Q=0，且Gamma Q的列空间落在V内。取u在半径sqrt(d)的开球均匀分布、x=beta+Gamma Q u，即得到不读真实图片的LN兼容任务探针；完整域则取1的正交补。MNIST实际得到31维和767维。此构造定义了探针，并没有证明真实任务输入就服从这两种分布。
+
+n维均匀球内前两个正交坐标的平方半径t服从Beta(1,n/2)，角度均匀；因此任意两个仿射神经元的QuickGELU乘积可化成二维积分。用[Gauss-Jacobi节点](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.roots_jacobi.html)对t、等距角度对theta积分，保留完整激活与偏置，没有用线性化替代。34行计算复用_impl/subspace.py，未增加优化器或实验入口。
+
+本地dc6a84a执行前固定后，在3090对全部12层、每层前8个固定神经元完成两域计算。最大两阶积分差3.8611e-7，独立65536向量积分全部在6SE+1e-6内，域条件误差4.84e-13；3个已知恒等式例也通过。详见results/data_free_compensation/summary.md。只有小矩阵计算的一致性证据，未生成发布／分类成绩，不推成全宽稳定性、真实任务分布或有效Defense2。
