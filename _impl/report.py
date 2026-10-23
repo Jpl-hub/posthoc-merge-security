@@ -190,12 +190,28 @@ def paper_tables(_source, output):
             ]
             + [pair(path, defense=name, merger="TA", attack_scope=s) for s in scopes]
         )
+    public_backbone = Path("results/nonlinear_public_backbone")
+    public_path = public_backbone / "evaluation/full/00_MNIST_SVHN/results.json"
+    if public_path.exists():
+        audit = read(str(public_path.with_name("numpy_statistics.json")))
+        assert audit["status"].startswith("passed_independent_numpy")
+        assert audit["results_sha256"] == hashlib.sha256(public_path.read_bytes()).hexdigest()
+        rows.append(
+            [
+                "Defense 2 (public backbone)",
+                f"{acc(pick(str(public_path), defense='Public_backbone', merger='Standalone', attack_scope='None', dataset='MNIST')):.2f}",
+            ]
+            + [
+                pair(str(public_path), defense="Public_backbone", merger="TA", attack_scope=s)
+                for s in scopes
+            ]
+        )
     table(
         "main",
         "Main comparison: two experts, TA coefficient 0.5",
         ["Protection", "Standalone M", "No recovery M / S", "AGA target M / S", "AGA both M / S"],
         rows,
-        "M/S: protected MNIST / partner SVHN. Original AGA processes the target or both experts. Numerical reconstruction uses 1,024 target-training images and 12 linear solves, with experts frozen; standalone accuracy drops by 0.19 pp. Its original confirmation and relative-gap checks failed. [H] Historical task-bound failures; [K] known symmetry; [F] previous failed candidate. PaRaMS retains official defaults. Recovery with additional algorithm knowledge is reported separately.",
+        "M/S: protected MNIST / partner SVHN. Original AGA processes the target or both experts. Numerical reconstruction uses 1,024 target-training images and 12 linear solves, with experts frozen. Standalone loss is 0.19 pp for the original construction and 0.22 pp after returning the other parameters to the public base. Both strict relative-gap checks failed; the original construction also failed its small confirmation gate. The second fixed rule was registered separately and does not replace the original release. [H] Historical task-bound failures; [K] known symmetry; [F] previous failed candidate. PaRaMS retains official defaults. Additional recovery knowledge is reported separately.",
     )
     rows = []
     for target, partner, case in [
@@ -1011,6 +1027,40 @@ def paper_tables(_source, output):
                 ]
             )
     if reconstruction:
+        for target, partner, path in [
+            ("MNIST", "SVHN", public_path),
+            (
+                "SVHN",
+                "MNIST",
+                public_backbone / "other_tasks/SVHN/evaluation/full/00_SVHN_MNIST/results.json",
+            ),
+            (
+                "DTD",
+                "MNIST",
+                public_backbone / "other_tasks/DTD/evaluation/full/00_DTD_MNIST/results.json",
+            ),
+        ]:
+            if not path.exists():
+                continue
+            audit = read(str(path.with_name("numpy_statistics.json")))
+            assert audit["status"].startswith("passed_independent_numpy")
+            reconstruction.append(
+                [
+                    "Public-backbone reconstruction",
+                    target,
+                    f"{acc(pick(str(path), defense='Public_backbone', merger='Standalone', attack_scope='None', dataset=target)):.2f}",
+                ]
+                + [
+                    pair(
+                        str(path),
+                        tasks=(target, partner),
+                        defense="Public_backbone",
+                        merger="TA",
+                        attack_scope=s,
+                    )
+                    for s in scopes
+                ]
+            )
         table(
             "numerical_reconstruction",
             "Numerical reconstruction: all fixed target-task measurements",
@@ -1052,15 +1102,26 @@ def paper_tables(_source, output):
     reset = numerical_root / "public_reset/evaluation/full/00_MNIST_SVHN/results.json"
     if reset.exists():
         rows = []
-        for path, name, label in [
+        reset_models = [
             (numerical_root / "evaluation/full/results.json", "Unprotected", "Unprotected"),
             (
                 numerical_root / "evaluation/full/results.json",
                 "Prefix_compensation",
                 "Numerical357",
             ),
-            (reset, "Public_MLP_reset", "Same public reset on both controls"),
-        ]:
+            (reset, "Public_MLP_reset", "Reset on untreated / original numerical model"),
+        ]
+        if public_path.exists():
+            reset_models += [
+                (public_path, "Public_backbone", "Public-backbone construction"),
+                (public_path, "Reset_protected", "Reset on public-backbone construction"),
+                (
+                    public_backbone / "no_target/evaluation/full/00_MNIST_SVHN/results.json",
+                    "No_target",
+                    "No target expert",
+                ),
+            ]
+        for path, name, label in reset_models:
             native = acc(
                 pick(
                     str(path),
@@ -1074,12 +1135,24 @@ def paper_tables(_source, output):
                 [label, f"{native:.2f}"]
                 + [pair(str(path), defense=name, merger="TA", attack_scope=s) for s in scopes]
             )
+        reset_note = "The attacker knows the 12 modified MLP modules and replaces their 48 tensors with public-base values. No original expert, true task vector, secret transform or images enter this operator. Resetting the untreated and original numerical models gives identical states. Original AGA and known-module reset are separate conditions."
+        if public_path.exists():
+            comparison = read(str(public_backbone / "matched_no_target.json"))
+            gain = next(
+                r
+                for r in comparison["rows"]
+                if r["model"] == "Reset_protected"
+                and r["scope"] == "Protected expert"
+                and r["dataset"] == "MNIST"
+            )
+            lo, hi = gain["gain95ci_pp"]
+            reset_note += f" Resetting the public-backbone construction leaves only three published final-readout tensors beyond the base. No target means base plus 0.5 times the SVHN task vector; its target-only column repeats direct merging, while its both column attacks only the partner. The new reset adds {gain['gain_pp']:.2f} pp over this baseline, paired 95% interval [{lo:.2f},{hi:.2f}] pp. This is an accuracy comparison, not a measure of knowledge leakage or proof of complete recovery resistance."
         table(
             "numerical_reset",
             "Known-module recovery using the public base",
             ["Model", "Standalone M", "TA M / S", "AGA target M / S", "AGA both M / S"],
             rows,
-            "The attacker knows the 12 modified MLP modules and replaces their 48 tensors with public-base values. No original expert, true task vector, secret transform or images are used. Applying the same operation to the untreated control gives the identical 158-tensor model. Standalone accuracy drops by 2.04 pp, while merged accuracy recovers. Original AGA alone retains 99.44% standalone accuracy; the reset is a separate recovery condition.",
+            reset_note,
         )
     eight = numerical_root / "eight_expert/full"
     if (eight / "numpy_statistics.json").exists():
@@ -1209,6 +1282,10 @@ def paper_tables(_source, output):
         coverage[2][1] += (
             " Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved."
         )
+    if public_path.exists():
+        coverage[2][1] += (
+            " A separately registered public-backbone construction retains99.47MNIST with originalAGA11.57;known-module reset84.63 is compared with84.06 without the target. Cross-task retention is still under fixed-rule validation."
+        )
     table(
         "coverage",
         "Completed work and remaining comparisons",
@@ -1226,20 +1303,17 @@ def paper_tables(_source, output):
             "axes.spines.right": False,
         }
     )
-    fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.7), sharey=True, layout="constrained")
     shown = [
-        "Unprotected",
-        "PaRaMS",
-        "Defense 1",
-        "O/B (historical)",
-        "A/B (historical)",
-        "Defense 2 (structure)",
-        "Previous candidate",
+        r[0]
+        .replace("PaRaMS (full)", "PaRaMS")
+        .replace("Defense 2 candidate (failed) [F]", "Previous candidate")
+        .replace(" [K]", "")
+        .replace(" [H]", " (historical)")
+        for r in tables[0]["rows"]
     ]
-    if pairing_complete:
-        shown.append("Defense 2 (task-directed)")
-    if numerical:
-        shown.append("Defense 2 (numerical)")
+    fig, axes = plt.subplots(
+        1, 2, figsize=(9.5, max(4.7, 0.5 * len(shown))), sharey=True, layout="constrained"
+    )
     for task, ax, title in zip(range(2), axes, ["Protected task: MNIST", "Partner task: SVHN"]):
         for j, (label, color) in enumerate(
             zip(["Direct TA", "AGA target", "AGA both"], ["#bfd3e6", "#6baed6", "#2171b5"])
@@ -1555,6 +1629,12 @@ def paper_tables(_source, output):
         p.write_text(
             p.read_text()
             + "\n[修改幅度与任务方向对照](../task_directed_pairing/amplitude_ablation/summary.md)已完成：同一固定顺序的96／192／384对交换，两种目标分别报告，0与384模型复用；不作为独立种子或新防御。\n"
+        )
+    if public_path.exists():
+        p = out / "README.md"
+        p.write_text(
+            p.read_text()
+            + "\n[公开基座数值补偿](../nonlinear_public_backbone/summary.md)已完成MNIST固定点：独立99.47%、TA15.65%、原AGA11.57%/11.52%。已知模块重置84.63%与无目标基线84.06%同时报告，不把伙伴已有能力算成恢复目标知识。SVHN/DTD同规则验证单列，原357不变。\n"
         )
     if numerical:
         p = out / "README.md"
