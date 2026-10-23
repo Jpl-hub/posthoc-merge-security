@@ -1,0 +1,17 @@
+{
+  "question": "Does the same frozen MNIST numerical protection and known-module reset retain its effect with the other already available partner,DTD?",
+  "point_sha256": "27ebc7eacfe0a4afc4277f7f3f35b01c2cf0395c068bfe439dee114ac6256b20",
+  "coefficient": 0.5,
+  "construction_changes": 0,
+  "new_defense_weights": 0,
+  "new_AGA_calls": 0,
+  "reuse": "Same stored27eb/AGA/reset/resetAGA and untreated-reset weights;cached originalDTDAGA. Existing standalone MNIST model scores reused only after hashes match;no duplicate native forward in full.",
+  "new_evaluation": "CompleteMNIST andDTD with both originalAGA scopes,identical known48MLP reset on untreated/protected,and no-target counterpart. Report every row and paired gains;no selecting a favorable partner.",
+  "posthoc": "Chosen after observing MNIST/SVHN outcomes as an additional partner test,not a blind claim or training/repair.",
+  "source": "Frozen b7fc1ea implementation,no code/kernel changes",
+  "deadline": "No fresh exploration after fixed02:00:56UTC;queued behind valid cross-task job64420",
+  "execution_sha256": {
+    "/tmp/posthoc_public_backbone_cross_partner.sh": "be651f702b33861e4ce97edcc09815053307c18e1b8498aab9145eabdec87ddc",
+    "/tmp/posthoc_public_backbone_cross_partner_recount.py": "643c559e3f1986ac15665f7b7f17157112a7a6ccb72870240aba5607d553ed2a"
+  }
+}
