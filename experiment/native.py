@@ -24,11 +24,13 @@ def run(args):
         sha256=args.sha256,
         reference="public_base" if args.base_reference else "expert",
     )
-    check_files({args.indices: args.indices_sha256})
-    ids = json.loads(Path(args.indices).read_text())
-    ids = ids["indices"] if isinstance(ids, dict) else ids
-    if len(ids) != len(set(ids)):
-        raise ValueError("Training indices contain duplicates")
+    ids = []
+    if not args.test_only:
+        check_files({args.indices: args.indices_sha256})
+        ids = json.loads(Path(args.indices).read_text())
+        ids = ids["indices"] if isinstance(ids, dict) else ids
+        if len(ids) != len(set(ids)):
+            raise ValueError("Training indices contain duplicates")
     _, expert, head, pins = checked_models(args.target)
     model = apply(expert, ref, args.full_state)
     out = new_output(args.output, vars(args))
@@ -47,7 +49,8 @@ def run(args):
             construction_updates=0,
         ),
     )
-    for stage, training in [("training", True), ("full", False)]:
+    stages = [("full", False)] if args.test_only else [("training", True), ("full", False)]
+    for stage, training in stages:
         data = dataset(args.target, "data", expert.val_preprocess, training)
         indices = ids if training else list(range(len(data)))
         if any(i < 0 or i >= len(data) for i in indices):
@@ -142,6 +145,7 @@ def main():
     p.add_argument("--publication")
     p.add_argument("--sha256")
     p.add_argument("--full-state", action="store_true")
+    p.add_argument("--test-only", action="store_true", help="Evaluate only the complete test split")
     p.add_argument(
         "--base-reference", action="store_true", help="Publication is relative to public base"
     )
@@ -159,8 +163,10 @@ def main():
     if a.verify:
         verify(a.verify)
     else:
-        if not all([a.target, a.publication, a.sha256, a.indices, a.indices_sha256, a.output]):
-            p.error("target,publication,sha256,indices,indices-sha256,output required")
+        if not all([a.target, a.publication, a.sha256, a.output]):
+            p.error("target,publication,sha256,output required")
+        if not a.test_only and not all([a.indices, a.indices_sha256]):
+            p.error("indices and indices-sha256 required unless --test-only")
         run(a)
 
 
