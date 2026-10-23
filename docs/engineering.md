@@ -67,3 +67,6 @@ Oct23清理：删除已结束Oct18汇报专用的`presentation/export_pptx.py`�
 
 
 Oct23断连期间的源码与结果已补同步，37份历史快照均与本地Git树一致；映射见`results/engineering_refactor/publication.json`的`oct23_source_and_result_history`。这是恢复连接后的补发，不是更早的公开预登记。当前无数据响应计算没有新防御模型或分类成绩，带真实训练图的数值结果继续保留为历史参考。
+
+
+Oct23书面报告收尾：将Oct18旧PPT/TeX/PDF及构建记录从当前目录移除，完整文件留在Git `cc0973910d44ee742e363921e2127518cd093a79`。同时移除已结束的 `experiment/nonlinear_ablation.py`、无数据失败先行点专用的三个矩计算/共同补偿函数及对应测试；详细文件和函数SHA见validation.json的report_cleanup_20261023。当前任务SVD/参数置换、防御一、原版AGA和主表入口保留，核心算法AST未变。历史数值试验须按原协议从该快照取回，不将现文件路径冒充历史版本。清理后17项核心回归及同源论文表格回归通过。唯一权重、原始分数和失败证据未删。最新书面报告在 `output/pdf/teacher_report_20261023/`，不再保留旧演示稿的重复产物。
