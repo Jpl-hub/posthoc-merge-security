@@ -2,7 +2,7 @@
 \usepackage[margin=21mm,top=19mm,bottom=19mm]{geometry}
 \usepackage{fontspec,xeCJK,amsmath,amssymb,booktabs,array,graphicx,float,caption,titlesec,fancyhdr}
 \usepackage[hidelinks]{hyperref}
-\hypersetup{pdftitle={模型融合保护方法研究进展},pdfsubject={防御二与防御一的方法及实验结果}}
+\hypersetup{pdftitle={模型融合保护方法研究进展},pdfsubject={防御二：基于任务子空间的全网络通道置换；防御一：视觉投影零空间中的偏置扰动}}
 \setmainfont{Times New Roman}
 \setCJKmainfont{SimSun}[AutoFakeBold=1.6]
 \setCJKsansfont{SimSun}[AutoFakeBold=1.6]
@@ -51,7 +51,7 @@
 
 原版AGA\cite{aga}可以访问发布模型和公开基座，不预先知道所用防御。评价分为三列：直接融合；只恢复保护专家后融合；对双方专家分别恢复后融合。AGA源码固定在作者仓库的\texttt{fb61429}提交，没有针对本方法改写恢复过程。PaRaMS\cite{params}使用完整官方默认实现作为防御基线。
 
-防御二的构造只读取目标专家、公开基座和两者的任务向量，不读取图片、伙伴参数或分类成绩。防御一使用目标任务的固定校准记录确定扰动幅度，不使用伙伴模型，也不更新原专家。构造完成后才评价独立能力与融合结果。本文结果来自已固定的模型与协议；测试集此前已在研究中使用，不表述为首次盲测。
+\textbf{防御二：基于任务子空间的全网络通道置换。}构造只读取目标专家与公开基座，用任务SVD选择通道交换顺序，再同步调整各层相连参数；不读取图片、伙伴参数或分类成绩。下文图表中简称“防御二”。防御一使用目标任务的固定校准记录确定偏置扰动幅度。两者均不重新训练专家。模型固定后再评价独立能力与融合结果；测试集此前已在研究中使用，不表述为首次盲测。
 
 \begin{figure}[H]
 \centering\includegraphics[width=.97\linewidth]{figures/aga_comparison.pdf}
@@ -60,42 +60,33 @@
 \end{figure}
 
 \clearpage
-\section{防御二：构造方法}
-\subsection{以任务方向参与参数选择}
-对第$l$个专家矩阵$W_l$及其公开基座$W_{0,l}$，定义任务矩阵
-\begin{equation}
-\Delta W_l=W_l-W_{0,l}=U_l\Sigma_lV_l^{\mathsf T}.
-\end{equation}
-保留前32个右奇异方向，记为$V_{l,32}$。计算范围包括12个Transformer块的Q、K、V、Attention输出、MLP输入和MLP输出矩阵，以及输入映射和视觉投影，共74个矩阵。任务方向用来衡量参数改动在这些方向上的大小，不将其正交补直接解释为功能零空间。
+\section{防御二：基于任务子空间的全网络通道置换}
+本方法改变视觉网络中768个残差通道的顺序，并同步修改各层相连参数。这里的通道是中间特征的坐标，不是类别、Attention头或MLP隐藏单元。\textbf{任务SVD用来选择交换哪些通道；全网络同步置换用来保持原模型的计算。}
 
-全网络使用同一个768维通道排列$P$。记排列引起的实际矩阵差为$E_l(P)$，定义
+\subsection{先用任务方向选择通道交换}
+对任务矩阵$\Delta W_l=W_l-W_{0,l}$做SVD，其中$W_l$和$W_{0,l}$分别为专家与基座参数；取前32个右奇异方向$V_{l,32}$。范围为12个Transformer块的Q、K、V、Attention输出、MLP输入和输出，以及输入映射和视觉投影，共74个矩阵。设共同排列为$P$，实际矩阵改动为$E_l(P)$，计算
 \begin{align}
 T(P)&=\sum_l\frac{\norm{E_l(P)}_F^2}{\norm{W_l}_F^2},&
 I(P)&=\sum_l\frac{\norm{E_l(P)V_{l,32}}_F^2}{\norm{W_l}_F^2},\\
-O(P)&=T(P)-I(P),&
-F(P)&=O(P)-I(P).
+F(P)&=\underbrace{[T(P)-I(P)]}_{\text{任务方向外的变化}}-\underbrace{I(P)}_{\text{任务方向内的变化}}.
 \end{align}
-$T$衡量整体参数变化，$I$衡量任务方向上的变化，$O$衡量其余方向的变化。构造最大化$F$，同时考虑扩大参数变化和减小任务方向上的改动。
+目标是增大方向外的变化、减小方向内的变化。从原顺序开始，每次在未交换的通道中，选使$F$增加最多的一对；增量大于$10^{-10}$才接受，最多384对，相同增量按编号决定。三个主模型均固定384对，不用图片或分类成绩选择。这是贪心构造，不保证全局最优。
 
-从恒等排列出发，每次交换两个尚未移动的通道，选择使$F$增加最多的一对；增量大于$10^{-10}$才接受，最多384对。增量按实际有限参数差计算，相同增量按通道编号确定顺序。它是固定贪心构造，不保证全局最优。三个主模型均使用384对交换；没有按测试成绩重新选排列或交换数量。
-
-\subsection{跨层同步调整，保持独立模型的计算}
-以列向量表示残差通道。读取该通道的Q、K、V和MLP输入矩阵改为$WP^{\mathsf T}$，写回该通道的Attention输出和MLP输出矩阵改为$PW$。输入映射、类别和位置嵌入、LayerNorm参数与最终视觉投影一并按相同顺序调整。Attention头内和MLP隐藏单元的顺序不变。
-
-若某一层的隐藏量由$h$变为$Ph$，则相连的输入矩阵满足
+\subsection{再同步修改全网相连参数}
+以列向量表示通道：Q、K、V和MLP输入矩阵改为$WP^{\mathsf T}$，Attention输出和MLP输出矩阵改为$PW$；输入映射、对应偏置、嵌入和LayerNorm参数也按同一顺序调整，最终投影还原输出坐标。因此
 \begin{equation}
 (WP^{\mathsf T})(Ph)=Wh.
 \end{equation}
-逐元素非线性、配套LayerNorm和残差加法也与排列相容。因此，整网的中间通道虽然换序，最终视觉特征在实数计算下不变。实际FP32模型另外完成完整任务检查；三个任务的全部测试预测均与原专家一致。
+例如把第1、3通道互换，就同时互换下一矩阵的第1、3列（图\ref{fig:construction}）。残差两支使用同一排列，LayerNorm和逐元素非线性也保持对应，逐层计算由此保持。\textbf{独立功能保持来自这种配套修改，而不是假定SVD方向外没有功能作用。}完整FP32测试中，三个任务的全部预测均与原专家一致。
 
-\subsection{融合后的变化}
-原版AGA处理Attention和MLP，未恢复全网络共同通道顺序。以输入映射为例，保护专家和伙伴的映射分别为$PW_e$与$W_p$，TA融合后为$(PW_e+W_p)/2$。两份模型原来对应的通道不再直接对应。
+\begin{figure}[H]
+\centering\includegraphics[width=.98\linewidth]{figures/construction.pdf}
+\caption{一次通道交换的示意。输入映射与后续矩阵同时调整，右端计算结果保持。实际模型对全网络使用同一排列，而非只修改图中的两个矩阵。}
+\label{fig:construction}
+\end{figure}
 
-对本构造$P^2=I$，令$N=(I-P)/2$，可得
-\begin{equation}
-N\frac{PW_e+W_p}{2}=\frac12N(W_p-W_e).
-\end{equation}
-两模型共同的基座分量在这部分相消。该关系说明输入计算发生了什么变化，实际保护强度仍以完整分类实验为准。
+\subsection{融合后，原来的对应关系被打乱}
+伙伴保留自己的通道顺序。以输入映射为例，TA将$PW_e$与$W_p$按位置平均，得到$(PW_e+W_p)/2$；后续矩阵也分别平均，两端原有的配套关系因而不再自动成立。原版AGA处理Attention和MLP，没有完成全网共同排列的恢复。下一页报告实际分类结果，保护强度由这些结果检验。
 
 \clearpage
 \section{主实验结果}
