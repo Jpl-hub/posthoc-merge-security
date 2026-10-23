@@ -286,6 +286,8 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。任务方向防御二使用双专
 | Same-input teacher function | DTD | 26.28 | 2.13 / 10.17 | 10.37 / 10.20 | 10.59 / 10.10 |
 | Same-input teacher function | SVHN | 95.67 | 19.77 / 11.35 | 16.00 / 10.67 | 15.99 / 10.52 |
 | Public-backbone reconstruction | MNIST | 99.47 | 15.65 / 19.56 | 11.57 / 19.61 | 11.52 / 19.56 |
+| Public-backbone reconstruction | SVHN | 95.94 | 19.48 / 11.35 | 16.06 / 10.32 | 16.05 / 10.32 |
+| Public-backbone reconstruction | DTD | 41.81 | 2.71 / 10.09 | 6.91 / 10.09 | 6.81 / 10.09 |
 
 同一任务使用同一构造集，全部固定结果保留。M/S/D分别为MNIST/SVHN/DTD；目标与伙伴分列。原方法、增加Attention补偿和改为同输入教师函数重构分别比较，不根据测试成绩替换主模型。DTD独立准确率明显下降的行是任务保持失败，不能因为融合准确率低就称成功。
 
@@ -304,14 +306,19 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。任务方向防御二使用双专
 
 ## 20. 知道修改模块后的公开基座恢复
 
-| Model | Standalone M | TA M / S | AGA target M / S | AGA both M / S |
-|---|---|---|---|---|
-| 无保护 | 99.69 | 99.37 / 92.50 | 99.30 / 92.78 | 99.32 / 91.77 |
-| Numerical357 | 99.50 | 24.46 / 19.83 | 13.02 / 19.80 | 13.09 / 19.68 |
-| Reset on untreated / original numerical model | 97.65 | 95.39 / 95.67 | 94.47 / 95.73 | 94.31 / 94.99 |
-| Public-backbone construction | 99.47 | 15.65 / 19.56 | 11.57 / 19.61 | 11.52 / 19.56 |
-| Reset on public-backbone construction | 46.43 | 84.63 / 95.94 | 84.63 / 95.94 | 84.04 / 95.03 |
-| No target expert | 48.25 | 84.06 / 95.76 | 84.06 / 95.76 | 83.46 / 94.76 |
+| Partner | Model | SA M | TA M / P | AGA target M / P | AGA both M / P |
+|---|---|---|---|---|---|
+| SVHN | 无保护 | 99.69 | 99.37 / 92.50 | 99.30 / 92.78 | 99.32 / 91.77 |
+| SVHN | Numerical357 | 99.50 | 24.46 / 19.83 | 13.02 / 19.80 | 13.09 / 19.68 |
+| SVHN | Reset on untreated / original numerical model | 97.65 | 95.39 / 95.67 | 94.47 / 95.73 | 94.31 / 94.99 |
+| SVHN | Public-backbone construction | 99.47 | 15.65 / 19.56 | 11.57 / 19.61 | 11.52 / 19.56 |
+| SVHN | Reset on public-backbone construction | 46.43 | 84.63 / 95.94 | 84.63 / 95.94 | 84.04 / 95.03 |
+| SVHN | No target expert | 48.25 | 84.06 / 95.76 | 84.06 / 95.76 | 83.46 / 94.76 |
+| DTD | 无保护 | 99.69 | 99.45 / 69.31 | 99.43 / 69.41 | 99.42 / 68.78 |
+| DTD | Public-backbone construction | 99.47 | 11.35 / 2.07 | 18.54 / 4.04 | 17.65 / 4.04 |
+| DTD | Reset on untreated model | 97.65 | 89.66 / 71.86 | 86.76 / 71.76 | 86.86 / 70.85 |
+| DTD | Reset on public-backbone construction | 46.43 | 51.58 / 73.51 | 51.58 / 73.51 | 51.63 / 72.87 |
+| DTD | No target expert | 48.25 | 50.47 / 73.94 | 50.47 / 73.94 | 50.43 / 73.19 |
 
 仅使用发布模型、公开基座及12个MLP修改位置，替换其48个权重和偏置；没有原专家、真实任务向量、秘密变换或图片。同一操作处理无保护控制后得到完全相同的158个张量，因此只需评价一份相同模型。该恢复牺牲2.04个百分点独立准确率，使AGA后融合恢复到94.47%；与原版AGA单独列出。
 
@@ -323,6 +330,12 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。任务方向防御二使用双专
 | 无保护 | AGA target | 93.23 | 52.34 | 73.90 |
 | Numerical357 | None | 86.32 | 7.23 | 32.92 |
 | Numerical357 | AGA target | 50.35 | 26.60 | 30.58 |
+| Public-backbone construction | None | 79.56 | 7.39 | 29.82 |
+| Public-backbone construction | AGA target | 44.19 | 26.38 | 28.97 |
+| Known-module reset | None | 73.50 | 54.04 | 70.36 |
+| Known-module reset | AGA target | 73.50 | 54.04 | 70.36 |
+| No target expert | None | 72.99 | 54.57 | 69.87 |
+| No target expert | AGA target | 72.99 | 54.57 | 69.87 |
 
 只有MNIST受保护，DTD和SVHN是被评价的伙伴。作者顺序、TA系数0.2和原版AGA仅保护专家均固定。没有重构新防御或重复AGA，不报完整八任务表或平均。
 
@@ -344,7 +357,7 @@ TA0.2，每格固定MNIST / DTD / SVHN顺序。任务方向防御二使用双专
 |---|---|
 | TA + original AGA | Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. |
 | 防御一 | MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. |
-| Defense 2 | Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved. A separately registered public-backbone construction retains99.47MNIST with originalAGA11.57;known-module reset84.63 is compared with84.06 without the target. Cross-task retention is still under fixed-rule validation. |
+| Defense 2 | Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved. A separately registered public-backbone construction retains99.47MNIST with originalAGA11.57;known-module reset84.63 is compared with84.06 without the target. Same-rule SVHN95.94 andDTD41.81 fail task retention. With a DTD partner, MNIST originalAGA is18.54;eight-expert originalAGA is44.19. No release is selected or retuned from these observations. |
 | PaRaMS | Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. |
 | MergeLock | Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. |
 | MergeGuard / ARF | Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. |

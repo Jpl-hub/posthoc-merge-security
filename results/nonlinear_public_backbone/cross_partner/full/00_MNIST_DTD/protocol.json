@@ -1,0 +1,196 @@
+{
+  "experiment": "Same frozen27eb MNIST release with an additional DTD partner and matched public-reset/no-target controls;not model selection",
+  "output": "outputs/nonlinear_public_backbone_cross_partner_20261023",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "DTD": {
+      "classes": 47,
+      "test_n": 1880
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TA"
+  ],
+  "TIES": {
+    "repository": "https://github.com/prateeky2806/ties-merging",
+    "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+    "path": "external/ties-merging/src/utils/merge_utils.py",
+    "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+    "topk_percent": 20,
+    "coefficient": 1.0,
+    "resolve_method": "mass",
+    "merge_func": "dis-mean",
+    "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+  },
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "parameter_budget": 15.492469500178574,
+  "task_budget": 0.5,
+  "utility_seed": 20261016,
+  "utility_n": 512,
+  "probe_rank": 32,
+  "test_status": "Historically exposed test sets. Frozen defenses, no tuning or model selection from Phase 3.",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": false,
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "Public_backbone": {
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/nonlinear_public_backbone_20261023/release.pt",
+        "sha256": "27ebc7eacfe0a4afc4277f7f3f35b01c2cf0395c068bfe439dee114ac6256b20"
+      },
+      "AGA_edits": {
+        "path": "outputs/nonlinear_public_backbone_20261023/AGA/edits.pt",
+        "sha256": "f7d6ecaaccd4f4ad3378da2eb5831411318bba4a930a2a3be376f4febcfeb26a"
+      }
+    },
+    "Reset_protected": {
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/nonlinear_public_backbone_20261023/public_reset/edits.pt",
+        "sha256": "d8766841757bb86465380decdab5534d729345dfaad6599ebf05918bbe458791",
+        "reference": "public_base"
+      },
+      "AGA_edits": {
+        "path": "outputs/nonlinear_public_backbone_20261023/public_reset/AGA/edits.pt",
+        "sha256": "c56411c1432a958ea4c71609950f92a49c6c9d2aa9a5b6a9c2a8f618365b1c75",
+        "reference": "public_base"
+      }
+    },
+    "Reset_untreated": {
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/nonlinear_public_reset_20261023/release.pt",
+        "sha256": "1a07b886ce30bc0555595e0a1b85b46a22c0d1b38b5b8a20b4ec6cdd6eb70686"
+      },
+      "AGA_edits": {
+        "path": "outputs/nonlinear_public_reset_20261023/AGA/edits.pt",
+        "sha256": "d97c6411d244da396835cb76dc4da225eabb0f9334d2bb34f9b0d7ae8bf20af8"
+      },
+      "budget_status": "Known-module recovery;not a defense with a function-retention claim"
+    },
+    "No_target": {
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/nonlinear_no_target_20261023/empty_edits.pt",
+        "sha256": "019e956c64de522f2519b6ca7497237552422685b886b096f40b6d72e809f2af",
+        "reference": "public_base"
+      },
+      "AGA_edits": {
+        "path": "outputs/nonlinear_no_target_20261023/empty_edits.pt",
+        "sha256": "019e956c64de522f2519b6ca7497237552422685b886b096f40b6d72e809f2af",
+        "reference": "public_base"
+      },
+      "scope_note": "No target expert,only DTD partner;target-only repeats direct,both applies cached originalAGA only to DTD."
+    }
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "DTD",
+      "defenses": [
+        "Public_backbone",
+        "Reset_untreated",
+        "Reset_protected",
+        "No_target"
+      ]
+    }
+  ],
+  "legacy": {
+    "MNIST_DTD/Unprotected": {
+      "standalone": {
+        "path": "outputs/nonlinear_public_backbone_20261023/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "8f8a193b2e8239684c43c85e4fef15ce7ce676e916df5f28b2740b5d79f7e874",
+        "key_template": "Unprotected/Standalone/None/MNIST"
+      }
+    },
+    "MNIST_DTD/Public_backbone": {
+      "standalone": {
+        "path": "outputs/nonlinear_public_backbone_20261023/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "8f8a193b2e8239684c43c85e4fef15ce7ce676e916df5f28b2740b5d79f7e874",
+        "key_template": "Public_backbone/Standalone/None/MNIST"
+      }
+    },
+    "MNIST_DTD/Reset_untreated": {
+      "standalone": {
+        "path": "outputs/nonlinear_public_backbone_20261023/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "8f8a193b2e8239684c43c85e4fef15ce7ce676e916df5f28b2740b5d79f7e874",
+        "key_template": "Reset_untreated/Standalone/None/MNIST"
+      }
+    },
+    "MNIST_DTD/Reset_protected": {
+      "standalone": {
+        "path": "outputs/nonlinear_public_backbone_20261023/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "8f8a193b2e8239684c43c85e4fef15ce7ce676e916df5f28b2740b5d79f7e874",
+        "key_template": "Reset_protected/Standalone/None/MNIST"
+      }
+    },
+    "MNIST_DTD/No_target": {
+      "standalone": {
+        "path": "outputs/nonlinear_no_target_20261023/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "75ef40860882c1187b445bb911ab6eacd7abc688b428bb302d5b150bf73a271d",
+        "key_template": "No_target/Standalone/None/MNIST"
+      }
+    }
+  },
+  "source_sha256": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+    "_impl/defenses.py": "0f8b04061f38a5bd783f443a4b472ed9d308331573ffa15b3c8e1322ac6a2f57",
+    "_impl/evaluate.py": "2dee58c3e1dec5a3b2a7c29a14eccebdb89744a69d2751917b29ccc6a3027a0a",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/report.py": "e93de362faca4374658d953f4a089f4a209d13c6aa8b9855d4575114590c6639",
+    "_impl/subspace.py": "307558203a17fd3296882c2af4d0cbf706bdad63c61d189a82bd03daee6cd3b8",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "52ba89e1a593d7ceb3ad562ff0090ce7c5c0b01a1d4776bd83dba2e597df32a4",
+    "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "bbb1155bf308997fe1f3436b83218e1738651320ca20c4d27053e966cbf8539f",
+    "experiment/recover.py": "0e754b517cc5df7fe2e783a77cca4cb46acdf24b00479f50d40613c1f3ea04c2",
+    "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+  },
+  "original_batch_context_replays": true
+}

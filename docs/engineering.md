@@ -62,3 +62,5 @@ git archive c44c1ff184b126dbec7c776c79f12c3ab144e2f7 | tar -x -C /tmp/posthoc-hi
 本次检查结果及确切删减数量在 `results/engineering_refactor/validation.json`。连接恢复后已在3090通过18项测试、Ruff检查和真实模型核验：三份发布逐张量相同，原版AGA恢复权重全部158张量相同，8个原128张批上下文的分数最大误差0。仅新增1024张工程核验前向及一次原版AGA，不称完整科研实验重跑；详见GPU_validation.json。已有科研实验结果仍来自此前冻结代码。
 
 Oct23清理：删除已结束Oct18汇报专用的`presentation/export_pptx.py`和`presentation/update_tables.py`，共144行。当前实验／配置／测试没有依赖；源码可从Git 5b3c71951fdd51ab554eff118b68700af9157b62 取回，SHA见validation.json。旧TeX/PDF/PPT与build.json保留，当前论文只使用experiment.report，不新增汇报入口。
+
+清理已结束分析入口：8个历史results目录的独立Python脚本及两个已关闭重构变体从活动代码移除，版本/SHA见validation.json；原结果、唯一模型、逐图分数和固定协议均保留。旧定义请从Git ad5800c复现，当前主构造、SVD/前缀消融和统一评价入口保留。

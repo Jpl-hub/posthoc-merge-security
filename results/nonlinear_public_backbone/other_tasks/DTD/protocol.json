@@ -1,0 +1,110 @@
+{
+  "method": "nonlinear",
+  "target": "DTD",
+  "configuration": {
+    "rank": 32,
+    "tolerance": 1e-08,
+    "gain_tolerance": 1e-10,
+    "targets": {
+      "SVHN": {
+        "basis": {
+          "path": "outputs/task_directed_other_tasks_20261022/basis/SVHN/basis.pt",
+          "sha256": "8551a62fc8bbf8f996b198084d22a263ff82f6329a19a2765c47a33ef2741098"
+        },
+        "nonlinear": {
+          "indices": {
+            "path": "outputs/nonlinear_svhn_20261023/draw_split.json",
+            "sha256": "4423102fa4859bc56dcdd7f4be93bc22a0d76132afe5cb3a1eaddeed45ea4d31"
+          },
+          "source_n": 1024
+        }
+      },
+      "DTD": {
+        "basis": {
+          "path": "outputs/task_directed_other_tasks_20261022/basis/DTD/basis.pt",
+          "sha256": "ff73c7844989abacc1984328ca0f071f4fd6fc43ee1acc2d31709d40f53258d1"
+        },
+        "nonlinear": {
+          "indices": {
+            "path": "outputs/nonlinear_dtd_20261023/draw_split.json",
+            "sha256": "9f1f636a2dd6487a0e61fd31437cbcba766740b0bda9af025758da6f872bfec8"
+          },
+          "source_n": 512
+        }
+      }
+    },
+    "bias": {
+      "noise_seed": 20261014,
+      "numerical_relative_tolerance": 1e-10,
+      "proxy_beta": 0.5,
+      "native_cache": {
+        "MNIST": "outputs/covariance_noise_mnist",
+        "DTD": "outputs/covariance_noise_dtd"
+      },
+      "bias_safety": 2.0
+    },
+    "params": {
+      "path": "external/PaRaMS/src/PaRaMS/PaRaMS_algorithm.py",
+      "sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60"
+    },
+    "scope": "Same fixed public-backbone numerical construction on SVHN and DTD;no strength/rank/source/layer/target change",
+    "source_sha256": {
+      "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+      "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+      "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+      "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+      "_impl/defenses.py": "0f8b04061f38a5bd783f443a4b472ed9d308331573ffa15b3c8e1322ac6a2f57",
+      "_impl/evaluate.py": "2dee58c3e1dec5a3b2a7c29a14eccebdb89744a69d2751917b29ccc6a3027a0a",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+      "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+      "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+      "_impl/report.py": "e93de362faca4374658d953f4a089f4a209d13c6aa8b9855d4575114590c6639",
+      "_impl/subspace.py": "307558203a17fd3296882c2af4d0cbf706bdad63c61d189a82bd03daee6cd3b8",
+      "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+      "experiment/construct.py": "52ba89e1a593d7ceb3ad562ff0090ce7c5c0b01a1d4776bd83dba2e597df32a4",
+      "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+      "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+      "experiment/native.py": "bbb1155bf308997fe1f3436b83218e1738651320ca20c4d27053e966cbf8539f",
+      "experiment/recover.py": "0e754b517cc5df7fe2e783a77cca4cb46acdf24b00479f50d40613c1f3ea04c2",
+      "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+    },
+    "nonlinear": {
+      "source_n": 1024,
+      "source_loss_pp": 0.25,
+      "confirmation_loss_pp": 0.5,
+      "damping": 0.01,
+      "matrix_bounds": [
+        2.0,
+        4.0
+      ],
+      "indices": {
+        "path": "outputs/phase2_centered_readout_mnist_20261022/draw_split.json",
+        "sha256": "5e66fea460ed84dc6aea6173539ba81cc5ba8ce268c8db12610817a1e4cf47f0"
+      },
+      "scope": "Same fixed public-backbone numerical construction on SVHN and DTD;no strength/rank/source/layer/target change",
+      "layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "pre_ln_compensation": false,
+      "attention_bound": 4.0,
+      "local_teacher": false,
+      "public_backbone": true,
+      "prefix_compensation": true,
+      "publication_reference": "public_base"
+    }
+  }
+}
