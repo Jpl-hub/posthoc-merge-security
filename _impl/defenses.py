@@ -1,4 +1,4 @@
-"""Defense 1 projection-null bias and Defense 2 coordinated residual permutation."""
+"""Post-hoc bias protection, numerical compensation and permutation controls."""
 
 import copy
 import json
@@ -9,6 +9,78 @@ import torch
 from .data import make_loader
 from .io import digest
 from .merge import merge
+
+
+@torch.no_grad()
+def _reconstruct_attention_prefix(model, head, loader, teacher, layer, basis, cfg):
+    """Fit the residual before LN2, then let the MLP see the actual new input."""
+    from .evaluate import evaluate
+
+    block = model.model.visual.transformer.resblocks[layer]
+    assert isinstance(block.ln_attn, torch.nn.Identity)
+    inputs, residuals = [], []
+    hooks = [
+        block.ln_1.register_forward_hook(
+            lambda _m, _a, y: inputs.append(y.detach().permute(1, 0, 2).cpu())
+        ),
+        block.register_forward_pre_hook(
+            lambda _m, a: residuals.append(a[0].detach().permute(1, 0, 2).cpu())
+        ),
+    ]
+    try:
+        evaluate(model, head, loader, "cuda")
+    finally:
+        for hook in hooks:
+            hook.remove()
+    attention = block.attn.cuda()
+    weight = attention.out_proj.weight.detach()
+    bias = attention.out_proj.bias.detach()
+    target = torch.cat(teacher) - torch.cat(residuals) - bias.cpu()
+    v = basis["v"].cuda()
+    if not cfg.get("task_constraints", True):
+        v = v[:, :0]
+    width = weight.shape[1]
+    gram = torch.zeros(width, width, dtype=torch.double, device="cuda")
+    cross = gram.clone()
+    error_energy = torch.zeros((), dtype=torch.double, device="cuda")
+    override = {
+        "out_proj.weight": torch.eye(width, device="cuda"),
+        "out_proj.bias": torch.zeros_like(bias),
+    }
+    for x, y in zip(inputs, target.split(128)):
+        x = x.permute(1, 0, 2).cuda()
+        h = torch.func.functional_call(attention, override, (x, x, x), {"need_weights": False})[
+            0
+        ].permute(1, 0, 2)
+        error = (y.cuda() - torch.nn.functional.linear(h, weight)).flatten(0, 1).double()
+        z = h.flatten(0, 1).double()
+        z -= (z @ v) @ v.T
+        gram += z.T @ z
+        cross += z.T @ error
+        error_energy += error.square().sum()
+    damping = cfg["damping"] * gram.diagonal().mean()
+    assert float(damping) > 0
+    system = gram + damping * torch.eye(width, dtype=torch.double, device="cuda")
+    delta = torch.linalg.solve(system, cross)
+    solve_error = float((system @ delta - cross).norm() / cross.norm().clamp_min(1e-30))
+    assert solve_error < 1e-8
+    delta -= v @ (v.T @ delta)
+    result = (weight.double() + delta.T).float().cpu()
+    change = result.double().cuda() - weight.double()
+    distance = float(change.norm() / weight.double().norm())
+    assert distance <= cfg["attention_bound"] + 1e-6
+    fitted = error_energy - 2 * (delta * cross).sum() + (delta * (gram @ delta)).sum()
+    scale = float(torch.cat(teacher).double().square().sum())
+    detail = dict(
+        relative_distance=distance,
+        task_response_relative_to_weight=float((change @ v).norm() / weight.double().norm()),
+        residual_RMS_before=float((error_energy / scale).sqrt()),
+        residual_RMS_after=float((fitted.clamp_min(0) / scale).sqrt()),
+        ridge_solve_residual=solve_error,
+        attention_shadow_calls=len(inputs),
+    )
+    attention.cpu()
+    return result, detail
 
 
 @torch.no_grad()
@@ -100,7 +172,7 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
         )
         for i in layers
     ]
-    if not cfg.get("prefix_compensation", True):
+    if not cfg.get("prefix_compensation", True) or cfg.get("pre_ln_compensation", False):
         hooks += [
             blocks[i].ln_2.register_forward_pre_hook(
                 lambda _m, args, i=i: teacher_residuals[i].append(
@@ -121,6 +193,16 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
     edits, per_layer = {}, []
     forward_count = len(indices)
     for i in layers:
+        attention_detail = None
+        if cfg.get("pre_ln_compensation", False):
+            assert cfg.get("prefix_compensation", True)
+            key = f"model.visual.transformer.resblocks.{i}.attn.out_proj.weight"
+            value, attention_detail = _reconstruct_attention_prefix(
+                published, head, loader, teacher_residuals.pop(i), i, entries[key], cfg
+            )
+            published.state_dict()[key].copy_(value)
+            edits[key] = value
+            forward_count += len(indices)
         block = published.model.visual.transformer.resblocks[i]
         inputs, residuals = [], []
         hooks = [
@@ -151,6 +233,11 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
         ba, bb = [entries[prefix + k + ".weight"] for k in ["c_fc", "c_proj"]]
         Ap, Bp, row = _fit_nonlinear_mlp_layer(A, B, a, ba, bb, X, target, block.mlp.gelu, cfg)
         row["layer"] = i
+        if attention_detail is not None:
+            row["attention_prefix"] = attention_detail
+            row["logical_distance"] = (
+                row["logical_distance"] ** 2 + attention_detail["relative_distance"] ** 2
+            ) ** 0.5
         per_layer.append(row)
         changed = {prefix + "c_fc.weight": Ap, prefix + "c_proj.weight": Bp}
         for key, value in changed.items():
@@ -177,7 +264,7 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
         logical_distance=sum(r["logical_distance"] ** 2 for r in per_layer) ** 0.5,
         gradient_steps=0,
         expert_training_updates=0,
-        linear_solves=len(per_layer),
+        linear_solves=len(per_layer) * (2 if cfg.get("pre_ln_compensation", False) else 1),
         image_forwards=forward_count,
         finite_function_identity=False,
         parameter_range_passed=all(r["parameter_range_passed"] for r in per_layer),

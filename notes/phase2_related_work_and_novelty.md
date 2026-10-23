@@ -889,3 +889,6 @@ $$e(x(t))=e(x(0))+\int_0^t a(s)\,ds,\qquad
 固定P/beta有限极大极小点补充真实伙伴评价后，独立99.64%、TA94.64%、原AGA目标91.22%/双方87.79%；源公共环境9.67%没有转化为同等真实保护。当前不能称已替代现有换序方法。源四项分解也没有证明补偿是独立分类保持的必要原因：P单改/beta单改/联合均1022/1024正确，联合主要消去平均特征项。结果及权限见centered_readout_game/accuracy_evaluation。旧R0.5失败不改；这次是准确率的追加评价，没有调旧点或根据新成绩选模型。
 
 新源假设仅测试末MLP的任务补空间数值重构：改变QuickGELU输入并用B的一次岭回归补偿完整非线性响应，非全网坐标恒等。Neuron Merging（NeurIPS2020）§3.1讨论激活可交换的严格条件和后层补偿；SparseGPT官方147d2159提供对角阻尼的参考。最小二乘、正交投影、任务SVD和普通反射都已有基础，不能单独称原创，本点即使准确率好仍须证明真实AGA效果、SVD/联合补偿贡献及公开位置恢复边界。它不复现上述剪枝算法，也不把旧逐单元任务输入反射重新调掩码或强度。执行前有限条件、范围与停止规则见phase2_coupling末段；此时未有新CLIP结果。
+
+
+REPAIR官方固定源码补充：[`e90263d`](https://github.com/KellerJordan/REPAIR/blob/e90263d7a4d48376091327274ae541d8d6d34743/notebooks/Train-Merge-REPAIR-VGG11-ClosedForm.ipynb)，notebook SHAaaa5bd072e54a7b5836af146565973cb28992889c551d53c2f1ff7df7fd12136。实际核对TrackLayer/ResetLayer及目标均值、方差的代码单元：它在卷积层外包BatchNorm并设置融合后统计；没有运行其训练或声称CLIP复现。激活统计失配和校准修复属于已有研究。当前拟议O回归是发布前、仅目标专家、原架构、任务方向约束下重构教师逐图残差，再经过真实LN/非线性；不是将REPAIR重命名为防御。该差异仅定位具体机制，并未证明组合新颖性。

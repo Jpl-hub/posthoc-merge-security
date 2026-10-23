@@ -70,7 +70,7 @@ def main():
         )
         return
     if a.method == "nonlinear":
-        c = dict(cfg["nonlinear"], target=a.target)
+        c = cfg["nonlinear"] | case.get("nonlinear", {}) | {"target": a.target}
         ref = c["indices"]
         check_files({ref["path"]: ref["sha256"], case["basis"]["path"]: case["basis"]["sha256"]})
         indices = json.loads(Path(ref["path"]).read_text())["indices"][: c["source_n"]]

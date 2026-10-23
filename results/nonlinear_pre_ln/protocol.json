@@ -1,0 +1,30 @@
+{
+  "purpose": "One finite mechanism:repair the actual pre-LN residual by a constrained O solve before the unchanged nonlinear A/B solve",
+  "targets": [
+    "SVHN",
+    "DTD",
+    "MNIST"
+  ],
+  "source_order": "All three source points frozen before any new validation;all outcomes reported,not selected",
+  "same_as_original_numerical_method": [
+    "source indices",
+    "all12layers",
+    "rank32",
+    "A reflection rule",
+    "B damping.01",
+    "A2/B4 ranges",
+    "original frozen teachers and heads"
+  ],
+  "new_operation": "O delta right-task-complement ridge regression to original teacher attention-after residual;then recompute actual LN2 input and original A/B reconstruction",
+  "O_relative_range": 4,
+  "joint_parameter_range": 20.784609690826528,
+  "source_flags": ".25pp criterion unchanged and reported;not allowed to substitute for complete utility observations",
+  "utility": "Full standalone accuracy loss reference.5pp,strictR.5 and every prediction change separately reported;no threshold/weight repairs",
+  "MHA_condition": "All36teacher blocks ln_attn Identity;Torch2.3.0 official multi_head_attention_forward source16c5a5bb;unit output-projection shadow replay on real module Gaussian input exact0,not image validation",
+  "source_diagnostics": "SVHN original1024source1012to1007,late hidden reconstruction RMS.592 motivated splitting finite compensation beforeLN,not increasing strength or source samples",
+  "novelty": "SVD,reflection,constrained ridge and activation calibration are prior techniques;contribution of this combination remains empirical,not a new minmax solver or security theorem",
+  "recovery": "Fixed TA.5/originalAGA target/both first. Known whole-modified-module public reset is a separate data-free adaptive limitation;no claim it is solved",
+  "no_feedback": "Only target/public base/legal source construction. No partner,test,old confirmation or failure-witness responses in the equations,source selection or coefficients",
+  "source_access": "Pure posthoc teacher-frozen calibration,not data-free. No original expert or classifier finetuning and no gradient optimization",
+  "verification": "After each source hash,draw training heldout with explicit exclusion of that source even through symbolic links. DTD existing401 heldout is historically exposed,not globally fresh. All3 source points retained before confirmation/test."
+}

@@ -2,12 +2,14 @@
 
 研究 CLIP ViT-B/32 专家的训练后参数保护：单独使用时保持任务能力，未经授权融合及原版 AGA 恢复后降低受保护任务准确率。专家不重新训练。
 
-| 当前防御二 | MNIST | DTD | SVHN |
+**最新数值版防御二：**在 MNIST / SVHN 固定组合上，独立 MNIST 准确率由99.69%到99.50%，TA融合后24.46%，原版AGA仅处理保护专家/双方后13.02%/13.09%。方法修改12层MLP的24个矩阵，用任务SVD约束和实际逐层输出重构保持能力；原专家冻结，使用1024张目标训练图校准、12次线性求解，无梯度微调。跨任务和已知模块恢复正在验证，[完整数据及限制](results/nonlinear_prefix/summary.md)。它不是下面的全网换序对照；原严格间隔检查未通过，不能称函数完全相同。
+
+| 已有全网换序对照 | MNIST | DTD | SVHN |
 |---|---:|---:|---:|
 | 单独使用 | 99.69% | 79.41% | 97.46% |
 | 原版 AGA 仅处理保护专家后，TA 融合 | 9.80% | 2.39% | 6.45% |
 
-三份冻结发布的完整独立预测保持；伙伴成绩、AGA 两种作用范围及对照见[论文实验总表](results/paper_tables/README.md)。当前方法使用任务 SVD 选择全网共同换序；知道变换家族后的公开 patch 匹配能够恢复，属于单列的针对性攻击，不能与原版 AGA 混淆。[方法](results/task_directed_pairing/method.md) · [恢复限制](results/task_directed_pairing/recovery/summary.md)。防御一、完整 PaRaMS、历史 O/B 和 A/B 以及所有失败结果继续保留。
+三份冻结发布的完整独立预测保持；伙伴成绩、AGA 两种作用范围及对照见[论文实验总表](results/paper_tables/README.md)。该对照使用任务 SVD 选择全网共同换序；知道变换家族后的公开 patch 匹配能够恢复，属于单列的针对性攻击，不能与原版 AGA 混淆。[方法](results/task_directed_pairing/method.md) · [恢复限制](results/task_directed_pairing/recovery/summary.md)。防御一、完整 PaRaMS、历史 O/B 和 A/B 以及所有失败结果继续保留。
 
 ## 代码结构
 
@@ -16,7 +18,7 @@ cfg.py                       # 共同路径和配置检查
 _impl/
   models.py                  # 冻结模型加载、发布参数应用
   data.py                    # 官方数据划分、独立标签读取
-  defenses.py                # 防御一偏置构造、全网配套换序
+  defenses.py                # 防御一、数值逐层补偿、全网换序对照
   subspace.py                # 74 个任务矩阵 SVD、有限交换目标
   attacks.py                 # 原版 AGA、已知家族的公开匹配
   baselines.py               # 完整官方 PaRaMS
