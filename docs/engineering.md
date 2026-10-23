@@ -64,3 +64,6 @@ git archive c44c1ff184b126dbec7c776c79f12c3ab144e2f7 | tar -x -C /tmp/posthoc-hi
 Oct23清理：删除已结束Oct18汇报专用的`presentation/export_pptx.py`和`presentation/update_tables.py`，共144行。当前实验／配置／测试没有依赖；源码可从Git 5b3c71951fdd51ab554eff118b68700af9157b62 取回，SHA见validation.json。旧TeX/PDF/PPT与build.json保留，当前论文只使用experiment.report，不新增汇报入口。
 
 清理已结束分析入口：8个历史results目录的独立Python脚本及两个已关闭重构变体从活动代码移除，版本/SHA见validation.json；原结果、唯一模型、逐图分数和固定协议均保留。旧定义请从Git ad5800c复现，当前主构造、SVD/前缀消融和统一评价入口保留。
+
+
+Oct23断连期间的源码与结果已补同步，37份历史快照均与本地Git树一致；映射见`results/engineering_refactor/publication.json`的`oct23_source_and_result_history`。这是恢复连接后的补发，不是更早的公开预登记。当前无数据响应计算没有新防御模型或分类成绩，带真实训练图的数值结果继续保留为历史参考。
