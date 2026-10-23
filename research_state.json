@@ -17,8 +17,17 @@
   "allow_4090": false,
   "automatic_continuation": true,
   "automation_status": "13-35 ACTIVE for latest user-requested nine-hour overnight window only",
-  "research_jobs": [],
-  "active_GPU_jobs": 0,
+  "research_jobs": [
+    {
+      "name": "frozen_prefix_point_supplementary_TA_AGA",
+      "status": "running",
+      "server_log": "outputs/nonlinear_prefix_20261023/fusion_followup.log",
+      "point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
+      "old_native_gate_failed_retained": true,
+      "no_point_or_threshold_change": true
+    }
+  ],
+  "active_GPU_jobs": 1,
   "new_candidate": false,
   "protocol": {
     "parameter_budget": 0.5,
@@ -92,7 +101,7 @@
     "pending_local": "62a7937371f655a202800a392728d0f07263c1ee",
     "reason": "GitHub plugin USER_NOT_LOGGED_IN;continue research without waiting for user"
   },
-  "next_action": "Frozen actual-prefix point35750221:seed2026102302 fresh512 once,full native accuracy protocol0.5pp witholdstrictR reported. Then same point realTA0.5/originalAGA;no parameter repair from confirmation/test.",
+  "next_action": "Finish same357point supplementary realTA/originalAGA,reportnative-gatefailure separately. Do not restart after_source.sh or recover twice;fusion_followup.sh already running. Then decide mechanism from actual results,without repair from test/partner.",
   "history": {
     "retained_remote_commit": "281be3fc01d6c63d6194c2ef4849bcdadcf1135a",
     "scope": "Former cumulative status objects only. Scientific results, frozen protocols, source history and failure evidence remain in their original paths.",
@@ -510,7 +519,7 @@
     "wall_seconds": 11.726871578008286
   },
   "active_source_hypothesis": {
-    "status": "source_passed_waiting_fresh512_and_full_native",
+    "status": "same_fixed_point_supplementary_fusion_running",
     "configuration": "configs/construct.json:nonlinear",
     "entrypoint": "python -m experiment.construct --method nonlinear --target MNIST",
     "output": "outputs/nonlinear_prefix_20261023",
@@ -552,7 +561,16 @@
     "source_seconds": 62.280361963,
     "source_image_forwards": 14336,
     "new_teacher_training": 0,
-    "source_summary": "results/nonlinear_prefix/source.json"
+    "source_summary": "results/nonlinear_prefix/source.json",
+    "full_native_accuracy_percent": 99.5,
+    "full_native_loss_pp": 0.19,
+    "fresh512_correct": [
+      512,
+      509
+    ],
+    "original_native_protocol_passed": false,
+    "full_R": 85.76234523093515,
+    "full_prediction_changes": 33
   },
   "cleanup_finite_source": {
     "closed_one_off_entrypoints_removed": 2,
