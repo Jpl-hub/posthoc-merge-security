@@ -42,5 +42,22 @@
   "output": "outputs/centered_readout_accuracy_20261023",
   "policy": "Use existing native counts and matched clean controls. Pilot then full using existing evaluator. Report target and partner, per-class and paired outcomes; no new pass threshold. Do not alter point,source,rank,class,bound or amplitude after partner results. No new optimizer or expert training.",
   "utility_reference": "MergeGuard CVPR2026 section6 reports top-1 standalone accuracy before/after; this supports separate reporting, not retrospective success under our previous stricter protocol.",
-  "reference": "https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf"
+  "reference": "https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf",
+  "source_decomposition": {
+    "inputs": "Same frozen1024 construction-cache prefixes and same point, no new image evaluations or fitting",
+    "rows": [
+      "original",
+      "projection_only",
+      "bias_only",
+      "joint"
+    ],
+    "measures": [
+      "training_accuracy",
+      "prediction_changes",
+      "relative_class_gap",
+      "feature_shift_mean_and_norm",
+      "task_SVD_inside_response"
+    ],
+    "scope": "Mechanism/component ablation on construction source only;not unseen-task evidence or an SVD-removal optimization ablation."
+  }
 }
