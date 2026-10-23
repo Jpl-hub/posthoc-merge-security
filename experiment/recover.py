@@ -5,7 +5,7 @@ import time
 
 import torch
 
-from _impl.attacks import author_recover, load_author, public_patch_recovery
+from _impl.attacks import author_recover, load_author, public_mlp_reset, public_patch_recovery
 from _impl.io import digest, new_output, save_json
 from _impl.models import apply, initialize, load_checkpoint
 from cfg import AUTHOR, load_config, require_root
@@ -14,7 +14,7 @@ from cfg import AUTHOR, load_config, require_root
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--target", choices=["MNIST", "DTD", "SVHN"], required=True)
-    p.add_argument("--method", choices=["aga", "patch"], default="aga")
+    p.add_argument("--method", choices=["aga", "patch", "reset"], default="aga")
     p.add_argument("--publication", required=True)
     p.add_argument("--sha256", required=True)
     p.add_argument("--full-state", action="store_true")
@@ -44,11 +44,20 @@ def main():
             raise ValueError("AGA text mismatch")
         result = author_recover(published, base, author).state_dict()
         detail = dict(known_family=False, author_text_sha256=sha)
-    else:
+    elif a.method == "patch":
         # Recovery gets only the full published state and public base. The clean
         # expert above assembles an edits-only publication; it is not passed here.
         result, detail = public_patch_recovery(published.state_dict(), base.state_dict())
         detail["known_family"] = True
+    else:
+        result = public_mlp_reset(published.state_dict(), base.state_dict())
+        detail = dict(
+            known_modified_modules=True,
+            reset_tensors=sum(".mlp." in k for k in result),
+            images=0,
+            original_expert_used_by_attack=False,
+        )
+        reference = base
     edits = {k: v for k, v in result.items() if not torch.equal(v, reference.state_dict()[k])}
     torch.save(edits, out / "edits.pt")
     save_json(
@@ -58,6 +67,7 @@ def main():
             seconds=time.monotonic() - start,
             output_sha256=digest(out / "edits.pt"),
             details=detail,
+            reference="public_base" if a.base_reference or a.method == "reset" else "expert",
             new_training_updates=0,
         ),
     )
