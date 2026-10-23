@@ -1132,9 +1132,42 @@ def paper_tables(_source, output):
                 )
             )
             rows.append(
-                [label, f"{native:.2f}"]
+                ["SVHN", label, f"{native:.2f}"]
                 + [pair(str(path), defense=name, merger="TA", attack_scope=s) for s in scopes]
             )
+        cross = public_backbone / "cross_partner/full/00_MNIST_DTD/results.json"
+        if cross.exists():
+            audit = read(str(cross.with_name("numpy_statistics.json")))
+            assert audit["status"].startswith("passed_independent_numpy")
+            for name, label in [
+                ("Unprotected", "Unprotected"),
+                ("Public_backbone", "Public-backbone construction"),
+                ("Reset_untreated", "Reset on untreated model"),
+                ("Reset_protected", "Reset on public-backbone construction"),
+                ("No_target", "No target expert"),
+            ]:
+                native = acc(
+                    pick(
+                        str(cross),
+                        defense=name,
+                        merger="Standalone",
+                        attack_scope="None",
+                        dataset="MNIST",
+                    )
+                )
+                rows.append(
+                    ["DTD", label, f"{native:.2f}"]
+                    + [
+                        pair(
+                            str(cross),
+                            tasks=("MNIST", "DTD"),
+                            defense=name,
+                            merger="TA",
+                            attack_scope=s,
+                        )
+                        for s in scopes
+                    ]
+                )
         reset_note = "The attacker knows the 12 modified MLP modules and replaces their 48 tensors with public-base values. No original expert, true task vector, secret transform or images enter this operator. Resetting the untreated and original numerical models gives identical states. Original AGA and known-module reset are separate conditions."
         if public_path.exists():
             comparison = read(str(public_backbone / "matched_no_target.json"))
@@ -1146,13 +1179,14 @@ def paper_tables(_source, output):
                 and r["dataset"] == "MNIST"
             )
             lo, hi = gain["gain95ci_pp"]
-            reset_note += f" Resetting the public-backbone construction leaves only three published final-readout tensors beyond the base. No target means base plus 0.5 times the SVHN task vector; its target-only column repeats direct merging, while its both column attacks only the partner. The new reset adds {gain['gain_pp']:.2f} pp over this baseline, paired 95% interval [{lo:.2f},{hi:.2f}] pp. This is an accuracy comparison, not a measure of knowledge leakage or proof of complete recovery resistance."
+            reset_note += f" Resetting the public-backbone construction leaves only three published final-readout tensors beyond the base. No target means base plus 0.5 times the partner task vector; its target-only column repeats direct merging, while its both column attacks only the partner. With SVHN the new reset adds {gain['gain_pp']:.2f} pp over this baseline, paired 95% interval [{lo:.2f},{hi:.2f}] pp. This is an accuracy comparison, not a measure of knowledge leakage or proof of complete recovery resistance."
         table(
             "numerical_reset",
             "Known-module recovery using the public base",
-            ["Model", "Standalone M", "TA M / S", "AGA target M / S", "AGA both M / S"],
+            ["Partner", "Model", "SA M", "TA M / P", "AGA target M / P", "AGA both M / P"],
             rows,
             reset_note,
+            r"l>{\raggedright\arraybackslash}p{42mm}rrrr",
         )
     eight = numerical_root / "eight_expert/full"
     if (eight / "numpy_statistics.json").exists():
@@ -1171,12 +1205,29 @@ def paper_tables(_source, output):
                         for task in ["MNIST", "DTD", "SVHN"]
                     ]
                 )
+        newer = public_backbone / "eight_expert/full/results.json"
+        if newer.exists():
+            audit = read(str(newer.with_name("numpy_statistics.json")))
+            assert audit["status"].startswith("passed_independent_numpy")
+            for name, label in [
+                ("Public_backbone", "Public-backbone construction"),
+                ("Reset_protected", "Known-module reset"),
+                ("No_target", "No target expert"),
+            ]:
+                for scope, attack in [("None", "None"), ("Protected expert", "AGA target")]:
+                    rows.append(
+                        [label, attack]
+                        + [
+                            f"{acc(pick(str(newer), defense=name, attack_scope=scope, dataset=task)):.2f}"
+                            for task in ["MNIST", "DTD", "SVHN"]
+                        ]
+                    )
         table(
             "numerical_eight",
             "Same numerical release: eight experts,three evaluated datasets",
             ["Protection", "Recovery", "MNIST", "DTD", "SVHN"],
             rows,
-            "Eight experts in author order, TA coefficient 0.2, only MNIST protected. Original AGA processes only the protected expert. The release and AGA weights are reused. DTD/SVHN are evaluated partners. Twelve records and 192 scores were checked in their original batch contexts, with zero replay error and independent paired/per-class counts. No complete eight-task table or average is claimed.",
+            "Eight experts in author order, TA coefficient 0.2, only MNIST protected. Original AGA processes only the protected expert. The release and AGA weights are reused. DTD/SVHN are evaluated partners. Original numerical357: 12 records and 192 scores; public-backbone construction and matched reset/no-target controls: 24 records and 384 scores. Original batch-context replays have zero error, with independent paired/per-class counts. Reset versus no-target must be compared at this coefficient, not at the two-expert coefficient. No complete eight-task table or average is claimed.",
         )
     comp = read("results/mean_compensation/components.json")
     rows = []
@@ -1284,7 +1335,7 @@ def paper_tables(_source, output):
         )
     if public_path.exists():
         coverage[2][1] += (
-            " A separately registered public-backbone construction retains99.47MNIST with originalAGA11.57;known-module reset84.63 is compared with84.06 without the target. Cross-task retention is still under fixed-rule validation."
+            " A separately registered public-backbone construction retains99.47MNIST with originalAGA11.57;known-module reset84.63 is compared with84.06 without the target. Same-rule SVHN95.94 andDTD41.81 fail task retention. With a DTD partner, MNIST originalAGA is18.54;eight-expert originalAGA is44.19. No release is selected or retuned from these observations."
         )
     table(
         "coverage",
@@ -1634,7 +1685,7 @@ def paper_tables(_source, output):
         p = out / "README.md"
         p.write_text(
             p.read_text()
-            + "\n[公开基座数值补偿](../nonlinear_public_backbone/summary.md)已完成MNIST固定点：独立99.47%、TA15.65%、原AGA11.57%/11.52%。已知模块重置84.63%与无目标基线84.06%同时报告，不把伙伴已有能力算成恢复目标知识。SVHN/DTD同规则验证单列，原357不变。\n"
+            + "\n[公开基座数值补偿](../nonlinear_public_backbone/summary.md)已完成MNIST固定点：独立99.47%、TA15.65%、原AGA11.57%/11.52%。已知模块重置84.63%与无目标基线84.06%同时报告，不把伙伴已有能力算成恢复目标知识。SVHN/DTD同规则独立95.94%/41.81%，任务保持失败；DTD伙伴原AGA18.54%，八专家44.19%。原357不变。\n"
         )
     if numerical:
         p = out / "README.md"

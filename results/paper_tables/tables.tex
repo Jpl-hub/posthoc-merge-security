@@ -402,6 +402,8 @@ Same-input teacher function & MNIST & 99.39 & 27.71 / 20.90 & 18.26 / 19.39 & 17
 Same-input teacher function & DTD & 26.28 & 2.13 / 10.17 & 10.37 / 10.20 & 10.59 / 10.10 \\
 Same-input teacher function & SVHN & 95.67 & 19.77 / 11.35 & 16.00 / 10.67 & 15.99 / 10.52 \\
 Public-backbone reconstruction & MNIST & 99.47 & 15.65 / 19.56 & 11.57 / 19.61 & 11.52 / 19.56 \\
+Public-backbone reconstruction & SVHN & 95.94 & 19.48 / 11.35 & 16.06 / 10.32 & 16.05 / 10.32 \\
+Public-backbone reconstruction & DTD & 41.81 & 2.71 / 10.09 & 6.91 / 10.09 & 6.81 / 10.09 \\
 \bottomrule
 \end{tabular}
 \par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize TA coefficient 0.5. MNIST uses SVHN as partner; DTD/SVHN use MNIST. Construction sets contain 1,024 MNIST, 1,024 SVHN and 512 DTD images. Attention correction adds an O solve before each A/B step. Same-input reconstruction changes only the teacher target. Every fixed point is reported; low merged accuracy is not protection success when standalone accuracy collapses. No control replaces the main release.\end{minipage}
@@ -432,19 +434,24 @@ Numerical357 & 0.8 & 80.60 / 25.28 & 58.94 / 20.13 & 55.02 / 19.99 \\
 \small
 \caption{Known-module recovery using the public base}
 \label{tab:numerical_reset}
-\begin{tabular}{lrrrr}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{42mm}rrrr}
 \toprule
-Model & Standalone M & TA M / S & AGA target M / S & AGA both M / S \\
+Partner & Model & SA M & TA M / P & AGA target M / P & AGA both M / P \\
 \midrule
-Unprotected & 99.69 & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
-Numerical357 & 99.50 & 24.46 / 19.83 & 13.02 / 19.80 & 13.09 / 19.68 \\
-Reset on untreated / original numerical model & 97.65 & 95.39 / 95.67 & 94.47 / 95.73 & 94.31 / 94.99 \\
-Public-backbone construction & 99.47 & 15.65 / 19.56 & 11.57 / 19.61 & 11.52 / 19.56 \\
-Reset on public-backbone construction & 46.43 & 84.63 / 95.94 & 84.63 / 95.94 & 84.04 / 95.03 \\
-No target expert & 48.25 & 84.06 / 95.76 & 84.06 / 95.76 & 83.46 / 94.76 \\
+SVHN & Unprotected & 99.69 & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+SVHN & Numerical357 & 99.50 & 24.46 / 19.83 & 13.02 / 19.80 & 13.09 / 19.68 \\
+SVHN & Reset on untreated / original numerical model & 97.65 & 95.39 / 95.67 & 94.47 / 95.73 & 94.31 / 94.99 \\
+SVHN & Public-backbone construction & 99.47 & 15.65 / 19.56 & 11.57 / 19.61 & 11.52 / 19.56 \\
+SVHN & Reset on public-backbone construction & 46.43 & 84.63 / 95.94 & 84.63 / 95.94 & 84.04 / 95.03 \\
+SVHN & No target expert & 48.25 & 84.06 / 95.76 & 84.06 / 95.76 & 83.46 / 94.76 \\
+DTD & Unprotected & 99.69 & 99.45 / 69.31 & 99.43 / 69.41 & 99.42 / 68.78 \\
+DTD & Public-backbone construction & 99.47 & 11.35 / 2.07 & 18.54 / 4.04 & 17.65 / 4.04 \\
+DTD & Reset on untreated model & 97.65 & 89.66 / 71.86 & 86.76 / 71.76 & 86.86 / 70.85 \\
+DTD & Reset on public-backbone construction & 46.43 & 51.58 / 73.51 & 51.58 / 73.51 & 51.63 / 72.87 \\
+DTD & No target expert & 48.25 & 50.47 / 73.94 & 50.47 / 73.94 & 50.43 / 73.19 \\
 \bottomrule
 \end{tabular}
-\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize The attacker knows the 12 modified MLP modules and replaces their 48 tensors with public-base values. No original expert, true task vector, secret transform or images enter this operator. Resetting the untreated and original numerical models gives identical states. Original AGA and known-module reset are separate conditions. Resetting the public-backbone construction leaves only three published final-readout tensors beyond the base. No target means base plus 0.5 times the SVHN task vector; its target-only column repeats direct merging, while its both column attacks only the partner. The new reset adds 0.57 pp over this baseline, paired 95\% interval [0.37,0.77] pp. This is an accuracy comparison, not a measure of knowledge leakage or proof of complete recovery resistance.\end{minipage}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize The attacker knows the 12 modified MLP modules and replaces their 48 tensors with public-base values. No original expert, true task vector, secret transform or images enter this operator. Resetting the untreated and original numerical models gives identical states. Original AGA and known-module reset are separate conditions. Resetting the public-backbone construction leaves only three published final-readout tensors beyond the base. No target means base plus 0.5 times the partner task vector; its target-only column repeats direct merging, while its both column attacks only the partner. With SVHN the new reset adds 0.57 pp over this baseline, paired 95\% interval [0.37,0.77] pp. This is an accuracy comparison, not a measure of knowledge leakage or proof of complete recovery resistance.\end{minipage}
 \end{table}
 
 \begin{table}[!htbp]
@@ -460,9 +467,15 @@ Unprotected & None & 94.00 & 52.18 & 74.42 \\
 Unprotected & AGA target & 93.23 & 52.34 & 73.90 \\
 Numerical357 & None & 86.32 & 7.23 & 32.92 \\
 Numerical357 & AGA target & 50.35 & 26.60 & 30.58 \\
+Public-backbone construction & None & 79.56 & 7.39 & 29.82 \\
+Public-backbone construction & AGA target & 44.19 & 26.38 & 28.97 \\
+Known-module reset & None & 73.50 & 54.04 & 70.36 \\
+Known-module reset & AGA target & 73.50 & 54.04 & 70.36 \\
+No target expert & None & 72.99 & 54.57 & 69.87 \\
+No target expert & AGA target & 72.99 & 54.57 & 69.87 \\
 \bottomrule
 \end{tabular}
-\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Eight experts in author order, TA coefficient 0.2, only MNIST protected. Original AGA processes only the protected expert. The release and AGA weights are reused. DTD/SVHN are evaluated partners. Twelve records and 192 scores were checked in their original batch contexts, with zero replay error and independent paired/per-class counts. No complete eight-task table or average is claimed.\end{minipage}
+\par\vspace{3pt}\begin{minipage}{0.98\linewidth}\footnotesize Eight experts in author order, TA coefficient 0.2, only MNIST protected. Original AGA processes only the protected expert. The release and AGA weights are reused. DTD/SVHN are evaluated partners. Original numerical357: 12 records and 192 scores; public-backbone construction and matched reset/no-target controls: 24 records and 384 scores. Original batch-context replays have zero error, with independent paired/per-class counts. Reset versus no-target must be compared at this coefficient, not at the two-expert coefficient. No complete eight-task table or average is claimed.\end{minipage}
 \end{table}
 
 \begin{table}[!htbp]
@@ -495,7 +508,7 @@ Item & Status \\
 \midrule
 TA + original AGA & Completed: two-expert pairs; target/both recovery scopes; protected and partner accuracy. \\
 Defense 1 & MNIST, DTD, SVHN completed; targeted cleanup and fixed-budget hard-label recovery completed with separate permissions/numerics. \\
-Defense 2 & Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved. A separately registered public-backbone construction retains99.47MNIST with originalAGA11.57;known-module reset84.63 is compared with84.06 without the target. Cross-task retention is still under fixed-rule validation. \\
+Defense 2 & Fixed structure and the frozen task-SVD-directed construction verified on MNIST/DTD/SVHN. Fixed distance-objective classification ablation completed. Method contribution and known-family recovery remain separate; not a complete eight-task benchmark. Known-family public patch matching restores all158 tensors for each target and matched control; no true task vector or secret order is supplied. Same three releases evaluated in all six task-pair orientations; the independent DTD/SVHN pair is now included. The fixed objective classification ablation covers all three protected tasks. Matching96/192/384-pair extent controls completed onMNIST;not independent seeds. The same three task-directed releases also completed author-order eight-expert TA0.2 and originalAGA target-only,with three evaluated datasets. Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved. A separately registered public-backbone construction retains99.47MNIST with originalAGA11.57;known-module reset84.63 is compared with84.06 without the target. Same-rule SVHN95.94 andDTD41.81 fail task retention. With a DTD partner, MNIST originalAGA is18.54;eight-expert originalAGA is44.19. No release is selected or retuned from these observations. \\
 PaRaMS & Full-default protection completed for MNIST/DTD/SVHN, including matched TA and original AGA. Attention-only ablation completed for MNIST; diagonal recovery is a native adaptation. \\
 MergeLock & Not run: official repository currently contains only README/Coming Soon. No invented implementation or paper scores. \\
 MergeGuard / ARF & Full defenses not run; training-stage conditions differ. Unmask formula was tested separately; GradErase not reproduced. \\

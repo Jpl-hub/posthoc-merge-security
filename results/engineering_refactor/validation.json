@@ -133,5 +133,74 @@
       "source_snapshot": "5b3c71951fdd51ab554eff118b68700af9157b62",
       "reason": "Only the completed Oct18 presentation used these scripts;current experiment/config/test/docs contain no dependency. Historical output and build hashes retained."
     }
-  ]
+  ],
+  "removed_oct23_finished_analysis_scripts": [
+    {
+      "path": "results/feature_noise/verify.py",
+      "sha256": "3dba26bbfb1945e70fd8179caf5929bb684bd1186adde6b9417a3f65ff43f0f5",
+      "lines": 186,
+      "source_snapshot": "ad5800c4a9004853fdc20d814d03ee0db68372c4"
+    },
+    {
+      "path": "results/decision_audit/analyze.py",
+      "sha256": "37d3407fb0601aaacbad2e2fcb215e384e54a2db4b233bfac30fe8403cf40c7d",
+      "lines": 133,
+      "source_snapshot": "ad5800c4a9004853fdc20d814d03ee0db68372c4"
+    },
+    {
+      "path": "results/class_noise/verify.py",
+      "sha256": "54171f5f3589fe4cc5a1bed6c172bb6dec7f69675b5b75dc876d1627faa6bc68",
+      "lines": 190,
+      "source_snapshot": "ad5800c4a9004853fdc20d814d03ee0db68372c4"
+    },
+    {
+      "path": "results/class_noise/analyze.py",
+      "sha256": "9aa3a093acc10d043438dbbe2a15d266dcf49becb80e948c89b3de829ea1f978",
+      "lines": 91,
+      "source_snapshot": "ad5800c4a9004853fdc20d814d03ee0db68372c4"
+    },
+    {
+      "path": "results/phase2_matrix/decision_audit_source.py",
+      "sha256": "327ceb5c57399b8750dcc38778bd4e0bda131753c1016afefd29b38a2bff0056",
+      "lines": 32,
+      "source_snapshot": "ad5800c4a9004853fdc20d814d03ee0db68372c4"
+    },
+    {
+      "path": "results/phase2_distance/input_covariance_audit_source.py",
+      "sha256": "3a6244515b37d218fe7de0f8099204a137aeedc95c76d0f4ecf2524a17b4fb4e",
+      "lines": 26,
+      "source_snapshot": "ad5800c4a9004853fdc20d814d03ee0db68372c4"
+    },
+    {
+      "path": "results/phase2_distance/matrix_audit_source.py",
+      "sha256": "3041a23fe775b81ba54c7262f1f14c83da1c39264de62474ad76baa44c67547e",
+      "lines": 39,
+      "source_snapshot": "ad5800c4a9004853fdc20d814d03ee0db68372c4"
+    },
+    {
+      "path": "results/probe_margin/decision_scaling.py",
+      "sha256": "28e5c4ca89f04af55b9bf7a9900723ef197a44cfe2ad2651c51803adaa466d6c",
+      "lines": 42,
+      "source_snapshot": "ad5800c4a9004853fdc20d814d03ee0db68372c4"
+    }
+  ],
+  "closed_optional_reconstruction_removed": {
+    "source_snapshot": "ad5800c4a9004853fdc20d814d03ee0db68372c4",
+    "path": "_impl/defenses.py",
+    "previous_sha256": "0f8b04061f38a5bd783f443a4b472ed9d308331573ffa15b3c8e1322ac6a2f57",
+    "closed_definitions": [
+      "pre-LN Attention reconstruction",
+      "same-input local teacher target"
+    ],
+    "deleted_net_lines": 91,
+    "results_and_frozen_protocols_preserved": true,
+    "current_algorithm_math_unchanged": true
+  },
+  "cleanup_regression": {
+    "exact_numerical_fit": "Default and no-task small-tensor A/B plus details bit-identical to frozen ad5800c;cleanup_equivalence.json",
+    "existing_test_refactor": "17 passed in2.26seconds on3090",
+    "paper_table_regression": "1 passed;23tables199rows793source selections;MD/TeXsame inputs",
+    "latex": "Desktop compiler success",
+    "pytest_runtime": "Initial server had no pytest. Temporary isolated pytest8.4.2 dependencies used only for this run;removed after test,production environment not modified."
+  }
 }
