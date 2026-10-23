@@ -1,0 +1,11 @@
+{
+  "attack": "Public-base reset of all12 known modified MLP modules",
+  "permissions": "Known numerical-defense module scope,published model and public base;no secret transform,clean expert,task vector,images or labels passed to attack",
+  "operator": "For every layer0..11 replace c_fc/c_proj weights and biases by public-base values;all other published tensors retained",
+  "matched_control": "Apply identical48-tensor reset to the unprotected expert. Recount whole-state equality before any image evaluation;one identical model may supply both labels",
+  "comparison": "Report untouched original and reset native/TA0.5/originalAGA target and both. A matched-reset model is not the original fine-tuned expert;report its actual utility cost",
+  "main_model": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
+  "separate_from_original_AGA": true,
+  "no_defense_retraining_or_repair": true,
+  "AGA_standalone_check": "Also measure unchanged-authorAGA output of main357 alone on same512 evaluation and complete10000MNIST;no new recovery call"
+}
