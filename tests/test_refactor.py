@@ -16,11 +16,24 @@ from _impl.attacks import public_patch_recovery
 from _impl.defenses import residual_permutation
 from _impl.io import digest, new_output, save_json
 from _impl.metrics import logical_parameter_distance, paired_logp, task_change
-from _impl.subspace import greedy_task_pairs
+from _impl.subspace import greedy_task_pairs, mlp_ball_moments
 
 FROZEN_BODIES = json.loads(Path("results/engineering_refactor/snapshot.json").read_text())[
     "extracted_function_body_sha256"
 ]
+
+
+@pytest.mark.parametrize("dimension", [3, 31, 767])
+def test_quickgelu_ball_moments(dimension):
+    # phi(z)-phi(-z)=z and symmetry give E[phi(z)*z]=E[z^2]/2.
+    gram = np.array([[1, -1, 0], [-1, 1, 0], [0, 0, 0]], dtype=float)
+    kernel = mlp_ball_moments(gram, np.array([0, 0, 2]), dimension, np.sqrt(dimension + 2))
+    constant = 2 / (1 + np.exp(-1.702 * 2))
+    assert abs(kernel[0, 0] - kernel[0, 1] - 0.5) < 1e-11
+    assert abs(kernel[2, 2] - constant**2) < 1e-11
+    assert abs(kernel[2, -1] - constant) < 1e-11
+    assert kernel[-1, -1] == 1
+    assert np.linalg.eigvalsh(kernel).min() > -1e-10
 
 
 @pytest.mark.parametrize(
