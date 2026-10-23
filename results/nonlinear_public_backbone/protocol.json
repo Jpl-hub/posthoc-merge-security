@@ -1,0 +1,34 @@
+{
+  "question": "Can the same numerical MLP compensation retain original MNIST function after removing the other107task-update tensors,so known-MLP reset no longer leaves those task updates available?",
+  "prior_source_evidence": "Fixed four-group source check:MLP+final readout1020/1024,public base510/1024,readout-only482/1024;original1022/1024. This evidence informed the fixed scope;no partner/test/confirmation used.",
+  "target": "MNIST",
+  "source_n": 1024,
+  "source_indices": {
+    "path": "outputs/phase2_centered_readout_mnist_20261022/draw_split.json",
+    "sha256": "5e66fea460ed84dc6aea6173539ba81cc5ba8ce268c8db12610817a1e4cf47f0"
+  },
+  "main357_unchanged": true,
+  "algorithm": "Same12MLP A reflections and B prefix reconstructions;initialize other107tensors from public base,keep original finalLN/P3tensors and MLP biases. Frozen full original expert remains teacher.",
+  "parameter_range": {
+    "A": 2,
+    "B": 4,
+    "fixed_other_distance": 0.12888449853775258,
+    "global_max": 15.492469500178574,
+    "historical_D0_5_unchanged": true
+  },
+  "task_probes": "MLP A/B constraints unchanged;other task updates removed explicitly,not claimed to preserve their SVD responses.",
+  "functional_evaluation": "Source .25pp flag retained. Sole finite point frozen before new512train confirmation,complete10000MNIST,TA.5/originalAGA target and both. Accuracy loss .5pp and strictR.5 reported separately;no retuning from outcomes.",
+  "recovery": "Same known48tensor MLP public reset applied to both protected and untreated controls. For new point it must equal public base plus published finalLN/P3tensors,checked before images. Reuse prior exactly equal untreated-reset model and scores. Also run originalAGA on the reset point;no clean expert/task vector/images supplied to attack.",
+  "baseline_caution": "A partner can already contain MNIST ability. Even exact removal of MLP task updates is not a guarantee of low merged accuracy or proof of unique-knowledge theft.",
+  "resources": "One MNIST point first;source and AGA weights retained on3090,source/no teacher gradient. No repeated SVD/prefix variants or new optimizer.",
+  "prior_art": {
+    "paper": "https://arxiv.org/html/2408.13656v2",
+    "repository": "https://github.com/uiuctml/Localize-and-Stitch",
+    "commit": "109d20676cab515ae9b5cc16111f04a381598085",
+    "file": "localize_utils.py",
+    "sha256": "376b8f7556e7288345221b11b44c51526178dcf28251bb6700ce99bf82b5f7f9",
+    "read": "Frozen pretrained/finetuned models;mask initialization/interpolate_model/train_graft and stitching. Their source learns a sparse mask;we do not run it or claim grafting as new."
+  },
+  "novelty": "Returning unused groups to the public base and function reconstruction are known tools. The defense/recovery-path composition still needs empirical and novelty review.",
+  "stop": "One fixed point,no refitting/rank/data/strength adjustment. If incomplete/nonfinite/range failure stop and retain. No new exploration after fixed02:00:56UTC deadline."
+}

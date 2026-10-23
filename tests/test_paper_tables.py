@@ -20,4 +20,12 @@ def test_report_matches_published_tables_without_modifying_inputs(tmp_path):
     new = json.loads((out / "table_sources.json").read_text())
     assert new["input_sha256"] == meta["input_sha256"]
     assert new["selected_rows"] == meta["selected_rows"]
-    assert new["tables"] == 17 and len(new["selected_rows"]) == 578
+    assert new["tables"] == meta["tables"]
+    keys = {t["key"] for t in json.loads((out / "table_data.json").read_text())}
+    assert {
+        "main",
+        "three_tasks",
+        "numerical_ablation",
+        "numerical_reset",
+        "numerical_eight",
+    } <= keys

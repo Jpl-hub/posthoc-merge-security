@@ -892,3 +892,8 @@ $$e(x(t))=e(x(0))+\int_0^t a(s)\,ds,\qquad
 
 
 REPAIR官方固定源码补充：[`e90263d`](https://github.com/KellerJordan/REPAIR/blob/e90263d7a4d48376091327274ae541d8d6d34743/notebooks/Train-Merge-REPAIR-VGG11-ClosedForm.ipynb)，notebook SHAaaa5bd072e54a7b5836af146565973cb28992889c551d53c2f1ff7df7fd12136。实际核对TrackLayer/ResetLayer及目标均值、方差的代码单元：它在卷积层外包BatchNorm并设置融合后统计；没有运行其训练或声称CLIP复现。激活统计失配和校准修复属于已有研究。当前拟议O回归是发布前、仅目标专家、原架构、任务方向约束下重构教师逐图残差，再经过真实LN/非线性；不是将REPAIR重命名为防御。该差异仅定位具体机制，并未证明组合新颖性。
+
+
+2026-10-23补充：搜索工具现在能返回Sensitivity as a Shield的摘要和附录文字片段，但正式PDF两种URL直接打开仍跳OpenReview浏览器验证页，公开API亦未取得全文。保持“未读完整正文／未获得官方代码”的状态，不能从这些片段补造其具体全局／局部处理算法或宣称复现。当前反射＋约束重构只依据已经固定核对的原源码及项目有限机制，不以这篇尚未完整读取的论文为创新排除依据。
+
+2026-10-23再核[Merge-Lock官方仓库](https://github.com/hetailang/Merge-Lock)：主分支仍仅README，正文仍写Coming Soon；没有把未实现的官方防御填入当前对比。与现数值方法更接近的逐层激活重构已有SLOA固定5435f76等前例（见上文完整源码核读），不能将岭回归或实际前缀重构本身计为原创。当前需要解释的是发布前、仅目标专家、任务方向限制下主动改写非线性响应为何能保护原AGA，以及这种保护的效用、系数和公开恢复边界；实验已显示这些边界并未全部解决。

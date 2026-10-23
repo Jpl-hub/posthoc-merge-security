@@ -155,7 +155,7 @@ def _fit_nonlinear_mlp_layer(A, B, a, ba, bb, X, target, phi, cfg):
 
 
 @torch.no_grad()
-def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
+def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg, anchor=None):
     """Reconstruct teacher block outputs using the actual modified prefix.
 
     The teacher is frozen. Only publication A/B tensors are computed by linear
@@ -163,7 +163,7 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
     """
     from .data import official_labels
     from .evaluate import evaluate
-    from .metrics import task_change
+    from .metrics import logical_parameter_distance, task_change
 
     layers = cfg["layers"]
     loader = make_loader(training, indices)
@@ -197,6 +197,16 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
     state = expert.state_dict()
     entries = {v["source_key"]: v for v in basis.values()}
     edits, per_layer = {}, []
+    if cfg.get("public_backbone", False):
+        keep = {"model.visual.proj", "model.visual.ln_post.weight", "model.visual.ln_post.bias"}
+        edits = {
+            k: v
+            for k, v in anchor.state_dict().items()
+            if ".mlp." not in k and k not in keep and not torch.equal(v, state[k])
+        }
+        published.load_state_dict(state | edits, strict=True)
+    fixed_reset_distance = logical_parameter_distance(edits, state)
+    fixed_reset_tensors = len(edits)
     forward_count = len(indices)
     for i in layers:
         attention_detail = None
@@ -276,6 +286,13 @@ def nonlinear_mlp_compensation(expert, head, training, indices, basis, cfg):
         parameter_range_passed=all(r["parameter_range_passed"] for r in per_layer),
         local_teacher_function=cfg.get("local_teacher", False),
     )
+    if cfg.get("public_backbone", False):
+        details.update(
+            logical_distance=logical_parameter_distance(edits, state),
+            fixed_public_reset_distance=fixed_reset_distance,
+            fixed_public_reset_tensors=fixed_reset_tensors,
+            task_probe_scope="MLP A/B constraints retained;other task updates explicitly removed",
+        )
     details["source"] = task_change(before, after)
     details["source"].update(
         before_correct=int((before.argmax(1) == labels).sum()),

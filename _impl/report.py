@@ -195,7 +195,7 @@ def paper_tables(_source, output):
         "Main comparison: two experts, TA coefficient 0.5",
         ["Protection", "Standalone M", "No recovery M / S", "AGA target M / S", "AGA both M / S"],
         rows,
-        "M: protected MNIST; S: partner SVHN. AGA target/both denotes recovery of only the protected expert/both experts. [H] Historical O/B and A/B fail the original complete-task bound; effect references only. [K] Known global symmetry control, not an original method; family-aware public recovery is reported separately. [F] Previous candidate preserves the complete task check but does not provide useful protection. Full PaRaMS is the full-default baseline; parameter scales differ and are not a universal exclusion rule.",
+        "M/S: protected MNIST / partner SVHN. Original AGA processes the target or both experts. Numerical reconstruction uses 1,024 target-training images and 12 linear solves, with experts frozen; standalone accuracy drops by 0.19 pp. Its original confirmation and relative-gap checks failed. [H] Historical task-bound failures; [K] known symmetry; [F] previous failed candidate. PaRaMS retains official defaults. Recovery with additional algorithm knowledge is reported separately.",
     )
     rows = []
     for target, partner, case in [
@@ -953,7 +953,7 @@ def paper_tables(_source, output):
                 "AGA both M / S",
             ],
             rows,
-            "Same1024construction images,12layers,rank32,damping0.01 and parameter ranges. Task probe is max ||DeltaW V32||/||DeltaW|| on original teacher bases,not a functional guarantee. Without SVD removes it from both construction and output correction;without prefix correction fits original teacher MLP output using actual student inputs. Report every control,no replacement of main357. Main full accuracy loss0.19pp;fresh512 source-independent gate failed and strictR0.5 failed,retained separately. All are calibration-based numerical changes,not exact permutation identities.",
+            "Same 1,024 construction images, 12 layers, rank 32, damping 0.01 and parameter ranges. The task probe measures the largest relative parameter change along teacher task directions; it does not guarantee task retention. Removing SVD still protects MNIST, so a classification benefit from SVD is not established. Removing prefix correction fits original teacher MLP outputs from actual student inputs. All controls are reported without replacing the main release.",
         )
     components = numerical_root / "source_components/results.json"
     if components.exists():
@@ -966,7 +966,144 @@ def paper_tables(_source, output):
             "Numerical changes: source-only component checks",
             ["Component", "Correct", "Prediction changes"],
             rows,
-            "Same1024target-training images and frozen main357 point. A-only and B-only use literal subsets of its release. No-reconstruction retains all A changes and their pre-fit B transports;no weights refitted or selected. Joint scores reuse the frozen calibration cache. Source observations,not independent test results.",
+            "Same 1,024 target-training images and frozen release. A-only and B-only use subsets of its edits. No-reconstruction retains A changes and the pre-fit B transforms. No weights are refitted or selected. These are construction-set observations, not independent test results.",
+        )
+    reconstruction = []
+    for label, folder, name in [
+        ("Prefix reconstruction", None, None),
+        ("With attention correction", "nonlinear_pre_ln", "Pre_LN"),
+        ("Same-input teacher function", "nonlinear_local_function", "Local_function"),
+    ]:
+        for target, partner, path, original_name in numerical:
+            source = (
+                Path("results")
+                / {"MNIST": "nonlinear_prefix", "DTD": "nonlinear_dtd", "SVHN": "nonlinear_svhn"}[
+                    target
+                ]
+            )
+            if folder is not None:
+                source = Path("results") / folder / target
+                path = str(source / "evaluation/full/results.json")
+                if not Path(path).with_name("numpy_statistics.json").exists():
+                    continue
+                audit = read(str(Path(path).with_name("numpy_statistics.json")))
+                assert audit["status"].startswith("passed_independent_numpy")
+            native = acc(
+                pick(
+                    path,
+                    defense=name or original_name,
+                    merger="Standalone",
+                    attack_scope="None",
+                    dataset=target,
+                )
+            )
+            reconstruction.append(
+                [label, target, f"{native:.2f}"]
+                + [
+                    pair(
+                        path,
+                        tasks=(target, partner),
+                        defense=name or original_name,
+                        merger="TA",
+                        attack_scope=s,
+                    )
+                    for s in scopes
+                ]
+            )
+    if reconstruction:
+        table(
+            "numerical_reconstruction",
+            "Numerical reconstruction: all fixed target-task measurements",
+            [
+                "Construction",
+                "Target",
+                "Standalone",
+                "TA T / P",
+                "AGA target T / P",
+                "AGA both T / P",
+            ],
+            reconstruction,
+            "TA coefficient 0.5. MNIST uses SVHN as partner; DTD/SVHN use MNIST. Construction sets contain 1,024 MNIST, 1,024 SVHN and 512 DTD images. Attention correction adds an O solve before each A/B step. Same-input reconstruction changes only the teacher target. Every fixed point is reported; low merged accuracy is not protection success when standalone accuracy collapses. No control replaces the main release.",
+        )
+    coefficient_rows = []
+    for coefficient, path in [
+        (0.2, numerical_root / "coefficients/0p2/full/00_MNIST_SVHN/results.json"),
+        (0.5, numerical_root / "evaluation/full/results.json"),
+        (0.8, numerical_root / "coefficients/0p8/full/00_MNIST_SVHN/results.json"),
+    ]:
+        if not path.exists():
+            continue
+        for name, label in [
+            ("Unprotected", "Unprotected"),
+            ("Prefix_compensation", "Numerical357"),
+        ]:
+            coefficient_rows.append(
+                [label, f"{coefficient:.1f}"]
+                + [pair(str(path), defense=name, merger="TA", attack_scope=s) for s in scopes]
+            )
+    if coefficient_rows:
+        table(
+            "numerical_coefficient",
+            "Fixed numerical release at three TA coefficients",
+            ["Protection", "Coefficient", "TA M / S", "AGA target M / S", "AGA both M / S"],
+            coefficient_rows,
+            "One frozen release: standalone MNIST is 99.50%, versus 99.69% untreated. Coefficients 0.2 and 0.8 were fixed after observing 0.5 and were not used to tune or select defense weights. Both original AGA scopes and matched untreated controls are reported.",
+        )
+    reset = numerical_root / "public_reset/evaluation/full/00_MNIST_SVHN/results.json"
+    if reset.exists():
+        rows = []
+        for path, name, label in [
+            (numerical_root / "evaluation/full/results.json", "Unprotected", "Unprotected"),
+            (
+                numerical_root / "evaluation/full/results.json",
+                "Prefix_compensation",
+                "Numerical357",
+            ),
+            (reset, "Public_MLP_reset", "Same public reset on both controls"),
+        ]:
+            native = acc(
+                pick(
+                    str(path),
+                    defense=name,
+                    merger="Standalone",
+                    attack_scope="None",
+                    dataset="MNIST",
+                )
+            )
+            rows.append(
+                [label, f"{native:.2f}"]
+                + [pair(str(path), defense=name, merger="TA", attack_scope=s) for s in scopes]
+            )
+        table(
+            "numerical_reset",
+            "Known-module recovery using the public base",
+            ["Model", "Standalone M", "TA M / S", "AGA target M / S", "AGA both M / S"],
+            rows,
+            "The attacker knows the 12 modified MLP modules and replaces their 48 tensors with public-base values. No original expert, true task vector, secret transform or images are used. Applying the same operation to the untreated control gives the identical 158-tensor model. Standalone accuracy drops by 2.04 pp, while merged accuracy recovers. Original AGA alone retains 99.44% standalone accuracy; the reset is a separate recovery condition.",
+        )
+    eight = numerical_root / "eight_expert/full"
+    if (eight / "numpy_statistics.json").exists():
+        audit = read(str(eight / "numpy_statistics.json"))
+        assert audit["status"].startswith("passed_independent_numpy")
+        rows = []
+        for name, label in [
+            ("Unprotected", "Unprotected"),
+            ("Prefix_compensation", "Numerical357"),
+        ]:
+            for scope, attack in [("None", "None"), ("Protected expert", "AGA target")]:
+                rows.append(
+                    [label, attack]
+                    + [
+                        f"{acc(pick(str(eight / 'results.json'), defense=name, attack_scope=scope, dataset=task)):.2f}"
+                        for task in ["MNIST", "DTD", "SVHN"]
+                    ]
+                )
+        table(
+            "numerical_eight",
+            "Same numerical release: eight experts,three evaluated datasets",
+            ["Protection", "Recovery", "MNIST", "DTD", "SVHN"],
+            rows,
+            "Eight experts in author order, TA coefficient 0.2, only MNIST protected. Original AGA processes only the protected expert. The release and AGA weights are reused. DTD/SVHN are evaluated partners. Twelve records and 192 scores were checked in their original batch contexts, with zero replay error and independent paired/per-class counts. No complete eight-task table or average is claimed.",
         )
     comp = read("results/mean_compensation/components.json")
     rows = []
@@ -1070,7 +1207,7 @@ def paper_tables(_source, output):
         )
     if numerical:
         coverage[2][1] += (
-            " Numerical12MLP reconstruction now has measured native/TA/originalAGA outcomes and fixed SVD/prefix removals. Original small-sample/strict-gap failures are retained;standalone accuracy and calibration access are reported explicitly. Cross-task,coefficient and public-module-reset evidence is separate."
+            " Numerical12MLP reconstruction and fixed SVD/prefix removals completed. MNIST retains99.50 accuracy;SVHN loses1.21pp andDTD retention fails. Public-module reset recovers94.47MNIST merged accuracy;coefficient and eight-expert results are weaker thanTA0.5. Original small-sample/strict-gap failures retained. SVD classification contribution and robust task retention remain unresolved."
         )
     table(
         "coverage",
@@ -1173,7 +1310,7 @@ def paper_tables(_source, output):
         "",
         "表格形式参考AGA原文v1第9页Table1：明确保护方法与攻击状态、数据集列、独立未保护控制；使用booktabs横线与简短表注。此处内容、评价范围与原论文不同。",
         "",
-        "[AGA原文](https://arxiv.org/pdf/2606.30360v1)。MergeLock仓库于2026-10-21核对仍仅README；未把其论文结果填入我们的表。",
+        "[AGA原文](https://arxiv.org/pdf/2606.30360v1)。MergeLock仓库于2026-10-23核对仍仅README；未把其论文结果填入我们的表。",
         "",
         "TeX正文为英文，Markdown解释使用中文。SA为单独使用准确率；M/D/S分别为MNIST/DTD/SVHN；T/P为该行目标/伙伴。所有准确率单位为百分比。",
         "",
@@ -1183,6 +1320,22 @@ def paper_tables(_source, output):
         "% Accuracy in percent. No new model evaluation or raw-score audit.",
     ]
     chinese = {
+        "numerical_reconstruction": (
+            "数值补偿的完整跨任务结果",
+            "同一任务使用同一构造集，全部固定结果保留。M/S/D分别为MNIST/SVHN/DTD；目标与伙伴分列。原方法、增加Attention补偿和改为同输入教师函数重构分别比较，不根据测试成绩替换主模型。DTD独立准确率明显下降的行是任务保持失败，不能因为融合准确率低就称成功。",
+        ),
+        "numerical_coefficient": (
+            "同一数值发布在不同TA系数下的结果",
+            "唯一主发布357不变。0.2和0.8是在0.5结果之后固定的两项补充观察，没有按成绩选择新防御。MNIST独立准确率均99.50%，无保护99.69%。0.5上的低准确率不能代表其他系数同样有效。",
+        ),
+        "numerical_reset": (
+            "知道修改模块后的公开基座恢复",
+            "仅使用发布模型、公开基座及12个MLP修改位置，替换其48个权重和偏置；没有原专家、真实任务向量、秘密变换或图片。同一操作处理无保护控制后得到完全相同的158个张量，因此只需评价一份相同模型。该恢复牺牲2.04个百分点独立准确率，使AGA后融合恢复到94.47%；与原版AGA单独列出。",
+        ),
+        "numerical_eight": (
+            "同一数值发布：八专家融合、三个数据集评价",
+            "只有MNIST受保护，DTD和SVHN是被评价的伙伴。作者顺序、TA系数0.2和原版AGA仅保护专家均固定。没有重构新防御或重复AGA，不报完整八任务表或平均。",
+        ),
         "numerical_ablation": (
             "数值版防御二：SVD与逐层补偿消融",
             "相同1024张训练构造图、12层、rank32和0.01阻尼。Task probe为原任务右奇异方向上的相对参数改动，不是分类功能不变的证明。去掉SVD仍有效，不能把保护全归功于SVD；逐层补偿的结果与去除控制直接对照。完整方法主点冻结，不按消融成绩替换。独立准确率损失与原严格间隔/小样本失败分别报告。",
@@ -1402,6 +1555,12 @@ def paper_tables(_source, output):
         p.write_text(
             p.read_text()
             + "\n[修改幅度与任务方向对照](../task_directed_pairing/amplitude_ablation/summary.md)已完成：同一固定顺序的96／192／384对交换，两种目标分别报告，0与384模型复用；不作为独立种子或新防御。\n"
+        )
+    if numerical:
+        p = out / "README.md"
+        p.write_text(
+            p.read_text()
+            + "\n[数值版防御二](../nonlinear_prefix/summary.md)已完成MNIST及同规则SVHN/DTD、SVD/前缀消融、源分量、公开模块恢复、两项TA系数和八专家三数据集评价。MNIST独立99.50%、TA0.5原AGA后13.02%是实测有效结果；DTD独立43.46%是明确失败。去掉SVD仍有效，尚未证明SVD分类贡献。已知模块后的公开基座替换恢复融合94.47%，其他系数和八专家下保护较弱，均与主表分列。固定重构目标对照完整列出，不按成绩替换主发布。\n"
         )
     manifest = dict(
         status="completed_table_collection",
