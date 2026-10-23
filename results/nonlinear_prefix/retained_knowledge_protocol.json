@@ -1,0 +1,24 @@
+{
+  "question": "Why does replacing modified MLP modules with the public base retain most MNIST ability? Locate ability in unchanged groups before proposing any new defense.",
+  "source_only": true,
+  "targets": [
+    "MNIST",
+    "SVHN",
+    "DTD"
+  ],
+  "source_indices": "Exactly the already frozen original1024/1024/512 construction indices from calibration.pt;no new draw",
+  "groups": [
+    "Public base",
+    "Only expert48MLP tensors over public base",
+    "Only expert finalLN/P3tensors over public base",
+    "Expert MLP plus finalLN/P51tensors over public base"
+  ],
+  "fixed_head": "Same target classifier head for every group",
+  "controls": "Original expert source counts reused;all4fixed groups reported for all3targets",
+  "interpretation": "Nonlinear subset hybrids,not additive causal attribution and not new defense candidates. Source evidence only,not complete-task accuracy.",
+  "access": "Only original target/public base/legitimate target construction images;no partner/test/exposed-confirmation data",
+  "updates": "No fitting,gradient,expert training,new defense checkpoint or AGA call",
+  "execution": "python -m experiment.nonlinear_ablation --retained-knowledge,after already registered local-function evaluation;deadline checked before start",
+  "next_step": "Use the complete result to understand the recovery limitation;no automatic module expansion or new optimizer",
+  "source_sha256": "6f94a2aa41f9d86a22d64c3ee35a7a2ad7d66d2867746af2019ba630e1887d85"
+}

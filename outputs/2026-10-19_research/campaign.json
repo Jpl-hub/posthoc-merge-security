@@ -1,6 +1,6 @@
 {
-  "status": "Numerical Defense2:MNIST99.50 standalone,TA24.46,originalAGA13.02/13.09;fixed ablations/generalization/recovery queued",
-  "updated_utc": "2026-10-22T18:51:44.143857+00:00",
+  "status": "Numerical MNIST effect replicated;SVHN loses1.21pp,DTD retention fails;public MLP reset recovers94.47. Fixed pre-LN control complete;local-function target control running.",
+  "updated_utc": "2026-10-22T22:20:46.642794+00:00",
   "automatic_continuation": true,
   "automation_status": "13-35 ACTIVE by explicit latest nine-hour request;fixed deadline,then pause",
   "overnight_window_utc": {
@@ -9,41 +9,42 @@
   },
   "research_jobs": [
     {
-      "PID": 20497,
-      "name": "MNIST no_task/no_prefix matched controls",
-      "state": "serial GPU batch",
-      "log": "outputs/nonlinear_prefix_20261023/ablation_queue.log"
+      "PID": 48657,
+      "name": "Fixed same-input local teacher function target;all3sources before validation",
+      "state": "constructing SVHN/DTD/MNIST serially",
+      "log": "outputs/nonlinear_prefix_20261023/local_function_sources.log"
     },
     {
-      "PID": 22376,
-      "name": "Same algorithm SVHN target",
-      "state": "waiting for controls",
-      "log": "outputs/nonlinear_svhn_20261023/after_ablation.log"
-    },
-    {
-      "PID": 22804,
-      "name": "Same algorithm DTD target512source/401heldout",
-      "state": "waiting for SVHN",
-      "log": "outputs/nonlinear_dtd_20261023/after_svhn.log"
-    },
-    {
-      "PID": 23206,
-      "name": "AGA standalone and public-module reset matched control",
-      "state": "waiting for generalization",
-      "log": "outputs/nonlinear_prefix_20261023/after_generalization.log"
+      "PID": 48917,
+      "name": "Same fixed points native/TA/originalAGA",
+      "state": "waiting all3frozen sources;no duplicate job",
+      "log": "outputs/nonlinear_prefix_20261023/local_function_evaluate.log"
     }
   ],
   "active_GPU_jobs": 1,
-  "next_action": "Finish fixed controls,SVHN/DTD and public known-module recovery;integrate numerical results in MD/TeX;necessary8expert setting next. Never retune main357 from partner/test. At deadline finish and pause13-35.",
+  "next_action": "Finish already registered local-function control;collect all targets without selecting replacements. Independently recount new rows and integrate plain MD/TeX tables. No new optimizer or variant from test feedback. Fixed deadline02:00:56UTC.",
   "github_sync": {
     "status": "pending_connection",
     "last_verified_remote": "6c1ca1c40d23a42761314da386c2ff4b145e0de2",
-    "pending_local": "bf4f3c10e922f2ef30b1f4d297896edf615b579b",
+    "pending_local": "2d66f4504ae64c6895be38baa78e672c7f1ad3ff",
     "reason": "Plugin USER_NOT_LOGGED_IN,last real readback preserved,do not claim published"
   },
   "current_state": "research_state.json",
   "core_method_first": true,
   "current_candidate": "results/nonlinear_prefix/summary.md",
   "main_point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
-  "history_snapshot": "bf4f3c10e922f2ef30b1f4d297896edf615b579b"
+  "history_snapshot": "bf4f3c10e922f2ef30b1f4d297896edf615b579b",
+  "completed_overnight": {
+    "components": "results/nonlinear_prefix/source_components/results.json;A-only/B-only/no-reconstruction collapse source,full compensation preserves1022/1024",
+    "ablations": "results/nonlinear_prefix/ablations;no_task/no_prefix complete,do not rerun",
+    "generalization": [
+      "results/nonlinear_svhn",
+      "results/nonlinear_dtd"
+    ],
+    "AGA_standalone": "99.44MNIST,results/nonlinear_prefix/AGA_native",
+    "public_reset": "results/nonlinear_prefix/public_reset",
+    "eight_expert": "results/nonlinear_prefix/eight_expert",
+    "coefficients": "results/nonlinear_prefix/coefficients",
+    "pre_LN": "results/nonlinear_pre_ln:all3complete;M99.52/TA26.22/AGA23.08;S96.18/AGA20.79;D40.43/AGA9.10;not a generalization solution"
+  }
 }
