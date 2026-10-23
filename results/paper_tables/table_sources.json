@@ -1,6 +1,6 @@
 {
   "status": "completed_table_collection",
-  "report_source_sha256": "f67ae0cda9a5a20aff4e9ddaebf42f9448456e5bf58e411e2dc6df6fc809f2e6",
+  "report_source_sha256": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
   "input_sha256": {
     "results/nonlinear_prefix/evaluation/full/independent_validation.json": "8ff8e65a253d9297eb27a9e37916cfbc001a9d3652d6ca5ab4e22c64f38b606e",
     "results/nonlinear_prefix/evaluation/full/execution.json": "18a35ce1127c129679553d70bd5b89c9d14d016bfce17ad1e3756149715f7db1",
@@ -135,7 +135,10 @@
     "results/nonlinear_prefix/eight_expert/full/results.json": "e06c80c8b9e1824ac3ab7137b98c18d7c1b9a4f6398d5cf3480e1ff19393f74a",
     "results/nonlinear_public_backbone/eight_expert/full/numpy_statistics.json": "3e28571eab7178bcc0eea4ab46c57220d726745b6dffdb0212ffd3b02e7425d1",
     "results/nonlinear_public_backbone/eight_expert/full/results.json": "17b7390e247e0ad8e714ea58bdbf61bdd4722f2d8c23becd2b63c7a58b200f9f",
-    "results/mean_compensation/components.json": "3f2ad0ea7f1aed559d766b0bd395349ddeb018b4e3c2d15e488d36b6451d3f35"
+    "results/mean_compensation/components.json": "3f2ad0ea7f1aed559d766b0bd395349ddeb018b4e3c2d15e488d36b6451d3f35",
+    "results/data_free_compensation/pilot_evaluation_validation.json": "12857aac7e1f5509c482111b3c27446d544666e48a210c3ff245d2d19bfd6ca2",
+    "results/data_free_compensation/pilot_evaluation_execution.json": "ab53ffa961850b5dccc383d57842fb138ad3d1804b03f693c69f643253f12482",
+    "results/data_free_compensation/pilot_evaluation.json": "03ce0e37081ebf89ee10e750a6113c6fd74b798338ec85bb0c163cedcc7c5b55"
   },
   "selected_rows": [
     {
@@ -8401,9 +8404,147 @@
         "attack_scope": "Protected expert",
         "dataset": "SVHN"
       }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 0,
+      "selector": {
+        "defense": "Unprotected",
+        "merger": "Standalone",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 1,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 2,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 3,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 4,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 5,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 6,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 7,
+      "selector": {
+        "defense": "Joint_MNIST",
+        "merger": "Standalone",
+        "dataset": "MNIST"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 8,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Joint_MNIST",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 9,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Joint_MNIST",
+        "merger": "TA",
+        "attack_scope": "None"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 10,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Joint_MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 11,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Joint_MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 12,
+      "selector": {
+        "dataset": "MNIST",
+        "defense": "Joint_MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
+    },
+    {
+      "path": "results/data_free_compensation/pilot_evaluation.json",
+      "row": 13,
+      "selector": {
+        "dataset": "SVHN",
+        "defense": "Joint_MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts"
+      }
     }
   ],
-  "tables": 23,
+  "tables": 24,
   "new_GPU_forwards": 0,
   "new_raw_score_revalidation": false,
   "scope": "Checks imported integer/class totals and joins; reuses prior independent raw-score audits. Not a new attack/defense experiment.",
@@ -8415,9 +8556,9 @@
   },
   "output_sha256": {
     "README.md": "d4ff5559e45c3946fcd4652b4ebcdcc93fbebe45518c04a7424a6da8f2291aa2",
-    "tables.md": "272b3daaca70d3baa5678164a20542c74d396341421286203f379b740c871e66",
-    "tables.tex": "15082faffeaf5cc8742b75243d9d20a785050909c70a26b0ef11fac7df447fca",
-    "table_data.json": "2bfc2871b0138187a256e99bb917f4e21239ea5af84179493eefdd65f2db0c52",
+    "tables.md": "1b29768f21bab4b99ce6e4be5fec6dcade11d17a1df22e2b0d1fc28036f7a709",
+    "tables.tex": "72fb1689da7be5d873a6602499215b41d0316faf0eb2452611a84cbf7b739d5d",
+    "table_data.json": "65ff56b6af483728df363d74699e21232a3e196e2733f6cc0c5ec50b1793963c",
     "figure.tex": "c8b388f92005d0b18eda54f04f7ce2ab49c7c3389a00e45a0ee96e450dca48f5",
     "comparison.pdf": "f2aeeee3e626c8424182cf714b587438a36ae0f89136949839a993b7299fe8db",
     "comparison.png": "c42155cf3ccf033fba6299e6840810158103167893135df2aed22648ae6604a7",
