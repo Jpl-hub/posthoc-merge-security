@@ -1,0 +1,20 @@
+{
+  "purpose": "One compensation-target control:fit frozen original MLP evaluated at actual student normalized inputs",
+  "targets": [
+    "SVHN",
+    "DTD",
+    "MNIST"
+  ],
+  "source_rule": "Same frozen original source indices,all three source points frozen before new validation;no new source/seed/rank/strength",
+  "difference": "Only B target:teacher B phi(A X_s+a),rather than another teacher residual trajectory. Same24A/B tensors and all12layers",
+  "finite_mechanism": "LN normalized features do not observe positive residual scale;cross-trajectory target includes scale-dependent earlier residual difference. Same-input local-function target depends only on the features the MLP receives. Standard local reconstruction,not a new theorem or optimizer",
+  "parameter_range": 15.491933384829668,
+  "source_criterion": ".25pp flag retained,not a replacement for complete accuracy observations",
+  "full_accuracy_reference_loss_pp": 0.5,
+  "historical_strict_R0_5_reported": true,
+  "raw_observations": "Every complete finite fixed point measured and retained;no replacement selection or refitting from confirmation/test/partner scores",
+  "construction_access": "Only frozen target/base/legitimate target train;no partner/test/exposed-confirmation/failure-witness input",
+  "new_O_variant_results_used_to_select_this_control": false,
+  "prior_art": "Local function reconstruction and SVD/reflection/ridge are known;contribution of this defense composition not established by naming them",
+  "stop_rule": "One fixed target definition,report failure rather than varying target coefficients,data,budgets or seeds"
+}
