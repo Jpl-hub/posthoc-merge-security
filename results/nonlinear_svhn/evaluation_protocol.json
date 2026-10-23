@@ -1,0 +1,20 @@
+{
+  "target": "SVHN",
+  "partner": "MNIST",
+  "source": "source_indices.json",
+  "source_sha256": "4423102fa4859bc56dcdd7f4be93bc22a0d76132afe5cb3a1eaddeed45ea4d31",
+  "construction_seed": 2026102303,
+  "source_n": 1024,
+  "confirmation_n": 512,
+  "confirmation_seed": 2026102304,
+  "confirmation_draw": "After sole point hash;exclude source and all registered historical train metadata",
+  "utility": "Report source and complete standalone accuracy loss. Source criterion<=0.25pp,full criterion<=0.5pp. Fresh512 is an independent estimate reported with counts,not a censoring replacement for full accuracy. StrictR0.5 separately retained.",
+  "parameter_ranges": {
+    "A": 2,
+    "B": 4,
+    "joint": 15.491933384829668
+  },
+  "evaluation": "Fixed TA0.5 and unchanged authorAGA target-only/both;report all target/partner outcomes. If source fails,retain it,no retraining/retuning;do not promote it as useful defense.",
+  "method_main_MNIST": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
+  "novelty": "SVD/reflection/ridge/layer reconstruction known;empirical contribution of this composition still under evaluation"
+}
