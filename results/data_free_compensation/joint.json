@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-24T06:59:51.890124+00:00",
+  "updated_utc": "2026-10-24T07:03:36.327177+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -1113,5 +1113,189 @@
     "raw_record": "outputs/2026-10-24_research/task_function_probe.json",
     "limits": "Activation excitation and finite diversity only;not a defense,natural taskcoverage,classification harm or novelty proof.",
     "source_sha256": "c29341e650d6ee7ba37796769c74fa81fce089009eaa527c9281720272b7860c"
+  },
+  "task_function_probe": {
+    "status": "completed_read_only_generated_inputs",
+    "target": "MNIST",
+    "seed": 2026102420,
+    "directions": 32,
+    "generated_inputs": 64,
+    "steps": 64,
+    "step_size": 0.0078125,
+    "image_shape": [
+      224,
+      224
+    ],
+    "generated_latent_shape": [
+      3,
+      32,
+      32
+    ],
+    "before_signed_response": {
+      "min": -0.21736305926109317,
+      "median": 0.0013231484586479743,
+      "mean": 0.0004692139184891556,
+      "max": 0.21777065328087647
+    },
+    "after_signed_response": {
+      "min": 0.3090081390924476,
+      "median": 0.7449964173055859,
+      "mean": 0.7369229170053724,
+      "max": 1.1590914913245065
+    },
+    "signed_response_gain": {
+      "min": 0.46621947413539494,
+      "median": 0.7079716889753461,
+      "mean": 0.7364537030868833,
+      "max": 1.1336196438811024
+    },
+    "improved_inputs": 64,
+    "shifted_signed_response": {
+      "min": -0.15290388511108755,
+      "median": 0.07713881130284708,
+      "mean": 0.1041728838567477,
+      "max": 0.6082368275274563
+    },
+    "shifted_minus_unshifted": {
+      "min": -1.0692718774587202,
+      "median": -0.6324027935176082,
+      "mean": -0.6327500331486247,
+      "max": -0.2085142412353964
+    },
+    "initial_response_spectrum": {
+      "singular_values": [
+        0.14354682662068602,
+        0.13874467068858062,
+        0.11757027125474652,
+        0.10022177495439596,
+        0.09630141240617879,
+        0.08258343039135634,
+        0.06985929248367888,
+        0.06661832355365696,
+        0.062478954431785284,
+        0.058588349606260866,
+        0.05286160134161746,
+        0.04762780349789805,
+        0.04642041037780604,
+        0.04272255668327057,
+        0.04001382689592364,
+        0.03669672795640168,
+        0.03338850270535121,
+        0.03185749176995919,
+        0.030483891337509537,
+        0.029337489685310143,
+        0.028574564533882515,
+        0.027709476817485583,
+        0.025148652669421852,
+        0.022996811880358663,
+        0.02138926861433441,
+        0.019495474517388915,
+        0.017428806851298138,
+        0.015934435990414792,
+        0.01478975770073675,
+        0.013780819769640771,
+        0.01033402047749097,
+        0.010283272745025057
+      ],
+      "energy_effective_rank": 14.917126604926146
+    },
+    "final_response_spectrum": {
+      "singular_values": [
+        2.7808177062810278,
+        2.6131022733001483,
+        2.2795542367811334,
+        2.1315147848276474,
+        2.074850410871847,
+        1.794229470900336,
+        1.7182417045015548,
+        1.7006737236671057,
+        1.561814887252568,
+        1.4450914105012207,
+        1.4157155357520326,
+        1.2790758449366284,
+        1.1930426700744028,
+        1.0587707814552234,
+        0.962616181798375,
+        0.9092116733241786,
+        0.8307947387508614,
+        0.8021689860807543,
+        0.7896150551058654,
+        0.7552321129055036,
+        0.7144983531393978,
+        0.660399576793807,
+        0.6140533055860703,
+        0.5843150146410157,
+        0.5776357863584664,
+        0.5464471362612254,
+        0.4822902506235723,
+        0.46464638162285543,
+        0.4095049686077653,
+        0.39033583198746435,
+        0.3173779748658071,
+        0.15701549732939016
+      ],
+      "energy_effective_rank": 18.371758714346406
+    },
+    "full_feature_difference_before": {
+      "min": 0.6625420451164246,
+      "median": 0.697111189365387,
+      "mean": 0.6964473724365234,
+      "max": 0.7371583580970764
+    },
+    "full_feature_difference_after": {
+      "min": 1.1963375806808472,
+      "median": 1.3982744216918945,
+      "mean": 1.396884799003601,
+      "max": 1.5594351291656494
+    },
+    "seconds": 47.94148812498315,
+    "real_images": 0,
+    "classification_heads": 0,
+    "partner_models": 0,
+    "new_defense_points": 0,
+    "expert_updates": 0,
+    "pixel_gradient_steps": 1024,
+    "image_model_forwards": 8960,
+    "raw_path": "outputs/2026-10-24_research/task_function_probe.pt",
+    "raw_sha256": "129fb2c7dde6b530b9af05b8c62555b47e59859cd34efaa676530ee0cfeab57a",
+    "checkpoint_sha256": {
+      "expert": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "anchor": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f"
+    },
+    "basis_sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344",
+    "model_source_sha256": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "source_sha256": "c29341e650d6ee7ba37796769c74fa81fce089009eaa527c9281720272b7860c",
+    "limitations": "SVD-aligned activation excitation only,not natural-task coverage,classification,function preservation,defense construction or novelty.",
+    "independent_numpy_max_error": 1.3322676295501878e-15,
+    "raw_record": "outputs/2026-10-24_research/task_function_probe.json",
+    "raw_record_sha256": "4a9247bb61840d56dfc9e9565e52682f90fab9a17b6897a58a73c704e72355bb",
+    "mean_response_drop_after_translation": 0.8586380183695818,
+    "construction_preregistration": "local782acc0 / bba0716;not publicly uploaded",
+    "interpretation": "Complete-model task directions excited and finite response diversity increased;translation sensitivity prevents treating this as evidence of natural-task coverage.No defense constructed or closed point retried."
+  },
+  "CLAMP_ViT_source_review": {
+    "paper": "https://arxiv.org/html/2407.05266v2",
+    "sections_read": "3.2-3.5;generation uses task-specific output targets and patch contrast",
+    "repository": "https://github.com/gt-synergy-lab/CLAMP-ViT",
+    "commit": "76dd4561e26eb1e96adfc36f1bfaac1d3bfa7d12",
+    "tree": "8bad32f27c792dfd4e557ff260497f97645497f8",
+    "read_source": [
+      {
+        "path": "test_clamp_vit.py",
+        "blob": "8f56e68ae8a14cef8da89c8eb58584ad90529a59",
+        "sha256": "48685e0fb17d55a16bb3ca00a61898dba389b868f4244dc8276ce23e80f44dda"
+      },
+      {
+        "path": "config.py",
+        "blob": "6b0293519d9d0552c6abfd8f5caa705d37374bce",
+        "sha256": "ba127f836858f91a7828061d21a0791ed2874b206fc32d20d7f8941acb52283d"
+      },
+      {
+        "path": "models/ptq/observer/build.py",
+        "blob": "7b1afc0d9221bbc077c9e4a717437f45063cd91a",
+        "sha256": "462b40066e94fc46062dc8f1e52013e816bcd323147a89f5da90cc1a8f2d2fc2"
+      }
+    ],
+    "scope": "Public evaluator loads supplied quantized checkpoint and ImageNet val;Config selects observers. Recursive tree lists24Python files but no separate synthesis/search driver. Did not install,run,reproduce or invent missing loop. Ordinary synthesis/contrastive distillation is prior art."
   }
 }
