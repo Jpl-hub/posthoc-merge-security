@@ -1685,5 +1685,58 @@
       "context_forward_images": 5808,
       "raw_full_statistics": "outputs/alignment_compensation_20261024/components/results.json:independent_numpy"
     }
+  },
+  "population_function_calculation": {
+    "status": "defined_before_calculation",
+    "scope": "Eight fixed unselected original last-MLP neurons;no parameter changes. Check bounded-domain QuickGELU moments as a possible functional constraint,not a method or natural-task claim.",
+    "target": "MNIST",
+    "layer": 11,
+    "neuron_indices": "linspace0..3071,8integer indices,all reported",
+    "domains": [
+      "uniform767dimensional centered LayerNorm ball,radius sqrt768",
+      "uniform32dimensional task-probe ball,same radius;basis top32right singular vectors of(Ae-A0)diag(gamma_e)H"
+    ],
+    "activation": "z*sigmoid(1.702*z),actual frozen QuickGELU with both affine biases retained",
+    "quadrature": "64and128point sequential Gauss-Jacobi on2D marginal;orders fixed,no adaptive retry",
+    "independent_reference": "262144scrambled Sobol9dim uniforms seed2026102424,8standard normal coordinates plus independent chi-square(r+2-8)tail;uniform ball projection",
+    "numerical_reference": "64vs128 Frobenius relative<=1e-5;independent raw kernel/nonlinear covariance/mean relative<=.005;failed calculations retained,not retuned",
+    "functional_decomposition": "Centered activation covariance minus best-affine explained covariance;report nonlinear contribution also weighted by corresponding eight original B columns. Only a fixed subcircuit,not whole3072MLP.",
+    "new_defense_points": 0,
+    "real_images": 0,
+    "model_updates": 0,
+    "classification_heads": 0,
+    "prior_source_files": [
+      {
+        "repository": "friendshipkim/neuron-merging",
+        "commit": "d25cf3e39ecf376a1ffc8b3cbf326a38b6db19cf",
+        "path": "decompose.py",
+        "blob": "c726fff8c551b35e2a9829c8bce54a5babfe9d9d",
+        "sha256": "c4bc0dac56c380ae7791473d4a8f5bc0c2225c5b7bde1b378bbc5ad6e22ea85f"
+      },
+      {
+        "repository": "insuhan/ntk_activations",
+        "commit": "faa78b67929f442c689b01f88a15de8df54097e7",
+        "path": "ntk_activations/dual_kernels.py",
+        "blob": "a2e8ba5e9fecbcaf7d2a50ef00f3133bebe3db5d",
+        "sha256": "5597c01020c517b12c66036532e52e176fa54609e78c87197a3de2b32f11e70a"
+      },
+      {
+        "repository": "insuhan/ntk_activations",
+        "commit": "faa78b67929f442c689b01f88a15de8df54097e7",
+        "path": "ntk_activations/polynomials.py",
+        "blob": "a398ab768bea9c1b55f4fd1b30d170b3d3f3d251",
+        "sha256": "52eeda76b6b98f2f435c630a3bf6e76e60e3a0f16528815005d095a7fdad537d"
+      },
+      {
+        "repository": "insuhan/ntk_activations",
+        "commit": "faa78b67929f442c689b01f88a15de8df54097e7",
+        "path": "examples/dual_kernel_approx.py",
+        "blob": "518d771809a56931f47513a8ddae867e00b60ced",
+        "sha256": "61698647dc3e26b07e86b9a41531dd4882d8267dcdd3d102a0d73f77027f5022"
+      }
+    ],
+    "raw_record": "outputs/2026-10-24_research/population_function.json",
+    "source_sha256": "59076024f59426fd82cd0350f7dcea7d0eb69286229c8219ff0b0e658398e12e",
+    "source_embedded_in_raw_record": true
   }
 }

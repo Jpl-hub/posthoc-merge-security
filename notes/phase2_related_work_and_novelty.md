@@ -1016,3 +1016,10 @@ QuickGELU差式由本项目直接代数得到，再在原第11块上检查整个
 新核[CLAMP-ViT §3.2–3.5](https://arxiv.org/html/2407.05266v2)：局部patch对比与输出目标引导合成数据，目标仍含任务特定输出；它没有提供仅由任务权重差重建自然分布的结论。固定官方提交[76dd4561](https://github.com/gt-synergy-lab/CLAMP-ViT/tree/76dd4561e26eb1e96adfc36f1bfaac1d3bfa7d12)，实际核读test_clamp_vit.py、config.py和observer/build.py。公开入口加载给定量化权重，再读取ImageNet val评价；递归目录列24个Python文件，本轮未取得单独合成／搜索驱动，不编造缺失循环或声称官方复现。来源blob及SHA见joint.json。
 
 本项目只做固定SVD方向输入激发计算，普通激活最大化、合成输入和SVD本身不计创新。完整专家减基座的有符号响应虽然提高，但7像素平移后平均下降85.86%，不能据响应提高认定已经恢复目标任务数据。没有用类别头／真实图验证并挑选生成输入，没有据此接续旧失败优化器；完整数值Defense2仍未完成。
+
+
+### Oct24：非线性功能内积与无数据补偿
+
+新读[Neuron Merging §3.1–3.3](https://papers.nips.cc/paper/2020/file/0678ca2eae02d542cc931e81b74de122-Paper.pdf)及[官方d25cf3e](https://github.com/friendshipkim/neuron-merging/blob/d25cf3e39ecf376a1ffc8b3cbf326a38b6db19cf/decompose.py)的缩放矩阵与下一层合并实现。其ReLU交换条件要求每列至多一个非负非零项，权重余弦／范数比给出数据无关近似；CLIP的QuickGELU不具有一般正齐次性，不能直接移植。原研究已知，未安装／运行该仓库或纳入防御对比。
+
+又核[Fast Neural Kernel Embeddings §2–3.1](https://papers.neurips.cc/paper_files/paper/2022/file/e7be1f4c6212c24919cd743512477c13-Paper-Conference.pdf)及[官方faa78b6](https://github.com/insuhan/ntk_activations/tree/faa78b67929f442c689b01f88a15de8df54097e7)的dual_kernels.py、polynomials.py与dual_kernel_approx.py。二维高斯激活内积、Hermite展开与数值积分已有完整工具；其GELU公式不是QuickGELU，Gaussian核也不是有限LayerNorm球体分布。本项目下述有界球体计算是单独声明的局部功能统计，不将NTK无限宽结论套给冻结有限CLIP，不把核／求积／总体最小二乘叫原创。固定源码blob及SHA保存在joint.json。
