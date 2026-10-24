@@ -15,6 +15,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--target", choices=["MNIST", "DTD", "SVHN"], required=True)
     p.add_argument("--method", choices=["aga", "patch", "reset"], default="aga")
+    p.add_argument("--protocol", default="configs/evaluate.json")
     p.add_argument("--publication", required=True)
     p.add_argument("--sha256", required=True)
     p.add_argument("--full-state", action="store_true")
@@ -42,7 +43,7 @@ def main():
     published = apply(reference, dict(path=a.publication, sha256=a.sha256), a.full_state)
     start = time.monotonic()
     if a.method == "aga":
-        cfg = load_config("configs/evaluate.json")
+        cfg = load_config(a.protocol)
         source = AUTHOR / cfg["AGA"]["file"]
         if digest(source) != cfg["AGA"]["raw_sha256"]:
             raise ValueError("AGA source mismatch")
