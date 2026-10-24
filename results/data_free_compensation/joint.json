@@ -239,5 +239,24 @@
       }
     },
     "scope": "Read fixed author core implementation;not a full ViT reproduction. No HNC installation or run. Paper ViT probe uses real512Places365images,not our weight-only condition;internal representation change does not prove merging/AGA protection."
+  },
+  "second_order_synthetic_holdout_plan": {
+    "status": "fixed_before_new_synthetic_holdout",
+    "source_driver_sha256": "666c32c458fc060444146e23da0341d4f49805b3e875540acec0c93f0afb4b4b",
+    "source_sequences": 8,
+    "source_seed": 2026102320,
+    "holdout_sequences": 64,
+    "holdout_seed": 2026102401,
+    "tokens": 50,
+    "point": "Same previously defined D,E,C,block11,rank32;no layer,direction,scale or candidate change. Reconstruct original coefficients because old read-only calculation saved no parameter file.",
+    "question": "Does the same finite8response first/second-order compensation cancel on independent generated residual inputs,or merely interpolate its construction responses?",
+    "checks": "Independent analytic normalized-feature first derivative versus TorchJVP;fixed original s=.001 endpoint/midpoint errors. Report all64;do not select any input or refit coefficients.",
+    "construction_real_images": 0,
+    "classification_heads": 0,
+    "partner_models": 0,
+    "new_model_points": 0,
+    "new_optimizer": false,
+    "limits": "Synthetic holdout only,not unknown-image accuracy or all-method prerequisite. No new defense construction or retry of closed pilot62d9.",
+    "source_fixed_before_holdout": true
   }
 }
