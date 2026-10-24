@@ -1,0 +1,52 @@
+{
+  "target": "MNIST",
+  "layer": 11,
+  "image_size": 224,
+  "batch_size": 4,
+  "steps": 128,
+  "input_steps": 2,
+  "input_step_size": 0.03125,
+  "learning_rate": 2e-05,
+  "seed": 2026102404,
+  "confirmation_seed": 2026102405,
+  "confirmation_batches": 32,
+  "initial_distance": 0.01,
+  "native_weight": 1000.0,
+  "task_weight": 0.1,
+  "distance_weight": 0.01,
+  "matrix_bounds": [
+    2.0,
+    4.0
+  ],
+  "basis": {
+    "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+    "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+  },
+  "original_AGA": {
+    "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+    "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607"
+  },
+  "author_source": "external/secure-merge-attack/utils_attack_B32.py",
+  "source_sha256": {
+    "_impl/defenses.py": "a345c8de698807f7a9b99de7989e1dd2e53418964862e7ce8b6670f20bae4ff6",
+    "experiment/construct.py": "5d2dbd31654de6f0f9a508d5148c8e5cd5fb03868471aee0bbebd1c961b320f3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "external/secure-merge-attack/utils_attack_B32.py": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+  },
+  "registered_utc": "2026-10-24T03:36:52.246866+00:00",
+  "output": "outputs/recovery_game_20261024",
+  "construction_access": "Only frozen target/public base weights,rank32 taskSVD and existing unprotected originalAGA state. No real images,classification heads,partners,test/confirmation responses or previously failed releases used to construct.",
+  "scope": "One fixed final-block O/B finite game with adaptive synthetic bounded pixels. Original experts frozen;only two postprocessing publication matrices optimized. This is not a retry or continuation of af049113/62d9: new terminal normalized recovery discrepancy,soft SVD cost and input adversary,not the old fixed real-image half-task class proxy or hard-null A pilot.",
+  "objective": "1000*mean squared native unit-feature error + .1*sum||Z V32||F^2 - mean squared recovered unit-feature difference from unprotected originalAGA - .01*sum||Z(I-VV^T)||F^2. Z=deltaW/||W||. Two pixel ascent steps maximize full native discrepancy,teacher input derivative retained. Standard Adam and projected matrix balls;not a new optimizer/global saddle claim.",
+  "finite_mechanism": "O changes attention residual and following LN/QuickGELU;B jointly compensates complete native unit features. Actual author-equivalent headwise recovery transforms variableO while MLP permutation transportsB. Recovered output discrepancy is directly optimized;no inference that parameter distance alone causes harm.",
+  "comparison": "Historical logicalD.5/R.5 remain. New per-matrix O<=2/B<=4 bound,combinedD<=sqrt20 declared prospectively. Report all task-direction costs and standalone strictR;new bound does not retroactively qualify old results.",
+  "evaluation": "Save sole final iterate and content hash before independent128 generated probes. Then once full10000 native MNIST with strictR and accuracy both reported. If full accuracy loss<=.5pp,one fixed TA.5/originalAGA target-only/both MNIST/SVHN evaluation. Source probe error is descriptive,not a replacement for full task accuracy. No best-checkpoint/test selection,early stopping,seed/layer/budget/step retries.",
+  "novelty": "Known adversarial data-free distillation,taskSVD,numerical compensation and ridge recovery feedback;their combination efficacy/novelty unestablished. Not advertised as a new effective Defense2.",
+  "limits": "Synthetic uniform/8x8-upsampled pixels are not natural-task coverage. Independent generated probes only measure same declared distribution. StandaloneAGA disagreement need not transfer to real merging. Closed prior fixed points remain unchanged.",
+  "references": {
+    "DFAD": "VainF/Data-Free-Adversarial-Distillation@c161591aae4c13e53943dcb61c162876421aad7a",
+    "AGA": "krumpguo/secure-merge-attack@fb61429f5e6f3517102d506697a150ac26abbdea"
+  }
+}

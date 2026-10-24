@@ -11,6 +11,139 @@ from .io import digest
 from .merge import merge
 
 
+def recovery_compensation(expert, recovered, anchor, basis, cfg):
+    """One image-free finite game; frozen teacher, O/B publication variables."""
+    import math
+    import torch.nn.functional as F
+    from torch.func import functional_call
+
+    visual, attacked = expert.model.visual, recovered.model.visual
+    layer = cfg["layer"]
+    block, attacked_block = [v.transformer.resblocks[layer] for v in [visual, attacked]]
+    O, B = block.attn.out_proj.weight.detach(), block.mlp.c_proj.weight.detach()
+    anchor_O = anchor.model.visual.transformer.resblocks[layer].attn.out_proj.weight.cuda()
+    entries = {v["source_key"]: v for v in basis.values()}
+    prefix = f"model.visual.transformer.resblocks.{layer}."
+    vo, vb = [entries[prefix + k]["v"].float().cuda()
+              for k in ["attn.out_proj.weight", "mlp.c_proj.weight"]]
+    # A is fixed; author MLP recovery is a fixed paired permutation, not a new fit.
+    from .attacks import load_author
+    author, _ = load_author(cfg["author_source"])
+    perm = author["solve_permutation"](block.mlp.c_fc.weight,
+                                       anchor.model.visual.transformer.resblocks[layer].mlp.c_fc.weight.cuda())
+    torch.testing.assert_close(attacked_block.mlp.c_fc.weight, block.mlp.c_fc.weight[perm], rtol=0, atol=0)
+    norms = [w.norm() for w in [O, B]]
+    seed = torch.Generator(device="cuda").manual_seed(cfg["seed"])
+    mean = O.new_tensor([0.48145466, 0.4578275, 0.40821073])[None, :, None, None]
+    std = O.new_tensor([0.26862954, 0.26130258, 0.27577711])[None, :, None, None]
+
+    def pixels(generator, step):
+        side = cfg["image_size"] if step % 2 else 8
+        x = torch.rand(cfg["batch_size"], 3, side, side, generator=generator, device="cuda")
+        return F.interpolate(x, size=cfg["image_size"], mode="bilinear", align_corners=False)
+
+    def prefix_forward(v, x):
+        x = v.conv1((x - mean) / std).flatten(2).permute(0, 2, 1)
+        cls = v.class_embedding[None, None].expand(x.shape[0], 1, -1)
+        x = v.ln_pre(torch.cat([cls, x], 1) + v.positional_embedding).permute(1, 0, 2)
+        for b in v.transformer.resblocks[:layer]:
+            x = b(x)
+        return x
+
+    def finish(v, b, x, weights):
+        x = functional_call(b, weights, (x,)) if weights else b(x)
+        return F.normalize(v.ln_post(x[0]) @ v.proj, dim=-1)
+
+    def recover_O(w):
+        x = w.reshape(768, 12, 64).permute(1, 0, 2).double()
+        y = anchor_O.reshape(768, 12, 64).permute(1, 0, 2).double()
+        gram = x.transpose(1, 2) @ x + 1e-8 * torch.eye(64, device=x.device, dtype=x.dtype)
+        t = torch.linalg.solve(gram, x.transpose(1, 2) @ y).float()
+        return (x.float() @ t).permute(1, 0, 2).reshape(768, 768)
+
+    # Deterministic normal-to-column-space start avoids a zero separation gradient.
+    rows = torch.arange(1, 769, device="cuda", dtype=O.dtype)[:, None]
+    cols = rows.T
+    init = torch.cos(rows * cols * math.pi / 769)
+    for h in range(12):
+        x = O[:, 64*h:64*(h+1)].double()
+        z = init[:, 64*h:64*(h+1)].double()
+        init[:, 64*h:64*(h+1)] = (z - x @ torch.linalg.lstsq(x, z).solution).float()
+    init -= init.mean(0, keepdim=True)
+    zo = torch.nn.Parameter(init / init.norm() * cfg["initial_distance"])
+    zb = torch.nn.Parameter(torch.zeros_like(B))
+    optimizer = torch.optim.Adam([zo, zb], lr=cfg["learning_rate"])
+
+    def native(x, track_input=False):
+        context = torch.enable_grad() if track_input else torch.no_grad()
+        with context:
+            pre = prefix_forward(visual, x)
+            reference = finish(visual, block, pre, {})
+        value = finish(visual, block, pre, {"attn.out_proj.weight": O + norms[0]*zo,
+                                           "mlp.c_proj.weight": B + norms[1]*zb})
+        return (value - reference).square().sum(-1)
+
+    # Full visual forward is the control for the explicit prefix/tail composition.
+    x = pixels(seed, 0)
+    with torch.no_grad():
+        control_error = max(float((finish(v, b, prefix_forward(v, x), {}) -
+                                   F.normalize(v((x-mean)/std), dim=-1)).abs().max())
+                            for v, b in [(visual, block), (attacked, attacked_block)])
+        reference_O_error = float((recover_O(O) - attacked_block.attn.out_proj.weight).abs().max())
+    assert control_error < 1e-5 and reference_O_error < 2e-5
+    trace = []
+    for step in range(cfg["steps"]):
+        x = pixels(seed, step)
+        for _ in range(cfg["input_steps"]):
+            x.requires_grad_(True)
+            grad, = torch.autograd.grad(native(x, True).mean(), x)
+            x = (x + cfg["input_step_size"] * grad.sign()).detach().clamp(0, 1)
+        optimizer.zero_grad(set_to_none=True)
+        keep = native(x).mean()
+        with torch.no_grad():
+            pre = prefix_forward(attacked, x)
+            ref = finish(attacked, attacked_block, pre, {})
+        rec = finish(attacked, attacked_block, pre, {
+            "attn.out_proj.weight": recover_O(O + norms[0]*zo),
+            "mlp.c_proj.weight": (B + norms[1]*zb)[:, perm]})
+        separate = (rec - ref).square().sum(-1).mean()
+        inside = (zo @ vo).square().sum() + (zb @ vb).square().sum()
+        outside = zo.square().sum() + zb.square().sum() - inside
+        loss = cfg["native_weight"]*keep + cfg["task_weight"]*inside
+        loss -= separate + cfg["distance_weight"]*outside
+        if not torch.isfinite(loss):
+            raise FloatingPointError(f"Nonfinite finite-game objective at step{step}")
+        loss.backward()
+        optimizer.step()
+        with torch.no_grad():
+            for z, bound in zip([zo, zb], cfg["matrix_bounds"]):
+                z.mul_(min(1.0, bound / max(float(z.norm()), 1e-12)))
+        if step % 16 == 0 or step + 1 == cfg["steps"]:
+            row = dict(step=step+1, native_unit_RMS=float(keep.sqrt()),
+                       recovered_unit_RMS=float(separate.sqrt()), task_squared=float(inside),
+                       outside_squared=float(outside), O_distance=float(zo.norm()), B_distance=float(zb.norm()))
+            trace.append(row)
+            print("RECOVERY_GAME", json.dumps(row), flush=True)
+    edits = {prefix+"attn.out_proj.weight": (O+norms[0]*zo).detach().cpu(),
+             prefix+"mlp.c_proj.weight": (B+norms[1]*zb).detach().cpu()}
+    # Freeze the final iterate. Independent generated inputs never select it.
+    from .merge import parameter_hash
+    frozen_hash = parameter_hash(edits)
+    heldout = torch.Generator(device="cuda").manual_seed(cfg["confirmation_seed"])
+    errors = []
+    with torch.no_grad():
+        for k in range(cfg["confirmation_batches"]):
+            errors.extend(native(pixels(heldout, k)).cpu().tolist())
+    return edits, dict(trace=trace, heldout_native_unit_RMS=(sum(errors)/len(errors))**0.5,
+                       heldout_max_unit_error=max(errors)**0.5, heldout_n=len(errors),
+                       explicit_visual_error=control_error, originalAGA_O_error=reference_O_error,
+                       gradient_steps=cfg["steps"], input_gradient_steps=cfg["steps"]*cfg["input_steps"],
+                       real_construction_images=0, teacher_training_updates=0,
+                       parameter_content_sha256_before_confirmation=frozen_hash,
+                       trace_timing="Losses before update;parameter distances after update",
+                       final_O_B_relative_distances=[float(zo.norm()), float(zb.norm())])
+
+
 @torch.no_grad()
 def _fit_nonlinear_mlp_layer(A, B, a, ba, bb, X, target, phi, cfg):
     """Fixed task-complement change and one finite output reconstruction."""
