@@ -1,0 +1,134 @@
+\newcommand{\reporttablesettings}{%
+\begin{table}[H]
+\centering
+\small
+\caption{任务与评价规模}\label{tab:settings}
+\begin{tabular}{@{}llrr@{}}
+\toprule
+数据集 & 任务 & 类别数 & 完整测试样本数 \\
+\midrule
+MNIST & 手写数字 & 10 & 10,000 \\
+DTD & 纹理分类 & 47 & 1,880 \\
+SVHN & 街景数字 & 10 & 26,032 \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+}
+
+
+\newcommand{\reporttablemain}{%
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{双专家主实验：TA系数为0.5，准确率（\%）}\label{tab:main}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+保护任务 / 伙伴 & 方法 & 独立使用 & 直接融合 & \shortstack{AGA\\仅保护专家} & \shortstack{AGA\\双方专家} \\
+\midrule
+MNIST / SVHN & 无保护 & 99.69 & 99.37 / 92.50 & 99.30 / 92.78 & 99.32 / 91.77 \\
+MNIST / SVHN & PaRaMS & 99.69 & 8.92 / 9.15 & 99.30 / 92.79 & 99.32 / 91.77 \\
+MNIST / SVHN & 防御二 & 99.69 & 10.98 / 14.32 & 9.80 / 9.81 & 9.80 / 9.83 \\
+MNIST / SVHN & 防御一 & 99.69 & 9.80 / 6.70 & 9.80 / 6.70 & 9.80 / 6.70 \\
+\midrule
+DTD / MNIST & 无保护 & 79.41 & 69.31 / 99.45 & 68.40 / 99.45 & 68.78 / 99.42 \\
+DTD / MNIST & PaRaMS & 79.41 & 2.07 / 8.92 & 68.35 / 99.45 & 68.78 / 99.42 \\
+DTD / MNIST & 防御二 & 79.41 & 2.39 / 10.29 & 2.39 / 10.09 & 2.39 / 10.09 \\
+DTD / MNIST & 防御一 & 79.41 & 2.13 / 21.09 & 2.13 / 21.09 & 2.13 / 21.05 \\
+\midrule
+SVHN / MNIST & 无保护 & 97.46 & 92.50 / 99.37 & 91.56 / 99.39 & 91.77 / 99.32 \\
+SVHN / MNIST & PaRaMS & 97.46 & 9.09 / 8.95 & 91.56 / 99.39 & 91.77 / 99.32 \\
+SVHN / MNIST & 防御二 & 97.46 & 7.30 / 9.45 & 6.45 / 12.19 & 6.45 / 12.22 \\
+SVHN / MNIST & 防御一 & 97.46 & 6.70 / 9.80 & 6.70 / 9.80 & 6.70 / 9.80 \\
+\bottomrule
+\end{tabular}
+\tabnote{融合列均为“保护任务 / 伙伴任务”；独立列只列保护任务。每种恢复方式分别使用其对应的无保护结果。PaRaMS使用完整官方默认配置。}
+\end{table}
+}
+
+
+\newcommand{\reporttablecross}{%
+\begin{table}[H]
+\centering\footnotesize
+\caption{其余三组保护方向的完整结果，准确率（\%）}\label{tab:cross}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+保护任务 / 伙伴 & 方法 & 直接融合 & AGA仅保护专家 & AGA双方专家 \\
+\midrule
+MNIST / DTD & 无保护 & 99.45 / 69.31 & 99.43 / 69.41 & 99.42 / 68.78 \\
+MNIST / DTD & 防御二 & 5.01 / 1.81 & 9.80 / 2.18 & 9.80 / 2.18 \\
+\midrule
+DTD / SVHN & 无保护 & 70.59 / 95.36 & 69.15 / 95.44 & 69.52 / 94.18 \\
+DTD / SVHN & 防御二 & 2.93 / 8.85 & 2.34 / 6.42 & 2.34 / 6.42 \\
+\midrule
+SVHN / DTD & 无保护 & 95.36 / 70.59 & 94.09 / 70.74 & 94.18 / 69.52 \\
+SVHN / DTD & 防御二 & 7.22 / 2.13 & 6.53 / 2.07 & 6.51 / 2.07 \\
+\bottomrule
+\end{tabular}
+\tabnote{每格为“保护任务 / 伙伴任务”。与主表合计六个保护方向，对应三个无序任务组合。}
+\end{table}
+}
+
+\newcommand{\reporttableablation}{%
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{任务方向项的消融：保护任务准确率（\%）}\label{tab:ablation}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+保护任务 / 伙伴 & 选择目标 & 独立使用 & 直接融合 & AGA仅目标 & AGA双方 \\
+\midrule
+MNIST / SVHN & 任务方向与距离 & 99.69 & 10.98 & 9.80 & 9.80 \\
+MNIST / SVHN & 仅距离 & 99.69 & 13.99 & 11.27 & 11.08 \\
+\midrule
+DTD / MNIST & 任务方向与距离 & 79.41 & 2.39 & 2.39 & 2.39 \\
+DTD / MNIST & 仅距离 & 79.41 & 1.44 & 2.02 & 1.97 \\
+\midrule
+SVHN / MNIST & 任务方向与距离 & 97.46 & 7.30 & 6.45 & 6.45 \\
+SVHN / MNIST & 仅距离 & 97.46 & 9.36 & 8.52 & 8.48 \\
+\bottomrule
+\end{tabular}
+\tabnote{同一贪心规则、74个矩阵、32个任务奇异方向和384对交换。只改变构造目标；各目标的原始结果均保留。}
+\end{table}
+}
+
+
+\newcommand{\reporttableeight}{%
+\begin{table}[H]
+\centering
+\small
+\caption{八专家融合：TA系数为0.2，保护任务准确率（\%）}\label{tab:eight}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+保护任务 & 无保护TA & 防御二TA & 无保护+AGA & 防御二+AGA \\
+\midrule
+MNIST & 94.00 & 10.26 & 93.23 & 11.35 \\
+DTD & 52.18 & 3.24 & 51.38 & 4.89 \\
+SVHN & 74.42 & 13.28 & 72.53 & 11.64 \\
+\bottomrule
+\end{tabular}
+\tabnote{AGA只处理保护专家。八个专家参与合并，但只评价MNIST、DTD、SVHN，不报告八数据集平均。}
+\end{table}
+}
+
+
+\newcommand{\reporttablesupplement}{%
+\begin{table}[H]
+\centering
+\small
+\caption{防御一的融合方法补充：原版AGA仅处理保护专家}\label{tab:supplement}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+融合方法 & 无保护 & 防御一 \\
+\midrule
+TA & 99.30 / 92.78 & 9.80 / 6.70 \\
+TIES & 99.32 / 94.81 & 9.82 / 9.69 \\
+DARE+TA & 99.30 $\pm$ 0.00 / 92.81 $\pm$ 0.04 & 24.20 $\pm$ 5.60 / 25.50 $\pm$ 10.30 \\
+NUFILT：MNIST先 & 99.39 / 94.68 & 99.39 / 94.68 \\
+NUFILT：SVHN先 & 99.07 / 95.35 & 99.07 / 95.35 \\
+ProDistill & 99.42 / 96.83 & 9.80 / 6.70 \\
+\bottomrule
+\end{tabular}
+\tabnote{每格为MNIST / SVHN准确率（\%）。DARE+TA为种子42、43、44的均值$\pm$样本标准差；各项使用匹配的无保护结果。ProDistill为使用无标签校准图的两专家适配。}
+\end{table}
+}

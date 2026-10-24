@@ -1,4 +1,4 @@
-"""Task SVD probes, finite permutation costs and nonlinear compensation."""
+"""Task SVD probes and finite permutation costs."""
 
 import json
 import time
@@ -11,107 +11,6 @@ from .defenses import residual_permutation
 from .io import digest, save_json
 from .metrics import logical_parameter_distance
 from .models import checked_models
-
-
-def mlp_ball_moments(gram, bias, dimension, radius, radial_order=64, angular_order=128):
-    """QuickGELU feature moments on a specified uniform ball, including a constant.
-
-    gram contains inner products of the input rows in that ball's coordinates.
-    This is a numerical integral for an explicit probe distribution, not the
-    model's unknown task distribution or a guarantee about classification.
-    """
-    from scipy.special import expit, roots_jacobi
-
-    gram, bias = np.asarray(gram, dtype=np.float64), np.asarray(bias, dtype=np.float64)
-    if dimension < 2 or radius <= 0 or gram.shape != (len(bias), len(bias)):
-        raise ValueError("Expected a positive-radius ball of dimension >=2 and matching moments")
-    scale = np.sqrt(np.maximum(gram.diagonal(), 0))
-    denominator = np.outer(scale, scale)
-    correlation = np.divide(gram, denominator, out=np.zeros_like(gram), where=denominator > 0)
-    correlation = np.clip(correlation, -1, 1)
-    transverse = np.sqrt(np.maximum(1 - correlation**2, 0))
-    nodes, weights = roots_jacobi(radial_order, dimension / 2 - 1, 0)
-    weights /= weights.sum()
-    radii = radius * np.sqrt((nodes + 1) / 2)
-    angle = 2 * np.pi * np.arange(angular_order) / angular_order
-    cosine, sine = np.cos(angle), np.sin(angle)
-    kernel, mean = np.zeros_like(gram), np.zeros_like(bias)
-    for i in range(len(bias)):
-        direction = correlation[i, :, None] * cosine + transverse[i, :, None] * sine
-        for r, w in zip(radii, weights):
-            first = bias[i] + r * scale[i] * cosine
-            second = bias[:, None] + r * scale[:, None] * direction
-            left, right = first * expit(1.702 * first), second * expit(1.702 * second)
-            kernel[i] += w * (left * right).mean(1)
-            mean[i] += w * left.mean()
-    return np.block([[(kernel + kernel.T) / 2, mean[:, None]], [mean[None, :], np.ones((1, 1))]])
-
-
-def mlp_minimax_compensation(moments, B, free, ridge):
-    """One B correction for two probe distributions, with fixed A' and bias.
-
-    Each moment tuple is (E[hh.T], E[h'h'.T], E[h'h.T]); h excludes
-    the constant. Orthonormal columns of free span allowed B changes.
-    This solves only the convex output step, not a joint A/B defense.
-    """
-    B, free = np.asarray(B, dtype=float), np.asarray(free, dtype=float)
-    if len(moments) != 2 or ridge <= 0 or not np.allclose(free.T @ free, np.eye(free.shape[1])):
-        raise ValueError("Expected two distributions, positive ridge and orthonormal free basis")
-    quadratic, cross, constant = [], [], []
-    for tt, ss, st in moments:
-        energy = np.sum((B @ tt) * B)
-        if energy <= 0:
-            raise ValueError("Teacher response energy must be positive")
-        quadratic.append(free.T @ ss @ free / energy)
-        cross.append(B @ (st.T - ss) @ free / energy)
-        constant.append(np.sum((B @ (tt + ss - st - st.T)) * B) / energy)
-    correction, record = _minimax_quadratics(quadratic, cross, constant, ridge / np.square(B).sum())
-    record["relative_correction_norm"] = float(np.linalg.norm(correction) / np.linalg.norm(B))
-    return B + correction @ free.T, record
-
-
-def _minimax_quadratics(quadratic, cross, constant, regularizer):
-    """Same two-domain convex step, diagonalized once for all dual evaluations."""
-    from scipy.linalg import eigh
-
-    quadratic, cross, constant = map(np.asarray, (quadratic, cross, constant))
-    identity = np.eye(quadratic.shape[-1])
-    first = quadratic[0] + regularizer * identity
-    total = quadratic.sum(0) + 2 * regularizer * identity
-    eigenvalues, basis = eigh(first, total)
-    transformed = cross @ basis
-
-    def solve(weight):
-        mixture = np.array([weight, 1 - weight])
-        diagonal = weight * eigenvalues + (1 - weight) * (1 - eigenvalues)
-        target = np.einsum("d,doj->oj", mixture, transformed)
-        correction = target / diagonal
-        losses = constant - 2 * np.einsum("oj,doj->d", correction, transformed)
-        losses += np.array([np.sum(correction**2 * v) for v in [eigenvalues, 1 - eigenvalues]])
-        dual = mixture @ constant - np.sum(correction * target)
-        return correction, losses, float(dual)
-
-    low, high = 0.0, 1.0
-    if np.diff(solve(low)[1])[0] >= 0:
-        high = low
-    elif np.diff(solve(high)[1])[0] <= 0:
-        low = high
-    for _ in range(50 if high > low else 0):
-        weight = (low + high) / 2
-        if np.diff(solve(weight)[1])[0] < 0:
-            low = weight
-        else:
-            high = weight
-    weight = (low + high) / 2
-    correction, losses, dual = solve(weight)
-    correction = correction @ basis.T
-    penalty = regularizer * np.square(correction).sum()
-    return correction, dict(
-        first_distribution_weight=weight,
-        normalized_squared_errors=(losses - penalty).tolist(),
-        objective=float(losses.max()),
-        primal_dual_gap=float(losses.max() - dual),
-    )
 
 
 def greedy_task_pairs(total, quadratic, h, s, penalty, tolerance):

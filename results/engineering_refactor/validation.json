@@ -243,5 +243,110 @@
     "new_defense_success": false,
     "report_test": "1passed;unchanged scientific inputs and byte-identicalMD/TeX regeneration",
     "original_source_and_protocol_hashes_retained": true
+  },
+  "report_cleanup_20261023": {
+    "snapshot_commit": "cc0973910d44ee742e363921e2127518cd093a79",
+    "retired": [
+      {
+        "path": "presentation/build.json",
+        "bytes": 1334,
+        "lines": 23,
+        "sha256": "5ce10219b0208a75dc93a0180600cb8687d3eb367f677c3bfd93b58bcbedf35a",
+        "git_blob": "1373ed0f3722cddd5522a0a64d92e11c74236bb4",
+        "reason": "Superseded Oct18 presentation;new written report replaces it. Exact files remain in prior Git snapshot."
+      },
+      {
+        "path": "presentation/main.pdf",
+        "bytes": 316390,
+        "lines": 2753,
+        "sha256": "29747052787f162e53dcba19d97dfe04cf1638f66d68ff7550210365a5baaece",
+        "git_blob": "80b70d66a51e7feb5c4b9c11199d27fba49b2ed2",
+        "reason": "Superseded Oct18 presentation;new written report replaces it. Exact files remain in prior Git snapshot."
+      },
+      {
+        "path": "presentation/main.tex",
+        "bytes": 8716,
+        "lines": 170,
+        "sha256": "1eb193c0274b5fd44e638c338b7805d3169105912e73d7260fc0263b0cd59f9d",
+        "git_blob": "78513074251e6be941087984cf9f559db3098fdf",
+        "reason": "Superseded Oct18 presentation;new written report replaces it. Exact files remain in prior Git snapshot."
+      },
+      {
+        "path": "presentation/research_report.pptx",
+        "bytes": 2178243,
+        "lines": 16014,
+        "sha256": "1c11df0151a0179b270b238ed05c95f6404dfa85f21a3b427ef18a6f17f8130b",
+        "git_blob": "89c045ffec8df99a32a11a47ac625762c3b4eb8a",
+        "reason": "Superseded Oct18 presentation;new written report replaces it. Exact files remain in prior Git snapshot."
+      },
+      {
+        "path": "presentation/tables.tex",
+        "bytes": 2347,
+        "lines": 76,
+        "sha256": "81513d2a4f256b7a33593769036a524a49f37bb78c34bc7d2158d413921d9275",
+        "git_blob": "b0f59e0d3ba14c9253047ce4107b4c71be5f9959",
+        "reason": "Superseded Oct18 presentation;new written report replaces it. Exact files remain in prior Git snapshot."
+      },
+      {
+        "path": "experiment/nonlinear_ablation.py",
+        "bytes": 7778,
+        "lines": 188,
+        "sha256": "67e397fcaa15725259e54fb230712848b8cf68242098faa2b56e25f95affff90",
+        "git_blob": "e2ef46ffdeb2f2ec53cd240d2ef0c77300139747",
+        "reason": "Completed data-assisted component measurements;not an active data-free construction or evaluation dependency."
+      },
+      {
+        "path": "_impl/subspace.py",
+        "function": "mlp_ball_moments",
+        "lines": 32,
+        "sha256": "a4c88a389e9ddcd1a53ef3300fc57c47b43275567b47f7932d5b51b44bb4d538",
+        "reason": "Only used by the closed data-free numerical pilot and its retired calculation tests;no active experiment calls it."
+      },
+      {
+        "path": "_impl/subspace.py",
+        "function": "mlp_minimax_compensation",
+        "lines": 21,
+        "sha256": "b8de6e4da6e85584ebc990f66dea91446797d177e89095a961ec5df39ad7d137",
+        "reason": "Only used by the closed data-free numerical pilot and its retired calculation tests;no active experiment calls it."
+      },
+      {
+        "path": "_impl/subspace.py",
+        "function": "_minimax_quadratics",
+        "lines": 42,
+        "sha256": "5cf8742f1b8975df104b8eb487bf6bab1e2c82bc059a0b61da6904b24c2ddc44",
+        "reason": "Only used by the closed data-free numerical pilot and its retired calculation tests;no active experiment calls it."
+      },
+      {
+        "path": "tests/test_refactor.py",
+        "lines": 117,
+        "reason": "Tests solely for the retired moment/minimax helpers;current-model regression tests retained."
+      }
+    ],
+    "prior_sources_recoverable_from_Git": true,
+    "unique_models_or_raw_scores_or_failure_evidence_deleted": false,
+    "active_core_function_AST_unchanged": true,
+    "tests": {
+      "RTX3090_CPU_pytest_core": "17passed,1.90s",
+      "local_paper_table_regression": "1passed,9.20s",
+      "Ruff": "passed",
+      "new_expert_or_GPU_evaluation_runs": 0
+    },
+    "source_scope": "Remove closed helpers/one-off entry and outdated presentation;keep scientific data and original historical protocols",
+    "server_cleanup": {
+      "removed_exact_duplicates": [
+        "presentation/build.json",
+        "presentation/main.pdf",
+        "presentation/main.tex",
+        "presentation/research_report.pptx",
+        "presentation/tables.tex",
+        "experiment/nonlinear_ablation.py"
+      ],
+      "nonidentical_retained": [],
+      "temporary_test_runtime_removed": true,
+      "disk_free": {
+        "/root": 61808640,
+        "/root/autodl-tmp": 34238464
+      }
+    }
   }
 }
