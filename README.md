@@ -1,23 +1,17 @@
 # posthoc-merge-security
 
-[10月23日书面报告（PDF）](output/pdf/teacher_report_20261023/模型融合保护研究进展_20261023.pdf)：防御二、防御一的构造、有效结果及必要消融；[发送说明](output/pdf/teacher_report_20261023/发送说明.txt)。
-
 研究 CLIP ViT-B/32 专家的训练后参数保护：单独使用时保持任务能力，未经授权融合及原版 AGA 恢复后降低受保护任务准确率。专家不重新训练。
 
-**当前主线要求无数据构造：**只使用冻结原专家、公开基座参数和任务向量SVD，不使用真实训练图构造、选参或修补。之前全网换序符合这一条件，图片只用于构造后的独立及融合评测。下列两项数值方案使用了真实目标训练图，按用户最新要求退出主线，保留为已完成的数据辅助参考，不继续拟合。
+当前重点是无数据数值防御二：只使用冻结专家、公开基座和任务 SVD，研究任务功能保持与跨模块补偿。真实图像只用于冻结后的评价。
 
-最新一个无数据联合数值补偿先行点已完成：MNIST独立99.61%（原99.69%），TA融合99.37%，原AGA仅保护专家/双方后99.32%/99.30%。**保持了独立能力，但没有产生融合保护。**这一点已经关闭，不增加迭代或换层追分；旧有效对照不受影响。[完整结果与原因分析](results/data_free_compensation/summary.md)。
-
-**数据辅助数值参考：**在 MNIST / SVHN 固定组合上，独立 MNIST 准确率由99.69%到99.50%，TA融合后24.46%，原版AGA仅处理保护专家/双方后13.02%/13.09%。方法修改12层MLP的24个矩阵，用任务SVD约束和实际逐层输出重构保持能力；原专家冻结，1024张目标训练图、12次线性求解，无梯度微调。[方法](results/nonlinear_prefix/method.md) · [完整结果与限制](results/nonlinear_prefix/summary.md)。同一规则在SVHN独立96.25%，DTD只有43.46%，尚未取得稳定的跨任务保持。知道修改模块后的公开基座替换使AGA后MNIST融合恢复到94.47%。原严格间隔检查失败和所有控制保留，不能称函数完全相同或已抵抗针对性恢复。
-
-另一项已完成的数据辅助参考[公开基座数值补偿](results/nonlinear_public_backbone/summary.md)：MNIST单独99.47%，TA15.65%，原AGA仅目标/双方11.57%/11.52%。知道MLP位置后的重置使融合回到84.63%；匹配的无目标专家融合已有84.06%，额外收益0.57个百分点。原357及所有失败结果保留；新规则SVHN/DTD单独95.94%/41.81%，任务保持失败。同一MNIST发布换DTD伙伴，原AGA后18.54%；八专家下44.19%。
-
-| 已有全网换序对照 | MNIST | DTD | SVHN |
+| 防御二：全网络通道置换 | MNIST | DTD | SVHN |
 |---|---:|---:|---:|
 | 单独使用 | 99.69% | 79.41% | 97.46% |
 | 原版 AGA 仅处理保护专家后，TA 融合 | 9.80% | 2.39% | 6.45% |
 
-三份冻结发布的完整独立预测保持；伙伴成绩、AGA 两种作用范围及对照见[论文实验总表](results/paper_tables/README.md)。该对照使用任务 SVD 选择全网共同换序；知道变换家族后的公开 patch 匹配能够恢复，属于单列的针对性攻击，不能与原版 AGA 混淆。[方法](results/task_directed_pairing/method.md) · [恢复限制](results/task_directed_pairing/recovery/summary.md)。防御一、完整 PaRaMS、历史 O/B 和 A/B 以及所有失败结果继续保留。
+该对照使用任务 SVD 选择共同通道顺序；三份冻结发布保持完整独立预测。知道变换家族后的公开匹配能够恢复，针对性恢复与原版 AGA 分列。[方法](results/task_directed_pairing/method.md) · [完整结果与恢复](results/task_directed_pairing/summary.md) · [论文表格](results/paper_tables/README.md)。防御一及完整 PaRaMS 对照继续保留。
+
+无数据数值补偿尚未得到新的融合保护。最近固定点的 MNIST 独立准确率为99.69%，TA为99.35%，原版AGA仅保护专家／双方后为99.29%／99.31%；该构造已结束。[数值研究记录](results/data_free_compensation/summary.md)。此前使用真实训练图的数值构造转为历史参考，源码和结果按[工程说明](docs/engineering.md)取回。
 
 ## 代码结构
 
@@ -26,7 +20,7 @@ cfg.py                       # 共同路径和配置检查
 _impl/
   models.py                  # 冻结模型加载、发布参数应用
   data.py                    # 官方数据划分、独立标签读取
-  defenses.py                # 防御一、数值逐层补偿、全网换序对照
+  defenses.py                # 防御一、通道置换对照
   subspace.py                # 74 个任务矩阵 SVD、有限交换目标
   attacks.py                 # 原版 AGA、已知家族的公开匹配
   baselines.py               # 完整官方 PaRaMS
@@ -65,7 +59,7 @@ data/dtd/...
 data/{train,test}_32x32.mat
 ```
 
-模型清单及 SHA：`configs/checkpoints.json`。历史原始分数、唯一发布权重和失败日志仍在 3090 的原路径；工程重构不移动或删除它们。
+模型清单及 SHA：`configs/checkpoints.json`。历史原始分数、唯一发布权重和失败记录保存在3090。已归档的诊断文件采用无损压缩，路径和还原方法见工程说明。
 
 ## 常用入口
 
@@ -116,4 +110,4 @@ pytest -q
 
 测试包含完整小型 Transformer 的配套换序、有限交换的穷举对照、原算法函数体记录、恢复输入边界、逻辑 Q/K/V 距离、输出防覆盖，以及论文 MD／TeX 与原结果一致性。测试不新增模型训练或改变科研结论。
 
-本次仅做工程整理。最新读出补偿候选的完整任务失败另见[实验记录](results/centered_readout_game/summary.md)，不替代上面的有效冻结结果。其旧实现与数值失败仍可按快照恢复。其他补充实验的历史复现及当前验证范围见[工程说明](docs/engineering.md)。
+其他补充实验的历史复现及当前验证范围见[工程说明](docs/engineering.md)。
