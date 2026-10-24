@@ -62,13 +62,13 @@
     "modification_extent": "results/task_directed_pairing/amplitude_ablation/summary.md"
   },
   "status": "Research resumed manually Oct24;data-free numerical core construction prioritized. No recurring automation.",
-  "updated_utc": "2026-10-24T03:12:05.136084+00:00",
+  "updated_utc": "2026-10-24T03:48:53.168283+00:00",
   "server": {
-    "status": "Connected;7.29second read-only authorAGA ridge derivative calculation complete;no GPU jobs queued",
+    "status": "Connected;fixed finite game and independent evaluation complete;noGPU jobs queued",
     "GPU": "RTX3090",
     "ssh_control_socket": "/tmp/posthoc_3090_refactor.sock",
     "research_GPU_processes": 0,
-    "checked_at_utc": "2026-10-24T03:12:05.136084+00:00",
+    "checked_at_utc": "2026-10-24T03:48:53.168283+00:00",
     "storage": {
       "available_bytes": {
         "/root": 2319605760,
@@ -145,7 +145,8 @@
     "finite_P_beta": "results/centered_readout_game/accuracy_evaluation/summary.md:99.64native,94.64TA,91.22/87.79AGA;not retuned",
     "other_history": "notes/phase2_coupling.md and frozen prior commits;all Q/V/O/head/affine/zero-unit/local-Jacobian closed points remain closed",
     "pre_LN_attention": "results/nonlinear_pre_ln;all3complete,no generalization benefit;no retry",
-    "same_input_local_teacher": "results/nonlinear_local_function;all3complete,worse utility;no retry"
+    "same_input_local_teacher": "results/nonlinear_local_function;all3complete,worse utility;no retry",
+    "recovery_game": "results/data_free_compensation/recovery_evaluation.json:14rows224replays0error;no protection,no retry"
   },
   "data_policy": {
     "construction": "Future primary Defense2 uses frozen target expert/public base weights and task SVD only;no real training/confirmation/test images,partner models,classification-based selection or witness-based repair. Historical data-assisted protocols and results remain unchanged.",
@@ -168,7 +169,7 @@
       "unique_models_or_raw_results_deleted": false
     }
   },
-  "next_action": "Define bounded data-free finite joint compensation using full normalized function discrepancy and originalAGA response;use taskSVD as a soft task-direction constraint rather than automatically fixing every task input activation. Adaptive synthetic probes are a possible distillation tool,not a new defense or a global guarantee. No new candidate is frozen.",
+  "next_action": "Study recovery-selective finite compensation before any new candidate:normal O changes in the closed pilot largely surviveAGA and its native/recovered feature effects remain coupled. Distinguish actual recovery-erased computation from meaningful nonlinear compensation. Do not retune this game or reopen oldtemperature/gauge/feedback points;no new optimizer or candidate selected.",
   "completed_overnight": {
     "components": "results/nonlinear_prefix/source_components/results.json;A-only/B-only/no-reconstruction collapse source,full compensation preserves1022/1024",
     "ablations": "results/nonlinear_prefix/ablations;no_task/no_prefix complete,do not rerun",
@@ -438,11 +439,27 @@
     "implementation_added": false
   },
   "core_method_building": {
-    "record": "results/data_free_compensation/joint.json:ridge_projection_derivative;adversarial_distillation_review",
-    "status": "originalAGA ridge derivative checked;adaptive image-free distillation source read;finite numerical defense not yet constructed",
+    "record": "results/data_free_compensation/recovery_evaluation.json",
+    "status": "Finite data-free originalAGA-aware game evaluated;native99.66,TA99.35,AGA99.29/99.33,no target protection. Closed source archived and removed fromactive constructor.",
     "DFAD_official_commit": "c161591aae4c13e53943dcb61c162876421aad7a",
-    "new_model_points": 0,
-    "new_accuracy_results": 0,
+    "new_model_points": 1,
+    "new_accuracy_results": true,
     "new_runtime_entrypoints": 0
+  },
+  "recovery_game": {
+    "point_sha256": "59be423108f682430f6ec23c345a04c0e32941e294136aed6ac0c6ad0043e536",
+    "native": 99.66,
+    "original_native": 99.69,
+    "strict_R": 6.974408420714314,
+    "status": "completed_closed_no_fusion_protection",
+    "real_construction_images": 0,
+    "record": "results/data_free_compensation/joint.json:recovery_game",
+    "TA": 99.35,
+    "AGA_target": 99.29,
+    "AGA_both": 99.33,
+    "logical_D": 0.12979409534251668,
+    "validation": "14rows/224original128contextscores0error",
+    "runtime_constructor_removed": true,
+    "source_snapshot": "outputs/recovery_game_20261024/source_snapshot.tar.gz;localGit67959e8/4d9726c"
   }
 }

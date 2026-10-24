@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-24T03:12:05.136084+00:00",
+  "updated_utc": "2026-10-24T03:47:52.761757+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -950,5 +950,55 @@
     "publication_updates": 0,
     "reason": "Byte-level hash check was incorrectly given the canonical text hash;upstream source has321CRLF. Rawbytes56e1af69 and normalizedtext4600479 checked. Only protocol hash representation repaired;no source algorithm/parameters/data changed.",
     "local_source_commit": "ef47460"
+  },
+  "recovery_game": {
+    "source_local_commit": "67959e8",
+    "public_preregistration": false,
+    "source_archive": {
+      "path": "outputs/recovery_game_20261024/source_snapshot.tar.gz",
+      "sha256": "0d866063f73c4b7b3b50e4efd3e3b709687dfe231a7f8fb228780832fbb63f41",
+      "compressed_bytes": 27928,
+      "files": 16,
+      "git_commit": "4d9726c854b4217fd3cfa37fe03dd231b846b951"
+    },
+    "engineering_failures": [
+      {
+        "stage": "author_source_pin",
+        "log_sha256": "21ff6ea1fd88d25722374e2a607feaa7d440db55dbe02872461f943a6ef9a248",
+        "scientific_updates": 0
+      },
+      {
+        "stage": "recovery_default_protocol",
+        "error": "Default historic config expected older defenses.py SHA;added explicit protocol argument. No authorAGA calls before fix.",
+        "original_trace": "cfg.load_config -> check_files -> SHA256 mismatch: _impl/defenses.py"
+      },
+      {
+        "stage": "recovery_argument_race",
+        "log_sha256": "2afe7ace0920a72286071961907be332d23b6b7973cdb07f74b02ad5d36daf22",
+        "error": "Launch overlapped source transfer;old CLI rejected protocol argument. Finished transfer before actualAGA run.0AGA calls;log retained."
+      }
+    ],
+    "status": "completed_closed_no_target_fusion_protection",
+    "point_sha256": "59be423108f682430f6ec23c345a04c0e32941e294136aed6ac0c6ad0043e536",
+    "record": "results/data_free_compensation/recovery_evaluation.json",
+    "protocol": "results/data_free_compensation/recovery_game_protocol.json",
+    "evaluation_protocol": "results/data_free_compensation/recovery_evaluation_protocol.json",
+    "native": 99.66,
+    "TA": 99.35,
+    "AGA_target": 99.29,
+    "AGA_both": 99.33,
+    "logical_D": 0.12979409534251668,
+    "strict_R": 6.974408420714314,
+    "source_seconds": 14.954284004983492,
+    "real_construction_images": 0,
+    "classification_construction_heads": 0,
+    "original_AGA_calls": 1,
+    "rows": 14,
+    "context_score_replays": 224,
+    "maximum_score_error": 0.0,
+    "operator_normal_energy_fraction": 0.8841796788940717,
+    "interpretation": "Complete native accuracy nearly retained but TA/originalAGA target accuracies match untreated controls. Recovery/native operator and feature changes were not sufficiently separated. Fixed point closed;no learning-rate/weight/step/layer/seed retry. No global infeasibility or convergence claim.",
+    "runtime_constructor_removed": true,
+    "reproduction": "Construction localGit67959e8;current experiment/recover protocol option retained;complete execution-source archive on3090 SHA0d866063. Failing constructor removed fromactive _impl/experiment after validation."
   }
 }
