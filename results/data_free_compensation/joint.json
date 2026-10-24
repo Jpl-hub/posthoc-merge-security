@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-24T02:29:53.712245+00:00",
+  "updated_utc": "2026-10-24T02:53:06.957566+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -598,5 +598,240 @@
     "scope": "Read author activation registry,one-hidden-layer MLP,ReLU XOR construction and symmetry illustration notebook. No JAX install or author experiment run;not a CLIP defense implementation.",
     "venue": "ICML2026workshop,not main-conference result",
     "whole_function_equivalence_completeness_claim": false
+  },
+  "attention_product_review": {
+    "target": "MNIST",
+    "heads": 144,
+    "circuit_rows": 288,
+    "numpy_fixed_last_head_max_relative_metric_difference": 3.469446951953614e-18,
+    "real_images": 0,
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "expert_updates": 0,
+    "source_hashes": {
+      "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+    },
+    "checkpoint_hashes": {
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f"
+    },
+    "seconds": 7.334096776001388,
+    "scope": "Raw weight products only;bias,LN,softmax,MLP,downstream margin and classification are not represented by these Frobenius ratios.",
+    "summary": {
+      "QK": {
+        "minimum": 0.017698880910731126,
+        "median": 0.02528836680551913,
+        "maximum": 0.0774980403176765
+      },
+      "OV": {
+        "minimum": 0.01576777838715946,
+        "median": 0.026954931266109736,
+        "maximum": 0.04880678073330096
+      }
+    },
+    "source_sha256": "8472abd3eceb182bc5262fc5a79125f10774801dabe037e7fdf6dd4bc02809a9",
+    "calculation_source": "\"\"\"Read-only QK/OV product drift;not task accuracy or a new defense.\"\"\"\nimport json,time,torch,numpy as np\nfrom _impl.models import initialize,load_checkpoint\nfrom _impl.io import digest\ninitialize()\nstart=time.monotonic()\nexpert=load_checkpoint(\"MNIST/finetuned.pt\").state_dict()\nbase=load_checkpoint(\"zeroshot.pt\").state_dict()\nrows=[]\ncheck=0.0\nfor layer in range(12):\n p=f\"model.visual.transformer.resblocks.{layer}.attn.\"\n qe,ke,ve=expert[p+\"in_proj_weight\"].double().cuda().chunk(3)\n qb,kb,vb=base[p+\"in_proj_weight\"].double().cuda().chunk(3)\n oe=expert[p+\"out_proj.weight\"].double().cuda()\n ob=base[p+\"out_proj.weight\"].double().cuda()\n for h in range(12):\n  s=slice(h*64,(h+1)*64)\n  for name,le,re,lb,rb in [\n   (\"QK\",qe[s].T,ke[s],qb[s].T,kb[s]),\n   (\"OV\",oe[:,s],ve[s],ob[:,s],vb[s])]:\n   me,mb=le@re,lb@rb\n   delta=(me-mb).norm()\n   if layer==11 and h==0:\n    x=le.cpu().numpy()@re.cpu().numpy()\n    y=lb.cpu().numpy()@rb.cpu().numpy()\n    direct=np.linalg.norm(x-y)/np.linalg.norm(x)\n    check=max(check,abs(float(delta/me.norm())-float(direct)))\n   rows.append(dict(layer=layer,head=h,circuit=name,\n     expert_frobenius=float(me.norm()),\n     anchor_frobenius=float(mb.norm()),\n     difference_frobenius=float(delta),\n     relative_to_expert=float(delta/me.norm())))\nresult=dict(target=\"MNIST\",heads=144,circuit_rows=len(rows),rows=rows,\n numpy_fixed_last_head_max_relative_metric_difference=check,\n real_images=0,new_defense_points=0,new_AGA_calls=0,expert_updates=0,\n source_hashes={p:digest(p) for p in [\"_impl/models.py\",\"configs/checkpoints.json\"]},\n checkpoint_hashes={p:digest(\"checkpoints/ViT-B-32/\"+p) for p in [\"MNIST/finetuned.pt\",\"zeroshot.pt\"]},\n seconds=time.monotonic()-start,\n scope=\"Raw weight products only;bias,LN,softmax,MLP,downstream margin and classification are not represented by these Frobenius ratios.\")\nresult[\"summary\"]={}\nfor circuit in [\"QK\",\"OV\"]:\n values=np.array([r[\"relative_to_expert\"] for r in rows if r[\"circuit\"]==circuit])\n result[\"summary\"][circuit]=dict(minimum=float(values.min()),median=float(np.median(values)),maximum=float(values.max()))\nprint(json.dumps(result))\n",
+    "raw_record": {
+      "server_path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-24_research/circuit_anchor.json",
+      "sha256": "1e48bb3e9989dfc77cf709a32f68a4306c887042214c4918eedf57177cb98b22",
+      "rows": 288
+    },
+    "by_layer": [
+      {
+        "layer": 0,
+        "circuit": "QK",
+        "minimum": 0.019827993441674782,
+        "median": 0.029766006358222553,
+        "maximum": 0.0774980403176765
+      },
+      {
+        "layer": 0,
+        "circuit": "OV",
+        "minimum": 0.02548817580518948,
+        "median": 0.030105157845982708,
+        "maximum": 0.03861299579822885
+      },
+      {
+        "layer": 1,
+        "circuit": "QK",
+        "minimum": 0.022399260030362297,
+        "median": 0.031794975635662595,
+        "maximum": 0.05121522293986733
+      },
+      {
+        "layer": 1,
+        "circuit": "OV",
+        "minimum": 0.0245230821390388,
+        "median": 0.029844855209408726,
+        "maximum": 0.042192844381875635
+      },
+      {
+        "layer": 2,
+        "circuit": "QK",
+        "minimum": 0.017698880910731126,
+        "median": 0.02830447215825174,
+        "maximum": 0.04415613238877435
+      },
+      {
+        "layer": 2,
+        "circuit": "OV",
+        "minimum": 0.021319963009045453,
+        "median": 0.0257221903853661,
+        "maximum": 0.04880678073330096
+      },
+      {
+        "layer": 3,
+        "circuit": "QK",
+        "minimum": 0.01969855070076471,
+        "median": 0.024082999903067205,
+        "maximum": 0.030875353385559343
+      },
+      {
+        "layer": 3,
+        "circuit": "OV",
+        "minimum": 0.01800959193205462,
+        "median": 0.025500337803132704,
+        "maximum": 0.034548157727170445
+      },
+      {
+        "layer": 4,
+        "circuit": "QK",
+        "minimum": 0.019028999148979278,
+        "median": 0.02517823001108154,
+        "maximum": 0.033572387570024995
+      },
+      {
+        "layer": 4,
+        "circuit": "OV",
+        "minimum": 0.01576777838715946,
+        "median": 0.02913664878397696,
+        "maximum": 0.038475742455844945
+      },
+      {
+        "layer": 5,
+        "circuit": "QK",
+        "minimum": 0.02115039058049132,
+        "median": 0.02534124709194331,
+        "maximum": 0.03208278703919656
+      },
+      {
+        "layer": 5,
+        "circuit": "OV",
+        "minimum": 0.018927917961462454,
+        "median": 0.025771593079861023,
+        "maximum": 0.04137174793380262
+      },
+      {
+        "layer": 6,
+        "circuit": "QK",
+        "minimum": 0.01985225274987344,
+        "median": 0.027684075675062484,
+        "maximum": 0.03230317341297284
+      },
+      {
+        "layer": 6,
+        "circuit": "OV",
+        "minimum": 0.016702874717862543,
+        "median": 0.026597133217740397,
+        "maximum": 0.03970324308549308
+      },
+      {
+        "layer": 7,
+        "circuit": "QK",
+        "minimum": 0.01951045441899114,
+        "median": 0.024341754864813443,
+        "maximum": 0.03334299167131742
+      },
+      {
+        "layer": 7,
+        "circuit": "OV",
+        "minimum": 0.02245848940160804,
+        "median": 0.027467321241960878,
+        "maximum": 0.034585557454731124
+      },
+      {
+        "layer": 8,
+        "circuit": "QK",
+        "minimum": 0.019845035564295687,
+        "median": 0.025389959052772894,
+        "maximum": 0.0337706689353992
+      },
+      {
+        "layer": 8,
+        "circuit": "OV",
+        "minimum": 0.019794339612185307,
+        "median": 0.02735974368696615,
+        "maximum": 0.034590927512757295
+      },
+      {
+        "layer": 9,
+        "circuit": "QK",
+        "minimum": 0.020180066741114697,
+        "median": 0.023351625480133326,
+        "maximum": 0.02720963057982808
+      },
+      {
+        "layer": 9,
+        "circuit": "OV",
+        "minimum": 0.02140890367392327,
+        "median": 0.02390805139869928,
+        "maximum": 0.025871419582223977
+      },
+      {
+        "layer": 10,
+        "circuit": "QK",
+        "minimum": 0.019963122094056398,
+        "median": 0.02382089918866584,
+        "maximum": 0.02670575530727659
+      },
+      {
+        "layer": 10,
+        "circuit": "OV",
+        "minimum": 0.02073327637846572,
+        "median": 0.024483246058830496,
+        "maximum": 0.028690872457130333
+      },
+      {
+        "layer": 11,
+        "circuit": "QK",
+        "minimum": 0.0201476499472471,
+        "median": 0.02721808086594349,
+        "maximum": 0.032632674550074535
+      },
+      {
+        "layer": 11,
+        "circuit": "OV",
+        "minimum": 0.024546958129878428,
+        "median": 0.030681098029270056,
+        "maximum": 0.043208971324676514
+      }
+    ],
+    "SITH_source_review": {
+      "paper": "https://arxiv.org/html/2603.24653v1",
+      "repo": "frangente/SITH",
+      "commit": "ee45a342eda4f11bd8fbf73ba48b88aa3f118316",
+      "files": {
+        "src/sith/linalg.py": {
+          "blob": "f9f6655b9d577137a7cd75b9e923a4d842fef567",
+          "sha256": "f43c98782feac1f510c41cfbebc122a4ab5d8f4a5be8aca344cd01becb226627"
+        },
+        "src/sith/modeling/_attn.py": {
+          "blob": "c39ebe42f8f07d14b7293857732148a34700513f",
+          "sha256": "80adcaf745b0d55f51b69a1d7e9bcab16c1990d1e496935ed06c750299324ae5"
+        },
+        "src/sith/modeling/_utils.py": {
+          "blob": "9b416092d7cfafc7fd111fa7430b29f4ed5b9230",
+          "sha256": "62cb5847190db833e6f3b028359f21c9643f9da30e403c318be1bcd5f59dd970"
+        },
+        "scripts/decompose.py": {
+          "blob": "630d2ef8880e3a93661314216aeb85ba4e1263eb",
+          "sha256": "413ca2d9e386bd184fc3c65880ccef8bcc0c71af2c9949f317c99104a2396e2e"
+        }
+      },
+      "executed_author_pipeline": false,
+      "concept_dictionary_or_CC12M_statistics_used": false
+    },
+    "interpretation": "Small source/base raw-product gaps are consistent with idealAGA preserving a near-anchor paired product despite large factor changes. Conditional weight-only analysis,not classification prediction or a restriction on nonlinear compensation."
   }
 }
