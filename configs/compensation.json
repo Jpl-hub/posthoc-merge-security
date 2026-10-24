@@ -1,0 +1,63 @@
+{
+  "experiment": "One finite task-complement O rotation with nonlinear MLP compensation",
+  "targets": {
+    "MNIST": {
+      "basis": {
+        "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+        "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+      }
+    }
+  },
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607"
+    }
+  },
+  "compensation": {
+    "layer": 11,
+    "source_n": 1024,
+    "batch_size": 4,
+    "seed": 2026102410,
+    "confirmation_seed": 2026102411,
+    "confirmation_batches": 32,
+    "damping": 0.01,
+    "steps": 512,
+    "input_steps": 2,
+    "input_step_size": 0.03125,
+    "rotation_lr": 0.001,
+    "B_lr": 2e-05,
+    "native_weight": 1000.0,
+    "distance_weight": 0.01,
+    "B_bound": 4.0,
+    "author_source": "external/secure-merge-attack/utils_attack_B32.py"
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "registered_utc": "2026-10-24T04:28:44.518692+00:00",
+  "construction_access": "Frozen target/public base,existing originalAGA and weight-only task SVD. No real images,classification heads,partners,confirmation/test scores or prior candidate weights.",
+  "finite_mechanism": "For every orthogonal R and ridge eta>0,F_eta(XR)=F_eta(X),including eta1e-8. Rotate only O,not V;native Attention and subsequent LN2/QuickGELU change. B jointly compensates native complete unit features while actual originalAGA removes O rotation and transports B with unchanged A permutation. Verify actual author FP32 result after freeze.",
+  "parameterization": "For each head,P projects off the corresponding rows of O task right basis. R0=I-2P maximizes finite O task-complement distance in this orthogonal family. R=R0 exp(P(Z-Z^T)P),O_prime=O R. B_delta is constrained to V_B complement. Both task-action changes zero in exact arithmetic.",
+  "difference_from_closed_game": "This is a finite recovery-invariant parameter family throughout optimization,not another initialization of the unconstrained59be game. Old within-head V/O gauge changed V inversely;here V fixed and native computation changes. Temperature,normal-space game,old fixed reflections and real-data fit points remain closed.",
+  "initialization": "One B ridge solve on1024 generated pixel inputs with actual rotated O/LN2 and frozen teacher complete block outputs;fixed .01 mean-diagonal damping. Project once to declared B<=4 if necessary,report unconstrained norm. Never reads real images.",
+  "objective": "1000*mean native complete unit-feature squared error - mean recovered complete unit-feature squared error - .01*sum squared relative O/B distances. Standard Adam in finite orthogonal coordinates and B task complement;two generated-pixel ascent steps maximize native discrepancy with teacher input derivative retained.",
+  "bounds": "O relative Frobenius<=2 follows from orthogonality;B<=4 prospectively declared,combined<=sqrt20. Historical D.5 and strictR.5 retained separately,not claimed met by this range.",
+  "sole_point": "Save only final512th iterate and content SHA before new128 synthetic inputs. No best-checkpoint selection,angle/rank/layer/seed/loss/steps tuning or restarting this fixed point.",
+  "evaluation": "Then once full10000MNIST standalone with strictR and actual accuracy both. If accuracy loss<=.5pp,run fixed TA.5 and unchanged originalAGA target-only/both with SVHN;reuse unprotected states/scores,report both tasks/perclass/paired/cost and original128-context replay. If not,close with evidence,no repair.",
+  "limitations": "Generic rotations,SVD,adversarial distillation,ridge and minmax are known. Finite O erasure does not prove B compensation or classification harm. Generated pixels do not certify natural-task coverage. Novelty and efficacy unestablished;no new effective defense claimed.",
+  "source_sha256": {
+    "_impl/defenses.py": "4506452b85be832919e011da76b167c8fdc1ac22069e3b029dcb1e7c021b4c52",
+    "experiment/construct.py": "b8c42b37477e7688375e8742fbfb7f938a144ea658598c418c1536828a466e63",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "external/secure-merge-attack/utils_attack_B32.py": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de"
+  }
+}

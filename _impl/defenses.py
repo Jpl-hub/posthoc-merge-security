@@ -11,6 +11,174 @@ from .io import digest
 from .merge import merge
 
 
+def compensate_after_alignment(expert, recovered, anchor, basis, cfg):
+    """Finite O rotations erased by ridge alignment, with joint nonlinear B compensation."""
+    import torch.nn.functional as F
+    from torch.func import functional_call
+
+    from .attacks import load_author
+    from .merge import parameter_hash
+
+    visual, attacked = expert.model.visual, recovered.model.visual
+    layer = cfg["layer"]
+    block, attacked_block = [v.transformer.resblocks[layer] for v in [visual, attacked]]
+    O, B = block.attn.out_proj.weight.detach(), block.mlp.c_proj.weight.detach()
+    key = f"model.visual.transformer.resblocks.{layer}."
+    entries = {v["source_key"]: v for v in basis.values()}
+    vo = entries[key + "attn.out_proj.weight"]["v"].double().cuda()
+    vb = entries[key + "mlp.c_proj.weight"]["v"].float().cuda()
+    eye = torch.eye(64, dtype=torch.double, device="cuda")
+    projectors = []
+    for v in vo.split(64):
+        u, s, _ = torch.linalg.svd(v, full_matrices=False)
+        u = u[:, s > s[0] * 1e-10]
+        projectors.append(eye - u @ u.T)
+    P = torch.stack(projectors)
+    R0 = eye - 2 * P
+    heads = O.reshape(768, 12, 64).permute(1, 0, 2).double()
+    z = torch.nn.Parameter(torch.zeros_like(P))
+    delta = torch.nn.Parameter(torch.zeros_like(B))
+    norm = B.norm()
+    author, _ = load_author(cfg["author_source"])
+    anchor_block = anchor.model.visual.transformer.resblocks[layer]
+    perm = author["solve_permutation"](block.mlp.c_fc.weight,
+                                       anchor_block.mlp.c_fc.weight.cuda())
+    torch.testing.assert_close(attacked_block.mlp.c_fc.weight,
+                               block.mlp.c_fc.weight[perm], rtol=0, atol=0)
+    mean = O.new_tensor([.48145466, .4578275, .40821073])[None, :, None, None]
+    std = O.new_tensor([.26862954, .26130258, .27577711])[None, :, None, None]
+
+    def weights():
+        R = R0 @ torch.matrix_exp(P @ (z - z.transpose(1, 2)) @ P)
+        op = (heads @ R).permute(1, 0, 2).reshape(768, 768).float()
+        db = delta - (delta @ vb) @ vb.T
+        return op, B + norm * db, R
+
+    def pixels(gen, step):
+        side = 8 if step % 2 == 0 else 224
+        x = torch.rand(cfg["batch_size"], 3, side, side, generator=gen, device="cuda")
+        return F.interpolate(x, size=224, mode="bilinear", align_corners=False)
+
+    def prefix(v, x):
+        h = v.conv1((x-mean)/std).flatten(2).permute(0, 2, 1)
+        cls = v.class_embedding[None, None].expand(h.shape[0], 1, -1)
+        h = v.ln_pre(torch.cat([cls, h], 1)+v.positional_embedding).permute(1, 0, 2)
+        for b in v.transformer.resblocks[:layer]:
+            h = b(h)
+        return h
+
+    def finish(v, b, h, edited=None):
+        h = functional_call(b, edited, (h,)) if edited else b(h)
+        return F.normalize(v.ln_post(h[0]) @ v.proj, dim=-1)
+
+    def native(x, input_gradient=False):
+        with torch.enable_grad() if input_gradient else torch.no_grad():
+            h = prefix(visual, x)
+            ref = finish(visual, block, h)
+        op, bp, _ = weights()
+        out = finish(visual, block, h, {"attn.out_proj.weight": op, "mlp.c_proj.weight": bp})
+        return (out-ref).square().sum(-1)
+
+    gen = torch.Generator(device="cuda").manual_seed(cfg["seed"])
+    x = pixels(gen, 0)
+    with torch.no_grad():
+        control_error = max(float((finish(v, b, prefix(v, x))-
+                                   F.normalize(v((x-mean)/std), dim=-1)).abs().max())
+                            for v, b in [(visual, block), (attacked, attacked_block)])
+    assert control_error < 1e-5
+    # One constrained ridge initialization uses generated pixels and the actual
+    # modified Attention/LN input. It does not fit real training examples.
+    gram = torch.zeros(3072, 3072, dtype=torch.double, device="cuda")
+    cross = torch.zeros(3072, 768, dtype=torch.double, device="cuda")
+    buffer = []
+    hook = block.mlp.gelu.register_forward_hook(lambda _m, _a, out: buffer.append(out.detach()))
+    try:
+        with torch.no_grad():
+            op, _, _ = weights()
+            for step in range(cfg["source_n"] // cfg["batch_size"]):
+                h = prefix(visual, pixels(gen, step))
+                ref = block(h)
+                buffer.clear()
+                out = functional_call(block, {"attn.out_proj.weight": op}, (h,))
+                features = buffer.pop().flatten(0, 1).double()
+                features -= (features @ vb.double()) @ vb.double().T
+                error = (ref-out).flatten(0, 1).double()
+                gram += features.T @ features
+                cross += features.T @ error
+            ridge = cfg["damping"] * gram.diagonal().mean()
+            system = gram + ridge * torch.eye(3072, dtype=torch.double, device="cuda")
+            solution = torch.linalg.solve(system, cross)
+            solve_error = float((system @ solution-cross).norm()/cross.norm())
+            assert solve_error < 1e-8
+            solution -= vb.double() @ (vb.double().T @ solution)
+            delta.copy_((solution.T/norm).float())
+            unclipped = float(delta.norm())
+            delta.mul_(min(1., cfg["B_bound"] / max(unclipped, 1e-12)))
+            init = dict(unclipped_B_distance=unclipped, B_distance=float(delta.norm()),
+                        solve_relative_error=solve_error, damping=float(ridge))
+    finally:
+        hook.remove()
+    del gram, cross, system, solution
+    optimizer = torch.optim.Adam([dict(params=[z], lr=cfg["rotation_lr"]),
+                                  dict(params=[delta], lr=cfg["B_lr"])])
+    trace = []
+    for step in range(cfg["steps"]):
+        x = pixels(gen, step)
+        for _ in range(cfg["input_steps"]):
+            x.requires_grad_(True)
+            grad, = torch.autograd.grad(native(x, True).mean(), x)
+            x = (x + cfg["input_step_size"] * grad.sign()).detach().clamp(0, 1)
+        optimizer.zero_grad(set_to_none=True)
+        keep = native(x).mean()
+        with torch.no_grad():
+            h = prefix(attacked, x)
+            ref = finish(attacked, attacked_block, h)
+        op, bp, _ = weights()
+        rec = finish(attacked, attacked_block, h, {"mlp.c_proj.weight": bp[:, perm]})
+        separate = (rec-ref).square().sum(-1).mean()
+        distance = ((op-O)/O.norm()).square().sum() + delta.square().sum()
+        loss = cfg["native_weight"]*keep - separate - cfg["distance_weight"]*distance
+        if not torch.isfinite(loss):
+            raise FloatingPointError(f"Nonfinite objective at step{step}")
+        loss.backward()
+        optimizer.step()
+        with torch.no_grad():
+            delta.sub_((delta @ vb) @ vb.T)
+            delta.mul_(min(1., cfg["B_bound"] / max(float(delta.norm()), 1e-12)))
+        if step % 32 == 0 or step + 1 == cfg["steps"]:
+            row = dict(step=step+1, native_unit_RMS=float(keep.sqrt()),
+                       recovered_unit_RMS=float(separate.sqrt()),
+                       O_distance=float((op-O).norm()/O.norm()), B_distance=float(delta.norm()))
+            trace.append(row)
+            print("COMPENSATION", json.dumps(row), flush=True)
+    with torch.no_grad():
+        op, bp, R = weights()
+        orthogonal = float((R.transpose(1, 2) @ R-eye).abs().max())
+        task_error = [float(((w-ref).double() @ v).norm()/ref.double().norm())
+                      for w, ref, v in [(op, O, vo), (bp, B, vb.double())]]
+        recovery_error = 0.
+        for head in range(12):
+            x, y = op[:, 64*head:64*(head+1)], anchor_block.attn.out_proj.weight[:, 64*head:64*(head+1)].cuda()
+            actual = x @ author["solve_linear_transformation"](x, y)
+            recovery_error = max(recovery_error, float(
+                (actual-attacked_block.attn.out_proj.weight[:, 64*head:64*(head+1)]).abs().max()))
+        assert orthogonal < 1e-10 and max(task_error) < 1e-6 and recovery_error < 2e-5
+        edits = {key+"attn.out_proj.weight": op.cpu(), key+"mlp.c_proj.weight": bp.cpu()}
+        frozen_hash = parameter_hash(edits)
+        held = torch.Generator(device="cuda").manual_seed(cfg["confirmation_seed"])
+        errors = []
+        for k in range(cfg["confirmation_batches"]):
+            errors.extend(native(pixels(held, k)).cpu().tolist())
+    return edits, dict(initialization=init, trace=trace, orthogonality_max_error=orthogonal,
+                       explicit_visual_max_error=control_error,
+                       task_relative_errors=task_error, originalAGA_O_max_error=recovery_error,
+                       heldout_native_unit_RMS=(sum(errors)/len(errors))**.5,
+                       heldout_max_unit_error=max(errors)**.5, heldout_n=len(errors),
+                       parameter_content_sha256_before_confirmation=frozen_hash,
+                       gradient_steps=cfg["steps"], real_construction_images=0,
+                       teacher_training_updates=0, final_O_B_distances=[float((op-O).norm()/O.norm()), float(delta.norm())])
+
+
 @torch.no_grad()
 def _fit_nonlinear_mlp_layer(A, B, a, ba, bb, X, target, phi, cfg):
     """Fixed task-complement change and one finite output reconstruction."""
