@@ -997,3 +997,9 @@ QuickGELU差式由本项目直接代数得到，再在原第11块上检查整个
 [DFAD](https://arxiv.org/html/1912.11006v2)官方固定c161591aae4c13e53943dcb61c162876421aad7a的DFAD_cifar.py、DFAD_mnist.py和network/gan.py已核读。分类入口交替五次L1模仿与一次负L1生成，教师不在优化器中，生成阶段保留两模型的输入梯度。README也明确引用更早的[Adversarial Belief Matching](https://arxiv.org/abs/1905.09768v4)；仅后者摘要已读，不称完整源码阅读。主动生成输入、极小极大蒸馏并非本项目创新。
 
 原GeneratorA在Tanh后还有BatchNorm，不能直接把输出视作固定像素盒。原入口逐轮测试并保留最高测试准确率，本项目不采用该选点规则。未安装或运行作者环境，未把该方法加入防御基线。其作用是帮助构造无真实图片的功能约束；有限生成器不能证明覆盖自然任务，也不自动产生TA／AGA保护。具体梯度与标准岭投影微分记在phase2_coupling，来源及SHA并入现有joint.json，没有新增训练框架。
+
+### Oct24：跨头补偿与普通换基的区别
+
+补核[GLMC固定5e343c0的utils.py](https://github.com/alexandertheus/Generalized-LMC-for-Transformers/blob/5e343c05683ce1f2972c7ca3f25111e82d3f00e5/utils.py)：其完整注意力乘积表示会把head_dim扩到embed_dim+1，不能直接认定为同宽CLIP64维头的保护。头内逆变换、跨头重分配和一般近似功能保持须分开；这些已有操作不能称原创。
+
+本项目有限两头例子可在原生完全补偿时被原作者逐头ridge恢复打断，而且单位残差方向有变化。但原第11块Q/K任务域的66对有效Attention核均不同，最近相对差0.946646，没有同核捷径依据。该条件只针对这一具体构造，不否定近似补偿、其他层或所有方法；未造新发布、未运行分类／融合。详见[计算记录](../results/data_free_compensation/joint.json)的head_coupling_condition和phase2_coupling末段，不能把有限例子写成已成功的数值Defense2。

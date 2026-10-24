@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-24T03:47:52.761757+00:00",
+  "updated_utc": "2026-10-24T04:12:50.409840+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -1000,5 +1000,82 @@
     "interpretation": "Complete native accuracy nearly retained but TA/originalAGA target accuracies match untreated controls. Recovery/native operator and feature changes were not sufficiently separated. Fixed point closed;no learning-rate/weight/step/layer/seed retry. No global infeasibility or convergence claim.",
     "runtime_constructor_removed": true,
     "reproduction": "Construction localGit67959e8;current experiment/recover protocol option retained;complete execution-source archive on3090 SHA0d866063. Failing constructor removed fromactive _impl/experiment after validation."
+  },
+  "head_coupling_condition": {
+    "status": "finite_head_coupling_condition_checked_no_CLIP_candidate",
+    "layer": 11,
+    "target": "MNIST",
+    "toy": {
+      "native_max_error": 1.1102230246251565e-16,
+      "recovered_attention_half_identity_error": 2.9802321499516893e-08,
+      "recovered_attention_relative_change": 0.500000059604643,
+      "complete_residual_centered_unit_feature_change": 0.2801109993544554,
+      "original_residual": [
+        [
+          1.0,
+          0.0,
+          1.0
+        ],
+        [
+          0.0,
+          1.0,
+          1.0
+        ]
+      ],
+      "ridge": 1e-08,
+      "author_scalar_ridge_calls": 8,
+      "scope": "Synthetic3residual/2heads/width1/uniform2token attention. No CLIP accuracy claim."
+    },
+    "task_rank_each": 32,
+    "union_LN_domain_rank": 64,
+    "centered_basis_error": 1.7763568394002505e-15,
+    "closest_kernel_pair": {
+      "heads": [
+        0,
+        7
+      ],
+      "kernel_relative_difference": 0.946646173751463
+    },
+    "independent_numpy_kernel_max_error": 0.0,
+    "row_centered_actual_vs_reduced_logits_max_error": 5.10702591327572e-15,
+    "closest_pair_synthetic_TV": {
+      "mean": 0.35663929189424465,
+      "maximum": 0.5042807032805359
+    },
+    "probe_definition": "4x50 fixedseed Gaussian coefficients normalized to sqrt768 on LN-compatible Q/K task union;not images or natural-task coverage",
+    "exact_equal_kernel_pairs": 0,
+    "real_images": 0,
+    "model_image_forwards": 0,
+    "complete_AGA_runs": 0,
+    "optimization_steps": 0,
+    "CLIP_parameter_updates": 0,
+    "new_defense_points": 0,
+    "source_sha256": "ddfe913031161b066708a609bb3f8500f627ff2ee26fe8fae552864c77f706b6",
+    "checkpoint_sha256": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "basis_sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344",
+    "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "seconds": 4.1674437490000855,
+    "raw_record": "outputs/2026-10-24_research/head_coupling.json",
+    "raw_record_sha256": "f65cc37e9eb7ea2e6d3fe83eecc3a0d8bebeafc07d5106a1ba95121dec9dc574",
+    "calculation_source": "Embedded in raw_record[source];hash matches original execution source",
+    "independent_NumPy_toy_unit_feature_difference": 3.7608863412419424e-08,
+    "kernel_pair_count": 66,
+    "kernel_difference_summary": {
+      "minimum": 0.946646173751463,
+      "median": 1.2067149367317476,
+      "maximum": 1.3679013958193216
+    },
+    "GLMC_source_review": {
+      "paper": "https://arxiv.org/html/2506.22712v1",
+      "official_commit": "5e343c05683ce1f2972c7ca3f25111e82d3f00e5",
+      "files": {
+        "weight_matching.py": "bf2120b41680abd95a268d876bd293046250fb53",
+        "merger.py": "4d4b658b723015f706dc179fa2cb5329c8204b2e",
+        "utils.py": "aa84dd38b3703384de718d2551ae0d328a30558b"
+      },
+      "observation": "permute_heads/project_to_attn_circuits retain full augmented products and set head_dim=embed_dim+1;not an executed original-width64 CLIP defense or a proof of arbitrary exact mixing"
+    },
+    "interpretation": "A finite toy establishes recovery can break cross-head compensation without radial-only output change. Actual fixed last-block task-domain kernels are distinct;no equal-kernel head pair was found. This does not exclude value-specific cancellation,approximate nonlinear compensation,other layers or all defenses. No CLIP candidate was constructed.",
+    "probe_scope": "Ideal centered LN sphere radius sqrt768;with positive epsilon this is a limiting sphere,not a proof of image reachability or natural-task coverage."
   }
 }
