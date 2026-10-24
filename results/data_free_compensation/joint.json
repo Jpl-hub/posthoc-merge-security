@@ -1299,7 +1299,7 @@
     "scope": "Public evaluator loads supplied quantized checkpoint and ImageNet val;Config selects observers. Recursive tree lists24Python files but no separate synthesis/search driver. Did not install,run,reproduce or invent missing loop. Ordinary synthesis/contrastive distillation is prior art."
   },
   "alignment_component_diagnosis": {
-    "status": "defined_before_component_evaluation",
+    "status": "completed_read_only_closed_point",
     "point_sha256": "28e0e122bcbd8737d71c5f64f1cde1bfc3663ce754eca69095371dbf18b691b9",
     "purpose": "Distinguish actual opposing classification effects from individually inert changes;measure frozen storedAGA standalone ability. Read-only diagnosis,not another candidate or selection.",
     "variants": [
@@ -1323,6 +1323,367 @@
       "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
       "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b"
     },
-    "source_embedded_in_final_raw_record": true
+    "source_embedded_in_final_raw_record": true,
+    "rows": {
+      "O_only": {
+        "n": 10000,
+        "correct": 9968,
+        "accuracy_percent": 99.68,
+        "changed_predictions": 1,
+        "paired": {
+          "both_correct": 9968,
+          "lost": 1,
+          "gained": 0,
+          "both_wrong": 31,
+          "loss_pp": 0.01,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.02960000000000282,
+          0.009600000000002815
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1030,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 954,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1025,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1002,
+            "lost": 1,
+            "gained": 0
+          }
+        ],
+        "strict_task": {
+          "n": 10000,
+          "changed": 1,
+          "R": 6.062833956048371
+        },
+        "runtime": {
+          "correct": 9968,
+          "n": 10000,
+          "top1": 0.9968,
+          "evaluation_seconds": 11.077822089981055,
+          "peak_gpu_bytes": 858202624
+        },
+        "replay": {
+          "scores": 16,
+          "context_images": 1936,
+          "maximum_score_error": 0.0,
+          "seconds": 1.9682340559957083
+        }
+      },
+      "B_only": {
+        "n": 10000,
+        "correct": 9968,
+        "accuracy_percent": 99.68,
+        "changed_predictions": 5,
+        "paired": {
+          "both_correct": 9966,
+          "lost": 3,
+          "gained": 2,
+          "both_wrong": 29,
+          "loss_pp": 0.01,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.05382868557654677,
+          0.033828685576546766
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1031,
+            "lost": 0,
+            "gained": 1
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 885,
+            "lost": 0,
+            "gained": 1
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 952,
+            "lost": 2,
+            "gained": 0
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1025,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1002,
+            "lost": 1,
+            "gained": 0
+          }
+        ],
+        "strict_task": {
+          "n": 10000,
+          "changed": 5,
+          "R": 15.423610821239906
+        },
+        "runtime": {
+          "correct": 9968,
+          "n": 10000,
+          "top1": 0.9968,
+          "evaluation_seconds": 8.198165862995666,
+          "peak_gpu_bytes": 858857984
+        },
+        "replay": {
+          "scores": 16,
+          "context_images": 1936,
+          "maximum_score_error": 0.0,
+          "seconds": 2.0192709380062297
+        }
+      },
+      "stored_AGA_standalone": {
+        "n": 10000,
+        "correct": 9964,
+        "accuracy_percent": 99.64,
+        "changed_predictions": 11,
+        "paired": {
+          "both_correct": 9961,
+          "lost": 8,
+          "gained": 3,
+          "both_wrong": 28,
+          "loss_pp": 0.05,
+          "exact_mcnemar_p": 0.2265625
+        },
+        "mcnemar_log10_p": -0.644811971748912,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.11500170860994051,
+          0.015001708609940507
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 980,
+            "lost": 0,
+            "gained": 1
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1031,
+            "lost": 0,
+            "gained": 1
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 885,
+            "lost": 0,
+            "gained": 1
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 950,
+            "lost": 4,
+            "gained": 0
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1024,
+            "lost": 1,
+            "gained": 0
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1000,
+            "lost": 3,
+            "gained": 0
+          }
+        ],
+        "strict_task": {
+          "n": 10000,
+          "changed": 11,
+          "R": 36.159093648306616
+        },
+        "runtime": {
+          "correct": 9964,
+          "n": 10000,
+          "top1": 0.9964,
+          "evaluation_seconds": 8.24456090698368,
+          "peak_gpu_bytes": 858857984
+        },
+        "replay": {
+          "scores": 16,
+          "context_images": 1936,
+          "maximum_score_error": 0.0,
+          "seconds": 1.8753920960007235
+        }
+      }
+    },
+    "gap_interaction": {
+      "teacher_winner_all_rivals": true,
+      "gap_delta_rms": {
+        "O_only": 0.5590617570825729,
+        "B_only": 0.4086625021026703,
+        "joint": 0.564809910512469
+      },
+      "O_B_gap_delta_cosine": 0.7475962401262152,
+      "joint_minus_sum_rms": 0.386724250770642
+    },
+    "raw_scores_sha256": "1a337282e02d8f60a792ad5856aaf916a6d35918844a7bdcc1f90f9151d7d977",
+    "real_evaluation_forwards": 35808,
+    "wall_seconds": 40.66052005501115,
+    "definition_commit": "c25af4cbbad8733fcd7aa95ac2cf284ca14796ee",
+    "definition_public_commit": "38f0a3bfd49566b465230173ff19f38e4420618c",
+    "definition_public_readback_before_execution": true,
+    "raw_results_sha256": "31ff0894bfb7f776458505fc11939dc2b9a5b8969c685aa7724399a218787fe3",
+    "source_retired_after_exact_embedding_check": true,
+    "active_runtime_code_added": 0,
+    "interpretation": "O_only and B_only retain99.68% independently versus original99.69%;joint99.69% does not establish strong classification compensation. StoredAGA standalone99.64%,so no major target classification disruption after recovery. Joint winner-vs-rival gap-change RMS.56481 is not below O_only.55906;O/B gap-delta cosine+.74760. These are diagnostics of this closed point,not a universal impossibility or a repair signal.",
+    "independent_validation": {
+      "official_labels_all10000_indices": true,
+      "NumPy_per_class_lost_gained_and_paired_CI": true,
+      "scalar_lgamma_exact_McNemar": true,
+      "all_teacher_winner_rival_relative_gaps": true,
+      "rows": 3,
+      "score_replays": 48,
+      "maximum_replay_error": 0.0,
+      "original_context_batch_size": 128,
+      "context_forward_images": 5808,
+      "raw_full_statistics": "outputs/alignment_compensation_20261024/components/results.json:independent_numpy"
+    }
   }
 }
