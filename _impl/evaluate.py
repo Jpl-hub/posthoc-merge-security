@@ -99,7 +99,15 @@ def run(protocol, case_index, pilot):
                 loaded_legacy[ref["path"]] = torch.load(
                     ref["path"], map_location="cpu", weights_only=False
                 )
-            imported = loaded_legacy[ref["path"]].get(old_key)
+            cached = loaded_legacy[ref["path"]]
+            if ref.get("native_score_field") in ["before", "after"]:
+                imported = dict(
+                    logits=cached[ref["native_score_field"]],
+                    target=torch.as_tensor(cached["labels"], dtype=torch.long),
+                    indices=cached["indices"],
+                )
+            else:
+                imported = cached.get(old_key)
         if imported is not None and "logits" not in imported:
             imported = None  # Old prediction-only records cannot supply real scores.
         if imported is not None:

@@ -1254,6 +1254,40 @@ def paper_tables(_source, output):
         rows,
         "The fixed512 target-training source images, not a test table. Matrix inside/outside components use the same original rank32 task basis; non-matrix changes are separate. Each counterfactual is quantized separately. Complete-release replay and independent NumPy recount both have zero error. No candidate was repaired or selected from these counterfactual outcomes.",
     )
+    joint_path = "results/data_free_compensation/pilot_evaluation.json"
+    joint_check = Path("results/data_free_compensation/pilot_evaluation_validation.json")
+    if joint_check.exists():
+        check = read(str(joint_check))
+        execution = read("results/data_free_compensation/pilot_evaluation_execution.json")
+        assert check["status"] == "passed"
+        assert check["raw_sha256"] == execution["predictions_sha256"]
+        rows = []
+        for name, label in [
+            ("Unprotected", "Unprotected"),
+            ("Joint_MNIST", "Joint numerical pilot"),
+        ]:
+            rows.append(
+                [
+                    label,
+                    "--" if name == "Unprotected" else "0",
+                    f"{acc(pick(joint_path, defense=name, merger='Standalone', dataset='MNIST')):.2f}",
+                ]
+                + [pair(joint_path, defense=name, merger="TA", attack_scope=s) for s in scopes]
+            )
+        table(
+            "data_free_joint",
+            "Data-free joint numerical compensation: fixed pilot",
+            [
+                "Model",
+                "Construction images",
+                "SA M",
+                "TA M / S",
+                "AGA target M / S",
+                "AGA both M / S",
+            ],
+            rows,
+            "One first-layer full-width MLP, 8192 generated LN vectors per domain, frozen teacher and 20 fixed joint iterations. No real construction images. A/B relative changes 1.0000/0.4599; combined logical distance 1.1007, separately declared from the historical 0.5 comparison. Synthetic 1-percent RMS and strict relative-margin criteria failed. Complete MNIST standalone loss is 0.08 percentage points. TA coefficient 0.5 and original AGA; target/partner accuracies are both reported. All 14 records and 224 original batch-context score replays passed with zero error. Fusion protection failed; this pilot is closed, not a completed Defense 2 method.",
+        )
     coverage = [
         [
             "TA + original AGA",
@@ -1445,6 +1479,10 @@ def paper_tables(_source, output):
         "% Accuracy in percent. No new model evaluation or raw-score audit.",
     ]
     chinese = {
+        "data_free_joint": (
+            "无真实图片的联合数值补偿：固定先行实验",
+            "只修改第一层完整MLP的A/B；构造输入为生成的LN向量，未用真实图、伙伴或分类分数选参。独立MNIST从99.69降至99.61%，但TA及原AGA后仍约99%，没有保护效果。完整相对间隔和合成RMS原标准失败均保留。不把它与使用真实训练图的旧12层数值结果混在一起，也不因距离增大称为有效防御。",
+        ),
         "numerical_reconstruction": (
             "数值补偿的完整跨任务结果",
             "同一任务使用同一构造集，全部固定结果保留。M/S/D分别为MNIST/SVHN/DTD；目标与伙伴分列。原方法、增加Attention补偿和改为同输入教师函数重构分别比较，不根据测试成绩替换主模型。DTD独立准确率明显下降的行是任务保持失败，不能因为融合准确率低就称成功。",

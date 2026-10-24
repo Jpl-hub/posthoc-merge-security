@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-23T05:53:14.274708+00:00",
+  "updated_utc": "2026-10-23T08:26:27.332599+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -79,5 +79,165 @@
       }
     },
     "distinction": "Author Attention fits public anchors;MLP only permutes A/a/B. This new computation fits the frozen teacher nonlinear response with one constrained B for two image-free probe distributions. No new AGA calls or accuracy claims."
+  },
+  "two_state_algebra": {
+    "scope": "Standard finite compatibility calculation,not a CLIP defense experiment",
+    "free_features": 7,
+    "output": 3,
+    "source_vectors": 13,
+    "seed": 20261023,
+    "q": 0.5,
+    "activation": "QuickGELU1.702",
+    "design": "K=[H,qH];T=[0,-2BH]",
+    "conditional_target": "Same activation at endpoints;native unchanged while raw block midpoint targets negative teacher output",
+    "exact_minimum_loss_per_teacher_energy": 3.2,
+    "direct_lstsq_loss": 3.2,
+    "projection_residual_loss": 3.1999999999999993,
+    "maximum_coefficient_identity_error": 1.3322676295501878e-15,
+    "real_images": 0,
+    "new_CLIP_models": 0,
+    "restriction": "An unchanged activation makes this pair of raw block targets incompatible. Not a complete normalized readout or unknown-partner impossibility theorem."
+  },
+  "fixed_readout_condition": {
+    "status": "read_only_fixed_readout_condition",
+    "target": "MNIST",
+    "checkpoint_sha256": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "L_shape": [
+      512,
+      767
+    ],
+    "rank": 512,
+    "rank_tolerance": 1.2905500166835332e-13,
+    "singular_min": 0.0002973215006158205,
+    "singular_max": 0.7577732169803061,
+    "origin_minimum_coordinate_norm": 24.094409935028484,
+    "allowed_radius": 27.712812921102035,
+    "LN_epsilon": 1e-05,
+    "origin_reconstruction_error": 5.218048215738236e-15,
+    "interior_condition": true,
+    "real_images": 0,
+    "classification_heads": 0,
+    "partner_models": 0,
+    "new_model_points": 0,
+    "parameter_updates": 0,
+    "model_image_forwards": 0,
+    "limitation": "Fixed original final LN/P only. Does not establish upper-network reachability,joint B compatibility,task function retention or TA/AGA protection. Mathematical output preimages are not released weights.",
+    "initial_serialization_failure": "outputs/2026-10-23_research/readout_direction_condition.serialization_failure.json",
+    "initial_seconds": null,
+    "example_n": 32,
+    "target_feature_scale": 0.00026895725141303856,
+    "maximum_normalized_input_norm": 24.095218419725754,
+    "FP64_maximum_direction_error": 6.334692077269908e-11,
+    "FP32_maximum_direction_error": 0.006589779543873905,
+    "minimum_FP32_antipodal_cosine": 0.9999782874027815,
+    "pre_LN_input_norm_min": 0.15423997845666618,
+    "pre_LN_input_norm_max": 0.15424212153848502,
+    "FP32_reference_passed": false,
+    "seconds": 2.8588905509968754,
+    "source_sha256": {
+      "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+    },
+    "device": "CPU",
+    "arithmetic": "NumPyFP64 analytic LN and PyTorchFP32 layer_norm/projection;not complete-model or image evaluation"
+  },
+  "second_order_complete_tail": {
+    "status": "read_only_second_order_normalized_response_identity",
+    "target": "MNIST",
+    "block": 11,
+    "seed": 2026102320,
+    "synthetic_residual_sequences": 8,
+    "tokens_per_sequence": 50,
+    "source": "Independent standard Gaussian residual tokens;not images,actual upstream states or task distribution",
+    "checkpoint_sha256": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "basis_sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344",
+    "source_commit": "7f53b2d",
+    "driver_sha256": "666c32c458fc060444146e23da0341d4f49805b3e875540acec0c93f0afb4b4b",
+    "source_sha256": {
+      "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+    },
+    "W_shape": [
+      3072,
+      8
+    ],
+    "W_rank": 8,
+    "W_singular_min": 10.32103959895255,
+    "W_singular_max": 31.86071375439004,
+    "relative_A_direction_norm": 0.9999999999999999,
+    "relative_first_B_direction_norm": 0.03925320191104371,
+    "relative_second_B_direction_norm": 0.05246814791851078,
+    "A_task_left_error": 5.257507803617717e-13,
+    "A_task_right_error": 1.9684670441111856e-12,
+    "B_first_task_error": 3.294051957930128e-14,
+    "B_second_task_error": 4.547882678782389e-14,
+    "raw_first_residual": 2.3499989581016283e-13,
+    "raw_second_residual": 5.06317153790671e-13,
+    "native_FP32_vs_NumPy64_maximum_feature_error": 1.3837059248400507e-07,
+    "normalized_first_derivative_norm": 8.67221713395788e-15,
+    "normalized_second_derivative_norm": 0.556415512446362,
+    "NumPy_Torch_second_derivative_maximum_error": 1.1102230246251565e-16,
+    "unit_feature_radial_curvature_maximum": 3.9979955110402976e-17,
+    "steps": [
+      {
+        "s": 0.001,
+        "native_unit_feature_error": 8.022728831939795e-11,
+        "midpoint_unit_feature_error": 6.95498988128414e-08,
+        "predicted_midpoint_error": 6.955193905579525e-08,
+        "midpoint_relative_expansion_error": 0.00015299585320544196,
+        "native_error_over_s_cubed": 0.08022728831939795
+      },
+      {
+        "s": 0.0005,
+        "native_unit_feature_error": 1.0028808594334091e-11,
+        "midpoint_unit_feature_error": 1.7387729583265636e-08,
+        "predicted_midpoint_error": 1.7387984763948814e-08,
+        "midpoint_relative_expansion_error": 7.650266841339228e-05,
+        "native_error_over_s_cubed": 0.08023046875467273
+      },
+      {
+        "s": 0.00025,
+        "native_unit_feature_error": 1.2536034900263863e-12,
+        "midpoint_unit_feature_error": 4.34696433773839e-09,
+        "predicted_midpoint_error": 4.3469961909872034e-09,
+        "midpoint_relative_expansion_error": 3.824834898411121e-05,
+        "native_error_over_s_cubed": 0.08023062336168872
+      }
+    ],
+    "real_images": 0,
+    "classification_heads": 0,
+    "partner_models": 0,
+    "model_image_forwards": 0,
+    "new_defense_points": 0,
+    "optimization_steps": 0,
+    "seconds": 3.44168262500898,
+    "limits": "Only finite8synthetic CLSresponses and local derivatives;no finite task/native accuracy,unknown-partner mixing or AGA efficacy. No parameter file written;not a retry of a closed defense point.",
+    "validation": "NumPy analytic complete LN/projection/normalization agrees with Torch second JVP;fixed-step expansion error halves,endpoint error scales cubically;not classification validation.",
+    "initial_implementation_failure": "outputs/2026-10-23_research/second_order_condition.key_type_failure.json;only basis integer/string key mismatch repaired,before token forwards",
+    "FP32_scope": "Smallest-step effects evaluated in FP64;even largest midpoint effect6.95e-8 is below original nativeFP32/analyticFP64 maximum discrepancy1.38e-7. No claim of a verified FP32 mixed-model effect."
+  },
+  "HNC_source_review": {
+    "paper": "https://arxiv.org/html/2609.38081v1",
+    "repo": "Ann-Huang-0/hessian-null-space-continuation",
+    "commit": "8fa8e94459fde94fb130e7c0af833d1e1cc21497",
+    "files": {
+      "hnc/curvature.py": {
+        "blob": "ef7c6c705b7487117ef13713bfeaefc281f6a539",
+        "sha256": "961b4e22b4e12f5c4dc47b829808c07596c1803b85f611bebf73651e3eb6c631"
+      },
+      "hnc/walk.py": {
+        "blob": "c0e440aa22408cbf890f3ab699a081d76a01ff35",
+        "sha256": "51e51d71dd69e4fc070e11b56d319afac83a8669565a663dd04a31a4f98f8e7d"
+      },
+      "hnc/problem.py": {
+        "blob": "1d4d75db596136876c8e3d24cafb14ec350028ce",
+        "sha256": "5d51a4edbd56f4aabec94574f4cc6e8cc7e164312811249d9747a1d19d272455"
+      },
+      "hnc/directions.py": {
+        "blob": "75860a1de45368789231afa2f9944bceb580cf37",
+        "sha256": "6319bb663d14986c25211d3fe413a9fdb9321fe2a597e3f6c22a1b003c7edb20"
+      }
+    },
+    "scope": "Read fixed author core implementation;not a full ViT reproduction. No HNC installation or run. Paper ViT probe uses real512Places365images,not our weight-only condition;internal representation change does not prove merging/AGA protection."
   }
 }

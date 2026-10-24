@@ -19,12 +19,19 @@ def main():
     p.add_argument("--sha256", required=True)
     p.add_argument("--full-state", action="store_true")
     p.add_argument(
+        "--aligned-reference",
+        action="store_true",
+        help="Store AGA differences from the already frozen AGA of the clean expert",
+    )
+    p.add_argument(
         "--base-reference",
         action="store_true",
         help="Apply and store edits relative to the public base",
     )
     p.add_argument("--output", required=True)
     a = p.parse_args()
+    if a.aligned_reference and (a.method != "aga" or a.base_reference):
+        p.error("aligned-reference requires aga without base-reference")
     require_root()
     initialize()
     protocol = vars(a)
@@ -44,6 +51,10 @@ def main():
             raise ValueError("AGA text mismatch")
         result = author_recover(published, base, author).state_dict()
         detail = dict(known_family=False, author_text_sha256=sha)
+        if a.aligned_reference:
+            ref = cfg["AGA_references"][a.target]
+            reference = apply(expert, ref, full=True)
+            detail["aligned_reference"] = ref
     elif a.method == "patch":
         # Recovery gets only the full published state and public base. The clean
         # expert above assembles an edits-only publication; it is not passed here.
@@ -59,6 +70,7 @@ def main():
         )
         reference = base
     edits = {k: v for k, v in result.items() if not torch.equal(v, reference.state_dict()[k])}
+    assert all(torch.equal(v, (reference.state_dict() | edits)[k]) for k, v in result.items())
     torch.save(edits, out / "edits.pt")
     save_json(
         out / "execution.json",
@@ -67,7 +79,9 @@ def main():
             seconds=time.monotonic() - start,
             output_sha256=digest(out / "edits.pt"),
             details=detail,
-            reference="public_base" if a.base_reference or a.method == "reset" else "expert",
+            reference="original_AGA"
+            if a.aligned_reference
+            else ("public_base" if a.base_reference or a.method == "reset" else "expert"),
             new_training_updates=0,
         ),
     )

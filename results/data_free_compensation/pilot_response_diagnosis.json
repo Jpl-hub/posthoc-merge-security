@@ -1,0 +1,36 @@
+{
+  "status": "posthoc_same_source_nonlinear_self_midpoint_diagnosis",
+  "point_sha256": "62d9f360e03c64585d709eeef81443f0d4ee29113de28c56d7cf0646219e6ee4",
+  "rows": [
+    {
+      "domain": "task",
+      "n": 8192,
+      "endpoint_relative_RMS": 0.04024746844522097,
+      "self_midpoint_relative_RMS": 0.0201237342219912,
+      "midpoint_defect_relative_RMS": 9.848251918415308e-10,
+      "directional_residual_RMS_after_per_input_scale": 0.019507579827243847,
+      "mean_midpoint_scale": 0.9931234440191894,
+      "mean_midpoint_cosine": 0.9994866048310315,
+      "finite_decomposition_max_error": 2.380265350641849e-14
+    },
+    {
+      "domain": "full",
+      "n": 8192,
+      "endpoint_relative_RMS": 0.04024746841186425,
+      "self_midpoint_relative_RMS": 0.10637671135285885,
+      "midpoint_defect_relative_RMS": 0.10240892611680724,
+      "directional_residual_RMS_after_per_input_scale": 0.10328061872511186,
+      "mean_midpoint_scale": 0.9843415706964291,
+      "mean_midpoint_cosine": 0.9941716445778936,
+      "finite_decomposition_max_error": 4.85722573273506e-15
+    }
+  ],
+  "source_seed": 2026102317,
+  "source_n": 8192,
+  "seconds": 12.186140245990828,
+  "real_images": 0,
+  "new_CLIP_forwards": 0,
+  "new_parameters": 0,
+  "formula": "t=.5;f_t=(B+t deltaB)phi(z+t deltaz);f_t-[(1-t)f0+t f1]=B[phi(z+t deltaz)-(1-t)phi(z)-t phi(z+deltaz)]+t deltaB[phi(z+t deltaz)-phi(z+deltaz)].",
+  "limitation": "Same-block self interpolation on original image-free source only. Not the real partner or complete model and not proof of classification causality. No release selected or repaired."
+}

@@ -1682,6 +1682,38 @@
     "colspec": "lrrr"
   },
   {
+    "key": "data_free_joint",
+    "title": "Data-free joint numerical compensation: fixed pilot",
+    "headers": [
+      "Model",
+      "Construction images",
+      "SA M",
+      "TA M / S",
+      "AGA target M / S",
+      "AGA both M / S"
+    ],
+    "rows": [
+      [
+        "Unprotected",
+        "--",
+        "99.69",
+        "99.37 / 92.50",
+        "99.30 / 92.78",
+        "99.32 / 91.77"
+      ],
+      [
+        "Joint numerical pilot",
+        "0",
+        "99.61",
+        "99.37 / 90.99",
+        "99.32 / 91.18",
+        "99.30 / 90.03"
+      ]
+    ],
+    "note": "One first-layer full-width MLP, 8192 generated LN vectors per domain, frozen teacher and 20 fixed joint iterations. No real construction images. A/B relative changes 1.0000/0.4599; combined logical distance 1.1007, separately declared from the historical 0.5 comparison. Synthetic 1-percent RMS and strict relative-margin criteria failed. Complete MNIST standalone loss is 0.08 percentage points. TA coefficient 0.5 and original AGA; target/partner accuracies are both reported. All 14 records and 224 original batch-context score replays passed with zero error. Fusion protection failed; this pilot is closed, not a completed Defense 2 method.",
+    "colspec": "lrrrrr"
+  },
+  {
     "key": "coverage",
     "title": "Completed work and remaining comparisons",
     "headers": [
