@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-24T09:26:51.337082+00:00",
+  "updated_utc": "2026-10-24T09:33:03.513900+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -4604,12 +4604,186 @@
     "source_retired_after_exact_embedding_check": true
   },
   "full_readout_followup": {
-    "status": "declared_before_read_only_calculation",
-    "closed_point_sha256": "787c235df28214ea18b659ead85c9233b9075d7e55fe40440bbd70a8661e08fc",
+    "status": "completed_read_only_full_prefix_and_final_readout_check",
     "source_sha256": "a5f4789f43a0d8935e2e151c8bda280dc480016c844804f6a08bdced5d23f69a",
-    "source_path": "results/data_free_compensation/code_snapshot/full_readout.py",
-    "definition": "Fixed128cached generated inputs,original/787c/native and originalAGA/public-base.5 midpoint. Capture fullprefix/lastMLP/finalreadout;test rank-one positive outside-plane relation and signed complete task increment.0realimages/heads/partners/newAGA/releases/optimizer. Norefit.",
-    "notes": "notes/phase2_coupling.md:Oct24固定787c完整前缀与最终读出",
-    "classification_or_unknown_partner_claim": false
+    "inputs": {
+      "outputs/2026-10-24_research/task_function_probe.pt": "129fb2c7dde6b530b9af05b8c62555b47e59859cd34efaa676530ee0cfeab57a",
+      "outputs/signed_function_control_20261024/release.pt": "787c235df28214ea18b659ead85c9233b9075d7e55fe40440bbd70a8661e08fc",
+      "outputs/feature_noise/artifacts/original_AGA.pt": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "outputs/signed_function_control_20261024/AGA/edits.pt": "56aa72f0ff8ff2bfe4c2f10a333b24d0e329637a734b28aa70ac2b1b0eb3ae91",
+      "outputs/signed_function_20261024/statistics.pt": "d07245c70b67e8e49b97a500194daf0a5dfb12ac1bf2e2322fe65f43eccf368a"
+    },
+    "results": {
+      "native": {
+        "synthetic_sets": {
+          "initial": {
+            "complete_feature_delta_RMS": 0.5137190429679229,
+            "task_increment_RMS": 0.6966852536099234,
+            "complete_task_cross_ratio": 1.3837317053785079,
+            "centered_task_cross_ratio": 0.959407307717834,
+            "task_relative_delta_RMS": 0.7373760823930918,
+            "MLP_residual_delta_RMS": 2.704468112663982,
+            "antipodal_error_RMS": 1.932897499841138,
+            "antipodal_lower_bound": {
+              "min": 1.2001870557516694,
+              "median": 1.2307396325942466,
+              "mean": 1.231122622697408,
+              "max": 1.262341745041946
+            },
+            "outside_plane_energy_fraction": {
+              "min": 0.9217256608690363,
+              "median": 0.9411258408581862,
+              "mean": 0.9412157195955686,
+              "max": 0.9586907954580949
+            },
+            "positive_outside_ratio": {
+              "min": 0.8584682249160605,
+              "median": 0.9183817230792941,
+              "mean": 0.9171958623437237,
+              "max": 0.9729835048846387
+            }
+          },
+          "task_generated": {
+            "complete_feature_delta_RMS": 0.3504665010463014,
+            "task_increment_RMS": 1.3995418759060743,
+            "complete_task_cross_ratio": 1.0081319583696,
+            "centered_task_cross_ratio": 0.9565463298956163,
+            "task_relative_delta_RMS": 0.2504151587600097,
+            "MLP_residual_delta_RMS": 2.2027411200800557,
+            "antipodal_error_RMS": 1.9690538925190348,
+            "antipodal_lower_bound": {
+              "min": 1.108238176831253,
+              "median": 1.3138523972906362,
+              "mean": 1.2957092266910286,
+              "max": 1.3894847720181298
+            },
+            "outside_plane_energy_fraction": {
+              "min": 0.8510780474400587,
+              "median": 0.9812575925737952,
+              "mean": 0.9674568106273331,
+              "max": 0.9987982660752805
+            },
+            "positive_outside_ratio": {
+              "min": 0.6464772880366293,
+              "median": 0.9681425990054673,
+              "mean": 0.9317288790142739,
+              "max": 1.0195448435923737
+            }
+          }
+        },
+        "unchanged_upstream_hidden_max_error": 0.0,
+        "FP32_rank_one_relative_error": 8.190719375333663e-08,
+        "complete_FP32_vs_NumPy_readout_max_error": 1.546803633512006e-07,
+        "FP32_MLP_residual_identity_max_error": 2.865012445896209e-06,
+        "finite_rank_one_formula_max_error": 1.6863663327044975e-07,
+        "positive_outside_relation_RMS_error": 5.051870370240307e-07,
+        "readout_plane_rank": 2,
+        "readout_plane_singular_values": [
+          7.519395147500164,
+          0.3134033449559869
+        ]
+      },
+      "mid": {
+        "synthetic_sets": {
+          "initial": {
+            "complete_feature_delta_RMS": 0.03663950458043806,
+            "task_increment_RMS": 0.33105389937640767,
+            "complete_task_cross_ratio": 0.9507792529301574,
+            "centered_task_cross_ratio": 0.9897642813001682,
+            "task_relative_delta_RMS": 0.11067534516117876,
+            "MLP_residual_delta_RMS": 0.22834722635825677,
+            "antipodal_error_RMS": 1.999664358512223,
+            "antipodal_lower_bound": {
+              "min": 0.9706863199695329,
+              "median": 0.9985571374905586,
+              "mean": 0.9995782426386699,
+              "max": 1.021252887165357
+            },
+            "outside_plane_energy_fraction": {
+              "min": 0.7202816784614143,
+              "median": 0.7485560946562471,
+              "mean": 0.7495439941678204,
+              "max": 0.7710173939391792
+            },
+            "positive_outside_ratio": {
+              "min": 0.948232943825739,
+              "median": 0.9853155818990771,
+              "mean": 0.9845065581203309,
+              "max": 1.0078973798790365
+            }
+          },
+          "task_generated": {
+            "complete_feature_delta_RMS": 0.22960712436478548,
+            "task_increment_RMS": 0.7992398907003514,
+            "complete_task_cross_ratio": 1.0462550622034226,
+            "centered_task_cross_ratio": 1.01559207403187,
+            "task_relative_delta_RMS": 0.28728186247509147,
+            "MLP_residual_delta_RMS": 1.1695765655245056,
+            "antipodal_error_RMS": 1.9867764263854486,
+            "antipodal_lower_bound": {
+              "min": 0.9698735121819794,
+              "median": 1.0876586920462292,
+              "mean": 1.0857835269325198,
+              "max": 1.2353400857226555
+            },
+            "outside_plane_energy_fraction": {
+              "min": 0.7194468465700814,
+              "median": 0.8331278509717259,
+              "mean": 0.828428687401349,
+              "max": 0.9438464341318078
+            },
+            "positive_outside_ratio": {
+              "min": 0.9650584195344774,
+              "median": 1.0482268021666608,
+              "mean": 1.047007738489523,
+              "max": 1.0968945828330587
+            }
+          }
+        },
+        "unchanged_upstream_hidden_max_error": 0.0,
+        "FP32_rank_one_relative_error": 2.466444990161491e-07,
+        "complete_FP32_vs_NumPy_readout_max_error": 1.3700032763797054e-07,
+        "FP32_MLP_residual_identity_max_error": 1.4995505419751476e-06,
+        "finite_rank_one_formula_max_error": 1.45931244269204e-07,
+        "positive_outside_relation_RMS_error": 3.944184754860663e-07,
+        "readout_plane_rank": 2,
+        "readout_plane_singular_values": [
+          7.539582995105357,
+          0.31281816580528643
+        ]
+      }
+    },
+    "raw_path": "outputs/signed_function_control_20261024/full_readout.pt",
+    "raw_sha256": "9187d189c376a0cb3390334df1baaa5bf097154820c1f2b92b0cd8be900312f1",
+    "seconds": 11.847549882018939,
+    "real_images": 0,
+    "classification_heads": 0,
+    "partner_models": 0,
+    "new_AGA_calls": 0,
+    "new_publications": 0,
+    "model_parameter_updates": 0,
+    "generated_image_model_forwards": 512,
+    "upstream_models_frozen": true,
+    "scope": "Only the existing rank-one finalMLP reference and public-base midpoint;not actual unknown-partner fusion or a classification result. No point or generated input refit.",
+    "result_path": "outputs/signed_function_control_20261024/full_readout.json",
+    "result_sha256": "ee96b01b8da4dff4e08c5b2d4da93fd03b811baa5e2be40f56a31359d411419f",
+    "definition_local_commit": "26b7fa7fbca8aedd87cf07766f64a07a491cd52d",
+    "definition_public_commit": "67240c6fc7006ba8663280808dcdbeff1057aabc",
+    "definition_and_full_source_read_back_before_execution": true,
+    "source_retired_after_exact_embedding": true,
+    "independent_check": {
+      "path": "outputs/signed_function_control_20261024/full_readout_check.json",
+      "sha256": "f930c98768c184608197ad44f606d1abf51fa28a22af95c4befe1d2a30a19d13",
+      "cached_teacher_feature_max_error": 0.0,
+      "QR_cosine_bound_minimum_slack_native_mid": [
+        0.7511955933838907,
+        1.1879151535118004
+      ],
+      "positive_outside_dot_minimum_native_mid": [
+        0.6405382891611731,
+        0.7086832189187264
+      ]
+    },
+    "interpretation": "On the same existing128generated inputs,the local signed task reversal did not survive complete-prefix/final-readout task measurements. Rank-one final B edits preserve a positive outside-plane feature component. This closes only that inference;not a classification impossibility or a universal gate for future A/B methods. Native generated feature error is not real task accuracy loss. No point/input refit."
   }
 }
