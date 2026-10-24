@@ -1,8 +1,10 @@
 {
-  "status": "native_passed_fixed_TA_originalAGA_evaluation_pending",
+  "status": "completed_closed_no_target_fusion_protection",
   "point_sha256": "28e0e122bcbd8737d71c5f64f1cde1bfc3663ce754eca69095371dbf18b691b9",
   "source_definition_commit": "37cab68",
-  "source_protocol": "configs/compensation.json",
+  "evaluation_definition_commit": "15491c2",
+  "source_protocol": "results/data_free_compensation/alignment_protocol.json",
+  "execution_protocol_path": "configs/compensation.json in frozen source snapshot",
   "source": {
     "release_sha256": "28e0e122bcbd8737d71c5f64f1cde1bfc3663ce754eca69095371dbf18b691b9",
     "publication_reference": "expert",
@@ -140,10 +142,10 @@
       "orthogonality_max_error": 2.6645352591003757e-14,
       "explicit_visual_max_error": 0,
       "task_relative_errors": [
-        8.25794464623433e-9,
-        2.2212814466066157e-8
+        8.25794464623433e-09,
+        2.2212814466066157e-08
       ],
-      "originalAGA_O_max_error": 4.470348358154297e-8,
+      "originalAGA_O_max_error": 4.470348358154297e-08,
       "heldout_native_unit_RMS": 0.17581965303060965,
       "heldout_max_unit_error": 0.30186063132041174,
       "heldout_n": 128,
@@ -204,11 +206,1617 @@
     "reference": "original_AGA",
     "new_training_updates": 0
   },
+  "rows": [
+    {
+      "defense": "Unprotected",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "Standalone",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "role": "target",
+      "n": 10000,
+      "correct": 9969,
+      "accuracy_percent": 99.69,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 9969,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 31,
+        "loss_pp": 0,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        0,
+        0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1132,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1030,
+          "original_correct": 1030
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1010,
+          "original_correct": 1010
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 954,
+          "original_correct": 954
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1025,
+          "original_correct": 1025
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 973,
+          "original_correct": 973
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 1003,
+          "original_correct": 1003
+        }
+      ],
+      "evaluation_seconds": 0,
+      "provenance": {
+        "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "imported_key": "Unprotected/Standalone/None/MNIST"
+      }
+    },
+    {
+      "defense": "Unprotected",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "role": "target",
+      "n": 10000,
+      "correct": 9937,
+      "accuracy_percent": 99.37,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 9937,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 63,
+        "loss_pp": 0,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        0,
+        0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 975,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1133,
+          "original_correct": 1133
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1026,
+          "original_correct": 1026
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 944,
+          "original_correct": 944
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1018,
+          "original_correct": 1018
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 999,
+          "original_correct": 999
+        }
+      ],
+      "evaluation_seconds": 0,
+      "provenance": {
+        "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "imported_key": "Unprotected/TA/None/MNIST"
+      }
+    },
+    {
+      "defense": "Unprotected",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "role": "partner",
+      "n": 26032,
+      "correct": 24079,
+      "accuracy_percent": 92.49769514443761,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 24079,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 1953,
+        "loss_pp": 0,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        0,
+        0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1708,
+          "original_correct": 1708
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4800,
+          "original_correct": 4800
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3977,
+          "original_correct": 3977
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2457,
+          "original_correct": 2457
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2289,
+          "original_correct": 2289
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2305,
+          "original_correct": 2305
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1711,
+          "original_correct": 1711
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1826,
+          "original_correct": 1826
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1583,
+          "original_correct": 1583
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1423,
+          "original_correct": 1423
+        }
+      ],
+      "evaluation_seconds": 0,
+      "provenance": {
+        "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "imported_key": "Unprotected/TA/None/SVHN"
+      }
+    },
+    {
+      "defense": "Unprotected",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "role": "target",
+      "n": 10000,
+      "correct": 9930,
+      "accuracy_percent": 99.3,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 9930,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 70,
+        "loss_pp": 0,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        0,
+        0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 975,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1133,
+          "original_correct": 1133
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1024,
+          "original_correct": 1024
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 978,
+          "original_correct": 978
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 941,
+          "original_correct": 941
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1017,
+          "original_correct": 1017
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 999,
+          "original_correct": 999
+        }
+      ],
+      "evaluation_seconds": 0,
+      "provenance": {
+        "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "imported_key": "Unprotected/TA/Protected expert/MNIST"
+      }
+    },
+    {
+      "defense": "Unprotected",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "role": "partner",
+      "n": 26032,
+      "correct": 24153,
+      "accuracy_percent": 92.7819606637984,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 24153,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 1879,
+        "loss_pp": 0,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        0,
+        0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1711,
+          "original_correct": 1711
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4829,
+          "original_correct": 4829
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3990,
+          "original_correct": 3990
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2452,
+          "original_correct": 2452
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2293,
+          "original_correct": 2293
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2309,
+          "original_correct": 2309
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1713,
+          "original_correct": 1713
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1836,
+          "original_correct": 1836
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1589,
+          "original_correct": 1589
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1431,
+          "original_correct": 1431
+        }
+      ],
+      "evaluation_seconds": 0,
+      "provenance": {
+        "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "imported_key": "Unprotected/TA/Protected expert/SVHN"
+      }
+    },
+    {
+      "defense": "Unprotected",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "MNIST",
+      "role": "target",
+      "n": 10000,
+      "correct": 9932,
+      "accuracy_percent": 99.32,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 9932,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 68,
+        "loss_pp": 0,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        0,
+        0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 975,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1133,
+          "original_correct": 1133
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1024,
+          "original_correct": 1024
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 977,
+          "original_correct": 977
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 885,
+          "original_correct": 885
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 942,
+          "original_correct": 942
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1017,
+          "original_correct": 1017
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 971,
+          "original_correct": 971
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 999,
+          "original_correct": 999
+        }
+      ],
+      "evaluation_seconds": 0,
+      "provenance": {
+        "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "imported_key": "Unprotected/TA/All experts/MNIST"
+      }
+    },
+    {
+      "defense": "Unprotected",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "SVHN",
+      "role": "partner",
+      "n": 26032,
+      "correct": 23890,
+      "accuracy_percent": 91.77166564228642,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 23890,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 2142,
+        "loss_pp": 0,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        0,
+        0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1700,
+          "original_correct": 1700
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4797,
+          "original_correct": 4797
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3972,
+          "original_correct": 3972
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2374,
+          "original_correct": 2374
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2260,
+          "original_correct": 2260
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2300,
+          "original_correct": 2300
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1677,
+          "original_correct": 1677
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1806,
+          "original_correct": 1806
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1590,
+          "original_correct": 1590
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1414,
+          "original_correct": 1414
+        }
+      ],
+      "evaluation_seconds": 0,
+      "provenance": {
+        "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "imported_key": "Unprotected/TA/All experts/SVHN"
+      }
+    },
+    {
+      "defense": "Numerical_MNIST",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "Standalone",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "role": "target",
+      "n": 10000,
+      "correct": 9969,
+      "accuracy_percent": 99.69,
+      "changed_predictions": 6,
+      "paired": {
+        "both_correct": 9966,
+        "lost": 3,
+        "gained": 3,
+        "both_wrong": 28,
+        "loss_pp": 0,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.048012399638550717,
+        0.048012399638550717
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1132,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1031,
+          "original_correct": 1030
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1010,
+          "original_correct": 1010
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 886,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 952,
+          "original_correct": 954
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1025,
+          "original_correct": 1025
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 973,
+          "original_correct": 973
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 1002,
+          "original_correct": 1003
+        }
+      ],
+      "evaluation_seconds": 0,
+      "provenance": {
+        "imported_from": "outputs/alignment_compensation_20261024/native/full.pt",
+        "imported_key": "released/standalone/MNIST"
+      }
+    },
+    {
+      "defense": "Numerical_MNIST",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "role": "target",
+      "n": 10000,
+      "correct": 9935,
+      "accuracy_percent": 99.35000000000001,
+      "changed_predictions": 5,
+      "paired": {
+        "both_correct": 9934,
+        "lost": 3,
+        "gained": 1,
+        "both_wrong": 62,
+        "loss_pp": 0.02,
+        "exact_mcnemar_p": 0.625
+      },
+      "mcnemar_log10_p": -0.20411998265592465,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.059200000000005276,
+        0.019200000000005272
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 975,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1131,
+          "original_correct": 1133
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1026,
+          "original_correct": 1026
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 943,
+          "original_correct": 944
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1018,
+          "original_correct": 1018
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 971,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 999,
+          "original_correct": 999
+        }
+      ],
+      "evaluation_seconds": 9.0871109579748,
+      "provenance": {}
+    },
+    {
+      "defense": "Numerical_MNIST",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "role": "partner",
+      "n": 26032,
+      "correct": 23986,
+      "accuracy_percent": 92.14044253226797,
+      "changed_predictions": 180,
+      "paired": {
+        "both_correct": 23957,
+        "lost": 122,
+        "gained": 29,
+        "both_wrong": 1924,
+        "loss_pp": 0.3572526121696374,
+        "exact_mcnemar_p": 9.023809939632868e-15
+      },
+      "mcnemar_log10_p": -14.044610060417154,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.44967284029386767,
+        -0.26483238404540704
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1709,
+          "original_correct": 1708
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4759,
+          "original_correct": 4800
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3977,
+          "original_correct": 3977
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2450,
+          "original_correct": 2457
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2285,
+          "original_correct": 2289
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2304,
+          "original_correct": 2305
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1683,
+          "original_correct": 1711
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1819,
+          "original_correct": 1826
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1588,
+          "original_correct": 1583
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1412,
+          "original_correct": 1423
+        }
+      ],
+      "evaluation_seconds": 25.27165178701398,
+      "provenance": {}
+    },
+    {
+      "defense": "Numerical_MNIST",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "role": "target",
+      "n": 10000,
+      "correct": 9929,
+      "accuracy_percent": 99.29,
+      "changed_predictions": 3,
+      "paired": {
+        "both_correct": 9928,
+        "lost": 2,
+        "gained": 1,
+        "both_wrong": 69,
+        "loss_pp": 0.01,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.04394932752918481,
+        0.023949327529184813
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 975,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1133,
+          "original_correct": 1133
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1024,
+          "original_correct": 1024
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 978,
+          "original_correct": 978
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 940,
+          "original_correct": 941
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1016,
+          "original_correct": 1017
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 971,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 999,
+          "original_correct": 999
+        }
+      ],
+      "evaluation_seconds": 8.464839110994944,
+      "provenance": {}
+    },
+    {
+      "defense": "Numerical_MNIST",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "role": "partner",
+      "n": 26032,
+      "correct": 24076,
+      "accuracy_percent": 92.4861708666257,
+      "changed_predictions": 167,
+      "paired": {
+        "both_correct": 24044,
+        "lost": 109,
+        "gained": 32,
+        "both_wrong": 1847,
+        "loss_pp": 0.29578979717271053,
+        "exact_mcnemar_p": 5.02296156526002e-11
+      },
+      "mcnemar_log10_p": -10.299040144965915,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.3851235113884441,
+        -0.20645608295697696
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1713,
+          "original_correct": 1711
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4794,
+          "original_correct": 4829
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3990,
+          "original_correct": 3990
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2455,
+          "original_correct": 2452
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2294,
+          "original_correct": 2293
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2306,
+          "original_correct": 2309
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1690,
+          "original_correct": 1713
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1822,
+          "original_correct": 1836
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1590,
+          "original_correct": 1589
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1422,
+          "original_correct": 1431
+        }
+      ],
+      "evaluation_seconds": 25.46392768199439,
+      "provenance": {}
+    },
+    {
+      "defense": "Numerical_MNIST",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "MNIST",
+      "role": "target",
+      "n": 10000,
+      "correct": 9931,
+      "accuracy_percent": 99.31,
+      "changed_predictions": 3,
+      "paired": {
+        "both_correct": 9930,
+        "lost": 2,
+        "gained": 1,
+        "both_wrong": 67,
+        "loss_pp": 0.01,
+        "exact_mcnemar_p": 1
+      },
+      "mcnemar_log10_p": 0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.04394932752918314,
+        0.02394932752918314
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 975,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1134,
+          "original_correct": 1133
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1024,
+          "original_correct": 1024
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 977,
+          "original_correct": 977
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 885,
+          "original_correct": 885
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 941,
+          "original_correct": 942
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1016,
+          "original_correct": 1017
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 971,
+          "original_correct": 971
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 999,
+          "original_correct": 999
+        }
+      ],
+      "evaluation_seconds": 8.422782926994842,
+      "provenance": {}
+    },
+    {
+      "defense": "Numerical_MNIST",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "SVHN",
+      "role": "partner",
+      "n": 26032,
+      "correct": 23833,
+      "accuracy_percent": 91.55270436385986,
+      "changed_predictions": 202,
+      "paired": {
+        "both_correct": 23777,
+        "lost": 113,
+        "gained": 56,
+        "both_wrong": 2086,
+        "loss_pp": 0.21896127842655194,
+        "exact_mcnemar_p": 1.3829511795728438e-05
+      },
+      "mcnemar_log10_p": -4.859193150922027,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.3168065415472778,
+        -0.12111601530582607
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1707,
+          "original_correct": 1700
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4761,
+          "original_correct": 4797
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3969,
+          "original_correct": 3972
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2386,
+          "original_correct": 2374
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2264,
+          "original_correct": 2260
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2299,
+          "original_correct": 2300
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1652,
+          "original_correct": 1677
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1795,
+          "original_correct": 1806
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1594,
+          "original_correct": 1590
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1406,
+          "original_correct": 1414
+        }
+      ],
+      "evaluation_seconds": 24.844431545003317,
+      "provenance": {}
+    }
+  ],
+  "execution": {
+    "completed": true,
+    "pilot": false,
+    "case_index": 0,
+    "rows": 14,
+    "wall_seconds": 121.61280880900449,
+    "GPU": "NVIDIA GeForce RTX 3090",
+    "new_defense_weights": 0,
+    "optimizer_steps": 0,
+    "new_AGA_calls": 0,
+    "cached_author_AGA_weights": true,
+    "defense_feedback": false,
+    "predictions_sha256": "bfb2e325c71fa66ad05eeab3d134307e9175e5235585e4295ec1675c8a0cd190",
+    "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+    "protocol_sha256": "8354838332413b1f8efb2127fe63bf7e1393166975ebc69f363d35d8cac12702"
+  },
+  "independent_context_validation": {
+    "status": "passed",
+    "rows": 14,
+    "official_label_numpy_recount": true,
+    "full_image_prediction_replays": 224,
+    "context_forward_images": 27296,
+    "original_evaluation_batch_size": 128,
+    "maximum_score_error": 0,
+    "score_tolerance": 0.0005,
+    "explicit_TA_reconstruction": true,
+    "original_TIES_functions": false,
+    "independent_TIES_small_numpy_fixture": false,
+    "independent_full_TIES_reimplementation": false,
+    "raw_sha256": "bfb2e325c71fa66ad05eeab3d134307e9175e5235585e4295ec1675c8a0cd190",
+    "DARE_NumPy_mask_arithmetic": false,
+    "DARE_independent_RNG": false,
+    "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+    "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+    "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+  },
+  "independent_statistics": {
+    "status": "NumPy_perclass_paired_CI_and_scalar_lgamma_exact_McNemar_passed",
+    "rows": [
+      {
+        "key": "Unprotected/Standalone/None/MNIST",
+        "lost": 0,
+        "gained": 0,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          0,
+          0
+        ]
+      },
+      {
+        "key": "Unprotected/TA/None/MNIST",
+        "lost": 0,
+        "gained": 0,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          0,
+          0
+        ]
+      },
+      {
+        "key": "Unprotected/TA/None/SVHN",
+        "lost": 0,
+        "gained": 0,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          0,
+          0
+        ]
+      },
+      {
+        "key": "Unprotected/TA/Protected expert/MNIST",
+        "lost": 0,
+        "gained": 0,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          0,
+          0
+        ]
+      },
+      {
+        "key": "Unprotected/TA/Protected expert/SVHN",
+        "lost": 0,
+        "gained": 0,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          0,
+          0
+        ]
+      },
+      {
+        "key": "Unprotected/TA/All experts/MNIST",
+        "lost": 0,
+        "gained": 0,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          0,
+          0
+        ]
+      },
+      {
+        "key": "Unprotected/TA/All experts/SVHN",
+        "lost": 0,
+        "gained": 0,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          0,
+          0
+        ]
+      },
+      {
+        "key": "Numerical_MNIST/Standalone/None/MNIST",
+        "lost": 3,
+        "gained": 3,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          -0.048012399638550717,
+          0.048012399638550717
+        ]
+      },
+      {
+        "key": "Numerical_MNIST/TA/None/MNIST",
+        "lost": 3,
+        "gained": 1,
+        "independent_exact_mcnemar_log10_p": -0.20411998265592515,
+        "paired95CI_pp": [
+          -0.059199999999999996,
+          0.01919999999999999
+        ]
+      },
+      {
+        "key": "Numerical_MNIST/TA/None/SVHN",
+        "lost": 122,
+        "gained": 29,
+        "independent_exact_mcnemar_log10_p": -14.044610060417217,
+        "paired95CI_pp": [
+          -0.44967284029386184,
+          -0.264832384045413
+        ]
+      },
+      {
+        "key": "Numerical_MNIST/TA/Protected expert/MNIST",
+        "lost": 2,
+        "gained": 1,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          -0.04394932752918632,
+          0.023949327529186323
+        ]
+      },
+      {
+        "key": "Numerical_MNIST/TA/Protected expert/SVHN",
+        "lost": 109,
+        "gained": 32,
+        "independent_exact_mcnemar_log10_p": -10.2990401449659,
+        "paired95CI_pp": [
+          -0.3851235113884422,
+          -0.20645608295697884
+        ]
+      },
+      {
+        "key": "Numerical_MNIST/TA/All experts/MNIST",
+        "lost": 2,
+        "gained": 1,
+        "independent_exact_mcnemar_log10_p": 0,
+        "paired95CI_pp": [
+          -0.04394932752918632,
+          0.023949327529186326
+        ]
+      },
+      {
+        "key": "Numerical_MNIST/TA/All experts/SVHN",
+        "lost": 113,
+        "gained": 56,
+        "independent_exact_mcnemar_log10_p": -4.859193150922065,
+        "paired95CI_pp": [
+          -0.31680654154727955,
+          -0.12111601530582432
+        ]
+      }
+    ],
+    "source_score_sha256": "bfb2e325c71fa66ad05eeab3d134307e9175e5235585e4295ec1675c8a0cd190",
+    "new_model_forwards": 0,
+    "seconds": 3.690392929012887
+  },
+  "independent_parameter_validation": {
+    "status": "independent_numpy_finite_constraints_and_actual_AGA_transport_passed",
+    "rows": [
+      {
+        "matrix": "model.visual.transformer.resblocks.11.attn.out_proj.weight",
+        "relative_distance": 1.2232765867997186,
+        "task_relative_response": 5.209147371828131e-09
+      },
+      {
+        "matrix": "model.visual.transformer.resblocks.11.mlp.c_proj.weight",
+        "relative_distance": 1.4671553196816693,
+        "task_relative_response": 2.2478162750007745e-08
+      }
+    ],
+    "logical_D": 1.9102225890933735,
+    "heads": [
+      {
+        "head": 0,
+        "reconstructed_rotation_orthogonality": 8.596455103315748e-09,
+        "reconstructed_O_relative_error": 2.4105664625590682e-08,
+        "recovered_vs_unprotected_max_error": 2.2351741790771484e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 1.3040673083053456e-08
+      },
+      {
+        "head": 1,
+        "reconstructed_rotation_orthogonality": 8.815098651027142e-09,
+        "reconstructed_O_relative_error": 2.410186986017379e-08,
+        "recovered_vs_unprotected_max_error": 1.4901161193847656e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 1.0731634629557174e-08
+      },
+      {
+        "head": 2,
+        "reconstructed_rotation_orthogonality": 6.648676609266602e-09,
+        "reconstructed_O_relative_error": 2.4256491419576473e-08,
+        "recovered_vs_unprotected_max_error": 1.4901161193847656e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 8.92467466161867e-09
+      },
+      {
+        "head": 3,
+        "reconstructed_rotation_orthogonality": 9.130215583574852e-09,
+        "reconstructed_O_relative_error": 2.4245175315411656e-08,
+        "recovered_vs_unprotected_max_error": 1.862645149230957e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 9.90280938154009e-09
+      },
+      {
+        "head": 4,
+        "reconstructed_rotation_orthogonality": 1.0122350402319569e-08,
+        "reconstructed_O_relative_error": 2.4340362227373585e-08,
+        "recovered_vs_unprotected_max_error": 2.2351741790771484e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 1.3778361548921758e-08
+      },
+      {
+        "head": 5,
+        "reconstructed_rotation_orthogonality": 8.346285218507887e-09,
+        "reconstructed_O_relative_error": 2.437779139218434e-08,
+        "recovered_vs_unprotected_max_error": 1.862645149230957e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 1.1521577081285983e-08
+      },
+      {
+        "head": 6,
+        "reconstructed_rotation_orthogonality": 5.207286823960544e-09,
+        "reconstructed_O_relative_error": 2.4178870266144316e-08,
+        "recovered_vs_unprotected_max_error": 1.4901161193847656e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 1.4429487216194303e-08
+      },
+      {
+        "head": 7,
+        "reconstructed_rotation_orthogonality": 1.0668044669870369e-08,
+        "reconstructed_O_relative_error": 2.432254224522082e-08,
+        "recovered_vs_unprotected_max_error": 2.2351741790771484e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 9.887515920598e-09
+      },
+      {
+        "head": 8,
+        "reconstructed_rotation_orthogonality": 8.662279782356563e-09,
+        "reconstructed_O_relative_error": 2.3762684245158176e-08,
+        "recovered_vs_unprotected_max_error": 4.470348358154297e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 2.398581513962661e-08
+      },
+      {
+        "head": 9,
+        "reconstructed_rotation_orthogonality": 9.643608134268788e-09,
+        "reconstructed_O_relative_error": 2.4138418215582407e-08,
+        "recovered_vs_unprotected_max_error": 2.9802322387695312e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 1.3445698429648267e-08
+      },
+      {
+        "head": 10,
+        "reconstructed_rotation_orthogonality": 1.0011106832408245e-08,
+        "reconstructed_O_relative_error": 2.3840374803584892e-08,
+        "recovered_vs_unprotected_max_error": 2.9802322387695312e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 2.44901565424685e-08
+      },
+      {
+        "head": 11,
+        "reconstructed_rotation_orthogonality": 8.994180067389834e-09,
+        "reconstructed_O_relative_error": 2.4215357845065932e-08,
+        "recovered_vs_unprotected_max_error": 1.4901161193847656e-08,
+        "NumPy_FP64_vs_author_FP32_max_error": 8.896227345067675e-09
+      }
+    ],
+    "actual_B_permutation_max_error": 0,
+    "other_actual_AGA_parameter_max_change": 0,
+    "actual_AGA_edit_tensor_count": 2,
+    "new_real_images": 0,
+    "new_complete_AGA_calls": 0,
+    "new_defense_points": 0,
+    "seconds": 5.492062183999224,
+    "calculation_source_sha256": "71c5f8d89f1b6b73e8886da26f17a7ccdd483665c19c405da76bb17956d57279"
+  },
+  "artifacts": {
+    "outputs/alignment_compensation_20261024/evaluation/full/00_MNIST_SVHN/results.json": "bc9295cabc56c817cf5b1c9fa0cee2cff541cbc1bcac799dc5f3f243dd28f13c",
+    "outputs/alignment_compensation_20261024/evaluation/full/00_MNIST_SVHN/execution.json": "385121b89e471797c789eab425d7b31aaad84d228773aa6f0f62692a8ef63115",
+    "outputs/alignment_compensation_20261024/evaluation/full/00_MNIST_SVHN/independent_validation.json": "95b89ad442b8169ff4b7764b6fe8e87f61ae017cdc5f6aad5483a58d88b60c96",
+    "outputs/alignment_compensation_20261024/evaluation/full/00_MNIST_SVHN/independent_statistics.json": "da5348232c73ad14453ca1b5f6db1019212d41c6e9c689ac2e83874e5f819529",
+    "outputs/alignment_compensation_20261024/parameter_validation.json": "19ebb0b596dbc782ba92227189dc0bd4f4912a15d6214c589b9783020cbe5e74",
+    "outputs/alignment_compensation_20261024/source_snapshot.tar.gz": "fa72da294034f2c47537c311bf346ebf89f93c5017415570fe02481e3088dfdb",
+    "outputs/alignment_compensation_20261024/native/full.pt": "2166c96219ba1e774a661a954b8444fe0bcddf45fbd676fe00560bd5e024f0be"
+  },
   "source_archive": {
     "path": "outputs/alignment_compensation_20261024/source_snapshot.tar.gz",
     "sha256": "fa72da294034f2c47537c311bf346ebf89f93c5017415570fe02481e3088dfdb"
   },
+  "cost": {
+    "source_seconds": 39.80380611598957,
+    "native_seconds": 18.880703720002202,
+    "original_AGA_seconds": 12.0679768769769,
+    "fusion_seconds": 121.61280880900449,
+    "independent_parameter_seconds": 5.492062183999224,
+    "independent_statistics_seconds": 3.690392929012887,
+    "source_gradient_steps": 512,
+    "real_construction_images": 0,
+    "native_real_image_forwards": 20000,
+    "new_fusion_real_image_forwards": 108096,
+    "context_replay_real_image_forwards": 27296,
+    "total_evaluation_real_image_forwards": 155392,
+    "whole_AGA_runs": 1
+  },
   "trace_timing": "Losses/Odistance before step;traceBdistance after step. Final_O_B_distances are both final.",
-  "real_construction_images": 0,
-  "novelty_established": false
+  "novelty_established": false,
+  "closed_constructor_removed": true,
+  "interpretation": "Finite upstream erasure and native accuracy retention succeeded, but fixed TA/originalAGA target accuracy remained99.35/99.29/99.31 versus99.37/99.30/99.32. AGA transported B exactly and other parameters stayed unchanged. The remaining compensation did not cause material target classification harm. No same-point strength/steps/seed/layer retry.",
+  "strict_task_status": "CompleteR16.5500364 exceeds historical.5,6native predictions change,3lost/3gained. Accuracy99.69 retained;prospective full-accuracy evaluation branch passed. No retroactive strict-feasibility claim."
 }

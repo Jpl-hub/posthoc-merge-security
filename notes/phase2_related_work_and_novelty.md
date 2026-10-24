@@ -1003,3 +1003,9 @@ QuickGELU差式由本项目直接代数得到，再在原第11块上检查整个
 补核[GLMC固定5e343c0的utils.py](https://github.com/alexandertheus/Generalized-LMC-for-Transformers/blob/5e343c05683ce1f2972c7ca3f25111e82d3f00e5/utils.py)：其完整注意力乘积表示会把head_dim扩到embed_dim+1，不能直接认定为同宽CLIP64维头的保护。头内逆变换、跨头重分配和一般近似功能保持须分开；这些已有操作不能称原创。
 
 本项目有限两头例子可在原生完全补偿时被原作者逐头ridge恢复打断，而且单位残差方向有变化。但原第11块Q/K任务域的66对有效Attention核均不同，最近相对差0.946646，没有同核捷径依据。该条件只针对这一具体构造，不否定近似补偿、其他层或所有方法；未造新发布、未运行分类／融合。详见[计算记录](../results/data_free_compensation/joint.json)的head_coupling_condition和phase2_coupling末段，不能把有限例子写成已成功的数值Defense2。
+
+### Oct24：有限O消除并未带来分类保护
+
+对原作者带正则岭核，正交R仍精确满足F_eta(XR)=F_eta(X)。只改O而不逆改V，会改变Attention及后续LN2／QuickGELU，因而需要跨模块B补偿；这与原生函数不变的V/O换基不同。该代数不作为新定理，SVD／正交矩阵／岭回归及普通极大极小亦不主张原创。
+
+唯一无图像构造28e0e122已完成：任务参数作用保持、完整MNIST99.69%、实际AGA消除O且保留B均成立，但真实TA99.35%、原AGA99.29%／99.31%，仍无目标保护。总D1.91022不是原D0.5对照，strictR16.5500未过；原协议和指标不改。512固定更新结束后不续跑；函数／CLI已退役，源码及原始证据保留。[完整结果](../results/data_free_compensation/alignment_evaluation.json)。下一步需研究任务SVD对完整功能响应的贡献，不能仅将参数补空间或合成特征差视为分类损害。
