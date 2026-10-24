@@ -1874,7 +1874,7 @@
     "source_retired_after_embedding_check": true
   },
   "signed_function_analytic_control": {
-    "status": "sole_analytic_control_frozen_not_a_new_algorithm",
+    "status": "completed_closed_no_target_fusion_protection",
     "role": "Separate source-optimal analytic reference,not a new algorithm or a repair of the old1000penalty solution. Preserve the old failed protocol/source results unchanged. One sole new control,not coefficient sweep or replacement selected by real accuracy.",
     "construction_access": "Only original source C_native,c,E_tau2,mu,v,U and original/public weights;ignore previous solutionw and all old generated/real heldout responses.",
     "definition": "Unique minimum w^T C_native w subject V_B^T w=0 and source signed task cross-ratio=-1;w=-2E_tau2/(.5*c^T D c)*D c. No chosen scale/penalty/angle/seed/layer search.",
@@ -2139,7 +2139,7 @@
     },
     "native_raw_json_sha256": "27308c0cf194ef3c7544193f2f6e41da8ca40a631eff32352178cdfedb2615ce",
     "native_definition_public_commit": "27bd4647bac694d0d816ebc599f7684b7e26044c",
-    "fusion_status": "defined_before_originalAGA_and_fusion",
+    "fusion_status": "complete_originalAGA_once_TA_target_both_no_protection",
     "fusion_definition": {
       "protocol_template_sha256": "b5b86e44ba4a641129b8b009d126922967ea5df12e5c56f71a65bb54df775ab1",
       "method": "Unchanged authorAGA once;TA.5;MNISTtarget/SVHNpartner;unprotectedmatched cached scores reused;target-only/bothscopes,perclass/paired/original128batchreplay",
@@ -2173,6 +2173,2434 @@
           "native_score_field": "after"
         }
       }
-    }
+    },
+    "original_AGA": {
+      "method": "aga",
+      "seconds": 10.914858027012087,
+      "output_sha256": "56aa72f0ff8ff2bfe4c2f10a333b24d0e329637a734b28aa70ac2b1b0eb3ae91",
+      "details": {
+        "known_family": false,
+        "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "aligned_reference": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "reference": "original_AGA",
+      "new_training_updates": 0
+    },
+    "AGA_parameter_check": {
+      "status": "passed",
+      "new_AGA_calls": 1,
+      "only_B_columns_permuted_bias_kept": true,
+      "all_other_tensors_same_as_original_AGA": 156,
+      "changed_keys": [
+        "model.visual.transformer.resblocks.11.mlp.c_proj.weight",
+        "model.visual.transformer.resblocks.11.mlp.c_proj.bias"
+      ],
+      "original_AGA_reference_sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "released_AGA_edits_sha256": "56aa72f0ff8ff2bfe4c2f10a333b24d0e329637a734b28aa70ac2b1b0eb3ae91",
+      "exact_NumPy_permutation": true,
+      "execution": {
+        "method": "aga",
+        "seconds": 10.914858027012087,
+        "output_sha256": "56aa72f0ff8ff2bfe4c2f10a333b24d0e329637a734b28aa70ac2b1b0eb3ae91",
+        "details": {
+          "known_family": false,
+          "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+          "aligned_reference": {
+            "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+            "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+            "validation": "outputs/feature_noise/independent_validation.json"
+          }
+        },
+        "reference": "original_AGA",
+        "new_training_updates": 0
+      }
+    },
+    "fusion_protocol": {
+      "experiment": "Fixed analytic signed functional reference,not new algorithm",
+      "output": "outputs/signed_function_control_20261024/evaluation",
+      "tasks": {
+        "MNIST": {
+          "classes": 10,
+          "test_n": 10000
+        },
+        "SVHN": {
+          "classes": 10,
+          "test_n": 26032
+        }
+      },
+      "TA_coefficient": 0.5,
+      "mergers": [
+        "TA"
+      ],
+      "TIES": {
+        "repository": "https://github.com/prateeky2806/ties-merging",
+        "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+        "path": "external/ties-merging/src/utils/merge_utils.py",
+        "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+        "topk_percent": 20,
+        "coefficient": 1.0,
+        "resolve_method": "mass",
+        "merge_func": "dis-mean",
+        "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+      },
+      "pilot_n": 64,
+      "replay_n": 16,
+      "score_tolerance": 0.0005,
+      "parameter_budget": 0.5,
+      "task_budget": 0.5,
+      "utility_seed": 20261016,
+      "utility_n": 512,
+      "probe_rank": 32,
+      "test_status": "Complete historically exposed officialMNIST/SVHN benchmarks;not blind;no selection or parameter feedback",
+      "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+      "defense_optimization": "None during evaluation.128fixed data-free source Adam steps and256input ascent steps;no real construction images. No best iterate or test feedback.",
+      "attacker_data": false,
+      "attack_gradient_steps": 0,
+      "AGA_references": {
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "SVHN": {
+          "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+          "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "AGA": {
+        "repository": "https://github.com/krumpguo/secure-merge-attack",
+        "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+        "file": "utils_attack_B32.py",
+        "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+        "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+      },
+      "defenses": {
+        "AnalyticControl_MNIST": {
+          "label": "Source-optimal nonlinear functional control",
+          "target": "MNIST",
+          "release": {
+            "path": "outputs/signed_function_control_20261024/release.pt",
+            "sha256": "787c235df28214ea18b659ead85c9233b9075d7e55fe40440bbd70a8661e08fc"
+          },
+          "AGA_edits": {
+            "path": "outputs/signed_function_control_20261024/AGA/edits.pt",
+            "sha256": "56aa72f0ff8ff2bfe4c2f10a333b24d0e329637a734b28aa70ac2b1b0eb3ae91"
+          },
+          "budget_status": "ProspectiveB4/b4;actualB.47830/b.32722,D.57952,not historicalD.5compliant",
+          "function_status": "FullMNIST99.69to99.69,new512confirmation512/512;strictR6.642862failed"
+        }
+      },
+      "cases": [
+        {
+          "target": "MNIST",
+          "partner": "SVHN",
+          "defenses": [
+            "AnalyticControl_MNIST"
+          ]
+        }
+      ],
+      "legacy": {
+        "MNIST_SVHN/Unprotected": {
+          "standalone": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/Standalone/None/{task}"
+          },
+          "direct": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/TA/None/{task}"
+          },
+          "AGA_target_only": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/TA/Protected expert/{task}"
+          },
+          "AGA_both": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/TA/All experts/{task}"
+          }
+        },
+        "MNIST_SVHN/AnalyticControl_MNIST": {
+          "standalone": {
+            "path": "outputs/signed_function_control_20261024/native/full.pt",
+            "sha256": "d25d8e5d190921916c5cfa6c5076f7ce83975dd9af648fa888df07f34231e263",
+            "native_score_field": "after"
+          }
+        }
+      },
+      "source_sha256": {
+        "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+        "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+        "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+        "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+        "_impl/defenses.py": "b483086bc27198dd97cabdf283b591f70243d438c9907194d869803e602e9785",
+        "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+        "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+        "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+        "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+        "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+        "_impl/report.py": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+        "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+        "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+        "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+        "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+        "experiment/construct.py": "6815591553f7537d3de6f4adfc32e51cb999ca1f9bb7a88f3b1659c6a88e4b1f",
+        "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+        "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+        "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+        "experiment/recover.py": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+        "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+      },
+      "original_batch_context_replays": true
+    },
+    "rows": [
+      {
+        "defense": "Unprotected",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "role": "target",
+        "n": 10000,
+        "correct": 9969,
+        "accuracy_percent": 99.69,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9969,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 31,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1030,
+            "original_correct": 1030
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "original_correct": 1010
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 954,
+            "original_correct": 954
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1025,
+            "original_correct": 1025
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "original_correct": 973
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1003,
+            "original_correct": 1003
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "imported_key": "Unprotected/Standalone/None/MNIST"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "role": "target",
+        "n": 10000,
+        "correct": 9937,
+        "accuracy_percent": 99.37,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9937,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 63,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1133,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1026,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 944,
+            "original_correct": 944
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1018,
+            "original_correct": 1018
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 999,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/None/MNIST"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "SVHN",
+        "role": "partner",
+        "n": 26032,
+        "correct": 24079,
+        "accuracy_percent": 92.49769514443761,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 24079,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 1953,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1708,
+            "original_correct": 1708
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4800,
+            "original_correct": 4800
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3977,
+            "original_correct": 3977
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2457,
+            "original_correct": 2457
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2289,
+            "original_correct": 2289
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2305,
+            "original_correct": 2305
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1711,
+            "original_correct": 1711
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1826,
+            "original_correct": 1826
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1583,
+            "original_correct": 1583
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1423,
+            "original_correct": 1423
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/None/SVHN"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST",
+        "role": "target",
+        "n": 10000,
+        "correct": 9930,
+        "accuracy_percent": 99.3,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9930,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 70,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1133,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1024,
+            "original_correct": 1024
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 978
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 941,
+            "original_correct": 941
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1017,
+            "original_correct": 1017
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 999,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/Protected expert/MNIST"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "SVHN",
+        "role": "partner",
+        "n": 26032,
+        "correct": 24153,
+        "accuracy_percent": 92.7819606637984,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 24153,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 1879,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1711,
+            "original_correct": 1711
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4829,
+            "original_correct": 4829
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3990,
+            "original_correct": 3990
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2452,
+            "original_correct": 2452
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2293,
+            "original_correct": 2293
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2309,
+            "original_correct": 2309
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1713,
+            "original_correct": 1713
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1836,
+            "original_correct": 1836
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1589,
+            "original_correct": 1589
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1431,
+            "original_correct": 1431
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/Protected expert/SVHN"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST",
+        "role": "target",
+        "n": 10000,
+        "correct": 9932,
+        "accuracy_percent": 99.32,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9932,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 68,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1133,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1024,
+            "original_correct": 1024
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 977,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 885,
+            "original_correct": 885
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 942,
+            "original_correct": 942
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1017,
+            "original_correct": 1017
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 971,
+            "original_correct": 971
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 999,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/All experts/MNIST"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "SVHN",
+        "role": "partner",
+        "n": 26032,
+        "correct": 23890,
+        "accuracy_percent": 91.77166564228642,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 23890,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 2142,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1700,
+            "original_correct": 1700
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4797,
+            "original_correct": 4797
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3972,
+            "original_correct": 3972
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2374,
+            "original_correct": 2374
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2260,
+            "original_correct": 2260
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2300,
+            "original_correct": 2300
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1677,
+            "original_correct": 1677
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1806,
+            "original_correct": 1806
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1590,
+            "original_correct": 1590
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1414,
+            "original_correct": 1414
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/All experts/SVHN"
+        }
+      },
+      {
+        "defense": "AnalyticControl_MNIST",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "role": "target",
+        "n": 10000,
+        "correct": 9969,
+        "accuracy_percent": 99.69,
+        "changed_predictions": 2,
+        "paired": {
+          "both_correct": 9968,
+          "lost": 1,
+          "gained": 1,
+          "both_wrong": 30,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.027719971855757145,
+          0.027719971855757145
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1030,
+            "original_correct": 1030
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "original_correct": 1010
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 885,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 954,
+            "original_correct": 954
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1025,
+            "original_correct": 1025
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "original_correct": 973
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1002,
+            "original_correct": 1003
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/signed_function_control_20261024/native/full.pt",
+          "imported_key": "released/standalone/MNIST"
+        }
+      },
+      {
+        "defense": "AnalyticControl_MNIST",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "role": "target",
+        "n": 10000,
+        "correct": 9934,
+        "accuracy_percent": 99.33999999999999,
+        "changed_predictions": 4,
+        "paired": {
+          "both_correct": 9934,
+          "lost": 3,
+          "gained": 0,
+          "both_wrong": 63,
+          "loss_pp": 0.03,
+          "exact_mcnemar_p": 0.25
+        },
+        "mcnemar_log10_p": -0.6020599913279623,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.0639448004994575,
+          0.00394480049945751
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1131,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1025,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 944,
+            "original_correct": 944
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1018,
+            "original_correct": 1018
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 999,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 10.85884497902589,
+        "provenance": {}
+      },
+      {
+        "defense": "AnalyticControl_MNIST",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "SVHN",
+        "role": "partner",
+        "n": 26032,
+        "correct": 24067,
+        "accuracy_percent": 92.45159803318992,
+        "changed_predictions": 131,
+        "paired": {
+          "both_correct": 24026,
+          "lost": 53,
+          "gained": 41,
+          "both_wrong": 1912,
+          "loss_pp": 0.046097111247695145,
+          "exact_mcnemar_p": 0.2564423489329692
+        },
+        "mcnemar_log10_p": -0.5910102537663484,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.11909461773330601,
+          0.026900395237915722
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1706,
+            "original_correct": 1708
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4771,
+            "original_correct": 4800
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3973,
+            "original_correct": 3977
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2455,
+            "original_correct": 2457
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2307,
+            "original_correct": 2289
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2310,
+            "original_correct": 2305
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1715,
+            "original_correct": 1711
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1817,
+            "original_correct": 1826
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1582,
+            "original_correct": 1583
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1431,
+            "original_correct": 1423
+          }
+        ],
+        "evaluation_seconds": 26.366446876025293,
+        "provenance": {}
+      },
+      {
+        "defense": "AnalyticControl_MNIST",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST",
+        "role": "target",
+        "n": 10000,
+        "correct": 9928,
+        "accuracy_percent": 99.28,
+        "changed_predictions": 5,
+        "paired": {
+          "both_correct": 9927,
+          "lost": 3,
+          "gained": 1,
+          "both_wrong": 69,
+          "loss_pp": 0.02,
+          "exact_mcnemar_p": 0.625
+        },
+        "mcnemar_log10_p": -0.20411998265592465,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.05920000000000304,
+          0.019200000000003044
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1022,
+            "original_correct": 1024
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 978
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 942,
+            "original_correct": 941
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1017,
+            "original_correct": 1017
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 999,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 8.565838507958688,
+        "provenance": {}
+      },
+      {
+        "defense": "AnalyticControl_MNIST",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "SVHN",
+        "role": "partner",
+        "n": 26032,
+        "correct": 24137,
+        "accuracy_percent": 92.72049784880147,
+        "changed_predictions": 169,
+        "paired": {
+          "both_correct": 24082,
+          "lost": 71,
+          "gained": 55,
+          "both_wrong": 1824,
+          "loss_pp": 0.06146281499692686,
+          "exact_mcnemar_p": 0.18122406088142384
+        },
+        "mcnemar_log10_p": -0.7417841421210579,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.14597614252868749,
+          0.023050512534833784
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1706,
+            "original_correct": 1711
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4802,
+            "original_correct": 4829
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3986,
+            "original_correct": 3990
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2436,
+            "original_correct": 2452
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2313,
+            "original_correct": 2293
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2313,
+            "original_correct": 2309
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1724,
+            "original_correct": 1713
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1825,
+            "original_correct": 1836
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1591,
+            "original_correct": 1589
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1441,
+            "original_correct": 1431
+          }
+        ],
+        "evaluation_seconds": 26.217512764967978,
+        "provenance": {}
+      },
+      {
+        "defense": "AnalyticControl_MNIST",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST",
+        "role": "target",
+        "n": 10000,
+        "correct": 9932,
+        "accuracy_percent": 99.32,
+        "changed_predictions": 6,
+        "paired": {
+          "both_correct": 9930,
+          "lost": 2,
+          "gained": 2,
+          "both_wrong": 66,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.03920196014701225,
+          0.03920196014701225
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1133,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1023,
+            "original_correct": 1024
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 977,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 885,
+            "original_correct": 885
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 943,
+            "original_correct": 942
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1017,
+            "original_correct": 1017
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 971,
+            "original_correct": 971
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 999,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 8.64786509302212,
+        "provenance": {}
+      },
+      {
+        "defense": "AnalyticControl_MNIST",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "SVHN",
+        "role": "partner",
+        "n": 26032,
+        "correct": 23881,
+        "accuracy_percent": 91.73709280885063,
+        "changed_predictions": 224,
+        "paired": {
+          "both_correct": 23804,
+          "lost": 86,
+          "gained": 77,
+          "both_wrong": 2065,
+          "loss_pp": 0.03457283343577136,
+          "exact_mcnemar_p": 0.5310454494607935
+        },
+        "mcnemar_log10_p": -0.27486830828696696,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.13070008702548191,
+          0.061554420153939214
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1699,
+            "original_correct": 1700
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4752,
+            "original_correct": 4797
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3967,
+            "original_correct": 3972
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2366,
+            "original_correct": 2374
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2284,
+            "original_correct": 2260
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2307,
+            "original_correct": 2300
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1693,
+            "original_correct": 1677
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1797,
+            "original_correct": 1806
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1590,
+            "original_correct": 1590
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1426,
+            "original_correct": 1414
+          }
+        ],
+        "evaluation_seconds": 26.158803248021286,
+        "provenance": {}
+      }
+    ],
+    "fusion_execution": {
+      "completed": true,
+      "pilot": false,
+      "case_index": 0,
+      "rows": 14,
+      "wall_seconds": 128.9980425349786,
+      "GPU": "NVIDIA GeForce RTX 3090",
+      "new_defense_weights": 0,
+      "optimizer_steps": 0,
+      "new_AGA_calls": 0,
+      "cached_author_AGA_weights": true,
+      "defense_feedback": false,
+      "predictions_sha256": "8b74b4e5e10b755fd0d6ae6ea6c0aa29b1fd2d9d05351c2bf9cb7550b400e461",
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "protocol_sha256": "d30b7138506c578fb4675d75e64e18ae5652c5732a3d62ce81476bb2cfadeb42"
+    },
+    "context_validation": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 27296,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 0.0,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "8b74b4e5e10b755fd0d6ae6ea6c0aa29b1fd2d9d05351c2bf9cb7550b400e461",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "independent_statistics": {
+      "status": "passed",
+      "rows": 14,
+      "per_class_paired": true,
+      "source_sha256": "5b6ae8a517cfba6cb848138fad93c34629ac8edb7a57ffde42011771f0d6db5f",
+      "raw_sha256": "8b74b4e5e10b755fd0d6ae6ea6c0aa29b1fd2d9d05351c2bf9cb7550b400e461",
+      "statistics": [
+        {
+          "key": "Unprotected/Standalone/None/MNIST",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/None/MNIST",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/None/SVHN",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/Protected expert/MNIST",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/Protected expert/SVHN",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/All experts/MNIST",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/All experts/SVHN",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "AnalyticControl_MNIST/Standalone/None/MNIST",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 1
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 1,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "AnalyticControl_MNIST/TA/None/MNIST",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 2,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "AnalyticControl_MNIST/TA/None/SVHN",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 2,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 29,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 4,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 8,
+              "gained": 6
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 18
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 5
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 4
+            },
+            {
+              "class_id": 7,
+              "lost": 9,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 8
+            }
+          ]
+        },
+        {
+          "key": "AnalyticControl_MNIST/TA/Protected expert/MNIST",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 2,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 1
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "AnalyticControl_MNIST/TA/Protected expert/SVHN",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 5,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 27,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 8,
+              "gained": 4
+            },
+            {
+              "class_id": 3,
+              "lost": 19,
+              "gained": 3
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 20
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 4
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 11
+            },
+            {
+              "class_id": 7,
+              "lost": 11,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 1,
+              "gained": 3
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 10
+            }
+          ]
+        },
+        {
+          "key": "AnalyticControl_MNIST/TA/All experts/MNIST",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "lost": 1,
+              "gained": 1
+            },
+            {
+              "class_id": 2,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 1
+            },
+            {
+              "class_id": 7,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "AnalyticControl_MNIST/TA/All experts/SVHN",
+          "checks": {
+            "official_labels": true,
+            "per_class": true,
+            "paired_CI": true,
+            "scalar_lgamma_exact_McNemar": true
+          },
+          "per_class_lost_gained": [
+            {
+              "class_id": 0,
+              "lost": 3,
+              "gained": 2
+            },
+            {
+              "class_id": 1,
+              "lost": 45,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "lost": 9,
+              "gained": 4
+            },
+            {
+              "class_id": 3,
+              "lost": 18,
+              "gained": 10
+            },
+            {
+              "class_id": 4,
+              "lost": 0,
+              "gained": 24
+            },
+            {
+              "class_id": 5,
+              "lost": 0,
+              "gained": 7
+            },
+            {
+              "class_id": 6,
+              "lost": 0,
+              "gained": 16
+            },
+            {
+              "class_id": 7,
+              "lost": 9,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "lost": 1,
+              "gained": 1
+            },
+            {
+              "class_id": 9,
+              "lost": 1,
+              "gained": 13
+            }
+          ]
+        }
+      ]
+    },
+    "training_indices": {
+      "n": 512,
+      "seed": 2026102430,
+      "excluded_count": 59182,
+      "eligible_count": 818,
+      "historical_json_records": 687,
+      "scope": "New draw excluding discovered historical JSON integer-index lists;all historical raw PT files not exhaustively indexed,not a global-first-blind claim. Current construction uses0real images.",
+      "sha256": "3f82625ef4586adbd59860227fdd555034230fffd17ce1210af01ca81ab088aa"
+    },
+    "artifacts": {
+      "outputs/signed_function_control_20261024/before_images.json": "b1ba557b7d067c50262b4b59bfa02bb9f56a317581ffd9517c63bb9fc2d31acd",
+      "outputs/signed_function_control_20261024/native/results.json": "27308c0cf194ef3c7544193f2f6e41da8ca40a631eff32352178cdfedb2615ce",
+      "outputs/signed_function_control_20261024/AGA/execution.json": "25e90a8e27fe84edbbcc8ff52eab2eba57457d16baafdfda6d25023668009a1e",
+      "outputs/signed_function_control_20261024/AGA/independent_parameters.json": "fb0618d7ff7d37d3d8dec92a204619040e3fd82241af6ba2a06e14235932b450",
+      "outputs/signed_function_control_20261024/evaluation_protocol.json": "d30b7138506c578fb4675d75e64e18ae5652c5732a3d62ce81476bb2cfadeb42",
+      "outputs/signed_function_control_20261024/evaluation/full/00_MNIST_SVHN/results.json": "39710facd252c3ed10d6b65c1ec69537c74eef6161f646551cdb5a722a8d6f90",
+      "outputs/signed_function_control_20261024/evaluation/full/00_MNIST_SVHN/execution.json": "e5db13c3a5eed500712d9236443e621cf24093627b075081629b34b1bb334bc3",
+      "outputs/signed_function_control_20261024/evaluation/full/00_MNIST_SVHN/independent_validation.json": "1462af85adee4d4e8d2b5a4eee2a923771b57e1b08b319261067d3947f456147",
+      "outputs/signed_function_control_20261024/evaluation/full/00_MNIST_SVHN/independent_statistics.json": "cbc3e7222bd3420118c0c627586d36033dffc3ad0bc6ced47baf9160c2c9ec03",
+      "outputs/signed_function_control_20261024/release.pt": "787c235df28214ea18b659ead85c9233b9075d7e55fe40440bbd70a8661e08fc",
+      "outputs/signed_function_control_20261024/AGA/edits.pt": "56aa72f0ff8ff2bfe4c2f10a333b24d0e329637a734b28aa70ac2b1b0eb3ae91",
+      "outputs/signed_function_control_20261024/native/full.pt": "d25d8e5d190921916c5cfa6c5076f7ce83975dd9af648fa888df07f34231e263",
+      "outputs/signed_function_control_20261024/native/training.pt": "5518c202d9d15dc7c83cf6a9c631649fa419e8e53048003476e05c1a19e7a13d",
+      "outputs/signed_function_control_20261024/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt": "8b74b4e5e10b755fd0d6ae6ea6c0aa29b1fd2d9d05351c2bf9cb7550b400e461",
+      "outputs/signed_function_control_20261024/source.json": "b16041b2b02423b23f82fbd6acc1feec15be776135deb25690ae248af3c89f36"
+    },
+    "cost": {
+      "real_construction_images": 0,
+      "expert_training_updates": 0,
+      "original_AGA_calls": 1,
+      "new_merging_algorithms": 0,
+      "native_image_forwards": 13984,
+      "fusion_image_forwards": 108096,
+      "fusion_context_image_forwards": 27296,
+      "total_real_image_forwards": 149376,
+      "native_context_scores": 48,
+      "fusion_context_scores": 224
+    },
+    "raw_closure_sha256": "6b2bd6174dbc687190c1c7c1187c4098c6541ce4e80e8087f1ea85b669b380f4",
+    "source_archive": {
+      "local_commit": "d60398553d3a41b1b30d1b63e226d267bed45d27",
+      "public_commit": "a8bf27b5a33e5ee0763501c5aac11a571829c2d8",
+      "path": "results/data_free_compensation/code_snapshot",
+      "sha256": {
+        "analytic_control.py": "7787769ae014483ced3bca533ad1b1642fd882d0a2c3e727ed1063b1adde3312",
+        "condition.py": "1dd001cad920c6d854507b728d26c7d544aa5b57303065f67ba8c6a3235a2235",
+        "construct.py": "2756c45edbd0aae91239a6d7e7cda7a37b134c0e9f39b9d5a5bfca863748bbf0",
+        "native.py": "5b6ae8a517cfba6cb848138fad93c34629ac8edb7a57ffde42011771f0d6db5f"
+      },
+      "full_source_revealed_after_execution": true,
+      "source_hash_commitments_public_before_execution": true,
+      "retired_from_current_tree_after_completion": true
+    },
+    "interpretation": "CompleteMNIST99.69%preserved,butTA99.34%,originalAGA-target99.28%,both99.32% remain near matching99.37/99.30/99.32. Local signed task response reversal was achieved but did not produce actual target classification damage. This source-optimal B/b reference is not a completed jointA/B Defense2,new algorithm,unknown-head guarantee or oldD.5/R.5compliant result. Closed;no new scale/layer/task-direction retry.",
+    "native_accuracy_test_read_before_construction": false,
+    "source_retired_after_exact_embedding_check": true
   }
 }
