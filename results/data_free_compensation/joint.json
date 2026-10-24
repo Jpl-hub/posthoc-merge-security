@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-24T04:12:50.409840+00:00",
+  "updated_utc": "2026-10-24T04:41:14.918453+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -1077,5 +1077,18 @@
     },
     "interpretation": "A finite toy establishes recovery can break cross-head compensation without radial-only output change. Actual fixed last-block task-domain kernels are distinct;no equal-kernel head pair was found. This does not exclude value-specific cancellation,approximate nonlinear compensation,other layers or all defenses. No CLIP candidate was constructed.",
     "probe_scope": "Ideal centered LN sphere radius sqrt768;with positive epsilon this is a limiting sphere,not a proof of image reachability or natural-task coverage."
+  },
+  "alignment_compensation": {
+    "record": "results/data_free_compensation/alignment_evaluation.json",
+    "status": "closed_no_target_protection",
+    "point_sha256": "28e0e122bcbd8737d71c5f64f1cde1bfc3663ce754eca69095371dbf18b691b9",
+    "native": 99.69,
+    "TA": 99.35,
+    "AGA_target": 99.29,
+    "AGA_both": 99.31,
+    "logical_D": 1.9102225890933735,
+    "actual_AGA_O_max_error": 4.470348358154297e-08,
+    "real_construction_images": 0,
+    "new_runtime_lines_retained": 0
   }
 }

@@ -9,9 +9,9 @@ import torch
 
 from _impl.baselines import params_default, verify_edits
 from _impl.data import dataset
-from _impl.defenses import compensate_after_alignment, construct_bias, nonlinear_mlp_compensation
+from _impl.defenses import construct_bias, nonlinear_mlp_compensation
 from _impl.io import check_files, digest, new_output, save_json
-from _impl.models import apply, checked_models, initialize, load_checkpoint
+from _impl.models import checked_models, initialize
 from _impl.subspace import build_basis, task_pairing
 from cfg import load_config, require_root
 
@@ -20,7 +20,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
         "--method",
-        choices=["task-directed", "bias", "params", "basis", "nonlinear", "compensate"],
+        choices=["task-directed", "bias", "params", "basis", "nonlinear"],
         default="task-directed",
     )
     p.add_argument("--target", choices=["MNIST", "DTD", "SVHN"], required=True)
@@ -53,23 +53,6 @@ def main():
         task_pairing(str(protocol), a.output)
         return
     out = new_output(a.output, dict(method=a.method, target=a.target, configuration=cfg))
-    if a.method == "compensate":
-        # Construction must not load a classification head or a real dataset.
-        anchor = load_checkpoint("zeroshot.pt")
-        expert = load_checkpoint(f"{a.target}/finetuned.pt")
-        recovered = apply(expert, cfg["AGA_references"][a.target], full=True)
-        check_files({case["basis"]["path"]: case["basis"]["sha256"]})
-        basis = torch.load(case["basis"]["path"], map_location="cpu", weights_only=False)
-        start = time.monotonic()
-        edits, details = compensate_after_alignment(
-            expert.cuda(), recovered.cuda(), anchor, basis, cfg["compensation"]
-        )
-        torch.save(edits, out / "release.pt")
-        save_json(out / "before_images.json", dict(
-            release_sha256=digest(out / "release.pt"), publication_reference="expert",
-            method=a.method, target=a.target, seconds=time.monotonic()-start,
-            details=details, expert_training_updates=0))
-        return
     anchor, expert, head, pins = checked_models(a.target)
     start = time.monotonic()
     publication_reference = "expert"

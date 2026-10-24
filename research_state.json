@@ -62,13 +62,13 @@
     "modification_extent": "results/task_directed_pairing/amplitude_ablation/summary.md"
   },
   "status": "Research resumed manually Oct24;data-free numerical core construction prioritized. No recurring automation.",
-  "updated_utc": "2026-10-24T04:32:50.065701+00:00",
+  "updated_utc": "2026-10-24T04:40:18.148226+00:00",
   "server": {
-    "status": "Connected;finite head-coupling condition complete;noGPU job queued",
+    "status": "Connected;single finite O-erasure compensation batch complete;noGPU jobs",
     "GPU": "RTX3090",
     "ssh_control_socket": "/tmp/posthoc_3090_refactor.sock",
     "research_GPU_processes": 0,
-    "checked_at_utc": "2026-10-24T04:14:18.766831+00:00",
+    "checked_at_utc": "2026-10-24T04:40:18.148226+00:00",
     "storage": {
       "available_bytes": {
         "/root": 2319601664,
@@ -146,7 +146,8 @@
     "other_history": "notes/phase2_coupling.md and frozen prior commits;all Q/V/O/head/affine/zero-unit/local-Jacobian closed points remain closed",
     "pre_LN_attention": "results/nonlinear_pre_ln;all3complete,no generalization benefit;no retry",
     "same_input_local_teacher": "results/nonlinear_local_function;all3complete,worse utility;no retry",
-    "recovery_game": "results/data_free_compensation/recovery_evaluation.json:14rows224replays0error;no protection,no retry"
+    "recovery_game": "results/data_free_compensation/recovery_evaluation.json:14rows224replays0error;no protection,no retry",
+    "alignment_compensation": "MNIST99.69native,99.35TA,99.29/99.31originalAGA;actual O erasure passed but no target protection. No retry."
   },
   "data_policy": {
     "construction": "Future primary Defense2 uses frozen target expert/public base weights and task SVD only;no real training/confirmation/test images,partner models,classification-based selection or witness-based repair. Historical data-assisted protocols and results remain unchanged.",
@@ -169,7 +170,7 @@
       "unique_models_or_raw_results_deleted": false
     }
   },
-  "next_action": "Run the single preregistered finite orthogonal-O/MLP compensation construction. O ridge erasure is structural throughout optimization;do not retune source/evaluation conditions. Freeze before complete native then conditionalTA/originalAGA.",
+  "next_action": "Study task-SVD directions as functional teacher probes,rather than only hard parameter-null constraints or generic whole-feature preservation. Require a finite mechanism linking retained task responses to recovery-specific classification harm before another point. The ridge-erased O/B point is closed;do not change its steps,range,layer,seed or loss and retry.",
   "completed_overnight": {
     "components": "results/nonlinear_prefix/source_components/results.json;A-only/B-only/no-reconstruction collapse source,full compensation preserves1022/1024",
     "ablations": "results/nonlinear_prefix/ablations;no_task/no_prefix complete,do not rerun",
@@ -479,21 +480,20 @@
     "record": "results/data_free_compensation/joint.json:head_coupling_condition"
   },
   "alignment_compensation": {
-    "status": "native_passed_fixed_TA_originalAGA_evaluation_pending",
-    "protocol": "configs/compensation.json",
-    "output": "outputs/alignment_compensation_20261024",
-    "real_construction_images": 0,
-    "new_accuracy_results": 0,
-    "closed_game_not_restarted": true,
+    "status": "completed_closed_no_target_fusion_protection",
+    "protocol": "results/data_free_compensation/alignment_protocol.json",
+    "record": "results/data_free_compensation/alignment_evaluation.json",
     "point_sha256": "28e0e122bcbd8737d71c5f64f1cde1bfc3663ce754eca69095371dbf18b691b9",
     "native": 99.69,
-    "original_native": 99.69,
+    "TA": 99.35,
+    "AGA_target": 99.29,
+    "AGA_both": 99.31,
     "strict_R": 16.550036407823274,
-    "O_B_distances": [
-      1.2232766151428223,
-      1.4671552181243896
-    ],
-    "record": "results/data_free_compensation/alignment_evaluation.json",
-    "source_originalAGA_O_max_error": 4.470348358154297e-08
+    "logical_D": 1.9102225890933735,
+    "real_construction_images": 0,
+    "scores_replayed": 224,
+    "replay_max_error": 0.0,
+    "constructor_removed": true,
+    "source_snapshot": "localGit37cab68/15491c2;3090source_snapshot.tar.gz SHAfa72da29"
   }
 }
