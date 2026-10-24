@@ -353,5 +353,219 @@
     "logical_bytes": 111844230,
     "actual_free_space_change_bytes": -8192,
     "claimed_reclaimed_bytes": 0
+  },
+  "resumed_cleanup_20261024": {
+    "status": "remove_completed_reconstructible_training_activations_only",
+    "project": "/root/autodl-tmp/merge_security_20261009",
+    "checked_outcomes": {
+      "outputs/phase2_joint_response_mnist_20261019/diagnostic.pt": "752b4c856469ea51dd5ecbecb94f6dc3658e01673602f52916bec767186b5a24",
+      "outputs/phase2_joint_response_mnist_20261019/confirmation.pt": "95b1dd24a9c1c288ea41c62463f1985fe35f5929576ae676b27f89389e22d635",
+      "outputs/phase2_joint_response_eval_20261019/results.json": null
+    },
+    "models_or_original_scores_or_failure_logs_removed": false,
+    "reconstruction_source_archive": "outputs/2026-10-19_research/joint_response_source.tar.gz",
+    "reconstruction_indices": "outputs/phase2_joint_response_mnist_20261019/training_indices.json",
+    "reconstruction": "Original frozen capture on these4096training indices;H,z10,h are intermediate activations,not weights or classification scores.",
+    "removed": [
+      {
+        "path": "/root/autodl-tmp/merge_security_20261009/outputs/phase2_joint_response_mnist_20261019/cache.pt",
+        "sha256": "5fc0b0c165802376acff287356a4aba4e8c5f2e86ae7d040b56be1dea1192e0c",
+        "bytes": 3158312454,
+        "allocated_bytes": 3158319104,
+        "contents": {
+          "H": [
+            4096,
+            50,
+            768
+          ],
+          "z10": [
+            4096,
+            50,
+            3072
+          ],
+          "h": [
+            4096,
+            768
+          ]
+        },
+        "dtype": "FP32",
+        "role": "Completed training intermediate cache;all unique model weights,diagnostic andconfirmation scores retained"
+      }
+    ],
+    "system_free_space_gain": 3158319104,
+    "system_available_bytes": 3220115456,
+    "balanced_model_relocations": [
+      {
+        "original_path": "outputs/phase3_prodistill/00/model.pt",
+        "retained_path": "/root/posthoc_evaluation_cache/phase3_prodistill/00/model.pt",
+        "sha256": "069f7df5c43f1c33381d963f52af9d08a95f34ae5475d124d639bd1f3b5ca497",
+        "bytes": 453845234,
+        "original_path_retained_as_symlink": true
+      },
+      {
+        "original_path": "outputs/phase3_prodistill/01/model.pt",
+        "retained_path": "/root/posthoc_evaluation_cache/phase3_prodistill/01/model.pt",
+        "sha256": "7a56749108f4c90d27b40897c5c6188d0ad5bee341c3456108d1cef2d4b84981",
+        "bytes": 453845234,
+        "original_path_retained_as_symlink": true
+      },
+      {
+        "original_path": "outputs/phase3_prodistill/02/model.pt",
+        "retained_path": "/root/posthoc_evaluation_cache/phase3_prodistill/02/model.pt",
+        "sha256": "79e82483a4ab0d2cafae185909cc9216dea5ef0d8f591644cbaace0c4043cc53",
+        "bytes": 453845234,
+        "original_path_retained_as_symlink": true
+      },
+      {
+        "original_path": "outputs/phase3_prodistill/03/model.pt",
+        "retained_path": "/root/posthoc_evaluation_cache/phase3_prodistill/03/model.pt",
+        "sha256": "71a7a04b864db9fcc57fba615df47d12a2e2bf143a946e710ba5bf0ff112dd4b",
+        "bytes": 453845234,
+        "original_path_retained_as_symlink": true
+      }
+    ],
+    "disk_available_bytes": {
+      "/root": 2319605760,
+      "/root/autodl-tmp": 1849626624
+    },
+    "cleanup_complete": true,
+    "retired_activation_cache": {
+      "original_path": "outputs/phase2_attention_cascade_cache/calibration.pt",
+      "resolved_original": "/root/posthoc_evaluation_cache/phase2_attention_cascade_cache/calibration.pt",
+      "original_sha256": "aaf492c814b1b8baca7b8146824e0502ab1419171ed8b26c09a15c6dab4f91dd",
+      "original_bytes": 1095460190,
+      "retained_records": "/root/posthoc_evaluation_cache/phase2_attention_cascade_cache/retained_records.pt",
+      "retained_sha256": "22679be10cc56404715fbe8d247aa696e8a9bf21d9d9692e2f571e09cac97c11",
+      "retained_bytes": 180574466,
+      "removed_reconstructible_activations": [
+        {
+          "group": "native",
+          "key": "H",
+          "shape": [
+            4096,
+            50,
+            768
+          ],
+          "bytes": 629145600
+        },
+        {
+          "group": "native",
+          "key": "h",
+          "shape": [
+            4096,
+            768
+          ],
+          "bytes": 25165824
+        },
+        {
+          "group": "native",
+          "key": "rounding",
+          "shape": [
+            4096,
+            768
+          ],
+          "bytes": 25165824
+        },
+        {
+          "group": "native",
+          "key": "t",
+          "shape": [
+            4096,
+            50,
+            32
+          ],
+          "bytes": 52428800
+        },
+        {
+          "group": "scale",
+          "key": "H",
+          "shape": [
+            512,
+            50,
+            768
+          ],
+          "bytes": 78643200
+        },
+        {
+          "group": "scale",
+          "key": "h",
+          "shape": [
+            512,
+            768
+          ],
+          "bytes": 3145728
+        },
+        {
+          "group": "scale",
+          "key": "rounding",
+          "shape": [
+            512,
+            768
+          ],
+          "bytes": 3145728
+        },
+        {
+          "group": "scale",
+          "key": "t",
+          "shape": [
+            512,
+            50,
+            32
+          ],
+          "bytes": 6553600
+        },
+        {
+          "group": "proxy",
+          "key": "H",
+          "shape": [
+            512,
+            50,
+            768
+          ],
+          "bytes": 78643200
+        },
+        {
+          "group": "proxy",
+          "key": "h",
+          "shape": [
+            512,
+            768
+          ],
+          "bytes": 3145728
+        },
+        {
+          "group": "proxy",
+          "key": "rounding",
+          "shape": [
+            512,
+            768
+          ],
+          "bytes": 3145728
+        },
+        {
+          "group": "proxy",
+          "key": "t",
+          "shape": [
+            512,
+            50,
+            32
+          ],
+          "bytes": 6553600
+        }
+      ],
+      "all_parameters_bases_indices_and_raw_visual_outputs_exactly_retained": true,
+      "rebuild": "Frozen original/proxy model,stored indices and original source.zip;historical capture recomputes intermediate activations",
+      "historical_calibration_file_rebuild_required_for_old_hash_checks": true,
+      "initial_compact_write_failure": "First output used data-volume alias parent and hitENOSPC;original remained unchanged.Only incomplete newly-created31850624bytefile removed;then exact same compaction written at resolvedsystempath."
+    },
+    "exact_duplicate_scan": {
+      "large_unique_inodes": 277,
+      "same_size_groups": 34,
+      "bytes_hashed": 41292548950,
+      "duplicate_groups": 0,
+      "claimed_duplicate_bytes_freed": 0
+    },
+    "checked_utc": "2026-10-24T02:03:03.690874+00:00",
+    "storage_scope": "Remove completed intermediate training activations only;retain original models,scores,protocols and failure evidence. Relocations preserve exact bytes and existing model paths."
   }
 }
