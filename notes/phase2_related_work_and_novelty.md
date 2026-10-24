@@ -983,3 +983,11 @@ n维均匀球内前两个正交坐标的平方半径t服从Beta(1,n/2)，角度�
 实际读回[官方d746b14c](https://github.com/mrvnthss/symmetries-representational-geometry/tree/d746b14ceb81b2f01bdd3cafcb81da980578140d)的activations.py、mlp.py、xor.py及fig1/symmetries.py：分别是JAX激活注册、单隐藏层MLP、ReLU XOR解析例和绘图；不是针对CLIP的数值补偿或保护实现。仓库自引为ICML2026 workshop，不能写成主会方法复现。文件blob和SHA存于既有joint.json，未安装运行作者环境。
 
 QuickGELU差式由本项目直接代数得到，再在原第11块上检查整个LN兼容域的线性组合条件，未重跑旧任务子空间反射点。结果只说明这组原始神经元的完整反号不能直接提供连续域相消。标准恒等式、Gram秩和符号变换都不是新颖性；没有据此增加另一套防御代码或新的效果主张。
+
+### Oct24续接：SITH的权重分析与数据使用范围
+
+新读[SITH v1 §3.2及附录A.1–A.4](https://arxiv.org/html/2603.24653v1)，并固定[官方ee45a342](https://github.com/frangente/SITH/tree/ee45a342eda4f11bd8fbf73ba48b88aa3f118316)的linalg.py、modeling/_attn.py、modeling/_utils.py和scripts/decompose.py。VO乘积SVD、LN仿射折叠、均值方向处理和SVD重新分解已经是已有实现，不能改名为新防御。
+
+源码set_vo_matrix先把V偏置折入输出偏置，再以平方根奇异值分配V/O两因子；replace_attn折入LN仿射后只移除仿射参数，仍保留输入相关的归一化。不能把方向解释中的省略归一化当作完整前向恒等式。decompose.py还读取预计算图片均值及文本字典；论文A.3明确图片均值来自CC12M。纯权重分解与包含这些统计的完整语义解释流程应分别描述，本项目没有使用这些外部产物或复现其编辑实验。
+
+结合原AGA固定源码，只推导同一双线性乘积在两个独立锚点投影后的条件界，具体正则、偏置和分类范围见phase2_coupling末段。这项分析用来判断成对大变换为何可能仍被对齐，不是新攻击或保护效果。未将量化论文的旋转、普通压缩或合成输入换名加入实验表。
