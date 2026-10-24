@@ -65,16 +65,29 @@ def mlp_minimax_compensation(moments, B, free, ridge):
         quadratic.append(free.T @ ss @ free / energy)
         cross.append(B @ (st.T - ss) @ free / energy)
         constant.append(np.sum((B @ (tt + ss - st - st.T)) * B) / energy)
+    correction, record = _minimax_quadratics(quadratic, cross, constant, ridge / np.square(B).sum())
+    record["relative_correction_norm"] = float(np.linalg.norm(correction) / np.linalg.norm(B))
+    return B + correction @ free.T, record
+
+
+def _minimax_quadratics(quadratic, cross, constant, regularizer):
+    """Same two-domain convex step, diagonalized once for all dual evaluations."""
+    from scipy.linalg import eigh
+
     quadratic, cross, constant = map(np.asarray, (quadratic, cross, constant))
-    regularizer = ridge / np.square(B).sum()
+    identity = np.eye(quadratic.shape[-1])
+    first = quadratic[0] + regularizer * identity
+    total = quadratic.sum(0) + 2 * regularizer * identity
+    eigenvalues, basis = eigh(first, total)
+    transformed = cross @ basis
 
     def solve(weight):
         mixture = np.array([weight, 1 - weight])
-        system = np.einsum("d,dij->ij", mixture, quadratic)
-        target = np.einsum("d,doj->oj", mixture, cross)
-        correction = np.linalg.solve(system + regularizer * np.eye(len(system)), target.T).T
-        losses = constant - 2 * np.einsum("oj,doj->d", correction, cross)
-        losses += np.einsum("oi,dij,oj->d", correction, quadratic, correction)
+        diagonal = weight * eigenvalues + (1 - weight) * (1 - eigenvalues)
+        target = np.einsum("d,doj->oj", mixture, transformed)
+        correction = target / diagonal
+        losses = constant - 2 * np.einsum("oj,doj->d", correction, transformed)
+        losses += np.array([np.sum(correction**2 * v) for v in [eigenvalues, 1 - eigenvalues]])
         dual = mixture @ constant - np.sum(correction * target)
         return correction, losses, float(dual)
 
@@ -91,13 +104,13 @@ def mlp_minimax_compensation(moments, B, free, ridge):
             high = weight
     weight = (low + high) / 2
     correction, losses, dual = solve(weight)
+    correction = correction @ basis.T
     penalty = regularizer * np.square(correction).sum()
-    return B + correction @ free.T, dict(
+    return correction, dict(
         first_distribution_weight=weight,
-        normalized_squared_errors=losses.tolist(),
-        relative_correction_norm=float(np.linalg.norm(correction) / np.linalg.norm(B)),
-        objective=float(losses.max() + penalty),
-        primal_dual_gap=float(losses.max() + penalty - dual),
+        normalized_squared_errors=(losses - penalty).tolist(),
+        objective=float(losses.max()),
+        primal_dual_gap=float(losses.max() - dual),
     )
 
 
