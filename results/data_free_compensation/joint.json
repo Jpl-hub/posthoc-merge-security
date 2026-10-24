@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-24T04:41:14.918453+00:00",
+  "updated_utc": "2026-10-24T06:59:51.890124+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -1090,5 +1090,27 @@
     "actual_AGA_O_max_error": 4.470348358154297e-08,
     "real_construction_images": 0,
     "new_runtime_lines_retained": 0
+  },
+  "task_function_probe_plan": {
+    "status": "defined_before_execution",
+    "target": "MNIST",
+    "source": "Frozen expert/public base and final-projection task right32basis only",
+    "objective": "s*v_k^T(unit_f_expert(x)-unit_f_base(x)),k0..31,s=-1,+1",
+    "seed": 2026102420,
+    "generated_inputs": 64,
+    "latent_shape": [
+      3,
+      32,
+      32
+    ],
+    "steps": 64,
+    "pixel_sign_step": 0.0078125,
+    "batch_size": 4,
+    "augmentation_check": "same64final inputs rolled±7pixels along eachspatialaxis",
+    "no_heads_real_images_partners_old_candidates": true,
+    "new_model_points": 0,
+    "selection": "Allfinal inputs;no response-based selection or restarts",
+    "raw_record": "outputs/2026-10-24_research/task_function_probe.json",
+    "limits": "Activation excitation and finite diversity only;not a defense,natural taskcoverage,classification harm or novelty proof."
   }
 }
