@@ -1687,7 +1687,7 @@
     }
   },
   "population_function_calculation": {
-    "status": "defined_before_calculation",
+    "status": "completed_weight_only_calculation_not_a_defense",
     "scope": "Eight fixed unselected original last-MLP neurons;no parameter changes. Check bounded-domain QuickGELU moments as a possible functional constraint,not a method or natural-task claim.",
     "target": "MNIST",
     "layer": 11,
@@ -1737,6 +1737,61 @@
     ],
     "raw_record": "outputs/2026-10-24_research/population_function.json",
     "source_sha256": "59076024f59426fd82cd0350f7dcea7d0eb69286229c8219ff0b0e658398e12e",
-    "source_embedded_in_raw_record": true
+    "source_embedded_in_raw_record": true,
+    "selected_neuron_indices": [
+      0,
+      438,
+      877,
+      1316,
+      1754,
+      2193,
+      2632,
+      3071
+    ],
+    "rows": {
+      "full_centered_ball": {
+        "dimension": 767,
+        "radius": 27.712812921102035,
+        "covariance_scalar": 0.9986996098829647,
+        "moment_error": {
+          "quadrature64_vs128_relative": 1.097281395997094e-15,
+          "independent_sample_kernel_relative": 2.1183001551485577e-05,
+          "independent_sample_nonlinear_relative": 0.0001724228263974338,
+          "independent_sample_mean_relative": 3.084530054978063e-06
+        },
+        "numerical_reference_passed": true,
+        "centered_covariance_min_eigenvalue": 0.0019876085111904685,
+        "nonlinear_residual_min_eigenvalue": 0.000814030290603988,
+        "nonlinear_fraction_of_centered_response": 0.23744676667043435,
+        "nonlinear_fraction_of_selected_B_output": 0.25488048085031906
+      },
+      "task_probe_ball": {
+        "dimension": 32,
+        "radius": 27.712812921102035,
+        "covariance_scalar": 22.588235294117645,
+        "moment_error": {
+          "quadrature64_vs128_relative": 1.0714390101222895e-15,
+          "independent_sample_kernel_relative": 9.31812928299385e-05,
+          "independent_sample_nonlinear_relative": 0.0005240932080440205,
+          "independent_sample_mean_relative": 1.7955554383562274e-05
+        },
+        "numerical_reference_passed": true,
+        "centered_covariance_min_eigenvalue": 0.0014159159604342551,
+        "nonlinear_residual_min_eigenvalue": 0.00027895527954110213,
+        "nonlinear_fraction_of_centered_response": 0.27704477018790374,
+        "nonlinear_fraction_of_selected_B_output": 0.29652225320056735
+      }
+    },
+    "task_basis_formula": "top32right singular vectors of(A_expert-A_base)diag(gamma_expert)H",
+    "task_basis_energy_fraction": 0.9527140259815933,
+    "task_basis_sha256": "d2e920733a65b6c66291c9e99b4d9aed3a33615e7e68f465b2445f2248fd5616",
+    "wall_seconds": 6.937574387004133,
+    "raw_results_sha256": "e06eb9e7575a5dc482ff2331517496d1e7057f6955d5932c1faa111a94905f42",
+    "definition_local_commit": "17686890738d5231c236fee1833e5a360a62b3fc",
+    "definition_public_commit": "d8091e10f5c02573473f5de1717be326ed06a98c",
+    "definition_public_readback_before_calculation": true,
+    "source_retired_after_exact_embedding_check": true,
+    "active_runtime_code_added": 0,
+    "interpretation": "Local declared population averages only;neither natural task distribution nor full-model/worst-case/classification preservation;standard quadrature/kernel/least-squares not claimed novel."
   }
 }
