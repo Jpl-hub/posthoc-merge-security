@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-24T02:07:02.198955+00:00",
+  "updated_utc": "2026-10-24T02:29:53.712245+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -499,5 +499,104 @@
       ],
       "retired_from_active_tree_after_completion": true
     }
+  },
+  "exact_group_condition": {
+    "status": "read_only_known_symmetry_applicability",
+    "layer": 11,
+    "target": "MNIST",
+    "basis_sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344",
+    "checkpoint_sha256": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "source_sha256": "b3023e4a25c079d73460d4ae556e9ad21723ad0b7e1d91e3eff41299773aa13f",
+    "records": [
+      {
+        "domain": "task_LN_intersection",
+        "dimension": 31,
+        "neurons": 3072,
+        "centred_domain_error": 9.992007221626409e-16,
+        "correlation_min_eigenvalue": 0.10791574978361683,
+        "correlation_max_eigenvalue": 9.721657181946124,
+        "smallest_ten_eigenvalues": [
+          0.10791574978361683,
+          0.10845415971361383,
+          0.11398847169265494,
+          0.1289329027441378,
+          0.14492296280753345,
+          0.14608553279916398,
+          0.15017549161690427,
+          0.1531287809043127,
+          0.1555188287086236,
+          0.1596793158046481
+        ],
+        "numpy_cholesky_shift": 0.053957874891808415,
+        "numpy_cholesky_min_diagonal": 0.3610538904435846,
+        "numpy_cholesky_relative_error": 1.131293301506011e-16,
+        "direct_Gram_max_relative_error": 1.2178219723109583e-15,
+        "QuickGELU_linear_identity_max_error": 3.552713678800501e-15
+      },
+      {
+        "domain": "full_LN",
+        "dimension": 767,
+        "neurons": 3072,
+        "centred_domain_error": 6.661338147750939e-16,
+        "correlation_min_eigenvalue": 0.24313544761853192,
+        "correlation_max_eigenvalue": 3.5618205924683544,
+        "smallest_ten_eigenvalues": [
+          0.24313544761853192,
+          0.2445678766124956,
+          0.28693633542761826,
+          0.2937754303013351,
+          0.3039608233773156,
+          0.32394361444246145,
+          0.3394016465276064,
+          0.34679299379202244,
+          0.3523015252589655,
+          0.36310009960934336
+        ],
+        "numpy_cholesky_shift": 0.12156772380926596,
+        "numpy_cholesky_min_diagonal": 0.5256770266982554,
+        "numpy_cholesky_relative_error": 1.2774089921692057e-16,
+        "direct_Gram_max_relative_error": 1.093905656792785e-15,
+        "QuickGELU_linear_identity_max_error": 4.440892098500626e-15
+      }
+    ],
+    "real_images": 0,
+    "classification_heads": 0,
+    "partner_models": 0,
+    "new_defense_points": 0,
+    "optimized_masks": 0,
+    "expert_updates": 0,
+    "seconds": 7.601013032981427,
+    "scope": "Only collective whole-affine sign reversal with unchanged B and free output bias, on two declared continuous LN domains. No claim about approximate compensation, other numerical edits, cross-layer compensation, task accuracy or AGA.",
+    "local_definition_commit": "661f04a05d40932c450e49cbfabb1ac2d4d89109",
+    "source_archive_remote": "75fa16b110e09661c24a2c3aaf1ca8dde8ec6bcb",
+    "public_source_archive_was_after_execution": true,
+    "source_archived_path": "outputs/2026-10-24_research/group_condition.py",
+    "interpretation": "The3072weighted linear contributions are linearly independent on both declared domains for fixed originalA/B. Thus unchangedB,whole-affine sign flips plus output-bias compensation cannot exactly cancel there. This is neither a new defense nor a restriction on approximate or cross-layer methods."
+  },
+  "symmetry_source_review": {
+    "repo": "mrvnthss/symmetries-representational-geometry",
+    "commit": "d746b14ceb81b2f01bdd3cafcb81da980578140d",
+    "paper": "https://arxiv.org/html/2609.39078v1",
+    "files": {
+      "src/symmetries/activations.py": {
+        "blob": "e2ce09432246a69863d0692336239fbee41a1ab6",
+        "sha256": "af47312ec26901df258e39fb38d81142e253bb3a68edcc428cff418ac173bbd2"
+      },
+      "src/symmetries/mlp.py": {
+        "blob": "82e45b0abaf85bff864f850c222397d64d89278c",
+        "sha256": "142929c8444de7bcf15218fb2e07847385fbc9b1bccec6a0d050f5310e5f6135"
+      },
+      "src/symmetries/xor.py": {
+        "blob": "d7ef28dea5c87d84844bb49bff7344a1bbcef3e1",
+        "sha256": "6edc79afccfb7317ec1ac5247cc3fcedb9533be0e0ad4e1b8f2db22c49a33566"
+      },
+      "notebooks/figures/main/fig1/symmetries.py": {
+        "blob": "d746a13b6f48e93fe0f6d761d2f8344ea726cc5b",
+        "sha256": "4e7bc0099922736c28255354956318a16f2cec3585caabc7337ad00180686936"
+      }
+    },
+    "scope": "Read author activation registry,one-hidden-layer MLP,ReLU XOR construction and symmetry illustration notebook. No JAX install or author experiment run;not a CLIP defense implementation.",
+    "venue": "ICML2026workshop,not main-conference result",
+    "whole_function_equivalence_completeness_claim": false
   }
 }
