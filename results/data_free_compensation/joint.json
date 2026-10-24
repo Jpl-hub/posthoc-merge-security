@@ -1795,7 +1795,7 @@
     "interpretation": "Local declared population averages only;neither natural task distribution nor full-model/worst-case/classification preservation;standard quadrature/kernel/least-squares not claimed novel."
   },
   "signed_function_compensation": {
-    "status": "defined_before_source",
+    "status": "closed_fixed_functional_subproblem_failed",
     "scope": "One fixed whole3072-neuron last-MLP functional subproblem,not an A/B optimizer or established newDefense2. B/b-only change;source native/attack+public-base midpoint differ through real QuickGELU and LN affine parameters.",
     "construction_access": "OriginalMNIST/publicbase/taskSVD/storedoriginalAGA weights only;no real images,classheads,partner,closed-point responses or evaluation feedback.",
     "formula": "deltaB=v*w^T,delta_b=-v*(mu_native^T*w);v=leading left singular direction of Btask;V_B^T*w=0. Min E_task[(2*tau+.5*(hm-mu)^T*w)^2]+1000*E_native[((he-mu)^T*w)^2]+ridge*||w||^2. tau=v^T(F_AGA_mid-F_base). native is equal full/task-domain mixture.",
@@ -1809,6 +1809,81 @@
     "source_sha256": "2756c45edbd0aae91239a6d7e7cda7a37b134c0e9f39b9d5a5bfca863748bbf0",
     "raw_directory": "outputs/signed_function_20261024",
     "source_embedded_in_result": true,
-    "novelty": "SVD,rank-one edits,least-squares and functional matching are known. No originality or security claim;test a signed local task-response compatibility condition before considering larger joint compensation."
+    "novelty": "SVD,rank-one edits,least-squares and functional matching are known. No originality or security claim;test a signed local task-response compatibility condition before considering larger joint compensation.",
+    "heldout": {
+      "full": {
+        "native_delta_rms": 0.001787975714780129,
+        "native_output_rms": 12.61951583706913,
+        "native_relative_rms": 0.0001416833845184495
+      },
+      "task": {
+        "native_delta_rms": 0.0009808783318803278,
+        "native_output_rms": 13.019858550604868,
+        "native_relative_rms": 7.533709587303918e-05,
+        "task_increment_rms": 0.4056692348283135,
+        "signed_task_response_ratio": 0.9964173835114686,
+        "relative_reversal_error": 1.9964187125498885,
+        "task_sign_reversal_fraction": 0.000244140625
+      }
+    },
+    "source_projected_normal_equation_error": 9.157639982266875e-15,
+    "task_B_action_error": 1.2834839372429662e-16,
+    "source_ridge": 7.270139942006798e-08,
+    "B_relative_distance": 0.0008480676101267294,
+    "b_relative_distance": 0.0005802677434066618,
+    "logical_D": 0.001027584499282008,
+    "release_sha256": null,
+    "statistics_sha256": "d07245c70b67e8e49b97a500194daf0a5dfb12ac1bf2e2322fe65f43eccf368a",
+    "raw_AGA_reference_sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+    "all3072neurons": true,
+    "task_basis_energy_fraction": 0.9527140259815925,
+    "real_images": 0,
+    "classification_heads": 0,
+    "new_AGA_calls": 0,
+    "expert_training_updates": 0,
+    "source_latent_samples": 16384,
+    "heldout_latent_samples": 8192,
+    "linear_solves": 2,
+    "optimizer_steps": 0,
+    "wall_seconds": 10.830131116032135,
+    "raw_source_sha256": "056b3b185c77e981035b7d0fe2642401d1223a33221c7608ce54324c109372bb",
+    "read_only_condition": {
+      "status": "finite_source_lower_bound_checked_not_a_new_point",
+      "formula": "min sqrt(w^T C_native w) subject V_B^T w=0 and E[tau*(tau+q*s_m)]<=0 equals E[tau^2]/(q*sqrt(c^T D c)),D=C^-1-C^-1 V(V^T C^-1 V)^-1 V^T C^-1",
+      "source_statistic_sha256": "d07245c70b67e8e49b97a500194daf0a5dfb12ac1bf2e2322fe65f43eccf368a",
+      "source_sha256": "1dd001cad920c6d854507b728d26c7d544aa5b57303065f67ba8c6a3235a2235",
+      "numpy_projected_stationarity_error": 7.249809067031878e-15,
+      "task_action_error": 2.0411993796290914e-16,
+      "source_task_increment_rms": 0.4149188137300171,
+      "minimum_native_RMS_for_zero_average_cross": 0.3111604343629358,
+      "minimum_native_RMS_for_minus_one_average_cross": 0.6223208687258716,
+      "current_fixed_solution_source_native_RMS": 0.0011037920585899674,
+      "current_fixed_solution_source_signed_cross": 0.9964526606789581,
+      "capacity": 1.2244576346026592,
+      "positive_definite_finite_source_covariance": true,
+      "solve_residual_amplification_indicator": 4269.797382012276,
+      "new_parameter_points": 0,
+      "new_releases": 0,
+      "real_images": 0,
+      "new_model_forwards": 0,
+      "seconds": 1.8580105399596505,
+      "scope": "All3072Bcolumns with fixed A and32task equalities,on this finite source only;unrestricted norm in the lower-bound problem. No unknown-task/no-partner impossibility,no new coefficient fit or retest of the closed point."
+    },
+    "raw_condition_sha256": "66a17cc3afbbd719cc774dddef43e03a081b50a619c9fb6d0cbf13f63f7cf6ea",
+    "independent_numpy_KKT_error": 9.523336203772723e-15,
+    "source_retired_after_embedding_check": true
+  },
+  "signed_function_analytic_control": {
+    "status": "defined_before_control",
+    "role": "Separate source-optimal analytic reference,not a new algorithm or a repair of the old1000penalty solution. Preserve the old failed protocol/source results unchanged. One sole new control,not coefficient sweep or replacement selected by real accuracy.",
+    "construction_access": "Only original source C_native,c,E_tau2,mu,v,U and original/public weights;ignore previous solutionw and all old generated/real heldout responses.",
+    "definition": "Unique minimum w^T C_native w subject V_B^T w=0 and source signed task cross-ratio=-1;w=-2E_tau2/(.5*c^T D c)*D c. No chosen scale/penalty/angle/seed/layer search.",
+    "publication": "LastMLP deltaB=v*w^T,delta_b=-v*mu^T w;B/b_relative<=4,unclipped. CastFP32 and saveSHA before new generated confirmation.",
+    "generated_confirmation": "4096perdeclaredfull/taskdomain,seed2026102429;actual savedFP32deltas;reported regardless of proxy success,no refit",
+    "real_evaluation": "After freeze draw new512MNISTtraining confirmation with recorded historical-index exclusions;complete10000MNIST. Full native loss<=.5pp triggers fixedTA.5 and unchanged authorAGA target/both. Trainingconfirmation is descriptive;oldstrictR.5reported unchanged. No local1percent proxy gate or retroactive pass of the failed1000penalty protocol.",
+    "limitation": "Single local task direction and common normalized MLP input assumptions;not full jointA/B or completeDefense2. Min-native equality reference is standard constrained least-squares,not novelty.",
+    "source_sha256": "7787769ae014483ced3bca533ad1b1642fd882d0a2c3e727ed1063b1adde3312",
+    "source_embedded_in_result": true,
+    "raw_directory": "outputs/signed_function_control_20261024"
   }
 }
