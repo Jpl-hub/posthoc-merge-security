@@ -73,3 +73,6 @@ Oct23书面报告收尾：将Oct18旧PPT/TeX/PDF及构建记录从当前目录�
 
 
 Oct24磁盘清理：41.29GB同大小候选的SHA扫描没有找到新的完整重复文件，未声称释放重复模型。清理已结束的joint_response训练中间缓存；attention_cascade校准文件仅移除可重建的中间激活，全部参数、SVD、索引及原始视觉输出逐张量保留在retained_records.pt。旧缓存SHA与重建来源仍记录，历史完整缓存核验需按原源码重建。原模型、预测分数和失败日志未删除。四份ProDistill模型转存同一3090系统盘，原路径改符号链接，字节/SHA保持；见cleanup_20261023.json的resumed_cleanup_20261024。
+
+
+Oct24完成的两份只读二阶计算源码仅保留在历史提交62f2a9f（公开对应9dfbe3789a2ae8169957d8d4470e2d9b032ee400）及3090原outputs中，从活动目录移除；原字节/SHA已固定。无新增活动算法入口或优化器。最近源码映射见publication.json的oct24_reconnection_history。
