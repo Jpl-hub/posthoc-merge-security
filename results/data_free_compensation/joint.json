@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-24T02:53:06.957566+00:00",
+  "updated_utc": "2026-10-24T03:12:05.136084+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -833,5 +833,115 @@
       "concept_dictionary_or_CC12M_statistics_used": false
     },
     "interpretation": "Small source/base raw-product gaps are consistent with idealAGA preserving a near-anchor paired product despite large factor changes. Conditional weight-only analysis,not classification prediction or a restriction on nonlinear compensation."
+  },
+  "adversarial_distillation_review": {
+    "paper": "https://arxiv.org/html/1912.11006v2",
+    "repository": "VainF/Data-Free-Adversarial-Distillation",
+    "commit": "c161591aae4c13e53943dcb61c162876421aad7a",
+    "files": {
+      "DFAD_cifar.py": {
+        "git_blob": "7c1bdc77a9e2bb400ff3a19a0f1e8e8b344fad00",
+        "sha256": "6957e19a707482d0728faeb2a56c373b798b536cbb4d7d873d78eca61fae3d8e"
+      },
+      "DFAD_mnist.py": {
+        "git_blob": "a7d6274d35b06a821f8e9eb08213b8eac477c6ca",
+        "sha256": "18db4cada1ca51354a8ed1a57b4525e0ace032bdc49b8016f8ce73cadfa515dc"
+      },
+      "network/gan.py": {
+        "git_blob": "a106708fb7df99644f3c87705b317dd9df8c1dc9",
+        "sha256": "edb348b2fb01cf4b369dd1e401c74524890845015d92ce7dc136f523002e6a30"
+      },
+      "README.md": {
+        "git_blob": "2f0e3cd31358c1c0d56efdfb5aa5b53e2c5b639f",
+        "sha256": "96ef7a8d209eb4ee33b0e8a68bf244a91e863f6d839dae3e4e7703a59f191d2d"
+      }
+    },
+    "earlier_work_acknowledged_by_author_README": "https://arxiv.org/abs/1905.09768v4",
+    "source_findings": [
+      "Classification train loops use five student L1 imitation updates per generator negative-L1 update;teacher parameters are outside both optimizers.",
+      "Imitation detaches generated inputs and teacher logits;generation retains input gradients through both teacher and student. Frozen teacher weights do not require detaching its input derivative.",
+      "Author hard-sample discrepancy bound assumes a sufficiently hard generator;finite alternating ascent is not a certified global maximum or natural-task guarantee.",
+      "GeneratorA ends with non-affine BatchNorm after Tanh;its final output is not automatically a fixed bounded pixel domain.",
+      "Author checkpoints selected by highest test accuracy;this selection policy is not adopted for our fixed releases."
+    ],
+    "application": "Use adaptive synthetic function-discrepancy probes to study finite joint compensation,with frozen experts and task-SVD constraints. This alone supplies no merging/AGA protection mechanism or novelty.",
+    "implementation_added": false,
+    "author_environment_installed": false,
+    "author_training_runs": 0,
+    "new_model_points": 0,
+    "real_images": 0
+  },
+  "ridge_projection_derivative": {
+    "status": "read_only_ridge_derivative_checked_not_a_defense",
+    "target": "MNIST",
+    "layer": 11,
+    "head": 0,
+    "matrix": "model.visual.transformer.resblocks.11.attn.out_proj.weight",
+    "shape": [
+      768,
+      64
+    ],
+    "ridge": 1e-08,
+    "rows": [
+      {
+        "direction": "within_column_space",
+        "relative_direction_norm": 1.0000000000000002,
+        "response_per_direction_norm": 9.576716969547807e-08,
+        "analytic_vs_Torch_JVP_error": 7.29679627507938e-16,
+        "NumPy_centered_differences": [
+          {
+            "step": 0.001,
+            "error_per_direction_norm": 7.268902361637469e-13
+          },
+          {
+            "step": 0.0001,
+            "error_per_direction_norm": 4.976619320320426e-12
+          },
+          {
+            "step": 1e-05,
+            "error_per_direction_norm": 5.145614462682969e-11
+          }
+        ]
+      },
+      {
+        "direction": "outside_column_space",
+        "relative_direction_norm": 1.0,
+        "response_per_direction_norm": 1.0009896795173931,
+        "analytic_vs_Torch_JVP_error": 1.60058409723697e-16,
+        "NumPy_centered_differences": [
+          {
+            "step": 0.001,
+            "error_per_direction_norm": 1.0925286079932419e-06
+          },
+          {
+            "step": 0.0001,
+            "error_per_direction_norm": 1.0925294874229353e-08
+          },
+          {
+            "step": 1e-05,
+            "error_per_direction_norm": 1.2399911742429913e-10
+          }
+        ]
+      }
+    ],
+    "author_FP32_transform_vs_FP64_relative_error": 8.898649364724844e-08,
+    "source_sha256": "7132f9f4cf7e7d4475ed8a719b08cc836c32c5b93ce945fab7c94391b6737dfd",
+    "original_AGA_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182"
+    },
+    "seconds": 7.286578765982995,
+    "real_images": 0,
+    "new_model_points": 0,
+    "complete_AGA_runs": 0,
+    "model_image_forwards": 0,
+    "optimization_steps": 0,
+    "raw_record": {
+      "path": "/root/autodl-tmp/merge_security_20261009/outputs/2026-10-24_research/ridge_direction.json",
+      "sha256": "52347430c7583d9698e92cf23142a17d60d30f6cd544359af7496b9b3b7e1009"
+    },
+    "scope": "One original MNIST O head,standard ridge-projection differential. Within-column-space and normal directions are derivative arguments,not finite model candidates. No bias/full-model/classification derivative claim. Coupled products still obey the preceding paired-projection analysis.",
+    "calculation_source": "\"\"\"Read-only derivative of the original AGA ridge projection; no defense point.\"\"\"\nimport hashlib\nimport json\nimport time\nfrom pathlib import Path\n\nimport numpy as np\nimport torch\n\nfrom _impl.attacks import load_author\nfrom _impl.models import load_checkpoint\nfrom _impl.io import digest\nfrom cfg import CHECKPOINTS\n\nstart = time.monotonic()\ntorch.set_num_threads(4)\ntorch.backends.cuda.matmul.allow_tf32 = False\nauthor_path = Path(\"external/secure-merge-attack/utils_attack_B32.py\")\nauthor, sha = load_author(author_path)\nassert sha == \"4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778\"\nbase = load_checkpoint(\"zeroshot.pt\")\nexpert = load_checkpoint(\"MNIST/finetuned.pt\")\npins = {name: digest(CHECKPOINTS / name)\n        for name in [\"zeroshot.pt\", \"MNIST/finetuned.pt\"]}\nkey = \"model.visual.transformer.resblocks.11.attn.out_proj.weight\"\nW = expert.state_dict()[key][:, :64].double().cuda()\nY = base.state_dict()[key][:, :64].double().cuda()\neta = 1e-8\nI = torch.eye(64, dtype=W.dtype, device=W.device)\n\ndef fit(X):\n    return X @ torch.linalg.solve(X.T @ X + eta * I, X.T @ Y)\n\nG = W.T @ W + eta * I\nK = torch.linalg.solve(G, W.T @ Y)\nR = Y - W @ K\nraw = torch.cos(torch.arange(1, 769, device=W.device).double()[:, None]\n                * torch.arange(1, 65, device=W.device).double()[None, :] * np.pi / 769)\nnormal = raw - W @ torch.linalg.solve(W.T @ W, W.T @ raw)\ntangent = W * torch.linspace(-1, 1, 64, device=W.device).double()\nrows = []\nwn, yn = W.cpu().numpy(), Y.cpu().numpy()\ndef fit_numpy(X):\n    return X @ np.linalg.solve(X.T @ X + eta * np.eye(64), X.T @ yn)\nfor name, E in [(\"within_column_space\", tangent), (\"outside_column_space\", normal)]:\n    E = E * (W.norm() / E.norm())\n    value, jvp = torch.autograd.functional.jvp(fit, W, E)\n    derivative = (E - W @ torch.linalg.solve(G, W.T @ E)) @ K\n    derivative += W @ torch.linalg.solve(G, E.T @ R)\n    en = E.cpu().numpy()\n    finite = []\n    for h in [1e-3, 1e-4, 1e-5]:\n        fd = (fit_numpy(wn + h * en) - fit_numpy(wn - h * en)) / (2 * h)\n        finite.append(dict(step=h, error_per_direction_norm=float(\n            np.linalg.norm(fd - derivative.cpu().numpy()) / np.linalg.norm(en))))\n    error = float((derivative - jvp).norm() / E.norm())\n    assert error < 1e-10 and finite[-1][\"error_per_direction_norm\"] < 1e-7\n    rows.append(dict(direction=name, relative_direction_norm=float(E.norm() / W.norm()),\n                     response_per_direction_norm=float(derivative.norm() / E.norm()),\n                     analytic_vs_Torch_JVP_error=error, NumPy_centered_differences=finite))\nexact = fit(W)\nauthor_value = W.float() @ author[\"solve_linear_transformation\"](W.float(), Y.float())\nsource = Path(__file__).read_text()\nresult = dict(status=\"read_only_ridge_derivative_checked_not_a_defense\", target=\"MNIST\",\n              layer=11, head=0, matrix=key, shape=list(W.shape), ridge=eta, rows=rows,\n              author_FP32_transform_vs_FP64_relative_error=float(\n                  (author_value.double() - exact).norm() / exact.norm()),\n              source_sha256=hashlib.sha256(source.encode()).hexdigest(), source=source,\n              original_AGA_sha256=sha, checkpoint_sha256=pins,\n              seconds=time.monotonic() - start, real_images=0, new_model_points=0,\n              complete_AGA_runs=0, model_image_forwards=0, optimization_steps=0)\nout = Path(\"outputs/2026-10-24_research/ridge_direction.json\")\nassert not out.exists()\nout.write_text(json.dumps(result, indent=2) + \"\\n\")\nprint(json.dumps({k: v for k, v in result.items() if k not in [\"source\", \"checkpoint_sha256\"]}))\n"
   }
 }
