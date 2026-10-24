@@ -9,9 +9,9 @@ import torch
 
 from _impl.baselines import params_default, verify_edits
 from _impl.data import dataset
-from _impl.defenses import construct_bias, nonlinear_mlp_compensation, recovery_compensation
+from _impl.defenses import construct_bias, nonlinear_mlp_compensation
 from _impl.io import check_files, digest, new_output, save_json
-from _impl.models import apply, checked_models, initialize, load_checkpoint
+from _impl.models import checked_models, initialize
 from _impl.subspace import build_basis, task_pairing
 from cfg import load_config, require_root
 
@@ -20,7 +20,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
         "--method",
-        choices=["task-directed", "bias", "params", "basis", "nonlinear", "recovery-game"],
+        choices=["task-directed", "bias", "params", "basis", "nonlinear"],
         default="task-directed",
     )
     p.add_argument("--target", choices=["MNIST", "DTD", "SVHN"], required=True)
@@ -33,23 +33,6 @@ def main():
     require_root()
     initialize()
     cfg = load_config(a.protocol)
-    if a.method == "recovery-game":
-        if a.target != cfg["target"]:
-            raise ValueError("Target differs from fixed finite-game protocol")
-        out = new_output(a.output, cfg)
-        start = time.monotonic()
-        anchor, expert = [load_checkpoint(n) for n in ["zeroshot.pt", f"{a.target}/finetuned.pt"]]
-        recovered = apply(expert, cfg["original_AGA"], full=True)
-        check_files({cfg["basis"]["path"]: cfg["basis"]["sha256"]})
-        basis = torch.load(cfg["basis"]["path"], map_location="cpu", weights_only=False)
-        edits, details = recovery_compensation(expert.cuda(), recovered.cuda(), anchor, basis, cfg)
-        torch.save(edits, out / "release.pt")
-        save_json(out / "before_images.json", dict(
-            release_sha256=digest(out / "release.pt"), protocol_sha256=digest(a.protocol),
-            source_sha256={p: digest(p) for p in cfg["source_sha256"]},
-            seconds=time.monotonic()-start, details=details, final_iterate_only=True,
-            real_construction_images=0, partner_or_test_loaded=False))
-        return
     case = cfg["targets"][a.target]
     if a.method == "task-directed":
         c = dict(
