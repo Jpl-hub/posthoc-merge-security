@@ -61,8 +61,8 @@
     "task_direction_ablation_three_tasks": "results/task_directed_pairing/distance_ablation/other_tasks/tables.md",
     "modification_extent": "results/task_directed_pairing/amplitude_ablation/summary.md"
   },
-  "status": "Sole4090source game completed without source protection;3090CPU-only history. Necessary evaluation inputs fully transferred.",
-  "updated_utc": "2026-10-25T08:04:40.072728+00:00",
+  "status": "4090 fixed numerical A/B functional-compensation construction running;3090CPU-only history.",
+  "updated_utc": "2026-10-25T08:53:11.751457+00:00",
   "server": {
     "status": "3090CPU-only archive;transfer complete,no GPU experiment.",
     "GPU": "3090 instance in user-selected CPU-only mode",
@@ -92,19 +92,24 @@
   },
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "research_jobs": [],
-  "active_GPU_jobs": 0,
+  "research_jobs": [
+    {
+      "host": "4090",
+      "pid": 9256,
+      "scope": "one fixed row condition and conditional B functional compensation"
+    }
+  ],
+  "active_GPU_jobs": 1,
   "current_candidate": {
-    "status": "source_failed_closed_no_real_evaluation",
-    "record": "results/data_free_compensation/adversarial_coupling_result.json",
-    "point_sha256": "19d1e2a5a9d72723e28a5729e51ccc6a2d5b7b1f2e00e0da07ed7f6834162cb4",
-    "generated_views": 200,
-    "native_changed": 0,
-    "public_direct_changed": 0,
-    "public_AGA_changed": 0,
-    "logical_D_FP64": 0.3627507316396384,
-    "real_accuracy_measured": false,
-    "no_retry_of_closed_point": true
+    "status": "construction_running_no_accuracy_result",
+    "definition_local_commit": "a2fc01a0e8d5138779582c88eab137e24e985acc",
+    "definition_public_before_execution": false,
+    "geometry_result": "results/data_free_compensation/row_condition_result.json",
+    "construction_protocol": "results/data_free_compensation/row_compensation_protocol.json",
+    "log_4090": "outputs/row_compensation_20261025.log",
+    "real_construction_images": 0,
+    "original_expert_updates": 0,
+    "geometry_is_not_a_defense": true
   },
   "comparisons": {
     "global_task_directed": "results/task_directed_pairing/summary.md;three targets and eight-expert setting,originalAGA effective,known-family public matching exactly recovers158tensors",
@@ -602,7 +607,7 @@
       "socket": "/tmp/posthoc_4090_active.sock",
       "role": "Sole GPU for future construction, independent checks and final evaluation.",
       "runtime": "torch2.8.0cu128;existing3090torch2.3.0cu121 remains unchanged",
-      "status": "Ready;source game completed/closed;currentMNIST/SVHN evaluation inputs all10SHAverified.",
+      "status": "Fixed numerical A/B compensation source construction running; all evaluation inputs ready.",
       "runtime_record": "results/data_free_compensation/classifier_coupling.json:runtime_4090",
       "storage_available_bytes": {
         "/root": 31924256768,
