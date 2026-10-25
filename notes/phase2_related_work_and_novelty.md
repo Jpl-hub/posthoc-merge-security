@@ -1099,3 +1099,12 @@ PaRaMS原文§5／附录H分别评价保护前后独立模型、融合目标与�
 采用[固定torch2.8文档](https://docs.pytorch.org/docs/2.8/generated/torch.optim.LBFGS.html)及[同版本源码](https://github.com/pytorch/pytorch/blob/v2.8.0/torch/optim/lbfgs.py)的完整目标L-BFGS对照只达到385/800源预测保持，完整MNIST9.82%。它提供求解对照，不能称本项目新优化器、新防御或收敛证明；源码/范围/唯一末点均在真实图前固定，没有测试选步。
 
 再核[Parameter symmetries v1附录B.3与C.1](https://arxiv.org/html/2609.39078v1)：偶函数加线性项的分解已有先例。对当前QuickGELU直接得到phi(z)=z/2+z*tanh(.851z)/2，应用于原固定配对反射后，线性作用严格保持、非线性误差仍明显；当前联合64轴条件也不控制同一任务方向的组合。该权重计算不生成防御或反号新族，也不外推所有无数据方法不可行。对后续核心研究的具体含义是：A修改和B补偿需共同处理激活作用，而非只把任务SVD参数代价降小，或先固定一个大反射再归因于求解器。完整数据权限与真实TA／AGA评价标准仍不变。
+
+
+### Oct26晚：核对无数据合成图的内容约束
+
+核读[PSAQ-ViT v3](https://arxiv.org/html/2203.02250v3)和[V2 v2 §III／表VI](https://arxiv.org/html/2209.05687v2)，并固定[官方源码d2c726fe](https://github.com/zkkli/PSAQ-ViT/tree/d2c726fe33d6dd474a5f2e2e88d36a354c9d7a7d)。V1不仅让教师分类自信，还加入attention加权V输出的patch相似度熵及TV约束；V2将生成图与学生交替更新，输出差异采用MAE。它们是无数据量化／蒸馏方法，不是我们的新防御，不能把其合成输入方法本身当创新。
+
+官方V1 generate_data.py实际先对头求均值、去CLS，再计算patch两两余弦；论文将每patch各头拼接，两者不完全相同，不能默默混称。核读KDE带宽.01、10点网格、trapz和pdf+1e-4；官方1000像素步、ImageNet归一化／TV随机目标／水平翻转也不能未经说明搬入CLIP或数字任务。当前固定main树读取到V1生成器，尚未取得V2对应的学生交替循环，不能称完整官方V2复现。4份文件和SHA留4090 paper_source_review，未安装或运行量化代码。
+
+只在CPU查看原160合成源每类前两张，视觉上仍主要为彩色噪声。这提示单纯教师自信及模型差异不足以说明源覆盖自然任务，但不是失败因果证明；本次联合A/B源与规则没有因这项观察更换，也没有用真实图修补。下一步应先判断参数功能约束能否求解，再决定是否需要独立的无数据源内容控制，不直接堆入新损失。
