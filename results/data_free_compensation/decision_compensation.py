@@ -39,6 +39,7 @@ for n in hidden:
     names=['model.visual.ln_post.weight','model.visual.ln_post.bias','model.visual.proj']
     readouts[n]=[to(s[k] if n=='native' else (s[k]+p[k])/2) for k in names]
 W=to(head.weight);eps=expert.model.visual.ln_post.eps
+assert float(head.bias.abs().max())==0
 labels=raw['teacher_class'].cuda();requested=raw['requested'].cuda();others=torch.arange(10,device='cuda').expand(800,10)
 native_rivals=others[others!=labels[:,None]].reshape(800,9)
 public_rivals=torch.arange(1,10,device='cuda').expand(800,9)
@@ -107,8 +108,9 @@ with torch.no_grad():
             rows.append((F.normalize(m(x),dim=-1)@W.T).cpu())
         actual[n]=torch.cat(rows);spot=max(spot,float((actual[n].cuda()-tail[n]).abs().max()));m.cpu()
 assert spot<5e-4,spot
+full_metrics={n:dict(teacher_class_retained=int(v.argmax(1).eq(labels.cpu()).sum()),predicted_class_counts=torch.bincount(v.argmax(1),minlength=10).tolist()) for n,v in actual.items()}
 torch.save(dict(actual=actual,tail={n:v.cpu() for n,v in tail.items()},labels=labels.cpu(),requested=requested.cpu(),native_goal=native_goal.cpu(),public_goal=public_goal.cpu(),group_losses=values.cpu(),trace=trace),out/'source_scores.pt')
 source=Path(__file__).read_text();relative=float(delta.detach().norm()/B.norm())
-result=dict(status='sole_decision_margin_point_frozen_before_real_evaluation',point_sha256=point_sha,metrics=metrics,decision_violations=violations,max_final_group_loss=float(values.max()),B_relative=relative,A_relative=1.0273893035120545,logical_D=(relative**2+1.0273893035120545**2)**.5,source_full_vs_tail_error=spot,gradient_check_error=error,steps=cfg['optimizer']['steps'],source=source,source_sha256=hashlib.sha256(source.encode()).hexdigest(),protocol_sha256=digest(protocol),source_arrays_sha256=digest(out/'source_scores.pt'),checkpoint_sha256=pins,source_cache_tail_rows=3*800*(cfg['optimizer']['steps']+1),gradient_check_tail_rows=3*800*3,source_full_image_forwards=2400,new_generated_inputs=0,new_pixel_updates=0,original_expert_training_updates=0,new_full_AGA_calls=0,new_matching_calls=0,seconds=time.perf_counter()-start,limits=cfg['limits'])
+result=dict(status='sole_decision_margin_point_frozen_before_real_evaluation',point_sha256=point_sha,metrics=metrics,full_metrics=full_metrics,decision_violations=violations,max_final_group_loss=float(values.max()),B_relative=relative,A_relative=1.0273893035120545,logical_D=(relative**2+1.0273893035120545**2)**.5,source_full_vs_tail_error=spot,gradient_check_error=error,steps=cfg['optimizer']['steps'],source=source,source_sha256=hashlib.sha256(source.encode()).hexdigest(),protocol_sha256=digest(protocol),source_arrays_sha256=digest(out/'source_scores.pt'),checkpoint_sha256=pins,source_cache_tail_rows=3*800*(cfg['optimizer']['steps']+1),gradient_check_tail_rows=3*800*3,source_full_image_forwards=2400,new_generated_inputs=0,new_pixel_updates=0,original_expert_training_updates=0,new_full_AGA_calls=0,new_matching_calls=0,seconds=time.perf_counter()-start,limits=cfg['limits'])
 (out/'results.json').write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
 print(json.dumps({k:v for k,v in result.items() if k!='source'},indent=2))
