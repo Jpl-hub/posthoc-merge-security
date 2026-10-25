@@ -1,0 +1,14 @@
+{
+  "status": "defined_before_execution",
+  "inputs": "Only pinned public base P, original MNIST expert P and fixed MNIST classifier. No candidate, generated images, cached counterexamples, real images, or partner.",
+  "P": "P_base+0.5*(P_expert-P_base), using original FP32 arithmetic before conversion to FP64",
+  "radius_reference": "norm(0.5*(P_expert-P_base),F)/norm(P,F)",
+  "classes": "All10, report in numeric order; no class chosen or retried after results",
+  "capacity": "For each class y, A_j=P*(w_y-w_j)/(norm(P,F)*norm(w_y-w_j)). Solve max(norm(z)<=1) min_j z^T A_j = min(p>=0,sum(p)=1) norm(Ap).",
+  "calculation": "Enumerate all511nonempty faces of the nine-competitor probability simplex; solve its equality KKT point and retain feasible faces. Independently check primal/dual gap, global inequality KKT, and one SciPy SLSQP reference with maxiter1000/ftol1e-15. No solver or class retry.",
+  "interpretation": "The arbitrary hidden direction relaxation gives an upper bound on attainable readout robustness for actual LN/MLP outputs. A bound below the radius rules out uniform class-y prediction at that radius with this fixed readout. A bound above it proves neither realizability nor task retention nor merging protection.",
+  "new_weights": 0,
+  "new_images": 0,
+  "new_attacks": 0,
+  "no_novelty_claim": "Standard minimax identity, minimum-norm convex hull and simplex quadratic optimization. Used to define a feasible core-method target; no new defense or theorem."
+}
