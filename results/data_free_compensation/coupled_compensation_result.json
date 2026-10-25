@@ -1,0 +1,1295 @@
+{
+  "status": "one_joint_AB_point_frozen",
+  "point_sha256": "15c4e896233a8c85bfc0a8156a74370f1545c58cffc36c8a43117081084bd62a",
+  "source_sha256": "71856915ae652123be9bbcee6bf7e5cad924c8aa38bca749cfacfca051e6c449",
+  "source": "\"\"\"One Data-Free joint A/B construction with synchronous affine compensation.\"\"\"\nimport copy\nimport json\nimport time\nfrom pathlib import Path\n\nimport torch\nimport torch.nn.functional as F\nfrom torch.func import functional_call\n\nfrom _impl.io import digest\nfrom _impl.metrics import logical_parameter_distance\nfrom _impl.models import checked_models, initialize\n\n\ndef main():\n    initialize()\n    start = time.monotonic()\n    protocol = Path(\"results/data_free_compensation/coupled_compensation_protocol.json\")\n    cfg = json.loads(protocol.read_text())\n    assert digest(__file__) == cfg[\"source_sha256\"]\n    out = Path(cfg[\"output\"])\n    out.mkdir(exist_ok=False)\n    (out / \"protocol.json\").write_text(protocol.read_text())\n    for key in [\"source\", \"basis\"]:\n        assert digest(cfg[key][\"path\"]) == cfg[key][\"sha256\"]\n    base, expert, head, pins = checked_models(cfg[\"target\"])\n    del base\n    original = {k: v.clone() for k, v in expert.state_dict().items()}\n    published = copy.deepcopy(expert).cuda().eval().requires_grad_(False)\n    basis = torch.load(cfg[\"basis\"][\"path\"], map_location=\"cpu\", weights_only=False)\n    entries = {r[\"source_key\"]: r for r in basis.values()}\n    variables, geometry, keys = [], [], []\n    for i in range(12):\n        prefix = f\"model.visual.transformer.resblocks.{i}.\"\n        A, B, a, b = [original[prefix + \"mlp.\" + k].double().cuda() for k in\n                      [\"c_fc.weight\", \"c_proj.weight\", \"c_fc.bias\", \"c_proj.bias\"]]\n        V = entries[prefix + \"mlp.c_fc.weight\"][\"v\"].cuda()\n        N = torch.linalg.qr(V, mode=\"complete\").Q[:, 32:]\n        M = torch.cat([A, a[:, None]], dim=1)\n        Q, R = torch.linalg.qr(M, mode=\"reduced\")\n        inverse = torch.linalg.solve_triangular(R, Q.T, upper=True)\n        assert float((inverse @ M - torch.eye(769, device=\"cuda\")).norm()) < 1e-8\n        variables.extend([\n            torch.nn.Parameter(torch.zeros(736, 736, device=\"cuda\")),\n            torch.nn.Parameter(torch.zeros_like(B, dtype=torch.float)),\n        ])\n        keys.extend([prefix + \"mlp.c_fc.weight\", prefix + \"mlp.c_proj.weight\"])\n        gamma, beta = [original[prefix + \"ln_2.\" + k].double().cuda()\n                       for k in [\"weight\", \"bias\"]]\n        G = V / gamma[:, None]\n        _, _, vh = torch.linalg.svd(G.sum(0, keepdim=True), full_matrices=True)\n        task_Q = torch.linalg.qr(G @ vh[1:].T, mode=\"reduced\").Q\n        sobol = torch.quasirandom.SobolEngine(31, scramble=True, seed=cfg[\"task_seed\"] + i)\n        coefficients = torch.erfinv(2 * sobol.draw(cfg[\"task_probes\"]).double() - 1)\n        assert torch.isfinite(coefficients).all()\n        residual = coefficients.cuda() @ task_Q.T\n        residual *= 768 ** .5 / residual.norm(dim=1, keepdim=True)\n        eps = published.model.visual.transformer.resblocks[i].ln_2.eps\n        X = F.layer_norm(residual, (768,), gamma, beta, eps).float()\n        with torch.no_grad():\n            z = F.linear(X, A.float(), a.float())\n            Y = F.linear(z * torch.sigmoid(1.702 * z), B.float(), b.float())\n            assert float((Y - Y.mean(0)).square().mean()) > 0\n        geometry.append(dict(A=A, B=B, a=a, b=b, V=V, N=N, Q=Q, M=M,\n                             AN=A @ N, U=B @ A @ N, W=N.T @ inverse[:768],\n                             X=X, Y=Y, task_variance=(Y - Y.mean(0)).square().mean(),\n                             I=torch.eye(736, dtype=torch.double, device=\"cuda\")))\n    counters = dict(generated_image_forwards=0, input_gradient_model_forwards=0,\n                    pixel_optimizer_steps=0, joint_AB_library_iterations=0,\n                    full_objective_evaluations=0, local_task_vector_forwards=12 * cfg[\"task_probes\"])\n\n    def pairs():\n        result = []\n        for T, Z, g in zip(variables[::2], variables[1::2], geometry):\n            skew = (T.double() - T.double().T) / 2\n            C = torch.linalg.solve(g[\"I\"] - skew, g[\"I\"] + skew)\n            K = (C - C.T) / 2\n            S = -torch.linalg.solve(g[\"I\"] - K, g[\"I\"] + K)\n            Ap = g[\"A\"] + g[\"AN\"] @ (S - g[\"I\"]) @ g[\"N\"].T\n            free = Z.double() - (Z.double() @ g[\"Q\"]) @ g[\"Q\"].T\n            free = free * (g[\"B\"].norm() / free.norm().clamp_min(1e-30)).clamp(max=1)\n            Bp = g[\"B\"] + g[\"U\"] @ (S.T - g[\"I\"]) @ g[\"W\"] + free\n            result.extend([Ap.float(), Bp.float()])\n        return result\n\n    @torch.no_grad()\n    def materialize():\n        for key, value in zip(keys, pairs()):\n            published.state_dict()[key].copy_(value)\n\n    norm = expert.val_preprocess.transforms[-1]\n    mean = torch.tensor(norm.mean, device=\"cuda\")[None, :, None, None]\n    std = torch.tensor(norm.std, device=\"cuda\")[None, :, None, None]\n    raw = torch.load(cfg[\"source\"][\"path\"], map_location=\"cpu\", weights_only=False)\n    pixels = raw[\"final\"].clone()\n    del raw\n    groups = [torch.nn.Parameter(x.cuda()) for x in pixels.split(8)]\n    pixel_optimizers = [torch.optim.Adam([x], lr=.05) for x in groups]\n    history = [pixels]\n    expert.cuda().eval()\n    head.cuda().eval()\n\n    def views(x):\n        x = F.interpolate(x, (224, 224), mode=\"bilinear\", align_corners=False)\n        return (torch.cat([torch.roll(x, tuple(s), (2, 3)) for s in cfg[\"source\"][\"views\"]]) - mean) / std\n\n    def score(model, x):\n        counters[\"generated_image_forwards\"] += len(x)\n        if torch.is_grad_enabled() and x.requires_grad:\n            counters[\"input_gradient_model_forwards\"] += len(x)\n        return head(model(x))\n\n    def KL(student, teacher):\n        return 16 * F.kl_div(F.log_softmax(student / 4, dim=1),\n                             F.softmax(teacher / 4, dim=1), reduction=\"batchmean\")\n\n    @torch.no_grad()\n    def image_pool(x):\n        return torch.cat([views(v.cuda()).cpu() for v in x.split(8)])\n\n    pools, rounds, trace = [image_pool(pixels)], [], []\n    materialize()\n    for cycle in range(3):\n        first, last = [], []\n        for index, (group, optimizer) in enumerate(zip(groups, pixel_optimizers)):\n            for step in range(32):\n                x = views(group)\n                loss = KL(score(published, x), score(expert, x))\n                if step == 0:\n                    first.append(float(loss.detach()))\n                optimizer.zero_grad(set_to_none=True)\n                (-loss).backward()\n                assert group.grad is not None and torch.isfinite(group.grad).all()\n                optimizer.step()\n                counters[\"pixel_optimizer_steps\"] += 1\n                with torch.no_grad():\n                    group.clamp_(0, 1)\n            with torch.no_grad():\n                x = views(group)\n                last.append(float(KL(score(published, x), score(expert, x))))\n            if index % 5 == 0 or index == len(groups) - 1:\n                print(\"INPUT\", cycle + 1, index, first[-1], last[-1], flush=True)\n        history.append(torch.cat([x.detach().cpu() for x in groups]))\n        pools.append(image_pool(history[-1]))\n        images = torch.cat(pools)\n        batches = list(images.split(40))\n        with torch.no_grad():\n            targets = [score(expert, x.cuda()).detach() for x in batches]\n        optimizer = torch.optim.LBFGS(variables, lr=1., max_iter=40, max_eval=60,\n                                      history_size=5, line_search_fn=\"strong_wolfe\")\n\n        def closure():\n            optimizer.zero_grad(set_to_none=True)\n            actual = pairs()\n            leaves = [x.detach().requires_grad_() for x in actual]\n            overrides = dict(zip(keys, leaves))\n            classification = 0.\n            for x, target in zip(batches, targets):\n                counters[\"generated_image_forwards\"] += len(x)\n                logits = head(functional_call(published, overrides, (x.cuda(),)))\n                loss = KL(logits, target) * len(x) / len(images)\n                assert torch.isfinite(loss)\n                loss.backward()\n                classification += float(loss.detach())\n            task = 0.\n            for Ap, Bp, g in zip(leaves[::2], leaves[1::2], geometry):\n                z = F.linear(g[\"X\"], Ap, g[\"a\"].float())\n                y = F.linear(z * torch.sigmoid(1.702 * z), Bp, g[\"b\"].float())\n                loss = (y - g[\"Y\"]).square().mean() / g[\"task_variance\"] / 12\n                assert torch.isfinite(loss)\n                loss.backward()\n                task += float(loss.detach())\n                counters[\"local_task_vector_forwards\"] += len(y)\n            torch.autograd.backward(actual, grad_tensors=[p.grad for p in leaves])\n            assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in variables)\n            counters[\"full_objective_evaluations\"] += 1\n            row = dict(cycle=cycle + 1, evaluation=counters[\"full_objective_evaluations\"],\n                       classification_KL=classification, task_function_loss=task,\n                       total=classification + task)\n            trace.append(row)\n            (out / \"progress.json\").write_text(json.dumps(dict(trace=trace, rounds=rounds, counters=counters), indent=2))\n            print(\"JOINT_FIT\", json.dumps(row), flush=True)\n            return torch.tensor(classification + task, device=\"cuda\")\n\n        optimizer.step(closure)\n        counters[\"joint_AB_library_iterations\"] += int(optimizer.state[variables[0]][\"n_iter\"])\n        materialize()\n        with torch.no_grad():\n            before = torch.cat([x.cpu() for x in targets])\n            after = torch.cat([score(published, x.cuda()).cpu() for x in batches])\n        row = dict(cycle=cycle + 1, source_views=len(images),\n                   critic_KL_before=sum(first) / len(first), critic_KL_after=sum(last) / len(last),\n                   source_KL=float(KL(after, before)),\n                   teacher_prediction_changes=int((after.argmax(1) != before.argmax(1)).sum()))\n        rounds.append(row)\n        print(\"ROUND\", json.dumps(row), flush=True)\n        del optimizer\n    materialize()\n    with torch.no_grad():\n        rows = []\n        state = published.state_dict()\n        for i, g in enumerate(geometry):\n            p = f\"model.visual.transformer.resblocks.{i}.mlp.\"\n            A, B = [state[p + k].double() for k in [\"c_fc.weight\", \"c_proj.weight\"]]\n            actual = B @ torch.cat([A, g[\"a\"][:, None]], dim=1)\n            target = g[\"B\"] @ g[\"M\"]\n            error = float((actual - target).norm() / (1 + target.norm()))\n            da, db = float((A - g[\"A\"]).norm() / g[\"A\"].norm()), float((B - g[\"B\"]).norm() / g[\"B\"].norm())\n            lower = 2 ** .5 * float(g[\"AN\"].norm() / g[\"A\"].norm())\n            assert error < 1e-4 and da >= lower - 1e-5\n            assert db <= cfg[\"parameter_bounds\"][\"relative_B_by_layer\"][i] + 1e-5\n            rows.append(dict(layer=i,relative_A_distance=da,relative_B_distance=db,\n                             guaranteed_A_lower_bound=lower,affine_product_relative_error=error,\n                             task_A_parameter_error=float(((A-g[\"A\"])@g[\"V\"]).norm()/(A-g[\"A\"]).norm())))\n        assert all(p.grad is None for p in expert.parameters())\n        assert all(torch.equal(v, expert.state_dict()[k].cpu()) for k, v in original.items())\n        edits = {key: state[key].cpu().clone() for key in keys}\n    torch.save(edits, out / \"point.pt\")\n    torch.save(history, out / \"inputs.pt\")\n    torch.save(dict(before=before, after=after), out / \"source_scores.pt\")\n    result = dict(status=\"one_joint_AB_point_frozen\",point_sha256=digest(out / \"point.pt\"),\n                  source_sha256=digest(__file__),source=Path(__file__).read_text(),\n                  protocol_sha256=digest(protocol),checkpoint_sha256=pins,\n                  parameter_distance=logical_parameter_distance(edits, original),\n                  per_layer=rows,rounds=rounds,trace=trace,counters=counters,\n                  input_history_sha256=digest(out / \"inputs.pt\"),source_scores_sha256=digest(out / \"source_scores.pt\"),\n                  original_expert_updates=0,real_construction_images=0,new_AGA_calls=0,\n                  seconds=time.monotonic()-start,scope=cfg[\"scope\"])\n    (out / \"results.json\").write_text(json.dumps(result, indent=2) + \"\\n\")\n    print(\"POINT_FROZEN\", result[\"point_sha256\"], flush=True)\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "protocol_sha256": "8d12d5cdb1beb9af82b0727b571cbf381b4795ddff83bbd88f8ac1a59f7e9481",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "parameter_distance": 11.520524188691974,
+  "per_layer": [
+    {
+      "layer": 0,
+      "relative_A_distance": 1.7726916948956366,
+      "relative_B_distance": 8.611055151420745,
+      "guaranteed_A_lower_bound": 1.2702402730747124,
+      "affine_product_relative_error": 1.920125139223411e-08,
+      "task_A_parameter_error": 2.8442784163466088e-09
+    },
+    {
+      "layer": 1,
+      "relative_A_distance": 1.9376833257463153,
+      "relative_B_distance": 1.1695807703727916,
+      "guaranteed_A_lower_bound": 1.3712142046392426,
+      "affine_product_relative_error": 1.4970077898479895e-08,
+      "task_A_parameter_error": 2.6626399930738197e-09
+    },
+    {
+      "layer": 2,
+      "relative_A_distance": 1.9483770831504452,
+      "relative_B_distance": 1.2186157469783057,
+      "guaranteed_A_lower_bound": 1.377866192700095,
+      "affine_product_relative_error": 1.91938032793214e-08,
+      "task_A_parameter_error": 2.64763749747202e-09
+    },
+    {
+      "layer": 3,
+      "relative_A_distance": 1.9444005717600708,
+      "relative_B_distance": 1.1344023007250186,
+      "guaranteed_A_lower_bound": 1.3750968076162944,
+      "affine_product_relative_error": 2.0477603129195225e-08,
+      "task_A_parameter_error": 2.658812781308937e-09
+    },
+    {
+      "layer": 4,
+      "relative_A_distance": 1.9425559459421344,
+      "relative_B_distance": 1.116984956409121,
+      "guaranteed_A_lower_bound": 1.3738211659587274,
+      "affine_product_relative_error": 2.0632082589496833e-08,
+      "task_A_parameter_error": 2.6595144608658754e-09
+    },
+    {
+      "layer": 5,
+      "relative_A_distance": 1.9436969195220763,
+      "relative_B_distance": 1.0726312742473871,
+      "guaranteed_A_lower_bound": 1.3754539938767354,
+      "affine_product_relative_error": 1.9173909488731354e-08,
+      "task_A_parameter_error": 2.6656281413669445e-09
+    },
+    {
+      "layer": 6,
+      "relative_A_distance": 1.9365582819297518,
+      "relative_B_distance": 1.0790023897613905,
+      "guaranteed_A_lower_bound": 1.3744646950874861,
+      "affine_product_relative_error": 1.9259620797640156e-08,
+      "task_A_parameter_error": 2.669113837669153e-09
+    },
+    {
+      "layer": 7,
+      "relative_A_distance": 1.9355035464163297,
+      "relative_B_distance": 1.0591111036167598,
+      "guaranteed_A_lower_bound": 1.3751342585288873,
+      "affine_product_relative_error": 2.2615134190785775e-08,
+      "task_A_parameter_error": 2.667217042072605e-09
+    },
+    {
+      "layer": 8,
+      "relative_A_distance": 1.9320674385181849,
+      "relative_B_distance": 1.138709231087704,
+      "guaranteed_A_lower_bound": 1.3750488973648938,
+      "affine_product_relative_error": 1.851125781119192e-08,
+      "task_A_parameter_error": 2.6863425309929616e-09
+    },
+    {
+      "layer": 9,
+      "relative_A_distance": 1.913840122093894,
+      "relative_B_distance": 1.1660417299755397,
+      "guaranteed_A_lower_bound": 1.364129633485891,
+      "affine_product_relative_error": 1.808687674227762e-08,
+      "task_A_parameter_error": 2.706197913476222e-09
+    },
+    {
+      "layer": 10,
+      "relative_A_distance": 1.9303924478210472,
+      "relative_B_distance": 1.1590054053807963,
+      "guaranteed_A_lower_bound": 1.3707173409498064,
+      "affine_product_relative_error": 2.1433285215749343e-08,
+      "task_A_parameter_error": 2.684217090132248e-09
+    },
+    {
+      "layer": 11,
+      "relative_A_distance": 1.952770739635658,
+      "relative_B_distance": 1.1363993919701236,
+      "guaranteed_A_lower_bound": 1.38399883899164,
+      "affine_product_relative_error": 1.8964434862989847e-08,
+      "task_A_parameter_error": 2.656242022060987e-09
+    }
+  ],
+  "rounds": [
+    {
+      "cycle": 1,
+      "source_views": 1600,
+      "critic_KL_before": 10.60076630115509,
+      "critic_KL_after": 18.415322971343993,
+      "source_KL": 12.73331069946289,
+      "teacher_prediction_changes": 1229
+    },
+    {
+      "cycle": 2,
+      "source_views": 2400,
+      "critic_KL_before": 15.677862739562988,
+      "critic_KL_after": 28.801324081420898,
+      "source_KL": 13.560378074645996,
+      "teacher_prediction_changes": 1763
+    },
+    {
+      "cycle": 3,
+      "source_views": 3200,
+      "critic_KL_before": 11.10389552116394,
+      "critic_KL_after": 35.81075534820557,
+      "source_KL": 13.830897331237793,
+      "teacher_prediction_changes": 2294
+    }
+  ],
+  "trace": [
+    {
+      "cycle": 1,
+      "evaluation": 1,
+      "classification_KL": 14.508044317364693,
+      "task_function_loss": 7.586352065205574,
+      "total": 22.094396382570267
+    },
+    {
+      "cycle": 1,
+      "evaluation": 2,
+      "classification_KL": 14.507465675473213,
+      "task_function_loss": 7.576162770390511,
+      "total": 22.083628445863724
+    },
+    {
+      "cycle": 1,
+      "evaluation": 3,
+      "classification_KL": 14.501962423324585,
+      "task_function_loss": 7.48563739657402,
+      "total": 21.987599819898605
+    },
+    {
+      "cycle": 1,
+      "evaluation": 4,
+      "classification_KL": 14.46590831130743,
+      "task_function_loss": 7.065205335617065,
+      "total": 21.531113646924496
+    },
+    {
+      "cycle": 1,
+      "evaluation": 5,
+      "classification_KL": 14.279471822082996,
+      "task_function_loss": 5.490857049822807,
+      "total": 19.770328871905804
+    },
+    {
+      "cycle": 1,
+      "evaluation": 6,
+      "classification_KL": 14.270016983151436,
+      "task_function_loss": 3.021576054394245,
+      "total": 17.29159303754568
+    },
+    {
+      "cycle": 1,
+      "evaluation": 7,
+      "classification_KL": 14.264775387942791,
+      "task_function_loss": 2.472735032439232,
+      "total": 16.737510420382023
+    },
+    {
+      "cycle": 1,
+      "evaluation": 8,
+      "classification_KL": 14.27902115881443,
+      "task_function_loss": 2.2026260420680046,
+      "total": 16.481647200882435
+    },
+    {
+      "cycle": 1,
+      "evaluation": 9,
+      "classification_KL": 14.22226669639349,
+      "task_function_loss": 1.9437508955597878,
+      "total": 16.166017591953278
+    },
+    {
+      "cycle": 1,
+      "evaluation": 10,
+      "classification_KL": 14.182800181210041,
+      "task_function_loss": 1.7884064093232155,
+      "total": 15.971206590533257
+    },
+    {
+      "cycle": 1,
+      "evaluation": 11,
+      "classification_KL": 14.151241265237331,
+      "task_function_loss": 1.6634266749024391,
+      "total": 15.81466794013977
+    },
+    {
+      "cycle": 1,
+      "evaluation": 12,
+      "classification_KL": 14.109671868383884,
+      "task_function_loss": 1.5914661288261414,
+      "total": 15.701137997210026
+    },
+    {
+      "cycle": 1,
+      "evaluation": 13,
+      "classification_KL": 14.219160363078117,
+      "task_function_loss": 1.586741290986538,
+      "total": 15.805901654064655
+    },
+    {
+      "cycle": 1,
+      "evaluation": 14,
+      "classification_KL": 14.050714761018753,
+      "task_function_loss": 1.5383666828274727,
+      "total": 15.589081443846226
+    },
+    {
+      "cycle": 1,
+      "evaluation": 15,
+      "classification_KL": 14.030631504952908,
+      "task_function_loss": 1.5118699669837952,
+      "total": 15.542501471936703
+    },
+    {
+      "cycle": 1,
+      "evaluation": 16,
+      "classification_KL": 14.003235526382923,
+      "task_function_loss": 1.4977779611945152,
+      "total": 15.501013487577438
+    },
+    {
+      "cycle": 1,
+      "evaluation": 17,
+      "classification_KL": 13.950603030622005,
+      "task_function_loss": 1.4499151520431042,
+      "total": 15.40051818266511
+    },
+    {
+      "cycle": 1,
+      "evaluation": 18,
+      "classification_KL": 14.14076018333435,
+      "task_function_loss": 1.4135831966996193,
+      "total": 15.55434338003397
+    },
+    {
+      "cycle": 1,
+      "evaluation": 19,
+      "classification_KL": 13.9396380931139,
+      "task_function_loss": 1.422377660870552,
+      "total": 15.362015753984451
+    },
+    {
+      "cycle": 1,
+      "evaluation": 20,
+      "classification_KL": 13.896672382950783,
+      "task_function_loss": 1.3987024798989296,
+      "total": 15.295374862849712
+    },
+    {
+      "cycle": 1,
+      "evaluation": 21,
+      "classification_KL": 13.886571690440178,
+      "task_function_loss": 1.3936740159988403,
+      "total": 15.280245706439018
+    },
+    {
+      "cycle": 1,
+      "evaluation": 22,
+      "classification_KL": 13.859091252088547,
+      "task_function_loss": 1.3896468579769135,
+      "total": 15.24873811006546
+    },
+    {
+      "cycle": 1,
+      "evaluation": 23,
+      "classification_KL": 13.785239592194557,
+      "task_function_loss": 1.4080206602811813,
+      "total": 15.193260252475739
+    },
+    {
+      "cycle": 1,
+      "evaluation": 24,
+      "classification_KL": 13.76836048066616,
+      "task_function_loss": 1.3965300098061562,
+      "total": 15.164890490472317
+    },
+    {
+      "cycle": 1,
+      "evaluation": 25,
+      "classification_KL": 13.725136637687683,
+      "task_function_loss": 1.397601593285799,
+      "total": 15.122738230973482
+    },
+    {
+      "cycle": 1,
+      "evaluation": 26,
+      "classification_KL": 13.71851310133934,
+      "task_function_loss": 1.3919792473316193,
+      "total": 15.11049234867096
+    },
+    {
+      "cycle": 1,
+      "evaluation": 27,
+      "classification_KL": 13.56231839954853,
+      "task_function_loss": 1.3845712952315807,
+      "total": 14.946889694780111
+    },
+    {
+      "cycle": 1,
+      "evaluation": 28,
+      "classification_KL": 13.505076929926872,
+      "task_function_loss": 1.413274347782135,
+      "total": 14.918351277709007
+    },
+    {
+      "cycle": 1,
+      "evaluation": 29,
+      "classification_KL": 13.483842864632607,
+      "task_function_loss": 1.3981113694608212,
+      "total": 14.881954234093428
+    },
+    {
+      "cycle": 1,
+      "evaluation": 30,
+      "classification_KL": 13.452782720327377,
+      "task_function_loss": 1.4189230054616928,
+      "total": 14.87170572578907
+    },
+    {
+      "cycle": 1,
+      "evaluation": 31,
+      "classification_KL": 13.413135960698128,
+      "task_function_loss": 1.3916336670517921,
+      "total": 14.80476962774992
+    },
+    {
+      "cycle": 1,
+      "evaluation": 32,
+      "classification_KL": 13.40997140109539,
+      "task_function_loss": 1.382242612540722,
+      "total": 14.792214013636112
+    },
+    {
+      "cycle": 1,
+      "evaluation": 33,
+      "classification_KL": 13.411536619067192,
+      "task_function_loss": 1.391821712255478,
+      "total": 14.80335833132267
+    },
+    {
+      "cycle": 1,
+      "evaluation": 34,
+      "classification_KL": 13.29619187116623,
+      "task_function_loss": 1.3824324011802673,
+      "total": 14.678624272346497
+    },
+    {
+      "cycle": 1,
+      "evaluation": 35,
+      "classification_KL": 13.23792977631092,
+      "task_function_loss": 1.3747626543045044,
+      "total": 14.612692430615425
+    },
+    {
+      "cycle": 1,
+      "evaluation": 36,
+      "classification_KL": 13.117351830005646,
+      "task_function_loss": 1.393828570842743,
+      "total": 14.511180400848389
+    },
+    {
+      "cycle": 1,
+      "evaluation": 37,
+      "classification_KL": 13.412865415215492,
+      "task_function_loss": 1.451360534876585,
+      "total": 14.864225950092077
+    },
+    {
+      "cycle": 1,
+      "evaluation": 38,
+      "classification_KL": 13.016018688678741,
+      "task_function_loss": 1.39463672041893,
+      "total": 14.410655409097672
+    },
+    {
+      "cycle": 1,
+      "evaluation": 39,
+      "classification_KL": 13.080170080065727,
+      "task_function_loss": 1.431183859705925,
+      "total": 14.511353939771652
+    },
+    {
+      "cycle": 1,
+      "evaluation": 40,
+      "classification_KL": 12.983012229204178,
+      "task_function_loss": 1.4056296050548553,
+      "total": 14.388641834259033
+    },
+    {
+      "cycle": 1,
+      "evaluation": 41,
+      "classification_KL": 12.976353451609612,
+      "task_function_loss": 1.406527828425169,
+      "total": 14.38288128003478
+    },
+    {
+      "cycle": 1,
+      "evaluation": 42,
+      "classification_KL": 12.93705628812313,
+      "task_function_loss": 1.4084494933485985,
+      "total": 14.34550578147173
+    },
+    {
+      "cycle": 1,
+      "evaluation": 43,
+      "classification_KL": 12.87082976102829,
+      "task_function_loss": 1.3898513168096542,
+      "total": 14.260681077837944
+    },
+    {
+      "cycle": 1,
+      "evaluation": 44,
+      "classification_KL": 12.883646205067635,
+      "task_function_loss": 1.3781949318945408,
+      "total": 14.261841136962175
+    },
+    {
+      "cycle": 1,
+      "evaluation": 45,
+      "classification_KL": 12.850967928767204,
+      "task_function_loss": 1.3834966160356998,
+      "total": 14.234464544802904
+    },
+    {
+      "cycle": 1,
+      "evaluation": 46,
+      "classification_KL": 12.8236173838377,
+      "task_function_loss": 1.374762263149023,
+      "total": 14.198379646986723
+    },
+    {
+      "cycle": 1,
+      "evaluation": 47,
+      "classification_KL": 13.219643235206604,
+      "task_function_loss": 1.3426687978208065,
+      "total": 14.56231203302741
+    },
+    {
+      "cycle": 1,
+      "evaluation": 48,
+      "classification_KL": 12.802980661392212,
+      "task_function_loss": 1.340444877743721,
+      "total": 14.143425539135933
+    },
+    {
+      "cycle": 1,
+      "evaluation": 49,
+      "classification_KL": 12.752482429146767,
+      "task_function_loss": 1.333005253225565,
+      "total": 14.085487682372332
+    },
+    {
+      "cycle": 1,
+      "evaluation": 50,
+      "classification_KL": 12.741580188274384,
+      "task_function_loss": 1.3333813175559044,
+      "total": 14.074961505830288
+    },
+    {
+      "cycle": 1,
+      "evaluation": 51,
+      "classification_KL": 12.733310654759407,
+      "task_function_loss": 1.3342079780995846,
+      "total": 14.067518632858992
+    },
+    {
+      "cycle": 2,
+      "evaluation": 52,
+      "classification_KL": 18.089315764606,
+      "task_function_loss": 1.3342079780995846,
+      "total": 19.423523742705584
+    },
+    {
+      "cycle": 2,
+      "evaluation": 53,
+      "classification_KL": 18.066444486379623,
+      "task_function_loss": 1.3338458091020584,
+      "total": 19.400290295481682
+    },
+    {
+      "cycle": 2,
+      "evaluation": 54,
+      "classification_KL": 18.021886624395847,
+      "task_function_loss": 1.3328271135687828,
+      "total": 19.35471373796463
+    },
+    {
+      "cycle": 2,
+      "evaluation": 55,
+      "classification_KL": 17.90452053397894,
+      "task_function_loss": 1.3304837942123413,
+      "total": 19.23500432819128
+    },
+    {
+      "cycle": 2,
+      "evaluation": 56,
+      "classification_KL": 16.522585295140743,
+      "task_function_loss": 1.321279264986515,
+      "total": 17.84386456012726
+    },
+    {
+      "cycle": 2,
+      "evaluation": 57,
+      "classification_KL": 16.283204928040504,
+      "task_function_loss": 1.3189933709800243,
+      "total": 17.60219829902053
+    },
+    {
+      "cycle": 2,
+      "evaluation": 58,
+      "classification_KL": 15.7436892837286,
+      "task_function_loss": 1.3206021152436733,
+      "total": 17.064291398972273
+    },
+    {
+      "cycle": 2,
+      "evaluation": 59,
+      "classification_KL": 15.7335781827569,
+      "task_function_loss": 1.309068437665701,
+      "total": 17.0426466204226
+    },
+    {
+      "cycle": 2,
+      "evaluation": 60,
+      "classification_KL": 15.6295680180192,
+      "task_function_loss": 1.3114029802381992,
+      "total": 16.9409709982574
+    },
+    {
+      "cycle": 2,
+      "evaluation": 61,
+      "classification_KL": 15.768834456801414,
+      "task_function_loss": 1.3388168513774872,
+      "total": 17.1076513081789
+    },
+    {
+      "cycle": 2,
+      "evaluation": 62,
+      "classification_KL": 15.563972599804401,
+      "task_function_loss": 1.3150809295475483,
+      "total": 16.87905352935195
+    },
+    {
+      "cycle": 2,
+      "evaluation": 63,
+      "classification_KL": 15.694272615015507,
+      "task_function_loss": 1.2517899759113789,
+      "total": 16.946062590926886
+    },
+    {
+      "cycle": 2,
+      "evaluation": 64,
+      "classification_KL": 15.518433772027493,
+      "task_function_loss": 1.2773126363754272,
+      "total": 16.79574640840292
+    },
+    {
+      "cycle": 2,
+      "evaluation": 65,
+      "classification_KL": 15.294896453619003,
+      "task_function_loss": 1.2820321545004845,
+      "total": 16.576928608119488
+    },
+    {
+      "cycle": 2,
+      "evaluation": 66,
+      "classification_KL": 15.244953967630863,
+      "task_function_loss": 1.2571175135672092,
+      "total": 16.502071481198072
+    },
+    {
+      "cycle": 2,
+      "evaluation": 67,
+      "classification_KL": 15.04186836630106,
+      "task_function_loss": 1.2727777697145939,
+      "total": 16.314646136015654
+    },
+    {
+      "cycle": 2,
+      "evaluation": 68,
+      "classification_KL": 14.912525199353695,
+      "task_function_loss": 1.303119882941246,
+      "total": 16.21564508229494
+    },
+    {
+      "cycle": 2,
+      "evaluation": 69,
+      "classification_KL": 14.745579518377781,
+      "task_function_loss": 1.3004468008875847,
+      "total": 16.046026319265366
+    },
+    {
+      "cycle": 2,
+      "evaluation": 70,
+      "classification_KL": 14.70397336781025,
+      "task_function_loss": 1.2865589261054993,
+      "total": 15.990532293915749
+    },
+    {
+      "cycle": 2,
+      "evaluation": 71,
+      "classification_KL": 14.577527478337288,
+      "task_function_loss": 1.2700948007404804,
+      "total": 15.847622279077768
+    },
+    {
+      "cycle": 2,
+      "evaluation": 72,
+      "classification_KL": 14.749774098396301,
+      "task_function_loss": 1.2631527483463287,
+      "total": 16.01292684674263
+    },
+    {
+      "cycle": 2,
+      "evaluation": 73,
+      "classification_KL": 14.506424382328987,
+      "task_function_loss": 1.261216126382351,
+      "total": 15.767640508711338
+    },
+    {
+      "cycle": 2,
+      "evaluation": 74,
+      "classification_KL": 14.446264490485191,
+      "task_function_loss": 1.2616761736571789,
+      "total": 15.70794066414237
+    },
+    {
+      "cycle": 2,
+      "evaluation": 75,
+      "classification_KL": 14.406883746385574,
+      "task_function_loss": 1.2557417750358582,
+      "total": 15.662625521421432
+    },
+    {
+      "cycle": 2,
+      "evaluation": 76,
+      "classification_KL": 14.379861041903496,
+      "task_function_loss": 1.2468138076364994,
+      "total": 15.626674849539995
+    },
+    {
+      "cycle": 2,
+      "evaluation": 77,
+      "classification_KL": 14.342287078499794,
+      "task_function_loss": 1.2454156056046486,
+      "total": 15.587702684104443
+    },
+    {
+      "cycle": 2,
+      "evaluation": 78,
+      "classification_KL": 14.300952829420567,
+      "task_function_loss": 1.2547101862728596,
+      "total": 15.555663015693426
+    },
+    {
+      "cycle": 2,
+      "evaluation": 79,
+      "classification_KL": 14.182251296937466,
+      "task_function_loss": 1.25422964990139,
+      "total": 15.436480946838856
+    },
+    {
+      "cycle": 2,
+      "evaluation": 80,
+      "classification_KL": 15.500570848584175,
+      "task_function_loss": 1.2861750163137913,
+      "total": 16.786745864897966
+    },
+    {
+      "cycle": 2,
+      "evaluation": 81,
+      "classification_KL": 14.126592352986336,
+      "task_function_loss": 1.2441809140145779,
+      "total": 15.370773267000914
+    },
+    {
+      "cycle": 2,
+      "evaluation": 82,
+      "classification_KL": 14.057717934250832,
+      "task_function_loss": 1.3133261166512966,
+      "total": 15.371044050902128
+    },
+    {
+      "cycle": 2,
+      "evaluation": 83,
+      "classification_KL": 14.016022369265556,
+      "task_function_loss": 1.234673861414194,
+      "total": 15.25069623067975
+    },
+    {
+      "cycle": 2,
+      "evaluation": 84,
+      "classification_KL": 14.010782659053802,
+      "task_function_loss": 1.238156970590353,
+      "total": 15.248939629644156
+    },
+    {
+      "cycle": 2,
+      "evaluation": 85,
+      "classification_KL": 14.001463003456593,
+      "task_function_loss": 1.236091773957014,
+      "total": 15.237554777413607
+    },
+    {
+      "cycle": 2,
+      "evaluation": 86,
+      "classification_KL": 14.001990608870983,
+      "task_function_loss": 1.2335663847625256,
+      "total": 15.235556993633509
+    },
+    {
+      "cycle": 2,
+      "evaluation": 87,
+      "classification_KL": 13.998270526528358,
+      "task_function_loss": 1.2350006215274334,
+      "total": 15.233271148055792
+    },
+    {
+      "cycle": 2,
+      "evaluation": 88,
+      "classification_KL": 13.97387095540762,
+      "task_function_loss": 1.2461712509393692,
+      "total": 15.220042206346989
+    },
+    {
+      "cycle": 2,
+      "evaluation": 89,
+      "classification_KL": 13.961611948907375,
+      "task_function_loss": 1.2491038925945759,
+      "total": 15.210715841501951
+    },
+    {
+      "cycle": 2,
+      "evaluation": 90,
+      "classification_KL": 14.582548134028912,
+      "task_function_loss": 1.416568510234356,
+      "total": 15.999116644263268
+    },
+    {
+      "cycle": 2,
+      "evaluation": 91,
+      "classification_KL": 13.929081968963146,
+      "task_function_loss": 1.2645082101225853,
+      "total": 15.193590179085732
+    },
+    {
+      "cycle": 2,
+      "evaluation": 92,
+      "classification_KL": 15.23997450619936,
+      "task_function_loss": 1.4515717849135399,
+      "total": 16.6915462911129
+    },
+    {
+      "cycle": 2,
+      "evaluation": 93,
+      "classification_KL": 13.919594302773476,
+      "task_function_loss": 1.265956562012434,
+      "total": 15.18555086478591
+    },
+    {
+      "cycle": 2,
+      "evaluation": 94,
+      "classification_KL": 13.874630846083164,
+      "task_function_loss": 1.2754809223115444,
+      "total": 15.150111768394709
+    },
+    {
+      "cycle": 2,
+      "evaluation": 95,
+      "classification_KL": 13.829832434654236,
+      "task_function_loss": 1.2854096926748753,
+      "total": 15.115242127329111
+    },
+    {
+      "cycle": 2,
+      "evaluation": 96,
+      "classification_KL": 14.638363018631935,
+      "task_function_loss": 1.4850155524909496,
+      "total": 16.123378571122885
+    },
+    {
+      "cycle": 2,
+      "evaluation": 97,
+      "classification_KL": 13.820393346250057,
+      "task_function_loss": 1.2830195426940918,
+      "total": 15.103412888944149
+    },
+    {
+      "cycle": 2,
+      "evaluation": 98,
+      "classification_KL": 13.730891607701778,
+      "task_function_loss": 1.3031470887362957,
+      "total": 15.034038696438074
+    },
+    {
+      "cycle": 2,
+      "evaluation": 99,
+      "classification_KL": 13.722545139491558,
+      "task_function_loss": 1.2798291482031345,
+      "total": 15.002374287694693
+    },
+    {
+      "cycle": 2,
+      "evaluation": 100,
+      "classification_KL": 13.680565014481544,
+      "task_function_loss": 1.269047237932682,
+      "total": 14.949612252414227
+    },
+    {
+      "cycle": 2,
+      "evaluation": 101,
+      "classification_KL": 13.814842134714127,
+      "task_function_loss": 1.37365086004138,
+      "total": 15.188492994755507
+    },
+    {
+      "cycle": 2,
+      "evaluation": 102,
+      "classification_KL": 13.619599848985672,
+      "task_function_loss": 1.259175818413496,
+      "total": 14.878775667399168
+    },
+    {
+      "cycle": 2,
+      "evaluation": 103,
+      "classification_KL": 14.512097209692001,
+      "task_function_loss": 1.4670434556901455,
+      "total": 15.979140665382147
+    },
+    {
+      "cycle": 2,
+      "evaluation": 104,
+      "classification_KL": 13.576779425144196,
+      "task_function_loss": 1.2717780657112598,
+      "total": 14.848557490855455
+    },
+    {
+      "cycle": 2,
+      "evaluation": 105,
+      "classification_KL": 13.55368297547102,
+      "task_function_loss": 1.2808719128370285,
+      "total": 14.834554888308048
+    },
+    {
+      "cycle": 2,
+      "evaluation": 106,
+      "classification_KL": 13.57613329589367,
+      "task_function_loss": 1.251191671937704,
+      "total": 14.827324967831373
+    },
+    {
+      "cycle": 2,
+      "evaluation": 107,
+      "classification_KL": 13.577831342816353,
+      "task_function_loss": 1.248032871633768,
+      "total": 14.825864214450121
+    },
+    {
+      "cycle": 2,
+      "evaluation": 108,
+      "classification_KL": 13.560377985239029,
+      "task_function_loss": 1.2593229450285435,
+      "total": 14.819700930267572
+    },
+    {
+      "cycle": 3,
+      "evaluation": 109,
+      "classification_KL": 19.12297160923481,
+      "task_function_loss": 1.2593229450285435,
+      "total": 20.382294554263353
+    },
+    {
+      "cycle": 3,
+      "evaluation": 110,
+      "classification_KL": 19.105269610881805,
+      "task_function_loss": 1.2591163776814938,
+      "total": 20.3643859885633
+    },
+    {
+      "cycle": 3,
+      "evaluation": 111,
+      "classification_KL": 19.027011521160603,
+      "task_function_loss": 1.2581923715770245,
+      "total": 20.285203892737627
+    },
+    {
+      "cycle": 3,
+      "evaluation": 112,
+      "classification_KL": 18.62329012155533,
+      "task_function_loss": 1.2532987520098686,
+      "total": 19.876588873565197
+    },
+    {
+      "cycle": 3,
+      "evaluation": 113,
+      "classification_KL": 16.587573911994696,
+      "task_function_loss": 1.2322377003729343,
+      "total": 17.81981161236763
+    },
+    {
+      "cycle": 3,
+      "evaluation": 114,
+      "classification_KL": 16.115474313497543,
+      "task_function_loss": 1.2745039649307728,
+      "total": 17.389978278428316
+    },
+    {
+      "cycle": 3,
+      "evaluation": 115,
+      "classification_KL": 16.079738400876522,
+      "task_function_loss": 1.254249982535839,
+      "total": 17.33398838341236
+    },
+    {
+      "cycle": 3,
+      "evaluation": 116,
+      "classification_KL": 15.883570231497288,
+      "task_function_loss": 1.2087582051753998,
+      "total": 17.092328436672688
+    },
+    {
+      "cycle": 3,
+      "evaluation": 117,
+      "classification_KL": 15.928021989762783,
+      "task_function_loss": 4.2844178378582,
+      "total": 20.212439827620983
+    },
+    {
+      "cycle": 3,
+      "evaluation": 118,
+      "classification_KL": 17.326257295906544,
+      "task_function_loss": 1.2936519347131252,
+      "total": 18.61990923061967
+    },
+    {
+      "cycle": 3,
+      "evaluation": 119,
+      "classification_KL": 15.813025951385498,
+      "task_function_loss": 1.2155815623700619,
+      "total": 17.02860751375556
+    },
+    {
+      "cycle": 3,
+      "evaluation": 120,
+      "classification_KL": 15.795120060443878,
+      "task_function_loss": 1.2048791833221912,
+      "total": 16.99999924376607
+    },
+    {
+      "cycle": 3,
+      "evaluation": 121,
+      "classification_KL": 15.77433618158102,
+      "task_function_loss": 1.1972616836428642,
+      "total": 16.971597865223885
+    },
+    {
+      "cycle": 3,
+      "evaluation": 122,
+      "classification_KL": 15.62457811832428,
+      "task_function_loss": 1.1786245629191399,
+      "total": 16.80320268124342
+    },
+    {
+      "cycle": 3,
+      "evaluation": 123,
+      "classification_KL": 15.473201885819435,
+      "task_function_loss": 1.1933495700359344,
+      "total": 16.66655145585537
+    },
+    {
+      "cycle": 3,
+      "evaluation": 124,
+      "classification_KL": 15.434368632733822,
+      "task_function_loss": 1.1852570362389088,
+      "total": 16.61962566897273
+    },
+    {
+      "cycle": 3,
+      "evaluation": 125,
+      "classification_KL": 15.340730793774128,
+      "task_function_loss": 1.1752105504274368,
+      "total": 16.515941344201565
+    },
+    {
+      "cycle": 3,
+      "evaluation": 126,
+      "classification_KL": 15.318595491349697,
+      "task_function_loss": 1.170502595603466,
+      "total": 16.489098086953163
+    },
+    {
+      "cycle": 3,
+      "evaluation": 127,
+      "classification_KL": 15.308709003031254,
+      "task_function_loss": 1.1642023138701916,
+      "total": 16.472911316901445
+    },
+    {
+      "cycle": 3,
+      "evaluation": 128,
+      "classification_KL": 15.264455683529377,
+      "task_function_loss": 1.1648735702037811,
+      "total": 16.429329253733158
+    },
+    {
+      "cycle": 3,
+      "evaluation": 129,
+      "classification_KL": 15.196975730359554,
+      "task_function_loss": 1.157645434141159,
+      "total": 16.354621164500713
+    },
+    {
+      "cycle": 3,
+      "evaluation": 130,
+      "classification_KL": 15.158463060855865,
+      "task_function_loss": 1.1711599193513393,
+      "total": 16.329622980207205
+    },
+    {
+      "cycle": 3,
+      "evaluation": 131,
+      "classification_KL": 15.117325335741043,
+      "task_function_loss": 1.1552051343023777,
+      "total": 16.27253047004342
+    },
+    {
+      "cycle": 3,
+      "evaluation": 132,
+      "classification_KL": 15.106617912650108,
+      "task_function_loss": 1.1476617269217968,
+      "total": 16.254279639571905
+    },
+    {
+      "cycle": 3,
+      "evaluation": 133,
+      "classification_KL": 15.084012351930141,
+      "task_function_loss": 1.1503312289714813,
+      "total": 16.234343580901623
+    },
+    {
+      "cycle": 3,
+      "evaluation": 134,
+      "classification_KL": 15.01879507303238,
+      "task_function_loss": 1.2160495445132256,
+      "total": 16.234844617545605
+    },
+    {
+      "cycle": 3,
+      "evaluation": 135,
+      "classification_KL": 15.042191997170448,
+      "task_function_loss": 1.1667244732379913,
+      "total": 16.20891647040844
+    },
+    {
+      "cycle": 3,
+      "evaluation": 136,
+      "classification_KL": 14.975240848958492,
+      "task_function_loss": 1.1728764809668064,
+      "total": 16.1481173299253
+    },
+    {
+      "cycle": 3,
+      "evaluation": 137,
+      "classification_KL": 15.429250463843346,
+      "task_function_loss": 1.2761623077094555,
+      "total": 16.7054127715528
+    },
+    {
+      "cycle": 3,
+      "evaluation": 138,
+      "classification_KL": 14.883146621286869,
+      "task_function_loss": 1.1781742684543133,
+      "total": 16.061320889741182
+    },
+    {
+      "cycle": 3,
+      "evaluation": 139,
+      "classification_KL": 15.588017128407955,
+      "task_function_loss": 1.2667714282870293,
+      "total": 16.854788556694984
+    },
+    {
+      "cycle": 3,
+      "evaluation": 140,
+      "classification_KL": 14.839615181088448,
+      "task_function_loss": 1.1818936057388783,
+      "total": 16.021508786827326
+    },
+    {
+      "cycle": 3,
+      "evaluation": 141,
+      "classification_KL": 14.988903872668743,
+      "task_function_loss": 1.266918245702982,
+      "total": 16.255822118371725
+    },
+    {
+      "cycle": 3,
+      "evaluation": 142,
+      "classification_KL": 14.746510975062847,
+      "task_function_loss": 1.2001695334911346,
+      "total": 15.946680508553982
+    },
+    {
+      "cycle": 3,
+      "evaluation": 143,
+      "classification_KL": 14.650780066847801,
+      "task_function_loss": 1.2272600308060646,
+      "total": 15.878040097653866
+    },
+    {
+      "cycle": 3,
+      "evaluation": 144,
+      "classification_KL": 14.61507810652256,
+      "task_function_loss": 1.2560695186257362,
+      "total": 15.871147625148296
+    },
+    {
+      "cycle": 3,
+      "evaluation": 145,
+      "classification_KL": 14.610015831887722,
+      "task_function_loss": 1.2424515932798386,
+      "total": 15.85246742516756
+    },
+    {
+      "cycle": 3,
+      "evaluation": 146,
+      "classification_KL": 14.541790165007114,
+      "task_function_loss": 1.2603309527039528,
+      "total": 15.802121117711067
+    },
+    {
+      "cycle": 3,
+      "evaluation": 147,
+      "classification_KL": 14.500225260853767,
+      "task_function_loss": 1.2661212533712387,
+      "total": 15.766346514225006
+    },
+    {
+      "cycle": 3,
+      "evaluation": 148,
+      "classification_KL": 14.470512360334396,
+      "task_function_loss": 1.2793000862002373,
+      "total": 15.749812446534634
+    },
+    {
+      "cycle": 3,
+      "evaluation": 149,
+      "classification_KL": 14.452517040073872,
+      "task_function_loss": 1.2807964757084846,
+      "total": 15.733313515782356
+    },
+    {
+      "cycle": 3,
+      "evaluation": 150,
+      "classification_KL": 14.358047410845757,
+      "task_function_loss": 1.296119675040245,
+      "total": 15.654167085886002
+    },
+    {
+      "cycle": 3,
+      "evaluation": 151,
+      "classification_KL": 14.198182925581932,
+      "task_function_loss": 1.2710957899689674,
+      "total": 15.4692787155509
+    },
+    {
+      "cycle": 3,
+      "evaluation": 152,
+      "classification_KL": 14.183425284922123,
+      "task_function_loss": 1.2749336771667004,
+      "total": 15.458358962088823
+    },
+    {
+      "cycle": 3,
+      "evaluation": 153,
+      "classification_KL": 14.17705911397934,
+      "task_function_loss": 1.2371863536536694,
+      "total": 15.414245467633009
+    },
+    {
+      "cycle": 3,
+      "evaluation": 154,
+      "classification_KL": 14.111698165535927,
+      "task_function_loss": 1.2547412477433681,
+      "total": 15.366439413279295
+    },
+    {
+      "cycle": 3,
+      "evaluation": 155,
+      "classification_KL": 14.085264064371586,
+      "task_function_loss": 1.2617271952331066,
+      "total": 15.346991259604692
+    },
+    {
+      "cycle": 3,
+      "evaluation": 156,
+      "classification_KL": 14.085695646703243,
+      "task_function_loss": 1.2483156062662601,
+      "total": 15.334011252969503
+    },
+    {
+      "cycle": 3,
+      "evaluation": 157,
+      "classification_KL": 14.026797667145729,
+      "task_function_loss": 1.249843705445528,
+      "total": 15.276641372591257
+    },
+    {
+      "cycle": 3,
+      "evaluation": 158,
+      "classification_KL": 13.96051151305437,
+      "task_function_loss": 1.2559905089437962,
+      "total": 15.216502021998167
+    },
+    {
+      "cycle": 3,
+      "evaluation": 159,
+      "classification_KL": 13.923745445907116,
+      "task_function_loss": 1.2652124539017677,
+      "total": 15.188957899808884
+    },
+    {
+      "cycle": 3,
+      "evaluation": 160,
+      "classification_KL": 14.385768875479698,
+      "task_function_loss": 1.339082483202219,
+      "total": 15.724851358681917
+    },
+    {
+      "cycle": 3,
+      "evaluation": 161,
+      "classification_KL": 13.900233790278435,
+      "task_function_loss": 1.2725905887782574,
+      "total": 15.172824379056692
+    },
+    {
+      "cycle": 3,
+      "evaluation": 162,
+      "classification_KL": 13.846108175814152,
+      "task_function_loss": 1.2822774164378643,
+      "total": 15.128385592252016
+    },
+    {
+      "cycle": 3,
+      "evaluation": 163,
+      "classification_KL": 13.830898120999336,
+      "task_function_loss": 1.2767074294388294,
+      "total": 15.107605550438166
+    }
+  ],
+  "counters": {
+    "generated_image_forwards": 567200,
+    "input_gradient_model_forwards": 153600,
+    "pixel_optimizer_steps": 1920,
+    "joint_AB_library_iterations": 120,
+    "full_objective_evaluations": 163,
+    "local_task_vector_forwards": 1007616
+  },
+  "input_history_sha256": "f8164f6c80c2f2c61f75b70b54119cd50e4e8b68b5ed7e2eb47b6e00074a5fb8",
+  "source_scores_sha256": "9c53bca6d887f01ef38eacf8c27ce2beb2f9972b96c7fc4391ba85484704bf45",
+  "original_expert_updates": 0,
+  "real_construction_images": 0,
+  "new_AGA_calls": 0,
+  "seconds": 760.5007306234911,
+  "scope": "One joint numericalA/B feasibilityexperiment. Cayley,orthogonal mixing,pseudoinverse,affineconstraints,KD,ABM inputsearch andLBFGS areknown,notnewoptimizerormathclaims. Linearhalfidentitydoesnotguaranteecompletefunction. Distinctfromclosed62d(onefirstblockuniformLN outputVarPro)and19d(weakdistance-rewardlastblockgame),andfromfixedA737/8b64."
+}
