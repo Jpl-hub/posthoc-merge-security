@@ -1,31 +1,31 @@
 {
-  "status": "Latest Data-Free Defense2 trials completed and closed: native71.65 and9.74 vs99.69 original. No new usable defense. Joint finite task probes pass, but the complete classification fit is not stationary even on construction inputs.",
-  "updated_utc": "2026-10-25T16:00:59.960081+00:00",
+  "status": "No new effective Defense2. Full-objective solver control closed at native9.82vs99.69. Source order/first-step checks and nonlinear response decomposition completed; all raw evidence retained.",
+  "updated_utc": "2026-10-25T16:44:40.595386+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
   "latest_core_trial": {
-    "point_sha256": "7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192",
-    "record": "results/data_free_compensation/functional_compensation_result.json",
+    "point_sha256": "8b64a4089c1d0294f75ef98404158151ec8d42e0272617aca018bda06447ce3a",
+    "record": "results/data_free_compensation/functional_solver_result.json",
     "native_before_after": [
       99.69,
-      9.74
+      9.82
     ],
     "TA_and_AGA_evaluated": false,
     "closed": true,
     "real_construction_images": 0,
     "original_expert_updates": 0,
-    "publication_B_gradient_steps": 1440,
-    "pixel_optimizer_steps": 1920,
-    "generated_full_image_forwards": 230400,
-    "input_gradient_model_forwards": 153600,
+    "solver": "torch2.8LBFGS existing library,not a new algorithm",
+    "publication_B_library_iterations": 40,
+    "full_source_objective_evaluations": 47,
+    "generated_full_image_forwards": 40000,
     "new_real_evaluation_image_forwards": 20000,
     "new_AGA_calls": 0,
-    "source_retired_active_tree": true
+    "source_archived_and_retired_active_tree": true
   },
-  "next_action": "Establish a usable large-change compensation mechanism and solve its source functional objective before claiming task retention. Do not reopen these points, add an optimizer from a nonzero-gradient observation, or extend known closed symmetries. Fixed TA/AGA remains the downstream criterion.",
+  "next_action": "Research A changes and B compensation jointly under actual nonlinear task responses,with a concrete finite condition before another model. Do not interpret linear/SVD distance or finite axes as function retention; do not reopen these fixed points or stack solvers from nonzero gradients.",
   "engineering_cleanup": {
     "production_modules_and_entrypoints_unchanged": false,
     "new_frameworks": 0,
@@ -40,42 +40,42 @@
     "regression_and_behavior_tests_passed": 17
   },
   "github_sync": {
-    "status": "Current results saved locally and on4090 after exact SHA check. One current get_repo still failed at chatgpt.com MCP transport; no new upload/readback.",
+    "status": "One current GitHub get_repo returned Unknown tool; no upload/readback. Current science saved locally and4090; receipt retains last actual remote commit.",
     "last_verified_remote_commit": "4c76d4d9ecc2d71d1c3474ad2b78951e432685e5",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "historical_protocol_state": "97a3474",
   "latest_mechanism_analysis": {
-    "record": "results/data_free_compensation/functional_compensation_result.json:source_fit_condition",
-    "definition_local_commit": "527bd27",
-    "status": "completed read-only source fit check; no parameter update",
-    "tangent_gradient_norm": 0.10183888431456861,
-    "tangent_to_full_gradient_norm": 0.8319603293820241,
-    "B_ranges_interior": true,
-    "source_score_replay_max_error": 0,
-    "new_generated_image_forwards": 6400,
-    "new_real_images": 0,
+    "record": "results/data_free_compensation/functional_solver_result.json:nonlinear_condition",
+    "definition_local_commit": "bcd1d5d",
+    "status": "completed original-weight layer response condition; no new model",
+    "maximum_linear_error": 9.064918309718028e-14,
+    "mixed_direction_layer_output_error_range": [
+      0.0619704437839763,
+      0.9414999621953816
+    ],
+    "local_layer_vector_inputs": 2304,
+    "new_images": 0,
     "new_defense_points": 0,
     "new_AGA_calls": 0,
-    "finding": "This iterate did not solve its retained-source classification objective. Not evidence that every compensation is infeasible; no trial update or source-based repair."
+    "finding": "Paired reflection preserves linear response but not the activation even component. Exact64axis compensation does not preserve fixed mixtures. Not a natural-task bound or general impossibility."
   },
   "data_free_requirement": "Both defenses must construct from frozen weights and permitted synthetic inputs only. Defense1 now needs neither real nor synthetic images. Real held-out images are used only after release freezing for evaluation; historical image-calibrated records remain data-assisted.",
   "previous_core_trial": {
-    "point_sha256": "a886f6cefe0912329342f89fb0bc2ab34519d9ce6bd794b9cc248d63ff51d2bf",
-    "record": "results/data_free_compensation/adaptive_inputs_result.json",
+    "point_sha256": "7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192",
+    "record": "results/data_free_compensation/functional_compensation_result.json",
     "native_before_after": [
       99.69,
-      71.65
+      9.74
     ],
     "TA_and_AGA_evaluated": false,
     "closed": true,
     "real_construction_images": 0,
     "original_expert_updates": 0,
-    "publication_gradient_steps": 0,
-    "linear_solves": 36,
-    "generated_full_image_forwards": 259200,
-    "input_gradient_model_forwards": 153600,
+    "publication_B_gradient_steps": 1440,
     "pixel_optimizer_steps": 1920,
+    "generated_full_image_forwards": 230400,
+    "input_gradient_model_forwards": 153600,
     "new_real_evaluation_image_forwards": 20000,
     "new_AGA_calls": 0,
     "source_retired_active_tree": true
@@ -98,5 +98,25 @@
     "matched_recovery_transport_source_checked": true,
     "context_score_replays": 224,
     "production_tensor_equivalence_verified": true
+  },
+  "latest_source_solver_controls": {
+    "record": "results/data_free_compensation/functional_compensation_result.json",
+    "first_original_Bstep_loss": [
+      15.82703685760498,
+      6.4765448570251465
+    ],
+    "first_group_agreement": [
+      0,
+      40
+    ],
+    "original_order_and_shuffle_agreement": [
+      80,
+      80
+    ],
+    "source_views": 800,
+    "source_order_is_not_sufficient_explanation": true,
+    "new_generated_image_forwards": 27400,
+    "new_real_images": 0,
+    "new_AGA_calls": 0
   }
 }

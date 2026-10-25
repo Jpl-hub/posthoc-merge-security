@@ -1115,7 +1115,70 @@
     "source": "import ast,copy,hashlib,json,math,time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.models import checked_models,initialize\nfrom _impl.io import digest\ninitialize();start=time.monotonic()\nroot=Path(\"outputs/functional_compensation_20261025\")\nout=root/\"batch_order_20261026\";out.mkdir(exist_ok=False)\nmeta=json.loads((root/\"results.json\").read_text())\nassert hashlib.sha256(meta[\"source\"].encode()).hexdigest()==\"8674b92609f823763a5c32bea101cb6c1ae9b87616ab99d9f478b294b616bc62\"\nfn=next(n for n in ast.parse(meta[\"source\"]).body if isinstance(n,ast.FunctionDef) and n.name==\"joint_constraint\")\nscope=dict(torch=torch,F=F,math=math)\nexec(compile(ast.Module(body=[fn],type_ignores=[]),\"<frozen-joint-constraint>\",\"exec\"),scope)\ncfg=json.loads((root/\"protocol.json\").read_text())\nfor k in [\"source\",\"basis\"]:assert digest(cfg[k][\"path\"])==cfg[k][\"sha256\"]\nbase,expert,head,pins=checked_models(\"MNIST\");del base\noriginal={k:v.clone() for k,v in expert.state_dict().items()}\ninitial=copy.deepcopy(expert).cuda().eval().requires_grad_(False)\nentries={v[\"source_key\"]:v for v in torch.load(cfg[\"basis\"][\"path\"],map_location=\"cpu\",weights_only=False).values()}\nrules=[]\nfor i in range(12):\n p=f\"model.visual.transformer.resblocks.{i}.\";block=initial.model.visual.transformer.resblocks[i]\n A,B,rule=scope[\"joint_constraint\"](original,entries,block,p)\n with torch.no_grad():block.mlp.c_fc.weight.copy_(A);block.mlp.c_proj.weight.copy_(B)\n rules.append(rule)\nraw=torch.load(cfg[\"source\"][\"path\"],map_location=\"cpu\",weights_only=False)[\"final\"]\nnorm=expert.val_preprocess.transforms[-1]\nmean=torch.tensor(norm.mean,device=\"cuda\")[None,:,None,None];std=torch.tensor(norm.std,device=\"cuda\")[None,:,None,None]\nimages=[]\nwith torch.no_grad():\n for pixels in raw.split(8):\n  x=F.interpolate(pixels.cuda(),(224,224),mode=\"bilinear\",align_corners=False)\n  images.append(((torch.cat([torch.roll(x,tuple(s),(2,3)) for s in cfg[\"source\"][\"views\"]])-mean)/std).cpu())\nimages=torch.cat(images);expert.cuda();head.cuda();counters=dict(generated_image_forwards=0,publication_B_gradient_steps=0)\ndef scores(model,x):\n counters[\"generated_image_forwards\"]+=len(x)\n return head(model(x))\ndef KL(a,b):return 16*F.kl_div(F.log_softmax(a/4,dim=1),F.softmax(b/4,dim=1),reduction=\"batchmean\")\nwith torch.no_grad():\n teacher=torch.cat([scores(expert,x.cuda()).cpu() for x in images.split(40)])\n baseline=torch.cat([scores(initial,x.cuda()).cpu() for x in images.split(40)])\nrows=[];saved=dict(teacher=teacher,initial=baseline)\nfor branch in [\"original_order\",\"shuffled\"]:\n pub=copy.deepcopy(initial).eval().requires_grad_(False)\n parameters=[pub.model.visual.transformer.resblocks[i].mlp.c_proj.weight for i in range(12)]\n for p in parameters:p.requires_grad_(True)\n optimizer=torch.optim.Adam(parameters,lr=.001)\n generator=torch.Generator().manual_seed(2026102507)\n epochs=[];orders=[]\n for epoch in range(8):\n  order=torch.arange(len(images)) if branch==\"original_order\" else torch.randperm(len(images),generator=generator)\n  assert torch.equal(order.sort().values,torch.arange(len(images)))\n  orders.append(order)\n  for ids in order.split(40):\n   loss=KL(scores(pub,images[ids].cuda()),teacher[ids].cuda())\n   optimizer.zero_grad(set_to_none=True);loss.backward()\n   assert torch.isfinite(loss) and all(p.grad is not None and torch.isfinite(p.grad).all() for p in parameters)\n   optimizer.step();counters[\"publication_B_gradient_steps\"]+=1\n   with torch.no_grad():\n    for B,rule in zip(parameters,rules):\n     free=B-rule[\"affine\"];free-=(free@rule[\"Q\"])@rule[\"Q\"].T\n     free*=(rule[\"radius\"]/free.norm().clamp_min(1e-30)).clamp(max=1)\n     B.copy_(rule[\"affine\"]+free)\n  with torch.no_grad():\n   after=torch.cat([scores(pub,x.cuda()).cpu() for x in images.split(40)])\n  row=dict(epoch=epoch+1,KL=float(KL(after,teacher)),agreement=int((after.argmax(1)==teacher.argmax(1)).sum()),\n   predicted_class_counts=torch.bincount(after.argmax(1),minlength=10).tolist())\n  epochs.append(row);print(\"BATCH_ORDER\",branch,json.dumps(row),flush=True)\n saved[branch]=after;saved[branch+\"_orders\"]=torch.stack(orders)\n rows.append(dict(branch=branch,epochs=epochs,final=epochs[-1]))\n del pub,parameters,optimizer\nassert all(p.grad is None for p in expert.parameters())\ntorch.save(saved,out/\"scores_and_orders.pt\")\nresult=dict(status=\"source_only_batch_order_control\",source_views=len(images),source_base_images=len(raw),\n teacher_class_counts=torch.bincount(teacher.argmax(1),minlength=10).tolist(),\n original_batch_class_counts=[torch.bincount(x.argmax(1),minlength=10).tolist() for x in teacher.split(40)],\n initial_KL=float(KL(baseline,teacher)),initial_agreement=int((baseline.argmax(1)==teacher.argmax(1)).sum()),\n rows=rows,counters=counters,score_and_orders_sha256=digest(out/\"scores_and_orders.pt\"),\n shuffle_seed=2026102507,epochs=8,batch_size=40,lr=.001,original_source_sha256=cfg[\"source\"][\"sha256\"],\n geometry_source_sha256=meta[\"source_sha256\"],original_expert_updates=0,pixel_updates=0,\n real_construction_images=0,new_real_evaluation_images=0,new_defense_publications=0,new_AGA_calls=0,\n seconds=time.monotonic()-start,\n scope=\"Same original800generated views,initialization,loss,projection,Adam and160updates/branch;only minibatch order changes. All inputs retained. No source-augmentation history,real accuracy or new complete defense evaluation. A useful source-only result would not establish natural retention or merge protection.\")\n(out/\"results.json\").write_text(json.dumps(result,indent=2)+\"\\n\")\nprint(\"BATCH_ORDER_DONE\",json.dumps({k:v for k,v in result.items() if k not in [\"rows\",\"original_batch_class_counts\"]}),flush=True)\n",
     "source_sha256": "be8b04f39a348e615992183cbb96f01ee162d53f4bb022ededfc5c8066c66783",
     "definition_local_commit": "82a3d3a",
-    "public_before_execution": false
+    "public_before_execution": false,
+    "independent_validation": {
+      "status": "independent_numpy_source_recount_passed",
+      "batch_order": [
+        {
+          "branch": "original_order",
+          "agreement": 80,
+          "per_class": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0
+          ],
+          "KL_FP64": 10.45387946992909,
+          "KL_FP32_record_error": 1.1354481266323546e-07
+        },
+        {
+          "branch": "shuffled",
+          "agreement": 80,
+          "per_class": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0
+          ],
+          "KL_FP64": 10.428655399627829,
+          "KL_FP32_record_error": 7.289124965836891e-07
+        }
+      ],
+      "all_orders_are_permutations": true,
+      "first_update": [
+        {
+          "stage": "initial",
+          "KL_FP64": 15.827036757197684,
+          "agreement": 0
+        },
+        {
+          "stage": "after_first_step",
+          "KL_FP64": 6.476545108530213,
+          "agreement": 40
+        }
+      ],
+      "toy": {
+        "old_direction_derivative": 0.07692307538461543,
+        "project_gradient_first_derivative": -0.38461536461538604
+      },
+      "new_image_forwards": 0,
+      "new_parameter_updates": 0,
+      "new_AGA_calls": 0,
+      "source": "import hashlib,json,math\nfrom pathlib import Path\nimport numpy as np\nimport torch\nr=Path(\"outputs/functional_compensation_20261025\")\np=r/\"batch_order_20261026\"\nx=json.loads((p/\"results.json\").read_text())\nassert hashlib.sha256((p/\"scores_and_orders.pt\").read_bytes()).hexdigest()==x[\"score_and_orders_sha256\"]\nraw=torch.load(p/\"scores_and_orders.pt\",map_location=\"cpu\",weights_only=False)\na=raw[\"teacher\"].double().numpy();t=a.argmax(1)\ndef kl(b):\n b=b.astype(np.float64);aa=a/4;bb=b/4\n aa=aa-np.logaddexp.reduce(aa,axis=1,keepdims=True)\n bb=bb-np.logaddexp.reduce(bb,axis=1,keepdims=True)\n return float(16*np.mean(np.sum(np.exp(aa)*(aa-bb),axis=1)))\nrows=[]\nfor branch in [\"original_order\",\"shuffled\"]:\n b=raw[branch].double().numpy();order=raw[branch+\"_orders\"].numpy()\n assert order.shape==(8,800)\n np.testing.assert_array_equal(np.sort(order,axis=1),np.tile(np.arange(800),(8,1)))\n ref=next(v[\"final\"] for v in x[\"rows\"] if v[\"branch\"]==branch)\n count=int(np.sum(b.argmax(1)==t));classes=np.bincount(b.argmax(1),minlength=10).tolist()\n assert count==ref[\"agreement\"] and classes==ref[\"predicted_class_counts\"]\n # Stored batchmean used FP32 reductions; independent FP64 tolerance .00001.\n error=abs(kl(b)-ref[\"KL\"]);assert error<1e-5\n rows.append(dict(branch=branch,agreement=count,per_class=[int(np.sum((t==k)&(b.argmax(1)==k))) for k in range(10)],KL_FP64=kl(b),KL_FP32_record_error=error))\nnp.testing.assert_array_equal(np.bincount(t,minlength=10),x[\"teacher_class_counts\"])\nu=np.array([3.,-2.]);P=np.outer(u,u)/(u@u);g=np.array([1.,2.])\ntoy=dict(old_direction_derivative=float(g@(-P@(g/(np.abs(g)+1e-8)))),project_gradient_first_derivative=float(g@(-P@((P@g)/(np.abs(P@g)+1e-8)))))\nassert toy[\"old_direction_derivative\"]>0 and toy[\"project_gradient_first_derivative\"]<0\nf=torch.load(r/\"first_update_scores_20261026.pt\",map_location=\"cpu\",weights_only=False)\nfirst=[]\nfor name in [\"initial\",\"after_first_step\"]:\n aa=f[\"before\"].double().numpy()/4;b=f[name].double().numpy()/4\n aa-=np.logaddexp.reduce(aa,axis=1,keepdims=True);b-=np.logaddexp.reduce(b,axis=1,keepdims=True)\n value=float(16*np.mean(np.sum(np.exp(aa)*(aa-b),axis=1)))\n first.append(dict(stage=name,KL_FP64=value,agreement=int(np.sum(f[name].numpy().argmax(1)==f[\"before\"].numpy().argmax(1)))))\nout=dict(status=\"independent_numpy_source_recount_passed\",batch_order=rows,all_orders_are_permutations=True,first_update=first,toy=toy,new_image_forwards=0,new_parameter_updates=0,new_AGA_calls=0)\n(p/\"independent_validation.json\").write_text(json.dumps(out,indent=2)+\"\\n\")\nprint(json.dumps(out))\n",
+      "source_sha256": "841a3ffc243b96649c1cc82a7473bbdcebab66e6ab639ff3b92251a473cc33ed"
+    }
   },
   "update_geometry": {
     "status": "fresh_initialization_direction_check_only",
@@ -1287,7 +1350,8 @@
     "new_real_images": 0,
     "new_AGA_calls": 0,
     "seconds": 7.230774479918182,
-    "scope": "First fresh B-update only,not Adam's unavailable later moments. Reuses original first40synthetic views and original-weight initialization,not closed-point weights or witness inputs. No step applied. This can identify initial directional efficiency,not establish the cause of final failure or efficacy of a new solver."
+    "scope": "First fresh B-update only,not Adam's unavailable later moments. Reuses original first40synthetic views and original-weight initialization,not closed-point weights or witness inputs. No step applied. This can identify initial directional efficiency,not establish the cause of final failure or efficacy of a new solver.",
+    "definition_local_commit": "8d14783"
   },
   "first_update": {
     "status": "exact_original_first_step_reproduction",
@@ -1304,6 +1368,7 @@
     "new_AGA_calls": 0,
     "score_sha256": "fb53df38c1fe4f645aa047fb7cce704f4d8ada3798241e7367b73420b41c73ed",
     "seconds": 6.620361420325935,
-    "scope": "One reproduction of the original first step and its original40synthetic views. No alternative learning rate,line search,new model release or natural-image feedback."
+    "scope": "One reproduction of the original first step and its original40synthetic views. No alternative learning rate,line search,new model release or natural-image feedback.",
+    "definition_local_commit": "f37e5d0"
   }
 }
