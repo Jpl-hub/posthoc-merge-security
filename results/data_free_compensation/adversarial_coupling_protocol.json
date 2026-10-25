@@ -1,0 +1,82 @@
+{
+  "status": "specified_not_implemented_or_executed",
+  "purpose": "One independent source-feasibility experiment for joint A/B task-function compensation with separate active input searches and finite projection uncertainty. Not a repair of069e or an asserted new effective defense.",
+  "construction_access": "Pinned original MNIST expert, public base, original fixed target head/classIDs, fixed task32SVD, original clean authorAGA. No other candidate, old generated input/counterexample, real image, partner, or test result is read.",
+  "source": {
+    "seed": 2026102506,
+    "buffers": 2,
+    "inputs_per_buffer": 20,
+    "class_rule": "0..9,each twice in each buffer",
+    "shape": [
+      3,
+      32,
+      32
+    ],
+    "pixel_box": [
+      0,
+      1
+    ],
+    "views": [
+      [
+        0,
+        0
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        -7,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        -7
+      ]
+    ],
+    "resize": "bilinear224,align_cornersFalse",
+    "warmup_pixel_steps": 128,
+    "pixel_lr": 0.05,
+    "microbatch": 2,
+    "warmup_loss": "maximum requested-class CE over all views and three clean states: original/native and clean public direct/AGA means",
+    "no_filter": "All final inputs remain, including confidence failures."
+  },
+  "states": [
+    "original_native",
+    "public_direct_mean0.5",
+    "public_originalAGA_mean0.5"
+  ],
+  "native_critic": "Minimize clean requested-class CE minus KL(teacher||protected_native) at temperature4; input gradients through both frozen networks. This seeks native discrepancies without real images.",
+  "merge_critic": "Minimize clean requested-class CE plus the minimum protected wrong-class robust margin over the two public means, divided by rho. This seeks a useful clean merge that the current protection still fails to disrupt.",
+  "robust_margin": "H(z,y)=max(j!=y) z*P*(w_j-w_y)/(norm(z)*norm(P,F)*norm(w_j-w_y))-rho. z is the actual post-LN row. H>0 is sufficient for one wrong competitor to beat y for every P perturbation in the declared Frobenius ball at fixed z. It is not a prefix/unknown-partner guarantee.",
+  "rho": "norm(0.5*(P_expert-P_base),F)/norm(P_public_mean,F), determined solely by original weights",
+  "actor": {
+    "parameters": "Only original lastMLP A/B numerical increments; biases and every other tensor frozen. Start deltaA=deltaB=0, no old point initialization.",
+    "task_constraint": "Project deltaA off both task32left/right singular probes and original LN2bias input response; project deltaB off task32right probes.",
+    "loss": "10*maximum native KL over both buffers/views + maximum softplus(-H/rho) over both public states and both buffers/views -0.01*(relativeA^2+relativeB^2). Teacher target detached only during actor update.",
+    "outer_cycles": 20,
+    "pixel_steps_each_cycle_per_buffer": 8,
+    "actor_steps_each_cycle": 5,
+    "normalized_joint_gradient_step": 0.05,
+    "parameter_caps": {
+      "relative_A": 1.0,
+      "relative_B": 4.0
+    },
+    "gradient_metric": "Euclidean in deltaA/norm(A),deltaB/norm(B); normalize joint gradient, project and clip individual caps after every step.",
+    "author_matching": "Use unchanged author lastMLP Hungarian at each outer cycle and final source evaluation; fixed assignment during each five-step actor block. Count separately from fullAGA attacks.",
+    "no_sweep": "No continuation, best-iteration selection, alternative class/rank/seed/layer/radius/step or optimizer retry."
+  },
+  "source_acceptance": {
+    "clean_requested_classes": "At least190/200views simultaneously agree with requested classes in all three clean states.",
+    "native_retention": "At most2/200teacher prediction changes.",
+    "public_protection": "Each public state has at most40/200teacher-class predictions and at least180/200positive robust wrong-class margins.",
+    "FP32_full_source": "Freeze sole point first, then compare full-model and captured-tail scores in original source microbatch contexts. Any nonfinite or implementation mismatch stops and preserves evidence."
+  },
+  "later_evaluation": "Only source support permits a separately frozen independent active-input check and complete native MNIST accuracy, followed by fixed realTA0.5/originalAGA target-only/both. No source score is natural accuracy. Historical D0.5/R0.5 retained separately; primary full native loss criterion0.5pp.",
+  "hypothesis": "Optimizing actual task outputs against separate native and merge input critics, with finite projection-margin support, may realize a useful joint compensation that fixed hidden reflection and teacher-only prototypes did not. This single trial can fail at source; no general success or novelty inferred.",
+  "novelty_boundary": "ABM/DFAD adversarial input generation, KL, SVD, projected gradient and linear norm support are known. The claimed research question is their concrete task-function/anti-merging compatibility under frozen original expert and zero real construction images; no new-method claim before actual evidence."
+}
