@@ -9,9 +9,9 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn.functional as F
-from scipy.optimize import minimize
 
 from _impl.attacks import load_author
+from _impl.compensation import compensate
 from _impl.io import digest
 from _impl.merge import merge
 from _impl.models import checked_models, initialize
@@ -61,38 +61,44 @@ shared=centered.mean(0);T=centered.square().sum(1).mean().sqrt()
 assert float(shared.norm())>1e-10
 shared=shared/shared.norm()*T
 for n in ['direct','recovered']:targets[n]=(shared[None,:]+cache[n]['final'].mean(1,keepdim=True)).T
-torch.save(dict(centered_shared_residual=shared.cpu(),RMS=float(T)),out/'target.pt')
+clean_readout=(base.state_dict()['model.visual.ln_post.weight']+se['model.visual.ln_post.weight'])/2
+clean_projection=(base.state_dict()['model.visual.proj']+se['model.visual.proj'])/2
+contrast=(head.weight[1:]-head.weight[0]).double().cuda()
+C=clean_readout.double().cuda()[:,None]*clean_projection.double().cuda()@contrast.T
+C=C-C.mean(0,keepdim=True)
+Q=torch.linalg.qr(C,mode='reduced').Q
+assert float((Q.T@Q-torch.eye(9,device='cuda',dtype=torch.double)).abs().max())<1e-10
+torch.save(dict(centered_shared_residual=shared.cpu(),RMS=float(T),class_response_basis=Q.cpu()),out/'target.pt')
 ks,es,ids,names=[],[],[],[]
-for n in features:
+for y in range(10):
+    mask=requested.eq(y);den=cache['native']['final'][mask].square().sum().sqrt()
+    ks.append(hn[:,mask]/den);es.append((targets['native']-fixed['native'])[:,mask]/den)
+    ids.extend([len(names)]*int(mask.sum()));names.append('native/'+str(y))
+basis_ref=cfg['task_basis'];assert digest(basis_ref['path'])==basis_ref['sha256']
+basis=torch.load(basis_ref['path'],map_location='cpu',weights_only=False)
+V=next(x['v'] for x in basis.values() if x['source_key']==key+'c_fc.weight').double().cuda()
+probe=torch.cat([V.T,-V.T]);probe=probe-probe.mean(1,keepdim=True)
+probe=probe/probe.norm(dim=1,keepdim=True)*np.sqrt(768)
+ln=expert.model.visual.transformer.resblocks[11].ln_2
+probe=probe*ln.weight.double().cuda()+ln.bias.double().cuda()
+before=F.linear(activation(F.linear(probe,originalA,a)),B,b).T
+after=F.linear(activation(F.linear(probe,A,a)),B,b).T
+hp=activation(F.linear(probe,A,a)).T;den=before.norm()
+ks.append(hp/den);es.append((before-after)/den)
+ids.extend([len(names)]*len(probe));names.append('native/task32_finite_MLP')
+native_E=torch.cat(es,1);n_native=native_E.shape[1]
+projected=[Q.T@native_E]
+for n in ['direct','recovered']:
     for y in range(10):
-        mask=requested.eq(y);den=cache[n]['final'][mask].square().sum().sqrt()
-        ks.append(features[n][:,mask]/den);es.append((targets[n]-fixed[n])[:,mask]/den)
+        mask=requested.eq(y);den=(Q.T@cache[n]['final'][mask].T).norm()
+        assert float(den)>1e-10
+        ks.append(features[n][:,mask]/den);projected.append(Q.T@(targets[n]-fixed[n])[:,mask]/den)
         ids.extend([len(names)]*int(mask.sum()));names.append(n+'/'+str(y))
-K,E=torch.cat(ks,1),torch.cat(es,1);groups=torch.tensor(ids,device='cuda')
-rho=.01;ridge=rho/float(B.square().sum());trace=[]
-def solve(weights):
-    lam=torch.tensor(np.maximum(weights,0),dtype=torch.double,device='cuda')
-    scale=lam[groups].sqrt();kw=K*scale;ew=E*scale
-    gram=kw.T@kw;gram.diagonal().add_(ridge)
-    D=torch.cholesky_solve(ew.T,torch.linalg.cholesky(gram)).T@kw.T
-    errors=torch.zeros(30,dtype=torch.double,device='cuda').scatter_add_(0,groups,(D@K-E).square().sum(0))
-    reg=ridge*D.square().sum();value=lam@errors+reg
-    trace.append(dict(call=len(trace)+1,primal=float(errors.max()+reg),dual=float(value)))
-    return D,errors,reg,value
-uniform=np.ones(30)/30;tangent=np.zeros(30);tangent[0]=1/np.sqrt(2);tangent[1]=-1/np.sqrt(2)
-_,er,_,_=solve(uniform);ad=float(er.cpu().numpy()@tangent);step=1e-5
-fd=float((solve(uniform+step*tangent)[3]-solve(uniform-step*tangent)[3])/(2*step))
-assert abs(fd-ad)<1e-6*(1+abs(ad)),(fd,ad)
-def objective(weights):
-    _,errors,_,value=solve(weights)
-    return -float(value),-errors.cpu().numpy()
-opt=minimize(objective,uniform,jac=True,bounds=[(0.,1.)]*30,constraints=[dict(type='eq',fun=lambda p:p.sum()-1,jac=lambda p:np.ones(30))],method='SLSQP',options=dict(maxiter=200,ftol=1e-8))
-weights=np.maximum(opt.x,0);weights/=weights.sum();D,errors,reg,value=solve(weights)
-E0=float(torch.zeros(30,dtype=torch.double,device='cuda').scatter_add_(0,groups,E.square().sum(0)).max())
-assert float(D.norm()/B.norm())<=np.sqrt(E0/rho)*(1+1e-7)
+K,E=torch.cat(ks,1),torch.cat(projected,1);groups=torch.tensor(ids,device='cuda')
+D,fit=compensate(K,native_E,E,groups,Q,B,rho=.01)
 edits={key+'c_fc.weight':Ap,key+'c_proj.weight':(B+D).float().cpu()}
 torch.save(edits,out/'point.pt');point_sha=digest(out/'point.pt')
-torch.save(dict(assignment=pi.cpu(),weights=weights,errors=errors.cpu(),group_names=names,trace=trace),out/'solver.pt')
+torch.save(dict(assignment=pi.cpu(),group_names=names,n_native=n_native,probe_inputs=probe.cpu(),probe_before=before.cpu(),probe_after=(after+D@hp).cpu(),**fit),out/'solver.pt')
 candidate=copy.deepcopy(expert);candidate.load_state_dict(se|edits,strict=True)
 ar=copy.deepcopy(aligned);ar.load_state_dict(aligned.state_dict()|{key+'c_fc.weight':Ap[pi.cpu()],key+'c_fc.bias':se[key+'c_fc.bias'][pi.cpu()],key+'c_proj.weight':edits[key+'c_proj.weight'][:,pi.cpu()]},strict=True)
 models=dict(native=candidate,direct=merge(base,candidate,base,.5),recovered=merge(base,ar,base,.5))
@@ -121,6 +127,6 @@ torch.save(arrays,out/'source_scores.pt')
 actualA=A-originalA;actualB=edits[key+'c_proj.weight'].double().cuda()-B
 ra=float(actualA.norm()/originalA.norm());rb=float(actualB.norm()/B.norm())
 source=Path(__file__).read_text()
-result=dict(status='shared_response_point_frozen_before_real_evaluation',point_sha256=point_sha,A_relative=ra,B_relative=rb,logical_D=(ra*ra+rb*rb)**.5,zero_A_rows=int(Ap.norm(dim=1).eq(0).sum()),max_row_inner_product=float((A*A0).sum(1).abs().max()),independent_A_solve_error=independent,metrics=metrics,source_full_vs_tail_error=spot,solver_success=bool(opt.success),solver_message=str(opt.message),solver_iterations=int(opt.nit),weighted_ridge_solves=len(trace),relative_dual_gap=float((errors.max()+reg-value)/(1+errors.max()+reg)),envelope_derivative_error=abs(fd-ad),solver_arrays_sha256=digest(out/'solver.pt'),source_arrays_sha256=digest(out/'source_scores.pt'),target_sha256=digest(out/'target.pt'),protocol_sha256=digest(protocol),source=source,source_sha256=hashlib.sha256(source.encode()).hexdigest(),checkpoint_sha256=pins,new_generated_inputs=0,new_pixel_updates=0,generated_image_forwards=2400,real_construction_images=0,original_expert_updates=0,author_last_MLP_matches=1,new_full_AGA_calls=0,seconds=time.perf_counter()-start)
+result=dict(status='class_response_compensation_frozen_before_real_evaluation',point_sha256=point_sha,A_relative=ra,B_relative=rb,logical_D=(ra*ra+rb*rb)**.5,zero_A_rows=int(Ap.norm(dim=1).eq(0).sum()),max_row_inner_product=float((A*A0).sum(1).abs().max()),independent_A_solve_error=independent,metrics=metrics,source_full_vs_tail_error=spot,solver_success=fit['success'],solver_message=fit['message'],solver_iterations=fit['iterations'],weighted_ridge_solves=len(fit['trace']),relative_dual_gap=fit['relative_dual_gap'],envelope_derivative_error=fit['envelope_derivative_error'],B_relative_bound=fit['B_relative_bound'],finite_task_probe_relative=float((D@hp+after-before).norm()/before.norm()),solver_arrays_sha256=digest(out/'solver.pt'),source_arrays_sha256=digest(out/'source_scores.pt'),target_sha256=digest(out/'target.pt'),protocol_sha256=digest(protocol),source=source,source_sha256=hashlib.sha256(source.encode()).hexdigest(),solver_source_sha256=digest('_impl/compensation.py'),checkpoint_sha256=pins,new_generated_inputs=0,new_pixel_updates=0,generated_image_forwards=2400,real_construction_images=0,original_expert_updates=0,author_last_MLP_matches=1,new_full_AGA_calls=0,seconds=time.perf_counter()-start)
 (out/'results.json').write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
 print(json.dumps({k:v for k,v in result.items() if k!='source'},indent=2))
