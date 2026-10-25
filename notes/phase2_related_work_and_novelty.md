@@ -1078,3 +1078,9 @@ PaRaMS原文§5／附录H分别评价保护前后独立模型、融合目标与�
 核读[On Layer Normalization in the Transformer Architecture，ICML2020](https://proceedings.mlr.press/v119/xiong20b.html)的Pre-LN结构，以及[OpenAI CLIP model.py](https://github.com/openai/CLIP/blob/main/clip/model.py)的ResidualAttentionBlock.forward；实际运行模块的forward、LayerNorm和QuickGELU源码随计算保留。论文讨论初始化与训练稳定性，不将其均值场结论用于本项目冻结专家的分类保证。末块r+MLP(LN(r))的长度条件是直接代数推导，不作为新防御或原创定理。
 
 这项只读计算表明，当前固定末块无法在两个同方向、不同长度的层内输入上同时让公开分类头各类分数相同；它没有要求未来所有防御都做到这一点。真实任务保持及原版AGA下的实际保护是主问题，额外的输出处理／方法已知恢复仍按各自权限单列。不能为了防住所有假想恢复而把主方法改成越来越强、越来越复杂的全输入信息消除问题。
+
+### Oct25：原模型自信与当前修改模型的功能覆盖不同
+
+再次核读[ABM原文3.1—3.2](https://papers.neurips.cc/paper_files/paper/2019/file/fe663a72b27bdc613873fbbb512f6f67-Paper.pdf)及[固定e24915d的solver.py](https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/solver.py)中的run、divergence、KT_loss_generator／student。源码输入阶段取负的正向KL，经过两模型反传；参数阶段才在no_grad中重算教师目标。注意力项只加在学生损失中，源码的测试准确率选存不采用。当前仅借鉴输入寻找方向，不执行作者环境或宣称复现。
+
+本项目7d的800个生成预测保持与真实MNIST45.17%的差距说明，那批原模型自信输入不足以支持该固定重构。下一项f3393fc把A的大幅补空间修改直接固定，再主动生成当前功能差异并用条件B解补偿；区别于19d的弱距离奖励梯度求解，也区别于在7d原点上加步数。SVD、反射、KL、输入生成及条件岭解均为已知工具，是否形成有效防御仍须完整任务与融合证据。输入KL最大化与逐块平方重构不是同一全局目标，不使用全局鞍点求解、自然分布覆盖或独立功能保证等表述。
