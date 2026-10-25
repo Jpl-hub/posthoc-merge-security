@@ -1,0 +1,14 @@
+% Complete MNIST test; partner SVHN; fixed TA coefficient 0.5.
+% Same frozen82ff point; strict component deletion, no refitting.
+\begin{tabular}{lrrrr}
+\toprule
+Method & Standalone & TA & AGA (target) & AGA (both) \\
+\midrule
+Unprotected & 99.69 & 99.37 & 99.30 & 99.32 \\
+A only & 99.70 & 99.37 & 99.31 & 99.34 \\
+B only & 44.00 & 51.39 & 43.06 & 38.25 \\
+A+B & 98.93 & 60.89 & 5.50 & 2.38 \\
+\bottomrule
+\end{tabular}
+% Accuracy in percent. Native utility loss of A+B is0.76pp, above its0.5pp prospective reference.
+% This is one evaluated task/pair;SVD contribution has not been isolated by these component controls.
