@@ -70,9 +70,10 @@ assert torch.equal(aa[old],clean[key+'c_fc.bias']) and torch.equal(bb[:,old],cle
 aligned = {name:float((new.double()-clean[key+k].double()).norm()/original.double().norm()) for name,k,new,original in [('A','c_fc.weight',Ap[order],A_cpu),('a','c_fc.bias',aa[order],aa),('B','c_proj.weight',bb[:,order],bb)]}
 probes = torch.cat([V.T,-V.T])
 a = aa.double().cuda();B = bb.double().cuda()
+output_bias = expert.state_dict()[key+'c_proj.bias'].double().cuda()
 activation = lambda z:z*torch.sigmoid(1.702*z)
-before = F.linear(activation(F.linear(probes,A,a)),B)
-after = F.linear(activation(F.linear(probes,Ap.double().cuda(),a)),B)
+before = F.linear(activation(F.linear(probes,A,a)),B,output_bias)
+after = F.linear(activation(F.linear(probes,Ap.double().cuda(),a)),B,output_bias)
 probe_error = float((before-after).abs().max())
 torch.save(dict(delta_A_FP64=delta.cpu(),A_prime_FP32=Ap,lambda_FP64=lam.cpu(),author_assignment=order,original_assignment=old,probe_before=before.cpu(),probe_after=after.cpu()),out/'geometry.pt')
 source = Path(__file__).read_text()
