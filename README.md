@@ -13,7 +13,7 @@
 
 该对照使用任务 SVD 选择共同通道顺序；三份冻结发布保持完整独立预测。知道变换家族后的公开匹配能够恢复，针对性恢复与原版 AGA 分列。[方法](results/task_directed_pairing/method.md) · [完整结果与恢复](results/task_directed_pairing/summary.md) · [论文表格](results/paper_tables/README.md)。防御一及完整 PaRaMS 对照继续保留。
 
-当前Data-Free数值构造仍未保住任务：最近完整分类求解对照的MNIST为9.82%，原模型99.69%，未继续融合或AGA。只保持SVD参数方向或有限方向响应，没有保持方向组合经过激活后的输出；先固定大幅A修改、再单独求B补偿的做法需重新审视。原有效结果及失败证据保留，已结束的临时源码退出活动目录。[防御二研究记录](results/data_free_compensation/summary.md)。
+当前Data-Free数值构造仍未保住任务：最近一个完整MNIST结果为9.14%，原模型99.69%，未继续融合或AGA。最新构造联合补偿完整合成输入和SVD局部任务响应，源64/64预测保持，真实分类仍失败。已有有效结果及失败证据保留，结束的临时源码退出活动目录。[防御二研究记录](results/data_free_compensation/summary.md)。
 
 ## 代码结构
 
