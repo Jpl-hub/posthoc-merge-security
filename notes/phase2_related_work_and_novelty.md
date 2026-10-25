@@ -1074,3 +1074,7 @@ PaRaMS原文§5／附录H分别评价保护前后独立模型、融合目标与�
 核读[AlphaEdit固定v3 §3.1–3.3](https://arxiv.org/html/2410.02355v3)与[官方主分支AlphaEdit_main.py](https://github.com/jianghoucheng/AlphaEdit/blob/main/AlphaEdit/AlphaEdit_main.py)：保存键的零空间投影和正则求解已有先例，get_cov调用真实数据激活统计。另读[LEACE固定v3 §3–4](https://arxiv.org/html/2306.03819v3)与[官方主分支leace.py](https://github.com/EleutherAI/concept-erasure/blob/main/concept_erasure/leace.py)：其线性概念消除依赖特征／标签统计，不等于所有分类器均不可恢复。两个官方文件本次只通过网页阅读，固定提交源码API请求失败，未取得可校验的固定版本文件，不称已固定官方源码或执行复现。检索状态保存在paper_protocol_review.json。
 
 本项目c5ddd6be以标准伪逆精确保持有限原生／任务响应，并使固定最终分类头在两种公开生成状态下的类别分数相等；普通核投影、伪逆与LayerNorm恒等式不计创新。独立99.69%保持，但真实TA97.31%、原AGA78.22%／77.20%，未形成新的可靠保护。真实伙伴改变上游输出后，同源的分数相等条件也不再成立，内部替换最终读出仍有671/800保留原类别。本结果说明这一具体有限字典与末块求解的范围不足，不是对全部无数据补偿的否定，也不是通过增加通用审计或更多约束来解决的问题。
+
+核读[On Layer Normalization in the Transformer Architecture，ICML2020](https://proceedings.mlr.press/v119/xiong20b.html)的Pre-LN结构，以及[OpenAI CLIP model.py](https://github.com/openai/CLIP/blob/main/clip/model.py)的ResidualAttentionBlock.forward；实际运行模块的forward、LayerNorm和QuickGELU源码随计算保留。论文讨论初始化与训练稳定性，不将其均值场结论用于本项目冻结专家的分类保证。末块r+MLP(LN(r))的长度条件是直接代数推导，不作为新防御或原创定理。
+
+这项只读计算表明，当前固定末块无法在两个同方向、不同长度的层内输入上同时让公开分类头各类分数相同；它没有要求未来所有防御都做到这一点。真实任务保持及原版AGA下的实际保护是主问题，额外的输出处理／方法已知恢复仍按各自权限单列。不能为了防住所有假想恢复而把主方法改成越来越强、越来越复杂的全输入信息消除问题。

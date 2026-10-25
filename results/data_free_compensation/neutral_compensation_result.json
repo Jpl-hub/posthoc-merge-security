@@ -1474,5 +1474,53 @@
     "new_image_forwards": 0,
     "new_AGA_calls": 0,
     "inline_check_sha256": "04f2f67abe30f64e8a3aafb337672a6fd7fced86e07c20f7f16e2c590bbcb2fa"
-  }
+  },
+  "radial_condition": {
+    "status": "finite_radial_condition_only_not_a_defense_or_accuracy_result",
+    "point_sha256": "c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8",
+    "s": [
+      1.0,
+      2.0
+    ],
+    "centered_direction_norm": 27.71281292110203,
+    "head_rank": 8,
+    "LN2_epsilon": 1e-05,
+    "post_LN_epsilon": 1e-05,
+    "LN2_input_difference": 0.0001857968017334148,
+    "MLP_A_spectral_norm": 2.6645296942405454,
+    "MLP_B_spectral_norm": 47.65357130833856,
+    "MLP_global_Lipschitz_upper_bound": 173.68561083795203,
+    "required_Lipschitz_for_both_score_neutral": 149156.5660041069,
+    "ratio_required_to_upper": 858.7733047343189,
+    "lower_bound_largest_unnormalized_projected_contrast": 130.49085100956978,
+    "actual_projected_contrast_norms": [
+      229.4440415643216,
+      490.5807567608284
+    ],
+    "actual_MLP_output_difference": 4.235091983022534e-05,
+    "maximum_NumPy_q_error": 5.684341886080802e-14,
+    "maximum_final_LN_head_identity_error": 1.4210854715202004e-13,
+    "model_image_forwards": 0,
+    "real_images": 0,
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "parameter_updates": 0,
+    "local_block_vector_forwards": 2,
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "executed_model_sources": {
+      "block_forward": "    def forward(self, x: torch.Tensor, attn_mask: Optional[torch.Tensor] = None):\n        x = x + self.ln_attn(self.attention(self.ln_1(x), attn_mask=attn_mask))\n        x = x + self.mlp(self.ln_2(x))\n        return x\n",
+      "QuickGELU": "class QuickGELU(nn.Module):\n    # NOTE This is slower than nn.GELU or nn.SiLU and uses more GPU memory\n    def forward(self, x: torch.Tensor):\n        return x * torch.sigmoid(1.702 * x)\n",
+      "LayerNorm": "class LayerNorm(nn.LayerNorm):\n    \"\"\"Subclass torch's LayerNorm to handle fp16.\"\"\"\n\n    def forward(self, x: torch.Tensor):\n        orig_type = x.dtype\n        x = F.layer_norm(x, self.normalized_shape, self.weight, self.bias, self.eps)\n        return x.to(orig_type)\n"
+    },
+    "seconds": 5.1165418215096,
+    "scope": "Only the same last-MLP public mean and two declared layer-input radii. These are not images or a measured natural input distribution. No unknown-partner impossibility or general requirement on other defenses;no accuracy inference or use for point repair.",
+    "calculation_source": "import json,math,time,inspect,pathlib,hashlib,torch,numpy as np\nimport torch.nn.functional as F\nfrom _impl.models import checked_models,initialize\nfrom _impl.io import digest\ninitialize();start=time.monotonic()\nout=pathlib.Path(\"outputs/row_compensation_20261025/neutral_response\")\nassert digest(out/\"point.pt\")==\"c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8\"\nbase,expert,head,pins=checked_models(\"MNIST\")\noriginal,anchor=expert.state_dict(),base.state_dict()\npoint=original|torch.load(out/\"point.pt\",map_location=\"cpu\",weights_only=False)\nmean=lambda k:(point[k].double()+anchor[k].double())/2\np=\"model.visual.transformer.resblocks.11.\"\nA,a,B,b=[mean(p+\"mlp.\"+k) for k in [\"c_fc.weight\",\"c_fc.bias\",\"c_proj.weight\",\"c_proj.bias\"]]\ng2,t2=[mean(p+\"ln_2.\"+k) for k in [\"weight\",\"bias\"]]\ngp,tp=[mean(\"model.visual.ln_post.\"+k) for k in [\"weight\",\"bias\"]]\nP=mean(\"model.visual.proj\");W=head.weight.double()\nassert float(head.bias.abs().max())==0\nD=W[1:]-W[0];L=(D@P.T)*gp;L-=L.mean(1,keepdim=True);offset=D@P.T@tp\nJ=torch.eye(len(offset),dtype=torch.double)\nif float(offset.square().sum())>0:J-=torch.outer(offset,offset)/offset.square().sum()\nC=J@L;u,sv,vh=torch.linalg.svd(C,full_matrices=False);v=vh[0]*math.sqrt(768)\nif float(v[v.abs().argmax()])<0:v=-v\neps=expert.model.visual.transformer.resblocks[11].ln_2.eps\neps_post=expert.model.visual.ln_post.eps\ns=torch.tensor([1.,2.],dtype=torch.double);r=s[:,None]*v\nx=F.layer_norm(r,(768,),g2,t2,eps)\nz=F.linear(x,A,a);h=r+F.linear(z*torch.sigmoid(1.702*z),B,b)\nq=h@C.T;dx=float((x[1]-x[0]).norm())\nsa=float(torch.linalg.eigvalsh(A.T@A)[-1].sqrt())\nsb=float(torch.linalg.eigvalsh(B@B.T)[-1].sqrt())\ncap=(1+1/math.e)*sa*sb;signal=float((C@v).norm())\nneeded=signal/(float(sv[0])*dx)\nbound=max(0.,(signal-float(sv[0])*cap*dx)/2)\ndef arr(t):return t.numpy()\nrn,xn,An,an,Bn,bn,Cn=[arr(t) for t in [r,x,A,a,B,b,C]]\nxn2=(rn-rn.mean(1,keepdims=True))/np.sqrt(rn.var(1,keepdims=True)+eps)*arr(g2)+arr(t2)\nzn=xn2@An.T+an;hn=rn+(zn*np.exp(-np.logaddexp(0,-1.702*zn)))@Bn.T+bn\nqn=hn@Cn.T\nerr=float(np.max(np.abs(qn-arr(q))))\nnp.testing.assert_allclose(qn,arr(q),rtol=1e-11,atol=1e-10)\nnp.testing.assert_allclose(xn2,arr(x),rtol=1e-12,atol=1e-12)\nactual_step=float((h[1]-r[1]-h[0]+r[0]).norm())\nassert actual_step<=cap*dx*(1+1e-7)\nassert float(q.norm(dim=1).max())+1e-9>=bound\nyc=h-h.mean(1,keepdim=True);sigma=(yc.square().mean(1)+eps_post).sqrt()\nfeat=(yc/sigma[:,None]*gp+tp)@P\nscores=F.normalize(feat,dim=1)@W.T\ncontrast=scores[:,1:]-scores[:,:1]\nreplay=(contrast@J.T)*(sigma*feat.norm(dim=1))[:,None]\nnp.testing.assert_allclose(arr(replay),arr(q),rtol=1e-10,atol=1e-9)\nblock=expert.model.visual.transformer.resblocks[11]\nsources={n:inspect.getsource(o) for n,o in {\"block_forward\":type(block).forward,\"QuickGELU\":type(block.mlp.gelu),\"LayerNorm\":type(block.ln_2)}.items()}\nresult=dict(status=\"finite_radial_condition_only_not_a_defense_or_accuracy_result\",point_sha256=digest(out/\"point.pt\"),s=[1.,2.],centered_direction_norm=float(v.norm()),head_rank=int((sv>1e-10).sum()),LN2_epsilon=eps,post_LN_epsilon=eps_post,LN2_input_difference=dx,MLP_A_spectral_norm=sa,MLP_B_spectral_norm=sb,MLP_global_Lipschitz_upper_bound=cap,required_Lipschitz_for_both_score_neutral=needed,ratio_required_to_upper=needed/cap,lower_bound_largest_unnormalized_projected_contrast=bound,actual_projected_contrast_norms=q.norm(dim=1).tolist(),actual_MLP_output_difference=actual_step,maximum_NumPy_q_error=err,maximum_final_LN_head_identity_error=float((replay-q).abs().max()),model_image_forwards=0,real_images=0,new_defense_points=0,new_AGA_calls=0,parameter_updates=0,local_block_vector_forwards=2,checkpoint_sha256=pins,executed_model_sources=sources,seconds=time.monotonic()-start,scope=\"Only the same last-MLP public mean and two declared layer-input radii. These are not images or a measured natural input distribution. No unknown-partner impossibility or general requirement on other defenses;no accuracy inference or use for point repair.\")\nresult[\"calculation_source\"]=pathlib.Path(\"/proc/self/fd/0\").read_text() if False else None\n(out/\"radial_condition.json\").write_text(json.dumps(result,ensure_ascii=False,indent=2)+\"\\n\")\nprint(json.dumps({k:v for k,v in result.items() if k not in [\"executed_model_sources\",\"calculation_source\",\"checkpoint_sha256\",\"scope\"]}))\n",
+    "calculation_source_sha256": "cf1104181459390c3998d325a0609d4bab15f9a6e00e150413d63d197559390b",
+    "local_definition_commit": "f157cb4"
+  },
+  "radial_condition_raw_sha256": "a30c8d8f01dc56edb9cab51f9b5cc82453d74c8d49fdeba6050b9736fc1e3703"
 }
