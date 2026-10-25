@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import json
+import sys
 import time
 from pathlib import Path
 
@@ -9,12 +10,13 @@ import torch
 import torch.nn.functional as F
 
 from _impl.io import digest
+from _impl.attacks import load_author
 from _impl.merge import merge
 from _impl.models import checked_models, initialize
 
 initialize()
 start=time.perf_counter()
-protocol=Path('results/data_free_compensation/decision_compensation_protocol.json')
+protocol=Path(sys.argv[1] if len(sys.argv)>1 else 'results/data_free_compensation/decision_compensation_protocol.json')
 cfg=json.loads(protocol.read_text());out=Path(cfg['output']);out.mkdir(exist_ok=False)
 (out/'protocol.json').write_text(json.dumps(cfg,indent=2)+'\n')
 for r in cfg['inputs'].values():assert digest(r['path'])==r['sha256']
@@ -26,6 +28,13 @@ key='model.visual.transformer.resblocks.11.mlp.'
 to=lambda x:x.float().cuda()
 A=to(geometry['A_prime_FP32']);pi=geometry['author_assignment'].cuda()
 B,B0,A0,a,a0,b,b0=[to(x) for x in [s[key+'c_proj.weight'],p[key+'c_proj.weight'],p[key+'c_fc.weight'],s[key+'c_fc.bias'],p[key+'c_fc.bias'],s[key+'c_proj.bias'],p[key+'c_proj.bias']]]
+if not cfg.get('task_projectors',True):
+    orig,anchor=s[key+'c_fc.weight'].double(),p[key+'c_fc.weight'].double()
+    A=(orig-(orig*anchor).sum(1,keepdim=True)/anchor.square().sum(1,keepdim=True)*anchor).float().cuda()
+    author,sha=load_author('external/secure-merge-attack/utils_attack_B32.py')
+    assert sha=='4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778'
+    pi=author['solve_permutation'](A.cpu(),p[key+'c_fc.weight']).cuda()
+A_relative=float((A.double().cpu()-s[key+'c_fc.weight'].double()).norm()/s[key+'c_fc.weight'].double().norm())
 cache={n:{k:to(x) for k,x in row.items()} for n,row in raw['cache'].items()}
 activate=lambda z:z*torch.sigmoid(1.702*z)
 hn=activate(F.linear(cache['native']['x'],A,a)).T
@@ -68,7 +77,7 @@ def losses(delta,hdn,fx,ro,weight,ng,pg):
 check=torch.zeros_like(B,dtype=torch.double,requires_grad=True)
 dh={n:v.double() for n,v in hidden.items()};df={n:v.double() for n,v in fixed.items()};dr={n:[v.double() for v in r] for n,r in readouts.items()}
 vv,_=losses(check,dh,df,dr,W.double(),native_goal.double(),public_goal.double());value=vv.sum();grad,=torch.autograd.grad(value,check)
-direction=torch.ones_like(check)/check.numel()**.5;step=1e-4
+direction=torch.zeros_like(check);direction[0,0]=2**-.5;direction[1,0]=-2**-.5;step=1e-4
 with torch.no_grad():
     fd=(losses(check+step*direction,dh,df,dr,W.double(),native_goal.double(),public_goal.double())[0].sum()-losses(check-step*direction,dh,df,dr,W.double(),native_goal.double(),public_goal.double())[0].sum())/(2*step)
 error=float((fd-(grad*direction).sum()).abs());assert error<1e-5*(1+abs(float(fd))),error
@@ -83,7 +92,7 @@ for i in range(cfg['optimizer']['steps']):
     if i%25==0 or i+1==cfg['optimizer']['steps']:
         trace.append(dict(step=i+1,preupdate_max_group_loss=float(values.max()),preupdate_regularizer=float(reg)))
         print('DECISION',trace[-1],flush=True)
-edits={key+'c_fc.weight':geometry['A_prime_FP32'],key+'c_proj.weight':(B+delta.detach()).cpu()}
+edits={key+'c_fc.weight':A.cpu(),key+'c_proj.weight':(B+delta.detach()).cpu()}
 assert all(torch.isfinite(v).all() for v in edits.values())
 torch.save(edits,out/'point.pt');point_sha=digest(out/'point.pt')
 with torch.no_grad():
@@ -111,6 +120,6 @@ assert spot<5e-4,spot
 full_metrics={n:dict(teacher_class_retained=int(v.argmax(1).eq(labels.cpu()).sum()),predicted_class_counts=torch.bincount(v.argmax(1),minlength=10).tolist()) for n,v in actual.items()}
 torch.save(dict(actual=actual,tail={n:v.cpu() for n,v in tail.items()},labels=labels.cpu(),requested=requested.cpu(),native_goal=native_goal.cpu(),public_goal=public_goal.cpu(),group_losses=values.cpu(),trace=trace),out/'source_scores.pt')
 source=Path(__file__).read_text();relative=float(delta.detach().norm()/B.norm())
-result=dict(status='sole_decision_margin_point_frozen_before_real_evaluation',point_sha256=point_sha,metrics=metrics,full_metrics=full_metrics,decision_violations=violations,max_final_group_loss=float(values.max()),B_relative=relative,A_relative=1.0273893035120545,logical_D=(relative**2+1.0273893035120545**2)**.5,source_full_vs_tail_error=spot,gradient_check_error=error,steps=cfg['optimizer']['steps'],source=source,source_sha256=hashlib.sha256(source.encode()).hexdigest(),protocol_sha256=digest(protocol),source_arrays_sha256=digest(out/'source_scores.pt'),checkpoint_sha256=pins,source_cache_tail_rows=3*800*(cfg['optimizer']['steps']+1),gradient_check_tail_rows=3*800*3,source_full_image_forwards=2400,new_generated_inputs=0,new_pixel_updates=0,original_expert_training_updates=0,new_full_AGA_calls=0,new_matching_calls=0,seconds=time.perf_counter()-start,limits=cfg['limits'])
+result=dict(status='sole_decision_margin_point_frozen_before_real_evaluation',point_sha256=point_sha,metrics=metrics,full_metrics=full_metrics,decision_violations=violations,max_final_group_loss=float(values.max()),B_relative=relative,A_relative=A_relative,logical_D=(relative**2+A_relative**2)**.5,source_full_vs_tail_error=spot,gradient_check_error=error,gradient_check_direction='(e_output0-e_output1)e_hidden0T/sqrt2',steps=cfg['optimizer']['steps'],source=source,source_sha256=hashlib.sha256(source.encode()).hexdigest(),protocol_sha256=digest(protocol),source_arrays_sha256=digest(out/'source_scores.pt'),checkpoint_sha256=pins,source_cache_tail_rows=3*800*(cfg['optimizer']['steps']+1),gradient_check_tail_rows=3*800*3,source_full_image_forwards=2400,new_generated_inputs=0,new_pixel_updates=0,original_expert_training_updates=0,new_full_AGA_calls=0,new_matching_calls=0 if cfg.get('task_projectors',True) else 1,seconds=time.perf_counter()-start,limits=cfg['limits'])
 (out/'results.json').write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
 print(json.dumps({k:v for k,v in result.items() if k!='source'},indent=2))
