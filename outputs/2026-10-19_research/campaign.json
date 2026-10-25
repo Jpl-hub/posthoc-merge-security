@@ -1,6 +1,6 @@
 {
-  "status": "Sole4090source game completed without source protection;3090CPU-only history. Necessary evaluation inputs fully transferred.",
-  "updated_utc": "2026-10-25T08:04:40.072728+00:00",
+  "status": "Data-free numericalA/B gives single-pair originalAGA protection;native loss.76pp and directTA60.89 remain. Mainand2componentcontrols completed independently.",
+  "updated_utc": "2026-10-25T09:17:11.869599+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "research_jobs": [],
@@ -13,16 +13,42 @@
   "current_state": "research_state.json",
   "core_method_first": true,
   "current_candidate": {
-    "status": "source_failed_closed_no_real_evaluation",
-    "record": "results/data_free_compensation/adversarial_coupling_result.json",
-    "point_sha256": "19d1e2a5a9d72723e28a5729e51ccc6a2d5b7b1f2e00e0da07ed7f6834162cb4",
-    "generated_views": 200,
-    "native_changed": 0,
-    "public_direct_changed": 0,
-    "public_AGA_changed": 0,
-    "logical_D_FP64": 0.3627507316396384,
-    "real_accuracy_measured": false,
-    "no_retry_of_closed_point": true
+    "status": "effective_original_AGA_single_pair_with_native_and_TA_limits",
+    "record": "results/data_free_compensation/row_evaluation_result.json",
+    "construction_record": "results/data_free_compensation/row_compensation_result.json",
+    "ablation_record": "results/data_free_compensation/row_ablation_result.json",
+    "point_sha256": "82ffac347099984e52df0662acbcc8178b16c61a1c3cb20ce9d61c869fd4a364",
+    "native": 98.93,
+    "native_original": 99.69,
+    "native_loss_pp": 0.76,
+    "declared_utility_passed": false,
+    "TA": 60.89,
+    "original_AGA_target": 5.5,
+    "original_AGA_both": 2.38,
+    "strict_R": 64.12920754090881,
+    "logical_D": 3.0622344081125203,
+    "real_construction_images": 0,
+    "classhead_used": true,
+    "teacher_training_updates": 0,
+    "SVD_contribution_independently_proven": false,
+    "onlyA_native_TA_AGAtarget_AGAboth": [
+      99.7,
+      99.37,
+      99.31,
+      99.34
+    ],
+    "onlyB_native_TA_AGAtarget_AGAboth": [
+      44.0,
+      51.39,
+      43.06,
+      38.25
+    ],
+    "frozen_no_test_repair": true,
+    "full_new_AGA_calls_main_and_controls": 3,
+    "source_last_MLP_geometry_matches": 1,
+    "score_context_replays": 560,
+    "maximum_context_score_error": 1.52587890625e-05,
+    "scope": "Fixed TA.5 MNISTtarget/SVHNpartner,complete tests. Not full multitask or all-attacker recovery claim."
   },
   "main_point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
   "history_snapshot": "bf4f3c10e922f2ef30b1f4d297896edf615b579b",
@@ -408,7 +434,7 @@
       "socket": "/tmp/posthoc_4090_active.sock",
       "role": "Sole GPU for future construction, independent checks and final evaluation.",
       "runtime": "torch2.8.0cu128;existing3090torch2.3.0cu121 remains unchanged",
-      "status": "Ready;source game completed/closed;currentMNIST/SVHN evaluation inputs all10SHAverified.",
+      "status": "Current fixed primaryand2componentcontrols completed and independently verified;soleGPUready.",
       "runtime_record": "results/data_free_compensation/classifier_coupling.json:runtime_4090",
       "storage_available_bytes": {
         "/root": 31924256768,
@@ -433,5 +459,9 @@
     ],
     "interpretation": "Fixed generated-source success is locally fragile to projection changes; the unrestricted readout relaxation does not rule out a more robust function target. No realizability/private-partner guarantee."
   },
-  "evaluation_input_transfer": "results/engineering_refactor/compute_4090_20261025.json"
+  "evaluation_input_transfer": "results/engineering_refactor/compute_4090_20261025.json",
+  "next_core_work": "Establish SVD contribution and cross-task validity of this same mechanism;no main-point tuning on exposed MNIST/SVHN results. Preserve existing effective permutation andDefense1 comparisons.",
+  "closed_points": {
+    "adversarial_class_coupling": "19d1e2a5 source failed closed,no natural evaluation,no retry;adversarial_coupling_result.json"
+  }
 }
