@@ -1,8 +1,8 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2 data-free core mechanism: meaningful numerical changes and cross-module compensation preserving standalone function after expert freezing.",
-  "status": "No accepted new numerical Defense2. Generated-only adaptation 7d949449 preserves all 800 generated-source predictions but complete MNIST falls from99.69% to45.17%; closed before fusion/AGA.",
-  "updated_utc": "2026-10-25T14:24:23.276429+00:00",
+  "status": "Data-Free Defense1 verified on MNIST/SVHN: standalone99.69%, TA/AGA target/both9.80%; zero real or synthetic construction images. Numerical Defense2 is not complete; generated-source adaptation7d949449 fails standalone at45.17% and remains closed.",
+  "updated_utc": "2026-10-25T14:52:18.572436+00:00",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": ".5/.5comparison preserved,not a universal newparametercap;full history at97a3474.",
@@ -46,25 +46,28 @@
     "source_retired_active_tree": true
   },
   "established_methods": {
-    "Defense1": "results/phase3/tables.md",
+    "Defense1": "results/phase3/bias_weight_only/summary.md: current fully Data-Free MNIST/SVHN result; older data-assisted amplitudes separately retained.",
     "task_directed_permutation": "results/task_directed_pairing/summary.md;known-family matching scope separate.",
     "earlier_numerical_references": "results/data_free_compensation/row_evaluation_result.json,decision_evaluation_result.json,decision_no_task_evaluation_result.json;originalAGA effects and fixedoutputcorrection outcomes retained."
   },
   "closed_history": "notes/phase2_coupling.md,notes/phase2_related_work_and_novelty.md;all earlierQ/V/O/affine/zero-unit/Jacobian/staticreadout/069e/19d/cyclic/commonresponse/decisionmargin/neutral-responsepoints remain closed.",
   "engineering": {
-    "production_modules_and_entrypoints_unchanged": true,
+    "production_modules_and_entrypoints_unchanged": false,
     "new_frameworks": 0,
-    "retired_exploration_sources": 5,
-    "retired_source_lines": 755,
+    "retired_exploration_sources": 6,
+    "retired_source_lines": 833,
     "retired_unreferenced_debug_records": 10,
     "unique_models_scores_failures_deleted": 0,
     "record": "results/engineering_refactor/validation.json:oct25_core_cleanup",
-    "previous_full_state_commit": "97a3474"
+    "previous_full_state_commit": "97a3474",
+    "weight_only_bias_core_lines": 117,
+    "prior_bias_core_lines": 213,
+    "regression_and_behavior_tests_passed": 17
   },
-  "next_action": "Focus on Data-Free native-function preservation before more fusion experiments. Study whether a concrete teacher/student disagreement mechanism from the already reviewed data-free distillation work can improve functional coverage; no new optimizer yet, and no source/seed/parameter retry of 7d949449. Both defenses must avoid real-image construction; weight-only noise-amplitude construction remains to be verified separately.",
+  "next_action": "Primary focus returns to Defense2 native-function preservation under Data-Free construction. Study teacher/student-disagreement-based input generation and genuinely joint compensation using the already reviewed sources. Reasoned parameter adjustment on permitted construction inputs is allowed; do not use real test feedback to fit or select release parameters, and do not patch the closed generated-prefix point.",
   "paper_tables": "Canonical24tablesunchanged;current small MD/TeXsupplement inresults/data_free_compensation. No new report or PPT.",
   "github_sync": {
-    "status": "User requested a fresh connection check. GitHub get_repo still failed at the chatgpt.com MCP transport; no upload or new remote readback.",
+    "status": "Latest batch verified locally and on4090. Fresh GitHub get_repo check still failed at the chatgpt.com MCP transport; no new upload/readback.",
     "last_verified_remote_commit": "4c76d4d9ecc2d71d1c3474ad2b78951e432685e5",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -86,7 +89,7 @@
     "new_AGA_calls": 0,
     "finding": "The fixed last-MLP public mean cannot make all fixed-head class scores equal at both declared layer-input radii. This stronger objective is not a requirement for future defenses; natural-task and original-AGA evaluation remain primary."
   },
-  "data_free_requirement": "Both Defense1 and Defense2 construction must use no real task images. Existing real-data amplitude calibration in some Defense1 batches is a separate data-assisted record, not relabeled Data-Free. Real held-out images are used only for frozen-model evaluation.",
+  "data_free_requirement": "Both defenses must construct from frozen weights and permitted synthetic inputs only. Defense1 now needs neither real nor synthetic images. Real held-out images are used only after release freezing for evaluation; historical image-calibrated records remain data-assisted.",
   "previous_core_trial": {
     "point_sha256": "c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8",
     "record": "results/data_free_compensation/neutral_compensation_result.json",
@@ -111,5 +114,24 @@
     "active_constructor_retired": true,
     "source_preservation_and_public_equality_scope": "Finite800native+64taskprobes;doesnotguarantee realpartner upstreamactivations.",
     "internal_diagnosis": "Same800generated inputs:realpartner restores684teacherclasses;construction final readout with realpartner upstream still671. This is an internalablation,not an attack with hiddenexpert access. It establishes upstream changes can break this finite compensation,not all sources of natural-task error."
+  },
+  "latest_Defense1": {
+    "record": "results/phase3/bias_weight_only/results.json",
+    "point_sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0",
+    "native_TA_AGAtarget_AGAboth": [
+      99.69,
+      9.8,
+      9.8,
+      9.8
+    ],
+    "real_construction_images": 0,
+    "synthetic_construction_images": 0,
+    "direction_and_amplitude": "weights only",
+    "native_changed_predictions": 0,
+    "native_R": 0.0023300658846215653,
+    "new_complete_AGA_calls": 0,
+    "matched_recovery_transport_source_checked": true,
+    "context_score_replays": 224,
+    "production_tensor_equivalence_verified": true
   }
 }

@@ -420,9 +420,18 @@
         "archive": "outputs/generated_prefix_20261025/results.json",
         "archive_source_sha_verified_4090": true,
         "git_snapshot": "e6d7667"
+      },
+      {
+        "path": "results/phase3/bias_weight_only/construct.py",
+        "sha256": "fd02a9615dde9fdb71740f4da923d98852a5d223b1ae4d62490fed2bbd183d00",
+        "lines": 78,
+        "archive": "outputs/bias_weight_only_20261025/results.json",
+        "archive_source_sha_verified_4090": true,
+        "git_snapshot": "c8b89c5",
+        "reason": "Promoted verified weight-only construction to the shared core function; remove duplicate driver."
       }
     ],
-    "removed_active_source_lines": 755,
+    "removed_active_source_lines": 833,
     "new_frameworks": 0,
     "remaining_active_exploration": null,
     "unique_models_or_raw_scores_deleted": false,
@@ -488,17 +497,31 @@
         "git_snapshot": "97a34746f969a98446b9f50a413b3bbc6b95588a"
       }
     ],
-    "canonical_table_inputs_and_current_runtime_references_unchanged": true,
+    "canonical_table_inputs_and_current_runtime_references_unchanged": false,
     "completed_checks": {
-      "exact_source_archives": 5,
-      "deleted_files_recoverable_from_Git": 15,
+      "exact_source_archives": 6,
+      "deleted_files_recoverable_from_Git": 16,
       "canonical_paper_table_inputs_sha256_unchanged": true,
       "existing_24_table_rebuild_test": "passed directly with system NumPy and Matplotlib; MD/TeX outputs and all input files unchanged",
       "latest_raw_score_numpy_statistics_rows": 14,
       "context_diagnosis_numpy_recounts": 4,
-      "production_module_edits": 0,
+      "production_module_edits": 2,
       "server_constructor_removal_sha256_verified": true
     },
-    "checked_utc": "2026-10-25T14:24:23.260109+00:00"
+    "checked_utc": "2026-10-25T14:24:23.260109+00:00",
+    "canonical_paper_table_inputs_unchanged": true,
+    "runtime_update": "Intentional Data-Free bias replacement in shared defense core and construction CLI; old body/source retained at4c15495."
+  },
+  "oct25_data_free_bias": {
+    "intentional_algorithm_change": "Replace image-calibrated noise amplitude with weight-only analytic bound. Historical code retained at4c15495.",
+    "removed_data_loader_and_index_dependency": true,
+    "defenses_lines_before": 213,
+    "defenses_lines_after": 117,
+    "constructor_tensor_equality_to_frozen_point": true,
+    "regression_and_behavior_tests_passed": 17,
+    "published_point": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0",
+    "new_real_construction_images": 0,
+    "new_synthetic_construction_images": 0,
+    "shared_core_retained": true
   }
 }
