@@ -1,6 +1,6 @@
 {
-  "status": "本次A/B非线性补偿已结束：固定任务方向响应保持，但完整MNIST从99.69%降至9.63%。未做融合或AGA，没有新的有效防御二。",
-  "updated_utc": "2026-10-25T18:04:06.507500+00:00",
+  "status": "两组合成输入及合成图实际前缀投影测量完成。正在准备同输入下SVD方向与随机方向的局部功能比较，尚无新防御点。",
+  "updated_utc": "2026-10-25T18:44:23.087353+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -32,7 +32,7 @@
     "source_archived_and_retired_active_tree": true,
     "max_finite_task_response_error": 8.098655257526843e-07
   },
-  "next_action": "研究无数据输入、SVD任务探针和完整分类功能之间的差距；结合冻结教师的实际前缀响应与已有无数据蒸馏代码。665d和15c4点不续跑，目前没有新候选或运行作业。",
+  "next_action": "同两组固定合成输入，在完整原教师CLS前缀附近比较SVD和随机方向的非线性任务响应；固定全部12层，不按结果选层，不构造新发布。",
   "engineering_cleanup": {
     "production_modules_and_entrypoints_unchanged": false,
     "new_frameworks": 0,
@@ -133,5 +133,19 @@
     "new_real_images": 0,
     "new_AGA_calls": 0
   },
-  "writing_and_research_focus": "先讲核心方法、整体算法流程和真实效果。适用条件简短交代，过程核验与历史细节留索引，避免防御性写作及外围补丁挤占核心工作。"
+  "writing_and_research_focus": "先讲核心方法、整体算法流程和真实效果。适用条件简短交代，过程核验与历史细节留索引，避免防御性写作及外围补丁挤占核心工作。",
+  "latest_source_prior_comparison": {
+    "record": "results/data_free_compensation/source_prior_result.json",
+    "completed": true,
+    "pseudo_correct_all5shifts": [
+      32,
+      32
+    ],
+    "batch_per_variant": 32,
+    "real_images": 0,
+    "new_defense_points": 0,
+    "generation_seconds": 136.5374082578346,
+    "prefix_rows": 24,
+    "local_response_definition_pending": true
+  }
 }

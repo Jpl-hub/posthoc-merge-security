@@ -218,5 +218,254 @@
     "source": "\"\"\"Measure actual synthetic prefixes against the fixed SVD task probe domain.\"\"\"\nimport json\nfrom pathlib import Path\n\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.io import digest\nfrom _impl.models import initialize, load_checkpoint\n\n\n@torch.no_grad()\ndef main():\n    initialize()\n    root = Path(\"outputs/source_prior_20261026\")\n    meta = json.loads((root / \"results.json\").read_text())\n    expert = load_checkpoint(\"MNIST/finetuned.pt\").cuda().eval()\n    path = Path(\"outputs/phase2_task_subspace_comparison_20261020/basis.pt\")\n    assert digest(path) == \"99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344\"\n    entries = {v[\"source_key\"]: v for v in torch.load(path, map_location=\"cpu\", weights_only=False).values()}\n    residuals, native_outputs, hooks = {}, {}, []\n    for i, block in enumerate(expert.model.visual.transformer.resblocks):\n        hooks.append(block.ln_2.register_forward_pre_hook(lambda module, args, layer=i: residuals.__setitem__(layer, args[0])))\n        hooks.append(block.mlp.register_forward_hook(lambda module, args, output, layer=i: native_outputs.__setitem__(layer, output)))\n    rows = []\n    for variant in meta[\"rows\"]:\n        name = variant[\"variant\"]\n        assert digest(root / (name + \".pt\")) == variant[\"raw_sha256\"]\n        raw = torch.load(root / (name + \".pt\"), map_location=\"cpu\", weights_only=False)\n        expert(raw[\"normalized_images\"].cuda())\n        for i, block in enumerate(expert.model.visual.transformer.resblocks):\n            key = f\"model.visual.transformer.resblocks.{i}.mlp.c_fc.weight\"\n            V = entries[key][\"v\"].cuda()\n            gamma, beta = block.ln_2.weight.double(), block.ln_2.bias.double()\n            G = V / gamma[:, None]\n            _, _, vh = torch.linalg.svd(G.sum(0, keepdim=True), full_matrices=True)\n            Q = torch.linalg.qr(G @ vh[1:].T, mode=\"reduced\").Q\n            u = F.layer_norm(residuals[i].double(), (768,), None, None, block.ln_2.eps)\n            projected = (u @ Q) @ Q.T\n            native = native_outputs[i]\n            changed = block.mlp((beta + gamma * projected).float())\n            fraction = projected.square().sum(-1) / u.square().sum(-1)\n            row = dict(variant=name, layer=i, task_dimension=Q.shape[1],\n                       task_plane_energy_all_tokens=float(fraction.mean()),\n                       task_plane_energy_CLS=float(fraction[0].mean()),\n                       projected_input_block_output_error=float((changed - native).norm() / (1 + native.norm())),\n                       projected_input_CLS_output_error=float((changed[0] - native[0]).norm() / (1 + native[0].norm())))\n            rows.append(row)\n            print(json.dumps(row), flush=True)\n    for hook in hooks:\n        hook.remove()\n    result = dict(rows=rows, source_sha256=digest(__file__), source=Path(__file__).read_text(),\n                  source_result_sha256=digest(root / \"results.json\"),\n                  synthetic_model_forwards=64, projected_layer_vector_forwards=38400,\n                  real_images=0, parameter_updates=0, new_defense_points=0, new_AGA_calls=0,\n                  scope=\"Originalmodel,all32inputs ofbothfixedsources. Compare actual standardizedLNinputs with31dimtaskprobeplane andblockoutputs. No naturaldata or causality claim, no fitting/selection.\")\n    (root / \"prefix_comparison.json\").write_text(json.dumps(result, indent=2) + \"\\n\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
     "source_sha256": "fb07164a285abbeca35e6cddce12b1e03947075cb77cd72b642a1a40c4f11755",
     "question": "Do actualsyntheticprefixes lieclose to the declared31dimweightprobeplane? All12layers andbothcomplete32imagebatches, no threshold/selection/parameters."
+  },
+  "prefix_comparison": {
+    "rows": [
+      {
+        "variant": "confidence_only",
+        "layer": 0,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.04863559136766178,
+        "task_plane_energy_CLS": 0.06459735364246555,
+        "projected_input_block_output_error": 2.2269961833953857,
+        "projected_input_CLS_output_error": 2.294312000274658
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 1,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.052704030492910586,
+        "task_plane_energy_CLS": 0.016865285287532485,
+        "projected_input_block_output_error": 1.1531691551208496,
+        "projected_input_CLS_output_error": 0.8977737426757812
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 2,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.0714180057938094,
+        "task_plane_energy_CLS": 0.05044338824555175,
+        "projected_input_block_output_error": 1.0246520042419434,
+        "projected_input_CLS_output_error": 0.5892147421836853
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 3,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.08957209771142839,
+        "task_plane_energy_CLS": 0.02946744031714462,
+        "projected_input_block_output_error": 0.9496994614601135,
+        "projected_input_CLS_output_error": 0.719391405582428
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 4,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.12960943235123235,
+        "task_plane_energy_CLS": 0.039233278228589075,
+        "projected_input_block_output_error": 0.9142669439315796,
+        "projected_input_CLS_output_error": 0.8153474926948547
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 5,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.14286560342403026,
+        "task_plane_energy_CLS": 0.02853777579737225,
+        "projected_input_block_output_error": 0.911492109298706,
+        "projected_input_CLS_output_error": 1.0574257373809814
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 6,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.1684021978209222,
+        "task_plane_energy_CLS": 0.23303251413982196,
+        "projected_input_block_output_error": 0.8240200877189636,
+        "projected_input_CLS_output_error": 0.4798663556575775
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 7,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.1796684192837546,
+        "task_plane_energy_CLS": 0.35277890843474147,
+        "projected_input_block_output_error": 0.8717741370201111,
+        "projected_input_CLS_output_error": 0.33566465973854065
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 8,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.2667227504124789,
+        "task_plane_energy_CLS": 0.5611324271004215,
+        "projected_input_block_output_error": 0.7875580191612244,
+        "projected_input_CLS_output_error": 0.28219592571258545
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 9,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.36165979163953843,
+        "task_plane_energy_CLS": 0.8655964268671799,
+        "projected_input_block_output_error": 0.7015182971954346,
+        "projected_input_CLS_output_error": 0.6456723213195801
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 10,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.3111460902409551,
+        "task_plane_energy_CLS": 0.9076747137444008,
+        "projected_input_block_output_error": 0.7098568081855774,
+        "projected_input_CLS_output_error": 0.5974803566932678
+      },
+      {
+        "variant": "confidence_only",
+        "layer": 11,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.07953141985521836,
+        "task_plane_energy_CLS": 0.8181650934777915,
+        "projected_input_block_output_error": 0.926287055015564,
+        "projected_input_CLS_output_error": 0.6936889290809631
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 0,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.058379848467352266,
+        "task_plane_energy_CLS": 0.06301804319763851,
+        "projected_input_block_output_error": 1.9757835865020752,
+        "projected_input_CLS_output_error": 2.291363477706909
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 1,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.07194123288882226,
+        "task_plane_energy_CLS": 0.016788394534735795,
+        "projected_input_block_output_error": 1.2094813585281372,
+        "projected_input_CLS_output_error": 0.8773815035820007
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 2,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.09169772285726584,
+        "task_plane_energy_CLS": 0.04935296394584391,
+        "projected_input_block_output_error": 1.0450726747512817,
+        "projected_input_CLS_output_error": 0.5830256342887878
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 3,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.09346458626071723,
+        "task_plane_energy_CLS": 0.02458791384259135,
+        "projected_input_block_output_error": 0.9588916301727295,
+        "projected_input_CLS_output_error": 0.732865035533905
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 4,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.11487578927778792,
+        "task_plane_energy_CLS": 0.033380394564123034,
+        "projected_input_block_output_error": 0.9217766523361206,
+        "projected_input_CLS_output_error": 0.8245893120765686
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 5,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.10797703432566767,
+        "task_plane_energy_CLS": 0.02139005998834885,
+        "projected_input_block_output_error": 0.9437468647956848,
+        "projected_input_CLS_output_error": 1.051021695137024
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 6,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.10704572459482253,
+        "task_plane_energy_CLS": 0.2041796441006912,
+        "projected_input_block_output_error": 0.8492840528488159,
+        "projected_input_CLS_output_error": 0.4548351764678955
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 7,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.11100754837101291,
+        "task_plane_energy_CLS": 0.29061685434715967,
+        "projected_input_block_output_error": 0.877223551273346,
+        "projected_input_CLS_output_error": 0.3517749607563019
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 8,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.14458860748491345,
+        "task_plane_energy_CLS": 0.4692599774570382,
+        "projected_input_block_output_error": 0.8929131031036377,
+        "projected_input_CLS_output_error": 0.29832252860069275
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 9,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.15628423880277628,
+        "task_plane_energy_CLS": 0.8255089849413237,
+        "projected_input_block_output_error": 0.8980196118354797,
+        "projected_input_CLS_output_error": 0.5938905477523804
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 10,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.16040395261691742,
+        "task_plane_energy_CLS": 0.8450089853487734,
+        "projected_input_block_output_error": 0.8957852125167847,
+        "projected_input_CLS_output_error": 0.682370662689209
+      },
+      {
+        "variant": "paper_priors",
+        "layer": 11,
+        "task_dimension": 31,
+        "task_plane_energy_all_tokens": 0.05196696643696724,
+        "task_plane_energy_CLS": 0.47149258679935585,
+        "projected_input_block_output_error": 1.016067624092102,
+        "projected_input_CLS_output_error": 0.8343210220336914
+      }
+    ],
+    "source_sha256": "fb07164a285abbeca35e6cddce12b1e03947075cb77cd72b642a1a40c4f11755",
+    "source": "\"\"\"Measure actual synthetic prefixes against the fixed SVD task probe domain.\"\"\"\nimport json\nfrom pathlib import Path\n\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.io import digest\nfrom _impl.models import initialize, load_checkpoint\n\n\n@torch.no_grad()\ndef main():\n    initialize()\n    root = Path(\"outputs/source_prior_20261026\")\n    meta = json.loads((root / \"results.json\").read_text())\n    expert = load_checkpoint(\"MNIST/finetuned.pt\").cuda().eval()\n    path = Path(\"outputs/phase2_task_subspace_comparison_20261020/basis.pt\")\n    assert digest(path) == \"99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344\"\n    entries = {v[\"source_key\"]: v for v in torch.load(path, map_location=\"cpu\", weights_only=False).values()}\n    residuals, native_outputs, hooks = {}, {}, []\n    for i, block in enumerate(expert.model.visual.transformer.resblocks):\n        hooks.append(block.ln_2.register_forward_pre_hook(lambda module, args, layer=i: residuals.__setitem__(layer, args[0])))\n        hooks.append(block.mlp.register_forward_hook(lambda module, args, output, layer=i: native_outputs.__setitem__(layer, output)))\n    rows = []\n    for variant in meta[\"rows\"]:\n        name = variant[\"variant\"]\n        assert digest(root / (name + \".pt\")) == variant[\"raw_sha256\"]\n        raw = torch.load(root / (name + \".pt\"), map_location=\"cpu\", weights_only=False)\n        expert(raw[\"normalized_images\"].cuda())\n        for i, block in enumerate(expert.model.visual.transformer.resblocks):\n            key = f\"model.visual.transformer.resblocks.{i}.mlp.c_fc.weight\"\n            V = entries[key][\"v\"].cuda()\n            gamma, beta = block.ln_2.weight.double(), block.ln_2.bias.double()\n            G = V / gamma[:, None]\n            _, _, vh = torch.linalg.svd(G.sum(0, keepdim=True), full_matrices=True)\n            Q = torch.linalg.qr(G @ vh[1:].T, mode=\"reduced\").Q\n            u = F.layer_norm(residuals[i].double(), (768,), None, None, block.ln_2.eps)\n            projected = (u @ Q) @ Q.T\n            native = native_outputs[i]\n            changed = block.mlp((beta + gamma * projected).float())\n            fraction = projected.square().sum(-1) / u.square().sum(-1)\n            row = dict(variant=name, layer=i, task_dimension=Q.shape[1],\n                       task_plane_energy_all_tokens=float(fraction.mean()),\n                       task_plane_energy_CLS=float(fraction[0].mean()),\n                       projected_input_block_output_error=float((changed - native).norm() / (1 + native.norm())),\n                       projected_input_CLS_output_error=float((changed[0] - native[0]).norm() / (1 + native[0].norm())))\n            rows.append(row)\n            print(json.dumps(row), flush=True)\n    for hook in hooks:\n        hook.remove()\n    result = dict(rows=rows, source_sha256=digest(__file__), source=Path(__file__).read_text(),\n                  source_result_sha256=digest(root / \"results.json\"),\n                  synthetic_model_forwards=64, projected_layer_vector_forwards=38400,\n                  real_images=0, parameter_updates=0, new_defense_points=0, new_AGA_calls=0,\n                  scope=\"Originalmodel,all32inputs ofbothfixedsources. Compare actual standardizedLNinputs with31dimtaskprobeplane andblockoutputs. No naturaldata or causality claim, no fitting/selection.\")\n    (root / \"prefix_comparison.json\").write_text(json.dumps(result, indent=2) + \"\\n\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+    "source_result_sha256": "c12d827ba0f0f7a44267a15415c9350d6a82e6a4dbe950c4bb242c1199da3b48",
+    "synthetic_model_forwards": 64,
+    "projected_layer_vector_forwards": 38400,
+    "real_images": 0,
+    "parameter_updates": 0,
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "scope": "Originalmodel,all32inputs ofbothfixedsources. Compare actual standardizedLNinputs with31dimtaskprobeplane andblockoutputs. No naturaldata or causality claim, no fitting/selection."
+  },
+  "source_generation_complete": true,
+  "finding": "Both fixed32image batches satisfy all5pseudo-label shifts. Paperpriors change image content but are not demonstrated to improve natural-task preservation. Actual earlyCLS prefixes have small projection into the isolated31dimweight-probe plane, so these probes cannot replace full-prefix functional constraints.",
+  "local_task_response_definition": {
+    "source": "\"\"\"Compare finite task-SVD and random responses around complete synthetic prefixes.\"\"\"\nimport json\nfrom pathlib import Path\n\nimport torch\n\nfrom _impl.io import digest\nfrom _impl.models import initialize, load_checkpoint\n\n\n@torch.no_grad()\ndef main():\n    initialize()\n    root = Path(\"outputs/source_prior_20261026\")\n    output = root / \"local_task_response.json\"\n    assert not output.exists()\n    meta = json.loads((root / \"results.json\").read_text())\n    expert = load_checkpoint(\"MNIST/finetuned.pt\").cuda().eval()\n    base = load_checkpoint(\"zeroshot.pt\").cuda().eval()\n    path = Path(\"outputs/phase2_task_subspace_comparison_20261020/basis.pt\")\n    assert digest(path) == \"99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344\"\n    entries = {v[\"source_key\"]: v for v in torch.load(path, map_location=\"cpu\", weights_only=False).values()}\n    residuals, rows = {}, []\n    hooks = [block.ln_2.register_forward_pre_hook(\n        lambda module, args, layer=i: residuals.__setitem__(layer, args[0][0].clone()) if args[0].ndim == 3 else None)\n        for i, block in enumerate(expert.model.visual.transformer.resblocks)]\n    for record in meta[\"rows\"]:\n        variant = record[\"variant\"]\n        raw_path = root / (variant + \".pt\")\n        assert digest(raw_path) == record[\"raw_sha256\"]\n        raw = torch.load(raw_path, map_location=\"cpu\", weights_only=False)\n        expert(raw[\"normalized_images\"].cuda())\n        for i, (block, base_block) in enumerate(zip(expert.model.visual.transformer.resblocks,\n                                                 base.model.visual.transformer.resblocks)):\n            r = residuals[i].clone()\n            key = f\"model.visual.transformer.resblocks.{i}.mlp.c_fc.weight\"\n            G = entries[key][\"v\"].cuda() / block.ln_2.weight.double()[:, None]\n            _, _, vh = torch.linalg.svd(G.sum(0, keepdim=True), full_matrices=True)\n            task = torch.linalg.qr(G @ vh[1:].T, mode=\"reduced\").Q\n            generator = torch.Generator().manual_seed(2026102605 + i)\n            z = torch.randn(768, 31, generator=generator, dtype=torch.float64).cuda()\n            random = torch.linalg.qr(z - z.mean(0, keepdim=True), mode=\"reduced\").Q\n            epsilon = .01 * (r.double().var(-1, unbiased=False) + block.ln_2.eps).sqrt()\n            row = dict(variant=variant, layer=i, directions=31)\n            for name, Q in [(\"task\", task), (\"random\", random)]:\n                delta = (epsilon[:, None, None] * (768 ** .5) * Q.T[None]).float()\n                plus = (r[:, None] + delta).reshape(-1, 768)\n                minus = (r[:, None] - delta).reshape(-1, 768)\n                eplus = block.mlp(block.ln_2(plus)).double()\n                eminus = block.mlp(block.ln_2(minus)).double()\n                bplus = base_block.mlp(base_block.ln_2(plus)).double()\n                bminus = base_block.mlp(base_block.ln_2(minus)).double()\n                denominator = 2 * epsilon[:, None, None]\n                teacher = (eplus - eminus).reshape(32, 31, 768) / denominator\n                difference = ((eplus - bplus) - (eminus - bminus)).reshape(32, 31, 768) / denominator\n                row[name + \"_teacher_response_energy\"] = float(teacher.square().sum(-1).mean())\n                row[name + \"_task_difference_response_energy\"] = float(difference.square().sum(-1).mean())\n            row[\"task_random_difference_ratio\"] = row[\"task_task_difference_response_energy\"] / row[\"random_task_difference_response_energy\"]\n            row[\"task_random_teacher_ratio\"] = row[\"task_teacher_response_energy\"] / row[\"random_teacher_response_energy\"]\n            rows.append(row)\n            print(json.dumps(row), flush=True)\n    for hook in hooks:\n        hook.remove()\n    result = dict(rows=rows, source=Path(__file__).read_text(), source_sha256=digest(__file__),\n                  source_result_sha256=digest(root / \"results.json\"),\n                  synthetic_model_forwards=64, local_layer_vector_forwards=95232,\n                  real_images=0, parameter_updates=0, new_defense_points=0, new_AGA_calls=0,\n                  measurement=\"Central finite differences of expert-minus-base full MLP(LN2(r)) around original synthetic CLS prefixes. Both models receive the same full residual, each uses its own LN2. Epsilon is .01 times each residual standard deviation; directions have RMS1. All12layers, both complete32imagebatches, one independent random basis per layer shared between batches. No layer selection or natural-data claim.\")\n    output.write_text(json.dumps(result, indent=2) + \"\\n\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+    "source_sha256": "de4d0a4874554a6e8d7d5066e60c0589d27f8c9315ddc7531c4289f8e3b5ede3",
+    "question": "At complete synthetic CLS prefixes, do the fixed task-SVD directions yield larger expert-minus-base nonlinear MLP responses than matched random directions?",
+    "models": "Frozen originalMNISTexpert andpublicbase, same full preLN2residual supplied to both, each own LN2.",
+    "directions": "31centeredLN-compatibletaskdirections fromfixed32rightSVD;31centeredrandomorthonormaldirections, seed2026102605+layer, sharedbetweenbothsourcefamilies;RMS1.",
+    "finite_step": ".01 times individual originalresidual standard deviation including native LN epsilon;central differences, actualFP32modelresponses andFP64subtraction.",
+    "measurement": "All12layers,bothcomplete32imagebatches. Perlayer energy andtask/randomratio,also pooledsumenergy. No layer/threshold or candidate selection.",
+    "access": "Onlyoriginalexpert/publicbase/originalSVD/fixedsyntheticinputs. No previousdefensepoint,realimage,partner orAGA.",
+    "cost": {
+      "synthetic_full_model_forwards": 64,
+      "local_MLP_vector_forwards": 95232,
+      "real_images": 0,
+      "new_defense_points": 0,
+      "AGA_calls": 0
+    }
   }
 }

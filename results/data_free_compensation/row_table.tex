@@ -24,6 +24,15 @@ Joint A/B nonlinear response fit & 906/3200 & 99.69 & 15.08 \\
 Response-conditioned joint A/B & 2017/3200 & 99.69 & 9.63 \\
 \bottomrule
 \end{tabular}
+% Input-generation comparison only. Pseudo-label agreement is not native accuracy.
+\begin{tabular}{lrr}
+\toprule
+Synthetic input objective & Images & All five shifts agree \\
+\midrule
+Class cross-entropy & 32 & 32/32 \\
+Class cross-entropy with paper priors & 32 & 32/32 \\
+\bottomrule
+\end{tabular}
 % Same predeclared output calibration, no true-label fitting; attacker can retain raw AGA.
 \begin{tabular}{lrrr}
 \toprule
