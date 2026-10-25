@@ -1,0 +1,34 @@
+{
+  "status": "defined_before_execution",
+  "purpose": "Read-only separation of input coverage and final-projection sensitivity before designing a new data-free game; no new defense point or recovery attack.",
+  "point_sha256": "069e6091c34fe6f88f0c9b6c1044204228b096e68d9dae33dd6f8bf03e8236de",
+  "cached_source_sha256": "1ae3c1dbd6997a75cfd8324bd8a611dffeddda62df26b9b12dd58551daf310aa",
+  "original_AGA_sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+  "states": [
+    "direct",
+    "recovered"
+  ],
+  "all_cached_inputs": 800,
+  "projection_radius_rule": "rho = norm(0.5*(P_expert-P_base),F)/norm(P_public_mean,F); target-own update scale only, not an unknown-partner bound",
+  "exact_condition": "For fixed post-LN row z and head contrast d=W[0]-W[j], margin(z,P+E)=margin(z,P)+z E d. Minimum over norm(E,F)<=rho*norm(P,F) equals margin-rho*norm(P,F)*norm(z)*norm(d).",
+  "witness_rule": "For each of the two fixed states, take the minimum critical relative radius over every cached input and all nine competitors. Apply its unique minimum-norm rank-one tie perturbation multiplied by 1.000001. Report every cached prediction. No choice or repair of defense weights.",
+  "reuse": "The previously independently verified unchanged author row assignment is reconstructed by exact original/clean-AGA row bytes; no new Hungarian or full AGA call.",
+  "limits": "Only the frozen source cache and final P vary; LN and hidden prefixes remain fixed. No natural-task accuracy, task retention of a changed attacker model, prefix uncertainty coverage, new defense, or impossibility claim. Diagnostic witnesses are not future construction inputs.",
+  "real_images": 0,
+  "new_image_forwards": 0,
+  "new_defense_points": 0,
+  "related_source": {
+    "ABM_commit": "e24915d713672554800372c777c9014e3399e13b",
+    "files": {
+      "solver": {
+        "url": "https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/solver.py",
+        "sha256": "b64461dfcc460ebb11f84ad2ad8ff41a02258c69562c01d35357ed776320f222"
+      },
+      "main": {
+        "url": "https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/main.py",
+        "sha256": "c74cc2f283fd5cf54593b815da9c7025800b284ae8d200af5d483a0b8748c750"
+      }
+    },
+    "read_scope": "solver.run,divergence,KT_loss_generator;main1generator/7student defaults. Not installed or executed. During input search both frozen models transmit input gradients;during student step teacher target has no gradient."
+  }
+}

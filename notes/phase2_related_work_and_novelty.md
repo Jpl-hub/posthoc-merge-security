@@ -1023,3 +1023,14 @@ QuickGELU差式由本项目直接代数得到，再在原第11块上检查整个
 新读[Neuron Merging §3.1–3.3](https://papers.nips.cc/paper/2020/file/0678ca2eae02d542cc931e81b74de122-Paper.pdf)及[官方d25cf3e](https://github.com/friendshipkim/neuron-merging/blob/d25cf3e39ecf376a1ffc8b3cbf326a38b6db19cf/decompose.py)的缩放矩阵与下一层合并实现。其ReLU交换条件要求每列至多一个非负非零项，权重余弦／范数比给出数据无关近似；CLIP的QuickGELU不具有一般正齐次性，不能直接移植。原研究已知，未安装／运行该仓库或纳入防御对比。
 
 又核[Fast Neural Kernel Embeddings §2–3.1](https://papers.neurips.cc/paper_files/paper/2022/file/e7be1f4c6212c24919cd743512477c13-Paper-Conference.pdf)及[官方faa78b6](https://github.com/insuhan/ntk_activations/tree/faa78b67929f442c689b01f88a15de8df54097e7)的dual_kernels.py、polynomials.py与dual_kernel_approx.py。二维高斯激活内积、Hermite展开与数值积分已有完整工具；其GELU公式不是QuickGELU，Gaussian核也不是有限LayerNorm球体分布。本项目下述有界球体计算是单独声明的局部功能统计，不将NTK无限宽结论套给冻结有限CLIP，不把核／求积／总体最小二乘叫原创。固定源码blob及SHA保存在joint.json。
+
+
+### Oct25：输入搜索须针对当前模型，环境范围须另行限定
+
+核读[Adversarial Belief Matching原文§3.1–3.2／算法1](https://papers.neurips.cc/paper_files/paper/2019/file/fe663a72b27bdc613873fbbb512f6f67-Paper.pdf)，以及[固定官方e24915d的solver.py](https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/solver.py)和main.py：输入生成最大化教师到学生的正向KL，学生最小化同一个KL；生成阶段两网络均须保留输入梯度，学生更新时教师目标才停止梯度。默认一轮生成／七轮学生是作者设置，本项目未安装或运行该方法。不是只让固定教师对合成样本自信，也不是以一种共享生成损失同时解决任务保持与融合破坏。原文的注意力附加项只用于学生，不用于生成器；没有据此给本项目增加注意力损失。
+
+重读[DFAD §3.1–3.2](https://arxiv.org/html/1912.11006v2)：其困难样本上界依赖生成器确能持续找到困难样本的条件，不能把有限生成器最大值当作自然分布误差的已证上界。两项工作均为知识迁移，普通交替极大极小不是新防御；固定源码与SHA存readout_radius_protocol.json。
+
+本项目下一项功能目标应分开定义：原生输入搜索寻找教师／发布模型差异，补偿端降低该差异；融合输入搜索寻找原教师有明确类别、融合后仍保持该类别的输入，补偿端降低这种可恢复分类间隔。两项输入搜索的方向不同，单一平均损失不能表示两个最坏情况。原专家和原任务头冻结，输入梯度与更新专家权重是不同的事；不能调用真实图、伙伴或069e反例来构造下一点。
+
+未知伙伴还会改变前缀和最终读出。先作一次纯缓存检查，判断已有公开源成功是否连自身任务更新尺度的最终投影变化都不能承受：固定LN后行向量z、类别对比d和投影P，有m(P+E)=m(P)+zEd。Frobenius球内最坏间隔为m(P)−epsilon||z||||d||，最小翻转半径为m(P)/(||z||||d||)。这是普通线性对偶范数，不是新安全定理。两种公开状态的800个已缓存响应全部检查；半径取目标自身半个P任务更新，不能称真实伙伴的已知上界。此项不更新任何权重、不新增图片前向／恢复攻击。若读出已经脆弱，新功能目标必须同时处理环境变化；即使通过，也仍缺前缀及输入覆盖，不允许写成未知伙伴保证。069e仍关闭，不据此修补。
