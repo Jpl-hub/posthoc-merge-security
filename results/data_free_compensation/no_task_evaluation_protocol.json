@@ -21,7 +21,7 @@
     "path": "external/ties-merging/src/utils/merge_utils.py",
     "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
     "topk_percent": 20,
-    "coefficient": 1.0,
+    "coefficient": 1,
     "resolve_method": "mass",
     "merge_func": "dis-mean",
     "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
@@ -68,7 +68,7 @@
       },
       "AGA_edits": {
         "path": "outputs/row_compensation_20261025/no_task/AGA/edits.pt",
-        "sha256": "FILL_AFTER_AUTHOR_WEIGHT_RECOVERY_BEFORE_ANY_REAL_IMAGES"
+        "sha256": "aa73de3212f0a253f83fb9ae79eea7e50856ec5891a0f82e741ea8973c9c3780"
       },
       "budget_status": "Unconstrained minimum-norm rowcondition and samefunctionalridge;actualdistance reported,no result-based rescaling",
       "function_status": "Prospectively evaluate completeMNIST standalone;loss<=.5pp utility criterion,strictR separately;all fixed fusion scopes still measured without repair"
@@ -137,5 +137,21 @@
   "original_batch_context_replays": true,
   "parameter_budget_scope": "Actual A norm fixed by geometry; B ridge implied bound prospectively declared. HistoricalD.5/R.5 retained separately,standalone loss<=.5pp reported.",
   "native_evaluation": "Use existing main_table Standalone row before new fusion rows;reuses original full baseline bySHA. No new native entrypoint or full baseline rerun.",
-  "frozen_point_before_images": "4c0e11ecc932b44f9635f695dbfc3165a6462800930ada81ac315f53716e5ebf"
+  "frozen_point_before_images": "4c0e11ecc932b44f9635f695dbfc3165a6462800930ada81ac315f53716e5ebf",
+  "AGA_weight_only_execution": {
+    "method": "aga",
+    "seconds": 12.138597240671515,
+    "output_sha256": "aa73de3212f0a253f83fb9ae79eea7e50856ec5891a0f82e741ea8973c9c3780",
+    "details": {
+      "known_family": false,
+      "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+      "aligned_reference": {
+        "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+        "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+        "validation": "outputs/feature_noise/independent_validation.json"
+      }
+    },
+    "reference": "original_AGA",
+    "new_training_updates": 0
+  }
 }
