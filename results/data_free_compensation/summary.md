@@ -31,6 +31,6 @@ A、B 分别为末层 MLP 的输入、输出矩阵。先由原专家和公开基
 
 该规则采用 [Calibrate Before Use](https://proceedings.mlr.press/v139/zhao21c.html) 的类别概率除法，在对数空间计算；图像随机噪声是本次明确的输入适配，不称论文原实验复现或新攻击算法。只有这一个事先固定规则，没有挑系数、种子或映射。18 个完整结果的 NumPy 逐类／配对复核通过；新增 576 次生成图前向，真实图前向、AGA 和防御更新均为 0。[完整校正结果与原源码](readout_calibration_result.json)。
 
-[主点完整结果](decision_evaluation_result.json) · [删除约束对照](decision_no_task_evaluation_result.json) · [共用实现](decision_compensation.py) · [执行前定义](decision_compensation_protocol.json) · [TeX 表](row_table.tex)
+[主点完整结果](decision_evaluation_result.json) · [删除约束对照](decision_no_task_evaluation_result.json) · [历史构造源码](decision_no_task_result.json) · [执行前定义](decision_compensation_protocol.json) · [TeX 表](row_table.tex)
 
 早期类别循环点的原 AGA 保护效果、已知规则恢复及全部失败证据仍保留于[原点与组件对照](row_evaluation_result.json)、[早期 SVD 删除对照](no_task_evaluation_result.json)、[已知规则纠正](fixed_readout_check.json)和[研究记录](../../notes/phase2_coupling.md)。既有[任务方向换序](../task_directed_pairing/summary.md)及[防御一](../phase3/tables.md)不受本轮影响。唯一权重、生成输入和原始分数留服务器；没有新增运行框架或报告入口。

@@ -1,5 +1,5 @@
 {
-  "status": "sole_conditional_point_frozen_before_natural_images",
+  "status": "complete_native_accuracy_passed_same_solepoint_originalAGA_pending",
   "point_sha256": "c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8",
   "metrics": {
     "native": {
@@ -83,5 +83,55 @@
   "limits": "Finite clean generated domain only. Preserves A-only source responses,not a whole-domain native identity. Unknown partners change prefix/readout. Equal fixed-head scores do not mean all feature knowledge erased. Actual native/fusion/originalAGA and scoped calibration results required.",
   "source_archive": "\"\"\"One finite conditional solve for equal public class scores and native preservation.\"\"\"\nimport copy\nimport hashlib\nimport json\nimport time\nfrom pathlib import Path\n\nimport numpy as np\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.io import digest\nfrom _impl.merge import merge\nfrom _impl.models import checked_models, initialize\n\ninitialize()\nstart = time.perf_counter()\nprotocol = Path('results/data_free_compensation/neutral_compensation_protocol.json')\ncfg = json.loads(protocol.read_text())\nout = Path(cfg['output'])\nout.mkdir(exist_ok=False)\n(out / 'protocol.json').write_text(json.dumps(cfg, indent=2) + '\\n')\nfor ref in cfg['inputs'].values():\n    assert digest(ref['path']) == ref['sha256']\n\n\ndef svd(matrix):\n    u, s, vh = torch.linalg.svd(matrix, full_matrices=False)\n    threshold = torch.finfo(matrix.dtype).eps * max(matrix.shape) * s[0]\n    keep = s > threshold\n    return u[:, keep], s[keep], vh[keep], s, float(threshold)\n\n\ndef neutral_targets(residual, L, bias, eps):\n    u, s, vh, spectrum, tolerance = svd(L)\n    q = vh.T\n    u0 = -q @ ((u.T @ bias) / s)\n    d = len(u0)\n    assert float(u0.square().sum()) < d\n    centered = residual - residual.mean(0, keepdim=True)\n    free = centered - q @ (q.T @ centered)\n    sigma = ((free.square().sum(0) + d * eps) / (d - u0.square().sum())).sqrt()\n    return q, q.T @ (u0[:, None] * sigma - centered), u0, spectrum, tolerance\n\n\n# A fixed small independent solve checks the nonlinear LN identity and both constraints.\nrng = np.random.default_rng(2026102511)\nlt = rng.normal(size=(3, 8));lt -= lt.mean(1, keepdims=True)\nbt = .01 * rng.normal(size=3)\nrt = rng.normal(size=(8, 10))\nqt, tt, ut, _, _ = neutral_targets(torch.tensor(rt), torch.tensor(lt), torch.tensor(bt), 1e-5)\nhn = torch.tensor(rng.normal(size=(16, 4)))\nkp = torch.tensor(rng.normal(size=(16, 10)))\nun, _, _, _, _ = svd(hn)\nft = kp - un @ (un.T @ kp)\nuf, sf, vf, _, _ = svd(ft)\nmt = ((tt @ vf.T) / sf) @ uf.T\nmt -= (mt @ un) @ un.T\nnumpy_m = np.linalg.lstsq(ft.numpy().T, tt.numpy().T, rcond=None)[0].T\nnp.testing.assert_allclose(mt.numpy(), numpy_m, atol=1e-10, rtol=1e-10)\nnew_rt = torch.tensor(rt) + qt @ mt @ kp\nzc = new_rt - new_rt.mean(0, keepdim=True)\nidentity_error = float((torch.tensor(lt) @ zc / (zc.square().mean(0) + 1e-5).sqrt() + torch.tensor(bt)[:, None]).abs().max())\nassert identity_error < 1e-10 and float((mt @ hn).abs().max()) < 1e-10\n\nbase, expert, head, pins = checked_models('MNIST')\nraw = torch.load(cfg['inputs']['clean_source']['path'], map_location='cpu', weights_only=False)\ngeometry = torch.load(cfg['inputs']['geometry']['path'], map_location='cpu', weights_only=False)\nbasis = torch.load(cfg['inputs']['task_basis']['path'], map_location='cpu', weights_only=False)\nclean_aga = torch.load(cfg['inputs']['clean_AGA']['path'], map_location='cpu', weights_only=False)\nkey = 'model.visual.transformer.resblocks.11.mlp.'\noriginal, anchor = expert.state_dict(), base.state_dict()\nto = lambda x: x.double().cuda()\nA, order = to(geometry['A_prime_FP32']), geometry['author_assignment'].cuda()\nB, B0, a, a0, b, b0 = [to(v) for v in [original[key+'c_proj.weight'], anchor[key+'c_proj.weight'], original[key+'c_fc.bias'], anchor[key+'c_fc.bias'], original[key+'c_proj.bias'], anchor[key+'c_proj.bias']]]\nA0 = to(anchor[key+'c_fc.weight'])\ncache = {n: {k: to(v) for k, v in row.items()} for n, row in raw['cache'].items()}\nphi = lambda x: x * torch.sigmoid(1.702 * x)\nhn = phi(F.linear(cache['native']['x'], A, a)).T\nhd = phi(F.linear(cache['direct']['x'], (A0+A)/2, (a0+a)/2)).T\nha = phi(F.linear(cache['recovered']['x'], (A0+A[order])/2, (a0+a[order])/2)).T\nback = torch.empty_like(ha);back[order] = ha\nhidden = dict(native=hn, direct=hd/2, recovered=back/2)\nfixed = dict(native=cache['native']['prefix'].T+B@hn+b[:, None],\n             direct=cache['direct']['prefix'].T+(B+B0)@hd/2+(b+b0)[:, None]/2,\n             recovered=cache['recovered']['prefix'].T+B@back/2+B0@ha/2+(b+b0)[:, None]/2)\npublic = merge(base, expert, base, .5)\nfor name in ['model.visual.ln_post.weight', 'model.visual.ln_post.bias', 'model.visual.proj']:\n    assert torch.equal(clean_aga[name], original[name])\ngamma, beta, P = [to(v) for v in [public.model.visual.ln_post.weight, public.model.visual.ln_post.bias, public.model.visual.proj]]\nW = to(head.weight)\nassert float(head.bias.abs().max()) == 0\nD = W[1:] - W[0]\nL = (D @ P.T) * gamma\nL -= L.mean(1, keepdim=True)\noffset = D @ P.T @ beta\nK = torch.cat([hidden['direct'], hidden['recovered']], 1)\nR = torch.cat([fixed['direct'], fixed['recovered']], 1)\nQ, T, u0, head_spectrum, head_tolerance = neutral_targets(R, L, offset, expert.model.visual.ln_post.eps)\ntask = next(v for v in basis.values() if v['source_key'] == key+'c_fc.weight')['v']\nV = torch.linalg.qr(to(task), mode='reduced').Q\ntask_hidden = phi(F.linear(torch.cat([V.T, -V.T]), A, a)).T\npreserve = torch.cat([hn, task_hidden], 1)\nU, _, _, native_spectrum, native_tolerance = svd(preserve)\nfree = K - U @ (U.T @ K)\nUF, SF, VF, public_spectrum, public_tolerance = svd(free)\nM = ((T @ VF.T) / SF) @ UF.T\nM -= (M @ U) @ U.T\ndelta = Q @ M\nnative_error = float((delta @ preserve).norm() / (1 + (B @ preserve).norm()))\npublic_error = float((M @ K - T).norm() / (1 + T.norm()))\nassert native_error < 1e-7 and public_error < 1e-7, (native_error, public_error)\nassert torch.isfinite(delta).all()\ntorch.save(dict(delta_B=delta.cpu(), Q=Q.cpu(), M=M.cpu(), u0=u0.cpu(),\n                target=T.cpu(), native_spectrum=native_spectrum.cpu(),\n                public_spectrum=public_spectrum.cpu(), head_spectrum=head_spectrum.cpu()), out / 'solution.pt')\nedits = {key+'c_fc.weight': A.float().cpu(), key+'c_proj.weight': (B+delta).float().cpu()}\ntorch.save(edits, out / 'point.pt')\npoint_sha = digest(out / 'point.pt')\nprint('POINT_FROZEN', point_sha, 'B_relative', float(delta.norm()/B.norm()), flush=True)\ncandidate = copy.deepcopy(expert)\ncandidate.load_state_dict(original | edits, strict=True)\naligned = copy.deepcopy(expert)\naligned.load_state_dict(clean_aga | {key+'c_fc.weight': edits[key+'c_fc.weight'][order.cpu()],\n                                   key+'c_fc.bias': original[key+'c_fc.bias'][order.cpu()],\n                                   key+'c_proj.weight': edits[key+'c_proj.weight'][:, order.cpu()]}, strict=True)\nmodels = dict(native=candidate, direct=merge(base, candidate, base, .5), recovered=merge(base, aligned, base, .5))\nnorm = expert.val_preprocess.transforms[-1]\nmean = torch.tensor(norm.mean, device='cuda')[None, :, None, None]\nstd = torch.tensor(norm.std, device='cuda')[None, :, None, None]\nscores, metrics = {}, {}\nwith torch.no_grad():\n    for name, model in models.items():\n        model.cuda().eval().requires_grad_(False)\n        values = []\n        for i in range(0, 160, 8):\n            x = F.interpolate(raw['final'][i:i+8].cuda(), (224, 224), mode='bilinear', align_corners=False)\n            x = (torch.cat([torch.roll(x, shift, (2, 3)) for shift in [(0,0),(7,0),(-7,0),(0,7),(0,-7)]])-mean)/std\n            values.append(head.cuda()(model(x)).cpu())\n        value = torch.cat(values)\n        assert torch.isfinite(value).all()\n        scores[name] = value\n        metrics[name] = dict(teacher_class_retained=int(value.argmax(1).eq(raw['teacher_class']).sum()),\n                             maximum_class_score_spread=float((value.max(1).values-value.min(1).values).max()),\n                             prediction_counts=torch.bincount(value.argmax(1), minlength=10).tolist())\n        model.cpu()\ntorch.save(dict(scores=scores, teacher_class=raw['teacher_class'], requested=raw['requested']), out / 'source_scores.pt')\nsource = Path(__file__).read_text()\nresult = dict(status='sole_conditional_point_frozen_before_natural_images', point_sha256=point_sha,\n              metrics=metrics, B_relative=float(delta.norm()/B.norm()),\n              A_relative=cfg['A_relative'], source_native_constraint_error=native_error,\n              source_public_constraint_error=public_error, u0_squared_norm=float(u0.square().sum()),\n              head_rank=Q.shape[1], preserve_rank=U.shape[1], public_rank=len(SF),\n              SVD_thresholds=[head_tolerance, native_tolerance, public_tolerance],\n              independent_toy_LN_error=identity_error, solution_sha256=digest(out/'solution.pt'),\n              source_arrays_sha256=digest(out/'source_scores.pt'), source=source,\n              source_sha256=hashlib.sha256(source.encode()).hexdigest(), protocol_sha256=digest(protocol),\n              checkpoint_sha256=pins, generated_full_image_forwards=2400, real_construction_images=0,\n              teacher_training_updates=0, new_AGA_calls=0, optimizer_steps=0,\n              seconds=time.perf_counter()-start, limits=cfg['limits'])\n(out/'results.json').write_text(json.dumps(result, indent=2, allow_nan=False)+'\\n')\nprint(json.dumps({k:v for k,v in result.items() if k!='source'}, indent=2))\n",
   "definition_local_commit": "df2d116187ec68fcfaa0e530bb43c3996bd65d68",
-  "public_before_execution": false
+  "public_before_execution": false,
+  "native": {
+    "results.json": {
+      "rows": [
+        {
+          "n": 10000,
+          "changed": 7,
+          "R": 41.56357464245541,
+          "stage": "full",
+          "before_correct": 9969,
+          "after_correct": 9969,
+          "strict_task_passed": false,
+          "accuracy_loss_pp": 0.0,
+          "passed": true,
+          "raw_sha256": "e1b4086e5b8fd8da2fa07388f6a8226ecf76b8b326c26e7c980f0f32b362c075"
+        }
+      ],
+      "passed": true,
+      "image_forwards": 20000,
+      "seconds": 23.72849332075566
+    },
+    "results.json_sha256": "c5719fd8f612be59db6181b0343d5bd29c59cf1effd9ebfaa54db5eeef29fb01",
+    "independent_validation.json": {
+      "status": "passed_raw_score_and_official_label_recount",
+      "rows": [
+        {
+          "stage": "full",
+          "n": 10000,
+          "R": 41.56357464245541
+        }
+      ],
+      "results_sha256": "c5719fd8f612be59db6181b0343d5bd29c59cf1effd9ebfaa54db5eeef29fb01",
+      "new_image_forwards": 0
+    },
+    "independent_validation.json_sha256": "0fc023cedca26aedd1651827f560c7faeef4c3b245198eb0015255643ec984da",
+    "before_images.json": {
+      "publication": {
+        "path": "outputs/row_compensation_20261025/neutral_response/point.pt",
+        "sha256": "c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8",
+        "reference": "expert"
+      },
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "parameter_distance": 9.391307961352343,
+      "construction_updates": 0
+    },
+    "before_images.json_sha256": "52cfde2289278fd0c394dd9f550ecb76567d82926dfc7377adbcc53b98c1ca8a"
+  }
 }

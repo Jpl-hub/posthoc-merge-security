@@ -83,3 +83,6 @@ Oct24完成的两份只读二阶计算源码仅保留在历史提交62f2a9f（�
 Oct24继续清理：已完成且使用真实训练图的逐层数值构造从活动入口移除，两个函数及原配置保留在Git `7a59e9dd6101eeed9158f7fa8a27dd0570ff1cbf` 和 `outputs/2026-10-24_research/before_cleanup_source.tar.gz`。历史数值结果及论文表格不改；防御一、通道置换、原版AGA和统一评价继续使用当前入口。当前配置的源码SHA随本次入口变化更新，历史协议不回写。
 
 磁盘清理记录见 `results/engineering_refactor/cleanup_20261023.json` 的 `additional_cleanup_20261024`。旧诊断的 `.pt.gz` 保留原文件全部字节，已校验解压SHA。需要历史重放时，根据清理记录中的两个绝对路径，用 `gzip -dc <archive_path> > <original_path>` 恢复尚不存在的原 `.pt`，核对原SHA后再使用冻结源码；无需在当前工程增加加载分支。query_direction校准缓存只保留原始视觉输出、索引和基，其余中间激活按冻结source.zip重建。已关闭探索不能通过清理改为成功。
+
+
+2026-10-25：三个已结束的数值探索脚本已从当前目录删除，共391行；源码SHA与4090原始结果嵌入源码逐一相同。完整原文件可从Git快照`5dc4c6d2b6084971fbf61dbf8af8bbe29e0c7fe8`取回，具体路径／SHA见`results/engineering_refactor/validation.json`的`oct25_core_cleanup`。当前只保留正在验证的单份`neutral_compensation.py`，没有新增运行框架，原模型／分数／有效历史结果未删。
