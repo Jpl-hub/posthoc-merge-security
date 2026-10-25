@@ -1,8 +1,8 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2: data-free numerical changes and joint compensation preserving standalone task accuracy while reducing TA and original-AGA protected-task performance.",
-  "status": "Direct decision-margin main and strict SVD-projection deletion control completed and independently checked. Both retain native accuracy; control has stronger measured protection. Main is not replaced by the control.",
-  "updated_utc": "2026-10-25T11:22:21.390374+00:00",
+  "status": "Frozen direct-margin points retain standalone utility and original-AGA effects; one fixed data-free output calibration restores about89-90%MNIST afterAGA. This exposes a common class-bias limitation; no new defense point was constructed.",
+  "updated_utc": "2026-10-25T12:06:24.340818+00:00",
   "protocol": {
     "parameter_budget": 0.5,
     "parameter_convention": "Separate logical Q/K/V matrices and each edited bias; raw packed-tensor distances are not equivalent.",
@@ -127,7 +127,7 @@
       "teacher_training_updates": 0,
       "runtime_frameworks_added": 0
     },
-    "limitations": "One target/partner only; partner utility also decreases. Prior cyclic inverse does not restore these two points; arbitrary adaptive recovery not tested.",
+    "limitations": "One target/partner; partner utility also decreases. Fixed data-free output calibration restores about89-90%afterAGA. Cannot claim originalclassinformation erased or all adaptive recoveries resisted.",
     "implementation": "results/data_free_compensation/decision_compensation.py"
   },
   "comparisons": {
@@ -138,7 +138,7 @@
     "closed_history": "All closed Q/V/O/affine/zero-unit/local-Jacobian/069e/19d/common-feature/class-response points remain closed; exact records and sources in notes and prior Git snapshot. No strength/layer/rank/seed retries.",
     "data_assisted_reference": "Real-image numerical357 and public-backbone27eb are historical references, not current data-free construction."
   },
-  "next_action": "Study why finite public-base compensation does not carry fully to direct real-partner merging. Need a distinct function-coverage/recovery mechanism, not more steps, coefficients, layers, ranks or seeds on these frozen points. Further method decisions use original/public weights only; new task validation must not tune from these test results.",
+  "next_action": "Core construction must reduce the input-dependent class contrasts rather than merely add a fixed class bias. Derive a distinct original/public-weight-only compensation mechanism and meaningful functional task probes; no reliable new algorithm is fixed yet. Do not repair closed points with exposed corrections/scores/examples or sweep steps/coefficients/layers/ranks/seeds. Raw original-AGA effects remain separate from generated-query output calibration.",
   "paper_tables": {
     "canonical": "results/paper_tables; unchanged completed24-table source snapshot",
     "current_supplement": "results/data_free_compensation/summary.md and row_table.tex; same checked main/control rows",
@@ -155,5 +155,35 @@
     "unique_weights_scores_failures": "Preserved on servers; current batch outputs/row_compensation_20261025/decision_margin and decision_margin_no_task on4090; older unique evidence remains3090.",
     "engineering": "Only shared necessary construction source retained; prior completed/failed source snapshots in Git and embedded records. No new report/audit framework."
   },
-  "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图"
+  "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
+  "readout_calibration": {
+    "status": "complete_independently_verified",
+    "record": "results/data_free_compensation/readout_calibration_result.json",
+    "definition_local": "5973f19",
+    "public_before_execution": false,
+    "permission": "Own fused model/publichead and64unoptimizednoisequeries; no originaltarget for fitting, realimages, labels or parameterupdates. Separate from originalAGA.",
+    "uncorrected_original_AGA_retained": true,
+    "unprotected_calibrated_TA_AGAtarget_AGAboth": [
+      99.34,
+      99.29,
+      99.29
+    ],
+    "main_calibrated_TA_AGAtarget_AGAboth": [
+      81.12,
+      89.46,
+      89.59
+    ],
+    "control_calibrated_TA_AGAtarget_AGAboth": [
+      89.13,
+      89.59,
+      89.62
+    ],
+    "control_AGAboth_remaining_loss_pp_vs_matched_corrected": 9.67,
+    "new_defense_points": 0,
+    "new_real_image_forwards": 0,
+    "new_AGA_calls": 0,
+    "generated_image_forwards": 576,
+    "active_one_off_source_retired": true,
+    "finite_functional_diagnosis": "H_N*S*H_C is invariant to constant class-logit shifts and per-input scalar shifts. On800oldsourceviews,public between-class contrasts retain0.628-0.722 of clean norm despite allclass0top1. Diagnosis only,not new parameter construction or unknown-input theorem."
+  }
 }

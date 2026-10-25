@@ -1,6 +1,6 @@
 {
-  "status": "Direct decision-margin main and strict SVD-projection deletion control completed and independently checked. Both retain native accuracy; control has stronger measured protection. Main is not replaced by the control.",
-  "updated_utc": "2026-10-25T11:22:21.390374+00:00",
+  "status": "Frozen direct-margin points retain standalone utility and original-AGA effects; one fixed data-free output calibration restores about89-90%MNIST afterAGA. This exposes a common class-bias limitation; no new defense point was constructed.",
+  "updated_utc": "2026-10-25T12:06:24.340818+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted; do not recreate",
@@ -51,12 +51,28 @@
     "hard_SVD_benefit_demonstrated": false,
     "all_adaptive_recovery_solved": false
   },
-  "next_action": "Study why finite public-base compensation does not carry fully to direct real-partner merging. Need a distinct function-coverage/recovery mechanism, not more steps, coefficients, layers, ranks or seeds on these frozen points. Further method decisions use original/public weights only; new task validation must not tune from these test results.",
+  "next_action": "Core construction must reduce the input-dependent class contrasts rather than merely add a fixed class bias. Derive a distinct original/public-weight-only compensation mechanism and meaningful functional task probes; no reliable new algorithm is fixed yet. Do not repair closed points with exposed corrections/scores/examples or sweep steps/coefficients/layers/ranks/seeds. Raw original-AGA effects remain separate from generated-query output calibration.",
   "github_sync": {
     "status": "Connector github.fetch returned Unknown tool; current batch local and4090, not claimed uploaded.",
     "last_verified_remote_commit": "4c76d4d9ecc2d71d1c3474ad2b78951e432685e5",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "history_snapshot": "4b627f793619ebb1f22628645b10b7ac489ee4ad",
-  "unique_models_scores_failures_deleted": 0
+  "unique_models_scores_failures_deleted": 0,
+  "last_completed_check": {
+    "record": "results/data_free_compensation/readout_calibration_result.json",
+    "new_defense_points": 0,
+    "new_real_images": 0,
+    "new_AGA_calls": 0,
+    "generated_image_forwards": 576,
+    "main_AGA_target_both_after_fixedcalibration": [
+      89.46,
+      89.59
+    ],
+    "control_AGA_target_both_after_fixedcalibration": [
+      89.59,
+      89.62
+    ],
+    "original_AGA_raw_unchanged": true
+  }
 }
