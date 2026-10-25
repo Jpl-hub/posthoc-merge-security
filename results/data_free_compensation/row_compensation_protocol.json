@@ -1,0 +1,62 @@
+{
+  "status": "defined_before_execution",
+  "purpose": "One frozen numerical A/B construction:task-outside A change with altered author row matching, followed by finite class/environment minimax functional B compensation.",
+  "geometry": {
+    "path": "outputs/row_condition_20261025/geometry.pt",
+    "sha256": "b785015346adcb78f5ae61735bfe9ebbadd1f4eec4a6978cb48822001d2a3c79",
+    "A_relative_distance": 1.0273893035120545,
+    "fixed": "Use its sole FP32 A and original-author assignment without modifying row condition,rank,layer,angle or amplitude."
+  },
+  "information": "Frozen original MNIST expert/public base,fixed original target classifier/classIDs,weight-derived task32SVD and clean originalAGA. Zero real construction images,partners,closed19d/069e weights/pixels or exposed witnesses.",
+  "source": {
+    "seed": 2026102507,
+    "n": 160,
+    "requested_class_rule": "Each of10classes appears16times,all finalinputs retained",
+    "latent": [
+      3,
+      32,
+      32
+    ],
+    "box": [
+      0,
+      1
+    ],
+    "views": [
+      [
+        0,
+        0
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        -7,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        -7
+      ]
+    ],
+    "resize": "bilinear224,align_cornersFalse",
+    "pixel_steps": 128,
+    "pixel_lr": 0.05,
+    "microbatch": 8,
+    "loss": "Per-input maximum requested-classCE across all5views and3clean states(original expert,public direct mean0.5,public cleanAGA mean0.5);then average across images. No protected-point feedback or best-step selection."
+  },
+  "native_function_target": "Original teacher full final residual on every generated view;actual prefix,Attention,LN2,QuickGELU,skip,finalLN/P/feature normalization remain unchanged in computation.",
+  "public_function_target": "Each original-teacher class y maps to fixed wrong class(y+1)%10. For every destination class, maximize minimum normalized head-contrast raw score on a centered LN-input sphere at the pooled original-public residual RMS. Mean residual per input is preserved. This replaces arbitrary hidden-space reflection/constant-class0 targets.",
+  "prototype_solver": "All10classes,one SciPySLSQP solve each over9simplex weights;minimize kappa*norm(H*Gamma*P*D*p)+beta*P*D*p,where D normalizes class contrasts. maxiter200,ftol1e-10. Verify primal/dual gap and real FP32 readout class. No class/direction/backend retry. Each prototype projection-ball relative robustness radius is reported,not a claim about unknown prefixes or a natural-task selection gate.",
+  "B_objective": "Only B is the conditional compensator once A is fixed. Minimize maximum of31relative squared functional errors:10requested-class groups for each of native/direct-public/AGA-public,plus B's32right-singular-vector response group. Add rho*norm(deltaB,F)^2/norm(B,F)^2,rho0.01. Each image group is normalized by the original state residual squared norm;Bprobe by norm(B*VB,F)^2. All generated inputs remain,including requested-label failures.",
+  "minimax_solver": "Maximize the concave weighted-ridge dual over31simplex weights using one SciPySLSQP call,maxiter200,ftol1e-8. For each weight use the unique FP64 ridge solution;gradient is group errors by envelope identity. Start uniform,do not select best trial or change solver. Report finite primal-dual gap;absence of convergence is not mathematical infeasibility. Numerical nonfinite/linear-solve failure stops and retains evidence.",
+  "parameter_scope": "A norm fixed by the unique weight-only row condition. No inherited D0.5 or B4 cap. The B-ridge construction has bound relativeB<=sqrt(E0/rho) for a solved finite minimax objective,E0=max group error at deltaB0. Actual logical A/B distance and task-probe changes reported;historical D0.5/R0.5 comparisons retained separately. Biases/all other tensors unchanged.",
+  "freeze_and_evaluate": "Save sole FP32 A/B point and hashes before any new real-image measurement. Check complete generated source and identical microbatch full-versus-tail scores. Synthetic confidence or robust-margin counts do not determine natural utility. Then independently measure complete MNIST standalone and fixed MNIST/SVHN TA0.5/originalAGA target-only/both for this same point,no repair or parameter selection. Mark standalone loss<=0.5pp utility retention separately and preserve strictR. Failed utility/effect stays an explicitly failed reference,not a successful defense.",
+  "cost_and_reuse": "Original cleanAGA,unprotected scores and partnerAGA reused by pinned SHA;geometry's single lastMLPmatching is reused because B changes do not affect A-row assignment. Count full recovery separately. No new merger or report framework.",
+  "limits": "Finite convex minimax is for fixed generated responses and residual targets,not the full input/unknown-partner game. SVD probes are not a free function-null space;matching changes are not classification harm. Standard row constraints,ridge,minimax and input synthesis are not claimed novel. Genuine usefulness requires measured standalone and merged/attacked performance.",
+  "no_retry": "One source/geometry/point,all10classes,one two-expert pair;no seed/rank/strength/layer/solver sweep or test-feedback repair. This independent construction does not resume a closed point."
+}
