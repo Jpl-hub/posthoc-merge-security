@@ -1055,3 +1055,8 @@ PaRaMS原文§5／附录H分别评价保护前后独立模型、融合目标与�
 ### Oct25：完整表示重建和分类保持须分开
 
 核读[EMMET／A Unified Framework for Model Editing §3–5.1、§7](https://arxiv.org/html/2403.14236v2)，及[固定官方23d72b56](https://github.com/scalable-model-editing/unified-model-editing/tree/23d72b560e52992e675377cc2d1deed7a45b1cd0)的emmet_main.py／memit_main.py。论文区分表示保持、表示写入、逐层分配；更强的表示等式并不自动改善任务效果。源码在每一层重算键及终点残差，按剩余层数分配；EMMET对保存协方差和键Gram作求逆／正则，MEMIT使用协方差加键Gram的线性求解。协方差调用mom2_dataset实际激活，不能直接称本项目所需的无图像构造。源码／SHA保留4090 editing_source_review.json，仅阅读，未安装或跑LLM编辑。普通伪逆、岭回归和跨层分配不算我们的创新；不因看到已有多层实现就把当前失败扩层重跑。
+
+
+### Oct25：直接决策目标的结果与原创性边界
+
+以真实最终LN／投影／单位化／固定分类头间隔替代完整特征重建，原生保留教师半间隔，两公开状态统一向事前固定类0；普通Adam、相对间隔正部损失及有限组minmax均不是原创性主张。任务投影主点完整MNIST99.61、TA93.22、原AGA26.45／23.12；严格删除该投影的对照99.67、38.58、15.47／13.11。均零真实构造图，独立准确率损失小于事前.5pp；本次仍没有SVD硬约束收益证据，不把任务探针与参数距离自动等同任务功能保持。先前公开循环逆改名不能恢复这两点，但尚未检验任意方法已知恢复；不将特定逆规则失败写成知识删除。完整逐类、伙伴、配对、原128批上下文重放及成本见decision_evaluation_result.json／decision_no_task_evaluation_result.json。共用一份构造源码，无新运行框架，旧效果和失败记录保留。

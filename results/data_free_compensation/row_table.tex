@@ -1,21 +1,34 @@
-% Complete MNIST test,SVHNpartner,TAcoefficient0.5.
+% Complete MNIST test; SVHN partner; TA coefficient 0.5; original-author AGA.
+% Main and deletion control are separately frozen releases, not best-point selection.
 \begin{tabular}{lrrrr}
 \toprule
 Setting & Standalone & TA & AGA (target) & AGA (both) \\
 \midrule
 Unprotected & 99.69 & 99.37 & 99.30 & 99.32 \\
-Task-parameter constraints & 98.93 & 60.89 & 5.50 & 2.38 \\
-Constraints removed & 99.68 & 0.21 & 1.80 & 1.39 \\
+Decision margins, task constraints & 99.61 & 93.22 & 26.45 & 23.12 \\
+Task constraints removed & 99.67 & 38.58 & 15.47 & 13.11 \\
 \bottomrule
 \end{tabular}
-% Method-informed fixed inverse readout correction, separate from original AGA.
+
+% SVHN partner accuracy under the same three merging/recovery settings.
 \begin{tabular}{lrrr}
 \toprule
 Setting & TA & AGA (target) & AGA (both) \\
 \midrule
-Task-parameter constraints & 38.03 & 93.50 & 96.65 \\
-Constraints removed & 98.87 & 97.26 & 97.69 \\
+Decision margins, task constraints & 48.90 & 8.62 & 7.38 \\
+Task constraints removed & 17.39 & 7.63 & 6.99 \\
 \bottomrule
 \end{tabular}
-% Actual native loss with the original constraints is0.76pp;old0.5ppcriterion failed.
-% Frozen taskSVDdeletioncontrol shows no benefit of that hardconstraint component.
+
+% Method-informed fixed inverse (argmax-1) mod 10; no label fitting.
+% This checks the specified cyclic inverse, not all adaptive recovery.
+\begin{tabular}{lrrr}
+\toprule
+Setting & TA & AGA (target) & AGA (both) \\
+\midrule
+Decision margins, task constraints & 0.26 & 1.62 & 2.00 \\
+Task constraints removed & 0.71 & 8.99 & 9.75 \\
+\bottomrule
+\end{tabular}
+% Native losses 0.08/0.02 pp satisfy the declared 0.5 pp accuracy condition.
+% Historical strict relative-gap checks fail and remain in source records.
