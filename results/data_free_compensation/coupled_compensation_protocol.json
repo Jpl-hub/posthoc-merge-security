@@ -1,0 +1,138 @@
+{
+  "status": "defined_before_execution",
+  "target": "MNIST",
+  "output": "outputs/coupled_compensation_20261026",
+  "source_sha256": "71856915ae652123be9bbcee6bf7e5cad924c8aa38bca749cfacfca051e6c449",
+  "source": {
+    "path": "outputs/row_compensation_20261025/source.pt",
+    "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2",
+    "views": [
+      [
+        0,
+        0
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        -7,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        -7
+      ]
+    ],
+    "base_count": 160,
+    "all_inputs_retained": true
+  },
+  "basis": {
+    "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+    "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+  },
+  "task_seed": 2026102602,
+  "task_probes": 512,
+  "geometry": {
+    "record": "results/data_free_compensation/coupled_pair_geometry.json",
+    "sha256": "5ede1b2bda57fb73535e8ed82fa79306fc7f5117b1c118eab3d6d790c0a56401",
+    "construction": "OriginalM=[A,a],leftinverseandtaskrightV only;variableinputmixingonV complement,notglobalresidualrotation or neuronpermutation.",
+    "A_B": "Anew=A+AN(S-I)N^T;Bnew=B+(BAN)(S^T-I)(N^T Mplus[:768])+free. Free=Z(I-MMplus),relativefree<=1. PreservesBnew[Anew,a]=B[A,a] inexactarithmetic,not fullQuickGELU.",
+    "S": "T=skew(raw);C=solve(I-T,I+T);K=(C-C^T)/2;S=-solve(I-K,I+K). OrthogonalS,Kop<=1;cannot shrinkAchangebelow analyticlowerbound. Originalexpertsfixed;newvariablesrawT/freeZ only."
+  },
+  "parameter_bounds": {
+    "relative_A_by_layer_interval": [
+      [
+        1.2702402730747124,
+        1.796391021654762
+      ],
+      [
+        1.3712142046392426,
+        1.9391897251194534
+      ],
+      [
+        1.377866192700095,
+        1.9485970568518547
+      ],
+      [
+        1.3750968076162944,
+        1.9446805549069102
+      ],
+      [
+        1.3738211659587274,
+        1.9428765251740507
+      ],
+      [
+        1.3754539938767354,
+        1.9451856925607192
+      ],
+      [
+        1.3744646950874861,
+        1.9437866127957235
+      ],
+      [
+        1.3751342585288873,
+        1.9447335184954222
+      ],
+      [
+        1.3750488973648938,
+        1.9446127995796025
+      ],
+      [
+        1.364129633485891,
+        1.9291706285107864
+      ],
+      [
+        1.3707173409498064,
+        1.9384870537512018
+      ],
+      [
+        1.38399883899164,
+        1.9572699284105948
+      ]
+    ],
+    "relative_B_by_layer": [
+      172.3161220231345,
+      16.235686812178947,
+      7.141260481295032,
+      6.1803682227520875,
+      5.343450255637608,
+      5.501002757999368,
+      3.950907090275003,
+      4.489727458180919,
+      6.8795232030476345,
+      6.617010330398878,
+      4.274727818271248,
+      8.99795934760768
+    ],
+    "meaning": "Prospectivelydeclared weight-derivedupperbounds,notB4orhistoricalD.5. FirstBinitial6.88212,firstanalyticupper172.316isloose;actualdistancesalwaysreport. Originalnative<=.5ppunchanged."
+  },
+  "task_probe_distribution": "PerlayerGamma^-1 V intersectzero-mean,31dimorthQ.512Sobolnormaldirections,seed2026102602+i,centeredRMS1residuals,actualoriginalLN2 epsilon/gamma/beta. New source probes,not oldaxis-mixturediagnosticwitnesses;not asserted natural distribution.",
+  "objective": "CompleteT²KL(original||publication),T4,all retained generatedimages,plus mean12taskMLPoutput squaredchanges normalizedbyoriginalcenteredtaskresponsevariance. Coefficient1. Taskterm is genuinejoint nonlinearA/B response,not deltaB V_B=0. No directconstantwrongclass/public-mean fitting.",
+  "input_search": "Same3rounds32pixelsteps,l r.05,T4,20groups8,fiveviews. Bothmodelsinputderivatives;nooriginalparametergradient. Retainoriginal800andallroundfinal800pools:1600/2400/3200,no filtering.",
+  "solver": {
+    "library": "torch2.8 LBFGS",
+    "reset_each_round_for_changed_objective": true,
+    "lr": 1.0,
+    "max_iter": 40,
+    "max_eval": 60,
+    "history_size": 5,
+    "line_search_fn": "strong_wolfe",
+    "matrix_compute": "FP64 geometryandcoupledmatrices,castactualmodelFP32. Perbatchmodel gradientsaccumulateonmaterializedA/B leaves,thenone exactVJPthroughcoupledmapping. ToydirectvsVJPerror0,affineidentity6.09e-15."
+  },
+  "permission": "Onlyoriginaltarget/publicweights,fixedtargethead,taskSVD,originalclean generatedpoolandfreshweight-taskvectors. No real training/test/partner/exposedconfirmation orclosedpointweights/hardinputs for construction/selection/repair.",
+  "evaluation": "SinglethirdroundlastFP32point frozen andcommittedbeforeonefullnativeMNIST. ReportaccuracyandoldstrictR;loss<=.5ppthenfixedTA.5/authorAGA target/bothwithmatchedbaselineandpartner/perclass/paired/original128batchscore replay. No beststep/test-drivenchanges.",
+  "failure": "Nonfinite,failedgradientsorlinearidentity/rangefailure preserveandstop;onlyclearimplementationerrorsfixable.No oldpoint continuation or hyperparameterselectionfromrealresults.",
+  "scope": "One joint numericalA/B feasibilityexperiment. Cayley,orthogonal mixing,pseudoinverse,affineconstraints,KD,ABM inputsearch andLBFGS areknown,notnewoptimizerormathclaims. Linearhalfidentitydoesnotguaranteecompletefunction. Distinctfromclosed62d(onefirstblockuniformLN outputVarPro)and19d(weakdistance-rewardlastblockgame),andfromfixedA737/8b64.",
+  "references": [
+    "https://arxiv.org/html/2007.13171v1",
+    "https://arxiv.org/html/2609.39078v1",
+    "https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/solver.py",
+    "https://docs.pytorch.org/docs/2.8/generated/torch.optim.LBFGS.html"
+  ],
+  "public_before_execution": false
+}
