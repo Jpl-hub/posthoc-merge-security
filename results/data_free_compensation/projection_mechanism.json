@@ -1,0 +1,311 @@
+{
+  "readout_radius": {
+    "status": "completed_read_only",
+    "protocol": {
+      "status": "defined_before_execution",
+      "purpose": "Read-only separation of input coverage and final-projection sensitivity before designing a new data-free game; no new defense point or recovery attack.",
+      "point_sha256": "069e6091c34fe6f88f0c9b6c1044204228b096e68d9dae33dd6f8bf03e8236de",
+      "cached_source_sha256": "1ae3c1dbd6997a75cfd8324bd8a611dffeddda62df26b9b12dd58551daf310aa",
+      "original_AGA_sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "states": [
+        "direct",
+        "recovered"
+      ],
+      "all_cached_inputs": 800,
+      "projection_radius_rule": "rho = norm(0.5*(P_expert-P_base),F)/norm(P_public_mean,F); target-own update scale only, not an unknown-partner bound",
+      "exact_condition": "For fixed post-LN row z and head contrast d=W[0]-W[j], margin(z,P+E)=margin(z,P)+z E d. Minimum over norm(E,F)<=rho*norm(P,F) equals margin-rho*norm(P,F)*norm(z)*norm(d).",
+      "witness_rule": "For each of the two fixed states, take the minimum critical relative radius over every cached input and all nine competitors. Apply its unique minimum-norm rank-one tie perturbation multiplied by 1.000001. Report every cached prediction. No choice or repair of defense weights.",
+      "reuse": "The previously independently verified unchanged author row assignment is reconstructed by exact original/clean-AGA row bytes; no new Hungarian or full AGA call.",
+      "limits": "Only the frozen source cache and final P vary; LN and hidden prefixes remain fixed. No natural-task accuracy, task retention of a changed attacker model, prefix uncertainty coverage, new defense, or impossibility claim. Diagnostic witnesses are not future construction inputs.",
+      "real_images": 0,
+      "new_image_forwards": 0,
+      "new_defense_points": 0,
+      "related_source": {
+        "ABM_commit": "e24915d713672554800372c777c9014e3399e13b",
+        "files": {
+          "solver": {
+            "url": "https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/solver.py",
+            "sha256": "b64461dfcc460ebb11f84ad2ad8ff41a02258c69562c01d35357ed776320f222"
+          },
+          "main": {
+            "url": "https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/main.py",
+            "sha256": "c74cc2f283fd5cf54593b815da9c7025800b284ae8d200af5d483a0b8748c750"
+          }
+        },
+        "read_scope": "solver.run,divergence,KT_loss_generator;main1generator/7student defaults. Not installed or executed. During input search both frozen models transmit input gradients;during student step teacher target has no gradient."
+      }
+    },
+    "protocol_sha256": "2fc13d010597835d82e37ac6da81a033f95b1a7390f8c20b8f835f3956cbc09d",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "records": {
+      "direct": {
+        "n": 800,
+        "own_update_relative_radius": 0.01517626618430219,
+        "minimum_critical_radius": 0.008243491181392337,
+        "critical_radius_quantiles": [
+          0.008243491181392337,
+          0.00863163317698926,
+          0.008698862633887878,
+          0.008762549394350656,
+          0.009102395179254208
+        ],
+        "all_nine_positive_at_own_radius": 0,
+        "witness_input": 579,
+        "witness_competitor": 7,
+        "witness_relative_norm": 0.00824349942488352,
+        "witness_class0_remaining": 799,
+        "witness_prediction_histogram": [
+          799,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "analytic_gradient_error": 0,
+        "dual_norm_error": 0,
+        "finite_margin_identity_error": 8.031441044989082e-14
+      },
+      "recovered": {
+        "n": 800,
+        "own_update_relative_radius": 0.01517626618430219,
+        "minimum_critical_radius": 0.008355417414123363,
+        "critical_radius_quantiles": [
+          0.008355417414123363,
+          0.008638820470385153,
+          0.008695738024684482,
+          0.008747423502172117,
+          0.009040756138877155
+        ],
+        "all_nine_positive_at_own_radius": 0,
+        "witness_input": 173,
+        "witness_competitor": 7,
+        "witness_relative_norm": 0.008355425769540776,
+        "witness_class0_remaining": 799,
+        "witness_prediction_histogram": [
+          799,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "analytic_gradient_error": 0,
+        "dual_norm_error": 1.1368683772161603e-13,
+        "finite_margin_identity_error": 1.7452464712124083e-13
+      }
+    },
+    "arrays_sha256": "bb1397514e7d5d17ed251d430bccef1b72b7b47146cc6e50d54aa7108cb2773c",
+    "seconds": 6.068059545010328,
+    "real_images": 0,
+    "new_image_forwards": 0,
+    "new_full_AGA_calls": 0,
+    "new_matching_calls": 0,
+    "new_defense_points": 0,
+    "source_sha256": "cec22797d433846d9bb76ab65eff0f13146f941d69cf19ab27e738c86a73d4a2"
+  },
+  "projection_capacity": {
+    "status": "completed_read_only_capacity_calculation",
+    "records": [
+      {
+        "class_id": 0,
+        "unrestricted_maximum_relative_P_radius": 0.030972310633318286,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": 0,
+        "simplex_KKT_violation": 3.2526065174565133e-19,
+        "scipy_reference_error": 8.673617379884035e-16,
+        "active_competitors": [
+          1,
+          2,
+          4,
+          6,
+          8,
+          9
+        ]
+      },
+      {
+        "class_id": 1,
+        "unrestricted_maximum_relative_P_radius": 0.029811421662089492,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": 2.42861286636753e-17,
+        "simplex_KKT_violation": 1.0842021724855044e-19,
+        "scipy_reference_error": 8.430756093247282e-16,
+        "active_competitors": [
+          0,
+          4,
+          5,
+          7,
+          8
+        ]
+      },
+      {
+        "class_id": 2,
+        "unrestricted_maximum_relative_P_radius": 0.028368171227799704,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": 1.0408340855860843e-17,
+        "simplex_KKT_violation": 0,
+        "scipy_reference_error": 9.610368056911511e-16,
+        "active_competitors": [
+          0,
+          3,
+          4,
+          7
+        ]
+      },
+      {
+        "class_id": 3,
+        "unrestricted_maximum_relative_P_radius": 0.018491191025273114,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": 1.0408340855860843e-17,
+        "simplex_KKT_violation": 5.421010862427522e-20,
+        "scipy_reference_error": 5.204170427930421e-17,
+        "active_competitors": [
+          1,
+          2,
+          4,
+          5,
+          8
+        ]
+      },
+      {
+        "class_id": 4,
+        "unrestricted_maximum_relative_P_radius": 0.029422102020028228,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": 6.938893903907228e-18,
+        "simplex_KKT_violation": 2.168404344971009e-19,
+        "scipy_reference_error": 7.011752289898254e-15,
+        "active_competitors": [
+          0,
+          1,
+          2,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      {
+        "class_id": 5,
+        "unrestricted_maximum_relative_P_radius": 0.027629114851444914,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": 2.42861286636753e-17,
+        "simplex_KKT_violation": 0,
+        "scipy_reference_error": 0,
+        "active_competitors": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8
+        ]
+      },
+      {
+        "class_id": 6,
+        "unrestricted_maximum_relative_P_radius": 0.026466561162712003,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": 1.3877787807814457e-17,
+        "simplex_KKT_violation": 0,
+        "scipy_reference_error": 6.904199434387692e-15,
+        "active_competitors": [
+          0,
+          4,
+          5,
+          7,
+          8,
+          9
+        ]
+      },
+      {
+        "class_id": 7,
+        "unrestricted_maximum_relative_P_radius": 0.03303776027080042,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": 2.7755575615628914e-17,
+        "simplex_KKT_violation": 0,
+        "scipy_reference_error": 4.85722573273506e-17,
+        "active_competitors": [
+          1,
+          2,
+          4,
+          6,
+          8
+        ]
+      },
+      {
+        "class_id": 8,
+        "unrestricted_maximum_relative_P_radius": 0.033125292254730015,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": 2.7755575615628914e-17,
+        "simplex_KKT_violation": 2.168404344971009e-19,
+        "scipy_reference_error": 6.938893903907228e-18,
+        "active_competitors": [
+          0,
+          4,
+          5,
+          6,
+          7,
+          9
+        ]
+      },
+      {
+        "class_id": 9,
+        "unrestricted_maximum_relative_P_radius": 0.022373570801825622,
+        "own_update_relative_radius": 0.01517626618430219,
+        "upper_bound_exceeds_own_scale": true,
+        "primal_dual_gap": -1.0408340855860843e-17,
+        "simplex_KKT_violation": 0,
+        "scipy_reference_error": 1.3877787807814457e-17,
+        "active_competitors": [
+          0,
+          6,
+          7,
+          8
+        ]
+      }
+    ],
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "seconds": 6.103684560395777,
+    "source_sha256": "46926865abf7d77be3bec5e749b388f77969cc0b49706b347f1b37267e8abc92",
+    "arrays_sha256": "0037b09a6b4a57412433ae1c05e671c5239e326c150680e39b381f8ac70ae53b",
+    "new_image_forwards": 0,
+    "real_images": 0,
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "note": "All10classes fixed in advance;511simplex faces per class. Exact capacity only for arbitrary hidden direction and Frobenius projection uncertainty at this fixed public mean readout. Relaxation upper bound for actual LN/MLP outputs, not an attainable defense, task preservation, private-partner guarantee, or class selection rule."
+  },
+  "status": "completed_mechanism_calculations_no_new_defense",
+  "source_archive": {
+    "readout_radius_remote": "2026c6b01436c308b0191b55f199d22923caf288",
+    "projection_capacity_remote": "d71c693dcb2373b4543922fd19cb0d54c36dafd7",
+    "readout_radius_local": "fabca3b16f83544579b95f370c550d60858f8111",
+    "projection_capacity_local": "7b8186da3c7a91ca7f6d802103b46a4dd59b944b",
+    "both_sources_read_back_before_execution": true
+  },
+  "interpretation": "Frozen source success is not robust to a final-projection change on the target-own update scale; minimum tie radii0.82435%/0.83554% only show one pair crossing, not restoration of natural accuracy or all800views under one perturbation. Arbitrary-hidden-direction capacity is1.8491%-3.3125% across the fixed10classes, above the1.5176%stress radius, so this relaxed calculation does not rule out the target. Actual LN, sharedA/B, native retention and unknown-prefix coverage remain unproved. Standard margin/dual-norm/minimum-norm-convex-hull calculations are not novel algorithms."
+}

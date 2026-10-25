@@ -1,0 +1,52 @@
+{
+  "status": "resumed_after_user_CPU_only_restart_pending_final_SHA_verification",
+  "source": "3090 CPU-only",
+  "destination": "4090",
+  "source_project": "/root/autodl-tmp/merge_security_20261009",
+  "destination_project": "/root/autodl-tmp/posthoc-merge-security",
+  "method": "rsync -aLR --partial --append-verify --checksum; no source deletion",
+  "files": {
+    "data/MNIST/raw/train-images-idx3-ubyte": {
+      "bytes": 47040016,
+      "sha256": "ba891046e6505d7aadcbbe25680a0738ad16aec93bde7f9b65e87a2fc25776db"
+    },
+    "data/MNIST/raw/train-labels-idx1-ubyte": {
+      "bytes": 60008,
+      "sha256": "65a50cbbf4e906d70832878ad85ccda5333a97f0f4c3dd2ef09a8a9eef7101c5"
+    },
+    "data/MNIST/raw/t10k-images-idx3-ubyte": {
+      "bytes": 7840016,
+      "sha256": "0fa7898d509279e482958e8ce81c8e77db3f2f8254e26661ceb7762c4d494ce7"
+    },
+    "data/MNIST/raw/t10k-labels-idx1-ubyte": {
+      "bytes": 10008,
+      "sha256": "ff7bcfd416de33731a308c3f266cc351222c34898ecbeaf847f06e48f7ec33f2"
+    },
+    "data/test_32x32.mat": {
+      "bytes": 64275384,
+      "sha256": "cdce80dfb2a2c4c6160906d0bd7c68ec5a99d7ca4831afa54f09182025b6a75b"
+    },
+    "checkpoints/ViT-B-32/SVHN/finetuned.pt": {
+      "bytes": 453892355,
+      "sha256": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc"
+    },
+    "checkpoints/ViT-B-32/head_SVHN.pt": {
+      "bytes": 21927,
+      "sha256": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "outputs/feature_noise/artifacts/partner_AGA.pt": {
+      "bytes": 453856254,
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3"
+    },
+    "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt": {
+      "bytes": 11453570,
+      "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51"
+    }
+  },
+  "extra_source": "external/ties-merging/src/utils/merge_utils.py; pinned generic evaluator dependency, no new TIES evaluation",
+  "production_code_files_copied": 20,
+  "main_GPU": "4090",
+  "historical_evidence": "Unique historical weights/raw scores remain on3090. This is a necessary evaluation-input transfer, not a complete backup.",
+  "construction_data_policy": "Copied MNIST/SVHN files are for later frozen evaluation only. New method construction must not read real images.",
+  "no_new_experiments_on_3090": true
+}
