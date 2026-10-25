@@ -1,0 +1,18 @@
+{
+  "status": "defined_before_execution",
+  "target": "MNIST",
+  "output": "outputs/bias_weight_only_20261025",
+  "noise_seed": 20261014,
+  "proxy_coefficient": 0.5,
+  "amplitude_multiplier": 2.0,
+  "numerical_relative_tolerance": 1e-10,
+  "construction_access": "Frozen original target, public base and fixed original classifier only. No real or synthetic images, data indices, cached activations, prior protected release or test results.",
+  "direction": "Same original projection-kernel direction and fixed-seed requested class rule. No new direction or seed selection.",
+  "amplitude": "For proxy P,gamma,beta and each rival contrast d_j=w_c-w_j, let t_j=P*d_j and g_j=n^T*t_j>0. LayerNorm centered vector has norm <=sqrt(width). One analytic sufficient amplitude is max_j[(sqrt(width)*norm(center(gamma*t_j))-beta^T*t_j)/(coefficient*g_j)]_+. Use the existing fixed multiplier 2, no image calibration or amplitude sweep.",
+  "numeric_release": "One FP32 final-LN bias publication. Record actual quantized native embedding offset and actual proxy margin lower bounds. Do not repair from natural evaluation.",
+  "evaluation": "Freeze SHA before complete native MNIST; max accuracy loss0.5pp. If passed, same TA0.5 and original AGA two scopes; use unchanged original-AGA weights because only the final bias changes, and verify the recovery transport from official source. Otherwise close without fusion.",
+  "scope": "Data-Free construction of Defense1, not a new defense algorithm. The analytic certificate is for the public-base proxy only, not every unknown partner. Historical image-calibrated amplitudes remain data-assisted records.",
+  "no_retry": "One fixed target/seed/direction/formula/multiplier/FP32 point. No source, scale, precision or test-driven retry.",
+  "public_before_execution": false,
+  "implementation_sha256": "fd02a9615dde9fdb71740f4da923d98852a5d223b1ae4d62490fed2bbd183d00"
+}

@@ -85,4 +85,4 @@ Oct24继续清理：已完成且使用真实训练图的逐层数值构造从活
 磁盘清理记录见 `results/engineering_refactor/cleanup_20261023.json` 的 `additional_cleanup_20261024`。旧诊断的 `.pt.gz` 保留原文件全部字节，已校验解压SHA。需要历史重放时，根据清理记录中的两个绝对路径，用 `gzip -dc <archive_path> > <original_path>` 恢复尚不存在的原 `.pt`，核对原SHA后再使用冻结源码；无需在当前工程增加加载分支。query_direction校准缓存只保留原始视觉输出、索引和基，其余中间激活按冻结source.zip重建。已关闭探索不能通过清理改为成功。
 
 
-2026-10-25：四个已结束的数值探索脚本从当前目录删除，共553行；另移除10份未被运行代码和论文表引用的一次性调试记录。源码及记录的SHA与归档逐一相同，具体路径和Git快照见results/engineering_refactor/validation.json的oct25_core_cleanup。没有新增运行框架，生产入口及已有效的方法未改；唯一模型、原始分数和失败记录保留。
+2026-10-25：五个已结束的数值探索脚本从当前目录删除，共755行；另移除10份未被运行代码和论文表引用的一次性调试记录。源码及记录的SHA与归档逐一相同，具体路径和Git快照见results/engineering_refactor/validation.json的oct25_core_cleanup。没有新增运行框架，生产入口及已有效的方法未改；唯一模型、原始分数和失败记录保留。
