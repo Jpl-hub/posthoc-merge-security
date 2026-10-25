@@ -1,78 +1,51 @@
 {
-  "status": "Frozen direct-margin points retain standalone utility and original-AGA effects; one fixed data-free output calibration restores about89-90%MNIST afterAGA. This exposes a common class-bias limitation; no new defense point was constructed.",
-  "updated_utc": "2026-10-25T12:06:24.340818+00:00",
+  "status": "No accepted new numerical Defense2. Frozen point c5ddd6be retains MNIST standalone 99.69%, but TA is 97.31% and original AGA is 78.22% / 77.20%. This experiment is closed.",
+  "updated_utc": "2026-10-25T13:33:51.549029+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
-  "automation_status": "13-35 deleted; do not recreate",
+  "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "primary_compute": {
-    "primary_GPU": "4090D",
-    "primary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "ssh_control_socket": "/tmp/posthoc_4090_active.sock",
-    "3090": "CPU-only archive, no GPU jobs",
-    "4090_storage_available_bytes": 50655252480,
-    "4090_system_available_bytes": 31924256768,
-    "GPU_process_check_utc": "2026-10-25T11:19:40Z",
-    "active_GPU_jobs": 0
+  "latest_core_trial": {
+    "point_sha256": "c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8",
+    "record": "results/data_free_compensation/neutral_compensation_result.json",
+    "native_TA_AGAtarget_AGAboth": [
+      99.69,
+      97.31,
+      78.22,
+      77.2
+    ],
+    "calibrated_TA_AGAtarget_AGAboth": [
+      87.22,
+      60.33,
+      56.33
+    ],
+    "closed": true,
+    "teacher_updates": 0,
+    "source_optimizer_steps": 0,
+    "full_new_AGA_calls": 1,
+    "new_real_evaluation_image_forwards": 128096,
+    "original_context_replay_image_forwards": 27296,
+    "new_generated_full_image_forwards": 5792,
+    "active_constructor_retired": true,
+    "source_preservation_and_public_equality_scope": "Finite800native+64taskprobes;doesnotguarantee realpartner upstreamactivations.",
+    "internal_diagnosis": "Same800generated inputs:realpartner restores684teacherclasses;construction final readout with realpartner upstream still671. This is an internalablation,not an attack with hiddenexpert access. It establishes upstream changes can break this finite compensation,not all sources of natural-task error."
   },
-  "main_point_sha256": "b8f1bfb02c09e47b5daae6621e6cd55d8aa7f83c97621230a0ad1365be1a842e",
-  "control_point_sha256": "d87be267ff077aa8b5db06958273b1de2c65d78c7ca8234c17fb818c774a1af1",
-  "current_construction": {
-    "status": "completed_with_independent_checks",
-    "implementation": "results/data_free_compensation/decision_compensation.py",
-    "protocols": [
-      "results/data_free_compensation/decision_compensation_protocol.json",
-      "results/data_free_compensation/decision_no_task_protocol.json"
-    ],
-    "results": [
-      "results/data_free_compensation/decision_evaluation_result.json",
-      "results/data_free_compensation/decision_no_task_evaluation_result.json"
-    ],
-    "public_before_execution": false,
-    "local_definition": "0320a5f4758f9525955de7e337285c292b84133a",
-    "control_definition": "e95b028",
-    "main_replaced_by_control": false,
-    "test_based_repair": false
+  "next_action": "Focus on a data-free cross-module compensation mechanism that remains meaningful when upstream mixed activations change. Need a concrete original/public-weight-only functional condition before coding;no more point/solver/layer variants of the closed final-MLP construction. Inputs/parameters/statistics exposed by partner/test/diagnosis cannot be used to patch those points.",
+  "engineering_cleanup": {
+    "production_modules_and_entrypoints_unchanged": true,
+    "new_frameworks": 0,
+    "retired_exploration_sources": 4,
+    "retired_source_lines": 553,
+    "retired_unreferenced_debug_records": 10,
+    "unique_models_scores_failures_deleted": 0,
+    "record": "results/engineering_refactor/validation.json:oct25_core_cleanup",
+    "previous_full_state_commit": "97a3474"
   },
-  "current_results": {
-    "main_native_TA_AGAtarget_AGAboth": [
-      99.61,
-      93.22,
-      26.45,
-      23.12
-    ],
-    "control_native_TA_AGAtarget_AGAboth": [
-      99.67,
-      38.58,
-      15.47,
-      13.11
-    ],
-    "hard_SVD_benefit_demonstrated": false,
-    "all_adaptive_recovery_solved": false
-  },
-  "next_action": "Core construction must reduce the input-dependent class contrasts rather than merely add a fixed class bias. Derive a distinct original/public-weight-only compensation mechanism and meaningful functional task probes; no reliable new algorithm is fixed yet. Do not repair closed points with exposed corrections/scores/examples or sweep steps/coefficients/layers/ranks/seeds. Raw original-AGA effects remain separate from generated-query output calibration.",
   "github_sync": {
-    "status": "Connector github.fetch returned Unknown tool; current batch local and4090, not claimed uploaded.",
+    "status": "Pending upload: the GitHub connector get_repo request failed at transport (chatgpt.com MCP endpoint). No new remote commit or readback.",
     "last_verified_remote_commit": "4c76d4d9ecc2d71d1c3474ad2b78951e432685e5",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
-  "history_snapshot": "4b627f793619ebb1f22628645b10b7ac489ee4ad",
-  "unique_models_scores_failures_deleted": 0,
-  "last_completed_check": {
-    "record": "results/data_free_compensation/readout_calibration_result.json",
-    "new_defense_points": 0,
-    "new_real_images": 0,
-    "new_AGA_calls": 0,
-    "generated_image_forwards": 576,
-    "main_AGA_target_both_after_fixedcalibration": [
-      89.46,
-      89.59
-    ],
-    "control_AGA_target_both_after_fixedcalibration": [
-      89.59,
-      89.62
-    ],
-    "original_AGA_raw_unchanged": true
-  }
+  "historical_protocol_state": "97a3474"
 }

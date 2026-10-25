@@ -1067,3 +1067,10 @@ PaRaMS原文§5／附录H分别评价保护前后独立模型、融合目标与�
 核读[Calibrate Before Use，ICML2021 §5](https://proceedings.mlr.press/v139/zhao21c/zhao21c.pdf)及[固定官方e04d8643](https://github.com/tonyzhaozh/few-shot-learning/blob/e04d8643be91c2cce63f33e07760ff75d5aa3ad0/run_classification.py)的eval_accuracy与get_p_content_free：作者平均无内容输入的类别概率，再作固定对角除法；另有减概率偏差分支。实际文件blob f8b0eeaf、SHA60787d59，全文源码留4090 bias_calibration_source_review.json，未安装／执行原语言模型流程。本项采用同一概率除法的稳定对数实现，改用64张固定未优化随机图作图像域输入，并非官方CLIP复现或本项目新攻击算法。
 
 唯一执行前固定校正使原AGA后主点MNIST89.46／89.59、删除约束对照89.59／89.62，匹配同校正无保护99.29／99.29；原始AGA各表不改。拟合仅使用自己的融合模型／公开头／随机输入，无原专家／任务向量、真实图或标签。故当前数值保护很大部分来自可由输入无关偏差处理消除的类别倾向，不代表原分类信息已消失；约10pp剩余损失仍须如实保留。H_N S H_C对任意固定类别偏差不变的普通矩阵恒等式给出下一功能分析的具体对象，不自动成为新防御或原创性。完整分组、配对和成本见readout_calibration_result.json。
+
+
+### Oct25：有限输入上的类别相等不能替代融合后的功能验证
+
+核读[AlphaEdit固定v3 §3.1–3.3](https://arxiv.org/html/2410.02355v3)与[官方主分支AlphaEdit_main.py](https://github.com/jianghoucheng/AlphaEdit/blob/main/AlphaEdit/AlphaEdit_main.py)：保存键的零空间投影和正则求解已有先例，get_cov调用真实数据激活统计。另读[LEACE固定v3 §3–4](https://arxiv.org/html/2306.03819v3)与[官方主分支leace.py](https://github.com/EleutherAI/concept-erasure/blob/main/concept_erasure/leace.py)：其线性概念消除依赖特征／标签统计，不等于所有分类器均不可恢复。两个官方文件本次只通过网页阅读，固定提交源码API请求失败，未取得可校验的固定版本文件，不称已固定官方源码或执行复现。检索状态保存在paper_protocol_review.json。
+
+本项目c5ddd6be以标准伪逆精确保持有限原生／任务响应，并使固定最终分类头在两种公开生成状态下的类别分数相等；普通核投影、伪逆与LayerNorm恒等式不计创新。独立99.69%保持，但真实TA97.31%、原AGA78.22%／77.20%，未形成新的可靠保护。真实伙伴改变上游输出后，同源的分数相等条件也不再成立，内部替换最终读出仍有671/800保留原类别。本结果说明这一具体有限字典与末块求解的范围不足，不是对全部无数据补偿的否定，也不是通过增加通用审计或更多约束来解决的问题。

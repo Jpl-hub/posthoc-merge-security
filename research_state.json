@@ -1,189 +1,85 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
-  "active_focus": "Defense2: data-free numerical changes and joint compensation preserving standalone task accuracy while reducing TA and original-AGA protected-task performance.",
-  "status": "Frozen direct-margin points retain standalone utility and original-AGA effects; one fixed data-free output calibration restores about89-90%MNIST afterAGA. This exposes a common class-bias limitation; no new defense point was constructed.",
-  "updated_utc": "2026-10-25T12:06:24.340818+00:00",
+  "active_focus": "Defense2 data-free core mechanism: meaningful numerical changes and cross-module compensation preserving standalone function after expert freezing.",
+  "status": "No accepted new numerical Defense2. Frozen point c5ddd6be retains MNIST standalone 99.69%, but TA is 97.31% and original AGA is 78.22% / 77.20%. This experiment is closed.",
+  "updated_utc": "2026-10-25T13:33:51.549029+00:00",
+  "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
-    "parameter_budget": 0.5,
-    "parameter_convention": "Separate logical Q/K/V matrices and each edited bias; raw packed-tensor distances are not equivalent.",
-    "full_relative_class_gap_budget": 0.5,
-    "extra_parameter_budget": "Prospective method-specific range justified by structure, standalone function and numerical stability; declare before source/evaluation. Do not retune closed points.",
-    "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
-    "validation_order": "Prospective source construction -> freeze sole point -> independent held-out measurement -> complete native accuracy -> fixed TA and originalAGA. Report any strictR/old small-sample failure separately. Main357 fusion is explicitly post-gate same-point observational followup.",
-    "SVD_role": "Task-direction probe; its orthogonal complement is not a functional zero space.",
-    "historical_tests_not_blind": true,
-    "closed_points_not_retried": true,
-    "parameter_budget_scope": "Historical fixed-distance comparison only; not a universal prerequisite for future Defense2 or full-default paper baselines. Existing protocols and outcomes remain unchanged.",
-    "comparison_policy": "Primary TA/originalAGA with full default baselines and matched standalone function. Parameter distances and resource costs reported explicitly. Historical D0.5 comparison and R0.5 functional check retained."
+    "historical_D_and_R": ".5/.5comparison preserved,not a universal newparametercap;full history at97a3474.",
+    "native_condition": "Prospectivelydeclared<=.5ppcompleteaccuracy loss;oldstrictR separately reported.",
+    "experts_frozen": true,
+    "real_construction_images": 0,
+    "no_partner_test_witness_for_construction_selection_or_repair": true,
+    "no_closed_point_parameter_seed_rank_layer_retries": true,
+    "original_AGA_and_other_processing": "OriginalAGA raw,outputcalibration,knownmodule recovery separate;mergers notcountedasattacks."
   },
-  "user_engineering_preference": "Keep a small set of useful checks; do not add audit entrypoints,repeat checks or stricter process gates without a concrete correctness need. Concentrate on method and actual standalone/TA/AGA accuracy.",
   "automatic_continuation": false,
-  "automation_status": "13-35 deleted; do not recreate",
+  "automation_status": "13-35 deleted;do not recreate",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
   "compute": {
     "primary_GPU": "4090D",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
     "ssh_control_socket": "/tmp/posthoc_4090_active.sock",
     "3090": "CPU-only archive, no GPU jobs",
-    "4090_storage_available_bytes": 50655252480,
-    "4090_system_available_bytes": 31924256768,
-    "GPU_process_check_utc": "2026-10-25T11:19:40Z",
+    "4090_storage_available_bytes": 50533109760,
+    "4090_system_available_bytes": 31924252672,
+    "GPU_process_check_utc": "2026-10-25T13:29:49.534193+00:00",
     "active_GPU_jobs": 0
   },
-  "research_jobs": [],
-  "active_GPU_jobs": 0,
-  "current_candidate": {
-    "point_sha256": "b8f1bfb02c09e47b5daae6621e6cd55d8aa7f83c97621230a0ad1365be1a842e",
-    "record": "results/data_free_compensation/decision_evaluation_result.json",
+  "latest_core_trial": {
+    "point_sha256": "c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8",
+    "record": "results/data_free_compensation/neutral_compensation_result.json",
     "native_TA_AGAtarget_AGAboth": [
-      99.61,
-      93.22,
-      26.45,
-      23.12
+      99.69,
+      97.31,
+      78.22,
+      77.2
     ],
-    "partner_TA_AGAtarget_AGAboth": [
-      48.9014,
-      8.6202,
-      7.3794
+    "calibrated_TA_AGAtarget_AGAboth": [
+      87.22,
+      60.33,
+      56.33
     ],
-    "native_loss_pp": 0.08,
-    "declared_native_condition_passed": true,
-    "A_relative": 1.0273893035120545,
-    "B_relative": 0.40747854113578796,
-    "logical_D": 1.1052454670602068,
-    "strict_R": {
-      "Decision_MNIST": {
-        "n": 10000,
-        "changed": 18,
-        "R": 189.3094491985055
-      }
-    },
-    "source_all800_native_retained": true,
-    "source_both_public_states_all_class0": true,
-    "all_requested_source_halfmargins_satisfied": false,
-    "known_fixed_cyclic_inverse_TA_AGAtarget_AGAboth": [
-      0.26,
-      1.62,
-      2.0
-    ],
-    "full_author_AGA_calls": 1,
-    "source_full_AGA_calls": 0,
-    "real_construction_images": 0,
-    "teacher_training_updates": 0
+    "closed": true,
+    "teacher_updates": 0,
+    "source_optimizer_steps": 0,
+    "full_new_AGA_calls": 1,
+    "new_real_evaluation_image_forwards": 128096,
+    "original_context_replay_image_forwards": 27296,
+    "new_generated_full_image_forwards": 5792,
+    "active_constructor_retired": true,
+    "source_preservation_and_public_equality_scope": "Finite800native+64taskprobes;doesnotguarantee realpartner upstreamactivations.",
+    "internal_diagnosis": "Same800generated inputs:realpartner restores684teacherclasses;construction final readout with realpartner upstream still671. This is an internalablation,not an attack with hiddenexpert access. It establishes upstream changes can break this finite compensation,not all sources of natural-task error."
   },
-  "current_control": {
-    "point_sha256": "d87be267ff077aa8b5db06958273b1de2c65d78c7ca8234c17fb818c774a1af1",
-    "record": "results/data_free_compensation/decision_no_task_evaluation_result.json",
-    "native_TA_AGAtarget_AGAboth": [
-      99.67,
-      38.58,
-      15.47,
-      13.11
-    ],
-    "partner_TA_AGAtarget_AGAboth": [
-      17.3901,
-      7.6329,
-      6.9914
-    ],
-    "native_loss_pp": 0.02,
-    "declared_native_condition_passed": true,
-    "A_relative": 0.9996194067824443,
-    "B_relative": 0.3559892475605011,
-    "logical_D": 1.0611160647143072,
-    "strict_R": {
-      "DecisionNoTask_MNIST": {
-        "n": 10000,
-        "changed": 10,
-        "R": 96.53982865292676
-      }
-    },
-    "source_all800_native_retained": true,
-    "source_both_public_states_all_class0": true,
-    "all_requested_source_halfmargins_satisfied": false,
-    "known_fixed_cyclic_inverse_TA_AGAtarget_AGAboth": [
-      0.71,
-      8.99,
-      9.75
-    ],
-    "full_author_AGA_calls": 1,
-    "source_full_AGA_calls": 0,
-    "real_construction_images": 0,
-    "teacher_training_updates": 0
+  "established_methods": {
+    "Defense1": "results/phase3/tables.md",
+    "task_directed_permutation": "results/task_directed_pairing/summary.md;known-family matching scope separate.",
+    "earlier_numerical_references": "results/data_free_compensation/row_evaluation_result.json,decision_evaluation_result.json,decision_no_task_evaluation_result.json;originalAGA effects and fixedoutputcorrection outcomes retained."
   },
-  "method": {
-    "source": "One shared constructor, fixed A row geometry; deltaB only, exact final LN/P/unit-normalization/head margins. Native half teacher gaps; both public surrogate states toward prospectively fixed class0.",
-    "main_protocol": "results/data_free_compensation/decision_compensation_protocol.json",
-    "control_protocol": "results/data_free_compensation/decision_no_task_protocol.json",
-    "allowed_inputs": "Original target/public weights, fixed target classifier/class IDs and existing clean generated source. No partner, real images, previous protected parameters or exposed witness-based repair.",
-    "optimizer": "300 Adam steps, lr0.001, rho0.01, original B initialization, exact final step, no hard parameter cap or test-based point selection.",
-    "task_SVD_contribution": "Hard A task projection has not shown a benefit in this fixed deletion control. No contribution claim.",
-    "source_scope": "800 generated views, finite classes/environments, not worst input or unknown-partner guarantee. Some half-margin conditions remain unsatisfied despite source class predictions.",
-    "independent_checks": "NumPy official labels/full indices/per-class/paired CI/exact McNemar; 448 original128-context score replays, max error1.52587890625e-5. Main active centered gradient FD error7.79e-12; original zero-gradient check retained and identified as LN-invariant.",
-    "cost_this_batch": {
-      "complete_author_AGA_calls": 2,
-      "new_real_evaluation_image_forwards": 236192,
-      "original_context_replay_image_forwards": 54592,
-      "generated_full_source_image_forwards": 4800,
-      "new_pixel_generation_or_optimization": 0,
-      "teacher_training_updates": 0,
-      "runtime_frameworks_added": 0
-    },
-    "limitations": "One target/partner; partner utility also decreases. Fixed data-free output calibration restores about89-90%afterAGA. Cannot claim originalclassinformation erased or all adaptive recoveries resisted.",
-    "implementation": "results/data_free_compensation/decision_compensation.py"
+  "closed_history": "notes/phase2_coupling.md,notes/phase2_related_work_and_novelty.md;all earlierQ/V/O/affine/zero-unit/Jacobian/staticreadout/069e/19d/cyclic/commonresponse/decisionmargin/neutral-responsepoints remain closed.",
+  "engineering": {
+    "production_modules_and_entrypoints_unchanged": true,
+    "new_frameworks": 0,
+    "retired_exploration_sources": 4,
+    "retired_source_lines": 553,
+    "retired_unreferenced_debug_records": 10,
+    "unique_models_scores_failures_deleted": 0,
+    "record": "results/engineering_refactor/validation.json:oct25_core_cleanup",
+    "previous_full_state_commit": "97a3474"
   },
-  "comparisons": {
-    "earlier_cyclic_numerical_points": "results/data_free_compensation/row_evaluation_result.json and no_task_evaluation_result.json; raw original-AGA effects and method-informed inverse recovery retained.",
-    "global_task_directed": "results/task_directed_pairing/summary.md;three targets and eight-expert setting,originalAGA effective,known-family public matching exactly recovers158tensors",
-    "Defense1": "results/phase3/tables.md;originalAGA and stronger permissions separately reported",
-    "full_PaRaMS": "results/params_reference/other_tasks/summary.md;full default baseline,not excluded by historical D0.5",
-    "closed_history": "All closed Q/V/O/affine/zero-unit/local-Jacobian/069e/19d/common-feature/class-response points remain closed; exact records and sources in notes and prior Git snapshot. No strength/layer/rank/seed retries.",
-    "data_assisted_reference": "Real-image numerical357 and public-backbone27eb are historical references, not current data-free construction."
-  },
-  "next_action": "Core construction must reduce the input-dependent class contrasts rather than merely add a fixed class bias. Derive a distinct original/public-weight-only compensation mechanism and meaningful functional task probes; no reliable new algorithm is fixed yet. Do not repair closed points with exposed corrections/scores/examples or sweep steps/coefficients/layers/ranks/seeds. Raw original-AGA effects remain separate from generated-query output calibration.",
-  "paper_tables": {
-    "canonical": "results/paper_tables; unchanged completed24-table source snapshot",
-    "current_supplement": "results/data_free_compensation/summary.md and row_table.tex; same checked main/control rows",
-    "complete_eight_task_claim": false
-  },
+  "next_action": "Focus on a data-free cross-module compensation mechanism that remains meaningful when upstream mixed activations change. Need a concrete original/public-weight-only functional condition before coding;no more point/solver/layer variants of the closed final-MLP construction. Inputs/parameters/statistics exposed by partner/test/diagnosis cannot be used to patch those points.",
+  "paper_tables": "Canonical24tablesunchanged;current small MD/TeXsupplement inresults/data_free_compensation. No new report or PPT.",
   "github_sync": {
-    "status": "Connector github.fetch returned Unknown tool; current batch local and4090, not claimed uploaded.",
+    "status": "Pending upload: the GitHub connector get_repo request failed at transport (chatgpt.com MCP endpoint). No new remote commit or readback.",
     "last_verified_remote_commit": "4c76d4d9ecc2d71d1c3474ad2b78951e432685e5",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "history": {
     "full_previous_state_and_campaign_commit": "4b627f793619ebb1f22628645b10b7ac489ee4ad",
     "scientific_notes": "notes/phase2_coupling.md and notes/phase2_related_work_and_novelty.md",
-    "unique_weights_scores_failures": "Preserved on servers; current batch outputs/row_compensation_20261025/decision_margin and decision_margin_no_task on4090; older unique evidence remains3090.",
-    "engineering": "Only shared necessary construction source retained; prior completed/failed source snapshots in Git and embedded records. No new report/audit framework."
+    "unique_weights_scores_failures": "Current raw evidence remains on the 4090 under outputs/row_compensation_20261025; older unique evidence remains on the CPU-only 3090.",
+    "engineering": "No active one-off constructor. Exact completed sources remain in Git and raw result archives; shared production code is unchanged."
   },
-  "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
-  "readout_calibration": {
-    "status": "complete_independently_verified",
-    "record": "results/data_free_compensation/readout_calibration_result.json",
-    "definition_local": "5973f19",
-    "public_before_execution": false,
-    "permission": "Own fused model/publichead and64unoptimizednoisequeries; no originaltarget for fitting, realimages, labels or parameterupdates. Separate from originalAGA.",
-    "uncorrected_original_AGA_retained": true,
-    "unprotected_calibrated_TA_AGAtarget_AGAboth": [
-      99.34,
-      99.29,
-      99.29
-    ],
-    "main_calibrated_TA_AGAtarget_AGAboth": [
-      81.12,
-      89.46,
-      89.59
-    ],
-    "control_calibrated_TA_AGAtarget_AGAboth": [
-      89.13,
-      89.59,
-      89.62
-    ],
-    "control_AGAboth_remaining_loss_pp_vs_matched_corrected": 9.67,
-    "new_defense_points": 0,
-    "new_real_image_forwards": 0,
-    "new_AGA_calls": 0,
-    "generated_image_forwards": 576,
-    "active_one_off_source_retired": true,
-    "finite_functional_diagnosis": "H_N*S*H_C is invariant to constant class-logit shifts and per-input scalar shifts. On800oldsourceviews,public between-class contrasts retain0.628-0.722 of clean norm despite allclass0top1. Diagnosis only,not new parameter construction or unknown-input theorem."
-  }
+  "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图"
 }

@@ -1,35 +1,19 @@
-% Complete MNIST test; SVHN partner; TA coefficient 0.5; original-author AGA.
-% Main and deletion control are separately frozen releases, not best-point selection.
+% Complete MNIST, SVHN partner, TA0.5, original-author AGA.
+% Unique fixed point; source condition and standalone retention are not merge protection.
 \begin{tabular}{lrrrr}
 \toprule
 Setting & Standalone & TA & AGA (target) & AGA (both) \\
 \midrule
 Unprotected & 99.69 & 99.37 & 99.30 & 99.32 \\
-Decision margins, task constraints & 99.61 & 93.22 & 26.45 & 23.12 \\
-Task constraints removed & 99.67 & 38.58 & 15.47 & 13.11 \\
+Fixed conditional point & 99.69 & 97.31 & 78.22 & 77.20 \\
 \bottomrule
 \end{tabular}
-
-% SVHN partner accuracy under the same three merging/recovery settings.
-\begin{tabular}{lrrr}
-\toprule
-Setting & TA & AGA (target) & AGA (both) \\
-\midrule
-Decision margins, task constraints & 48.90 & 8.62 & 7.38 \\
-Task constraints removed & 17.39 & 7.63 & 6.99 \\
-\bottomrule
-\end{tabular}
-
-% One fixed content-free probability calibration; generated queries, no true-label fitting.
-% This is separate from raw original-author AGA above.
+% Same predeclared output calibration, no true-label fitting; attacker can retain raw AGA.
 \begin{tabular}{lrrr}
 \toprule
 Setting & TA & AGA (target) & AGA (both) \\
 \midrule
 Unprotected & 99.34 & 99.29 & 99.29 \\
-Decision margins, task constraints & 81.12 & 89.46 & 89.59 \\
-Task constraints removed & 89.13 & 89.59 & 89.62 \\
+Fixed conditional point & 87.22 & 60.33 & 56.33 \\
 \bottomrule
 \end{tabular}
-% Native losses 0.08/0.02 pp satisfy the declared 0.5 pp accuracy condition.
-% Historical strict relative-gap checks fail and remain in source records.
