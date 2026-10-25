@@ -1,0 +1,17 @@
+{
+  "status": "defined_before_execution",
+  "purpose": "Check one finite weight-only condition for task-outside numerical change before constructing a joint functional defense.",
+  "target": "MNIST",
+  "layer": 11,
+  "matrix": "MLP c_fc.weight A,3072x768",
+  "information": "Only original target/public weights and fixed weight-derived32dimensional task singular subspaces. Original cleanAGA used after construction only to identify the old reference assignment. No real/generated image,classhead,partner,candidate or exposed counterexample.",
+  "basis": {"path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt", "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344", "rank": 32, "operation": "QR reorthogonalize the same columns inFP64;no rank/direction selection"},
+  "condition": "PL=I-UU^T,PR=I-VV^T;deltaA=PLdeltaAPR;diag((A+deltaA)A0^T)=0 for every3072corresponding row.",
+  "solution": "Minimum Frobenius norm subject to these equalities: G=PL elementwise(A0PR A0^T),b=-diag(AA0^T),Glambda=b,deltaA=PLdiag(lambda)A0PR. One undamped Cholesky solve;failure stops,no rank/budget/ridge retry.",
+  "independent_check": "NumPy QR and products,SciPy Cholesky;all equalities,KKT/norm identity andFP32actual matrix. Relative residual1e-8,FP32relative task-probe leakage5e-7,FP32maximum corresponding-row cosine1e-5. These check implementation,not natural function.",
+  "parameter_scope": "No arbitrary distance cap or amplitude sweep. Report the unique minimum distance required by the fixed condition;not automatically historicalD0.5compliant. No publication model is constructed by this check.",
+  "author_matching": {"path": "external/secure-merge-attack/utils_attack_B32.py", "sha256_text": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778", "calls": 1, "full_AGA_calls": 0, "original_clean_AGA": "outputs/feature_noise/artifacts/original_AGA.pt", "original_clean_AGA_sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607", "measure": "All rows,assignment change versus original reference,aligned lastMLP A/a/B differences. Changed assignment/parameter distance is not classification harm."},
+  "finite_probes": "All64positive/negative unit task right-singular vectors;original bias andB unchanged. Synthetic MLP-vector responses only,no images or full encoder.",
+  "limits": "Task SVD is not an image-function zero space. This changes nonlinear neuron responses outside its probes and is not a global function-preserving permutation/scaling. Native function and anti-merging effect require jointB/multilayer compensation and actual separate evaluation. No novelty or security guarantee from the standard linear algebra.",
+  "no_retry": "One original/public pair,one fixed layer/rank/condition;no angle,strength,row subset,seed or solver sweep.Closed19d/069e and previous affine controls are not loaded or repaired."
+}
