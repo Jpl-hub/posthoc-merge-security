@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-25T05:14:23.209734+00:00",
+  "updated_utc": "2026-10-25T05:42:34.769000+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -4787,7 +4787,7 @@
     "interpretation": "On the same existing128generated inputs,the local signed task reversal did not survive complete-prefix/final-readout task measurements. Rank-one final B edits preserve a positive outside-plane feature component. This closes only that inference;not a classification impossibility or a universal gate for future A/B methods. Native generated feature error is not real task accuracy loss. No point/input refit."
   },
   "class_conditioned_source": {
-    "status": "declared_before_generation",
+    "status": "completed_fixed_teacher_source",
     "source_sha256": "01ed6cd32a805228a5dfa5f27fb90cb9551e80a1afb45059b08428828ba2f780",
     "source_path": "results/data_free_compensation/code_snapshot/class_inputs.py",
     "source_n": 160,
@@ -4797,10 +4797,12 @@
     "defense_publications": 0,
     "GPU": "4090D",
     "selection": "all final128-step source inputs;no step/class/test selection",
-    "next_condition": "Shared A/B complete-function feasibility for native and both public midpoint states;no new optimizer unless a finite mechanism is specified."
+    "next_condition": "Shared A/B complete-function feasibility for native and both public midpoint states;no new optimizer unless a finite mechanism is specified.",
+    "record": "results/data_free_compensation/classifier_coupling.json:source_generation",
+    "raw_sha256": "b48b467ef0f59540fd919ff3e8e9d9f7dad9cfcb0068caa797b0a7c371dd155c"
   },
   "classifier_coupling_plan": {
-    "status": "source_passed_sole_point_frozen_before_new_confirmation",
+    "status": "completed_closed_no_real_partner_target_protection",
     "source_sha256": "f46b3953d7776d1338752c198a8b5328ee3748d77f4f4f3a921713e1f0252522",
     "source_path": "results/data_free_compensation/code_snapshot/class_coupling.py",
     "head_information": "Uses existing target classification head,classIDs,original/public weights and fixed generated source.0realimages;not old head-free protocol",
@@ -4844,5 +4846,20 @@
     },
     "generated_evaluation_source_sha256": "5292e3c62cc183d3729e924c75d8a07f5e1557409bcb5d798ef5014318f18c12",
     "actual_AGA_edits_sha256": "da94e988182b684b4daa5b89eb6a24cfab4ee1d921eed531915734cddeb4ad54"
+  },
+  "classifier_coupling_result": {
+    "record": "results/data_free_compensation/classifier_coupling.json",
+    "point_sha256": "069e6091c34fe6f88f0c9b6c1044204228b096e68d9dae33dd6f8bf03e8236de",
+    "native": 99.33,
+    "TA": 99.16,
+    "AGA_target": 99.03,
+    "AGA_both": 99.02,
+    "public_source_direct_AGA_real_MNIST": [
+      84.13,
+      78.26
+    ],
+    "new_imagefree_commonclass_counterexamples_all4models_5views": 70,
+    "critic_inputs": 72,
+    "point_closed_no_retuning": true
   }
 }

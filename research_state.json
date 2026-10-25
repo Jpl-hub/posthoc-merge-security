@@ -7,7 +7,7 @@
     "parameter_convention": "Separate logical Q/K/V matrices and each edited bias; raw packed-tensor distances are not equivalent.",
     "full_relative_class_gap_budget": 0.5,
     "extra_parameter_budget": "Prospective method-specific range justified by structure, standalone function and numerical stability; declare before source/evaluation. Do not retune closed points.",
-    "construction_access": "Future primary Defense2 uses frozen target expert/public base weights and task SVD only;no real training/confirmation/test images,partner models,classification-based selection or witness-based repair. Historical data-assisted protocols and results remain unchanged.",
+    "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
     "validation_order": "Prospective source construction -> freeze sole point -> independent held-out measurement -> complete native accuracy -> fixed TA and originalAGA. Report any strictR/old small-sample failure separately. Main357 fusion is explicitly post-gate same-point observational followup.",
     "SVD_role": "Task-direction probe; its orthogonal complement is not a functional zero space.",
     "historical_tests_not_blind": true,
@@ -61,18 +61,18 @@
     "task_direction_ablation_three_tasks": "results/task_directed_pairing/distance_ablation/other_tasks/tables.md",
     "modification_extent": "results/task_directed_pairing/amplitude_ablation/summary.md"
   },
-  "status": "Research resumed manually Oct24;data-free numerical core construction prioritized. No recurring automation.",
-  "updated_utc": "2026-10-25T04:48:54.828056+00:00",
+  "status": "Manual core-method research; classifier-informed data-free batch completed without meaningful real-partner protection; no recurring automation.",
+  "updated_utc": "2026-10-25T06:17:14.053142+00:00",
   "server": {
-    "status": "Connected;full-prefix/final-readout check completed;noGPU jobs",
+    "status": "Connected;native/realTA/originalAGA/source-proxybatchcomplete;noGPUjobs",
     "GPU": "RTX3090",
     "ssh_control_socket": "/tmp/posthoc_3090_refactor.sock",
     "research_GPU_processes": 0,
-    "checked_at_utc": "2026-10-24T09:33:03.513900+00:00",
+    "checked_at_utc": "2026-10-25T06:17:14.053142+00:00",
     "storage": {
       "available_bytes": {
-        "/root": 2717134848,
-        "/root/autodl-tmp": 3906396160
+        "/root": 2717118464,
+        "/root/autodl-tmp": 3851411456
       },
       "reconstructible_training_cache_bytes_removed": 4073198178,
       "model_bytes_relocated_between_volumes": 1815380936,
@@ -85,7 +85,7 @@
       }
     },
     "last_verified_process_snapshot": {
-      "checked_at_utc": "2026-10-24T09:33:38.752351+00:00",
+      "checked_at_utc": "2026-10-25T06:17:14.053142+00:00",
       "research_GPU_processes": 0
     },
     "attempts": "User provided current credentials;interactiveSSH master re-established,process snapshot noGPU jobs."
@@ -95,50 +95,25 @@
   "research_jobs": [],
   "active_GPU_jobs": 0,
   "current_candidate": {
-    "name": "Twelve-layer numerical SVD-constrained nonlinear output reconstruction",
-    "point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
-    "construction": "results/nonlinear_prefix/protocol.json",
-    "summary": "results/nonlinear_prefix/summary.md",
-    "frozen_main": true,
-    "source_n": 1024,
-    "teacher_training_updates": 0,
-    "gradient_steps": 0,
-    "linear_solves": 12,
-    "source_seconds": 62.280361963,
-    "D": 8.842194066103989,
-    "task_right_probe_relative_changes": "approximately2e-9",
-    "actual_results": {
-      "summary": "results/nonlinear_prefix/summary.md",
-      "point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
-      "standalone": 99.5,
-      "TA": 24.46,
-      "AGA_target": 13.02,
-      "AGA_both": 13.09,
-      "partner_TA_AGA_target_both": [
-        19.83,
-        19.8,
-        19.68
-      ],
-      "main_frozen": true,
-      "original_fresh512_gate_passed": false,
-      "full_accuracy_loss_pp": 0.19,
-      "strict_R": 85.76234523093515,
-      "scores_replayed": 224,
-      "replay_max_error": 0.0,
-      "new_teacher_training": 0,
-      "novelty_established": false,
-      "other_target_tasks_evaluated": true
-    },
-    "novelty_established": false,
-    "generalization_pending": false,
-    "limitations": {
-      "cross_task": "Same rule SVHN97.46->96.25,DTD79.41->43.46;DTD retention failed",
-      "public_module_reset": "Only published/base plus known12MLP scope,no true task vector/images. Same operator on untreated/protected produces identical158tensors;AGA-target MNIST94.47",
-      "SVD_ablation": "No-SVD keeps99.52native/11.10AGA-target;task probe constraint enforced but classification benefit not established",
-      "coefficients": "Same point originalAGA-target49.65atTA.2,58.94atTA.8;13.02onlyTA.5",
-      "eight_expert": "TA.2 originalAGA-target MNIST50.35;only3datasets evaluated"
-    },
-    "role": "Completed data-assisted reference;excluded from the primary data-free Defense2 route by the Oct23 user instruction."
+    "name": "Data-free numerical A/B coupling with fixed target classifier",
+    "status": "completed_closed_no_meaningful_real_partner_target_protection",
+    "point_sha256": "069e6091c34fe6f88f0c9b6c1044204228b096e68d9dae33dd6f8bf03e8236de",
+    "record": "results/data_free_compensation/classifier_coupling.json",
+    "real_construction_images": 0,
+    "fixed_target_head_used": true,
+    "A_source_gradient_updates": 20,
+    "native": 99.33,
+    "original_native": 99.69,
+    "TA": 99.16,
+    "AGA_target": 99.03,
+    "AGA_both": 99.02,
+    "strict_R": 130.64710136193804,
+    "logical_D": 1.2813249455222813,
+    "historical_D_and_R_budget_passed": false,
+    "original_AGA_calls": 1,
+    "source_author_matching_calls": 22,
+    "no_unknown_partner_claim": true,
+    "closed_no_strength_seed_class_rank_layer_retries": true
   },
   "comparisons": {
     "global_task_directed": "results/task_directed_pairing/summary.md;three targets and eight-expert setting,originalAGA effective,known-family public matching exactly recovers158tensors",
@@ -154,7 +129,8 @@
     "same_input_local_teacher": "results/nonlinear_local_function;all3complete,worse utility;no retry",
     "recovery_game": "results/data_free_compensation/recovery_evaluation.json:14rows224replays0error;no protection,no retry",
     "alignment_compensation": "MNIST99.69native,99.35TA,99.29/99.31originalAGA;actual O erasure passed but no target protection. No retry.",
-    "signed_function_reference": "787c235d data-free B/b analytic control:99.69native,99.34TA,99.28/99.32originalAGA. Local generated signed task reversal did not yield classification protection;closed,no amplification/task-direction/layer retry."
+    "signed_function_reference": "787c235d data-free B/b analytic control:99.69native,99.34TA,99.28/99.32originalAGA. Local generated signed task reversal did not yield classification protection;closed,no amplification/task-direction/layer retry.",
+    "classifier_coupling": "069e6091:datafreeusingfrozenhead,native99.33,realTA99.16,originalAGA99.03/99.02;partialpublicproxy84.13/78.26;closed,no repair;record classifier_coupling.json"
   },
   "data_policy": {
     "construction": "Future primary Defense2 uses frozen target expert/public base weights and task SVD only;no real training/confirmation/test images,partner models,classification-based selection or witness-based repair. Historical data-assisted protocols and results remain unchanged.",
@@ -163,9 +139,8 @@
     "ablation": "Both fixed controls fully reported even when utility/source flags fail;no replacement of main357 based on scores"
   },
   "github_sync": {
-    "status": "current_publication_record_in_receipt",
-    "receipt": "outputs/latest_github_sync_receipt.json",
-    "raw_data_stays_3090": true
+    "status": "Final result and prototype cleanup prepared; exact publication commit will be recorded in outputs/latest_github_sync_receipt.json.",
+    "last_verified_remote_commit": "50a0c51f9e8f2c4222981ef99d5999bc3f883513"
   },
   "history": {
     "full_previous_state_commit": "bf4f3c10e922f2ef30b1f4d297896edf615b579b",
@@ -178,7 +153,7 @@
     },
     "cleanup_20261024": "222runtime lines and29configuration lines removed from completed data-assisted constructor;Git7a59e9d/source archive retained;17core+1paper regression passed. Cold diagnostics losslessly archived,one reconstructible activation cache compacted."
   },
-  "next_action": "Build a genuinely coupled A/B finite-function mechanism using complete native and recovered/public-midpoint prefixes and final readout. Task SVD supplies probes,not a free functional null space. Do not amplify or refit the closed787c rank-one control. Ordinary complete-feature reversal is only a research target,not a universal gate or a novelty claim. No new optimizer without a justified finite mechanism.",
+  "next_action": "Core Defense2:define a finite data-free input/environment adversary for genuinely joint A/B task-function preservation and recovery/merging harm. Teacher-confidence prototypes alone are insufficient;70/72fixed image-free fourmodel counterexamples are diagnosis only,not new training inputs. Do not reuse069e or its exposed evaluation/counterexamples to repair it. Next independent algorithm must start from frozen original/public weights and predeclared task-SVD functional conditions;ordinaryminimax/rotation/ridge are not novelty. Existingeffectivepermutation/Defense1retained.",
   "completed_overnight": {
     "components": "results/nonlinear_prefix/source_components/results.json;A-only/B-only/no-reconstruction collapse source,full compensation preserves1022/1024",
     "ablations": "results/nonlinear_prefix/ablations;no_task/no_prefix complete,do not rerun",
@@ -626,7 +601,18 @@
       "socket": "/tmp/posthoc_4090_active.sock",
       "role": "new data-free core source calculations;no historical reruns",
       "runtime": "torch2.8.0cu128;existing3090torch2.3.0cu121 remains unchanged",
-      "status": "pinned required checkpoints streaming;dependenciesinstalled;no datasets copied"
+      "status": "Ready; fixed source, independent generated confirmation and frozen-point counterexample check completed; no GPU job.",
+      "runtime_record": "results/data_free_compensation/classifier_coupling.json:runtime_4090",
+      "storage_available_bytes": {
+        "/root": 31924256768,
+        "/root/autodl-tmp": 52167065600
+      }
     }
+  },
+  "previous_data_assisted_reference": {
+    "record": "results/nonlinear_prefix/summary.md",
+    "point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
+    "frozen_unchanged": true,
+    "earlier_state_commit": "0fcc54e225d24f5cbc00384a59f9f4ba335e6223"
   }
 }
