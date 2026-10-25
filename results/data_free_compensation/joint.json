@@ -22,7 +22,7 @@
   },
   "reduced_directional_derivative_error": 2.1759329581205744e-11,
   "status": "synthetic_convex_inner_step_checked_not_a_defense",
-  "updated_utc": "2026-10-25T04:53:06.822453+00:00",
+  "updated_utc": "2026-10-25T05:10:47.575858+00:00",
   "construction": "Fixed seed20261023;7input,8hidden,3output,193uniform-ball vectors in each of two centered domains. Fixed synthetic A perturbation exactly orthogonal to task domain and beta. No CLIP weights or real images.",
   "seed": 20261023,
   "ridge": 0.01,
@@ -4798,5 +4798,21 @@
     "GPU": "4090D",
     "selection": "all final128-step source inputs;no step/class/test selection",
     "next_condition": "Shared A/B complete-function feasibility for native and both public midpoint states;no new optimizer unless a finite mechanism is specified."
+  },
+  "classifier_coupling_plan": {
+    "status": "declared_before_sole_source_run",
+    "source_sha256": "f46b3953d7776d1338752c198a8b5328ee3748d77f4f4f3a921713e1f0252522",
+    "source_path": "results/data_free_compensation/code_snapshot/class_coupling.py",
+    "head_information": "Uses existing target classification head,classIDs,original/public weights and fixed generated source.0realimages;not old head-free protocol",
+    "generated_source_sha256": "b48b467ef0f59540fd919ff3e8e9d9f7dad9cfcb0068caa797b0a7c371dd155c",
+    "native_target": "Class-contrast/task-probe-preserving residualR,not whole-network parameter rotation",
+    "public_targets": "Same fixed class0 final residual with finite LN norm,for direct and author-AGA/public-base.5prefixes",
+    "variables": "LastMLP A/B only,biases/frozenexpert/otherweights fixed;20fixedAvariable-projectionstepswith sharedB solve",
+    "A_relative_range": 1.0,
+    "B_range": "Unique source ridge rho.01;relative<=sqrt(unmodified_B_source_objective/.01),not inheritedD.5orB4",
+    "source_gate": "FP32unique point nativechanges<=4/800;bothpublicclass0counts>=720;8actualoriginalbatchcontextsmaxscoreerror<5e-4",
+    "next_if_source_passes": "Fresh independent training confirmation,completeMNIST native loss<=.5pp,TA.5/originalAGA target/both;old strictR.5reported unchanged",
+    "selection": "Sole final20-updatepoint,no best-step/seed/rank/class/layer/scale retry",
+    "novelty": "Reflection,classificationnullspace,sourcegeneration,ridge andvariableprojectionare standard;no innovation/defenseefficacyclaimbeforeactualresults"
   }
 }
