@@ -1,0 +1,28 @@
+{
+  "status": "defined_before_readonly_diagnostic",
+  "purpose": "Explain why same frozen numericalA permits cyclic class changes yet failed to erase public classresponses;no new release or tuning.",
+  "inputs": {
+    "clean_generated_source": {
+      "path": "outputs/row_compensation_20261025/source.pt",
+      "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2"
+    },
+    "shared_target": {
+      "path": "outputs/row_compensation_20261025/shared_response/target.pt",
+      "sha256": "a705aeaca25046f7090706169824dc75252f981d66df57062c17870aa2a3297e"
+    },
+    "fixed_A_B_point": {
+      "path": "outputs/row_compensation_20261025/class_response/point.pt",
+      "sha256": "27e77def8f35f2f5153a823dae177d10ec7d100495beaa7274b46311cebe6311"
+    },
+    "assignment": {
+      "path": "outputs/row_compensation_20261025/class_response/solver.pt",
+      "sha256": "64894c5b1ab02ccbe8660fab4a8c1282b000728f0bba069e18f910228f83605e"
+    }
+  },
+  "permission": "Read original/base/head and clean generated caches plus frozen point for diagnosis only. No real images,partner or test/counterexample input. Do not use exposed rows/coefficients to construct or repair a new point.",
+  "stage1": "Reconstruct native/direct/AGApublic prefix andMLP outputs using exact frozenweights and originalcleanprefixcache. Compare prefix-only and final actualLN/P/head predictions to frozen teacherclasses;split correct-class vs strongest rival rawmargin into prefix,MLP and LNbeta. This is an internal source explanation,not an attack permission claim.",
+  "stage2": "For fixedA,let Hn nativehidden3072x800,En originalnativefullfinalresidual minus currentfixednative. Compute Dn=En*pinv(Hn),PN=UnUnT. Stack publichiddenfeaturesKp=[.5Hd,.5PiT Ha]. F=(I-PN)Kp. ClasscontrastQ from samecenteredreadout span. Targetcommon residual from pinned sharedcleanmean. R=Q^T(Ep-DnKp). The unconstrained leastnorm residual correction is Q*R*pinv(F). Report requirednorm,retainedresidual,rank and singularspectrum;it is only a finite linear feasibility calculation,not a new defense.",
+  "numerical_rank": "One standard float64 pinv rank threshold eps64*max(matrixshape)*largest singularvalue;all singularvalues retained in server arrays. No rank/threshold sweep,regularizerchoice or model saved. SVDreconstruction and normalstationarity checks reported;numericalrank does not certify exact mathematicalrank.",
+  "interpretation": "A small per-layer parameter change/effect or a small featurevariance does not mean classinformation vanished. A large finite exactfit norm or poor conditioning may explain one regularized source result,but cannot establish natural-task impossibility or select nexthyperparameters.",
+  "cost": "Zero CLIPimage forwards,zero fullAGA/newmodels/optimizers/teacherupdates. One read-only GPUlinearalgebra job,recordsourceandhashes."
+}
