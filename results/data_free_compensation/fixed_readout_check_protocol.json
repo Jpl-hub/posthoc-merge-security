@@ -1,0 +1,12 @@
+{
+  "status": "defined_before_readout_check",
+  "purpose": "Check the direct implication of the public fixed cyclic class target,no new parameter optimization or candidate selection.",
+  "fixed_rule": "For every merged/AGA targetMNIST row,apply decoded_class=(argmax(logits)-1)%10. This is the known inverse of the published construction target(y+1)%10. No mapping fit from labels,source search,test selection or arbitrary Hungarian permutation search.",
+  "points": [
+    "82ffac347099984e52df0662acbcc8178b16c61a1c3cb20ce9d61c869fd4a364",
+    "4c0e11ecc932b44f9635f695dbfc3165a6462800930ada81ac315f53716e5ebf"
+  ],
+  "controls": "Apply exactly the same inverse to matched unprotected merged rows;standalone remains separately measured as is. Full officiallabels used only to evaluate fixedrule after point freeze.",
+  "permission": "Method-informed readout correction:attackerknows the publiccyclicconstructionrule and MNISTclassIDs/outputhead and can relabel fused predictions. Strongerthan the original defense-agnosticAGA;report separately. No originalexpert weights/real training labels needed to choose correction.",
+  "scope": "Read only already saved scores;zero newimages,gradientsteps,authorAGA or weightchanges. Does not change main or ablation scores,protocols or selection. A large gain would show reversible class relabeling,not destroyed taskknowledge."
+}
