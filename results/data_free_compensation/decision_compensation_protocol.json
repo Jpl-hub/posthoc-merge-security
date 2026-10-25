@@ -1,0 +1,39 @@
+{
+  "status": "defined_before_execution",
+  "output": "outputs/row_compensation_20261025/decision_margin",
+  "purpose": "One fixed numericalA/B construction that preserves native classification margins and drives both publicmeans into one decision region with positive margins;no fullfeaturematching or cyclicclasscode.",
+  "inputs": {
+    "clean_source": {
+      "path": "outputs/row_compensation_20261025/source.pt",
+      "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2"
+    },
+    "geometry": {
+      "path": "outputs/row_condition_20261025/geometry.pt",
+      "sha256": "b785015346adcb78f5ae61735bfe9ebbadd1f4eec4a6978cb48822001d2a3c79"
+    },
+    "clean_prototypes": {
+      "path": "outputs/row_compensation_20261025/prototypes.pt",
+      "sha256": "73126260e9d76589536dcf1ecf8a50713fb1fb9ad090724198618b6a1882468e"
+    },
+    "clean_AGA": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607"
+    }
+  },
+  "allowed_information": "FrozenoriginalMNIST/publicweights,declaredfixedclassifier,classIDs,originalSVDgeometry and original/publiccleangeneratedcache. No partner,realimages,previousprotectedparameters or exposedcounterexamples/realtestscores. Prototypefile contains only original/publicreadout sphere solves,not candidate outputs.",
+  "A_rule": "Use sole original task32 rowcondition A unchanged. Native taskleft/rightAprobe action retained,actualmatching from samegeometry;do not select a differentA from betterablation ordiagnostic. B alone is conditionalvariable;alloriginalmodelparametersfrozen.",
+  "decision_loss": "Exact fulltail:LayerNorm includingeps/gamma/beta,projection,unitfeature normalization and fixedhead. Each normalizedclassgap divides headcontrastnorm. Nativegap againstall9rivals>=half clean teachergap. Bothpublicstatesgap of fixedcanonicalclass0 againstall9rivals>=half fixedclass0maxminprototypegap. Class0 chosen as smallestclassID beforeexecution,not selectedfromtest or sourceperformance. Samepositive destinationfor allclasses is non-injective at top1,not a claim of erased featureknowledge or all adaptiveattackresistance.",
+  "aggregation": "30groups:10requestedsourceclasses per native/directpublic/AGApublic. Groupmean squared positive relativegapviolation;minimize maximumgroup plus fixedridge. This is a finite class/environment minimax,not worst-input or unknown-partner guarantee. Record everyinput and allpairviolations,do not call lowaggregatefeasibility.",
+  "optimizer": {
+    "name": "Adam",
+    "lr": 0.001,
+    "steps": 300,
+    "rho": 0.01,
+    "initialization": "deltaB0,originalB;not previouspoints",
+    "selection": "Exactly finalstep,no bestiterate/earlyselection/extraepochs/rank/layer/seed/strengthtrial. No hardparametercap;fixednormregularizer,actualdistance reported."
+  },
+  "gradient_check": "One fixedall-onesunitdirection,centraldifference1e-4 on sumof30group losses inFP64 beforeupdates,tolerance1e-5*(1+absFD). CheckrealLN/normalize/hinge derivative,not theconservativecone surrogate. Stop clearimplementation/nonfinitefailure and retain evidence.",
+  "freeze_evaluate": "Freeze finalFP32A/B before anynaturalmeasurement. Checkall800sourceviews and samefullimagecontexts. Then completeMNISTstandalone,fixedMNIST/SVHN TA.5 andoriginalAGA target-only/both;cachedmatchingcontrols/partnerAGA bySHA. Retainnative.5ppcriterionandstrictR separately. Checkalreadyfixedcyclicinverse on savedscoreswithknownmethodpermission;no label-mappingfit. No parameter repair after realtest.",
+  "boundaries": "This addresses decision margins rather than exactfullresidual/cyclicmapping;it is not a restartofclosed069e/19d or a ridge/strength/layer change to27e77. Pureposthoc,two actualmatricesedited,originalexperttraining0,realconstructionimages0. StandardAdam/margins/minmax notclaimednovel. Useful method stillneeds actualprotectedaccuracy and joint/SVDcontributions.",
+  "limits": "Finitegenerateddomain andpublicbase surrogate;realhead/partner may retaininformation. Constanttop1 prevents the specificfixedclassinversefromcreatingvaryingclasses,but doesnotprove informationtheoreticunlearning or no adaptiveclassifierrecovery."
+}
