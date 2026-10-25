@@ -1,0 +1,37 @@
+{
+  "status": "defined_before_execution",
+  "output": "outputs/row_compensation_20261025/neutral_response",
+  "target": "MNIST",
+  "inputs": {
+    "clean_source": {
+      "path": "outputs/row_compensation_20261025/source.pt",
+      "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2"
+    },
+    "geometry": {
+      "path": "outputs/row_condition_20261025/geometry.pt",
+      "sha256": "b785015346adcb78f5ae61735bfe9ebbadd1f4eec4a6978cb48822001d2a3c79"
+    },
+    "clean_AGA": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607"
+    },
+    "task_basis": {
+      "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+      "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+    }
+  },
+  "A_relative": 1.0273893035120545,
+  "permission": "Original frozen target/public weights and fixed classifier; same original task32 geometry and clean original/public generated cache only. No previous protected point/parameters, noise-calibration vectors, partner, real training/test inputs or exposed confirmation/witness for construction.",
+  "change": "All public fixed-head class scores equal, rather than any particular class having the largest score. Native source output under fixed A is preserved, including64positive/negative original task-direction nonlinear MLP probes. Fixed-head neutrality does not erase all hidden feature information or resist arbitrary replacement classifiers.",
+  "head_equation": "D rows wj-w0,L=D*P^T*diag(gamma)*H,b=D*P^T*beta. u0=-pinv(L)b,Q=orth(rowspace(L)). For unchanged v=(I-QQ^T)Hh, sigma=sqrt((norm(v)^2+d*eps)/(d-norm(u0)^2));h_neutral=sigma*u0+v+mean(h). Requires norm(u0)^2<d. This handles exact LN affine/epsilon;feature L2 normalization preserves equal scores.",
+  "conditional_solve": "Keep A from original task32 row geometry, no amplitude/rank/layer variants. Hpreserve=[nativehidden800,phi(A*V+a),phi(-A*V+a)] for original same32taskrightdirections. K=[.5H_direct,.5Pi^T H_AGApublic]. F=(I-UU^T)K, T=Q^T(sigma*u0-Hh_fixed). M=T*pinv(F)*(I-UU^T),deltaB=Q*M. One exact minimum-Frobenius solution if finite equations compatible;no damping/ridge/optimizer/grid or norm rescaling.",
+  "rank_rule": "Unique float64 eps*maxshape*largest singularvalue threshold; report all singularvalues. No truncation selection. Equations checked relative1e-7. A numerical failure is retained and stops this fixed calculation.",
+  "parameter_range": "Unique minimum-norm finite conditional solution, no tuned hard cap. Report actual A/B logical distances; not historicalD0.5 comparison. Full standalone accuracy condition remains0.5pp. Do not set a new task tolerance from this result.",
+  "FP32": "Save one FP32 A/B point and SHA before any natural image. Check finite full generated-source outputs and record actual class-score spread;FP64 equations alone do not establish FP32 or task protection. No correction of point from source/real results.",
+  "native_order": "Existing experiment.native --test-only --max-accuracy-loss-pp .5 plus independent --verify. Complete10000MNIST and original128batch context;baseline20kimages from native entrypoint counted honestly. Full historical strictR reported separately. Native failure closes point,no fusion/no repair.",
+  "if_native_passes": "SamefixedMNIST/SVHN TA.5 and original-authorAGA target-only/both,existing main_table. Cache baseline and native scores bySHA. Then same already-fixed64noiseprobability calibration,no new decoder variants. Full target/partner/perclass/paired/cost and original128context replays.",
+  "novelty": "Standard nullspace projection/pseudoinverse/LN algebra are not original claims. Study a posthoc parameter construction specific to native/public/originalAGA functional mismatch. AlphaEdit/LEACE are related,not implemented/reproduced; officialmain code read viaweb,API404prevented fixedsourcebyte pinning;previous fixed MEMIT/EMMET source already reviewed.",
+  "limits": "Finite clean generated domain only. Preserves A-only source responses,not a whole-domain native identity. Unknown partners change prefix/readout. Equal fixed-head scores do not mean all feature knowledge erased. Actual native/fusion/originalAGA and scoped calibration results required.",
+  "no_retry": "Exactlyone main point if feasible. No test-driven row/rank/seed/layer/amplitude/solver retry, no replacement by an ablation. Retire completed oneoff source after exact archive.",
+  "public_before_execution": false
+}
