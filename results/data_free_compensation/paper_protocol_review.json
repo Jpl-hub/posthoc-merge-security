@@ -1,0 +1,41 @@
+{
+  "scope": "Read primary papers and official source;no new merger implementation or claimed reproduction.",
+  "TSV": {
+    "paper": "https://openaccess.thecvf.com/content/CVPR2025/papers/Gargiulo_Task_Singular_Vectors_Reducing_Task_Interference_in_Model_Merging_CVPR_2025_paper.pdf",
+    "repository": "https://github.com/AntoAndGar/task_singular_vectors",
+    "commit": "a6c97188f7aa0bb20753de4f2939be89dd64f1c3",
+    "reviewed": [
+      "main.py",
+      "config/config.yaml",
+      "src/eval/eval_utils.py",
+      "src/eval/aggregation.py",
+      "src/utils/TSVM_utils.py"
+    ],
+    "raw_source_archive_4090": "outputs/row_compensation_20261025/paper_source_review.json",
+    "raw_sha256": "10f7d244c69432f8c8ff3cb34c7a69eed779becef795de07de1013752aa97752",
+    "findings": "Tasklayer SVD and orthogonalization are established. Main evaluation constructs vectors separately from val/test evaluation. Officialcode chooses a coefficient on validation before test and reports absolute/normalizedaccuracy;default8tasks/31points differs from our fixedTA.5 pair.",
+    "installed_or_run": false
+  },
+  "PaRaMS": {
+    "paper": "https://arxiv.org/html/2503.07661v1",
+    "reviewed_sections": [
+      "5.1",
+      "5.2",
+      "H.1",
+      "H.2"
+    ],
+    "findings": "Report standalonebefore/after and merging both target/partner;deleting individual modules isolates contribution;coefficient/taskcount sensitivity and cost are separate. Different coefficients or taskaverages must not be mixed with our fixedpair."
+  },
+  "AGA": {
+    "paper": "https://arxiv.org/html/2606.30360v1",
+    "fixed_kernel_commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "reviewed_sections": [
+      "3.2",
+      "4.1",
+      "11.5",
+      "11.6"
+    ],
+    "findings": "Separate protected-task accuracy from cross-task average. Defenseagnostic core applies to all candidateexperts;our targetonly/both explicitly separated. Standalonepostattack and parameter sensitivity are distinct evaluations,not additional attackalgorithms."
+  },
+  "our_priority": "Numericalposthoc mechanism and non-invertible fused function,without actualconstructionimages;not importing more fusion algorithms. SVD contribution must follow our ablation evidence."
+}
