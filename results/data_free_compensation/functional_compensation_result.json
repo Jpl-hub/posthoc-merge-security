@@ -1,5 +1,5 @@
 {
-  "status": "unique_functional_constraint_point_frozen",
+  "status": "closed_complete_native_accuracy_failed",
   "point_sha256": "7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192",
   "source": "\"\"\"One Data-Free classification fit with joint A/B task-response constraints.\"\"\"\nimport copy\nimport json\nimport math\nimport time\nfrom pathlib import Path\n\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.io import digest\nfrom _impl.metrics import logical_parameter_distance\nfrom _impl.models import checked_models, initialize\n\n\n@torch.no_grad()\ndef joint_constraint(state, entries, block, prefix):\n    A, B, a = [state[prefix + \"mlp.\" + k].double().cuda()\n               for k in [\"c_fc.weight\", \"c_proj.weight\", \"c_fc.bias\"]]\n    ba, bb = [entries[prefix + \"mlp.\" + k + \".weight\"] for k in [\"c_fc\", \"c_proj\"]]\n    ua, va, vb = [v.cuda() for v in [ba[\"u\"], ba[\"v\"], bb[\"v\"]]]\n    columns = torch.cat([ua, A @ va, vb, a[:, None]], dim=1)\n    columns = columns[:, columns.norm(dim=0) > 0]\n    columns /= columns.norm(dim=0)\n    C, s, _ = torch.linalg.svd(columns, full_matrices=False)\n    C = C[:, s > s[0] * 1e-10]\n    Ap = (2 * C @ (C.T @ A) - A).float()\n    Bt = (2 * (B @ C) @ C.T - B).float().double()\n    r = torch.cat([va.T, -va.T])\n    r -= r.mean(1, keepdim=True)\n    r *= math.sqrt(768) / r.norm(dim=1, keepdim=True)\n    gamma, beta = [state[prefix + \"ln_2.\" + k].double().cuda()\n                   for k in [\"weight\", \"bias\"]]\n    X = F.layer_norm(r, (768,), gamma, beta, block.ln_2.eps)\n    phi = lambda z: z * torch.sigmoid(1.702 * z)\n    H = phi(F.linear(X, Ap.double(), a)).T\n    Y = B @ phi(F.linear(X, A, a)).T\n    U, s, vh = torch.linalg.svd(H, full_matrices=False)\n    keep = s > torch.finfo(torch.double).eps * max(H.shape) * s[0]\n    Q = U[:, keep]\n    inverse = (vh[keep].T / s[keep]) @ Q.T\n    affine = B + (Y - B @ H) @ inverse\n    initial = Bt + (Y - Bt @ H) @ inverse\n    assert float((initial @ H - Y).norm() / (1 + Y.norm())) < 1e-10\n    radius = ((4 * B.norm()).square() - (affine - B).square().sum()).sqrt()\n    return Ap, initial.float(), dict(\n        affine=affine.float(), Q=Q.float(), radius=radius.float(),\n        H=H, Y=Y, original=B, vb=vb, X=X, a=a,\n    )\n\n\ndef main():\n    initialize()\n    start = time.monotonic()\n    path = Path(\"results/data_free_compensation/functional_compensation_protocol.json\")\n    cfg = json.loads(path.read_text())\n    assert digest(__file__) == cfg[\"implementation_sha256\"]\n    out = Path(cfg[\"output\"])\n    out.mkdir(exist_ok=False)\n    (out / \"protocol.json\").write_text(path.read_text())\n    for k in [\"source\", \"basis\"]:\n        assert digest(cfg[k][\"path\"]) == cfg[k][\"sha256\"]\n    base, expert, head, pins = checked_models(cfg[\"target\"])\n    del base\n    original = {k: v.clone() for k, v in expert.state_dict().items()}\n    published = copy.deepcopy(expert).cuda().eval().requires_grad_(False)\n    basis = torch.load(cfg[\"basis\"][\"path\"], map_location=\"cpu\", weights_only=False)\n    entries = {v[\"source_key\"]: v for v in basis.values()}\n    rules, parameters = [], []\n    for i in cfg[\"layers\"]:\n        prefix = f\"model.visual.transformer.resblocks.{i}.\"\n        block = published.model.visual.transformer.resblocks[i]\n        Ap, Bp, rule = joint_constraint(original, entries, block, prefix)\n        with torch.no_grad():\n            block.mlp.c_fc.weight.copy_(Ap)\n            block.mlp.c_proj.weight.copy_(Bp)\n        parameters.append(block.mlp.c_proj.weight)\n        rules.append(rule)\n    optimizer = torch.optim.Adam(parameters, lr=cfg[\"publication_lr\"])\n    raw = torch.load(cfg[\"source\"][\"path\"], map_location=\"cpu\", weights_only=False)\n    pixels = raw[\"final\"].clone()\n    del raw\n    groups = [torch.nn.Parameter(x.clone().cuda())\n              for x in pixels.split(cfg[\"source\"][\"group_size\"])]\n    pixel_optimizers = [torch.optim.Adam([x], lr=cfg[\"source\"][\"pixel_lr\"]) for x in groups]\n    history = [pixels]\n    norm = expert.val_preprocess.transforms[-1]\n    mean = torch.tensor(norm.mean, device=\"cuda\")[None, :, None, None]\n    std = torch.tensor(norm.std, device=\"cuda\")[None, :, None, None]\n    expert.cuda().eval()\n    head.cuda().eval()\n    counters = dict(generated_full_image_forwards=0, input_gradient_model_forwards=0,\n                    pixel_optimizer_steps=0, publication_B_gradient_steps=0)\n    temperature = cfg[\"source\"][\"temperature\"]\n\n    def views(x):\n        x = F.interpolate(x, (224, 224), mode=\"bilinear\", align_corners=False)\n        return (torch.cat([torch.roll(x, tuple(s), (2, 3))\n                           for s in cfg[\"source\"][\"views\"]]) - mean) / std\n\n    def logits(model, x):\n        counters[\"generated_full_image_forwards\"] += len(x)\n        if torch.is_grad_enabled() and x.requires_grad:\n            counters[\"input_gradient_model_forwards\"] += len(x)\n        return head(model(x))\n\n    def divergence(student, teacher):\n        return temperature ** 2 * F.kl_div(\n            F.log_softmax(student / temperature, dim=1),\n            F.softmax(teacher / temperature, dim=1), reduction=\"batchmean\")\n\n    @torch.no_grad()\n    def image_pool(x):\n        return torch.cat([views(v.cuda()).cpu()\n                          for v in x.split(cfg[\"source\"][\"group_size\"])])\n\n    @torch.no_grad()\n    def project():\n        for B, rule in zip(parameters, rules):\n            free = B - rule[\"affine\"]\n            free -= (free @ rule[\"Q\"]) @ rule[\"Q\"].T\n            free *= (rule[\"radius\"] / free.norm().clamp_min(1e-30)).clamp(max=1)\n            B.copy_(rule[\"affine\"] + free)\n\n    pools, rounds = [image_pool(pixels)], []\n    for cycle in range(cfg[\"source\"][\"rounds\"]):\n        for B in parameters:\n            B.requires_grad_(False)\n            B.grad = None\n        first, last = [], []\n        for group_index, (group, actor) in enumerate(zip(groups, pixel_optimizers)):\n            for step in range(cfg[\"source\"][\"pixel_steps_per_round\"]):\n                x = views(group)\n                loss = divergence(logits(published, x), logits(expert, x))\n                if step == 0:\n                    first.append(float(loss.detach()))\n                actor.zero_grad(set_to_none=True)\n                (-loss).backward()\n                assert group.grad is not None and torch.isfinite(group.grad).all()\n                actor.step()\n                counters[\"pixel_optimizer_steps\"] += 1\n                with torch.no_grad():\n                    group.clamp_(0, 1)\n            with torch.no_grad():\n                x = views(group)\n                last.append(float(divergence(logits(published, x), logits(expert, x))))\n            if group_index % 5 == 0 or group_index == len(groups) - 1:\n                print(\"INPUT_SEARCH\", cycle + 1, group_index, first[-1], last[-1], flush=True)\n        history.append(torch.cat([x.detach().cpu() for x in groups]))\n        pools.append(image_pool(history[-1]))\n        images = torch.cat(pools)\n        batches = list(images.split(cfg[\"source\"][\"batch_size\"]))\n        with torch.no_grad():\n            targets = [logits(expert, x.cuda()).detach() for x in batches]\n        for B in parameters:\n            B.requires_grad_(True)\n        epoch_losses = []\n        for epoch in range(cfg[\"publication_epochs_per_round\"]):\n            total = 0\n            for x, target in zip(batches, targets):\n                loss = divergence(logits(published, x.cuda()), target)\n                optimizer.zero_grad(set_to_none=True)\n                loss.backward()\n                assert torch.isfinite(loss) and all(\n                    p.grad is not None and torch.isfinite(p.grad).all() for p in parameters)\n                optimizer.step()\n                project()\n                counters[\"publication_B_gradient_steps\"] += 1\n                total += float(loss.detach()) * len(x)\n            epoch_losses.append(total / len(images))\n            print(\"CLASSIFICATION_FIT\", cycle + 1, epoch + 1, epoch_losses[-1], flush=True)\n        with torch.no_grad():\n            after = torch.cat([logits(published, x.cuda()).cpu() for x in batches])\n            before = torch.cat([x.cpu() for x in targets])\n        row = dict(cycle=cycle + 1, source_views=len(images),\n                   critic_KL_before=sum(first) / len(first),\n                   critic_KL_after=sum(last) / len(last), epoch_losses=epoch_losses,\n                   source_prediction_changes=int((after.argmax(1) != before.argmax(1)).sum()),\n                   source_KL_after=float(divergence(after, before)))\n        rounds.append(row)\n        (out / \"progress.json\").write_text(json.dumps(dict(rounds=rounds, counters=counters), indent=2))\n        print(\"ROUND\", json.dumps(row), flush=True)\n    with torch.no_grad():\n        rows = []\n        for i, B, rule in zip(cfg[\"layers\"], parameters, rules):\n            delta = B.double() - rule[\"original\"]\n            error = float((B.double() @ rule[\"H\"] - rule[\"Y\"]).norm() / (1 + rule[\"Y\"].norm()))\n            distance = float(delta.norm() / rule[\"original\"].norm())\n            assert error < 1e-4 and distance <= 4 + 1e-5\n            Akey = f\"model.visual.transformer.resblocks.{i}.mlp.c_fc.weight\"\n            rows.append(dict(layer=i, relative_A_distance=float(\n                                 (published.state_dict()[Akey].double() - original[Akey].cuda()).norm()\n                                 / original[Akey].norm()), relative_B_distance=distance,\n                             joint_probe_relative_error=error,\n                             B_parameter_task_energy_ratio=float(\n                                 (delta @ rule[\"vb\"]).square().sum() / delta.square().sum()),\n                             B_parameter_task_relative_response=float(\n                                 (delta @ rule[\"vb\"]).norm() / (rule[\"original\"] @ rule[\"vb\"]).norm())))\n        assert all(p.grad is None for p in expert.parameters())\n        assert all(torch.equal(v.cpu(), expert.state_dict()[k].cpu()) for k, v in original.items())\n        edits = {k: v.detach().cpu() for k, v in published.state_dict().items()\n                 if not torch.equal(v.cpu(), original[k])}\n    torch.save(edits, out / \"point.pt\")\n    torch.save(history, out / \"inputs.pt\")\n    torch.save(dict(before=before, after=after), out / \"source_scores.pt\")\n    result = dict(status=\"unique_functional_constraint_point_frozen\",\n                  point_sha256=digest(out / \"point.pt\"), source=Path(__file__).read_text(),\n                  source_sha256=digest(__file__), protocol_sha256=digest(path),\n                  checkpoint_sha256=pins, rounds=rounds, per_layer=rows, counters=counters,\n                  input_history_sha256=digest(out / \"inputs.pt\"),\n                  source_scores_sha256=digest(out / \"source_scores.pt\"),\n                  parameter_distance=logical_parameter_distance(edits, original),\n                  seconds=time.monotonic() - start, real_construction_images=0,\n                  original_expert_parameter_updates=0, new_AGA_calls=0,\n                  scope=cfg[\"scope\"])\n    (out / \"results.json\").write_text(json.dumps(result, indent=2) + \"\\n\")\n    print(\"POINT_FROZEN\", result[\"point_sha256\"], flush=True)\n\n\nif __name__ == \"__main__\":\n    main()\n",
   "source_sha256": "8674b92609f823763a5c32bea101cb6c1ae9b87616ab99d9f478b294b616bc62",
@@ -178,5 +178,341 @@
   "new_AGA_calls": 0,
   "scope": "One finite feasibility experiment for Defense2. KL adversarial distillation,reflection,SVD,pseudoinverse and projectedAdam are standard. No innovation or global minimax claim. Local64probe constraints do not guarantee natural-task preservation or fusion security.",
   "definition_local_commit": "05773f8",
-  "public_before_execution": false
+  "public_before_execution": false,
+  "native": {
+    "before_images.json": {
+      "publication": {
+        "path": "outputs/functional_compensation_20261025/point.pt",
+        "sha256": "7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192",
+        "reference": "expert"
+      },
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "parameter_distance": 9.622995127200621,
+      "construction_updates": 0
+    },
+    "before_images.json_sha256": "bec047538aa56b60d863b36a006e0d7c407e16fd89b340b2eafd9a2a1aca0f76",
+    "independent_validation.json": {
+      "status": "passed_raw_score_and_official_label_recount",
+      "rows": [
+        {
+          "stage": "full",
+          "n": 10000,
+          "R": 69.28659810380846
+        }
+      ],
+      "results_sha256": "37a40d3dd2fb44f2e25296d60056dd7caa13e5a260aa31698ed881fc38bb5947",
+      "new_image_forwards": 0
+    },
+    "independent_validation.json_sha256": "29cc7d084d03409c2b085d5e05a522193914082069d7ef391faed091f46a336a",
+    "protocol.json": {
+      "verify": null,
+      "target": "MNIST",
+      "publication": "outputs/functional_compensation_20261025/point.pt",
+      "sha256": "7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192",
+      "full_state": false,
+      "test_only": true,
+      "base_reference": false,
+      "indices": null,
+      "indices_sha256": null,
+      "output": "outputs/functional_compensation_20261025/native",
+      "task_budget": 0.5,
+      "max_accuracy_loss_pp": 0.5
+    },
+    "protocol.json_sha256": "95f88e3fe7688e9856f51c1d4642796eaab280ab6b93fee0030670dd7ba89bc9",
+    "results.json": {
+      "rows": [
+        {
+          "n": 10000,
+          "changed": 9026,
+          "R": 69.28659810380846,
+          "stage": "full",
+          "before_correct": 9969,
+          "after_correct": 974,
+          "strict_task_passed": false,
+          "accuracy_loss_pp": 89.95,
+          "passed": false,
+          "raw_sha256": "e174eab2a97628db126e699eb3f21acd32ec38f32d4c5ed5d6ac41bfa39f30fb"
+        }
+      ],
+      "passed": false,
+      "image_forwards": 20000,
+      "seconds": 21.38421519473195
+    },
+    "results.json_sha256": "37a40d3dd2fb44f2e25296d60056dd7caa13e5a260aa31698ed881fc38bb5947"
+  },
+  "independent_FP64_distances": {
+    "status": "FP64_distance_recount_passed",
+    "per_layer": [
+      {
+        "layer": 0,
+        "A": 1.5632425049299417,
+        "B": 1.9672911114550211
+      },
+      {
+        "layer": 1,
+        "A": 1.8574885603961662,
+        "B": 2.070201159906741
+      },
+      {
+        "layer": 2,
+        "A": 1.8766187178879383,
+        "B": 2.061763881590476
+      },
+      {
+        "layer": 3,
+        "A": 1.8794405159966776,
+        "B": 2.063792597384847
+      },
+      {
+        "layer": 4,
+        "A": 1.8814004665832067,
+        "B": 2.063614941333299
+      },
+      {
+        "layer": 5,
+        "A": 1.8893267613115607,
+        "B": 2.0587696886974682
+      },
+      {
+        "layer": 6,
+        "A": 1.8869863494932826,
+        "B": 2.0605003752726803
+      },
+      {
+        "layer": 7,
+        "A": 1.8856358419785417,
+        "B": 2.075923013008616
+      },
+      {
+        "layer": 8,
+        "A": 1.8839571693962438,
+        "B": 2.079451864813054
+      },
+      {
+        "layer": 9,
+        "A": 1.8635018985299163,
+        "B": 2.20193803537661
+      },
+      {
+        "layer": 10,
+        "A": 1.8807475381733738,
+        "B": 2.0110859283083027
+      },
+      {
+        "layer": 11,
+        "A": 1.8809906557768252,
+        "B": 2.0966313226408038
+      }
+    ],
+    "D": 9.622995127200621,
+    "fixed_A_matches_geometry": true,
+    "changed_tensors": 24,
+    "point_dtypes": "FP32",
+    "note": "Original source per-layer A denominator used FP32 torch.norm; these FP64 distances correct only that metadata. Point/optimization/budgets/native results unchanged.",
+    "new_image_forwards": 0,
+    "new_AGA_calls": 0
+  },
+  "new_real_evaluation_image_forwards": 20000,
+  "new_complete_AGA_calls": 0,
+  "fusion_evaluated": false,
+  "independent_numpy_native": {
+    "status": "passed_independent_numpy_native_counts",
+    "before_correct": 9969,
+    "after_correct": 974,
+    "n": 10000,
+    "changed_predictions": 9026,
+    "lost": 8996,
+    "gained": 1,
+    "paired_accuracy_delta_95ci_pp": [
+      -90.53998543022755,
+      -89.36001456977245
+    ],
+    "mcnemar_log10_p": -2704.1116950043393,
+    "per_class": [
+      {
+        "class_id": 0,
+        "n": 980,
+        "before_correct": 979,
+        "after_correct": 0,
+        "lost": 979,
+        "gained": 0
+      },
+      {
+        "class_id": 1,
+        "n": 1135,
+        "before_correct": 1132,
+        "after_correct": 0,
+        "lost": 1132,
+        "gained": 0
+      },
+      {
+        "class_id": 2,
+        "n": 1032,
+        "before_correct": 1030,
+        "after_correct": 0,
+        "lost": 1030,
+        "gained": 0
+      },
+      {
+        "class_id": 3,
+        "n": 1010,
+        "before_correct": 1010,
+        "after_correct": 0,
+        "lost": 1010,
+        "gained": 0
+      },
+      {
+        "class_id": 4,
+        "n": 982,
+        "before_correct": 979,
+        "after_correct": 0,
+        "lost": 979,
+        "gained": 0
+      },
+      {
+        "class_id": 5,
+        "n": 892,
+        "before_correct": 884,
+        "after_correct": 0,
+        "lost": 884,
+        "gained": 0
+      },
+      {
+        "class_id": 6,
+        "n": 958,
+        "before_correct": 954,
+        "after_correct": 0,
+        "lost": 954,
+        "gained": 0
+      },
+      {
+        "class_id": 7,
+        "n": 1028,
+        "before_correct": 1025,
+        "after_correct": 0,
+        "lost": 1025,
+        "gained": 0
+      },
+      {
+        "class_id": 8,
+        "n": 974,
+        "before_correct": 973,
+        "after_correct": 974,
+        "lost": 0,
+        "gained": 1
+      },
+      {
+        "class_id": 9,
+        "n": 1009,
+        "before_correct": 1003,
+        "after_correct": 0,
+        "lost": 1003,
+        "gained": 0
+      }
+    ],
+    "new_image_forwards": 0,
+    "new_AGA_calls": 0
+  },
+  "finding": "Complete MNIST99.69 to9.74; all predictions class8. Finite joint probes pass and B balls are interior, but retained synthetic-source classification itself remains unsolved. This specific fit is closed; no fusion/AGA or test-based repair. It does not establish infeasibility of the objective or all data-free numerical defenses.",
+  "source_fit_condition": {
+    "status": "read_only_source_first_order_condition",
+    "source_KL": 15.637434971332555,
+    "score_replay_errors": [
+      0.0,
+      0.0
+    ],
+    "rows": [
+      {
+        "layer": 0,
+        "gradient_norm": 0.06996698195470837,
+        "tangent_gradient_norm": 0.05431648585417378,
+        "relative_B_distance": 1.967291111455117
+      },
+      {
+        "layer": 1,
+        "gradient_norm": 0.03695382619039522,
+        "tangent_gradient_norm": 0.030492629615908012,
+        "relative_B_distance": 2.0702011599068078
+      },
+      {
+        "layer": 2,
+        "gradient_norm": 0.03130971656924162,
+        "tangent_gradient_norm": 0.02930760032359462,
+        "relative_B_distance": 2.0617638815905885
+      },
+      {
+        "layer": 3,
+        "gradient_norm": 0.027354933755550842,
+        "tangent_gradient_norm": 0.025283890573910093,
+        "relative_B_distance": 2.063792597384938
+      },
+      {
+        "layer": 4,
+        "gradient_norm": 0.023236713366360726,
+        "tangent_gradient_norm": 0.02164053543780841,
+        "relative_B_distance": 2.0636149413333897
+      },
+      {
+        "layer": 5,
+        "gradient_norm": 0.01981934157461734,
+        "tangent_gradient_norm": 0.01769091871761702,
+        "relative_B_distance": 2.0587696886975406
+      },
+      {
+        "layer": 6,
+        "gradient_norm": 0.018609899686100124,
+        "tangent_gradient_norm": 0.01621908195339114,
+        "relative_B_distance": 2.0605003752727677
+      },
+      {
+        "layer": 7,
+        "gradient_norm": 0.017823732143634044,
+        "tangent_gradient_norm": 0.014984125207302964,
+        "relative_B_distance": 2.0759230130086914
+      },
+      {
+        "layer": 8,
+        "gradient_norm": 0.025134371791723155,
+        "tangent_gradient_norm": 0.02150689165178378,
+        "relative_B_distance": 2.079451864813153
+      },
+      {
+        "layer": 9,
+        "gradient_norm": 0.04480222529974828,
+        "tangent_gradient_norm": 0.03337030231395245,
+        "relative_B_distance": 2.201938035376692
+      },
+      {
+        "layer": 10,
+        "gradient_norm": 0.0521849065210994,
+        "tangent_gradient_norm": 0.04625005372205133,
+        "relative_B_distance": 2.011085928308376
+      },
+      {
+        "layer": 11,
+        "gradient_norm": 0.005936505152020958,
+        "tangent_gradient_norm": 0.0029684611551022456,
+        "relative_B_distance": 2.096631322640904
+      }
+    ],
+    "total_gradient_norm": 0.12240834174174388,
+    "tangent_gradient_norm": 0.10183888431456861,
+    "tangent_to_total_gradient_norm": 0.8319603293820241,
+    "negative_tangent_directional_derivative": -0.01037115835843609,
+    "all_B_balls_strictly_interior": true,
+    "new_generated_image_forwards": 6400,
+    "new_real_image_forwards": 0,
+    "new_parameter_updates": 0,
+    "new_AGA_calls": 0,
+    "seconds": 10.22095399722457,
+    "scope": "Nonzero feasible first-order descent shows this iterate has not solved the retained-source classification fit. It does not guarantee a practical convergent optimizer,natural retention or merge protection.",
+    "definition_local_commit": "527bd27",
+    "source": "import hashlib,json,math,time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.models import apply,checked_models,initialize\nfrom _impl.io import digest\ninitialize();start=time.monotonic()\nroot=Path(\"outputs/functional_compensation_20261025\")\nresult=json.loads((root/\"results.json\").read_text())\nassert result[\"point_sha256\"]==\"7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192\"\nassert digest(root/\"inputs.pt\")==result[\"input_history_sha256\"]\nbase,expert,head,pins=checked_models(\"MNIST\");del base\npub=apply(expert,dict(path=str(root/\"point.pt\"),sha256=result[\"point_sha256\"]))\nhistory=torch.load(root/\"inputs.pt\",map_location=\"cpu\",weights_only=False)\ncached=torch.load(root/\"source_scores.pt\",map_location=\"cpu\",weights_only=False)\nbasis=torch.load(\"outputs/phase2_task_subspace_comparison_20261020/basis.pt\",map_location=\"cpu\",weights_only=False)\nentries={v[\"source_key\"]:v for v in basis.values()}\npub.cuda();expert.cuda();head.cuda()\nparameters=[pub.model.visual.transformer.resblocks[i].mlp.c_proj.weight for i in range(12)]\nfor p in parameters:p.requires_grad_(True)\nnorm=expert.val_preprocess.transforms[-1]\nmean=torch.tensor(norm.mean,device=\"cuda\")[None,:,None,None]\nstd=torch.tensor(norm.std,device=\"cuda\")[None,:,None,None]\nshifts=[[0,0],[7,0],[-7,0],[0,7],[0,-7]]\nbefore=[];after=[];loss_total=0.\nfor pixels in history:\n for group in pixels.split(8):\n  x=F.interpolate(group.cuda(),(224,224),mode=\"bilinear\",align_corners=False)\n  x=(torch.cat([torch.roll(x,tuple(s),(2,3)) for s in shifts])-mean)/std\n  with torch.no_grad():target=head(expert(x))\n  scores=head(pub(x))\n  loss=16*F.kl_div(F.log_softmax(scores/4,dim=1),F.softmax(target/4,dim=1),reduction=\"batchmean\")\n  (loss/80).backward();loss_total+=float(loss.detach())/80\n  before.append(target.cpu());after.append(scores.detach().cpu())\na,b=torch.cat(before),torch.cat(after)\nerrors=[float((a-cached[\"before\"]).abs().max()),float((b-cached[\"after\"]).abs().max())]\nassert max(errors)<.0005 and abs(loss_total-result[\"rounds\"][-1][\"source_KL_after\"])<1e-4\nphi=lambda z:z*torch.sigmoid(1.702*z)\nrows=[]\nwith torch.no_grad():\n state=expert.state_dict()\n for i,B in enumerate(parameters):\n  prefix=f\"model.visual.transformer.resblocks.{i}.\"\n  block=pub.model.visual.transformer.resblocks[i]\n  va=entries[prefix+\"mlp.c_fc.weight\"][\"v\"].cuda()\n  r=torch.cat([va.T,-va.T]);r-=r.mean(1,keepdim=True);r*=math.sqrt(768)/r.norm(dim=1,keepdim=True)\n  gamma,beta=[state[prefix+\"ln_2.\"+k].double() for k in [\"weight\",\"bias\"]]\n  X=F.layer_norm(r,(768,),gamma,beta,block.ln_2.eps)\n  H=phi(F.linear(X,block.mlp.c_fc.weight.double(),block.mlp.c_fc.bias.double())).T\n  U,s,_=torch.linalg.svd(H,full_matrices=False)\n  Q=U[:,s>torch.finfo(torch.double).eps*max(H.shape)*s[0]]\n  gradient=B.grad.double()\n  tangent=gradient-(gradient@Q)@Q.T\n  original=state[prefix+\"mlp.c_proj.weight\"].double()\n  rows.append(dict(layer=i,gradient_norm=float(gradient.norm()),tangent_gradient_norm=float(tangent.norm()),relative_B_distance=float((B.double()-original).norm()/original.norm())))\n assert all(p.grad is None for p in expert.parameters())\ntotal=sum(r[\"gradient_norm\"]**2 for r in rows);tangent=sum(r[\"tangent_gradient_norm\"]**2 for r in rows)\nout=dict(status=\"read_only_source_first_order_condition\",source_KL=loss_total,score_replay_errors=errors,rows=rows,total_gradient_norm=math.sqrt(total),tangent_gradient_norm=math.sqrt(tangent),tangent_to_total_gradient_norm=math.sqrt(tangent/total),negative_tangent_directional_derivative=-tangent,all_B_balls_strictly_interior=all(r[\"relative_B_distance\"]<4 for r in rows),new_generated_image_forwards=6400,new_real_image_forwards=0,new_parameter_updates=0,new_AGA_calls=0,seconds=time.monotonic()-start,scope=\"Nonzero feasible first-order descent shows this iterate has not solved the retained-source classification fit. It does not guarantee a practical convergent optimizer,natural retention or merge protection.\")\n(root/\"source_fit_condition.json\").write_text(json.dumps(out,indent=2)+\"\\n\")\nprint(json.dumps({k:v for k,v in out.items() if k!=\"rows\"}))\n",
+    "source_sha256": "f78c022ee63d010b6b00cb28569d0fc393fedb9fdb050f10b933d948fc842e36"
+  },
+  "source_retired_active_tree": true
 }

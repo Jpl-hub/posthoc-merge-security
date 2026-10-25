@@ -1,42 +1,36 @@
 {
-  "status": "Defense2 three active-input rounds completed, unique point a886f6ce frozen before real images. Complete native evaluation next; no effectiveness claimed.",
-  "updated_utc": "2026-10-25T15:22:56.462473+00:00",
+  "status": "Latest Data-Free Defense2 trials completed and closed: native71.65 and9.74 vs99.69 original. No new usable defense. Joint finite task probes pass, but the complete classification fit is not stationary even on construction inputs.",
+  "updated_utc": "2026-10-25T16:00:59.960081+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "kind": "Defense2 complete native evaluation",
-      "point_sha256": "a886f6cefe0912329342f89fb0bc2ab34519d9ce6bd794b9cc248d63ff51d2bf",
-      "output": "outputs/adaptive_inputs_20261025/native",
-      "real_construction_images": 0
-    }
-  ],
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
   "latest_core_trial": {
-    "point_sha256": "7d9494497fbd10535fc4aaf38d2b71d9fafe7d6fa10d8d39aed68e85b77ca357",
-    "record": "results/data_free_compensation/generated_prefix_result.json",
+    "point_sha256": "7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192",
+    "record": "results/data_free_compensation/functional_compensation_result.json",
     "native_before_after": [
       99.69,
-      45.17
+      9.74
     ],
     "TA_and_AGA_evaluated": false,
     "closed": true,
     "real_construction_images": 0,
-    "teacher_updates": 0,
-    "source_optimizer_steps": 0,
-    "linear_solves": 12,
-    "generated_full_image_forwards": 11200,
+    "original_expert_updates": 0,
+    "publication_B_gradient_steps": 1440,
+    "pixel_optimizer_steps": 1920,
+    "generated_full_image_forwards": 230400,
+    "input_gradient_model_forwards": 153600,
     "new_real_evaluation_image_forwards": 20000,
     "new_AGA_calls": 0,
     "source_retired_active_tree": true
   },
-  "next_action": "Finish this one3round active-input construction. Freeze the unique release before complete native MNIST. Only if native utility passes evaluate fixed TA andAGA; no test-driven changes or best-iteration selection.",
+  "next_action": "Establish a usable large-change compensation mechanism and solve its source functional objective before claiming task retention. Do not reopen these points, add an optimizer from a nonzero-gradient observation, or extend known closed symmetries. Fixed TA/AGA remains the downstream criterion.",
   "engineering_cleanup": {
     "production_modules_and_entrypoints_unchanged": false,
     "new_frameworks": 0,
-    "retired_exploration_sources": 6,
-    "retired_source_lines": 833,
+    "retired_exploration_sources": 9,
+    "retired_source_lines": 1459,
     "retired_unreferenced_debug_records": 10,
     "unique_models_scores_failures_deleted": 0,
     "record": "results/engineering_refactor/validation.json:oct25_core_cleanup",
@@ -46,47 +40,45 @@
     "regression_and_behavior_tests_passed": 17
   },
   "github_sync": {
-    "status": "Latest batch verified locally and on4090. Fresh GitHub get_repo check still failed at the chatgpt.com MCP transport; no new upload/readback.",
+    "status": "Current results saved locally and on4090 after exact SHA check. One current get_repo still failed at chatgpt.com MCP transport; no new upload/readback.",
     "last_verified_remote_commit": "4c76d4d9ecc2d71d1c3474ad2b78951e432685e5",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "historical_protocol_state": "97a3474",
   "latest_mechanism_analysis": {
-    "record": "results/data_free_compensation/neutral_compensation_result.json:radial_condition",
-    "local_definition_commit": "f157cb4",
-    "status": "completed finite structural check; no new candidate",
-    "required_to_available_Lipschitz_ratio": 858.7733047343189,
-    "new_image_forwards": 0,
-    "local_block_vector_forwards": 2,
+    "record": "results/data_free_compensation/functional_compensation_result.json:source_fit_condition",
+    "definition_local_commit": "527bd27",
+    "status": "completed read-only source fit check; no parameter update",
+    "tangent_gradient_norm": 0.10183888431456861,
+    "tangent_to_full_gradient_norm": 0.8319603293820241,
+    "B_ranges_interior": true,
+    "source_score_replay_max_error": 0,
+    "new_generated_image_forwards": 6400,
+    "new_real_images": 0,
     "new_defense_points": 0,
     "new_AGA_calls": 0,
-    "finding": "The fixed last-MLP public mean cannot make all fixed-head class scores equal at both declared layer-input radii. This stronger objective is not a requirement for future defenses; natural-task and original-AGA evaluation remain primary."
+    "finding": "This iterate did not solve its retained-source classification objective. Not evidence that every compensation is infeasible; no trial update or source-based repair."
   },
   "data_free_requirement": "Both defenses must construct from frozen weights and permitted synthetic inputs only. Defense1 now needs neither real nor synthetic images. Real held-out images are used only after release freezing for evaluation; historical image-calibrated records remain data-assisted.",
   "previous_core_trial": {
-    "point_sha256": "c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8",
-    "record": "results/data_free_compensation/neutral_compensation_result.json",
-    "native_TA_AGAtarget_AGAboth": [
+    "point_sha256": "a886f6cefe0912329342f89fb0bc2ab34519d9ce6bd794b9cc248d63ff51d2bf",
+    "record": "results/data_free_compensation/adaptive_inputs_result.json",
+    "native_before_after": [
       99.69,
-      97.31,
-      78.22,
-      77.2
+      71.65
     ],
-    "calibrated_TA_AGAtarget_AGAboth": [
-      87.22,
-      60.33,
-      56.33
-    ],
+    "TA_and_AGA_evaluated": false,
     "closed": true,
-    "teacher_updates": 0,
-    "source_optimizer_steps": 0,
-    "full_new_AGA_calls": 1,
-    "new_real_evaluation_image_forwards": 128096,
-    "original_context_replay_image_forwards": 27296,
-    "new_generated_full_image_forwards": 5792,
-    "active_constructor_retired": true,
-    "source_preservation_and_public_equality_scope": "Finite800native+64taskprobes;doesnotguarantee realpartner upstreamactivations.",
-    "internal_diagnosis": "Same800generated inputs:realpartner restores684teacherclasses;construction final readout with realpartner upstream still671. This is an internalablation,not an attack with hiddenexpert access. It establishes upstream changes can break this finite compensation,not all sources of natural-task error."
+    "real_construction_images": 0,
+    "original_expert_updates": 0,
+    "publication_gradient_steps": 0,
+    "linear_solves": 36,
+    "generated_full_image_forwards": 259200,
+    "input_gradient_model_forwards": 153600,
+    "pixel_optimizer_steps": 1920,
+    "new_real_evaluation_image_forwards": 20000,
+    "new_AGA_calls": 0,
+    "source_retired_active_tree": true
   },
   "latest_Defense1": {
     "record": "results/phase3/bias_weight_only/results.json",

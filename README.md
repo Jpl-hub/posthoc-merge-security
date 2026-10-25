@@ -13,7 +13,7 @@
 
 该对照使用任务 SVD 选择共同通道顺序；三份冻结发布保持完整独立预测。知道变换家族后的公开匹配能够恢复，针对性恢复与原版 AGA 分列。[方法](results/task_directed_pairing/method.md) · [完整结果与恢复](results/task_directed_pairing/summary.md) · [论文表格](results/paper_tables/README.md)。防御一及完整 PaRaMS 对照继续保留。
 
-最新Data-Free检验沿用原数值构造，只换用全部固定生成输入：源预测800个全保持，但完整MNIST独立99.69%降至45.17%，未继续融合或AGA，固定点已关闭。此前末层计算独立99.69%、TA97.31%、AGA78.22%／77.20%仍保留。结束的临时源码和无引用调试记录已退出当前目录，原始结果与精确源码保留；噪声图片校准流程已删除，改用共享的纯权重构造。[当前数值研究记录](results/data_free_compensation/summary.md)。
+最新两次Data-Free构造分别使用主动生成输入的逐层补偿，以及完整分类损失下的联合任务响应约束，完整MNIST独立准确率为71.65%和9.74%，原模型99.69%；均未保住任务，没有继续融合或AGA。后一项的源端梯度检查表明生成源分类目标也尚未解完，不能据此否定所有联合补偿。结束的临时源码退出活动目录，原始权重、分数和精确源码保留。[防御二研究记录](results/data_free_compensation/summary.md)。
 
 ## 代码结构
 
