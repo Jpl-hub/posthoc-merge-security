@@ -24,3 +24,5 @@ A、B分别为末层MLP的输入与输出矩阵。原任务方向参数约束点
 [原点与组件对照](row_evaluation_result.json) · [SVD删除对照](no_task_evaluation_result.json) · [公开规则纠正](fixed_readout_check.json) · [后续固定检查](class_response_evaluation_result.json) · [TeX表](row_table.tex)
 
 旧点全部保留，既有[任务方向换序](../task_directed_pairing/summary.md)和[防御一](../phase3/tables.md)有效结果不受本轮影响。唯一权重、生成源、原始分数与复核源码留4090。当前树退役已结束的失败构造，定义和原源码可从Git历史及结果中取回。[研究记录](../../notes/phase2_coupling.md)记载具体哈希、成本和权限。
+
+最新只读检查显示：在800个生成视图上，末MLP之前的残差路径已包含足够类别信息。现有补偿抵消了大部分分类间隔，却仍未让多数输入跨过决策边界；要求逐点精确重建完整特征又会使补偿矩阵很大。下一步应直接处理分类决策和独立能力保持，不能仅压低整体特征误差。[计算与范围](conditional_feasibility.json)。该检查没有新模型或真实图片前向。
