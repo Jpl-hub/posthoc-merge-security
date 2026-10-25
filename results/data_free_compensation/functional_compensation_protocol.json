@@ -1,0 +1,82 @@
+{
+  "target": "MNIST",
+  "source": {
+    "path": "outputs/row_compensation_20261025/source.pt",
+    "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2",
+    "use": "Only the160clean original/public-model final pixel inputs; do not read old protected points, cached protected activations or diagnostic witnesses. Keep all inputs.",
+    "base_count": 160,
+    "group_size": 8,
+    "views": [
+      [
+        0,
+        0
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        -7,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        -7
+      ]
+    ],
+    "batch_size": 40,
+    "resize": "bilinear224,align_cornersFalse",
+    "rounds": 3,
+    "pixel_steps_per_round": 32,
+    "pixel_lr": 0.05,
+    "temperature": 4.0,
+    "critic": "Maximize T² KL(original||publication); both models retain input gradients, all model parameters frozen in this stage. Same32steps/round,3rounds,all retained pools,no filtering.",
+    "pool": "All original800views plus every round final800views;1600,2400,3200views. No filtering, best-step selection or removal of difficult inputs."
+  },
+  "basis": {
+    "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+    "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+  },
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "rank": 32,
+  "matrix_bounds": [
+    2.0,
+    4.0
+  ],
+  "permission": "Original target, public base, fixed original classifier, original taskSVD and permitted clean synthetic input pool only. No real images, partner, test or exposed confirmation for construction/selection/repair.",
+  "evaluation": "After third round, freeze one FP32 release and SHA; source metrics descriptive. Complete native MNIST with<=0.5ppaccuracy loss,oldstrictRreported. Only if passed,same TA0.5 andAGA target/both,matched baseline/partnerAGA and native score reuse;full perclass/paired/original128context replay.",
+  "references": {
+    "ABM_paper": "https://papers.neurips.cc/paper_files/paper/2019/file/fe663a72b27bdc613873fbbb512f6f67-Paper.pdf",
+    "official_solver": "https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/solver.py",
+    "review": "Input step retains teacher/student input derivatives; official student updates and attention penalty are not imported. Test-accuracy checkpoint selection is not adopted."
+  },
+  "status": "defined_before_execution",
+  "output": "outputs/functional_compensation_20261025",
+  "publication_lr": 0.001,
+  "publication_epochs_per_round": 8,
+  "geometry": "Original expert only. Same original task32 A reflection.64 signed,centered,normsqrt768 A-right probes per layer after actual originalLN2. Affine B_jointH=originalY constraint; unique machine-epsilon pseudoinverse. Initialize by projecting original B-reflection template into this affine set. No closed-point weights or inputs loaded.",
+  "publication_objective": "Minimize exactly the same T² forwardKL using complete final normalized classification outputs on all retained generated inputs. Original target/head frozen. Only12new publication B matrices have gradients. Eight complete passes each round,Adam.001,last iterate,no test-based stopping.",
+  "projection": "After each B step project into B_aff+Z(I-QQ^T),then scale only the orthogonal free component to remaining radius sqrt((4||B||F)^2-||B_aff-B||F²). All12A fixed. Report raw B task-right changes; no individual deltaB V_B=0 constraint.",
+  "difference_from_adaptive_inputs": "Replaces all50token conditional layerwise ridge reconstruction with one complete classification loss; replaces individual B task-parameter equality with finite joint nonlinear A/B task responses. It is not an extra source/step retry of that closed construction.",
+  "scope": "One finite feasibility experiment for Defense2. KL adversarial distillation,reflection,SVD,pseudoinverse and projectedAdam are standard. No innovation or global minimax claim. Local64probe constraints do not guarantee natural-task preservation or fusion security.",
+  "no_retry": "Freeze the single last3round FP32 point before real images. No old publication/witness/partner/test construction,parameter sweep,best iteration selection or test-driven repair. Nonfinite/range failure preserves evidence and stops; native<=0.5pp only then fixed TA/AGA.",
+  "implementation_sha256": "8674b92609f823763a5c32bea101cb6c1ae9b87616ab99d9f478b294b616bc62",
+  "public_before_execution": false
+}
