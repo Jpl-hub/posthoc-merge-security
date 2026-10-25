@@ -1,0 +1,25 @@
+{
+  "status": "defined_before_execution",
+  "purpose": "NumericalA/B jointcompensation with a non-injective public functional target,not a class-permutation target or retuning oldweights.",
+  "A_rule": "Remove both task singular-space projectors. Use unique rowwise minimum-Frobenius equality solution deltaAi=-(Ai dot A0i)/norm(A0i)^2*A0i. Keep same3072row anchoring conditions and same lastMLP;report any zero rows and actual distance,do not choose amplitude.",
+  "B_rule": "Same30relative class/environment functional error groups,oneBshared by native/publicdirect/publicAGA,ridge.01,SLSQPmaxiter200ftol1e-8,unchanged pixelinputs/targets for native. Only public functional target changes from reversible classcycle to a shared finalresponse.",
+  "clean_inputs": {
+    "source": {
+      "path": "outputs/row_compensation_20261025/source.pt",
+      "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2"
+    },
+    "original_AGA": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607"
+    }
+  },
+  "reuse_scope": "Reuse only original-expert/public-clean caches,teacher classes and original-readout prototypes,all independent of protectedpoint. Do not read mainpoint or any real-score files for construction. No new pixel generation,seed,strength,rank orlayer selection.",
+  "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "evaluation": "Freeze sole control point first;then same complete nativeMNIST and MNIST/SVHN TA.5/originalAGA target-only/both,no source-confidence selection. Identical original unprotected scores/partnerAGA reused. Report source accuracy,logicaldistance,oldstrictR and native.5pp criterion separately;no main replacement.",
+  "interpretation": "Teacher direction is large meaningful numerical change with standalone functional compensation. CurrentSVDconstraint deletion showed no benefit for originalhardconstraints,so they are not claimed as validated contribution. This new shared target addresses the explicit publicreadout weakness,not a strength/class/seed sweep.",
+  "output": "outputs/row_compensation_20261025/shared_response",
+  "public_function_target": "One shared centered finalresidual for all generated inputs and all10classes,both public states. Compute the mean of all1600cleanpublic centeredresiduals;normalize it to their pooled RMS norm. Add back only each input residualmean,which finalLayerNorm removes. No targetclass is selected;no tasklabel-dependent cyclicmap.",
+  "mathematical_condition": "In the exact common-target case,finalLN/P/normalizedfeature and all classscores are identical across inputclasses for each fixedpublicreadout. An inverse classpermutation cannot recover varying classes from this commonresponse. Approximate finite fitting or realdistribution behavior is not an informationtheoretic/unseenpartner guarantee.",
+  "no_test_feedback": "Fresh construction from original weights and only the pinned clean teacher/publiccache. Do not read82ff/4c0e pointparameters,real images,real scores,or correction results to set coefficients,direction,norm,seed,layer,rank or optimizationbudget. New functional condition is motivated by algebraic invertibility of the publiccyclicrule;previous releases stayfrozen.",
+  "source_and_evaluation": "First sourcefreeze and hash,samefull800generatedview checks;then completeMNIST and MNIST/SVHN TA.5/originalAGA two scopes. Report fixedknowncyclicinverse separately without fitting or selecting a mapping. Keep both earlier points as scoped references. No new merger/attackeroptimizer."
+}

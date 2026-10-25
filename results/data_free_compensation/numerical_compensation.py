@@ -1,7 +1,8 @@
-"""Fixed removal of both task-SVD constraints; no refitting of the main point."""
+"""Frozen-expert numerical A/B compensation with a shared fused response."""
 import copy
 import hashlib
 import json
+import sys
 import time
 from pathlib import Path
 
@@ -17,15 +18,14 @@ from _impl.models import checked_models, initialize
 
 initialize()
 start = time.perf_counter()
-protocol = Path('results/data_free_compensation/no_task_protocol.json')
+protocol = Path(sys.argv[1])
 cfg = json.loads(protocol.read_text())
-out = Path('outputs/row_compensation_20261025/no_task')
+out = Path(cfg['output'])
 out.mkdir(exist_ok=False)
 (out/'protocol.json').write_text(json.dumps(cfg,indent=2)+'\n')
 for ref in cfg['clean_inputs'].values():
     assert digest(ref['path']) == ref['sha256']
 raw = torch.load(cfg['clean_inputs']['source']['path'],map_location='cpu',weights_only=False)
-prototypes = torch.load(cfg['clean_inputs']['prototypes']['path'],map_location='cpu',weights_only=False)['centered_residual'].cuda()
 base,expert,head,pins = checked_models('MNIST')
 aligned = copy.deepcopy(expert)
 aligned.load_state_dict(torch.load(cfg['clean_inputs']['original_AGA']['path'],map_location='cpu',weights_only=False),strict=True)
@@ -56,7 +56,12 @@ features=dict(native=hn,direct=.5*hd,recovered=.5*back)
 bm=(b0+b)/2
 fixed=dict(native=cache['native']['prefix'].T+B@hn+b[:,None],direct=cache['direct']['prefix'].T+(B0+B)@hd/2+bm[:,None],recovered=cache['recovered']['prefix'].T+B@back/2+B0@ha/2+bm[:,None])
 targets=dict(native=cache['native']['final'].T)
-for n in ['direct','recovered']:targets[n]=(prototypes[(teacher_class+1)%10]+cache[n]['final'].mean(1,keepdim=True)).T
+centered=torch.cat([cache[n]['final']-cache[n]['final'].mean(1,keepdim=True) for n in ['direct','recovered']])
+shared=centered.mean(0);T=centered.square().sum(1).mean().sqrt()
+assert float(shared.norm())>1e-10
+shared=shared/shared.norm()*T
+for n in ['direct','recovered']:targets[n]=(shared[None,:]+cache[n]['final'].mean(1,keepdim=True)).T
+torch.save(dict(centered_shared_residual=shared.cpu(),RMS=float(T)),out/'target.pt')
 ks,es,ids,names=[],[],[],[]
 for n in features:
     for y in range(10):
@@ -106,7 +111,9 @@ for n,m in models.items():
         r=cache[n]['prefix'].float()+F.linear(activation(z),block.mlp.c_proj.weight,block.mlp.c_proj.bias)
         v=m.model.visual;tail=(F.normalize(v.ln_post(r)@v.proj,dim=-1)@W.T).cpu()
         spot=max(spot,float((scores-tail).abs().max()));pred=scores.argmax(1).cuda()
-        metrics[n]=dict(teacher_class_retained=int(pred.eq(teacher_class).sum()),wrong_cyclic_class=int(pred.eq((teacher_class+1)%10).sum()),changed_from_clean=int(pred.ne(cache[n]['scores'].argmax(1)).sum()))
+        clean=cache[n]['scores'].cpu()
+        variation=float((scores-scores.mean(0)).square().sum()/(clean-clean.mean(0)).square().sum())
+        metrics[n]=dict(teacher_class_retained=int(pred.eq(teacher_class).sum()),predicted_class_counts=torch.bincount(pred,minlength=10).tolist(),changed_from_clean=int(pred.ne(cache[n]['scores'].argmax(1)).sum()),relative_class_score_variation=variation)
         arrays[n]=dict(actual=scores,tail=tail)
     m.cpu()
 assert spot<5e-4,spot
@@ -114,6 +121,6 @@ torch.save(arrays,out/'source_scores.pt')
 actualA=A-originalA;actualB=edits[key+'c_proj.weight'].double().cuda()-B
 ra=float(actualA.norm()/originalA.norm());rb=float(actualB.norm()/B.norm())
 source=Path(__file__).read_text()
-result=dict(status='fixed_no_task_constraint_ablation_frozen_not_main_replacement',point_sha256=point_sha,A_relative=ra,B_relative=rb,logical_D=(ra*ra+rb*rb)**.5,zero_A_rows=int(Ap.norm(dim=1).eq(0).sum()),max_row_inner_product=float((A*A0).sum(1).abs().max()),independent_A_solve_error=independent,metrics=metrics,source_full_vs_tail_error=spot,solver_success=bool(opt.success),solver_message=str(opt.message),solver_iterations=int(opt.nit),weighted_ridge_solves=len(trace),relative_dual_gap=float((errors.max()+reg-value)/(1+errors.max()+reg)),envelope_derivative_error=abs(fd-ad),solver_arrays_sha256=digest(out/'solver.pt'),source_arrays_sha256=digest(out/'source_scores.pt'),protocol_sha256=digest(protocol),source=source,source_sha256=hashlib.sha256(source.encode()).hexdigest(),checkpoint_sha256=pins,new_generated_inputs=0,new_pixel_updates=0,generated_image_forwards=2400,real_construction_images=0,original_expert_updates=0,author_last_MLP_matches=1,new_full_AGA_calls=0,seconds=time.perf_counter()-start)
+result=dict(status='shared_response_point_frozen_before_real_evaluation',point_sha256=point_sha,A_relative=ra,B_relative=rb,logical_D=(ra*ra+rb*rb)**.5,zero_A_rows=int(Ap.norm(dim=1).eq(0).sum()),max_row_inner_product=float((A*A0).sum(1).abs().max()),independent_A_solve_error=independent,metrics=metrics,source_full_vs_tail_error=spot,solver_success=bool(opt.success),solver_message=str(opt.message),solver_iterations=int(opt.nit),weighted_ridge_solves=len(trace),relative_dual_gap=float((errors.max()+reg-value)/(1+errors.max()+reg)),envelope_derivative_error=abs(fd-ad),solver_arrays_sha256=digest(out/'solver.pt'),source_arrays_sha256=digest(out/'source_scores.pt'),target_sha256=digest(out/'target.pt'),protocol_sha256=digest(protocol),source=source,source_sha256=hashlib.sha256(source.encode()).hexdigest(),checkpoint_sha256=pins,new_generated_inputs=0,new_pixel_updates=0,generated_image_forwards=2400,real_construction_images=0,original_expert_updates=0,author_last_MLP_matches=1,new_full_AGA_calls=0,seconds=time.perf_counter()-start)
 (out/'results.json').write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
 print(json.dumps({k:v for k,v in result.items() if k!='source'},indent=2))
