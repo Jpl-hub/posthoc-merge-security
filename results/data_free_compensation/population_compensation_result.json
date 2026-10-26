@@ -17075,5 +17075,3451 @@
       "recovery_digest_binding": "Only the fixed author AGA output SHA is bound after recovery and before images; all other settings fixed",
       "required_outputs": "Target and partner accuracy in each scope; paired/per-class statistics; original128-batch replay; no result-dependent retuning"
     }
+  },
+  "native_ellipse_DTD_observation_result": {
+    "protocol": {
+      "experiment": "Frozen DTD numerical defense: complete the utility/protection comparison after the historical stopping decision",
+      "output": "outputs/native_ellipse_classification_DTD_20261026/observation",
+      "tasks": {
+        "DTD": {
+          "classes": 47,
+          "test_n": 1880
+        },
+        "MNIST": {
+          "classes": 10,
+          "test_n": 10000
+        }
+      },
+      "TA_coefficient": 0.5,
+      "mergers": [
+        "TA"
+      ],
+      "TIES": {
+        "repository": "https://github.com/prateeky2806/ties-merging",
+        "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+        "path": "external/ties-merging/src/utils/merge_utils.py",
+        "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+        "topk_percent": 20,
+        "coefficient": 1,
+        "resolve_method": "mass",
+        "merge_func": "dis-mean",
+        "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+      },
+      "pilot_n": 64,
+      "replay_n": 16,
+      "score_tolerance": 0.0005,
+      "test_status": "Historically exposed official benchmarks; observation only, no construction or selection feedback",
+      "comparison": "Same frozen DTD publication, exact matched unprotected controls, no universal accuracy-loss pass/fail threshold",
+      "defense_optimization": "No construction or retuning. Reuse sole b8c70428 publication; old .5pp stop and R failure retained.",
+      "attacker_data": false,
+      "attack_gradient_steps": 0,
+      "AGA_references": {
+        "DTD": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        },
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "AGA": {
+        "repository": "https://github.com/krumpguo/secure-merge-attack",
+        "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+        "file": "utils_attack_B32.py",
+        "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+        "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+      },
+      "defenses": {
+        "NativeConstraintClass_DTD": {
+          "label": "Numerical A/B compensation, DTD",
+          "target": "DTD",
+          "release": {
+            "path": "outputs/native_ellipse_classification_DTD_20261026/point/point.pt",
+            "sha256": "b8c704282a585676c100cda17572557165cf7336de0f79230f97dda33527a9c8"
+          },
+          "AGA_edits": {
+            "path": "outputs/native_ellipse_classification_DTD_20261026/AGA_observation/edits.pt",
+            "sha256": "f79cf5204bc18d8c62a7fda019779fc9c4d238ae93c87ca1ad5414732bfc66fb"
+          },
+          "budget_status": "Observed logical D3.475844; historical D.5 not satisfied",
+          "function_status": "Original79.414894 to76.117021; historical .5pp and strict R checks failed and retained"
+        }
+      },
+      "cases": [
+        {
+          "target": "DTD",
+          "partner": "MNIST",
+          "defenses": [
+            "NativeConstraintClass_DTD"
+          ]
+        }
+      ],
+      "legacy": {
+        "DTD_MNIST/Unprotected": {
+          "standalone": {
+            "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+            "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+            "key_template": "Unprotected/Standalone/None/{task}"
+          },
+          "direct": {
+            "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+            "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+            "key_template": "Unprotected/TA/None/{task}"
+          },
+          "AGA_target_only": {
+            "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+            "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+            "key_template": "Unprotected/TA/Protected expert/{task}"
+          },
+          "AGA_both": {
+            "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+            "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+            "key_template": "Unprotected/TA/All experts/{task}"
+          }
+        },
+        "DTD_MNIST/NativeConstraintClass_DTD": {
+          "standalone": {
+            "path": "outputs/native_ellipse_classification_DTD_20261026/native/full.pt",
+            "sha256": "e0166ef40ae5d4db5daa0684b4cd7da556626ae68ff55772b85a02b8e2b135a0",
+            "native_score_field": "after",
+            "key_template": "already_evaluated_native"
+          }
+        }
+      },
+      "source_sha256": {
+        "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+        "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+        "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+        "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+        "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+        "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+        "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+        "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+        "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+        "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+        "_impl/report.py": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+        "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+        "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+        "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+        "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+        "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+        "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+        "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+        "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+        "experiment/recover.py": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+        "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+      },
+      "original_batch_context_replays": true,
+      "parameter_budget_scope": "Historical D3.475844 recorded; no new parameter budget or model change",
+      "native_evaluation": "Reuse original1880 DTD predictions:1493 to1431,3.297872pp loss; historical .5pp gate failed.",
+      "frozen_point_before_images": "b35830f",
+      "control_reuse": "Reuse SHA-pinned existing DTD/MNIST control logits for every scope, and existing DTD standalone protected logits.",
+      "observation_registration": {
+        "registered_utc": "2026-10-26T13:58:33.166249+00:00",
+        "reason": "User requested scrutiny of the unsupported universal .5 cutoff; complete the same frozen point rather than infer lack of fusion protection from standalone loss",
+        "new_defense_points": 0,
+        "new_synthetic_images": 0,
+        "new_expert_training_updates": 0,
+        "new_full_AGA_calls": 1,
+        "historical_stop_retained": true,
+        "recovery_digest_binding": "Only the fixed author AGA output SHA is bound after recovery and before images; all other settings fixed",
+        "required_outputs": "Target and partner accuracy in each scope; paired/per-class statistics; original128-batch replay; no result-dependent retuning"
+      }
+    },
+    "rows": [
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1493,
+        "accuracy_percent": 79.41489361702128,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 1493,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 387,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 25
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 36
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 36
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 39,
+            "original_correct": 39
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 23,
+            "original_correct": 23
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/Standalone/None/DTD"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1303,
+        "accuracy_percent": 69.30851063829788,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 1303,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 577,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 18,
+            "original_correct": 18
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 14,
+            "original_correct": 14
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 23,
+            "original_correct": 23
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 13,
+            "original_correct": 13
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 4,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 24,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 12,
+            "original_correct": 12
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 11,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/None/DTD"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 9945,
+        "accuracy_percent": 99.45,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9945,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 55,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1026,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1004,
+            "original_correct": 1004
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 977,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 887,
+            "original_correct": 887
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 949,
+            "original_correct": 949
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1022,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 999,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/None/MNIST"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1286,
+        "accuracy_percent": 68.40425531914893,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 1286,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 594,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 16,
+            "original_correct": 16
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 14,
+            "original_correct": 14
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 25
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 12,
+            "original_correct": 12
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 4,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 24,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 11,
+            "original_correct": 11
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 11,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/Protected expert/DTD"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 9945,
+        "accuracy_percent": 99.45,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9945,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 55,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1026,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1004,
+            "original_correct": 1004
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 977,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 888,
+            "original_correct": 888
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 949,
+            "original_correct": 949
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1022,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 998,
+            "original_correct": 998
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/Protected expert/MNIST"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1293,
+        "accuracy_percent": 68.77659574468085,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 1293,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 587,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 18,
+            "original_correct": 18
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 12,
+            "original_correct": 12
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 25
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 12,
+            "original_correct": 12
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 4,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 24,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 13,
+            "original_correct": 13
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 11,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 36
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/All experts/DTD"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 9942,
+        "accuracy_percent": 99.42,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9942,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 58,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1026,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1002,
+            "original_correct": 1002
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 977,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 888,
+            "original_correct": 888
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 950,
+            "original_correct": 950
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1021,
+            "original_correct": 1021
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 997,
+            "original_correct": 997
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/All experts/MNIST"
+        }
+      },
+      {
+        "defense": "NativeConstraintClass_DTD",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1431,
+        "accuracy_percent": 76.11702127659574,
+        "changed_predictions": 182,
+        "paired": {
+          "both_correct": 1407,
+          "lost": 86,
+          "gained": 24,
+          "both_wrong": 363,
+          "loss_pp": 3.297872340425532,
+          "exact_mcnemar_p": 2.2320673163199837e-09
+        },
+        "mcnemar_log10_p": -8.651292711766073,
+        "paired_accuracy_delta_95ci_pp": [
+          -4.381389464830382,
+          -2.2143552160206816
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 33
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 21
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 30
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 29
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 31
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 32
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 31
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 34
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 33
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 37
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 25
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 32
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 36
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 31
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 34
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 33
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 31
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 26
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 16,
+            "original_correct": 20
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 33
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 34
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 38
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 30
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 21
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 36
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 39
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 33
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 33
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 19,
+            "original_correct": 23
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 32
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 38
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/native_ellipse_classification_DTD_20261026/native/full.pt",
+          "imported_key": "already_evaluated_native"
+        }
+      },
+      {
+        "defense": "NativeConstraintClass_DTD",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 40,
+        "accuracy_percent": 2.127659574468085,
+        "changed_predictions": 1855,
+        "paired": {
+          "both_correct": 18,
+          "lost": 1285,
+          "gained": 22,
+          "both_wrong": 555,
+          "loss_pp": 67.18085106382979,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -345.707572033289,
+        "paired_accuracy_delta_95ci_pp": [
+          -69.41383807946329,
+          -64.94786404819628
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 18
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 14
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 23
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 13
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 12
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 31
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 21
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 30
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          }
+        ],
+        "evaluation_seconds": 5.638437353074551,
+        "provenance": {}
+      },
+      {
+        "defense": "NativeConstraintClass_DTD",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 9844,
+        "accuracy_percent": 98.44000000000001,
+        "changed_predictions": 133,
+        "paired": {
+          "both_correct": 9839,
+          "lost": 106,
+          "gained": 5,
+          "both_wrong": 50,
+          "loss_pp": 1.01,
+          "exact_mcnemar_p": 1.035239298994319e-25
+        },
+        "mcnemar_log10_p": -24.984959249994123,
+        "paired_accuracy_delta_95ci_pp": [
+          -1.2155580302357245,
+          -0.8044419697642753
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 967,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1119,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1026,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1004,
+            "original_correct": 1004
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 968,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 885,
+            "original_correct": 887
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 935,
+            "original_correct": 949
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1012,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 955,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 6.842762373387814,
+        "provenance": {}
+      },
+      {
+        "defense": "NativeConstraintClass_DTD",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 40,
+        "accuracy_percent": 2.127659574468085,
+        "changed_predictions": 1858,
+        "paired": {
+          "both_correct": 17,
+          "lost": 1269,
+          "gained": 23,
+          "both_wrong": 571,
+          "loss_pp": 66.27659574468085,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -339.560792023273,
+        "paired_accuracy_delta_95ci_pp": [
+          -68.52822518343208,
+          -64.02496630592964
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 17
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 16
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 14
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 25
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 12
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 21
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 11
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          }
+        ],
+        "evaluation_seconds": 5.580565866082907,
+        "provenance": {}
+      },
+      {
+        "defense": "NativeConstraintClass_DTD",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 7564,
+        "accuracy_percent": 75.64,
+        "changed_predictions": 2432,
+        "paired": {
+          "both_correct": 7559,
+          "lost": 2386,
+          "gained": 5,
+          "both_wrong": 50,
+          "loss_pp": 23.81,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -704.6488802358544,
+        "paired_accuracy_delta_95ci_pp": [
+          -24.647144044976216,
+          -22.972855955023785
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 455,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 597,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1022,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 981,
+            "original_correct": 1004
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 913,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 868,
+            "original_correct": 888
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 811,
+            "original_correct": 949
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 943,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 974,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 0,
+            "original_correct": 998
+          }
+        ],
+        "evaluation_seconds": 6.741654627025127,
+        "provenance": {}
+      },
+      {
+        "defense": "NativeConstraintClass_DTD",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 40,
+        "accuracy_percent": 2.127659574468085,
+        "changed_predictions": 1856,
+        "paired": {
+          "both_correct": 18,
+          "lost": 1275,
+          "gained": 22,
+          "both_wrong": 565,
+          "loss_pp": 66.64893617021276,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -342.7711947888881,
+        "paired_accuracy_delta_95ci_pp": [
+          -68.89014583402529,
+          -64.40772650640024
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 18
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 12
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 25
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 12
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 21
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 13
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 36
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          }
+        ],
+        "evaluation_seconds": 5.49754473939538,
+        "provenance": {}
+      },
+      {
+        "defense": "NativeConstraintClass_DTD",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 6861,
+        "accuracy_percent": 68.61,
+        "changed_predictions": 3137,
+        "paired": {
+          "both_correct": 6855,
+          "lost": 3087,
+          "gained": 6,
+          "both_wrong": 52,
+          "loss_pp": 30.81,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -912.7010626170678,
+        "paired_accuracy_delta_95ci_pp": [
+          -31.717536786541427,
+          -29.902463213458567
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 167,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 372,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1017,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 958,
+            "original_correct": 1002
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 885,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 862,
+            "original_correct": 888
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 701,
+            "original_correct": 950
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 925,
+            "original_correct": 1021
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 974,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 0,
+            "original_correct": 997
+          }
+        ],
+        "evaluation_seconds": 6.629786968231201,
+        "provenance": {}
+      }
+    ],
+    "execution": {
+      "completed": true,
+      "pilot": false,
+      "case_index": 0,
+      "rows": 14,
+      "wall_seconds": 46.803069952875376,
+      "GPU": "NVIDIA GeForce RTX 4090",
+      "new_defense_weights": 0,
+      "optimizer_steps": 0,
+      "new_AGA_calls": 0,
+      "cached_author_AGA_weights": true,
+      "defense_feedback": false,
+      "predictions_sha256": "6c34143fa1853efaa9422aa1a8e3eca9093242c58fcdbba3ee6ee58bc8ab0bf4",
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "protocol_sha256": "6e80659014035fe55752dd81953f2dbacbf22329fdb67e5ef9eb178b84598e4e"
+    },
+    "independent_validation": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 26656,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 9.5367431640625e-06,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "6c34143fa1853efaa9422aa1a8e3eca9093242c58fcdbba3ee6ee58bc8ab0bf4",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "numpy_validation": {
+      "status": "passed",
+      "rows": 14,
+      "method": "NumPy recount and sample-variance CI; exact McNemar independently summed with math.lgamma, not production metrics or scipy.binomtest",
+      "complete_indices": true,
+      "per_class": true,
+      "paired_95ci": true,
+      "exact_mcnemar": true,
+      "raw_sha256": "6c34143fa1853efaa9422aa1a8e3eca9093242c58fcdbba3ee6ee58bc8ab0bf4",
+      "release_sha256": "b8c704282a585676c100cda17572557165cf7336de0f79230f97dda33527a9c8",
+      "new_image_forwards": 0,
+      "new_optimizer_steps": 0,
+      "checks": [
+        {
+          "key": "Unprotected/Standalone/None/DTD",
+          "n": 1880,
+          "correct": 1493,
+          "paired": {
+            "both_correct": 1493,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 387
+          }
+        },
+        {
+          "key": "Unprotected/TA/None/DTD",
+          "n": 1880,
+          "correct": 1303,
+          "paired": {
+            "both_correct": 1303,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 577
+          }
+        },
+        {
+          "key": "Unprotected/TA/None/MNIST",
+          "n": 10000,
+          "correct": 9945,
+          "paired": {
+            "both_correct": 9945,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 55
+          }
+        },
+        {
+          "key": "Unprotected/TA/Protected expert/DTD",
+          "n": 1880,
+          "correct": 1286,
+          "paired": {
+            "both_correct": 1286,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 594
+          }
+        },
+        {
+          "key": "Unprotected/TA/Protected expert/MNIST",
+          "n": 10000,
+          "correct": 9945,
+          "paired": {
+            "both_correct": 9945,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 55
+          }
+        },
+        {
+          "key": "Unprotected/TA/All experts/DTD",
+          "n": 1880,
+          "correct": 1293,
+          "paired": {
+            "both_correct": 1293,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 587
+          }
+        },
+        {
+          "key": "Unprotected/TA/All experts/MNIST",
+          "n": 10000,
+          "correct": 9942,
+          "paired": {
+            "both_correct": 9942,
+            "lost": 0,
+            "gained": 0,
+            "both_wrong": 58
+          }
+        },
+        {
+          "key": "NativeConstraintClass_DTD/Standalone/None/DTD",
+          "n": 1880,
+          "correct": 1431,
+          "paired": {
+            "both_correct": 1407,
+            "lost": 86,
+            "gained": 24,
+            "both_wrong": 363
+          }
+        },
+        {
+          "key": "NativeConstraintClass_DTD/TA/None/DTD",
+          "n": 1880,
+          "correct": 40,
+          "paired": {
+            "both_correct": 18,
+            "lost": 1285,
+            "gained": 22,
+            "both_wrong": 555
+          }
+        },
+        {
+          "key": "NativeConstraintClass_DTD/TA/None/MNIST",
+          "n": 10000,
+          "correct": 9844,
+          "paired": {
+            "both_correct": 9839,
+            "lost": 106,
+            "gained": 5,
+            "both_wrong": 50
+          }
+        },
+        {
+          "key": "NativeConstraintClass_DTD/TA/Protected expert/DTD",
+          "n": 1880,
+          "correct": 40,
+          "paired": {
+            "both_correct": 17,
+            "lost": 1269,
+            "gained": 23,
+            "both_wrong": 571
+          }
+        },
+        {
+          "key": "NativeConstraintClass_DTD/TA/Protected expert/MNIST",
+          "n": 10000,
+          "correct": 7564,
+          "paired": {
+            "both_correct": 7559,
+            "lost": 2386,
+            "gained": 5,
+            "both_wrong": 50
+          }
+        },
+        {
+          "key": "NativeConstraintClass_DTD/TA/All experts/DTD",
+          "n": 1880,
+          "correct": 40,
+          "paired": {
+            "both_correct": 18,
+            "lost": 1275,
+            "gained": 22,
+            "both_wrong": 565
+          }
+        },
+        {
+          "key": "NativeConstraintClass_DTD/TA/All experts/MNIST",
+          "n": 10000,
+          "correct": 6861,
+          "paired": {
+            "both_correct": 6855,
+            "lost": 3087,
+            "gained": 6,
+            "both_wrong": 52
+          }
+        }
+      ]
+    },
+    "AGA_execution": {
+      "method": "aga",
+      "seconds": 9.774198044091463,
+      "output_sha256": "f79cf5204bc18d8c62a7fda019779fc9c4d238ae93c87ca1ad5414732bfc66fb",
+      "details": {
+        "known_family": false,
+        "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "aligned_reference": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        }
+      },
+      "reference": "original_AGA",
+      "new_training_updates": 0
+    },
+    "registration_local_commit": "3815d13531af7a213ab5dd07ad32938a90844803",
+    "frozen_before_images_commit": "b35830f",
+    "new_defense_weights": 0,
+    "new_real_evaluation_image_forwards": 35640,
+    "new_real_replay_image_forwards": 26656,
+    "new_complete_AGA_calls": 1,
+    "historical_native_stop_preserved": true,
+    "scope": "Post-stop observation of the exact existing DTD model. Accuracy loss remains3.297872pp; no construction, source, parameter or threshold retuning. Not a newly feasible point under the historical .5pp gate. Target and partner effects both reported."
   }
 }
