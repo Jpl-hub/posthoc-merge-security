@@ -1,34 +1,29 @@
 {
-  "status": "约束A/B点a31b完整收尾：独立99.70，TA99.34，AGA目标99.29/双方99.31，无目标保护。224融合上下文与16原生上下文分数复核通过；0构造图片。",
-  "updated_utc": "2026-10-26T07:17:21.994575+00:00",
+  "status": "新权重谱层输入A/B补偿ba02已冻结：0图片、0优化器步，一次B条件解5.04秒；下一完整独立MNIST。尚无保护效果结论。",
+  "updated_utc": "2026-10-26T07:25:17.038951+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "new4090",
+      "root": "outputs/task_shaped_compensation_20261026",
+      "stage": "frozen_before_native_evaluation"
+    }
+  ],
   "latest_core_trial": {
-    "point_sha256": "a31b050ecb3118f074f043a65ab3c93ab227ead81e4fb6c318b2b139c8a66e53",
-    "closed": true,
-    "record": "results/data_free_compensation/population_compensation_result.json:native_constrained_construction_result",
+    "point_sha256": "ba02f911b70bee06347626ddaaad2b18c78c98eab98d00ceb4760fd3f34ea14d",
+    "record": "results/data_free_compensation/population_compensation_result.json:spectral_input_compensation_result",
+    "closed": false,
     "real_construction_images": 0,
     "synthetic_construction_images": 0,
+    "synthetic_layer_inputs": 24576,
+    "optimizer_steps": 0,
     "original_expert_updates": 0,
-    "seconds": 192.75455757975578,
-    "postprocess_A_steps": 40,
-    "parameter_distance": 2.2727646493178604,
-    "TA_and_AGA_evaluated": true,
-    "native_before_after": [
-      99.69,
-      99.7
-    ],
-    "target_TA_AGAtarget_AGAboth": [
-      99.34,
-      99.29,
-      99.31
-    ],
-    "new_full_AGA_calls": 1,
-    "source_steps": 40,
-    "not_claimed_stationary": true
+    "seconds": 5.0409820936620235,
+    "parameter_distance": 1.6725680715439644,
+    "TA_and_AGA_evaluated": false
   },
   "next_action": "核ACTMat官方774ee932及当前权重的无数据输入矩条件；不新增融合器。先解决非线性补偿所需输入均值/尺度，避免把线性估计直接当真实激活分布。",
   "engineering_cleanup": {

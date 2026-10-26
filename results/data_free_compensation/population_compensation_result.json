@@ -5533,5 +5533,51 @@
       "source": "\"\"\"Read-only replay in the unchanged original 128-image evaluation contexts.\"\"\"\nimport json\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.models import initialize,checked_models,apply\nfrom _impl.data import dataset\nfrom _impl.io import digest\ninitialize();root=Path('outputs/task_shaped_compensation_20261026');r=json.loads((root/'result.json').read_text());ref=dict(path=str(root/'point.pt'),sha256=r['point_sha256'])\n_,e,h,_=checked_models('MNIST');m=apply(e,ref).cuda();h.cuda();d=dataset('MNIST','data',e.val_preprocess)\ns=torch.load(root/'native/full.pt',map_location='cpu',weights_only=False)['after'];ids=np.linspace(0,len(s)-1,16,dtype=int);maximum=0.;count=0\nwith torch.no_grad():\n for block in sorted(set(ids//128)):\n  start,end=int(block*128),min(int((block+1)*128),len(s));x=torch.stack([d[i][0] for i in range(start,end)]).cuda();actual=h(m(x)).cpu().double();wanted=ids[(ids>=start)&(ids<end)];subset=actual[wanted-start]\n  np.testing.assert_array_equal(subset.argmax(1).numpy(),s[wanted].argmax(1).numpy());maximum=max(maximum,float((subset-s[wanted]).abs().max()));count+=end-start\nassert maximum<=.0002,maximum\nr=dict(status='passed',source_sha256=digest(__file__),score_replays=16,original_batch_size=128,context_image_forwards=count,maximum_score_error=maximum,tolerance=.0002,new_expert_updates=0,new_AGA=0)\n(root/'context_replay.json').write_text(json.dumps(r,indent=2)+'\\n');print(json.dumps(r),flush=True)\n",
       "sha256": "ed2559b93be43de35c0bda0165f2dadc44a419bb9ed465c322710a66dbd8d836"
     }
+  },
+  "spectral_input_compensation_result": {
+    "status": "sole_spectral_input_compensation_frozen_before_images",
+    "point_sha256": "ba02f911b70bee06347626ddaaad2b18c78c98eab98d00ceb4760fd3f34ea14d",
+    "metrics": {
+      "A_relative": 1.0273893035120727,
+      "B_relative": 0.9174383035223694,
+      "bias_relative": 0.9488214437961721,
+      "logical_D": 1.6725680715439644,
+      "task_left_relative": 1.664649622705227e-14,
+      "task_right_relative": 9.867416442926162e-14,
+      "anchor_corresponding_row_cosine_max": 4.823793047587439e-13
+    },
+    "checks": [
+      {
+        "domain": "source",
+        "n": 16384,
+        "relative_variance_MSE": 0.02703379790793146,
+        "relative_uncentered_MSE": 0.010117051432339381,
+        "maximum_output_error_norm": 4.390221199234252
+      },
+      {
+        "domain": "independent",
+        "n": 8192,
+        "relative_variance_MSE": 0.03247103032432121,
+        "relative_uncentered_MSE": 0.01210924936792868,
+        "maximum_output_error_norm": 5.612265336730596
+      }
+    ],
+    "independent_numpy": {
+      "task_left_relative": 1.664733093502799e-14,
+      "task_right_relative": 9.867457332010123e-14,
+      "anchor_cosine_max": 4.82368643264551e-13
+    },
+    "ridge": 13.204789419745566,
+    "ridge_stationarity_relative": 2.0587465440552424e-15,
+    "layer_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe",
+    "source_sha256": "f1706997adc192c4076d41e9c4ad711e21fc63be0e530965efb32daf78faccee",
+    "seconds": 5.0409820936620235,
+    "original_expert_updates": 0,
+    "optimizer_steps": 0,
+    "new_AGA": 0,
+    "real_images": 0,
+    "synthetic_images": 0,
+    "synthetic_layer_inputs": 24576,
+    "scope": "One originalA/publicanchor equality condition and one fullB ridge fit on allmode weight-shaped LN-compatible inputs. TaskGram suppliesdirections only,not claimedactualinputmoments;mean/scale not recoveredfrombias. No public/partner/test/classheadused. Standardleast-squares,SVD and samplingnotnovelty;native/fusion behaviornotyetknown."
   }
 }
