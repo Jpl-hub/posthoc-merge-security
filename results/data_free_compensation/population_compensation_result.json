@@ -998,5 +998,31 @@
       "task_kernel_vs_independent_MSE_relative_difference": 0.03169122816471888,
       "kernel_precision": "有限15阶矩是数值目标；任务域独立QuickGELU误差比核预测约高3.2%，不称精确全域功能等式。"
     }
+  },
+  "frozen_matrix_observation_definition": {
+    "status": "defined_before_any_model_images",
+    "scope": "One behavioral measurement of the sole earlier frozen FP64 matrix record;no additional optimization or change to old continuousMSE threshold/source-failure. Not a claim that the closed40step solve passed.",
+    "motivation": "A fixed uniform-ball relativeMSE threshold is not identical to natural classification accuracy;observe both rather than assuming either implication. No alternative matrix/step/parameter selection.",
+    "input": {
+      "path": "outputs/population_compensation_20261026/joint_fit/first_layer_fit.pt",
+      "sha256": "ea3c4db2733aabc502a9f81927d7c4116567c9b904419aa4d285f2d339289781"
+    },
+    "embedding": "All saved A,a,B,b of block0 rounded once toFP32,all other expert tensors untouched. No classifier/partner/image/oldtest used to embed or choose parameters.",
+    "new_construction_images": 0,
+    "optimizer_steps": 0,
+    "freeze": "Freeze soleFP32publication andlocalSHA before completeMNIST evaluation;originalMNIST rawbaseline reused.",
+    "evaluation": "Historical completeMNIST benchmark,not blind. Complete native loss<=.5pp permits separately reported TA.5 MNIST/SVHN plus unchanged authorAGA target/both. Native failure stops fusion. Do not rewrite oldcontinuousMSE condition or use observation for parameterrepair.",
+    "scope_parameter": "Original effectiveWchange.5/outside89.7138%;reportallfourlogicalmatrix/biasdistances includinga/b. No claimofoldD.5compliance.",
+    "source": {
+      "embed": {
+        "content": "\"\"\"Embed the already frozen first-layer matrices without optimization.\"\"\"\nimport json\nfrom pathlib import Path\nimport torch\nfrom _impl.io import digest,save_json\nfrom _impl.models import initialize,load_checkpoint\nfrom _impl.metrics import logical_parameter_distance\ninitialize();old=Path('outputs/population_compensation_20261026/joint_fit/first_layer_fit.pt')\nassert digest(old)=='ea3c4db2733aabc502a9f81927d7c4116567c9b904419aa4d285f2d339289781'\nx=torch.load(old,map_location='cpu',weights_only=False);key='model.visual.transformer.resblocks.0.mlp.'\nedits={key+k:x[n].float() for n,k in [('A','c_fc.weight'),('a','c_fc.bias'),('B','c_proj.weight'),('b','c_proj.bias')]}\nassert all(torch.isfinite(v).all() for v in edits.values())\ns=load_checkpoint('MNIST/finetuned.pt').state_dict();out=Path('outputs/population_compensation_20261026/first_layer_observation/point');out.mkdir(parents=True,exist_ok=False)\ntorch.save(edits,out/'point.pt');save_json(out/'results.json',dict(point_sha256=digest(out/'point.pt'),source_parameter_record_sha256=digest(old),logical_D=logical_parameter_distance(edits,s),new_optimizer_steps=0,original_expert_updates=0,construction_images=0,source_sha256=digest(__file__),original_continuous_source_condition_passed=False))\nprint((out/'results.json').read_text())\n",
+        "sha256": "67f05969d561d195d4e24d2d422dc23582439b5ca49abc23b7ef66ec5143ac0e"
+      },
+      "native": {
+        "content": "\"\"\"Evaluate one frozen MNIST publication; reuse the pinned original full scores.\"\"\"\nimport json,time\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.data import dataset,make_loader,official_labels\nfrom _impl.evaluate import evaluate\nfrom _impl.io import digest,new_output,save_json\nfrom _impl.metrics import task_change,row_metrics\nfrom _impl.models import checked_models,apply,initialize\ninitialize();start=time.perf_counter();root=Path('outputs/population_compensation_20261026/first_layer_observation')\nresult=json.loads((root/'point/results.json').read_text());ref=dict(path=str(root/'point/point.pt'),sha256=result['point_sha256'])\nbaseline='outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt'\nassert digest(baseline)=='f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51'\nraw=torch.load(baseline,map_location='cpu',weights_only=False)['Unprotected/Standalone/None/MNIST']\nassert raw['indices']==list(range(10000))\nlabels=official_labels('MNIST');np.testing.assert_array_equal(raw['target'].numpy(),labels)\n_,expert,head,pins=checked_models('MNIST');model=apply(expert,ref)\nout=new_output(str(root/'native'),dict(target='MNIST',task_budget=.5,max_accuracy_loss_pp=.5,publication=ref,baseline_scores=baseline))\nsave_json(out/'before_images.json',dict(publication=ref,checkpoint_sha256=pins,source_sha256=digest(__file__)))\nsink=[];evaluate(model,head,make_loader(dataset('MNIST','data',expert.val_preprocess)),'cuda',logit_sink=sink.append)\na,b=raw['logits'].double(),torch.cat(sink).double();row=task_change(a.numpy(),b.numpy());row.update(stage='full',before_correct=int((a.argmax(1).numpy()==labels).sum()),after_correct=int((b.argmax(1).numpy()==labels).sum()))\nrow.update(strict_task_passed=row['changed']==0 and row['R']<=.5,accuracy_loss_pp=100*(row['before_correct']-row['after_correct'])/row['n']);row['passed']=row['accuracy_loss_pp']<=.5\ntorch.save(dict(indices=raw['indices'],labels=labels,before=a,after=b),out/'full.pt');row['raw_sha256']=digest(out/'full.pt')\nsave_json(out/'results.json',dict(rows=[row],passed=row['passed'],image_forwards=10000,baseline_new_forwards=0,seconds=time.perf_counter()-start,paired=row_metrics(b,torch.tensor(labels),a,10)))\nprint(json.dumps(row),flush=True)\n",
+        "sha256": "cf4f146f71de609d75bff779396985901b78d0606e30e8a7c74c8249bca4e23b"
+      }
+    },
+    "runtime": "New4090torch2.8+cu128,numpy1.26.4;originalFP64solver3090torch2.3. Runtimeexplicit,17existingtests and2samefixedsyntheticforwardcompatibility passed."
   }
 }
