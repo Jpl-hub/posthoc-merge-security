@@ -16652,5 +16652,275 @@
       "/tmp/posthoc_ellipse_no_A_SVD.py",
       "/tmp/posthoc_ellipse_uniform_prior.py"
     ]
+  },
+  "core_method_review": {
+    "status": "completed_read_only_core_review",
+    "rows": [
+      {
+        "task": "MNIST",
+        "point_sha256": "828daa484b64f27f99df4cbb657366572c951f21585dbde6136bf7a8f4d72dc1",
+        "projection": {
+          "A_right_task_change": 6.23139448285241e-09,
+          "A_left_task_change": 5.53213498580793e-09,
+          "A_outside_energy_fraction": 0.9999999999999999,
+          "B_right_task_change": 5.176082383057501
+        },
+        "contexts": {
+          "native": {
+            "n": 800,
+            "same_teacher_class": 800,
+            "class0": 80,
+            "mean_class_offset_fraction": 0.003614099119825413,
+            "centered_score_norm_ratio": 0.9994453057727206,
+            "centered_score_cosine": 0.9989025908540412
+          },
+          "direct": {
+            "n": 800,
+            "same_teacher_class": 80,
+            "class0": 800,
+            "mean_class_offset_fraction": 0.7031095521463385,
+            "centered_score_norm_ratio": 0.043533505801338045,
+            "centered_score_cosine": 0.4353935904175063
+          },
+          "recovered": {
+            "n": 800,
+            "same_teacher_class": 80,
+            "class0": 800,
+            "mean_class_offset_fraction": 0.7063468399834087,
+            "centered_score_norm_ratio": 0.0377385745157831,
+            "centered_score_cosine": 0.4333777657681832
+          }
+        },
+        "native_limit": 1.2644836124713486,
+        "native_constraint_usage": 0.2564712555057021,
+        "last_logged_preupdate_FW_gap": 0.8646906920278399,
+        "native_FP64_iterate_quadratic": 0.324303699611157,
+        "native_published_FP32_quadratic": 0.3243036996569124
+      },
+      {
+        "task": "SVHN",
+        "point_sha256": "a203d6c989396243641ee44a7d865cc74cb3bcae9359c201089ffcd15dc6fb9c",
+        "projection": {
+          "A_right_task_change": 6.362274929792788e-09,
+          "A_left_task_change": 5.265805963464422e-09,
+          "A_outside_energy_fraction": 1.0000000000000002,
+          "B_right_task_change": 4.863304298864729
+        },
+        "contexts": {
+          "native": {
+            "n": 800,
+            "same_teacher_class": 800,
+            "class0": 80,
+            "mean_class_offset_fraction": 0.003940027449522983,
+            "centered_score_norm_ratio": 0.9997236019228241,
+            "centered_score_cosine": 0.9989124961739896
+          },
+          "direct": {
+            "n": 800,
+            "same_teacher_class": 80,
+            "class0": 800,
+            "mean_class_offset_fraction": 0.7488648108269546,
+            "centered_score_norm_ratio": 0.03527122894013039,
+            "centered_score_cosine": 0.29524992887655066
+          },
+          "recovered": {
+            "n": 800,
+            "same_teacher_class": 80,
+            "class0": 800,
+            "mean_class_offset_fraction": 0.7464929109189087,
+            "centered_score_norm_ratio": 0.029698444363147412,
+            "centered_score_cosine": 0.29563724367551164
+          }
+        },
+        "native_limit": 2.1425365311148905,
+        "native_constraint_usage": 0.21555990413659476,
+        "last_logged_preupdate_FW_gap": 0.5704810738628647,
+        "native_FP64_iterate_quadratic": 0.4618449691713984,
+        "native_published_FP32_quadratic": 0.46184496925627805
+      },
+      {
+        "task": "DTD",
+        "point_sha256": "b8c704282a585676c100cda17572557165cf7336de0f79230f97dda33527a9c8",
+        "projection": {
+          "A_right_task_change": 6.044508086736337e-09,
+          "A_left_task_change": 5.909800831852314e-09,
+          "A_outside_energy_fraction": 1.0,
+          "B_right_task_change": 3.507903213486692
+        },
+        "contexts": {
+          "native": {
+            "n": 3760,
+            "same_teacher_class": 3760,
+            "class0": 80,
+            "mean_class_offset_fraction": 0.00042750376996904103,
+            "centered_score_norm_ratio": 1.00010954873433,
+            "centered_score_cosine": 0.9926882062299828
+          },
+          "direct": {
+            "n": 3760,
+            "same_teacher_class": 80,
+            "class0": 3760,
+            "mean_class_offset_fraction": 0.8194676001806461,
+            "centered_score_norm_ratio": 0.09470135974457457,
+            "centered_score_cosine": 0.6434757099278723
+          },
+          "recovered": {
+            "n": 3760,
+            "same_teacher_class": 80,
+            "class0": 3760,
+            "mean_class_offset_fraction": 0.8262347986125946,
+            "centered_score_norm_ratio": 0.08951873887635259,
+            "centered_score_cosine": 0.6916231914979541
+          }
+        },
+        "native_limit": 2.8732043059180246,
+        "native_constraint_usage": 0.23605369203942952,
+        "last_logged_preupdate_FW_gap": 3.1343966300756865,
+        "native_FP64_iterate_quadratic": 0.6782304846262832,
+        "native_published_FP32_quadratic": 0.6782304843955362
+      }
+    ],
+    "source": "\"\"\"Read frozen weights and synthetic caches; no new defense or benchmark images.\"\"\"\nimport json\nfrom pathlib import Path\n\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.attacks import load_author\nfrom _impl.io import digest\nfrom _impl.models import checked_models, initialize\n\ninitialize()\ntorch.set_default_dtype(torch.float64)\nrows = []\nfor task in ['MNIST', 'SVHN', 'DTD']:\n    root = Path('outputs') / ('native_ellipse_classification_20261026' if task == 'MNIST'\n                              else f'native_ellipse_classification_{task}_20261026')\n    meta = json.loads((root / 'point/result.json').read_text())\n    assert digest(root / 'point/point.pt') == meta['point_sha256']\n    assert digest(root / 'source/source.pt') == meta['source_cache_sha256']\n    raw = torch.load(root / 'source/source.pt', weights_only=False)\n    edits = torch.load(root / 'point/point.pt', weights_only=False)\n    base, expert, head, pins = checked_models(task)\n    s, bs = expert.state_dict(), base.state_dict()\n    k = 'model.visual.transformer.resblocks.11.mlp.'\n    assert set(edits) == {k + 'c_fc.weight', k + 'c_proj.weight', k + 'c_proj.bias'}\n    to = lambda x: x.double().cuda()\n    A, A0, a, a0, B, B0, b, b0 = [to(x) for x in [s[k+'c_fc.weight'],bs[k+'c_fc.weight'],\n        s[k+'c_fc.bias'],bs[k+'c_fc.bias'],s[k+'c_proj.weight'],bs[k+'c_proj.weight'],\n        s[k+'c_proj.bias'],bs[k+'c_proj.bias']]]\n    Ap, Bp, bp = [to(edits[k+n]) for n in ['c_fc.weight','c_proj.weight','c_proj.bias']]\n    U, _, Vh = torch.linalg.svd(A-A0, full_matrices=False)\n    U, V = U[:, :32], Vh[:32].T\n    dA, dB = Ap-A, Bp-B\n    _, _, VBh = torch.linalg.svd(B-B0, full_matrices=False)\n    VB = VBh[:32].T\n    projection = dict(A_right_task_change=float((dA@V).norm()/(A@V).norm()),\n        A_left_task_change=float((U.T@dA).norm()/(U.T@A).norm()),\n        A_outside_energy_fraction=float((dA-(U@(U.T@dA))-(dA@V)@V.T+U@((U.T@dA)@V)@V.T).square().sum()/dA.square().sum()),\n        B_right_task_change=float((dB@VB).norm()/(B@VB).norm()))\n    author, sha = load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))\n    assert sha == '4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778'\n    pi = author['solve_permutation'](Ap.float().cpu(), A0.float().cpu()).cuda()\n    phi = lambda x: x*torch.sigmoid(1.702*x)\n    W = to(head.weight)\n    contexts = {}\n    for name, item in raw['cache'].items():\n        x, prefix, original_scores = [to(item[q]) for q in ['x','prefix','scores']]\n        if name == 'native':\n            final = prefix + phi(x@Ap.T+a)@Bp.T+bp\n        else:\n            AA, aa, BB = (Ap, a, Bp) if name == 'direct' else (Ap[pi], a[pi], Bp[:,pi])\n            final = prefix + phi(x@((AA+A0)/2).T+(aa+a0)/2)@((BB+B0)/2).T+(bp+b0)/2\n        names = ['model.visual.ln_post.weight','model.visual.ln_post.bias','model.visual.proj']\n        g, beta, P = [to(s[q] if name == 'native' else (s[q]+bs[q])/2) for q in names]\n        scores = F.normalize(F.layer_norm(final,(768,),g,beta,expert.model.visual.ln_post.eps)@P,dim=-1)@W.T\n        before = original_scores-original_scores.mean(1,keepdim=True)\n        after = scores-scores.mean(1,keepdim=True)\n        delta = after-before\n        centered_before = before-before.mean(0,keepdim=True)\n        centered_after = after-after.mean(0,keepdim=True)\n        contexts[name] = dict(n=len(scores),same_teacher_class=int((scores.argmax(1).cpu()==raw['teacher_class']).sum()),\n            class0=int(scores.argmax(1).eq(0).sum()),\n            mean_class_offset_fraction=float(len(delta)*delta.mean(0).square().sum()/delta.square().sum()),\n            centered_score_norm_ratio=float(centered_after.norm()/centered_before.norm()),\n            centered_score_cosine=float((centered_before*centered_after).sum()/(centered_before.norm()*centered_after.norm())))\n    rows.append(dict(task=task,point_sha256=meta['point_sha256'],projection=projection,\n        contexts=contexts,native_quadratic=meta['native_final'],native_limit=meta['native_limit'],\n        native_constraint_usage=meta['native_final']/meta['native_limit'],\n        final_conditional_gradient_gap=meta['trace'][-1]['conditional_gradient_gap']))\n    print(json.dumps(rows[-1]),flush=True)\n\nresult = dict(status='completed_read_only_core_review',rows=rows,\n    source=Path(__file__).read_text(),source_sha256=digest(__file__),\n    model_image_forwards=0,new_real_images=0,new_defense_points=0,new_full_AGA_calls=0,\n    matching_calls=3,parameter_updates=0,\n    scope='Previously frozen synthetic sources and publications only. No natural/partner data read, no parameter or hyperparameter selection. B task change is a parameter probe, not a classification bound.')\nout = Path('outputs/native_ellipse_classification_20261026/core_review.json')\nassert not out.exists()\nout.write_text(json.dumps(result,indent=2)+'\\n')\n",
+    "source_sha256": "85ee136216a46f98b9a0708d6c5428f6ba9af4cdb245c5a982017746c89722ef",
+    "model_image_forwards": 0,
+    "new_real_images": 0,
+    "new_defense_points": 0,
+    "new_full_AGA_calls": 0,
+    "matching_calls": 3,
+    "parameter_updates": 0,
+    "scope": "Previously frozen synthetic sources and publications only. No natural/partner data read, no parameter or hyperparameter selection. B task change is a parameter probe, not a classification bound.",
+    "raw_record": {
+      "path": "outputs/native_ellipse_classification_20261026/core_review.json",
+      "sha256": "1a1a544fef14d17d45c24b897c752b6b0050e908e07ea977ffd854a49909b5bd"
+    },
+    "source_archive": "outputs/native_ellipse_classification_20261026/source_archive/posthoc_core_review.py",
+    "interpretation": "A task projections are parameter probes. B task projection is not a joint function condition. Centering removes each sample common-class score and the mean score across inputs. Source diagnostics are not natural accuracy or unknown-partner guarantees. Raw final_conditional_gradient_gap is the last logged PRE-UPDATE gap, not a certificate at the released FP32 point.",
+    "updated_utc": "2026-10-26T11:47:44.037987+00:00",
+    "teacher_requirements": {
+      "data_free": true,
+      "experts_frozen": true,
+      "maximize_effective_distance": "Not implemented by current min-norm A then fixed-A B solve",
+      "task_probe_contribution": "A projections numerically preserved; no accuracy advantage established by either separate SVD deletion",
+      "joint_compensation": "Supported by A-only and B-only fixed deletions"
+    },
+    "protocol_description_errata": {
+      "status": "retrospective_annotation_original_protocols_unchanged",
+      "updated_utc": "2026-10-26T11:47:44.037987+00:00",
+      "scope": "Descriptive fields inherited from main point. Actual release paths/hashes and scientific score rows were correct; these four fields are not read by production evaluation code. No model, score, threshold, source configuration or preregistration changed.",
+      "items": [
+        {
+          "record": "native_ellipse_components_result",
+          "original_protocol_sha256": "ea07a2073cee5cc15fced7a69b6cefc96dad9d09acb55040b502c4c06569cb81",
+          "incorrect_inherited_description": {
+            "parameter_budget_scope": "A1.02739,B2.67213,logicalD3.02937;source-nativebound fixedbeforeupdates,notoldD.5compliant.",
+            "native_evaluation": "CompleteMNIST99.61vs99.69,.08pp loss;strictR44.81122failsretained. OriginalandcandidatefullscorescachedbySHA.",
+            "frozen_point_before_images": "6d56537648d6e627cc7e7c2ecfd6ac369665f330",
+            "defense_optimization": "FreshoriginalArowcondition;nativefunctionalquadraticfrom16384layerprobesand800originalgeneratedprefixes. Fixedbound=A-onlysourcevalue. StandardFW500steps,lastpoint,no testfeedback. Publicnormalizedclass0gapobjective. 0realimages."
+          },
+          "actual_publications": {
+            "A_only": {
+              "path": "outputs/native_ellipse_components_20261026/A_only/point.pt",
+              "sha256": "075041ed3404f769c0acfaaf5bc00e320decebb8551f0e6f83822f31f592bd40"
+            },
+            "B_only": {
+              "path": "outputs/native_ellipse_components_20261026/B_only/point.pt",
+              "sha256": "c1420d7e6788b838bcbc90559b27097c9862e25c2146ef07a473efc4e6cfc88c"
+            }
+          },
+          "native_rows": [
+            {
+              "defense": "A_only",
+              "accuracy_percent": 99.7,
+              "n": 10000,
+              "correct": 9970
+            },
+            {
+              "defense": "B_only",
+              "accuracy_percent": 9.8,
+              "n": 10000,
+              "correct": 980
+            }
+          ],
+          "actual_definition_local_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
+          "actual_construction": "Exact A or B/output-bias deletion from frozen 828daa48; zero refit. Parent joint D/native numbers do not describe the deletions. No separate component freeze commit claimed."
+        },
+        {
+          "record": "native_ellipse_no_A_SVD_evaluation",
+          "original_protocol_sha256": "af409270163933ae49402a1fd1ad351e74cd2305f0152f30389bc0d77ffadc1b",
+          "incorrect_inherited_description": {
+            "parameter_budget_scope": "A1.02739,B2.67213,logicalD3.02937;source-nativebound fixedbeforeupdates,notoldD.5compliant.",
+            "native_evaluation": "CompleteMNIST99.61vs99.69,.08pp loss;strictR44.81122failsretained. OriginalandcandidatefullscorescachedbySHA.",
+            "frozen_point_before_images": "6d56537648d6e627cc7e7c2ecfd6ac369665f330",
+            "defense_optimization": "FreshoriginalArowcondition;nativefunctionalquadraticfrom16384layerprobesand800originalgeneratedprefixes. Fixedbound=A-onlysourcevalue. StandardFW500steps,lastpoint,no testfeedback. Publicnormalizedclass0gapobjective. 0realimages."
+          },
+          "actual_publications": {
+            "No_A_SVD": {
+              "path": "outputs/native_ellipse_no_A_SVD_20261026/point/point.pt",
+              "sha256": "537a2f648a65147ae2e15a255c0e84bb8ca362d05c719ac66adffb4a2c5be5b7"
+            }
+          },
+          "native_rows": [
+            {
+              "defense": "No_A_SVD",
+              "accuracy_percent": 99.68,
+              "n": 10000,
+              "correct": 9968
+            }
+          ],
+          "actual_parameter_metrics": {
+            "A_relative": 0.9996194067825314,
+            "B_relative": 4.25196036902103,
+            "logical_D": 4.420114321137948
+          },
+          "actual_freeze_local_commit": "de07b8294cab72ac90f4ccc44dee9e1a0a309b6c",
+          "actual_construction": "Same native-bound B solve; remove only A SVD projectors; task-spectrum inputs retained."
+        },
+        {
+          "record": "native_ellipse_uniform_prior_evaluation",
+          "original_protocol_sha256": "0f6de922a12c47d7cfadfc7bade1ca140550ab37b74046d21ed982477ef302a0",
+          "incorrect_inherited_description": {
+            "parameter_budget_scope": "A1.02739,B2.67213,logicalD3.02937;source-nativebound fixedbeforeupdates,notoldD.5compliant.",
+            "native_evaluation": "CompleteMNIST99.61vs99.69,.08pp loss;strictR44.81122failsretained. OriginalandcandidatefullscorescachedbySHA.",
+            "frozen_point_before_images": "6d56537648d6e627cc7e7c2ecfd6ac369665f330",
+            "defense_optimization": "FreshoriginalArowcondition;nativefunctionalquadraticfrom16384layerprobesand800originalgeneratedprefixes. Fixedbound=A-onlysourcevalue. StandardFW500steps,lastpoint,no testfeedback. Publicnormalizedclass0gapobjective. 0realimages."
+          },
+          "actual_publications": {
+            "Uniform_layer_inputs": {
+              "path": "outputs/native_ellipse_uniform_prior_20261026/point/point.pt",
+              "sha256": "182df452cdcd8d4eca9f1e530a0f9c11e2c0176b3748e475c2019b92368795e6"
+            }
+          },
+          "native_rows": [
+            {
+              "defense": "Uniform_layer_inputs",
+              "accuracy_percent": 99.62,
+              "n": 10000,
+              "correct": 9962
+            }
+          ],
+          "actual_parameter_metrics": {
+            "A_relative": 1.0273893035120727,
+            "B_relative": 3.696500282302531,
+            "logical_D": 4.092218806545324
+          },
+          "actual_freeze_local_commit": "6ae5d72bc61da0590c5af65f6c66ad2c986743d8",
+          "actual_construction": "Same native-bound B solve; use uniform layer inputs; A SVD projectors retained."
+        }
+      ]
+    },
+    "cleanup": {
+      "new_remote_temporary_source_retired": 1,
+      "source_preserved": true,
+      "unique_models_or_scores_deleted": 0,
+      "new_production_modules": 0,
+      "new_frameworks": 0
+    },
+    "verification": {
+      "existing_scientific_records_unchanged": true,
+      "current_README_TeX_match_frozen_numbers": true,
+      "protocol_errata_actual_release_hashes_match": true,
+      "server_CPU_paper_table_test": "1 passed in 1.85s",
+      "local_paper_table_test": "Collection failed before tests: system matplotlib binary incompatible with local NumPy 2.2.6; same existing test passed in project server environment. No system packages changed."
+    }
   }
 }
