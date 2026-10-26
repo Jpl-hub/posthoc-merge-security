@@ -7343,5 +7343,69 @@
       "direct": 800,
       "recovered": 800
     }
+  },
+  "native_ellipse_classification_result": {
+    "status": "sole_native_ellipse_classification_frozen_before_images",
+    "point_sha256": "828daa484b64f27f99df4cbb657366572c951f21585dbde6136bf7a8f4d72dc1",
+    "source_sha256": "91d82d78651ac4aeb52fb14d976ac293e1efe591c0226bce66926bda47bea323",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "source_counts": {
+      "native_teacher_retained": 800,
+      "native_n": 800,
+      "public_class0": {
+        "direct": 800,
+        "recovered": 800
+      }
+    },
+    "public_objective": -13.286056534008233,
+    "native_limit": 1.2644836124713486,
+    "native_minimum": 0.06556075573926279,
+    "native_final": 0.324303699611157,
+    "native_final_FP32": 0.3243036996569124,
+    "native_groups": [
+      {
+        "population": "task_layer",
+        "n": 16384,
+        "variance": 79.14436889714108
+      },
+      {
+        "population": "generated_native",
+        "n": 800,
+        "variance": 6.812061375916116
+      }
+    ],
+    "ridge": 6.0394128536670705e-05,
+    "original_tail_maximum_error": 1.942210661454169e-05,
+    "derivative_check": {
+      "finite_difference": -39.722245601225836,
+      "autograd": -39.72224560184564,
+      "relative_error": 1.522034011761075e-11
+    },
+    "iterations": 500,
+    "stop_reason": "iteration_limit",
+    "metrics": {
+      "A_relative": 1.0273893035120727,
+      "B_relative": 2.672125476035669,
+      "logical_D": 3.029371231369218
+    },
+    "seconds": 80.4174216017127,
+    "real_images": 0,
+    "new_full_AGA_calls": 0,
+    "matching_calls": 1,
+    "original_expert_updates": 0,
+    "synthetic_images_reused": 160,
+    "generated_views": 800,
+    "synthetic_native_layer_inputs": 16384,
+    "scope": "SharedB conditionalnativequadratic/completepublicclassifier construction. OrdinaryFW/ellipsoid/Choleskyarenotnewalgorithm. Finitegapnotglobalguarantee. NativeboundequalA-onlysourcevalue,notnaturalaccuracy. Head/classesexplicitallowed;no partner/test/closedB read.",
+    "trajectory_summary": {
+      "iterations": 500,
+      "first_public_objective": -5.822050997719561,
+      "last_public_objective": -13.286056533951905,
+      "native_bound_maximum_excess": 2.2026824808563106e-13,
+      "last_FW_gap": 0.8646906920278399,
+      "not_claimed_stationary": true,
+      "full_trace": "outputs/native_ellipse_classification_20261026/point/result.json",
+      "full_trace_sha256": "3350c5d327646512f5f55bd4dfe8d8cd002d6802cfb54e5050bd3666de55e4f2"
+    }
   }
 }
