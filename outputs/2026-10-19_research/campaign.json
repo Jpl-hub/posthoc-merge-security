@@ -1,20 +1,13 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-26T15:45:17.715726+00:00",
+  "updated_utc": "2026-10-26T15:54:32.058598+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
-  "research_jobs": [
-    {
-      "status": "registered_not_started",
-      "task": "teacher-only synthetic transition diagnostic",
-      "record": "results/data_free_compensation/paper_protocol_review.json:ABM_transition_review_20261026",
-      "new_defense_points": 0
-    }
-  ],
-  "next_action": "原冻结三任务点的教师合成图插值检查：判断类别交界处功能是否保持，不产生新权重，不据此修补旧点。",
+  "research_jobs": [],
+  "next_action": "核心方法：原有A/B补偿在原教师自信源之外存在功能差异；直接处理完整类别间隔的有限条件与A/B共同改变。插值诊断不设新硬门槛，不用已暴露输入修补旧点，不将核读和诊断称新方法。",
   "github_sync": {
-    "status": "Verified GitHub publication and readback completed",
+    "status": "Exact current publication and readback are recorded in outputs/latest_github_sync_receipt.json; references below describe the previous verified science batch.",
     "scientific_remote_commit": "f41ae5ab9760640308287a8c54cc3e7eccd3b2f1",
     "equivalent_local_scientific_commit": "1e85a4c09847893bcd67694b3fcda7769dd42d31",
     "scientific_tree": "6474df981b8fb356b155e22bd56699edfaf2a208",
@@ -127,5 +120,13 @@
     "new_real_images": 0,
     "production_modules_added": 0
   },
-  "threshold_review": "notes/parameter_scale_and_threat_model.md#2026-10-26四种05的来源与修正"
+  "threshold_review": "notes/parameter_scale_and_threat_model.md#2026-10-26四种05的来源与修正",
+  "latest_function_check": {
+    "record": "results/data_free_compensation/paper_protocol_review.json:ABM_transition_review_20261026",
+    "status": "completed_and_independently_verified",
+    "new_real_images": 0,
+    "teacher_image_forwards": 1809,
+    "protected_validation_forwards": 12,
+    "new_defense_points": 0
+  }
 }
