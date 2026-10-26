@@ -1,0 +1,197 @@
+{
+  "status": "sole_SVHN_release_frozen_before_real_images",
+  "protocol": "results/data_free_compensation/task_transfer_protocol.json",
+  "preconstruction_local_commit": "022df029e72fbbdaf1a7caf2f6c3bdde3f1a0953",
+  "public_before_execution": false,
+  "geometry": {
+    "status": "finite_weight_condition_passed_not_a_defense",
+    "relative_A_distance": 1.0246225341653223,
+    "task_left_relative": 6.071310083405459e-10,
+    "task_right_relative": 1.2278903144137484e-09,
+    "max_corresponding_anchor_cosine": 3.881829882177454e-09,
+    "minimum_row_norm": 0.042510516941547394,
+    "author_reassignments_vs_original": 3072,
+    "rows": 3072,
+    "aligned_lastMLP_relative_changes": {
+      "A": 0.994010027708508,
+      "a": 0.561213353321512,
+      "B": 1.408406234317752
+    },
+    "finite64probe_max_output_error": 6.742650882074486e-11,
+    "relative_linear_residual": 1.043732254256021e-15,
+    "minimum_norm_KKT_identity_error": 0.0,
+    "independent_numpy_relative_error": 1.7800497594422385e-15,
+    "geometry_sha256": "e33e5728ffc453cc4987c997cf45ba848df724681f20e6267816f13e5d4be2f3",
+    "protocol_sha256": "f4849a90ee4569098effeeb871a95f3d2c7b7367322ac86e8461107d05c2d6af",
+    "source_sha256": "f048ee651d537969127c8e09bd728acda1f4fcca5bd00af10c5b5c645da514c5",
+    "seconds": 10.60813840595074,
+    "new_image_forwards": 0,
+    "real_images": 0,
+    "classhead_used": false,
+    "author_lastMLP_matching_calls": 1,
+    "new_full_AGA_calls": 0,
+    "new_defense_models": 0,
+    "limits": "Task SVD is not an image-function zero space. This changes nonlinear neuron responses outside its probes and is not a global function-preserving permutation/scaling. Native function and anti-merging effect require jointB/multilayer compensation and actual separate evaluation. No novelty or security guarantee from the standard linear algebra."
+  },
+  "clean_source": {
+    "stage": "clean_SVHN_synthetic_source",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+      "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "source_sha256": "921ca6ebe4701014f5166fe3a335fd525e1956b676c0bc0d977fe7c798aa648d",
+    "source_arrays_sha256": "b6c0aedbfbf45a3421d63deee926de0bccca5bec61b2ebbc94c4f53613aa8a4c",
+    "prototypes_sha256": "472d367020abf53b695ba7140b5e1189c9a4be9b852b02b6d34ad493be003d93",
+    "generated_image_forwards": 309600,
+    "pixel_optimizer_batch_steps": 2560,
+    "seconds": 233.3238755837083,
+    "real_images": 0,
+    "expert_updates": 0,
+    "clean_requested": {
+      "native": 800,
+      "direct": 800,
+      "recovered": 800
+    }
+  },
+  "scope": "No real construction images,no new model accuracy yet.",
+  "compensation": {
+    "status": "sole_decision_margin_point_frozen_before_real_evaluation",
+    "point_sha256": "6e5018c45aa19e945b70eebdcd9666724c7eaaef29a425753b7798872bedb71c",
+    "metrics": {
+      "native": {
+        "teacher_class_retained": 800,
+        "predicted_class_counts": [
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80
+        ]
+      },
+      "direct": {
+        "teacher_class_retained": 80,
+        "predicted_class_counts": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "recovered": {
+        "teacher_class_retained": 80,
+        "predicted_class_counts": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "full_metrics": {
+      "native": {
+        "teacher_class_retained": 800,
+        "predicted_class_counts": [
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80
+        ]
+      },
+      "direct": {
+        "teacher_class_retained": 80,
+        "predicted_class_counts": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "recovered": {
+        "teacher_class_retained": 80,
+        "predicted_class_counts": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "decision_violations": {
+      "native": {
+        "inputs_below_any_requested_margin": 176,
+        "minimum_gap": 0.01316880527883768
+      },
+      "direct": {
+        "inputs_below_any_requested_margin": 424,
+        "minimum_gap": 0.13078263401985168
+      },
+      "recovered": {
+        "inputs_below_any_requested_margin": 1,
+        "minimum_gap": 0.2472255378961563
+      }
+    },
+    "max_final_group_loss": 0.0012249083956703544,
+    "B_relative": 0.4196097254753113,
+    "A_relative": 1.024622534165245,
+    "logical_D": 1.1072143691411682,
+    "source_full_vs_tail_error": 1.9073486328125e-05,
+    "gradient_check_error": 1.3877787807814457e-16,
+    "steps": 300,
+    "source_sha256": "a83c142d1581ba0c14b943ab4b32b28b14af66314fde190ac052a8e117c5e3c4",
+    "protocol_sha256": "529ef9a8bfaf4061c513ff03fa0a95824f4d404adcbf8d64dc75c3570715df5a",
+    "source_arrays_sha256": "0d1c13ed42fd6ea6fccf3b072f373e08c95255b71ea22d428e81c92c45202b91",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+      "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "source_cache_tail_rows": 722400,
+    "gradient_check_tail_rows": 7200,
+    "source_full_image_forwards": 2400,
+    "new_generated_inputs": 0,
+    "new_pixel_updates": 0,
+    "original_expert_training_updates": 0,
+    "new_full_AGA_calls": 0,
+    "new_matching_calls": 0,
+    "seconds": 15.959548715502024,
+    "limits": "Finitegenerateddomain andpublicbase surrogate;realhead/partner may retaininformation. Constanttop1 prevents the specificfixedclassinversefromcreatingvaryingclasses,but doesnotprove informationtheoreticunlearning or no adaptiveclassifierrecovery."
+  },
+  "frozen_utc": "2026-10-26T05:21:40.578201+00:00",
+  "source_archive": "results/data_free_compensation/task_transfer_protocol.json:sources"
+}
