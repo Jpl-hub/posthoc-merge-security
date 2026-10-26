@@ -1130,3 +1130,10 @@ PaRaMS原文§5／附录H分别评价保护前后独立模型、融合目标与�
 [CLIP无数据定制，ICLR2025](https://proceedings.iclr.cc/paper_files/paper/2025/file/8c96b559340daa7bb29f56ccfbbc9c2f-Paper-Conference.pdf)明确借助预训练VQGAN提供自然图先验；官方[f122cab9](https://github.com/WalkerWorldPeace/CVLM/tree/f122cab9e8c1b1f07c6643d37db848a925164682)还训练独立学生，不能将其输入与当前仅目标/基座的构造权限混为一谈。两者都未安装运行，不通过增加生成器掩盖核心补偿未完成。
 
 条件B随A求解是[标准变量投影](https://www.cs.umd.edu/users/oleary/software/varpro.pdf)§1–2已有方法，不构成本项目创新。当前可研究的是用完整非线性功能矩约束A/B共同变化，区别于有限方向保持和先固定大反射；尚无新的模型效果，不能写成算法已完成。
+
+
+### Oct26：联合功能计算不等于新防御
+
+连续功能矩与标准变量投影的联合导数已在独立积分／自动求导及原首末层差分下核对。固定第一层求解保留有效数值改动，同时降低96.94%源目标；但完整域功能误差未达到预声明条件，且源切向梯度仍非零。当前既没有新自然准确率，也不能据有限预算结束认定联合补偿不存在。后续问题是可解的联合功能构造，不能把旧点加迭代或换求解器包装为新机制。
+
+另核读[Layer-Wise Data-Free CNN Compression v3](https://arxiv.org/pdf/2011.09058)§III-A/B：其逐层输入用BN统计生成，AFCLE用显式前后缩放缓冲保持函数；没有执行该作者代码。不能将BN生成统计或加缓冲后的恒等式直接视为当前CLIP/QuickGELU原结构的数值补偿方案。
