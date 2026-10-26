@@ -1,8 +1,8 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2 data-free core mechanism: meaningful numerical changes and cross-module compensation preserving standalone function after expert freezing.",
-  "status": "无数据联合功能导数检查通过。第一层固定求解将补偿目标降低96.94%，参数改动保持，但完整域误差未达到事前条件；40步结束仍非驻点。未产生完整新防御模型或分类/融合成绩。",
-  "updated_utc": "2026-10-26T04:40:40.993885+00:00",
+  "status": "新4090环境及原始模型已核对；同一无数据数值方法正在做固定SVHN任务验证。3090已完成源权重条件和NumPy独立计算；尚无本批完整分类成绩。",
+  "updated_utc": "2026-10-26T05:17:14.932994+00:00",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": ".5/.5comparison preserved,not a universal newparametercap;full history at97a3474.",
@@ -15,21 +15,32 @@
   },
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "new4090",
+      "stage": "SVHNclean synthetic source",
+      "PID": 2741,
+      "protocol": "results/data_free_compensation/task_transfer_protocol.json",
+      "frozen_before_execution_local": "022df029e72fbbdaf1a7caf2f6c3bdde3f1a0953",
+      "raw": "outputs/decision_transfer_20261026"
+    }
+  ],
   "compute": {
-    "primary_GPU": "RTX3090",
-    "primary_root": "/root/autodl-tmp/merge_security_20261009",
-    "ssh_control_socket": "/tmp/posthoc_3090_active.sock",
-    "python": "/root/miniconda3/bin/python",
-    "torch": "2.3.0+cu121",
+    "primary_GPU": "RTX4090",
+    "primary_root": "/root/autodl-tmp/posthoc-merge-security",
+    "ssh_control_socket": "/tmp/posthoc_4090_34125.sock",
+    "python": "/root/autodl-tmp/posthoc-env/bin/python",
+    "torch": "2.8.0+cu128",
     "numpy": "1.26.4",
-    "GPU_memory_MiB": 24576,
-    "GPU_process_check_utc": "2026-10-26T04:38:19.186200+00:00",
-    "active_GPU_jobs": 0,
-    "4090": "Unavailable at user report; no new work there. Oct25/26 raw artifacts remain on its disk.",
-    "3090_data_available_bytes": 6007599104,
-    "3090_system_available_bytes": 5264433152
+    "GPU_memory_MiB": 24564,
+    "active_GPU_jobs": 1,
+    "secondary_GPU": "RTX3090",
+    "secondary_root": "/root/autodl-tmp/merge_security_20261009",
+    "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
+    "secondary_torch": "2.3.0+cu121",
+    "old_4090": "Previous17811 host remains unavailable. ItsOct25/26 rawscores/models have not been restored onto this new host.",
+    "record": "results/engineering_refactor/compute_4090_20261026.json"
   },
   "latest_core_trial": {
     "point_sha256": "1a693ec907f5dde6b973692b9247ebeee6f4c56d60088bce06506c0b7b119883",
@@ -72,10 +83,10 @@
     "regression_and_behavior_tests_passed": 17,
     "current_completed_constructor_lines_retired": 265
   },
-  "next_action": "继续研究连续非线性功能条件下可解的联合补偿，区分源求解未完成与机制不可行；固定已结束求解不加步数、换种子或据真实图修补。",
+  "next_action": "完成固定SVHN构造，先冻结再完整独立评价；通过原生<=.5pp才评价TA.5与原AGA。原第一层连续求解保持关闭；不改源、步数或任务外幅度追分。",
   "paper_tables": "Canonical24tablesunchanged;current small MD/TeXsupplement inresults/data_free_compensation. No new report or PPT.",
   "github_sync": {
-    "status": "本批联合导数与第一层求解结果已通过GitHub插件发布，6个变更文件逐字读回；最新状态提交与科学提交分别见receipt。",
+    "status": "新SVHN执行前定义022df02及运行状态本地提交；GitHub接口报Unknown tool，未宣称公开。上次已核远程提交见receipt。",
     "last_verified_remote_commit": "199dc2e521aa26a7ce0dd45a69c990e204dad9b3",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },

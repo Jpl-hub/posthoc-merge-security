@@ -154,5 +154,22 @@
     },
     "archive_3090": "outputs/population_compensation_20261026/paper_source_review.json",
     "archive_sha256": "a814486a2c66df50185e4dc5205df069f33fad5c48b842e0becc8591ebfef18a"
+  },
+  "Trap2": {
+    "paper": "https://arxiv.org/html/2601.21898v2",
+    "project": "https://pseudope.github.io/Trap2/",
+    "official_repository": "ml-postech/Trap2",
+    "commit": "ef65a26590d92fe07955c5621c08bb315484ff29",
+    "file": "training_scripts/8vision_training_full_trap2.py",
+    "blob_sha": "6e3817b3c6d3e5c1457fc432c837cc7677d39916",
+    "read_sections": [
+      "paper4/5,6.4,D.3,D.5;officialsource99-199"
+    ],
+    "method": "Training-time nominal task loss minus lambda times loss at random scaled taskupdate;real labeled taskminibatches;all vision model parameters AdamW-trained for full-finetuning.",
+    "difference": "Our original experts remain frozen and real construction images are forbidden. Its scale proxy motivates evaluation but does not supply a native Data-Free post-hoc compensation mechanism. Our prior row/decision constructions already use native/direct/AGA public states; copying its loss is not a new mechanism.",
+    "evaluation_boundary": "Paper's ProDistill/SFT are data-driven recovery; they are not original AGA. Paper selects lambda and merging coefficients onvalidation;not imported into our construction.",
+    "executions": 0,
+    "new_models": 0,
+    "source_sha256": "6fdf570e5286a525f5c274f8e60f42360f7150c72d90988297bc6a096fffc3ff"
   }
 }
