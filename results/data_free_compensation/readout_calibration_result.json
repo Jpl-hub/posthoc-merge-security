@@ -2193,5 +2193,106 @@
     "new_images": 0,
     "new_updates": 0
   },
-  "matched_corrected_sha256": "041f26e5d8b5d4685d16bf03bd6ca6deb6edf9ed8f319fd89c46daa5c2e487cd"
+  "matched_corrected_sha256": "041f26e5d8b5d4685d16bf03bd6ca6deb6edf9ed8f319fd89c46daa5c2e487cd",
+  "native_ellipse_extension_definition": {
+    "protocol": {
+      "status": "defined_before_execution",
+      "paper": "https://proceedings.mlr.press/v139/zhao21c.html",
+      "official_source": {
+        "repository": "tonyzhaozh/few-shot-learning",
+        "commit": "e04d8643be91c2cce63f33e07760ff75d5aa3ad0",
+        "file": "run_classification.py",
+        "sha256": "60787d59863caebc1688e3333659accf759d6f0c615735d1901f1427724ec8fc",
+        "functions": [
+          "eval_accuracy",
+          "get_p_content_free"
+        ],
+        "raw_review_sha256": "89248b0cdce36b31050a8a5b94010db4f5451368a0c7f33c1603600433975bff"
+      },
+      "rule": "For each own fused model, p_cf=mean softmax(logits(noise)); predict argmax(logits(test)-log(p_cf)). This is the official diagonal probability division computed stably in log space. One fixed rule, no scale/temperature/mapping/source/seed selection.",
+      "adaptation": "Original paper uses content-free language strings; here exactly64 fixed unoptimized uniform-noise images are image-domain probes, not an official CLIP reproduction or a claim that noise represents the natural task.",
+      "input_seed": 2026102509,
+      "input_n": 64,
+      "input_definition": "CPU torch.rand(64,3,32,32), uniform[0,1],bilinear224 align_cornersFalse,originalCLIPnormalization,batches8,no labels/no pixel optimization.",
+      "attacker_information": "Own already-created fused model, fixed public classifier/class IDs and synthetic noise. Fitting does not access original target expert, real training/test data, old clean teacher generated cache, protected-source data or labels. Research assembly uses pinned published/original-AGA weights and own partner exactly as the original fixed merging evaluation. The unprotected matched release is corrected by the same rule on itself.",
+      "scopes": [
+        "TA0.5",
+        "originalAGA target-only + TA0.5",
+        "originalAGA both + TA0.5"
+      ],
+      "freeze_order": "Save calibration vectors andSHA before opening any raw test score or label file. Then read frozen full MNIST/SVHN scores for evaluation only. No defense parameter changes, no choice of decoder from these results.",
+      "checks": "Independent NumPy stable softmax/mean/log-prior and predictions; official full labels/indices; classwise and paired changes; preserve original raw scores and same matched unprotected controls.",
+      "mechanism": "If logits(x)=task_signal(x)+constant_bias and content-free inputs identify that bias, subtracting logprior cancels it up to a class-independent scalar. Probe-dependent residuals and feature-normalization can violate that model; actual results required. Failure of one fixed correction does not prove erased class information.",
+      "public_before_execution": false,
+      "output": "outputs/native_ellipse_calibration_20261026",
+      "purpose": "The unchanged64-noise output calibration on the frozen MNIST828d andSVHNa203 numerical releases and own matched unprotected models. Both target and partner reports. No new defense or data/parameter choice.",
+      "cost": "12 models times64noise images=768 imageforwards. Identical digit classifier verified tensorwise. Existing full scores reused;0new natural images,0AGA,0defense/teacher updates.",
+      "source_prior_result": "results/data_free_compensation/readout_calibration_result.json",
+      "cases": [
+        {
+          "target": "MNIST",
+          "partner": "SVHN",
+          "name": "NativeConstraintClass_MNIST",
+          "release": {
+            "path": "outputs/native_ellipse_classification_20261026/point/point.pt",
+            "sha256": "828daa484b64f27f99df4cbb657366572c951f21585dbde6136bf7a8f4d72dc1"
+          },
+          "AGA_edits": {
+            "path": "outputs/native_ellipse_classification_20261026/AGA/edits.pt",
+            "sha256": "432ed158e0b60aa4912655f79e9c6c6d9ab9414c91ad445a77872cb63419c94f"
+          },
+          "AGA_references": {
+            "MNIST": {
+              "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+              "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+              "validation": "outputs/feature_noise/independent_validation.json"
+            },
+            "SVHN": {
+              "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+              "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+              "validation": "outputs/feature_noise/independent_validation.json"
+            }
+          },
+          "raw_scores": {
+            "path": "outputs/native_ellipse_classification_20261026/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "5f36e2ff939c328678bafedfc6a1aa1ae6bad7072dd5aa39651499237b1d7ed8"
+          }
+        },
+        {
+          "target": "SVHN",
+          "partner": "MNIST",
+          "name": "NativeConstraintClass_SVHN",
+          "release": {
+            "path": "outputs/native_ellipse_classification_SVHN_20261026/point/point.pt",
+            "sha256": "a203d6c989396243641ee44a7d865cc74cb3bcae9359c201089ffcd15dc6fb9c"
+          },
+          "AGA_edits": {
+            "path": "outputs/native_ellipse_classification_SVHN_20261026/AGA/edits.pt",
+            "sha256": "2c5e043d343dccc2d22b23fa2e7b0b9b4705238cfd8de053ae43ec5f2b50aadc"
+          },
+          "AGA_references": {
+            "MNIST": {
+              "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+              "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+              "validation": "outputs/feature_noise/independent_validation.json"
+            },
+            "SVHN": {
+              "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+              "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+              "validation": "outputs/feature_noise/independent_validation.json"
+            }
+          },
+          "raw_scores": {
+            "path": "outputs/native_ellipse_classification_SVHN_20261026/evaluation/full/00_SVHN_MNIST/artifacts/predictions.pt",
+            "sha256": "79aa6651634c987f9ce8eb55e68fd09409ae42a17dafbee62ff1d8aec5a6451b"
+          }
+        }
+      ]
+    },
+    "source": "\"\"\"Apply the already fixed output calibration to two frozen numerical releases.\"\"\"\nimport gc\nimport json\nimport sys\nimport time\nfrom pathlib import Path\n\nimport numpy as np\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.data import official_labels\nfrom _impl.io import digest, save_json\nfrom _impl.metrics import row_metrics\nfrom _impl.merge import merge\nfrom _impl.models import apply, checked_models, initialize, load_checkpoint\n\ninitialize()\nstart = time.perf_counter()\nprotocol = Path(sys.argv[1])\ncfg = json.loads(protocol.read_text())\nout = Path(cfg['output'])\nout.mkdir(exist_ok=False)\nsave_json(out / 'protocol.json', cfg)\nnoise = torch.rand(cfg['input_n'], 3, 32, 32,\n                   generator=torch.Generator().manual_seed(cfg['input_seed']))\ntorch.save(noise, out / 'noise.pt')\ncalibration, pins = {}, {}\nimage_forwards = 0\n\n# All calibration vectors are frozen before opening any saved benchmark scores.\nfor case in cfg['cases']:\n    task, peer = case['target'], case['partner']\n    base, target, head, pins[task] = checked_models(task)\n    partner = load_checkpoint(peer + '/finetuned.pt')\n    peer_head = load_checkpoint('head_' + peer + '.pt')\n    # Both digit tasks use exactly the same official classifier, not just 10 classes.\n    assert torch.equal(head.weight, peer_head.weight) and torch.equal(head.bias, peer_head.bias)\n    aligned = apply(target, case['AGA_references'][task], full=True)\n    partner_aligned = apply(partner, case['AGA_references'][peer], full=True)\n    normalizer = target.val_preprocess.transforms[-1]\n    mean = torch.tensor(normalizer.mean)[None, :, None, None]\n    std = torch.tensor(normalizer.std)[None, :, None, None]\n    inputs = (F.interpolate(noise, (224, 224), mode='bilinear', align_corners=False) - mean) / std\n    head.cuda().eval()\n    for name, own, restored in [\n        ('Unprotected', target, aligned),\n        (case['name'], apply(target, case['release']), apply(aligned, case['AGA_edits'])),\n    ]:\n        for scope, left, right in [('None', own, partner),\n                                   ('Protected expert', restored, partner),\n                                   ('All experts', restored, partner_aligned)]:\n            model = merge(base, left, right, .5).cuda().eval()\n            with torch.no_grad():\n                scores = torch.cat([head(model(x.cuda())).cpu() for x in inputs.split(8)]).double()\n            image_forwards += len(inputs)\n            assert torch.isfinite(scores).all()\n            prior = torch.logsumexp(F.log_softmax(scores, dim=1), dim=0) - np.log(len(scores))\n            calibration[task + '/' + name + '/' + scope] = dict(scores=scores, log_prior=prior)\n            del model\n            gc.collect()\n    del base, target, partner, aligned, partner_aligned, own, restored, left, right, head, peer_head\n    gc.collect()\ntorch.save(calibration, out / 'calibration.pt')\nfrozen_sha = digest(out / 'calibration.pt')\nprint('CALIBRATION_FROZEN', frozen_sha, flush=True)\n\nrows, corrected = [], {}\nmax_prior_error = 0.\nfor case in cfg['cases']:\n    assert digest(case['raw_scores']['path']) == case['raw_scores']['sha256']\n    raw = torch.load(case['raw_scores']['path'], map_location='cpu', weights_only=False)\n    for key, row in raw.items():\n        name, merger, scope, task = key.split('/')\n        if merger != 'TA':\n            continue\n        assert name in ['Unprotected', case['name']]\n        assert row['indices'] == list(range(len(row['target'])))\n        np.testing.assert_array_equal(row['target'].numpy(), official_labels(task))\n        fitted = calibration[case['target'] + '/' + name + '/' + scope]\n        scores = fitted['scores'].numpy()\n        exp = np.exp(scores - scores.max(1, keepdims=True))\n        prior_np = np.log((exp / exp.sum(1, keepdims=True)).mean(0))\n        max_prior_error = max(max_prior_error, float(np.max(np.abs(prior_np - fitted['log_prior'].numpy()))))\n        value = row['logits'].double() - fitted['log_prior']\n        prediction = (row['logits'].numpy().astype(np.float64) - prior_np).argmax(1)\n        np.testing.assert_array_equal(value.argmax(1).numpy(), prediction)\n        metric = row_metrics(value, row['target'], row['logits'], len(prior_np))\n        assert metric['correct'] == int((prediction == row['target'].numpy()).sum())\n        full_key = case['target'] + '/' + key\n        corrected[full_key] = dict(logits=value, target=row['target'], indices=row['indices'])\n        rows.append(dict(key=full_key, **metric))\n        print('CALIBRATED', full_key, metric['correct'], metric['n'], flush=True)\n\nmatched = []\nfor key, row in corrected.items():\n    task, name, merger, scope, dataset = key.split('/')\n    if name == 'Unprotected':\n        continue\n    control = corrected['/'.join([task, 'Unprotected', merger, scope, dataset])]\n    np.testing.assert_array_equal(row['target'], control['target'])\n    metric = row_metrics(row['logits'], row['target'], control['logits'], row['logits'].shape[1])\n    matched.append(dict(key=key, **metric))\nassert len(rows) == 24 and len(matched) == 12 and max_prior_error < 1e-10\nassert digest(out / 'calibration.pt') == frozen_sha\ntorch.save(corrected, out / 'corrected_scores.pt')\nsave_json(out / 'results.json', dict(\n    status='completed', rows=rows, matched_corrected_controls=matched,\n    protocol_sha256=digest(protocol), source_sha256=digest(__file__),\n    calibration_sha256=frozen_sha, corrected_scores_sha256=digest(out / 'corrected_scores.pt'),\n    noise_sha256=digest(out / 'noise.pt'), checkpoint_sha256=pins,\n    maximum_numpy_prior_error=max_prior_error, calibration_frozen_before_benchmark_read=True,\n    generated_image_forwards=image_forwards, new_real_image_forwards=0,\n    new_AGA_calls=0, new_defense_points=0, teacher_training_updates=0,\n    seconds=time.perf_counter()-start,\n))\n",
+    "source_sha256": "1abf2f3ae55fba7b2532236043c16fc5b9652ac3c869ca97985a3311311a567a",
+    "defined_utc": "2026-10-26T09:39:40.127883+00:00",
+    "status": "before_execution",
+    "public_before_execution": false
+  }
 }
