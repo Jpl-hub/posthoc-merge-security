@@ -3437,5 +3437,125 @@
     "new_models": 0,
     "new_AGA": 0,
     "source_sha256": "e139b67d3a2c7665c0ae05f5ab401ce8a2fddac0616fcba4a7d49ff2e4f44c92"
+  },
+  "two_state_native_result": {
+    "rows": [
+      {
+        "n": 10000,
+        "changed": 8986,
+        "R": 21.263870475272185,
+        "stage": "full",
+        "before_correct": 9969,
+        "after_correct": 1010,
+        "strict_task_passed": false,
+        "accuracy_loss_pp": 89.59,
+        "passed": false,
+        "raw_sha256": "5f8b573703e00314da3cb7c41c4169b044daf568b616d9a96a0dc6f18e40f3c9"
+      }
+    ],
+    "passed": false,
+    "image_forwards": 10000,
+    "baseline_new_forwards": 0,
+    "seconds": 11.928736198693514,
+    "paired": {
+      "n": 10000,
+      "correct": 1010,
+      "accuracy_percent": 10.100000000000001,
+      "changed_predictions": 8986,
+      "paired": {
+        "both_correct": 1010,
+        "lost": 8959,
+        "gained": 0,
+        "both_wrong": 31,
+        "loss_pp": 89.59,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2696.626701157944,
+      "paired_accuracy_delta_95ci_pp": [
+        -90.18859477300944,
+        -88.99140522699057
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 0,
+          "original_correct": 979
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 0,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 0,
+          "original_correct": 1030
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1010,
+          "original_correct": 1010
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 0,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 0,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 0,
+          "original_correct": 954
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 0,
+          "original_correct": 1025
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 0,
+          "original_correct": 973
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 0,
+          "original_correct": 1003
+        }
+      ]
+    },
+    "status": "closed_native_retention_failed_no_TA_or_AGA",
+    "frozen_before_images_local": "169faab",
+    "new_AGA_calls": 0,
+    "source_condition": "Latentnative/publicMSEmeans notequated withnaturalaccuracy;nativefullcriterionnotmet."
+  },
+  "two_state_context_replay_source": {
+    "source": "\"\"\"Read-only replay in the unchanged original 128-image evaluation contexts.\"\"\"\nimport json\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.models import initialize,checked_models,apply\nfrom _impl.data import dataset\nfrom _impl.io import digest\ninitialize();root=Path('outputs/two_state_functional_20261026');r=json.loads((root/'result.json').read_text());ref=dict(path=str(root/'point.pt'),sha256=r['point_sha256'])\n_,e,h,_=checked_models('MNIST');m=apply(e,ref).cuda();h.cuda();d=dataset('MNIST','data',e.val_preprocess)\ns=torch.load(root/'native/full.pt',map_location='cpu',weights_only=False)['after'];ids=np.linspace(0,len(s)-1,16,dtype=int);maximum=0.;count=0\nwith torch.no_grad():\n for block in sorted(set(ids//128)):\n  start,end=int(block*128),min(int((block+1)*128),len(s));x=torch.stack([d[i][0] for i in range(start,end)]).cuda();actual=h(m(x)).cpu().double();wanted=ids[(ids>=start)&(ids<end)];subset=actual[wanted-start]\n  np.testing.assert_array_equal(subset.argmax(1).numpy(),s[wanted].argmax(1).numpy());maximum=max(maximum,float((subset-s[wanted]).abs().max()));count+=end-start\nassert maximum<=.0002,maximum\nr=dict(status='passed',source_sha256=digest(__file__),score_replays=16,original_batch_size=128,context_image_forwards=count,maximum_score_error=maximum,tolerance=.0002,new_expert_updates=0,new_AGA=0)\n(root/'context_replay.json').write_text(json.dumps(r,indent=2)+'\\n');print(json.dumps(r),flush=True)\n",
+    "sha256": "fb3f775aad7589a8b1da603eef967127f9841cb585f4e24d368eb70bf2098969",
+    "scope": "Readonlyfailedpoint;original128batchcontext16scores.Nochangedtolerances."
+  },
+  "native_constrained_feasibility_definition": {
+    "status": "before_execution",
+    "question": "AtfixedA, can fullconditionalBchange publicinput-dependentfunction while itsnativefunctionerrorisheldnearitsbest attainablevalue?",
+    "cases": "OriginalA andpreviouslyfrozenonly-sourcefunctionalAea3c4db2,readonly. Exclude newfailed e70b matrices,test/head/partner. No B publication/application.",
+    "problem": "min_R LP(R)+rho||R-Rorig||^2 subject LN(R)+rho||R-Rorig||^2 <= min_Rnative(LN+rho||R-Rorig||^2)+1e-4. LN isfull+tasknativevariance-normalizedMSE;LPisfull+taskmean-preservingpublicresponsereversaltarget. 1e-4 excess allowancefixedbeforecalculation,notaccuracy gate.",
+    "solve": "Standardconvexquadratictrust-regionduality. R(lambda)=(TP+lambdaTN)(GP+lambdaGN)^-1 afterincludingfixedrho. Startlambda0,atmost40doublingsfrom1,then48bisections.Reportnativefeasibilityandprimal-dualgap. Ordinarylinearalgebra/dualitynotnewalgorithm.",
+    "scope": "Fixedmatricesanddeclaredartificialinputballs only. No allA/naturalclassification/unknownpartnerguarantee. Oldpointnotrepaired;computedBdiscarded.",
+    "source_sha256": "2699ea570a6bc197edb78b4addeeaef995c5244bae7c5aedd72cbbbb40ca7664",
+    "source": "\"\"\"Read-only native-constrained conditional B feasibility, with no publication.\"\"\"\nimport importlib.util,json,time\nfrom pathlib import Path\nimport torch\nfrom _impl.io import digest\nfrom _impl.models import initialize,load_checkpoint\ninitialize();torch.set_default_dtype(torch.float64);start=time.perf_counter();device='cuda'\npath=Path('outputs/population_compensation_20261026/two_state_mapped_check/calculation.py');assert digest(path)=='e139b67d3a2c7665c0ae05f5ab401ce8a2fddac0616fcba4a7d49ff2e4f44c92';spec=importlib.util.spec_from_file_location('h',path);h=importlib.util.module_from_spec(spec);spec.loader.exec_module(h)\ns=load_checkpoint('MNIST/finetuned.pt').state_dict();base=load_checkpoint('zeroshot.pt').state_dict();k='model.visual.transformer.resblocks.0.';to=lambda x:x.double().cuda()\nA,A0,a,a0=[to(x) for x in [s[k+'mlp.c_fc.weight'],base[k+'mlp.c_fc.weight'],s[k+'mlp.c_fc.bias'],base[k+'mlp.c_fc.bias']]];gamma,gamma0,beta,beta0=[to(x) for x in [s[k+'ln_2.weight'],base[k+'ln_2.weight'],s[k+'ln_2.bias'],base[k+'ln_2.bias']]];R,R0=[torch.cat([to(x[k+'mlp.c_proj.weight']),to(x[k+'mlp.c_proj.bias'])[:,None]],1) for x in [s,base]]\nD=(A-A0)*gamma;D-=D.mean(1,keepdim=True);V=torch.linalg.svd(D,full_matrices=False).Vh[:32].T;V=torch.linalg.qr(V-V.mean(0),mode='reduced').Q;p=h.pack(A,A0,a,a0,gamma,gamma0,beta,beta0,R,R0,V);p['radius']=None;rows=h.prepare(p)\nrecord=Path('outputs/population_compensation_20261026/joint_fit/first_layer_fit.pt');assert digest(record)=='ea3c4db2733aabc502a9f81927d7c4116567c9b904419aa4d285f2d339289781';saved=torch.load(record,map_location='cpu',weights_only=False)\nW=A*gamma;W-=W.mean(1,keepdim=True);Wp=saved['A'].cuda()*gamma;Wp-=Wp.mean(1,keepdim=True);ridge=1e-8*sum(r['alpha']**2*r['K'].trace()/r['variance'] for r in rows)/(len(A)+1);eye=torch.eye(len(A)+1,device=device);results=[]\nfor name,Z in [('original_A',torch.zeros_like(A)),('frozen_native_functional_A',Wp-W)]:\n groups={m:[torch.zeros_like(eye),torch.zeros_like(R),R.new_zeros(())] for m in ['native','public']}\n for r in rows:\n  f=h.features(Z,p,r);K=h.math.augmented(f,f,r['dimension']);C=h.math.augmented(r['old'],f,r['dimension']);G,T,c=groups[r['mode']];alpha,offset,target=r['alpha'],r['offset'],r['target'];w=1/r['variance'];G+=w*alpha**2*K;T+=w*alpha*(target@C-offset@K);c+=w*(((offset@K)*offset).sum()+((target@r['K'])*target).sum()-2*((target@C)*offset).sum())\n GN,TN,cN=groups['native'];GP,TP,cP=groups['public'];GN=GN+ridge*eye;TN=TN+ridge*R;cN=cN+ridge*R.square().sum();GP=GP+ridge*eye;TP=TP+ridge*R;cP=cP+ridge*R.square().sum()\n loss=lambda X,G,T,c:float(((X@G)*X).sum()-2*(T*X).sum()+c)\n RN=torch.cholesky_solve(TN.T,torch.linalg.cholesky(GN)).T;minimum=loss(RN,GN,TN,cN);bound=minimum+1e-4\n def at(lam):\n  X=torch.cholesky_solve((TP+lam*TN).T,torch.linalg.cholesky(GP+lam*GN)).T\n  return X,loss(X,GN,TN,cN),loss(X,GP,TP,cP)\n lo,hi=0.,1.;X,native,public=at(0.);brackets=0\n if native>bound:\n  for _ in range(40):\n   X,native,public=at(hi);brackets+=1\n   if native<=bound:break\n   lo,hi=hi,hi*2\n  else:raise RuntimeError('Fixed dual bracket exhausted;no retry')\n  for _ in range(48):\n   mid=(lo+hi)/2;candidate,nv,pv=at(mid)\n   if nv>bound:lo=mid\n   else:hi=mid;X,native,public=candidate,nv,pv\n  multiplier=hi\n else:multiplier=0.\n assert native<=bound+1e-8,(native,bound)\n gap=multiplier*(bound-native);assert gap<1e-5*(1+abs(public)),gap\n result=dict(A=name,native_regularized_minimum=minimum,native_limit=bound,native_at_public_optimum=native,public_residual_at_native_optimum=loss(RN,GP,TP,cP),public_residual_at_constrained_optimum=public,dual_multiplier=multiplier,primal_dual_gap=gap,B_relative=float((X[:,:-1]-R[:,:-1]).norm()/R[:,:-1].norm()),bracket_solves=brackets,bisection_solves=48 if multiplier else 0)\n results.append(result);print(json.dumps(result),flush=True)\nout=Path('outputs/population_compensation_20261026/native_constrained_feasibility');out.mkdir(exist_ok=False);r=dict(results=results,seconds=time.perf_counter()-start,source=Path(__file__).read_text(),source_sha256=digest(__file__),saved_or_applied_B=0,new_images=0,new_AGA=0,new_models=0,scope='FixedA convexconditionalBonly;statedlatentpopulations andfixedridge/1e-4 excess native allowance. Not naturalaccuracy,not an allA/multilayer impossibilityclaim. No computedB saved or used torepairclosedpoints.')\n(out/'result.json').write_text(json.dumps(r,indent=2)+'\\n')\n"
   }
 }
