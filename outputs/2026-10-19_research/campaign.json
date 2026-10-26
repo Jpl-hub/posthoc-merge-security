@@ -1,6 +1,6 @@
 {
-  "status": "按用户要求暂停，明天继续。最新完整前缀数值点独立MNIST9.14%，未融合或AGA。结果已保存，独立原始分数复核下次继续。",
-  "updated_utc": "2026-10-25T19:04:46.141941+00:00",
+  "status": "用户已恢复研究授权，4090无法开机，改用3090。GPU空闲，清理15份旧中间缓存及2重复副本，实际释放4.71GB，正同步当前源码与研究状态。",
+  "updated_utc": "2026-10-26T03:23:47.265694+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -27,7 +27,7 @@
     "independent_raw_recount_status": "Pending next session after user requested rest",
     "source_archived_and_retired_active_tree": true
   },
-  "next_action": "用户明天明确继续后，先复核已保存的完整分数和逐类结果；分析完整合成前缀64/64保持与真实9.14%的差异，不重启此关闭点，不自动运行。",
+  "next_action": "先恢复当前精简源码和运行环境；围绕无数据完整功能保持研究机制，不重跑关闭点。1a693ec9原始分数留4090，独立复核待该实例可读取时完成，不重建重复实验。",
   "engineering_cleanup": {
     "production_modules_and_entrypoints_unchanged": false,
     "new_frameworks": 0,
@@ -146,5 +146,26 @@
     "new_defense_points": 0,
     "real_images": 0
   },
-  "user_pause_requested": true
+  "user_pause_requested": false,
+  "compute": {
+    "primary_GPU": "RTX3090",
+    "primary_root": "/root/autodl-tmp/merge_security_20261009",
+    "ssh_control_socket": "/tmp/posthoc_3090_active.sock",
+    "python": "/root/miniconda3/bin/python",
+    "torch": "2.3.0+cu121",
+    "numpy": "1.26.4",
+    "GPU_memory_MiB": 24576,
+    "GPU_process_check_utc": "2026-10-26T03:23:47.265694+00:00",
+    "active_GPU_jobs": 0,
+    "4090": "Unavailable at user report; no new work there. Oct25/26 raw artifacts remain on its disk.",
+    "3090_data_available_bytes": 6013739008,
+    "3090_system_available_bytes": 5268209664
+  },
+  "storage_cleanup": {
+    "record": "results/engineering_refactor/cleanup_20261026.json",
+    "actual_total_available_bytes_increase": 4713619456,
+    "pruned_finished_cache_files": 15,
+    "byte_identical_duplicates_hardlinked": 2,
+    "original_or_unique_release_weights_deleted": 0
+  }
 }
