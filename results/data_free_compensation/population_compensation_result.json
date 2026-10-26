@@ -3398,7 +3398,8 @@
     "original_expert_updates": 0,
     "full_model_forwards": 0,
     "new_AGA": 0,
-    "frozen_before_images": true
+    "frozen_before_images": true,
+    "source_empirical_scope": "AllfouractualactivationMonteCarloMSEs agreewithkernelvalueswithinreported samplinguncertainty;thisvalidates declaredpopulationcalculation,not naturalfunctionretention."
   },
   "two_state_mapped_check_result": {
     "status": "passed",
@@ -3541,7 +3542,19 @@
     "status": "closed_native_retention_failed_no_TA_or_AGA",
     "frozen_before_images_local": "169faab",
     "new_AGA_calls": 0,
-    "source_condition": "Latentnative/publicMSEmeans notequated withnaturalaccuracy;nativefullcriterionnotmet."
+    "source_condition": "Latentnative/publicMSEmeans notequated withnaturalaccuracy;nativefullcriterionnotmet.",
+    "prediction_histogram": [
+      0,
+      0,
+      0,
+      10000,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
   },
   "two_state_context_replay_source": {
     "source": "\"\"\"Read-only replay in the unchanged original 128-image evaluation contexts.\"\"\"\nimport json\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.models import initialize,checked_models,apply\nfrom _impl.data import dataset\nfrom _impl.io import digest\ninitialize();root=Path('outputs/two_state_functional_20261026');r=json.loads((root/'result.json').read_text());ref=dict(path=str(root/'point.pt'),sha256=r['point_sha256'])\n_,e,h,_=checked_models('MNIST');m=apply(e,ref).cuda();h.cuda();d=dataset('MNIST','data',e.val_preprocess)\ns=torch.load(root/'native/full.pt',map_location='cpu',weights_only=False)['after'];ids=np.linspace(0,len(s)-1,16,dtype=int);maximum=0.;count=0\nwith torch.no_grad():\n for block in sorted(set(ids//128)):\n  start,end=int(block*128),min(int((block+1)*128),len(s));x=torch.stack([d[i][0] for i in range(start,end)]).cuda();actual=h(m(x)).cpu().double();wanted=ids[(ids>=start)&(ids<end)];subset=actual[wanted-start]\n  np.testing.assert_array_equal(subset.argmax(1).numpy(),s[wanted].argmax(1).numpy());maximum=max(maximum,float((subset-s[wanted]).abs().max()));count+=end-start\nassert maximum<=.0002,maximum\nr=dict(status='passed',source_sha256=digest(__file__),score_replays=16,original_batch_size=128,context_image_forwards=count,maximum_score_error=maximum,tolerance=.0002,new_expert_updates=0,new_AGA=0)\n(root/'context_replay.json').write_text(json.dumps(r,indent=2)+'\\n');print(json.dumps(r),flush=True)\n",
@@ -3627,5 +3640,73 @@
     "scope": "A mathematicalsolver checkbeforeanynewconstrainedconstruct. No newdefenseclaim or classification/unknownpartnerguarantee.",
     "source_sha256": "fedc19ef16fffb300366f3160cd5354ecee7b361bdabf5049548a06720bfe6b5",
     "source": "\"\"\"CPU toy check of a fixed-native-limit conditional functional gradient.\"\"\"\nimport importlib.util,json,time\nfrom pathlib import Path\nimport torch\nfrom _impl.io import digest\nfrom _impl.models import initialize\ninitialize();torch.set_default_dtype(torch.float64);start=time.perf_counter()\nhelper=Path('outputs/population_compensation_20261026/two_state_mapped_check/calculation.py');assert digest(helper)=='e139b67d3a2c7665c0ae05f5ab401ce8a2fddac0616fcba4a7d49ff2e4f44c92';spec=importlib.util.spec_from_file_location('h',helper);h=importlib.util.module_from_spec(spec);spec.loader.exec_module(h)\ng=torch.Generator().manual_seed(2026102623);rand=lambda *n:torch.randn(*n,generator=g)\nA=.2*rand(8,6);A0=A+.03*rand(8,6);gamma=1+.1*rand(6);gamma0=1+.1*rand(6);beta=.1*rand(6);beta0=.1*rand(6);R=.2*rand(3,9);R0=R+.03*rand(3,9);V=rand(6,2);V=torch.linalg.qr(V-V.mean(0),mode='reduced').Q;p=h.pack(A,A0,.1*rand(8),.1*rand(8),gamma,gamma0,beta,beta0,R,R0,V);rows=h.prepare(p)\nridge=1e-8*sum(r['alpha']**2*r['K'].trace()/r['variance'] for r in rows)/9;eye=torch.eye(9)\ndef quads(Z):\n q={m:[torch.zeros(9,9),torch.zeros(3,9),torch.zeros(())] for m in ['native','public']}\n for r in rows:\n  f=h.features(Z,p,r);K=h.math.augmented(f,f,r['dimension']);C=h.math.augmented(r['old'],f,r['dimension']);G,T,c=q[r['mode']];alpha,offset,target=r['alpha'],r['offset'],r['target'];w=1/r['variance'];G+=w*alpha**2*K;T+=w*alpha*(target@C-offset@K);c+=w*(((offset@K)*offset).sum()+((target@r['K'])*target).sum()-2*((target@C)*offset).sum())\n for G,T,c in q.values():G+=ridge*eye;T+=ridge*R;c+=ridge*R.square().sum()\n return q\nloss=lambda X,q:((X@q[0])*X).sum()-2*(q[1]*X).sum()+q[2]\ndef optimal(Z,tau=None):\n q=quads(Z);GN,TN,_=q['native'];GP,TP,_=q['public'];RN=torch.cholesky_solve(TN.T,torch.linalg.cholesky(GN)).T;minimum=float(loss(RN,q['native']))\n if tau is None:return minimum\n assert minimum<tau,(minimum,tau)\n def at(lam):\n  X=torch.cholesky_solve((TP+lam*TN).T,torch.linalg.cholesky(GP+lam*GN)).T\n  return X,float(loss(X,q['native'])),float(loss(X,q['public']))\n lo,hi=0.,1.;X,nv,pv=at(0.)\n if nv>tau:\n  for _ in range(40):\n   X,nv,pv=at(hi)\n   if nv<=tau:break\n   lo,hi=hi,hi*2\n  else:raise RuntimeError('Dual bracket failed')\n  for _ in range(48):\n   mid=(lo+hi)/2;Y,n,pub=at(mid)\n   if n>tau:lo=mid\n   else:hi=mid;X,nv,pv=Y,n,pub\n  lam=hi\n else:lam=0.\n return X,lam,nv,pv\nZ=rand(8,6);Z-=Z.mean(1,keepdim=True);Z*=.5*p['Wnorm']/Z.norm();tau=optimal(Z)+1e-4\nX,lam,nv,pv=optimal(Z,tau);weighted=[r|{'weight':lam if r['mode']=='native' else 1} for r in rows];grad=h.gradient(Z,p,weighted,X)\ndirection=rand(8,6);direction-=direction.mean(1,keepdim=True);direction*=Z.norm()/direction.norm();step=1e-6\nfd=(optimal(Z+step*direction,tau)[3]-optimal(Z-step*direction,tau)[3])/(2*step);ad=float((grad*direction).sum());error=abs(fd-ad)/(1+abs(fd));assert error<1e-4,(fd,ad,error)\nresult=dict(status='passed',native_limit_fixed_for_all_differences=tau,native_at_optimum=nv,public_objective=pv,dual_multiplier=lam,primal_dual_gap=lam*(tau-nv),envelope_directional_derivative=ad,finite_difference=fd,relative_error=error,seconds=time.perf_counter()-start,source=Path(__file__).read_text(),source_sha256=digest(__file__),new_images=0,new_models=0,optimizer_steps=0,new_AGA=0,scope='Independent8neuronCPU mathematicalexample;not trainedCLIPparametersorclassificationproof. Fixedtau isessential;not recomputedfromtrialA.')\nout=Path('outputs/population_compensation_20261026/constrained_gradient_check');out.mkdir(exist_ok=False);(out/'result.json').write_text(json.dumps(result,indent=2)+'\\n');print(json.dumps({k:v for k,v in result.items() if k!='source'}),flush=True)\n"
+  },
+  "constrained_gradient_result": {
+    "status": "passed",
+    "native_limit_fixed_for_all_differences": 0.060180167928690645,
+    "native_at_optimum": 0.06018016792869041,
+    "public_objective": 7.7939809538521985,
+    "dual_multiplier": 153.80736099090427,
+    "primal_dual_gap": 3.62866006248987e-14,
+    "envelope_directional_derivative": 6.892153490595907,
+    "finite_difference": 6.892153551874003,
+    "relative_error": 7.76443274753277e-09,
+    "seconds": 0.388282623142004,
+    "source_sha256": "fedc19ef16fffb300366f3160cd5354ecee7b361bdabf5049548a06720bfe6b5",
+    "new_images": 0,
+    "new_models": 0,
+    "optimizer_steps": 0,
+    "new_AGA": 0,
+    "scope": "Independent8neuronCPU mathematicalexample;not trainedCLIPparametersorclassificationproof. Fixedtau isessential;not recomputedfromtrialA."
+  },
+  "oct26_current_batch_code_cleanup": {
+    "archived_and_retired_temporary_sources": [
+      {
+        "name": "posthoc_two_state_check.py",
+        "destination": "outputs/population_compensation_20261026/two_state_check/calculation.py",
+        "sha256": "e4a87ae48167868c323e0d43d0b8c4c356843279a78e02023db216fa1f0e9a9b",
+        "lines": 84
+      },
+      {
+        "name": "posthoc_two_state_mapped.py",
+        "destination": "outputs/population_compensation_20261026/two_state_mapped_check/calculation.py",
+        "sha256": "e139b67d3a2c7665c0ae05f5ab401ce8a2fddac0616fcba4a7d49ff2e4f44c92",
+        "lines": 88
+      },
+      {
+        "name": "posthoc_two_state_construct.py",
+        "destination": "outputs/two_state_functional_20261026/calculation.py",
+        "sha256": "4d92a8396624c65c9cf09139ed3f469eb2b0bd9c0dba23d4d63ccb4d29e6d731",
+        "lines": 43
+      },
+      {
+        "name": "posthoc_two_state_native.py",
+        "destination": "outputs/two_state_functional_20261026/native/calculation.py",
+        "sha256": "672cb2e18ad59c31490d5a3497edd90f74794b5abf031a40deac54e7d1dbf13c",
+        "lines": 26
+      },
+      {
+        "name": "posthoc_two_state_replay.py",
+        "destination": "outputs/two_state_functional_20261026/context_replay.py",
+        "sha256": "fb3f775aad7589a8b1da603eef967127f9841cb585f4e24d368eb70bf2098969",
+        "lines": 18
+      },
+      {
+        "name": "posthoc_retention_bound.py",
+        "destination": "outputs/population_compensation_20261026/native_constrained_feasibility/calculation.py",
+        "sha256": "2699ea570a6bc197edb78b4addeeaef995c5244bae7c5aedd72cbbbb40ca7664",
+        "lines": 42
+      },
+      {
+        "name": "posthoc_constrained_gradient.py",
+        "destination": "outputs/population_compensation_20261026/constrained_gradient_check/calculation.py",
+        "sha256": "fedc19ef16fffb300366f3160cd5354ecee7b361bdabf5049548a06720bfe6b5",
+        "lines": 45
+      }
+    ],
+    "source_hash_mismatches": 0,
+    "production_modules_or_entrypoints_added": 0,
+    "unique_models_deleted": 0,
+    "raw_scores_deleted": 0
   }
 }

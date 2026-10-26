@@ -1,33 +1,30 @@
 {
-  "status": "已完成无数据冻结首层联合补偿观察：独立99.68%，TA99.34%，原AGA目标99.31%/双方99.33%，无目标保护。只有67/3072行指派改变，已完成原上下文重放。固定SVHN转任务仍保持失败。",
-  "updated_utc": "2026-10-26T05:42:26.751893+00:00",
+  "status": "新双状态无数据A/B构造e70b：独立MNIST10.10%，停止融合/AGA，完整分数与16上下文重放通过。已核明原补偿在融合下仍抵消约98.8%；原生约束下B条件最优及固定约束外层梯度已核对，尚无对应新模型。",
+  "updated_utc": "2026-10-26T06:35:00.358097+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
   "latest_core_trial": {
-    "point_sha256": "1a693ec907f5dde6b973692b9247ebeee6f4c56d60088bce06506c0b7b119883",
-    "parameter_distance": 7.2871371127329825,
+    "point_sha256": "e70b71d379b9dfdb3e8a9fe9bfd9e127261523d3203e367e0a5ae82eb5381bda",
     "closed": true,
-    "record": "results/data_free_compensation/local_prefix_result.json",
+    "record": "results/data_free_compensation/population_compensation_result.json:two_state_construction_result",
     "native_before_after": [
       99.69,
-      9.14
+      10.1
     ],
-    "source_agreement": [
-      64,
-      64
-    ],
+    "parameter_distance": 72.34503113851801,
     "real_construction_images": 0,
     "original_expert_updates": 0,
+    "seconds": 114.94904704391956,
+    "postprocess_LBFGS_iterations": 40,
+    "objective_evaluations": 43,
     "TA_and_AGA_evaluated": false,
-    "seconds": 146.53505530022085,
-    "new_real_evaluation_image_forwards": 20000,
-    "independent_raw_recount_status": "Pending access to the unavailable 4090 raw scores; failed experiment remains closed, no rerun.",
-    "source_archived_and_retired_active_tree": true
+    "context_score_replays": 16,
+    "context_maximum_error": 0.0
   },
-  "next_action": "继续核心机制推导：在联合功能保持下，怎样改变实际锚点对应及融合后的分类作用；不以全局距离或补空间能量代替安全，不追加已关闭点优化。仅新4090计算，3090CPU/存储。",
+  "next_action": "完成固定原生功能误差界下的A/B可行构造依据与实参梯度核对，再冻结唯一新候选。误差界不得随外层A试算放宽；不改e70b比例/步数/参数，不重跑旧模型。仅4090计算。",
   "engineering_cleanup": {
     "production_modules_and_entrypoints_unchanged": false,
     "new_frameworks": 0,
@@ -42,7 +39,7 @@
     "regression_and_behavior_tests_passed": 17
   },
   "github_sync": {
-    "status": "本批固定SVHN定义、原始结果及MD/TeX已本地提交待同步；GitHub接口Unknown tool，远程最新仍以receipt为准。",
+    "status": "新增科学记录、代码归档和MD/TeX本地待同步；GitHub接口Unknown tool，未声称上传。receipt保留最后真实远程提交。",
     "last_verified_remote_commit": "199dc2e521aa26a7ce0dd45a69c990e204dad9b3",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -65,30 +62,25 @@
   },
   "data_free_requirement": "Both defenses must construct from frozen weights and permitted synthetic inputs only. Defense1 now needs neither real nor synthetic images. Real held-out images are used only after release freezing for evaluation; historical image-calibrated records remain data-assisted.",
   "previous_core_trial": {
-    "point_sha256": "665d801780e74884693c57f0ef98a4ec2606186583ee24a755956f753a4de441",
-    "parameter_distance": 6.729433161477576,
+    "point_sha256": "1a693ec907f5dde6b973692b9247ebeee6f4c56d60088bce06506c0b7b119883",
+    "parameter_distance": 7.2871371127329825,
     "closed": true,
-    "real_construction_images": 0,
-    "original_expert_updates": 0,
-    "seconds": 705.0913086039945,
-    "record": "results/data_free_compensation/response_compensation_result.json",
+    "record": "results/data_free_compensation/local_prefix_result.json",
     "native_before_after": [
       99.69,
-      9.63
+      9.14
     ],
-    "TA_and_AGA_evaluated": false,
     "source_agreement": [
-      2017,
-      3200
+      64,
+      64
     ],
-    "generated_image_forwards": 500800,
-    "input_gradient_model_forwards": 153600,
-    "joint_AB_library_iterations": 120,
-    "full_objective_evaluations": 138,
+    "real_construction_images": 0,
+    "original_expert_updates": 0,
+    "TA_and_AGA_evaluated": false,
+    "seconds": 146.53505530022085,
     "new_real_evaluation_image_forwards": 20000,
-    "new_complete_AGA_calls": 0,
-    "source_archived_and_retired_active_tree": true,
-    "max_finite_task_response_error": 8.098655257526843e-07
+    "independent_raw_recount_status": "Pending access to the unavailable 4090 raw scores; failed experiment remains closed, no rerun.",
+    "source_archived_and_retired_active_tree": true
   },
   "latest_Defense1": {
     "record": "results/phase3/bias_weight_only/results.json",
@@ -275,5 +267,16 @@
     "new_real_construction_images": 0,
     "new_full_AGA_calls": 1,
     "closed_no_protection": true
+  },
+  "latest_native_constrained_analysis": {
+    "record": "results/data_free_compensation/population_compensation_result.json:native_constrained_feasibility_result",
+    "fixed_A_public_residuals": [
+      7.970534917888093,
+      8.012561454228663
+    ],
+    "largest_primal_dual_gap": 7.836751788384772e-14,
+    "outer_gradient_toy_relative_error": 7.76443274753277e-09,
+    "new_models": 0,
+    "new_AGA": 0
   }
 }
