@@ -418,5 +418,114 @@
     "actual": "Only original first/last MNIST blocks0/11, all3072neurons. A normalized-coordinate weights W=A*Gamma*C. One fixed centered Gaussian perturbation of relative size.1, no published model and no optimization. Full/task moments and conditionalB; blocked gradient compared with two fixed central differences, tolerance1e-3. Error stops calculation; no step/angle/seed retry.",
     "source_reference": "https://www.cs.umd.edu/users/oleary/software/varpro.pdf sections1-2.3; standard variable projection, not claimed as new optimizer or defense.",
     "scope": "Finite derivative/calculation validation, not a new defense, natural-task accuracy, compensation feasibility proof, global optimum orAGA result. Computed A/B never saved or applied to a CLIP model; all failures retained."
+  },
+  "joint_gradient_result": {
+    "toy": {
+      "hidden_neurons": 8,
+      "input_dimension": 6,
+      "function_cost": 0.0031125375306377944,
+      "full_task_relative_MSE": [
+        0.00203638059388136,
+        0.0010761512148185482
+      ],
+      "derivative": -0.0022519783595663003,
+      "finite_differences": [
+        {
+          "step": 1e-05,
+          "finite_difference": -0.0022519783220934643,
+          "relative_error": 1.66399627567044e-08
+        },
+        {
+          "step": 1e-06,
+          "finite_difference": -0.0022519789392647094,
+          "relative_error": 2.574173314678149e-07
+        }
+      ],
+      "identity_objective": 3.021541961316821e-35,
+      "gradient_norm": 0.12362213333289547,
+      "direct_autograd_relative_error": 5.957228895904871e-14,
+      "independent_2D_quadrature_cross_errors": [
+        2.708627844159672e-15,
+        6.001363011643376e-15
+      ]
+    },
+    "actual_layers": [
+      {
+        "layer": 0,
+        "hidden_neurons": 3072,
+        "input_dimension": 768,
+        "function_cost": 0.0012130082047561788,
+        "full_task_relative_MSE": [
+          0.0011857958265355454,
+          2.720310094724704e-05
+        ],
+        "derivative": 0.00011439025384307031,
+        "finite_differences": [
+          {
+            "step": 1e-05,
+            "finite_difference": 0.00011439018216810244,
+            "relative_error": 6.26582820300425e-07
+          },
+          {
+            "step": 1e-06,
+            "finite_difference": 0.00011438990726864162,
+            "relative_error": 3.0297548702311487e-06
+          }
+        ],
+        "identity_objective": 4.2809256889396845e-24,
+        "gradient_norm": 0.0023904587474344974
+      },
+      {
+        "layer": 11,
+        "hidden_neurons": 3072,
+        "input_dimension": 768,
+        "function_cost": 0.008427991750433322,
+        "full_task_relative_MSE": [
+          0.007140240820505977,
+          0.0012877502491150867
+        ],
+        "derivative": -5.6484874569177213e-05,
+        "finite_differences": [
+          {
+            "step": 1e-05,
+            "finite_difference": -5.648491197343674e-05,
+            "relative_error": 6.621991292822414e-07
+          },
+          {
+            "step": 1e-06,
+            "finite_difference": -5.648584291279013e-05,
+            "relative_error": 1.71431205233349e-05
+          }
+        ],
+        "identity_objective": 5.959896003675593e-31,
+        "gradient_norm": 0.009107302675327786
+      }
+    ],
+    "real_images": 0,
+    "model_image_forwards": 0,
+    "original_expert_updates": 0,
+    "new_defense_points": 0,
+    "optimizer_steps": 0,
+    "source_sha256": "c9b949884663380004e811caca1b09d1d5c5f65f502a3a36e21f85fd78492df2",
+    "seconds": 13.113718569977209,
+    "definition_local": "89213ecd139a3e04067a7b3d4322d68f06cd80e6",
+    "definition_remote": "c3d8a78e03c04ef999142cf0c45d9c6f2ceaec3a",
+    "definition_exact_readback_before_execution": true
+  },
+  "joint_fit_definition": {
+    "output": "outputs/population_compensation_20261026/joint_fit",
+    "source": "\"\"\"One original first-layer numerical feasibility solve; no image/model fitting.\"\"\"\nimport importlib.util\nimport inspect\nimport json\nimport time\nfrom pathlib import Path\n\nimport torch\n\nfrom _impl.io import digest\nfrom _impl.models import initialize, load_checkpoint\n\n\ndef main():\n    initialize()\n    torch.set_default_dtype(torch.float64)\n    record = json.loads(Path('results/data_free_compensation/population_compensation_result.json').read_text())\n    cfg = record['joint_fit_definition']\n    assert digest(__file__) == cfg['source_sha256']\n    helper = Path('outputs/population_compensation_20261026/joint_gradient/calculation.py')\n    assert digest(helper) == cfg['helper_sha256']\n    spec = importlib.util.spec_from_file_location('population_math', helper)\n    math = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(math)\n    out = Path(cfg['output'])\n    out.mkdir(exist_ok=False)\n    (out / 'definition.json').write_text(json.dumps(cfg, indent=2) + '\\n')\n    (out / 'calculation.py').write_text(Path(__file__).read_text())\n    (out / 'torch_LBFGS.py').write_text(inspect.getsource(torch.optim.LBFGS))\n    started = time.monotonic()\n    base, expert = load_checkpoint('zeroshot.pt').cuda(), load_checkpoint('MNIST/finetuned.pt').cuda()\n    block, anchor = expert.model.visual.transformer.resblocks[0], base.model.visual.transformer.resblocks[0]\n    A, gamma, beta = block.mlp.c_fc.weight.double(), block.ln_2.weight.double(), block.ln_2.bias.double()\n    W = A * gamma\n    W -= W.mean(1, keepdim=True)\n    mu = A @ beta + block.mlp.c_fc.bias.double()\n    delta = (A - anchor.mlp.c_fc.weight.double()) * gamma\n    delta -= delta.mean(1, keepdim=True)\n    V = torch.linalg.svd(delta, full_matrices=False).Vh[:32].T\n    V = torch.linalg.qr(V - V.mean(0), mode='reduced').Q\n    readout = torch.cat([block.mlp.c_proj.weight.double(), block.mlp.c_proj.bias.double()[:, None]], 1)\n    domains, ridge = math.original_terms(W, mu, readout, V)\n    normal = gamma.reciprocal()\n    normal /= normal.norm()\n    generator = torch.Generator(device='cuda').manual_seed(2026102609)\n    Z = torch.randn(A.shape, generator=generator, device='cuda')\n    Z -= Z.mean(1, keepdim=True)\n    Z *= .5 * W.norm() / Z.norm()\n    Z.requires_grad_(True)\n    optimizer = torch.optim.LBFGS([Z], lr=1, max_iter=40, max_eval=60, history_size=5,\n                                 tolerance_grad=1e-10, tolerance_change=1e-12, line_search_fn='strong_wolfe')\n    trace = []\n\n    def mapped():\n        centered = Z - Z.mean(1, keepdim=True)\n        inside = (centered @ V) @ V.T\n        outside = centered - inside\n        projected = outside + inside * (.5 * outside.norm() / inside.norm()).clamp(max=1)\n        dW = .5 * W.norm() * projected / projected.norm()\n        dA = dW / gamma\n        dA = dA - (dA @ normal)[:, None] * normal\n        new = (A + dA) * gamma\n        new = new - new.mean(1, keepdim=True)\n        return new, dA\n\n    def closure():\n        optimizer.zero_grad(set_to_none=True)\n        new, dA = mapped()\n        with torch.no_grad():\n            loss, changed, errors = math.conditional(new.detach(), mu, readout, domains, ridge)\n        grad = math.blocked_gradient(new.detach(), mu, changed, readout, domains)\n        new.backward(grad)\n        row = dict(evaluation=len(trace) + 1, objective=float(loss), full_task_MSE=[float(e) for e in errors],\n                   B_relative_change=float((changed[:, :-1] - readout[:, :-1]).norm() / readout[:, :-1].norm()))\n        trace.append(row)\n        print(json.dumps(row), flush=True)\n        return loss\n\n    optimizer.step(closure)\n    with torch.no_grad():\n        new, dA = mapped()\n        loss, changed, errors = math.conditional(new, mu, readout, domains, ridge)\n        difference = new - W\n        inside = (difference @ V).square().sum()\n        total = difference.square().sum()\n        first_bias = mu - (A + dA) @ beta\n        metrics = dict(A_relative_change=float(dA.norm() / A.norm()),\n                       normalized_weight_relative_change=float(difference.norm() / W.norm()),\n                       outside_energy_fraction=float(1 - inside / total),\n                       outside_relative_change=float((total - inside).sqrt() / W.norm()),\n                       removed_LN_affine_null_residual=float((dA @ normal).norm() / dA.norm()),\n                       B_relative_change=float((changed[:, :-1] - readout[:, :-1]).norm() / readout[:, :-1].norm()),\n                       first_bias_relative_change=float((first_bias - block.mlp.c_fc.bias).norm() / (1 + block.mlp.c_fc.bias.norm())),\n                       output_bias_relative_change=float((changed[:, -1] - block.mlp.c_proj.bias).norm() / (1 + block.mlp.c_proj.bias.norm())),\n                       full_task_relative_MSE=[float(x) for x in errors], objective=float(loss))\n        checks = []\n        for domain, (_, subspace, _, _, variance) in zip(['full', 'task'], domains):\n            rng = torch.Generator(device='cuda').manual_seed(2026102610 + (domain == 'task'))\n            dimension = 767 if subspace is None else 32\n            losses = []\n            for _ in range(64):\n                u = torch.randn(256, 768 if subspace is None else 32, generator=rng, device='cuda')\n                if subspace is None:\n                    u -= u.mean(1, keepdim=True)\n                u *= (768 ** .5) * torch.rand(256, 1, generator=rng, device='cuda').pow(1 / dimension) / u.norm(dim=1, keepdim=True)\n                if subspace is not None:\n                    u = u @ subspace.T\n                p, q = u @ W.T + mu, u @ new.T + mu\n                old = (p * torch.sigmoid(1.702 * p)) @ readout[:, :-1].T + readout[:, -1]\n                fitted = (q * torch.sigmoid(1.702 * q)) @ changed[:, :-1].T + changed[:, -1]\n                losses.append((old - fitted).square().sum(1) / variance)\n            values = torch.cat(losses)\n            checks.append(dict(domain=domain, n=len(values), relative_MSE=float(values.mean()),\n                               MSE_standard_error=float(values.std() / len(values) ** .5)))\n        passed = (max(metrics['full_task_relative_MSE']) <= 1e-4 and max(x['relative_MSE'] for x in checks) <= 1e-4\n                  and metrics['outside_energy_fraction'] >= .8 and metrics['outside_relative_change'] >= .25\n                  and metrics['A_relative_change'] <= 2 and metrics['B_relative_change'] <= 4)\n        weights_path = out / 'first_layer_fit.pt'\n        torch.save(dict(A=A + dA, a=first_bias, B=changed[:, :-1], b=changed[:, -1], task_basis=V), weights_path)\n        result = dict(metrics=metrics, independent_latent_checks=checks, source_condition_passed=passed,\n                      parameter_record=dict(path=str(weights_path), sha256=digest(weights_path)),\n                      LBFGS_iterations=optimizer.state[Z]['n_iter'], objective_evaluations=len(trace), trace=trace,\n                      seconds=time.monotonic() - started, real_images=0, model_image_forwards=0,\n                      original_expert_updates=0, full_defense_models=0, new_AGA_calls=0,\n                      independent_layer_vector_forwards=65536, source_sha256=digest(__file__), helper_sha256=digest(helper))\n        (out / 'result.json').write_text(json.dumps(result, indent=2) + '\\n')\n        print(json.dumps({k: v for k, v in result.items() if k != 'trace'}), flush=True)\n\n\nif __name__ == '__main__':\n    main()\n",
+    "source_sha256": "a26d20e41c2862b05447634a14a5392b9f294bed17c8fa9edab26304120e9b91",
+    "helper_sha256": "c9b949884663380004e811caca1b09d1d5c5f65f502a3a36e21f85fd78492df2",
+    "question": "Can meaningful numerical change in the original first MLP be coupled with its full nonlinear B compensation over continuous full/task inputs, without fixing A task action or using images?",
+    "access": "Only original MNIST expert/publicbase weights. No images, classifier, partner, old defense point or exposed task witness. Expert frozen; A/B records calculated but never applied to a CLIP instance.",
+    "parameterization": "W=A*Gamma*C. Center free Z; split into originaltaskV anditscomplement. Clip inside norm at.5*outside norm,then normalize total dW to.5*norm(W), so outside energy>=.8 and outside distance>=sqrt(.2). Map dW to the minimum raw A change dA=(dW*Gamma_inverse)*Pi_n, n=Gamma_inverse*ones. This removes exact LN affine functional null. a_new holds original preactivation mean. A task action can change; B and outputbias use conditional original-weight fixed ridge. No linear-product equality or fixed reflection.",
+    "function_objective": "Same15degree/128Jacobi full767/task32ball relativeMSE sum, with original constant ridge1e-8*trace(jointoriginalGram)/3073. B conditional at every A; validated blocked envelope gradient passed first/last actualweight checks.",
+    "solver": "Torch2.3 LBFGS, lr1,max_iter40,max_eval60,history5,strong_wolfe,tolerance_grad1e-10,tolerance_change1e-12. One Gaussian initialization seed2026102609, Z norm .5*norm(W) in effective matrix units. Last iterate only; no optimizer/step/rank/layer/seed or direction retries.",
+    "scope_and_budgets": "One original FIRST layer only, not selecting a favorable layer. Effective normalized-coordinate change fixed.5 with >=80%taskoutside energy. Raw A<=2 and B<=4 finalsourcegate,biases hold/compensate mean. Prospective per-matrix ranges, not historical whole-modelD.5. Not a full defense model or classification result.",
+    "source_condition": "Both full/task predictedMSE and both independent16384latentMSE must be<=1e-4; outside task energy>=.8 and effective normalized-coordinate outside distance>=.25; raw A<=2 and B<=4. This is a point-specific feasibility condition, not a natural-accuracy guarantee or universal requirement for every method. Failure closes this fixed solve; no full12layer model or real images follow automatically.",
+    "independent_check": "Same actual QuickGELU, original continuous domains, fixed fresh latent seeds2026102610/11;16384vectors/domain. No image input or model/classification forward. Parameter arrays and all solver trace retained even on failure.",
+    "novelty_boundary": "Spherical kernels, conditional regression, sphereparameterization, variable projection and LBFGS are established. This tests a different continuous joint-function condition, not a new optimizer or claimed successful novel Defense2.",
+    "before_execution_revision": "Initial raw-A-radius proposal was not executed. Before the solve, use effective W distance as the fixed radius and enforce taskoutside energy in the parameterization, so the objective cannot satisfy large raw distance merely in smallgamma directions."
   }
 }
