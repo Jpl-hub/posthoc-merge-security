@@ -1,6 +1,6 @@
 {
-  "status": "用户已恢复研究授权，4090无法开机，改用3090。GPU空闲，清理15份旧中间缓存及2重复副本，实际释放4.71GB，正同步当前源码与研究状态。",
-  "updated_utc": "2026-10-26T03:23:47.265694+00:00",
+  "status": "3090已恢复并完成4.71GB清理。连续输入补偿测量完成：固定大幅A改动后，完整B条件补偿仍有明显非线性误差；无新防御模型。核心机制研究继续，目前无GPU作业。",
+  "updated_utc": "2026-10-26T03:56:01.691890+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -24,10 +24,10 @@
     "TA_and_AGA_evaluated": false,
     "seconds": 146.53505530022085,
     "new_real_evaluation_image_forwards": 20000,
-    "independent_raw_recount_status": "Pending next session after user requested rest",
+    "independent_raw_recount_status": "Pending access to the unavailable 4090 raw scores; failed experiment remains closed, no rerun.",
     "source_archived_and_retired_active_tree": true
   },
-  "next_action": "先恢复当前精简源码和运行环境；围绕无数据完整功能保持研究机制，不重跑关闭点。1a693ec9原始分数留4090，独立复核待该实例可读取时完成，不重建重复实验。",
+  "next_action": "研究A/B共同分配任务功能变化的可计算补偿关系；先核论文源码及数学条件，不再对已关闭的大反射点加迭代、改层或换强度。",
   "engineering_cleanup": {
     "production_modules_and_entrypoints_unchanged": false,
     "new_frameworks": 0,
@@ -42,8 +42,8 @@
     "regression_and_behavior_tests_passed": 17
   },
   "github_sync": {
-    "status": "本轮GitHub get_repo返回MCP传输错误，尚未新上传或读回。结果已保存在本地和4090，保留最后一次真实远程提交。",
-    "last_verified_remote_commit": "4c76d4d9ecc2d71d1c3474ad2b78951e432685e5",
+    "status": "Oct25-26积压已通过插件发布并逐字读回；本项测量定义执行前已公开读回，新增结果正在同步。",
+    "last_verified_remote_commit": "0af294ac6389c2d7f35a4196bf8d2bd3e6170975",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "historical_protocol_state": "97a3474",
@@ -155,11 +155,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "GPU_process_check_utc": "2026-10-26T03:23:47.265694+00:00",
+    "GPU_process_check_utc": "2026-10-26T03:56:01.691890+00:00",
     "active_GPU_jobs": 0,
     "4090": "Unavailable at user report; no new work there. Oct25/26 raw artifacts remain on its disk.",
-    "3090_data_available_bytes": 6013739008,
-    "3090_system_available_bytes": 5268209664
+    "3090_data_available_bytes": 6007599104,
+    "3090_system_available_bytes": 5264433152
   },
   "storage_cleanup": {
     "record": "results/engineering_refactor/cleanup_20261026.json",
@@ -167,5 +167,27 @@
     "pruned_finished_cache_files": 15,
     "byte_identical_duplicates_hardlinked": 2,
     "original_or_unique_release_weights_deleted": 0
+  },
+  "latest_population_compensation": {
+    "full_relative_MSE_range": [
+      0.3020103041018594,
+      0.8814873196913698
+    ],
+    "task_relative_MSE_range": [
+      0.011667395989217585,
+      0.08527972298391598
+    ],
+    "B_relative_change_range": [
+      0.7746308814132928,
+      98.5374274352144
+    ],
+    "conclusion": "在固定大幅A修改下，仅靠完整B和输出偏置的条件补偿，在声明的连续输入分布上仍留下明显非线性输出误差。任务A作用不变不等于完整功能保持。",
+    "scope": "这是固定A、固定输入球分布和固定正则的数值计算，不是自然任务准确率、所有A/B补偿的不可能性结论或新防御模型。标准核、求积和岭回归不计创新。",
+    "record": "results/data_free_compensation/population_compensation_result.json",
+    "seconds": 24.6455562459887,
+    "real_images": 0,
+    "model_image_forwards": 0,
+    "new_defense_points": 0,
+    "definition_public_commit": "0af294ac6389c2d7f35a4196bf8d2bd3e6170975"
   }
 }
