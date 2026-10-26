@@ -470,7 +470,7 @@
     "formal_MergeGuard_fetch": "CVPR2026 PDF returned403 this review; no new final-version numerical claims."
   },
   "ABM_transition_review_20261026": {
-    "status": "registered_before_diagnostic_execution",
+    "status": "completed_and_independently_verified",
     "paper": "https://papers.neurips.cc/paper_files/paper/2019/file/fe663a72b27bdc613873fbbb512f6f67-Paper.pdf",
     "section": "4.4, Algorithm2, Eq2; belief matching near decision boundaries",
     "official_repository_commit": "e24915d713672554800372c777c9014e3399e13b",
@@ -483,6 +483,418 @@
     "source": "\"\"\"Fixed teacher-only synthetic interpolation diagnostic; no parameter fitting.\"\"\"\nimport json\nimport time\nfrom pathlib import Path\n\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.io import digest\nfrom _impl.models import checked_models, initialize\n\ninitialize()\nstarted = time.perf_counter()\nout = Path('outputs/native_ellipse_transition_20261026')\nout.mkdir(exist_ok=False)\nrows = []\nfor task in ['MNIST', 'SVHN', 'DTD']:\n    root = Path('outputs') / ('native_ellipse_classification_20261026' if task == 'MNIST'\n                              else f'native_ellipse_classification_{task}_20261026')\n    meta = json.loads((root/'point/result.json').read_text())\n    source = root/'source/source.pt'\n    assert digest(source) == meta['source_cache_sha256']\n    raw = torch.load(source, map_location='cpu', weights_only=False)\n    base, teacher, head, pins = checked_models(task)\n    teacher.cuda().eval().requires_grad_(False)\n    W = head.weight.double().cuda()\n    v = teacher.model.visual\n    block = v.transformer.resblocks[11]\n    prep = teacher.val_preprocess.transforms[-1]\n    mean = torch.tensor(prep.mean, device='cuda')[None, :, None, None]\n    std = torch.tensor(prep.std, device='cuda')[None, :, None, None]\n    C = len(W)\n    # Source generator stores 16 latent images per requested class, in order.\n    endpoints = raw['final'][torch.arange(C)*16].cuda()\n    assert len(raw['final']) == C*16\n    right = endpoints.roll(-1, 0)\n    original_forward_count = 0\n\n    @torch.no_grad()\n    def run(latents, capture=False):\n        nonlocal_rows = dict(x=[], prefix=[])\n        hs = []\n        if capture:\n            hs = [block.mlp.c_fc.register_forward_pre_hook(\n                lambda m,a: nonlocal_rows['x'].append(a[0][0].cpu())),\n                block.ln_2.register_forward_pre_hook(\n                lambda m,a: nonlocal_rows['prefix'].append(a[0][0].cpu()))]\n        scores = []\n        for i in range(0, len(latents), 16):\n            x = (F.interpolate(latents[i:i+16], (224,224), mode='bilinear',\n                               align_corners=False)-mean)/std\n            scores.append((F.normalize(teacher(x), dim=-1).double()@W.T).cpu())\n        for h in hs:\n            h.remove()\n        return dict(scores=torch.cat(scores), **{k:torch.cat(z) for k,z in nonlocal_rows.items() if z})\n\n    alpha = torch.linspace(0,1,17,device='cuda')[:,None]\n    grid = endpoints[None]+alpha[:,:,None,None,None]*(right-endpoints)[None]\n    lo, hi = torch.zeros(C,device='cuda'), torch.ones(C,device='cuda')\n    labels = torch.arange(C,device='cuda')\n    grid_record = run(grid.flatten(0,1), True)\n    original_forward_count += C*17\n    assert torch.equal(grid_record['scores'][:C].argmax(1), labels.cpu())\n    for _ in range(8):\n        mid = (lo+hi)/2\n        current = run(endpoints+mid[:,None,None,None]*(right-endpoints))['scores'].argmax(1).cuda()\n        same = current.eq(labels)\n        lo = torch.where(same,mid,lo)\n        hi = torch.where(same,hi,mid)\n        original_forward_count += C\n    brackets = torch.stack([lo,hi])\n    bracket_latents = endpoints[None]+brackets[:,:,None,None,None]*(right-endpoints)[None]\n    bracket_record = run(bracket_latents.flatten(0,1),True)\n    original_forward_count += C*2\n    cache = {k:torch.cat([grid_record[k],bracket_record[k]]) for k in grid_record}\n    frozen = dict(task=task,source_sha256=digest(source),checkpoint_sha256=pins,\n                  endpoints=endpoints.cpu(),grid_alpha=alpha.cpu(),brackets=brackets.cpu(),cache=cache)\n    torch.save(frozen,out/f'{task}_teacher.pt')\n    teacher_sha = digest(out/f'{task}_teacher.pt')\n    # No publication parameters are read until the entire diagnostic input is frozen.\n    assert digest(root/'point/point.pt') == meta['point_sha256']\n    edits = torch.load(root/'point/point.pt',map_location='cpu',weights_only=False)\n    s = teacher.state_dict()\n    k = 'model.visual.transformer.resblocks.11.mlp.'\n    assert set(edits) == {k+'c_fc.weight',k+'c_proj.weight',k+'c_proj.bias'}\n    score_rows = {}\n    x, prefix = [cache[n].double().cuda() for n in ['x','prefix']]\n    for mode in ['original','A_only','B_only','joint']:\n        use = {**s, **{name:value for name,value in edits.items()\n                       if mode=='joint' or (mode=='A_only' and name.endswith('c_fc.weight'))\n                       or (mode=='B_only' and not name.endswith('c_fc.weight'))}}\n        A,a,B,b = [use[k+n].double().cuda() for n in ['c_fc.weight','c_fc.bias','c_proj.weight','c_proj.bias']]\n        preact = x@A.T+a\n        final = prefix+(preact*torch.sigmoid(1.702*preact))@B.T+b\n        z = F.layer_norm(final,(768,),v.ln_post.weight.double(),v.ln_post.bias.double(),v.ln_post.eps)@v.proj.double()\n        score_rows[mode] = (F.normalize(z,dim=-1)@W.T).cpu()\n    # Check exact last-block reconstruction and a complete protected forward.\n    original_tail_error = float((score_rows['original']-cache['scores']).abs().max())\n    teacher.load_state_dict({**s,**edits},strict=True)\n    selected = torch.tensor([0,C,17*C,18*C])\n    all_latents = torch.cat([grid.flatten(0,1),bracket_latents.flatten(0,1)])\n    joint_replay = run(all_latents[selected])['scores']\n    replay_error = float((joint_replay-score_rows['joint'][selected]).abs().max())\n    assert max(original_tail_error,replay_error) < 1e-4\n    torch.save(dict(teacher=cache['scores'],scores=score_rows,selected=selected,\n                    joint_full_replay=joint_replay),out/f'{task}_scores.pt')\n    metrics = {}\n    t = cache['scores']\n    for mode,p in score_rows.items():\n        prediction = p.argmax(1)\n        masks = dict(endpoints=torch.cat([torch.arange(C),torch.arange(16*C,17*C)]),\n                     interior=torch.arange(C,16*C),left_bracket=torch.arange(17*C,18*C),\n                     right_bracket=torch.arange(18*C,19*C))\n        metrics[mode] = {name:dict(n=len(idx),same=int(prediction[idx].eq(t[idx].argmax(1)).sum()),\n             mean_probability_TV=float((p[idx].softmax(1)-t[idx].softmax(1)).abs().sum(1).mean()/2),\n             mean_centered_score_error=float(((p[idx]-t[idx])-(p[idx]-t[idx]).mean(1,keepdim=True)).norm(dim=1).mean()))\n             for name,idx in masks.items()}\n    row = dict(task=task,point_sha256=meta['point_sha256'],teacher_input_sha256=teacher_sha,\n               scores_sha256=digest(out/f'{task}_scores.pt'),classes=C,metrics=metrics,\n               original_image_forwards=original_forward_count,protected_replay_forwards=4,\n               original_tail_max_error=original_tail_error,protected_replay_max_error=replay_error,\n               bracket_width=1/256,endpoint_first_source_index_per_class=True)\n    rows.append(row)\n    print(json.dumps(row),flush=True)\n    teacher.cpu()\n    del base,teacher,head,v,block,s,cache,raw,score_rows,edits,x,prefix,grid,bracket_latents,all_latents\n    torch.cuda.empty_cache()\n\nresult = dict(status='completed_fixed_teacher_only_transition_diagnostic',rows=rows,\n    seconds=time.perf_counter()-started,source_sha256=digest(__file__),\n    new_real_images=0,expert_updates=0,new_defense_points=0,new_AGA_calls=0,\n    parameter_fitting_steps=0,scope='Original teacher only chooses cyclic interpolation and eight bisections; protected parameters read only after saving all input/cache hashes. Synthetic transitions are not real-data accuracy, causal proof, ABM reproduction, or a new defense. All paths retained.')\n(out/'result.json').write_text(json.dumps(result,indent=2)+'\\n')\n",
     "source_sha256": "f5454231a226410a663e35ce637fc3ab144cd6facf2b549a0770f8efc52ba390",
     "raw_output": "outputs/native_ellipse_transition_20261026",
-    "novelty": "Known boundary-matching diagnostic motivation;fixed teacher-only interpolation is our explicit read-only adaptation,not new defense or ABM reproduction."
+    "novelty": "Known boundary-matching diagnostic motivation;fixed teacher-only interpolation is our explicit read-only adaptation,not new defense or ABM reproduction.",
+    "registration_local_commit": "ea955e93698bc20d25055141c633ee163c68390f",
+    "registration_remote_commit": "55b7be797159bfdab326efdaa1d3d347f63e6931",
+    "registration_source_readback_before_execution": true,
+    "result": {
+      "status": "completed_fixed_teacher_only_transition_diagnostic",
+      "rows": [
+        {
+          "task": "MNIST",
+          "point_sha256": "828daa484b64f27f99df4cbb657366572c951f21585dbde6136bf7a8f4d72dc1",
+          "teacher_input_sha256": "764288bd05860a322e5edb2be535e439481b198ea94d3e8b148d0c86a6f1e3d4",
+          "scores_sha256": "71d4a317cf5aa850663104f2c53ae9877ae42ff710062d0178ba0eb9238b4bcd",
+          "classes": 10,
+          "metrics": {
+            "original": {
+              "endpoints": {
+                "n": 20,
+                "same": 20,
+                "mean_probability_TV": 1.431874339858765e-09,
+                "mean_centered_score_error": 5.470029182071246e-07
+              },
+              "interior": {
+                "n": 150,
+                "same": 150,
+                "mean_probability_TV": 8.443329971038624e-09,
+                "mean_centered_score_error": 4.792137002950724e-07
+              },
+              "left_bracket": {
+                "n": 10,
+                "same": 10,
+                "mean_probability_TV": 4.110843767716219e-08,
+                "mean_centered_score_error": 4.993290048769726e-07
+              },
+              "right_bracket": {
+                "n": 10,
+                "same": 10,
+                "mean_probability_TV": 4.79015111866199e-08,
+                "mean_centered_score_error": 5.389514596891269e-07
+              }
+            },
+            "A_only": {
+              "endpoints": {
+                "n": 20,
+                "same": 20,
+                "mean_probability_TV": 0.000398084489112143,
+                "mean_centered_score_error": 0.24811660822062015
+              },
+              "interior": {
+                "n": 150,
+                "same": 148,
+                "mean_probability_TV": 0.00885189390445133,
+                "mean_centered_score_error": 0.322872940581948
+              },
+              "left_bracket": {
+                "n": 10,
+                "same": 7,
+                "mean_probability_TV": 0.046498861044674364,
+                "mean_centered_score_error": 0.437536182852227
+              },
+              "right_bracket": {
+                "n": 10,
+                "same": 9,
+                "mean_probability_TV": 0.0476314112037146,
+                "mean_centered_score_error": 0.438358780971963
+              }
+            },
+            "B_only": {
+              "endpoints": {
+                "n": 20,
+                "same": 2,
+                "mean_probability_TV": 0.8995727955256912,
+                "mean_centered_score_error": 18.382814312970854
+              },
+              "interior": {
+                "n": 150,
+                "same": 16,
+                "mean_probability_TV": 0.892158587250139,
+                "mean_centered_score_error": 17.747575474602968
+              },
+              "left_bracket": {
+                "n": 10,
+                "same": 1,
+                "mean_probability_TV": 0.9092981740240775,
+                "mean_centered_score_error": 15.658132484904012
+              },
+              "right_bracket": {
+                "n": 10,
+                "same": 1,
+                "mean_probability_TV": 0.9070147063401681,
+                "mean_centered_score_error": 15.618373226720669
+              }
+            },
+            "joint": {
+              "endpoints": {
+                "n": 20,
+                "same": 20,
+                "mean_probability_TV": 0.00021149694474768122,
+                "mean_centered_score_error": 0.4376013092967902
+              },
+              "interior": {
+                "n": 150,
+                "same": 136,
+                "mean_probability_TV": 0.0742873014060805,
+                "mean_centered_score_error": 1.334439688627996
+              },
+              "left_bracket": {
+                "n": 10,
+                "same": 4,
+                "mean_probability_TV": 0.33445868751794183,
+                "mean_centered_score_error": 2.9902654026726534
+              },
+              "right_bracket": {
+                "n": 10,
+                "same": 3,
+                "mean_probability_TV": 0.32990611681722337,
+                "mean_centered_score_error": 2.992989064201621
+              }
+            }
+          },
+          "original_image_forwards": 270,
+          "protected_replay_forwards": 4,
+          "original_tail_max_error": 5.71246736313924e-06,
+          "protected_replay_max_error": 1.9487283081431883e-05,
+          "bracket_width": 0.00390625,
+          "endpoint_first_source_index_per_class": true
+        },
+        {
+          "task": "SVHN",
+          "point_sha256": "a203d6c989396243641ee44a7d865cc74cb3bcae9359c201089ffcd15dc6fb9c",
+          "teacher_input_sha256": "31def4a699d5390d43c6dbe0a665d6037b5fc20c1dcd7ff68f18592ba5c81eba",
+          "scores_sha256": "02562c3563fdeffd300b178ad72ad0d2e005af5f6e641374c3bc0649ad13626d",
+          "classes": 10,
+          "metrics": {
+            "original": {
+              "endpoints": {
+                "n": 20,
+                "same": 20,
+                "mean_probability_TV": 2.178286725556609e-09,
+                "mean_centered_score_error": 4.394054425309605e-07
+              },
+              "interior": {
+                "n": 150,
+                "same": 150,
+                "mean_probability_TV": 7.216728824045578e-09,
+                "mean_centered_score_error": 4.3746694779541894e-07
+              },
+              "left_bracket": {
+                "n": 10,
+                "same": 10,
+                "mean_probability_TV": 4.050944185703001e-08,
+                "mean_centered_score_error": 4.312029311159412e-07
+              },
+              "right_bracket": {
+                "n": 10,
+                "same": 10,
+                "mean_probability_TV": 4.0136289123821644e-08,
+                "mean_centered_score_error": 4.1593066148147794e-07
+              }
+            },
+            "A_only": {
+              "endpoints": {
+                "n": 20,
+                "same": 20,
+                "mean_probability_TV": 0.0009313617573550778,
+                "mean_centered_score_error": 0.19374663219697474
+              },
+              "interior": {
+                "n": 150,
+                "same": 150,
+                "mean_probability_TV": 0.004413670334313016,
+                "mean_centered_score_error": 0.18515811729928386
+              },
+              "left_bracket": {
+                "n": 10,
+                "same": 8,
+                "mean_probability_TV": 0.024665529362338963,
+                "mean_centered_score_error": 0.22532680363576732
+              },
+              "right_bracket": {
+                "n": 10,
+                "same": 8,
+                "mean_probability_TV": 0.02363538798211009,
+                "mean_centered_score_error": 0.2223662719582416
+              }
+            },
+            "B_only": {
+              "endpoints": {
+                "n": 20,
+                "same": 2,
+                "mean_probability_TV": 0.8971754885599396,
+                "mean_centered_score_error": 16.556967478581747
+              },
+              "interior": {
+                "n": 150,
+                "same": 20,
+                "mean_probability_TV": 0.8770654268109422,
+                "mean_centered_score_error": 16.51318823872968
+              },
+              "left_bracket": {
+                "n": 10,
+                "same": 1,
+                "mean_probability_TV": 0.8932762085885951,
+                "mean_centered_score_error": 16.043172534259345
+              },
+              "right_bracket": {
+                "n": 10,
+                "same": 2,
+                "mean_probability_TV": 0.8953419033234515,
+                "mean_centered_score_error": 16.038191194321286
+              }
+            },
+            "joint": {
+              "endpoints": {
+                "n": 20,
+                "same": 20,
+                "mean_probability_TV": 0.001061825147787998,
+                "mean_centered_score_error": 0.3234609797102569
+              },
+              "interior": {
+                "n": 150,
+                "same": 143,
+                "mean_probability_TV": 0.05464104888739318,
+                "mean_centered_score_error": 1.012946877170997
+              },
+              "left_bracket": {
+                "n": 10,
+                "same": 5,
+                "mean_probability_TV": 0.3719657502651957,
+                "mean_centered_score_error": 3.5412161473749997
+              },
+              "right_bracket": {
+                "n": 10,
+                "same": 4,
+                "mean_probability_TV": 0.3751071017704944,
+                "mean_centered_score_error": 3.5909488411459214
+              }
+            }
+          },
+          "original_image_forwards": 270,
+          "protected_replay_forwards": 4,
+          "original_tail_max_error": 5.853348291395832e-06,
+          "protected_replay_max_error": 2.661501705958358e-05,
+          "bracket_width": 0.00390625,
+          "endpoint_first_source_index_per_class": true
+        },
+        {
+          "task": "DTD",
+          "point_sha256": "b8c704282a585676c100cda17572557165cf7336de0f79230f97dda33527a9c8",
+          "teacher_input_sha256": "4dc74c2059b3ac140f06619ecadfd1f15064a3ff0f6f230decb698235e1be536",
+          "scores_sha256": "cbc1dd48d995df92eb6d1c674b3902f6b3b9b557eec0437d2fa28fe3ce2d758e",
+          "classes": 47,
+          "metrics": {
+            "original": {
+              "endpoints": {
+                "n": 94,
+                "same": 94,
+                "mean_probability_TV": 1.6290696524152263e-09,
+                "mean_centered_score_error": 4.551457008325044e-06
+              },
+              "interior": {
+                "n": 705,
+                "same": 705,
+                "mean_probability_TV": 7.609397346392589e-08,
+                "mean_centered_score_error": 4.626618309129094e-06
+              },
+              "left_bracket": {
+                "n": 47,
+                "same": 47,
+                "mean_probability_TV": 2.3494503245141906e-07,
+                "mean_centered_score_error": 4.739402267729342e-06
+              },
+              "right_bracket": {
+                "n": 47,
+                "same": 47,
+                "mean_probability_TV": 2.112934727110626e-07,
+                "mean_centered_score_error": 4.762789003357411e-06
+              }
+            },
+            "A_only": {
+              "endpoints": {
+                "n": 94,
+                "same": 94,
+                "mean_probability_TV": 0.009342284746910056,
+                "mean_centered_score_error": 4.218823012158813
+              },
+              "interior": {
+                "n": 705,
+                "same": 638,
+                "mean_probability_TV": 0.08348875621728202,
+                "mean_centered_score_error": 4.14615696009258
+              },
+              "left_bracket": {
+                "n": 47,
+                "same": 14,
+                "mean_probability_TV": 0.19865102635872617,
+                "mean_centered_score_error": 4.239675346240054
+              },
+              "right_bracket": {
+                "n": 47,
+                "same": 24,
+                "mean_probability_TV": 0.1973331674735429,
+                "mean_centered_score_error": 4.238078835259221
+              }
+            },
+            "B_only": {
+              "endpoints": {
+                "n": 94,
+                "same": 2,
+                "mean_probability_TV": 0.9787162975963813,
+                "mean_centered_score_error": 44.26904046163991
+              },
+              "interior": {
+                "n": 705,
+                "same": 10,
+                "mean_probability_TV": 0.984289782984391,
+                "mean_centered_score_error": 43.64598285762996
+              },
+              "left_bracket": {
+                "n": 47,
+                "same": 1,
+                "mean_probability_TV": 0.9854421103043929,
+                "mean_centered_score_error": 42.1956898132707
+              },
+              "right_bracket": {
+                "n": 47,
+                "same": 0,
+                "mean_probability_TV": 0.986145341774524,
+                "mean_centered_score_error": 42.172638352314024
+              }
+            },
+            "joint": {
+              "endpoints": {
+                "n": 94,
+                "same": 94,
+                "mean_probability_TV": 0.0010675224778203354,
+                "mean_centered_score_error": 2.5143694296424726
+              },
+              "interior": {
+                "n": 705,
+                "same": 659,
+                "mean_probability_TV": 0.052491470239879254,
+                "mean_centered_score_error": 3.4322699866353616
+              },
+              "left_bracket": {
+                "n": 47,
+                "same": 17,
+                "mean_probability_TV": 0.16844239198395047,
+                "mean_centered_score_error": 4.340411962261871
+              },
+              "right_bracket": {
+                "n": 47,
+                "same": 30,
+                "mean_probability_TV": 0.1666503705230756,
+                "mean_centered_score_error": 4.356018876363122
+              }
+            }
+          },
+          "original_image_forwards": 1269,
+          "protected_replay_forwards": 4,
+          "original_tail_max_error": 1.1044805233950683e-05,
+          "protected_replay_max_error": 4.6121900046713904e-05,
+          "bracket_width": 0.00390625,
+          "endpoint_first_source_index_per_class": true
+        }
+      ],
+      "seconds": 10.742302760481834,
+      "source_sha256": "f5454231a226410a663e35ce637fc3ab144cd6facf2b549a0770f8efc52ba390",
+      "new_real_images": 0,
+      "expert_updates": 0,
+      "new_defense_points": 0,
+      "new_AGA_calls": 0,
+      "parameter_fitting_steps": 0,
+      "scope": "Original teacher only chooses cyclic interpolation and eight bisections; protected parameters read only after saving all input/cache hashes. Synthetic transitions are not real-data accuracy, causal proof, ABM reproduction, or a new defense. All paths retained."
+    },
+    "independent_numpy_validation": {
+      "status": "passed_independent_numpy_recount",
+      "rows": [
+        {
+          "task": "MNIST",
+          "n": 190,
+          "mode_groups": 16,
+          "teacher_brackets_verified": 10,
+          "paths_visiting_more_than_two_classes": 5,
+          "maximum_tail_or_full_replay_error": 1.9487283081431883e-05
+        },
+        {
+          "task": "SVHN",
+          "n": 190,
+          "mode_groups": 16,
+          "teacher_brackets_verified": 10,
+          "paths_visiting_more_than_two_classes": 4,
+          "maximum_tail_or_full_replay_error": 2.661501705958358e-05
+        },
+        {
+          "task": "DTD",
+          "n": 893,
+          "mode_groups": 16,
+          "teacher_brackets_verified": 47,
+          "paths_visiting_more_than_two_classes": 38,
+          "maximum_tail_or_full_replay_error": 4.6121900046713904e-05
+        }
+      ],
+      "maximum_metric_error": 3.552713678800501e-15,
+      "new_image_forwards": 0,
+      "raw_result_sha256": "c7ed3e1504fafb2e103d494fa12dafbafae6676b8d4b59727015809c4337d41d",
+      "raw_scores_sha256": "ceac6edfa6c3a409529280b3a7d61b01f19e67e11a5814fd98c8fdee7e73f6ab",
+      "source_sha256": "5906a42c00f3bae162cda02db811f5847f70e3c0329ab216a3e95d78dbd43c0c",
+      "teacher_image_forwards": 1809,
+      "protected_replay_forwards": 12,
+      "scope": "Checks every stored class score,all groups and interpolation brackets; no claim that synthetic paths represent natural images."
+    },
+    "independent_numpy_source": "import hashlib\nimport json\nfrom pathlib import Path\nimport numpy as np\n\nroot = Path('tmp/teacher_transitions_result')\nsha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()\nassert sha(root/'result.json') == 'c7ed3e1504fafb2e103d494fa12dafbafae6676b8d4b59727015809c4337d41d'\nassert sha(root/'scores.npz') == 'ceac6edfa6c3a409529280b3a7d61b01f19e67e11a5814fd98c8fdee7e73f6ab'\nmeta = json.loads((root/'result.json').read_text())\na = np.load(root/'scores.npz')\nmax_error = 0.\nchecks = []\nfor row in meta['rows']:\n    task,C = row['task'],row['classes']\n    teacher = a[task+'_teacher']\n    assert teacher.shape == (C*19,C)\n    np.testing.assert_array_equal(teacher[:C].argmax(1),np.arange(C))\n    np.testing.assert_array_equal(teacher[17*C:18*C].argmax(1),np.arange(C))\n    assert np.all(teacher[18*C:19*C].argmax(1) != np.arange(C))\n    brackets = a[task+'_brackets']\n    np.testing.assert_array_equal(brackets[1]-brackets[0],np.full(C,1/256))\n    assert np.all((brackets>=0)&(brackets<=1))\n    np.testing.assert_array_equal(a[task+'_alpha'][:,0],np.linspace(0,1,17))\n    masks = dict(endpoints=np.r_[np.arange(C),np.arange(16*C,17*C)],\n                 interior=np.arange(C,16*C),left_bracket=np.arange(17*C,18*C),\n                 right_bracket=np.arange(18*C,19*C))\n    softmax = lambda s: np.exp(s-s.max(1,keepdims=True))/np.exp(s-s.max(1,keepdims=True)).sum(1,keepdims=True)\n    for mode,groups in row['metrics'].items():\n        p = a[task+'_'+mode]\n        for name,m in groups.items():\n            idx = masks[name]\n            assert len(idx)==m['n']\n            assert int(np.sum(p[idx].argmax(1)==teacher[idx].argmax(1)))==m['same']\n            tv = float(np.abs(softmax(p[idx])-softmax(teacher[idx])).sum(1).mean()/2)\n            delta = p[idx]-teacher[idx]\n            centered = float(np.linalg.norm(delta-delta.mean(1,keepdims=True),axis=1).mean())\n            max_error = max(max_error,abs(tv-m['mean_probability_TV']),abs(centered-m['mean_centered_score_error']))\n    replay = np.max(np.abs(a[task+'_replay']-a[task+'_joint'][a[task+'_selected']]))\n    original = np.max(np.abs(a[task+'_original']-teacher))\n    assert abs(replay-row['protected_replay_max_error'])<1e-12 and replay<1e-4\n    assert abs(original-row['original_tail_max_error'])<1e-12 and original<1e-4\n    assert row['original_image_forwards']==C*27 and row['protected_replay_forwards']==4\n    path_classes = [len(np.unique(teacher[:17*C].reshape(17,C,C)[:,i].argmax(1))) for i in range(C)]\n    checks.append(dict(task=task,n=C*19,mode_groups=16,teacher_brackets_verified=C,\n                       paths_visiting_more_than_two_classes=int(np.sum(np.array(path_classes)>2)),\n                       maximum_tail_or_full_replay_error=float(max(original,replay))))\nassert max_error<1e-12\nresult = dict(status='passed_independent_numpy_recount',rows=checks,\n    maximum_metric_error=max_error,new_image_forwards=0,raw_result_sha256=sha(root/'result.json'),\n    raw_scores_sha256=sha(root/'scores.npz'),source_sha256=sha(Path(__file__)),\n    teacher_image_forwards=sum(r['original_image_forwards'] for r in meta['rows']),\n    protected_replay_forwards=12,\n    scope='Checks every stored class score,all groups and interpolation brackets; no claim that synthetic paths represent natural images.')\n(root/'numpy_validation.json').write_text(json.dumps(result,indent=2)+'\\n',encoding='utf-8',newline='\\n')\nprint(json.dumps(result,indent=2))\n",
+    "interpretation": "All synthetic class-confident endpoints retained; joint A/B changes differ on14/150,7/150,46/705interior points. Very close teacher bracket agreement is7/20,9/20,47/94,which is sensitive to small boundary displacement and is not a universal pass criterion. DTD is not worse than MNIST in this diagnostic,so this is not a causal explanation of the larger natural DTD loss. Many paths visit third classes;all retained. No new weights or old-point repair."
   }
 }
