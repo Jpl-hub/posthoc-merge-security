@@ -90,5 +90,69 @@
     "official_code_read": "https://github.com/openai/CLIP/blob/main/clip/model.py",
     "scope": "Pre-LN residual architecture only, not transfer of the paper initialization theorem to frozen-task security. Actual executed forward/LN/QuickGELU source embedded in the radial condition record.",
     "ours": "A finite algebraic condition for the closed last-MLP class-equality objective; not a new defense, accuracy result, universal impossibility or prerequisite for all methods."
+  },
+  "data_free_input_review_20261026": {
+    "ZSKD": {
+      "paper": "https://proceedings.mlr.press/v97/nayak19a/nayak19a.pdf",
+      "repository": "vcl-iisc/ZSKD",
+      "commit": "54c855ff9d63aa35a833bd4b342e96ae6de80e0e",
+      "reviewed_sections": [
+        "3.2-3.4",
+        "4.1"
+      ],
+      "files": [
+        {
+          "repo": "vcl-iisc/ZSKD",
+          "path": "di_generation/dirichmat.py",
+          "sha256": "1edde62eed36a031fbd376ca8f4f2250efed9aae9951818db89ff4034b474c7b",
+          "blob": "553b327cb535b73fe6bdd9eae485545196d34268"
+        },
+        {
+          "repo": "vcl-iisc/ZSKD",
+          "path": "di_generation/cifar_10_impressions_alexnet_Dirch.py",
+          "sha256": "22b6f9275deb4ef8693adb455a7ed74d70071df6f26da295d1e0c07ec26d9699",
+          "blob": "cbff067c150eb7cf2b8ead15111d51682df2f3ee"
+        }
+      ],
+      "finding": "从训练后的分类器权重计算类别相似度，按Dirichlet软标签反演输入。与单纯one-hot自信输入不同；MNIST表为LeNet教师/学生和24000合成图，不是CLIP大幅参数修改的实验。",
+      "source_detail": "generateDirch先将给定每行重新min-max，再乘调用scale=1并加1e-4；main把1和0.1两种矩阵拼接，但第二次min-max抵消了预缩放。不能直接把此固定发布脚本当成论文两种beta的忠实执行。",
+      "our_head_difference": "原AGA heads.py由公开CLIP文本编码与类别模板产生分类头。它不是MNIST真实训练得到的分类器，其余弦相似度不能直接当成MNIST视觉训练统计；这是由构造源码得到的适配判断。",
+      "installed_or_executed": false
+    },
+    "CVLM": {
+      "paper": "https://proceedings.iclr.cc/paper_files/paper/2025/file/8c96b559340daa7bb29f56ccfbbc9c2f-Paper-Conference.pdf",
+      "repository": "WalkerWorldPeace/CVLM",
+      "commit": "f122cab9e8c1b1f07c6643d37db848a925164682",
+      "reviewed_sections": [
+        "3",
+        "4.1",
+        "AppendixE"
+      ],
+      "files": [
+        {
+          "repo": "WalkerWorldPeace/CVLM",
+          "path": "text_customization.py",
+          "sha256": "f294e301e88f877e7d997d3dac6eeb456999afad84802a3ff9fc4eccc5657506",
+          "blob": "474a9fb60586d23f3f2e96f98f3e6fcbbaeb7de7"
+        },
+        {
+          "repo": "WalkerWorldPeace/CVLM",
+          "path": "meta_distillation.py",
+          "sha256": "ea845ec7b8fd947cbd68553292a09c4f37006fbee18e146df8f358dc3dd93fc7",
+          "blob": "fd81f9aff427b37c6f84aa8bb0a4ca460880b3ec"
+        },
+        {
+          "repo": "WalkerWorldPeace/CVLM",
+          "path": "README.md",
+          "sha256": "816953d344c87da69b3afec0ad49035dc8d3988a2a21ea3351d3af8873b79326",
+          "blob": "2fa7239e7f7eda2b24edc7393f4d4715b5f4dfbf"
+        }
+      ],
+      "finding": "直接针对CLIP的无数据蒸馏，使用预训练VQGAN、文本风格与分类一致性，再训练学生。附录E明确生成器提供自然图先验；不能把其效果归为只优化CLIP像素或直接搬入当前仅目标/基座权重的构造权限。",
+      "source_detail": "text_customization.py固定CLIP和VQGAN，更新生成潜变量和风格嵌入；meta_distillation.py使用带预训练初始化的独立ResNet学生。forward_meta通过param.data临时更新再恢复，未保留普通可微内步的参数路径，不能仅凭create_graph=True就声称精确复现论文的二阶元梯度。",
+      "installed_or_executed": false
+    },
+    "archive_3090": "outputs/population_compensation_20261026/paper_source_review.json",
+    "archive_sha256": "a814486a2c66df50185e4dc5205df069f33fad5c48b842e0becc8591ebfef18a"
   }
 }

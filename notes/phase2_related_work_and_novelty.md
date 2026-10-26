@@ -1122,3 +1122,11 @@ PaRaMS原文§5／附录H分别评价保护前后独立模型、融合目标与�
 核读ICML2022《Random Gegenbauer Features for Scalable Kernel Methods》Lemma1及附录J.3，使用球面再生核恒等式计算声明均匀球上的QuickGELU矩。归一化Gegenbauer多项式、Gauss-Jacobi求积和条件岭解都是标准工具，不称新Defense2或官方代码复现。相关NeurIPS2022神经核官方代码固定faa78b67，其Gaussian/Hermite域与当前有界球不同。
 
 全部神经元的12层计算已完成：任务A方向作用在数值精度内保持，但完整球补偿误差仍.302至.881。固定均匀球不是自然图统计，B没有硬范数限制也不代表无正则全局最优。此结果把“有限样本没拟合好”和“这一固定大变换存在连续功能残差”分开；不成为所有防御的必要条件。下一机制应允许A与B的任务功能共同少变，而非把A任务作用强制为零后只追求B解。
+
+### Oct26：无数据蒸馏与当前参数补偿的区别
+
+[ZSKD，ICML2019](https://proceedings.mlr.press/v97/nayak19a/nayak19a.pdf)用训练分类器的类相似度和Dirichlet软目标生成输入；固定[54c855ff官方代码](https://github.com/vcl-iisc/ZSKD/tree/54c855ff9d63aa35a833bd4b342e96ae6de80e0e)的两次min-max会抵消输入相似度预缩放，不能按论文beta直接照搬。当前分类头来自CLIP文本，类别关系不是目标图像的训练统计。
+
+[CLIP无数据定制，ICLR2025](https://proceedings.iclr.cc/paper_files/paper/2025/file/8c96b559340daa7bb29f56ccfbbc9c2f-Paper-Conference.pdf)明确借助预训练VQGAN提供自然图先验；官方[f122cab9](https://github.com/WalkerWorldPeace/CVLM/tree/f122cab9e8c1b1f07c6643d37db848a925164682)还训练独立学生，不能将其输入与当前仅目标/基座的构造权限混为一谈。两者都未安装运行，不通过增加生成器掩盖核心补偿未完成。
+
+条件B随A求解是[标准变量投影](https://www.cs.umd.edu/users/oleary/software/varpro.pdf)§1–2已有方法，不构成本项目创新。当前可研究的是用完整非线性功能矩约束A/B共同变化，区别于有限方向保持和先固定大反射；尚无新的模型效果，不能写成算法已完成。
