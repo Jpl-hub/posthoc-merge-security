@@ -1,0 +1,406 @@
+{
+  "status": "closed_SVHN_native_accuracy_loss_3.19pp_no_TA_or_AGA",
+  "protocol": "results/data_free_compensation/task_transfer_protocol.json",
+  "preconstruction_local_commit": "022df029e72fbbdaf1a7caf2f6c3bdde3f1a0953",
+  "public_before_execution": false,
+  "geometry": {
+    "status": "finite_weight_condition_passed_not_a_defense",
+    "relative_A_distance": 1.0246225341653223,
+    "task_left_relative": 6.071310083405459e-10,
+    "task_right_relative": 1.2278903144137484e-09,
+    "max_corresponding_anchor_cosine": 3.881829882177454e-09,
+    "minimum_row_norm": 0.042510516941547394,
+    "author_reassignments_vs_original": 3072,
+    "rows": 3072,
+    "aligned_lastMLP_relative_changes": {
+      "A": 0.994010027708508,
+      "a": 0.561213353321512,
+      "B": 1.408406234317752
+    },
+    "finite64probe_max_output_error": 6.742650882074486e-11,
+    "relative_linear_residual": 1.043732254256021e-15,
+    "minimum_norm_KKT_identity_error": 0.0,
+    "independent_numpy_relative_error": 1.7800497594422385e-15,
+    "geometry_sha256": "e33e5728ffc453cc4987c997cf45ba848df724681f20e6267816f13e5d4be2f3",
+    "protocol_sha256": "f4849a90ee4569098effeeb871a95f3d2c7b7367322ac86e8461107d05c2d6af",
+    "source_sha256": "f048ee651d537969127c8e09bd728acda1f4fcca5bd00af10c5b5c645da514c5",
+    "seconds": 10.60813840595074,
+    "new_image_forwards": 0,
+    "real_images": 0,
+    "classhead_used": false,
+    "author_lastMLP_matching_calls": 1,
+    "new_full_AGA_calls": 0,
+    "new_defense_models": 0,
+    "limits": "Task SVD is not an image-function zero space. This changes nonlinear neuron responses outside its probes and is not a global function-preserving permutation/scaling. Native function and anti-merging effect require jointB/multilayer compensation and actual separate evaluation. No novelty or security guarantee from the standard linear algebra."
+  },
+  "clean_source": {
+    "stage": "clean_SVHN_synthetic_source",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+      "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "source_sha256": "921ca6ebe4701014f5166fe3a335fd525e1956b676c0bc0d977fe7c798aa648d",
+    "source_arrays_sha256": "b6c0aedbfbf45a3421d63deee926de0bccca5bec61b2ebbc94c4f53613aa8a4c",
+    "prototypes_sha256": "472d367020abf53b695ba7140b5e1189c9a4be9b852b02b6d34ad493be003d93",
+    "generated_image_forwards": 309600,
+    "pixel_optimizer_batch_steps": 2560,
+    "seconds": 233.3238755837083,
+    "real_images": 0,
+    "expert_updates": 0,
+    "clean_requested": {
+      "native": 800,
+      "direct": 800,
+      "recovered": 800
+    }
+  },
+  "scope": "First fixed SVHN transfer,not a new effective defense. MNIST original scores unchanged. No repair or source/parameter retry.",
+  "compensation": {
+    "status": "sole_decision_margin_point_frozen_before_real_evaluation",
+    "point_sha256": "6e5018c45aa19e945b70eebdcd9666724c7eaaef29a425753b7798872bedb71c",
+    "metrics": {
+      "native": {
+        "teacher_class_retained": 800,
+        "predicted_class_counts": [
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80
+        ]
+      },
+      "direct": {
+        "teacher_class_retained": 80,
+        "predicted_class_counts": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "recovered": {
+        "teacher_class_retained": 80,
+        "predicted_class_counts": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "full_metrics": {
+      "native": {
+        "teacher_class_retained": 800,
+        "predicted_class_counts": [
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80
+        ]
+      },
+      "direct": {
+        "teacher_class_retained": 80,
+        "predicted_class_counts": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "recovered": {
+        "teacher_class_retained": 80,
+        "predicted_class_counts": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "decision_violations": {
+      "native": {
+        "inputs_below_any_requested_margin": 176,
+        "minimum_gap": 0.01316880527883768
+      },
+      "direct": {
+        "inputs_below_any_requested_margin": 424,
+        "minimum_gap": 0.13078263401985168
+      },
+      "recovered": {
+        "inputs_below_any_requested_margin": 1,
+        "minimum_gap": 0.2472255378961563
+      }
+    },
+    "max_final_group_loss": 0.0012249083956703544,
+    "B_relative": 0.4196097254753113,
+    "A_relative": 1.024622534165245,
+    "logical_D": 1.1072143691411682,
+    "source_full_vs_tail_error": 1.9073486328125e-05,
+    "gradient_check_error": 1.3877787807814457e-16,
+    "steps": 300,
+    "source_sha256": "a83c142d1581ba0c14b943ab4b32b28b14af66314fde190ac052a8e117c5e3c4",
+    "protocol_sha256": "529ef9a8bfaf4061c513ff03fa0a95824f4d404adcbf8d64dc75c3570715df5a",
+    "source_arrays_sha256": "0d1c13ed42fd6ea6fccf3b072f373e08c95255b71ea22d428e81c92c45202b91",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+      "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "source_cache_tail_rows": 722400,
+    "gradient_check_tail_rows": 7200,
+    "source_full_image_forwards": 2400,
+    "new_generated_inputs": 0,
+    "new_pixel_updates": 0,
+    "original_expert_training_updates": 0,
+    "new_full_AGA_calls": 0,
+    "new_matching_calls": 0,
+    "seconds": 15.959548715502024,
+    "limits": "Finitegenerateddomain andpublicbase surrogate;realhead/partner may retaininformation. Constanttop1 prevents the specificfixedclassinversefromcreatingvaryingclasses,but doesnotprove informationtheoreticunlearning or no adaptiveclassifierrecovery."
+  },
+  "frozen_utc": "2026-10-26T05:21:40.578201+00:00",
+  "source_archive": "results/data_free_compensation/task_transfer_protocol.json:sources",
+  "native": {
+    "rows": [
+      {
+        "n": 26032,
+        "changed": 1122,
+        "R": 550.8079434167573,
+        "stage": "full",
+        "before_correct": 25371,
+        "after_correct": 24540,
+        "strict_task_passed": false,
+        "accuracy_loss_pp": 3.1922249539028886,
+        "passed": false,
+        "raw_sha256": "54d1b357555a62f8d451ded11a1c1ed6073832a3ebc7db097e37ac4e35d700c2"
+      }
+    ],
+    "passed": false,
+    "image_forwards": 26032,
+    "baseline_new_forwards": 0,
+    "seconds": 24.735648334026337,
+    "paired": {
+      "n": 26032,
+      "correct": 24540,
+      "accuracy_percent": 94.26859250153657,
+      "changed_predictions": 1122,
+      "paired": {
+        "both_correct": 24500,
+        "lost": 871,
+        "gained": 40,
+        "both_wrong": 621,
+        "loss_pp": 3.1922249539028886,
+        "exact_mcnemar_p": 1.4956270560548898e-204
+      },
+      "mcnemar_log10_p": -203.82517668701325,
+      "paired_accuracy_delta_95ci_pp": [
+        -3.4161481435852834,
+        -2.9683017642204947
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1726,
+          "original_correct": 1708
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4888,
+          "original_correct": 5001
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3968,
+          "original_correct": 4076
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2400,
+          "original_correct": 2736
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2455,
+          "original_correct": 2492
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2197,
+          "original_correct": 2316
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1909,
+          "original_correct": 1924
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1923,
+          "original_correct": 1975
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1542,
+          "original_correct": 1601
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1532,
+          "original_correct": 1542
+        }
+      ]
+    }
+  },
+  "frozen_before_real_images_local_commit": "038c95a",
+  "TA_and_AGA_evaluated": false,
+  "independent_source": {
+    "status": "passed_read_only_NumPy_source_counts_margins_and_matrix_distances",
+    "source_sha256": "45ead31e63622b0987152c332884ed39e2c41f82cf86cfb535e354468f55cf6a",
+    "point_sha256": "6e5018c45aa19e945b70eebdcd9666724c7eaaef29a425753b7798872bedb71c",
+    "maximum_group_loss_error": 9.479744571792847e-10,
+    "source_rows": {
+      "native": {
+        "teacher_retained": 800,
+        "histogram": [
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80
+        ],
+        "inputs_below_any_requested_margin": 176,
+        "maximum_full_tail_score_error": 1.52587890625e-05
+      },
+      "direct": {
+        "teacher_retained": 80,
+        "histogram": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "inputs_below_any_requested_margin": 424,
+        "maximum_full_tail_score_error": 1.52587890625e-05
+      },
+      "recovered": {
+        "teacher_retained": 80,
+        "histogram": [
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "inputs_below_any_requested_margin": 1,
+        "maximum_full_tail_score_error": 1.9073486328125e-05
+      }
+    },
+    "logical_matrix_ratios": {
+      "model.visual.transformer.resblocks.11.mlp.c_fc.weight": 1.0246225341653235,
+      "model.visual.transformer.resblocks.11.mlp.c_proj.weight": 0.4196097438798645
+    },
+    "logical_D": 1.1072143761161588,
+    "new_model_forwards": 0,
+    "new_AGA": 0,
+    "new_real_images": 0
+  },
+  "native_validation": {
+    "status": "passed_raw_score_and_official_label_recount",
+    "rows": [
+      {
+        "stage": "full",
+        "n": 26032,
+        "R": 550.8079434167573
+      }
+    ],
+    "results_sha256": "5835f979ebeb68980857a62d2ab11315cbddf9f2396cb08e1362b8a101c62ed8",
+    "new_image_forwards": 0
+  },
+  "context_replay": {
+    "status": "passed",
+    "source_sha256": "a63379f509d8165c5b63aa412836e68eb5c10fd60058cb6da20769ca134b51fc",
+    "score_replays": 16,
+    "original_batch_size": 128,
+    "context_image_forwards": 1968,
+    "maximum_score_error": 0.0,
+    "tolerance": 0.0002,
+    "new_expert_updates": 0,
+    "new_AGA": 0
+  },
+  "cost": {
+    "geometry_seconds": 10.60813840595074,
+    "synthetic_source_seconds": 233.3238755837083,
+    "compensation_seconds": 15.959548715502024,
+    "native_seconds": 24.735648334026337,
+    "synthetic_full_image_forwards": 312000,
+    "real_evaluation_image_forwards": 26032,
+    "original_context_image_forwards": 1968,
+    "new_full_AGA_calls": 0,
+    "new_original_expert_updates": 0,
+    "new_defense_points": 1
+  },
+  "temporary_scripts_retired_after_archival": true,
+  "retired_temporary_source_lines": 389,
+  "raw_primary_host": "new4090:/root/autodl-tmp/posthoc-merge-security/outputs/decision_transfer_20261026",
+  "raw_secondary_copy": "3090 retains geometry,source,point,native raw files and independent NumPy result;new4090 completecopy exceptgeometry source available in protocol andgeometry results."
+}
