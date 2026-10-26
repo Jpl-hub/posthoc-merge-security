@@ -25,3 +25,16 @@ Without A SVD projectors & 99.68 & 9.80 & 9.80 & 9.80 \\
 Uniform layer inputs & 99.62 & 9.80 & 9.80 & 9.80 \\
 \bottomrule
 \end{tabular}
+
+% Fixed 64-noise probability-division calibration. No original expert or real data.
+% Each unprotected control receives the same correction independently.
+\begin{tabular}{llrrr}
+\toprule
+Task & Method & TA + calibration & AGA (target) + calibration & AGA (both) + calibration \\
+\midrule
+MNIST & Unprotected & 99.34 & 99.29 & 99.29 \\
+MNIST & Defense 2 & 89.21 & 56.34 & 56.28 \\
+SVHN & Unprotected & 92.32 & 91.34 & 91.59 \\
+SVHN & Defense 2 & 84.56 & 53.84 & 51.46 \\
+\bottomrule
+\end{tabular}

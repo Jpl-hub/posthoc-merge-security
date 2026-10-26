@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2 data-free core mechanism: meaningful numerical changes and cross-module compensation preserving standalone function after expert freezing.",
-  "status": "无数据数值A/B补偿已核实MNIST与SVHN：独立99.61/96.9806，TA与AGA两范围9.80/6.6994；各224融合上下文分数重放通过。DTD待固定配置验证。",
+  "status": "无数据数值A/B补偿在MNIST/SVHN保住独立任务并显著降低TA/AGA准确率；DTD独立保持失败。固定无数据输出校正可部分恢复，SVD单删项未证明贡献，不能称完整稳健Defense2。",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": ".5/.5comparison preserved,not a universal newparametercap;full history at97a3474.",
@@ -22,7 +22,7 @@
     "torch": "2.8.0+cu128",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_GPU": "RTX3090",
     "secondary_root": "/root/autodl-tmp/merge_security_20261009",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261026.sock",
@@ -81,16 +81,10 @@
     "byte_identical_duplicates_hardlinked": 2,
     "original_or_unique_release_weights_deleted": 0
   },
-  "updated_utc": "2026-10-26T08:54:07.170190+00:00",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "new4090",
-      "root": "outputs/native_ellipse_classification_DTD_20261026",
-      "stage": "fixed_same_algorithm_synthetic_source_and_parameter_fit"
-    }
-  ],
-  "next_action": "DTD唯一构造完成后先固定参数，再完整独立评价；符合事前准确率条件后才TA/AGA。A-only/B-only及去A-SVD对照均已完整核验，勿重跑。",
+  "updated_utc": "2026-10-26T09:46:03.976974+00:00",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "聚焦独立功能保持与融合后输入相关分类改变；先提出可证伪机制，不继续追固定类别偏向、改已关闭点或堆融合算法。保持现有两项有效结果和全部额外权限对照。",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -100,16 +94,17 @@
     "new_production_modules": 0,
     "new_frameworks": 0,
     "current_result_tables": "results/data_free_compensation/summary.md and row_table.tex",
-    "source_archive": "Exact exploratory code in population_compensation_result.json; temporary runtime copies removed after use.",
-    "unique_models_scores_failures_deleted": 0
+    "source_archive": "Permanent source_archive inside each raw-output folder; exact hashes in result JSON. No production modules or frameworks added.",
+    "unique_models_scores_failures_deleted": 0,
+    "retired_temporary_source_and_config_files": 21
   },
   "github_sync": {
-    "status": "connected; current science snapshot exactly read back",
+    "status": "Connection restored; publishing current verified batch",
     "remote_commit": "71643527e4403b4ff7485100f2f83b0ccd23265e",
     "local_snapshot": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "verified_files": 13,
     "receipt": "outputs/latest_github_sync_receipt.json",
-    "pending": "This current status update and subsequent component/DTD results."
+    "pending": "All changes since local8ca189d are prepared for publication; readback not yet done."
   },
   "latest_component_result": {
     "A_only_native_TA_AGAtarget_AGAboth": [
@@ -130,7 +125,35 @@
       9.8,
       9.8
     ],
-    "scope": "支持A/B补偿；不支持A的SVD约束必要性。任务谱输入仍存在。",
-    "record": "results/data_free_compensation/population_compensation_result.json"
+    "scope": "A/B直接删项支持联合补偿；A投影与任务谱输入各自单删项未显示准确率优势，未联合删除二者。",
+    "record": "results/data_free_compensation/population_compensation_result.json",
+    "uniform_layer_inputs": [
+      99.62,
+      9.8,
+      9.8,
+      9.8
+    ]
+  },
+  "latest_DTD_result": {
+    "original": 79.41489361702128,
+    "protected": 76.11702127659575,
+    "native_loss_pp": 3.297872340425528,
+    "TA_and_AGA_run": false,
+    "status": "closed_no_retuning",
+    "record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_DTD_closure"
+  },
+  "fixed_output_calibration": {
+    "attacker_access": "Own fused model,public classifier,64fixed randomnoise;no original target expert or real data",
+    "MNIST_TA_AGAtarget_AGAboth": [
+      89.21,
+      56.34,
+      56.279999999999994
+    ],
+    "SVHN_TA_AGAtarget_AGAboth": [
+      84.55746773202213,
+      53.84142593730793,
+      51.45974185617701
+    ],
+    "record": "results/data_free_compensation/readout_calibration_result.json:native_ellipse_extension_result"
   }
 }
