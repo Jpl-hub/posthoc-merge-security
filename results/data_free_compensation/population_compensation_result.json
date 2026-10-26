@@ -3557,5 +3557,75 @@
     "scope": "Fixedmatricesanddeclaredartificialinputballs only. No allA/naturalclassification/unknownpartnerguarantee. Oldpointnotrepaired;computedBdiscarded.",
     "source_sha256": "2699ea570a6bc197edb78b4addeeaef995c5244bae7c5aedd72cbbbb40ca7664",
     "source": "\"\"\"Read-only native-constrained conditional B feasibility, with no publication.\"\"\"\nimport importlib.util,json,time\nfrom pathlib import Path\nimport torch\nfrom _impl.io import digest\nfrom _impl.models import initialize,load_checkpoint\ninitialize();torch.set_default_dtype(torch.float64);start=time.perf_counter();device='cuda'\npath=Path('outputs/population_compensation_20261026/two_state_mapped_check/calculation.py');assert digest(path)=='e139b67d3a2c7665c0ae05f5ab401ce8a2fddac0616fcba4a7d49ff2e4f44c92';spec=importlib.util.spec_from_file_location('h',path);h=importlib.util.module_from_spec(spec);spec.loader.exec_module(h)\ns=load_checkpoint('MNIST/finetuned.pt').state_dict();base=load_checkpoint('zeroshot.pt').state_dict();k='model.visual.transformer.resblocks.0.';to=lambda x:x.double().cuda()\nA,A0,a,a0=[to(x) for x in [s[k+'mlp.c_fc.weight'],base[k+'mlp.c_fc.weight'],s[k+'mlp.c_fc.bias'],base[k+'mlp.c_fc.bias']]];gamma,gamma0,beta,beta0=[to(x) for x in [s[k+'ln_2.weight'],base[k+'ln_2.weight'],s[k+'ln_2.bias'],base[k+'ln_2.bias']]];R,R0=[torch.cat([to(x[k+'mlp.c_proj.weight']),to(x[k+'mlp.c_proj.bias'])[:,None]],1) for x in [s,base]]\nD=(A-A0)*gamma;D-=D.mean(1,keepdim=True);V=torch.linalg.svd(D,full_matrices=False).Vh[:32].T;V=torch.linalg.qr(V-V.mean(0),mode='reduced').Q;p=h.pack(A,A0,a,a0,gamma,gamma0,beta,beta0,R,R0,V);p['radius']=None;rows=h.prepare(p)\nrecord=Path('outputs/population_compensation_20261026/joint_fit/first_layer_fit.pt');assert digest(record)=='ea3c4db2733aabc502a9f81927d7c4116567c9b904419aa4d285f2d339289781';saved=torch.load(record,map_location='cpu',weights_only=False)\nW=A*gamma;W-=W.mean(1,keepdim=True);Wp=saved['A'].cuda()*gamma;Wp-=Wp.mean(1,keepdim=True);ridge=1e-8*sum(r['alpha']**2*r['K'].trace()/r['variance'] for r in rows)/(len(A)+1);eye=torch.eye(len(A)+1,device=device);results=[]\nfor name,Z in [('original_A',torch.zeros_like(A)),('frozen_native_functional_A',Wp-W)]:\n groups={m:[torch.zeros_like(eye),torch.zeros_like(R),R.new_zeros(())] for m in ['native','public']}\n for r in rows:\n  f=h.features(Z,p,r);K=h.math.augmented(f,f,r['dimension']);C=h.math.augmented(r['old'],f,r['dimension']);G,T,c=groups[r['mode']];alpha,offset,target=r['alpha'],r['offset'],r['target'];w=1/r['variance'];G+=w*alpha**2*K;T+=w*alpha*(target@C-offset@K);c+=w*(((offset@K)*offset).sum()+((target@r['K'])*target).sum()-2*((target@C)*offset).sum())\n GN,TN,cN=groups['native'];GP,TP,cP=groups['public'];GN=GN+ridge*eye;TN=TN+ridge*R;cN=cN+ridge*R.square().sum();GP=GP+ridge*eye;TP=TP+ridge*R;cP=cP+ridge*R.square().sum()\n loss=lambda X,G,T,c:float(((X@G)*X).sum()-2*(T*X).sum()+c)\n RN=torch.cholesky_solve(TN.T,torch.linalg.cholesky(GN)).T;minimum=loss(RN,GN,TN,cN);bound=minimum+1e-4\n def at(lam):\n  X=torch.cholesky_solve((TP+lam*TN).T,torch.linalg.cholesky(GP+lam*GN)).T\n  return X,loss(X,GN,TN,cN),loss(X,GP,TP,cP)\n lo,hi=0.,1.;X,native,public=at(0.);brackets=0\n if native>bound:\n  for _ in range(40):\n   X,native,public=at(hi);brackets+=1\n   if native<=bound:break\n   lo,hi=hi,hi*2\n  else:raise RuntimeError('Fixed dual bracket exhausted;no retry')\n  for _ in range(48):\n   mid=(lo+hi)/2;candidate,nv,pv=at(mid)\n   if nv>bound:lo=mid\n   else:hi=mid;X,native,public=candidate,nv,pv\n  multiplier=hi\n else:multiplier=0.\n assert native<=bound+1e-8,(native,bound)\n gap=multiplier*(bound-native);assert gap<1e-5*(1+abs(public)),gap\n result=dict(A=name,native_regularized_minimum=minimum,native_limit=bound,native_at_public_optimum=native,public_residual_at_native_optimum=loss(RN,GP,TP,cP),public_residual_at_constrained_optimum=public,dual_multiplier=multiplier,primal_dual_gap=gap,B_relative=float((X[:,:-1]-R[:,:-1]).norm()/R[:,:-1].norm()),bracket_solves=brackets,bisection_solves=48 if multiplier else 0)\n results.append(result);print(json.dumps(result),flush=True)\nout=Path('outputs/population_compensation_20261026/native_constrained_feasibility');out.mkdir(exist_ok=False);r=dict(results=results,seconds=time.perf_counter()-start,source=Path(__file__).read_text(),source_sha256=digest(__file__),saved_or_applied_B=0,new_images=0,new_AGA=0,new_models=0,scope='FixedA convexconditionalBonly;statedlatentpopulations andfixedridge/1e-4 excess native allowance. Not naturalaccuracy,not an allA/multilayer impossibilityclaim. No computedB saved or used torepairclosedpoints.')\n(out/'result.json').write_text(json.dumps(r,indent=2)+'\\n')\n"
+  },
+  "native_constrained_feasibility_result": {
+    "results": [
+      {
+        "A": "original_A",
+        "native_regularized_minimum": -4.440892098500626e-16,
+        "native_limit": 9.999999999955592e-05,
+        "native_at_public_optimum": 9.999999999932285e-05,
+        "public_residual_at_native_optimum": 7.9999999999999165,
+        "public_residual_at_constrained_optimum": 7.970534917888093,
+        "dual_multiplier": 147.17193522676916,
+        "primal_dual_gap": 3.4300304703931886e-14,
+        "B_relative": 2.487021202014013,
+        "bracket_solves": 9,
+        "bisection_solves": 48
+      },
+      {
+        "A": "frozen_native_functional_A",
+        "native_regularized_minimum": 0.0006291625308882942,
+        "native_limit": 0.0007291625308882943,
+        "native_at_public_optimum": 0.0007291625308880612,
+        "public_residual_at_native_optimum": 8.080101997251347,
+        "public_residual_at_constrained_optimum": 8.012561454228663,
+        "dual_multiplier": 336.1919874639989,
+        "primal_dual_gap": 7.836751788384772e-14,
+        "B_relative": 0.8152567642486206,
+        "bracket_solves": 10,
+        "bisection_solves": 48
+      }
+    ],
+    "seconds": 11.48010540381074,
+    "source_sha256": "2699ea570a6bc197edb78b4addeeaef995c5244bae7c5aedd72cbbbb40ca7664",
+    "saved_or_applied_B": 0,
+    "new_images": 0,
+    "new_AGA": 0,
+    "new_models": 0,
+    "scope": "FixedA convexconditionalBonly;statedlatentpopulations andfixedridge/1e-4 excess native allowance. Not naturalaccuracy,not an allA/multilayer impossibilityclaim. No computedB saved or used torepairclosedpoints."
+  },
+  "two_state_native_validation": {
+    "status": "passed_raw_score_and_official_label_recount",
+    "rows": [
+      {
+        "stage": "full",
+        "n": 10000,
+        "R": 21.263870475272185
+      }
+    ],
+    "results_sha256": "ff3d61a4c1904022ec8e769044739ab836c9fe39b147cf412452763f58b0cae4",
+    "new_image_forwards": 0
+  },
+  "two_state_context_replay": {
+    "status": "passed",
+    "source_sha256": "fb3f775aad7589a8b1da603eef967127f9841cb585f4e24d368eb70bf2098969",
+    "score_replays": 16,
+    "original_batch_size": 128,
+    "context_image_forwards": 1936,
+    "maximum_score_error": 0.0,
+    "tolerance": 0.0002,
+    "new_expert_updates": 0,
+    "new_AGA": 0
+  },
+  "constrained_gradient_definition": {
+    "status": "before_execution",
+    "question": "WithonenativelimitfixedacrossA,does theKKT-envelope gradientofbestfeasiblepublicfunctionobjective agreewithfinite differences?",
+    "formula": "J(A)=min_R LP(R,A)+rho||R-Rorig||^2 subject LN(R,A)+rho||R-Rorig||^2<=tau. Wherefeasible,uniqueR andSlateractivecase imply dJ/dA=partialA LP+lambda*partialA LN;ridge has noexplicitAdependency. Do not differentiatethroughselectedR orredefine tau(A)eachtrial.",
+    "reference": "https://web.stanford.edu/class/ee364a/lectures/duality.pdf (standardduality,KKTandsensitivity;notnovelty)",
+    "case": "One8neuron6input3outputCPUexample only;fixedseed2026102623,radius.5,taskrank2. tau=minnative atfixedinitialZ+1e-4 heldconstantthroughbothFDpoints;1e-6directionstep. No CLIPsourceupdate/model/images.",
+    "scope": "A mathematicalsolver checkbeforeanynewconstrainedconstruct. No newdefenseclaim or classification/unknownpartnerguarantee.",
+    "source_sha256": "fedc19ef16fffb300366f3160cd5354ecee7b361bdabf5049548a06720bfe6b5",
+    "source": "\"\"\"CPU toy check of a fixed-native-limit conditional functional gradient.\"\"\"\nimport importlib.util,json,time\nfrom pathlib import Path\nimport torch\nfrom _impl.io import digest\nfrom _impl.models import initialize\ninitialize();torch.set_default_dtype(torch.float64);start=time.perf_counter()\nhelper=Path('outputs/population_compensation_20261026/two_state_mapped_check/calculation.py');assert digest(helper)=='e139b67d3a2c7665c0ae05f5ab401ce8a2fddac0616fcba4a7d49ff2e4f44c92';spec=importlib.util.spec_from_file_location('h',helper);h=importlib.util.module_from_spec(spec);spec.loader.exec_module(h)\ng=torch.Generator().manual_seed(2026102623);rand=lambda *n:torch.randn(*n,generator=g)\nA=.2*rand(8,6);A0=A+.03*rand(8,6);gamma=1+.1*rand(6);gamma0=1+.1*rand(6);beta=.1*rand(6);beta0=.1*rand(6);R=.2*rand(3,9);R0=R+.03*rand(3,9);V=rand(6,2);V=torch.linalg.qr(V-V.mean(0),mode='reduced').Q;p=h.pack(A,A0,.1*rand(8),.1*rand(8),gamma,gamma0,beta,beta0,R,R0,V);rows=h.prepare(p)\nridge=1e-8*sum(r['alpha']**2*r['K'].trace()/r['variance'] for r in rows)/9;eye=torch.eye(9)\ndef quads(Z):\n q={m:[torch.zeros(9,9),torch.zeros(3,9),torch.zeros(())] for m in ['native','public']}\n for r in rows:\n  f=h.features(Z,p,r);K=h.math.augmented(f,f,r['dimension']);C=h.math.augmented(r['old'],f,r['dimension']);G,T,c=q[r['mode']];alpha,offset,target=r['alpha'],r['offset'],r['target'];w=1/r['variance'];G+=w*alpha**2*K;T+=w*alpha*(target@C-offset@K);c+=w*(((offset@K)*offset).sum()+((target@r['K'])*target).sum()-2*((target@C)*offset).sum())\n for G,T,c in q.values():G+=ridge*eye;T+=ridge*R;c+=ridge*R.square().sum()\n return q\nloss=lambda X,q:((X@q[0])*X).sum()-2*(q[1]*X).sum()+q[2]\ndef optimal(Z,tau=None):\n q=quads(Z);GN,TN,_=q['native'];GP,TP,_=q['public'];RN=torch.cholesky_solve(TN.T,torch.linalg.cholesky(GN)).T;minimum=float(loss(RN,q['native']))\n if tau is None:return minimum\n assert minimum<tau,(minimum,tau)\n def at(lam):\n  X=torch.cholesky_solve((TP+lam*TN).T,torch.linalg.cholesky(GP+lam*GN)).T\n  return X,float(loss(X,q['native'])),float(loss(X,q['public']))\n lo,hi=0.,1.;X,nv,pv=at(0.)\n if nv>tau:\n  for _ in range(40):\n   X,nv,pv=at(hi)\n   if nv<=tau:break\n   lo,hi=hi,hi*2\n  else:raise RuntimeError('Dual bracket failed')\n  for _ in range(48):\n   mid=(lo+hi)/2;Y,n,pub=at(mid)\n   if n>tau:lo=mid\n   else:hi=mid;X,nv,pv=Y,n,pub\n  lam=hi\n else:lam=0.\n return X,lam,nv,pv\nZ=rand(8,6);Z-=Z.mean(1,keepdim=True);Z*=.5*p['Wnorm']/Z.norm();tau=optimal(Z)+1e-4\nX,lam,nv,pv=optimal(Z,tau);weighted=[r|{'weight':lam if r['mode']=='native' else 1} for r in rows];grad=h.gradient(Z,p,weighted,X)\ndirection=rand(8,6);direction-=direction.mean(1,keepdim=True);direction*=Z.norm()/direction.norm();step=1e-6\nfd=(optimal(Z+step*direction,tau)[3]-optimal(Z-step*direction,tau)[3])/(2*step);ad=float((grad*direction).sum());error=abs(fd-ad)/(1+abs(fd));assert error<1e-4,(fd,ad,error)\nresult=dict(status='passed',native_limit_fixed_for_all_differences=tau,native_at_optimum=nv,public_objective=pv,dual_multiplier=lam,primal_dual_gap=lam*(tau-nv),envelope_directional_derivative=ad,finite_difference=fd,relative_error=error,seconds=time.perf_counter()-start,source=Path(__file__).read_text(),source_sha256=digest(__file__),new_images=0,new_models=0,optimizer_steps=0,new_AGA=0,scope='Independent8neuronCPU mathematicalexample;not trainedCLIPparametersorclassificationproof. Fixedtau isessential;not recomputedfromtrialA.')\nout=Path('outputs/population_compensation_20261026/constrained_gradient_check');out.mkdir(exist_ok=False);(out/'result.json').write_text(json.dumps(result,indent=2)+'\\n');print(json.dumps({k:v for k,v in result.items() if k!='source'}),flush=True)\n"
   }
 }
