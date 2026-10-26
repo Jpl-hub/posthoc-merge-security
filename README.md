@@ -6,14 +6,22 @@
 
 防御一和防御二的当前构造要求均为Data-Free。防御一已改为只由权重确定噪声方向和幅度，MNIST独立99.69%，融合及AGA后均为9.80%；构造没有使用真实或合成图片。[结果与方法](results/phase3/bias_weight_only/summary.md)。历史数据辅助结果单列保留。
 
-| 防御二：全网络通道置换 | MNIST | DTD | SVHN |
+当前数值防御二修改最后一个MLP的A、B及输出偏置。A在所选任务方向的补空间改变，B补偿独立模型输出；构造只使用冻结权重、固定分类头和合成输入。固定TA系数为0.5，完整测试准确率如下：
+
+| 保护任务 | 原模型独立 | 防御二独立 | TA融合 | AGA仅目标 | AGA双方 |
+|---|---:|---:|---:|---:|---:|
+| MNIST | 99.69% | 99.61% | 9.80% | 9.80% | 9.80% |
+| SVHN | 97.46% | 96.98% | 6.70% | 6.70% | 6.70% |
+| DTD | 79.41% | 76.12% | 未运行 | 未运行 | 未运行 |
+
+MNIST和SVHN满足事前独立准确率下降不超过0.5个百分点的条件，DTD未通过。A/B删项对照支持联合补偿，但两项SVD单删项尚未显示准确率收益。当前A由最小范数行正交条件确定，并未求解参数距离最大化。另列的无数据输出校正能部分恢复分类，原AGA结果与该额外处理分别报告。[方法、对照与完整结果](results/data_free_compensation/summary.md) · [核心方法审查](notes/phase2_coupling.md#oct26核心方法审查)。
+
+| 通道置换对照 | MNIST | DTD | SVHN |
 |---|---:|---:|---:|
 | 单独使用 | 99.69% | 79.41% | 97.46% |
 | AGA 仅处理保护专家后，TA 融合 | 9.80% | 2.39% | 6.45% |
 
 该对照使用任务 SVD 选择共同通道顺序；三份冻结发布保持完整独立预测。知道变换家族后的公开匹配能够恢复，针对性恢复与原版 AGA 分列。[方法](results/task_directed_pairing/method.md) · [完整结果与恢复](results/task_directed_pairing/summary.md) · [论文表格](results/paper_tables/README.md)。防御一及完整 PaRaMS 对照继续保留。
-
-当前Data-Free数值构造仍未保住任务：最近一个完整MNIST结果为9.14%，原模型99.69%，未继续融合或AGA。最新构造联合补偿完整合成输入和SVD局部任务响应，源64/64预测保持，真实分类仍失败。已有有效结果及失败证据保留，结束的临时源码退出活动目录。[防御二研究记录](results/data_free_compensation/summary.md)。
 
 ## 代码结构
 
@@ -61,7 +69,7 @@ data/dtd/...
 data/{train,test}_32x32.mat
 ```
 
-模型清单及 SHA：`configs/checkpoints.json`。历史原始分数、唯一发布权重和失败记录保存在3090。已归档的诊断文件采用无损压缩，路径和还原方法见工程说明。
+模型清单及 SHA：`configs/checkpoints.json`。当前数值实验的原始分数、发布权重及源码保存在4090，3090保留历史模型和记录；旧离线4090的唯一记录尚未全部迁回。具体机器和路径以`research_state.json`及各批结果索引为准。已归档的诊断文件采用无损压缩，路径和还原方法见工程说明。
 
 ## 常用入口
 
@@ -84,13 +92,15 @@ python -m experiment.main_table --verify outputs/refactored/main/full/00_MNIST_S
 
 `configs/evaluate.json` 列出六个保护方向；每组同时报告目标与伙伴，原版 AGA 仅保护专家／全部专家分别列出。它们是**新入口的复现命令**，不是声称本次又跑了一遍这些实验。已完成结果无需重复运行。
 
-防御二构造复用已冻结的任务基，不读图像或伙伴：
+通道置换对照复用已冻结的任务基，不读图像或伙伴：
 
 ```bash
 python -m experiment.construct --method task-directed --target MNIST --output outputs/refactored/construction/MNIST
 ```
 
-`--variant distance_only` 是固定距离目标的消融，不作为另一个按成绩选择的发布。`--method basis` 从原专家减基座生成相同 rank32 任务基；`--method params` 运行完整 PaRaMS 默认配置；`--method bias` 使用原目标训练索引及其固定 SHA，具体参数见 `--help`。不自动抽取训练图或按成绩选参。
+`--variant distance_only` 是固定距离目标的消融，不作为另一个按成绩选择的发布。`--method basis` 从原专家减基座生成相同 rank32 任务基；`--method params` 运行完整 PaRaMS 默认配置；`--method bias` 仅由权重计算噪声方向和幅度，不读取训练图或合成图。具体参数见 `--help`。
+
+当前数值防御二尚未合入该构造入口。已执行源码、固定配置和模型指纹见`results/data_free_compensation/population_compensation_result.json`，服务器各批输出目录的`source_archive/`保留对应源码；不能把上述置换命令当作数值方法的复现入口。
 
 独立检查、八专家和恢复分别使用：
 

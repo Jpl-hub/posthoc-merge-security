@@ -2193,5 +2193,3269 @@
     "new_images": 0,
     "new_updates": 0
   },
-  "matched_corrected_sha256": "041f26e5d8b5d4685d16bf03bd6ca6deb6edf9ed8f319fd89c46daa5c2e487cd"
+  "matched_corrected_sha256": "041f26e5d8b5d4685d16bf03bd6ca6deb6edf9ed8f319fd89c46daa5c2e487cd",
+  "native_ellipse_extension_definition": {
+    "protocol": {
+      "status": "defined_before_execution",
+      "paper": "https://proceedings.mlr.press/v139/zhao21c.html",
+      "official_source": {
+        "repository": "tonyzhaozh/few-shot-learning",
+        "commit": "e04d8643be91c2cce63f33e07760ff75d5aa3ad0",
+        "file": "run_classification.py",
+        "sha256": "60787d59863caebc1688e3333659accf759d6f0c615735d1901f1427724ec8fc",
+        "functions": [
+          "eval_accuracy",
+          "get_p_content_free"
+        ],
+        "raw_review_sha256": "89248b0cdce36b31050a8a5b94010db4f5451368a0c7f33c1603600433975bff"
+      },
+      "rule": "For each own fused model, p_cf=mean softmax(logits(noise)); predict argmax(logits(test)-log(p_cf)). This is the official diagonal probability division computed stably in log space. One fixed rule, no scale/temperature/mapping/source/seed selection.",
+      "adaptation": "Original paper uses content-free language strings; here exactly64 fixed unoptimized uniform-noise images are image-domain probes, not an official CLIP reproduction or a claim that noise represents the natural task.",
+      "input_seed": 2026102509,
+      "input_n": 64,
+      "input_definition": "CPU torch.rand(64,3,32,32), uniform[0,1],bilinear224 align_cornersFalse,originalCLIPnormalization,batches8,no labels/no pixel optimization.",
+      "attacker_information": "Own already-created fused model, fixed public classifier/class IDs and synthetic noise. Fitting does not access original target expert, real training/test data, old clean teacher generated cache, protected-source data or labels. Research assembly uses pinned published/original-AGA weights and own partner exactly as the original fixed merging evaluation. The unprotected matched release is corrected by the same rule on itself.",
+      "scopes": [
+        "TA0.5",
+        "originalAGA target-only + TA0.5",
+        "originalAGA both + TA0.5"
+      ],
+      "freeze_order": "Save calibration vectors andSHA before opening any raw test score or label file. Then read frozen full MNIST/SVHN scores for evaluation only. No defense parameter changes, no choice of decoder from these results.",
+      "checks": "Independent NumPy stable softmax/mean/log-prior and predictions; official full labels/indices; classwise and paired changes; preserve original raw scores and same matched unprotected controls.",
+      "mechanism": "If logits(x)=task_signal(x)+constant_bias and content-free inputs identify that bias, subtracting logprior cancels it up to a class-independent scalar. Probe-dependent residuals and feature-normalization can violate that model; actual results required. Failure of one fixed correction does not prove erased class information.",
+      "public_before_execution": false,
+      "output": "outputs/native_ellipse_calibration_20261026",
+      "purpose": "The unchanged64-noise output calibration on the frozen MNIST828d andSVHNa203 numerical releases and own matched unprotected models. Both target and partner reports. No new defense or data/parameter choice.",
+      "cost": "12 models times64noise images=768 imageforwards. Identical digit classifier verified tensorwise. Existing full scores reused;0new natural images,0AGA,0defense/teacher updates.",
+      "source_prior_result": "results/data_free_compensation/readout_calibration_result.json",
+      "cases": [
+        {
+          "target": "MNIST",
+          "partner": "SVHN",
+          "name": "NativeConstraintClass_MNIST",
+          "release": {
+            "path": "outputs/native_ellipse_classification_20261026/point/point.pt",
+            "sha256": "828daa484b64f27f99df4cbb657366572c951f21585dbde6136bf7a8f4d72dc1"
+          },
+          "AGA_edits": {
+            "path": "outputs/native_ellipse_classification_20261026/AGA/edits.pt",
+            "sha256": "432ed158e0b60aa4912655f79e9c6c6d9ab9414c91ad445a77872cb63419c94f"
+          },
+          "AGA_references": {
+            "MNIST": {
+              "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+              "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+              "validation": "outputs/feature_noise/independent_validation.json"
+            },
+            "SVHN": {
+              "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+              "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+              "validation": "outputs/feature_noise/independent_validation.json"
+            }
+          },
+          "raw_scores": {
+            "path": "outputs/native_ellipse_classification_20261026/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "5f36e2ff939c328678bafedfc6a1aa1ae6bad7072dd5aa39651499237b1d7ed8"
+          }
+        },
+        {
+          "target": "SVHN",
+          "partner": "MNIST",
+          "name": "NativeConstraintClass_SVHN",
+          "release": {
+            "path": "outputs/native_ellipse_classification_SVHN_20261026/point/point.pt",
+            "sha256": "a203d6c989396243641ee44a7d865cc74cb3bcae9359c201089ffcd15dc6fb9c"
+          },
+          "AGA_edits": {
+            "path": "outputs/native_ellipse_classification_SVHN_20261026/AGA/edits.pt",
+            "sha256": "2c5e043d343dccc2d22b23fa2e7b0b9b4705238cfd8de053ae43ec5f2b50aadc"
+          },
+          "AGA_references": {
+            "MNIST": {
+              "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+              "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+              "validation": "outputs/feature_noise/independent_validation.json"
+            },
+            "SVHN": {
+              "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+              "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+              "validation": "outputs/feature_noise/independent_validation.json"
+            }
+          },
+          "raw_scores": {
+            "path": "outputs/native_ellipse_classification_SVHN_20261026/evaluation/full/00_SVHN_MNIST/artifacts/predictions.pt",
+            "sha256": "79aa6651634c987f9ce8eb55e68fd09409ae42a17dafbee62ff1d8aec5a6451b"
+          }
+        }
+      ]
+    },
+    "source": "\"\"\"Apply the already fixed output calibration to two frozen numerical releases.\"\"\"\nimport gc\nimport json\nimport sys\nimport time\nfrom pathlib import Path\n\nimport numpy as np\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.data import official_labels\nfrom _impl.io import digest, save_json\nfrom _impl.metrics import row_metrics\nfrom _impl.merge import merge\nfrom _impl.models import apply, checked_models, initialize, load_checkpoint\n\ninitialize()\nstart = time.perf_counter()\nprotocol = Path(sys.argv[1])\ncfg = json.loads(protocol.read_text())\nout = Path(cfg['output'])\nout.mkdir(exist_ok=False)\nsave_json(out / 'protocol.json', cfg)\nnoise = torch.rand(cfg['input_n'], 3, 32, 32,\n                   generator=torch.Generator().manual_seed(cfg['input_seed']))\ntorch.save(noise, out / 'noise.pt')\ncalibration, pins = {}, {}\nimage_forwards = 0\n\n# All calibration vectors are frozen before opening any saved benchmark scores.\nfor case in cfg['cases']:\n    task, peer = case['target'], case['partner']\n    base, target, head, pins[task] = checked_models(task)\n    partner = load_checkpoint(peer + '/finetuned.pt')\n    peer_head = load_checkpoint('head_' + peer + '.pt')\n    # Both digit tasks use exactly the same official classifier, not just 10 classes.\n    assert torch.equal(head.weight, peer_head.weight) and torch.equal(head.bias, peer_head.bias)\n    aligned = apply(target, case['AGA_references'][task], full=True)\n    partner_aligned = apply(partner, case['AGA_references'][peer], full=True)\n    normalizer = target.val_preprocess.transforms[-1]\n    mean = torch.tensor(normalizer.mean)[None, :, None, None]\n    std = torch.tensor(normalizer.std)[None, :, None, None]\n    inputs = (F.interpolate(noise, (224, 224), mode='bilinear', align_corners=False) - mean) / std\n    head.cuda().eval()\n    for name, own, restored in [\n        ('Unprotected', target, aligned),\n        (case['name'], apply(target, case['release']), apply(aligned, case['AGA_edits'])),\n    ]:\n        for scope, left, right in [('None', own, partner),\n                                   ('Protected expert', restored, partner),\n                                   ('All experts', restored, partner_aligned)]:\n            model = merge(base, left, right, .5).cuda().eval()\n            with torch.no_grad():\n                scores = torch.cat([head(model(x.cuda())).cpu() for x in inputs.split(8)]).double()\n            image_forwards += len(inputs)\n            assert torch.isfinite(scores).all()\n            prior = torch.logsumexp(F.log_softmax(scores, dim=1), dim=0) - np.log(len(scores))\n            calibration[task + '/' + name + '/' + scope] = dict(scores=scores, log_prior=prior)\n            del model\n            gc.collect()\n    del base, target, partner, aligned, partner_aligned, own, restored, left, right, head, peer_head\n    gc.collect()\ntorch.save(calibration, out / 'calibration.pt')\nfrozen_sha = digest(out / 'calibration.pt')\nprint('CALIBRATION_FROZEN', frozen_sha, flush=True)\n\nrows, corrected = [], {}\nmax_prior_error = 0.\nfor case in cfg['cases']:\n    assert digest(case['raw_scores']['path']) == case['raw_scores']['sha256']\n    raw = torch.load(case['raw_scores']['path'], map_location='cpu', weights_only=False)\n    for key, row in raw.items():\n        name, merger, scope, task = key.split('/')\n        if merger != 'TA':\n            continue\n        assert name in ['Unprotected', case['name']]\n        assert row['indices'] == list(range(len(row['target'])))\n        np.testing.assert_array_equal(row['target'].numpy(), official_labels(task))\n        fitted = calibration[case['target'] + '/' + name + '/' + scope]\n        scores = fitted['scores'].numpy()\n        exp = np.exp(scores - scores.max(1, keepdims=True))\n        prior_np = np.log((exp / exp.sum(1, keepdims=True)).mean(0))\n        max_prior_error = max(max_prior_error, float(np.max(np.abs(prior_np - fitted['log_prior'].numpy()))))\n        value = row['logits'].double() - fitted['log_prior']\n        prediction = (row['logits'].numpy().astype(np.float64) - prior_np).argmax(1)\n        np.testing.assert_array_equal(value.argmax(1).numpy(), prediction)\n        metric = row_metrics(value, row['target'], row['logits'], len(prior_np))\n        assert metric['correct'] == int((prediction == row['target'].numpy()).sum())\n        full_key = case['target'] + '/' + key\n        corrected[full_key] = dict(logits=value, target=row['target'], indices=row['indices'])\n        rows.append(dict(key=full_key, **metric))\n        print('CALIBRATED', full_key, metric['correct'], metric['n'], flush=True)\n\nmatched = []\nfor key, row in corrected.items():\n    task, name, merger, scope, dataset = key.split('/')\n    if name == 'Unprotected':\n        continue\n    control = corrected['/'.join([task, 'Unprotected', merger, scope, dataset])]\n    np.testing.assert_array_equal(row['target'], control['target'])\n    metric = row_metrics(row['logits'], row['target'], control['logits'], row['logits'].shape[1])\n    matched.append(dict(key=key, **metric))\nassert len(rows) == 24 and len(matched) == 12 and max_prior_error < 1e-10\nassert digest(out / 'calibration.pt') == frozen_sha\ntorch.save(corrected, out / 'corrected_scores.pt')\nsave_json(out / 'results.json', dict(\n    status='completed', rows=rows, matched_corrected_controls=matched,\n    protocol_sha256=digest(protocol), source_sha256=digest(__file__),\n    calibration_sha256=frozen_sha, corrected_scores_sha256=digest(out / 'corrected_scores.pt'),\n    noise_sha256=digest(out / 'noise.pt'), checkpoint_sha256=pins,\n    maximum_numpy_prior_error=max_prior_error, calibration_frozen_before_benchmark_read=True,\n    generated_image_forwards=image_forwards, new_real_image_forwards=0,\n    new_AGA_calls=0, new_defense_points=0, teacher_training_updates=0,\n    seconds=time.perf_counter()-start,\n))\n",
+    "source_sha256": "1abf2f3ae55fba7b2532236043c16fc5b9652ac3c869ca97985a3311311a567a",
+    "defined_utc": "2026-10-26T09:39:40.127883+00:00",
+    "status": "before_execution",
+    "public_before_execution": false
+  },
+  "native_ellipse_extension_result": {
+    "status": "completed",
+    "rows": [
+      {
+        "key": "MNIST/Unprotected/TA/None/MNIST",
+        "n": 10000,
+        "correct": 9934,
+        "accuracy_percent": 99.33999999999999,
+        "changed_predictions": 12,
+        "paired": {
+          "both_correct": 9930,
+          "lost": 7,
+          "gained": 4,
+          "both_wrong": 59,
+          "loss_pp": 0.03,
+          "exact_mcnemar_p": 0.548828125
+        },
+        "mcnemar_log10_p": -0.26056364107075064,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.09500643690962206,
+          0.035006436909622074
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1022,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 943,
+            "original_correct": 944
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1022,
+            "original_correct": 1018
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 998,
+            "original_correct": 999
+          }
+        ]
+      },
+      {
+        "key": "MNIST/Unprotected/TA/None/SVHN",
+        "n": 26032,
+        "correct": 24032,
+        "accuracy_percent": 92.31714812538414,
+        "changed_predictions": 224,
+        "paired": {
+          "both_correct": 23969,
+          "lost": 110,
+          "gained": 63,
+          "both_wrong": 1890,
+          "loss_pp": 0.18054701905347265,
+          "exact_mcnemar_p": 0.00043689152021394935
+        },
+        "mcnemar_log10_p": -3.359626384587754,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.2795557266316587,
+          -0.08153831147528659
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1708,
+            "original_correct": 1708
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4764,
+            "original_correct": 4800
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3957,
+            "original_correct": 3977
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2436,
+            "original_correct": 2457
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2293,
+            "original_correct": 2289
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2300,
+            "original_correct": 2305
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1700,
+            "original_correct": 1711
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1869,
+            "original_correct": 1826
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1590,
+            "original_correct": 1583
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1415,
+            "original_correct": 1423
+          }
+        ]
+      },
+      {
+        "key": "MNIST/Unprotected/TA/Protected expert/MNIST",
+        "n": 10000,
+        "correct": 9929,
+        "accuracy_percent": 99.29,
+        "changed_predictions": 10,
+        "paired": {
+          "both_correct": 9925,
+          "lost": 5,
+          "gained": 4,
+          "both_wrong": 66,
+          "loss_pp": 0.01,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.06880261353661811,
+          0.04880261353661811
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1021,
+            "original_correct": 1024
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 978
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 941,
+            "original_correct": 941
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1021,
+            "original_correct": 1017
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 998,
+            "original_correct": 999
+          }
+        ]
+      },
+      {
+        "key": "MNIST/Unprotected/TA/Protected expert/SVHN",
+        "n": 26032,
+        "correct": 24101,
+        "accuracy_percent": 92.58220651505839,
+        "changed_predictions": 235,
+        "paired": {
+          "both_correct": 24035,
+          "lost": 118,
+          "gained": 66,
+          "both_wrong": 1813,
+          "loss_pp": 0.1997541487400123,
+          "exact_mcnemar_p": 0.00015508545345345207
+        },
+        "mcnemar_log10_p": -3.8094289357851894,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.301858245981646,
+          -0.0976500514983786
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1711,
+            "original_correct": 1711
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4791,
+            "original_correct": 4829
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3972,
+            "original_correct": 3990
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2426,
+            "original_correct": 2452
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2298,
+            "original_correct": 2293
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2306,
+            "original_correct": 2309
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1702,
+            "original_correct": 1713
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1881,
+            "original_correct": 1836
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1595,
+            "original_correct": 1589
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1419,
+            "original_correct": 1431
+          }
+        ]
+      },
+      {
+        "key": "MNIST/Unprotected/TA/All experts/MNIST",
+        "n": 10000,
+        "correct": 9929,
+        "accuracy_percent": 99.29,
+        "changed_predictions": 12,
+        "paired": {
+          "both_correct": 9925,
+          "lost": 7,
+          "gained": 4,
+          "both_wrong": 64,
+          "loss_pp": 0.03,
+          "exact_mcnemar_p": 0.548828125
+        },
+        "mcnemar_log10_p": -0.26056364107075064,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.09500643690962425,
+          0.03500643690962427
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1021,
+            "original_correct": 1024
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 885
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 942,
+            "original_correct": 942
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1020,
+            "original_correct": 1017
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 971
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 998,
+            "original_correct": 999
+          }
+        ]
+      },
+      {
+        "key": "MNIST/Unprotected/TA/All experts/SVHN",
+        "n": 26032,
+        "correct": 23842,
+        "accuracy_percent": 91.58727719729563,
+        "changed_predictions": 276,
+        "paired": {
+          "both_correct": 23761,
+          "lost": 129,
+          "gained": 81,
+          "both_wrong": 2061,
+          "loss_pp": 0.18438844499078058,
+          "exact_mcnemar_p": 0.0011307965119772547
+        },
+        "mcnemar_log10_p": -2.946615539792787,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.29347594445089753,
+          -0.07530094553066366
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1700,
+            "original_correct": 1700
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4766,
+            "original_correct": 4797
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3945,
+            "original_correct": 3972
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2350,
+            "original_correct": 2374
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2266,
+            "original_correct": 2260
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2295,
+            "original_correct": 2300
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1664,
+            "original_correct": 1677
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1863,
+            "original_correct": 1806
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1593,
+            "original_correct": 1590
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1400,
+            "original_correct": 1414
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/None/MNIST",
+        "n": 10000,
+        "correct": 8921,
+        "accuracy_percent": 89.21,
+        "changed_predictions": 10000,
+        "paired": {
+          "both_correct": 0,
+          "lost": 980,
+          "gained": 8921,
+          "both_wrong": 99,
+          "loss_pp": -79.41,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -1593.840900532685,
+        "paired_accuracy_delta_95ci_pp": [
+          78.23474970358225,
+          80.58525029641775
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 980
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1133,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1006,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 981,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 882,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 936,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1019,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 968,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 987,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/None/SVHN",
+        "n": 26032,
+        "correct": 22264,
+        "accuracy_percent": 85.52550706822373,
+        "changed_predictions": 26032,
+        "paired": {
+          "both_correct": 0,
+          "lost": 1744,
+          "gained": 22264,
+          "both_wrong": 2024,
+          "loss_pp": -78.82606023355869,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -4513.5033238228025,
+        "paired_accuracy_delta_95ci_pp": [
+          78.1596863637787,
+          79.49243410333868
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1744
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4976,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3639,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2476,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2308,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2273,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1666,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1905,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1605,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1416,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/Protected expert/MNIST",
+        "n": 10000,
+        "correct": 5634,
+        "accuracy_percent": 56.34,
+        "changed_predictions": 10000,
+        "paired": {
+          "both_correct": 0,
+          "lost": 980,
+          "gained": 5634,
+          "both_wrong": 3386,
+          "loss_pp": -46.54,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -787.4418164938157,
+        "paired_accuracy_delta_95ci_pp": [
+          45.23274123346127,
+          47.84725876653873
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 980
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1134,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 10,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 0,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 973,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 810,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 924,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1020,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 26,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 737,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/Protected expert/SVHN",
+        "n": 26032,
+        "correct": 14070,
+        "accuracy_percent": 54.04886293792256,
+        "changed_predictions": 26032,
+        "paired": {
+          "both_correct": 0,
+          "lost": 1744,
+          "gained": 14070,
+          "both_wrong": 10218,
+          "loss_pp": -47.34941610325753,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2378.23339415283,
+        "paired_accuracy_delta_95ci_pp": [
+          46.597321734124094,
+          48.10151047239096
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1744
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 5042,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 82,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 133,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2196,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 1685,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1652,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1891,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 132,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1257,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/All experts/MNIST",
+        "n": 10000,
+        "correct": 5628,
+        "accuracy_percent": 56.279999999999994,
+        "changed_predictions": 10000,
+        "paired": {
+          "both_correct": 0,
+          "lost": 980,
+          "gained": 5628,
+          "both_wrong": 3392,
+          "loss_pp": -46.48,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -786.0535946313609,
+        "paired_accuracy_delta_95ci_pp": [
+          45.17280277678002,
+          47.78719722321998
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 980
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1135,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 9,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 0,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 974,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 802,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 923,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1019,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 26,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 740,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/All experts/SVHN",
+        "n": 26032,
+        "correct": 13649,
+        "accuracy_percent": 52.43162261831592,
+        "changed_predictions": 26032,
+        "paired": {
+          "both_correct": 0,
+          "lost": 1744,
+          "gained": 13649,
+          "both_wrong": 10639,
+          "loss_pp": -45.73217578365089,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2273.16936225827,
+        "paired_accuracy_delta_95ci_pp": [
+          44.98117995732781,
+          46.48317160997397
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1744
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 5037,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 89,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 161,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2135,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 1475,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1560,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1862,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 135,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1195,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "SVHN/Unprotected/TA/None/SVHN",
+        "n": 26032,
+        "correct": 24032,
+        "accuracy_percent": 92.31714812538414,
+        "changed_predictions": 224,
+        "paired": {
+          "both_correct": 23969,
+          "lost": 110,
+          "gained": 63,
+          "both_wrong": 1890,
+          "loss_pp": 0.18054701905347265,
+          "exact_mcnemar_p": 0.00043689152021394935
+        },
+        "mcnemar_log10_p": -3.359626384587754,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.2795557266316587,
+          -0.08153831147528659
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1708,
+            "original_correct": 1708
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4764,
+            "original_correct": 4800
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3957,
+            "original_correct": 3977
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2436,
+            "original_correct": 2457
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2293,
+            "original_correct": 2289
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2300,
+            "original_correct": 2305
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1700,
+            "original_correct": 1711
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1869,
+            "original_correct": 1826
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1590,
+            "original_correct": 1583
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1415,
+            "original_correct": 1423
+          }
+        ]
+      },
+      {
+        "key": "SVHN/Unprotected/TA/None/MNIST",
+        "n": 10000,
+        "correct": 9934,
+        "accuracy_percent": 99.33999999999999,
+        "changed_predictions": 12,
+        "paired": {
+          "both_correct": 9930,
+          "lost": 7,
+          "gained": 4,
+          "both_wrong": 59,
+          "loss_pp": 0.03,
+          "exact_mcnemar_p": 0.548828125
+        },
+        "mcnemar_log10_p": -0.26056364107075064,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.09500643690962206,
+          0.035006436909622074
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1022,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 943,
+            "original_correct": 944
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1022,
+            "original_correct": 1018
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 998,
+            "original_correct": 999
+          }
+        ]
+      },
+      {
+        "key": "SVHN/Unprotected/TA/Protected expert/SVHN",
+        "n": 26032,
+        "correct": 23777,
+        "accuracy_percent": 91.33758451137062,
+        "changed_predictions": 265,
+        "paired": {
+          "both_correct": 23705,
+          "lost": 131,
+          "gained": 72,
+          "both_wrong": 2124,
+          "loss_pp": 0.22664413030116778,
+          "exact_mcnemar_p": 4.1741384823470154e-05
+        },
+        "mcnemar_log10_p": -4.3794331467603715,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.33388536616174347,
+          -0.1194028944405921
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1701,
+            "original_correct": 1702
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4737,
+            "original_correct": 4767
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3931,
+            "original_correct": 3961
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2360,
+            "original_correct": 2392
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2255,
+            "original_correct": 2249
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2294,
+            "original_correct": 2297
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1662,
+            "original_correct": 1676
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1850,
+            "original_correct": 1798
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1587,
+            "original_correct": 1584
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1400,
+            "original_correct": 1410
+          }
+        ]
+      },
+      {
+        "key": "SVHN/Unprotected/TA/Protected expert/MNIST",
+        "n": 10000,
+        "correct": 9934,
+        "accuracy_percent": 99.33999999999999,
+        "changed_predictions": 14,
+        "paired": {
+          "both_correct": 9930,
+          "lost": 9,
+          "gained": 4,
+          "both_wrong": 57,
+          "loss_pp": 0.05,
+          "exact_mcnemar_p": 0.266845703125
+        },
+        "mcnemar_log10_p": -0.573739786018072,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.12066554296044883,
+          0.02066554296044884
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1134
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1021,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 943,
+            "original_correct": 943
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1023,
+            "original_correct": 1019
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 971
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 998,
+            "original_correct": 999
+          }
+        ]
+      },
+      {
+        "key": "SVHN/Unprotected/TA/All experts/SVHN",
+        "n": 26032,
+        "correct": 23842,
+        "accuracy_percent": 91.58727719729563,
+        "changed_predictions": 276,
+        "paired": {
+          "both_correct": 23761,
+          "lost": 129,
+          "gained": 81,
+          "both_wrong": 2061,
+          "loss_pp": 0.18438844499078058,
+          "exact_mcnemar_p": 0.0011307965119772547
+        },
+        "mcnemar_log10_p": -2.946615539792787,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.29347594445089753,
+          -0.07530094553066366
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 1700,
+            "original_correct": 1700
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4766,
+            "original_correct": 4797
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3945,
+            "original_correct": 3972
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2350,
+            "original_correct": 2374
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2266,
+            "original_correct": 2260
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2295,
+            "original_correct": 2300
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1664,
+            "original_correct": 1677
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1863,
+            "original_correct": 1806
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1593,
+            "original_correct": 1590
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1400,
+            "original_correct": 1414
+          }
+        ]
+      },
+      {
+        "key": "SVHN/Unprotected/TA/All experts/MNIST",
+        "n": 10000,
+        "correct": 9929,
+        "accuracy_percent": 99.29,
+        "changed_predictions": 12,
+        "paired": {
+          "both_correct": 9925,
+          "lost": 7,
+          "gained": 4,
+          "both_wrong": 64,
+          "loss_pp": 0.03,
+          "exact_mcnemar_p": 0.548828125
+        },
+        "mcnemar_log10_p": -0.26056364107075064,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.09500643690962425,
+          0.03500643690962427
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 975,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1133
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1021,
+            "original_correct": 1024
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 885
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 942,
+            "original_correct": 942
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1020,
+            "original_correct": 1017
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 971
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 998,
+            "original_correct": 999
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/None/SVHN",
+        "n": 26032,
+        "correct": 22012,
+        "accuracy_percent": 84.55746773202213,
+        "changed_predictions": 26032,
+        "paired": {
+          "both_correct": 0,
+          "lost": 1744,
+          "gained": 22012,
+          "both_wrong": 2276,
+          "loss_pp": -77.8580208973571,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -4445.942187219748,
+        "paired_accuracy_delta_95ci_pp": [
+          77.18559834403699,
+          78.5304434506772
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1744
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4853,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3573,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2407,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2312,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2289,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1732,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1881,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1596,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1369,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/None/MNIST",
+        "n": 10000,
+        "correct": 8766,
+        "accuracy_percent": 87.66000000000001,
+        "changed_predictions": 10000,
+        "paired": {
+          "both_correct": 0,
+          "lost": 980,
+          "gained": 8766,
+          "both_wrong": 254,
+          "loss_pp": -77.86,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -1554.2546074185184,
+        "paired_accuracy_delta_95ci_pp": [
+          76.67032862661078,
+          79.0496713733892
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 980
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1130,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 860,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1008,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 981,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 883,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 944,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1003,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 968,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 989,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/Protected expert/SVHN",
+        "n": 26032,
+        "correct": 14016,
+        "accuracy_percent": 53.84142593730793,
+        "changed_predictions": 26032,
+        "paired": {
+          "both_correct": 0,
+          "lost": 1744,
+          "gained": 14016,
+          "both_wrong": 10272,
+          "loss_pp": -47.1419791026429,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2364.722792949647,
+        "paired_accuracy_delta_95ci_pp": [
+          46.38999685249777,
+          47.89396135278803
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1744
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 3101,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 671,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 36,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 1996,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2307,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1528,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1682,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1493,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1202,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/Protected expert/MNIST",
+        "n": 10000,
+        "correct": 6999,
+        "accuracy_percent": 69.99,
+        "changed_predictions": 10000,
+        "paired": {
+          "both_correct": 0,
+          "lost": 980,
+          "gained": 6999,
+          "both_wrong": 2021,
+          "loss_pp": -60.19,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -1112.5797715001047,
+        "paired_accuracy_delta_95ci_pp": [
+          58.89631097749388,
+          61.48368902250611
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 980
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1131,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 134,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 887,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 946,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 993,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 938,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 991,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/All experts/SVHN",
+        "n": 26032,
+        "correct": 13396,
+        "accuracy_percent": 51.45974185617701,
+        "changed_predictions": 26032,
+        "paired": {
+          "both_correct": 0,
+          "lost": 1744,
+          "gained": 13396,
+          "both_wrong": 10892,
+          "loss_pp": -44.760295021511986,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2210.336122167244,
+        "paired_accuracy_delta_95ci_pp": [
+          44.010207637129426,
+          45.51038240589455
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1744
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 2588,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 694,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 30,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 1961,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2302,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1497,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1676,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1476,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1172,
+            "original_correct": 0
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/All experts/MNIST",
+        "n": 10000,
+        "correct": 6980,
+        "accuracy_percent": 69.8,
+        "changed_predictions": 10000,
+        "paired": {
+          "both_correct": 0,
+          "lost": 980,
+          "gained": 6980,
+          "both_wrong": 2040,
+          "loss_pp": -60.0,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -1107.9426515613725,
+        "paired_accuracy_delta_95ci_pp": [
+          58.70574148234948,
+          61.29425851765051
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 980
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1129,
+            "original_correct": 0
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 160,
+            "original_correct": 0
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1,
+            "original_correct": 0
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 0
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 886,
+            "original_correct": 0
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 943,
+            "original_correct": 0
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 984,
+            "original_correct": 0
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 908,
+            "original_correct": 0
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 991,
+            "original_correct": 0
+          }
+        ]
+      }
+    ],
+    "matched_corrected_controls": [
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/None/MNIST",
+        "n": 10000,
+        "correct": 8921,
+        "accuracy_percent": 89.21,
+        "changed_predictions": 1049,
+        "paired": {
+          "both_correct": 8905,
+          "lost": 1029,
+          "gained": 16,
+          "both_wrong": 50,
+          "loss_pp": 10.13,
+          "exact_mcnemar_p": 4.64085987807957e-280
+        },
+        "mcnemar_log10_p": -279.33340154407756,
+        "paired_accuracy_delta_95ci_pp": [
+          -10.73171596115258,
+          -9.528284038847422
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1133,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1006,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1009,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 981,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 882,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 936,
+            "original_correct": 943
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1019,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 968,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 987,
+            "original_correct": 998
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/None/SVHN",
+        "n": 26032,
+        "correct": 22264,
+        "accuracy_percent": 85.52550706822373,
+        "changed_predictions": 3169,
+        "paired": {
+          "both_correct": 21750,
+          "lost": 2282,
+          "gained": 514,
+          "both_wrong": 1486,
+          "loss_pp": 6.791641057160418,
+          "exact_mcnemar_p": 2.6785778870331456e-264
+        },
+        "mcnemar_log10_p": -263.5720957207996,
+        "paired_accuracy_delta_95ci_pp": [
+          -7.181128757372737,
+          -6.402153356948098
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1708
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4976,
+            "original_correct": 4764
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3639,
+            "original_correct": 3957
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2476,
+            "original_correct": 2436
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2308,
+            "original_correct": 2293
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2273,
+            "original_correct": 2300
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1666,
+            "original_correct": 1700
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1905,
+            "original_correct": 1869
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1605,
+            "original_correct": 1590
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1416,
+            "original_correct": 1415
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/Protected expert/MNIST",
+        "n": 10000,
+        "correct": 5634,
+        "accuracy_percent": 56.34,
+        "changed_predictions": 4344,
+        "paired": {
+          "both_correct": 5622,
+          "lost": 4307,
+          "gained": 12,
+          "both_wrong": 59,
+          "loss_pp": 42.95,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -1264.908691142608,
+        "paired_accuracy_delta_95ci_pp": [
+          -43.92499804600774,
+          -41.97500195399226
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1134,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 10,
+            "original_correct": 1021
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 0,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 973,
+            "original_correct": 978
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 810,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 924,
+            "original_correct": 941
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1020,
+            "original_correct": 1021
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 26,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 737,
+            "original_correct": 998
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/Protected expert/SVHN",
+        "n": 26032,
+        "correct": 14070,
+        "accuracy_percent": 54.04886293792256,
+        "changed_predictions": 11800,
+        "paired": {
+          "both_correct": 13596,
+          "lost": 10505,
+          "gained": 474,
+          "both_wrong": 1457,
+          "loss_pp": 38.53334357713583,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2458.1604095257862,
+        "paired_accuracy_delta_95ci_pp": [
+          -39.16838970217148,
+          -37.89829745210018
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1711
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 5042,
+            "original_correct": 4791
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 82,
+            "original_correct": 3972
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 133,
+            "original_correct": 2426
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2196,
+            "original_correct": 2298
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 1685,
+            "original_correct": 2306
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1652,
+            "original_correct": 1702
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1891,
+            "original_correct": 1881
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 132,
+            "original_correct": 1595
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1257,
+            "original_correct": 1419
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/All experts/MNIST",
+        "n": 10000,
+        "correct": 5628,
+        "accuracy_percent": 56.279999999999994,
+        "changed_predictions": 4349,
+        "paired": {
+          "both_correct": 5617,
+          "lost": 4312,
+          "gained": 11,
+          "both_wrong": 60,
+          "loss_pp": 43.01,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -1268.663580447391,
+        "paired_accuracy_delta_95ci_pp": [
+          -43.98476994292413,
+          -42.035230057075864
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1135,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 9,
+            "original_correct": 1021
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 0,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 974,
+            "original_correct": 978
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 802,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 923,
+            "original_correct": 942
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1019,
+            "original_correct": 1020
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 26,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 740,
+            "original_correct": 998
+          }
+        ]
+      },
+      {
+        "key": "MNIST/NativeConstraintClass_MNIST/TA/All experts/SVHN",
+        "n": 26032,
+        "correct": 13649,
+        "accuracy_percent": 52.43162261831592,
+        "changed_predictions": 12135,
+        "paired": {
+          "both_correct": 13147,
+          "lost": 10695,
+          "gained": 502,
+          "both_wrong": 1688,
+          "loss_pp": 39.155654578979714,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2482.1008229503045,
+        "paired_accuracy_delta_95ci_pp": [
+          -39.79480033858997,
+          -38.51650881936946
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1700
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 5037,
+            "original_correct": 4766
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 89,
+            "original_correct": 3945
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 161,
+            "original_correct": 2350
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2135,
+            "original_correct": 2266
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 1475,
+            "original_correct": 2295
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1560,
+            "original_correct": 1664
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1862,
+            "original_correct": 1863
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 135,
+            "original_correct": 1593
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1195,
+            "original_correct": 1400
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/None/SVHN",
+        "n": 26032,
+        "correct": 22012,
+        "accuracy_percent": 84.55746773202213,
+        "changed_predictions": 3514,
+        "paired": {
+          "both_correct": 21445,
+          "lost": 2587,
+          "gained": 567,
+          "both_wrong": 1433,
+          "loss_pp": 7.759680393362016,
+          "exact_mcnemar_p": 2.8225699935824993e-306
+        },
+        "mcnemar_log10_p": -305.5493552797114,
+        "paired_accuracy_delta_95ci_pp": [
+          -8.17189054656924,
+          -7.347470240154791
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1708
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 4853,
+            "original_correct": 4764
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 3573,
+            "original_correct": 3957
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 2407,
+            "original_correct": 2436
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 2312,
+            "original_correct": 2293
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2289,
+            "original_correct": 2300
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1732,
+            "original_correct": 1700
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1881,
+            "original_correct": 1869
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1596,
+            "original_correct": 1590
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1369,
+            "original_correct": 1415
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/None/MNIST",
+        "n": 10000,
+        "correct": 8766,
+        "accuracy_percent": 87.66000000000001,
+        "changed_predictions": 1223,
+        "paired": {
+          "both_correct": 8744,
+          "lost": 1190,
+          "gained": 22,
+          "both_wrong": 44,
+          "loss_pp": 11.68,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -317.8362113406615,
+        "paired_accuracy_delta_95ci_pp": [
+          -12.32283373770937,
+          -11.03716626229063
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1130,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 860,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1008,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 981,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 883,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 944,
+            "original_correct": 943
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1003,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 968,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 989,
+            "original_correct": 998
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/Protected expert/SVHN",
+        "n": 26032,
+        "correct": 14016,
+        "accuracy_percent": 53.84142593730793,
+        "changed_predictions": 11425,
+        "paired": {
+          "both_correct": 13643,
+          "lost": 10134,
+          "gained": 373,
+          "both_wrong": 1882,
+          "loss_pp": 37.49615857406269,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2464.436038421231,
+        "paired_accuracy_delta_95ci_pp": [
+          -38.119185821077885,
+          -36.8731313270475
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1701
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 3101,
+            "original_correct": 4737
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 671,
+            "original_correct": 3931
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 36,
+            "original_correct": 2360
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 1996,
+            "original_correct": 2255
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2307,
+            "original_correct": 2294
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1528,
+            "original_correct": 1662
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1682,
+            "original_correct": 1850
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1493,
+            "original_correct": 1587
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1202,
+            "original_correct": 1400
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/Protected expert/MNIST",
+        "n": 10000,
+        "correct": 6999,
+        "accuracy_percent": 69.99,
+        "changed_predictions": 2998,
+        "paired": {
+          "both_correct": 6974,
+          "lost": 2960,
+          "gained": 25,
+          "both_wrong": 41,
+          "loss_pp": 29.35,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -836.630630860925,
+        "paired_accuracy_delta_95ci_pp": [
+          -30.253258058315524,
+          -28.446741941684472
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1131,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 134,
+            "original_correct": 1021
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 887,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 946,
+            "original_correct": 943
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 993,
+            "original_correct": 1023
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 938,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 991,
+            "original_correct": 998
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/All experts/SVHN",
+        "n": 26032,
+        "correct": 13396,
+        "accuracy_percent": 51.45974185617701,
+        "changed_predictions": 12054,
+        "paired": {
+          "both_correct": 13057,
+          "lost": 10785,
+          "gained": 339,
+          "both_wrong": 1851,
+          "loss_pp": 40.12753534111862,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2691.096216297602,
+        "paired_accuracy_delta_95ci_pp": [
+          -40.75443040760647,
+          -39.50064027463078
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 1744,
+            "correct": 0,
+            "original_correct": 1700
+          },
+          {
+            "class_id": 1,
+            "n": 5099,
+            "correct": 2588,
+            "original_correct": 4766
+          },
+          {
+            "class_id": 2,
+            "n": 4149,
+            "correct": 694,
+            "original_correct": 3945
+          },
+          {
+            "class_id": 3,
+            "n": 2882,
+            "correct": 30,
+            "original_correct": 2350
+          },
+          {
+            "class_id": 4,
+            "n": 2523,
+            "correct": 1961,
+            "original_correct": 2266
+          },
+          {
+            "class_id": 5,
+            "n": 2384,
+            "correct": 2302,
+            "original_correct": 2295
+          },
+          {
+            "class_id": 6,
+            "n": 1977,
+            "correct": 1497,
+            "original_correct": 1664
+          },
+          {
+            "class_id": 7,
+            "n": 2019,
+            "correct": 1676,
+            "original_correct": 1863
+          },
+          {
+            "class_id": 8,
+            "n": 1660,
+            "correct": 1476,
+            "original_correct": 1593
+          },
+          {
+            "class_id": 9,
+            "n": 1595,
+            "correct": 1172,
+            "original_correct": 1400
+          }
+        ]
+      },
+      {
+        "key": "SVHN/NativeConstraintClass_SVHN/TA/All experts/MNIST",
+        "n": 10000,
+        "correct": 6980,
+        "accuracy_percent": 69.8,
+        "changed_predictions": 3017,
+        "paired": {
+          "both_correct": 6953,
+          "lost": 2976,
+          "gained": 27,
+          "both_wrong": 44,
+          "loss_pp": 29.49,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -837.8819920148827,
+        "paired_accuracy_delta_95ci_pp": [
+          -30.39533188310466,
+          -28.58466811689534
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 975
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1129,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 160,
+            "original_correct": 1021
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1,
+            "original_correct": 1009
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 978
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 886,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 943,
+            "original_correct": 942
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 984,
+            "original_correct": 1020
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 908,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 991,
+            "original_correct": 998
+          }
+        ]
+      }
+    ],
+    "protocol_sha256": "a0c785cf564ca9c4cebc11f3dad841cd31ab48f6d8d6c164db0616dc129eb2da",
+    "source_sha256": "1abf2f3ae55fba7b2532236043c16fc5b9652ac3c869ca97985a3311311a567a",
+    "calibration_sha256": "ca5476a76fe91f3c6711e0881ec1f9a52b718ad2f42b96d07ad7748ac1add34a",
+    "corrected_scores_sha256": "e85abe4a5b7f1b0a54c4ac1518046c866cd501a94ce99d8d9f303dbbd2348f3a",
+    "noise_sha256": "40416dc3eb66da7edc46905d6fce698abd5045a0a34c52f4e674f6fa1f8560ee",
+    "checkpoint_sha256": {
+      "MNIST": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "SVHN": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+        "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      }
+    },
+    "maximum_numpy_prior_error": 3.552713678800501e-15,
+    "calibration_frozen_before_benchmark_read": true,
+    "generated_image_forwards": 768,
+    "new_real_image_forwards": 0,
+    "new_AGA_calls": 0,
+    "new_defense_points": 0,
+    "teacher_training_updates": 0,
+    "seconds": 26.751180417835712,
+    "independent_validation": {
+      "status": "passed",
+      "rows": [
+        {
+          "key": "MNIST/Unprotected/TA/None/MNIST",
+          "n": 10000,
+          "correct": 9934,
+          "changed": 12
+        },
+        {
+          "key": "MNIST/Unprotected/TA/None/SVHN",
+          "n": 26032,
+          "correct": 24032,
+          "changed": 224
+        },
+        {
+          "key": "MNIST/Unprotected/TA/Protected expert/MNIST",
+          "n": 10000,
+          "correct": 9929,
+          "changed": 10
+        },
+        {
+          "key": "MNIST/Unprotected/TA/Protected expert/SVHN",
+          "n": 26032,
+          "correct": 24101,
+          "changed": 235
+        },
+        {
+          "key": "MNIST/Unprotected/TA/All experts/MNIST",
+          "n": 10000,
+          "correct": 9929,
+          "changed": 12
+        },
+        {
+          "key": "MNIST/Unprotected/TA/All experts/SVHN",
+          "n": 26032,
+          "correct": 23842,
+          "changed": 276
+        },
+        {
+          "key": "MNIST/NativeConstraintClass_MNIST/TA/None/MNIST",
+          "n": 10000,
+          "correct": 8921,
+          "changed": 10000
+        },
+        {
+          "key": "MNIST/NativeConstraintClass_MNIST/TA/None/SVHN",
+          "n": 26032,
+          "correct": 22264,
+          "changed": 26032
+        },
+        {
+          "key": "MNIST/NativeConstraintClass_MNIST/TA/Protected expert/MNIST",
+          "n": 10000,
+          "correct": 5634,
+          "changed": 10000
+        },
+        {
+          "key": "MNIST/NativeConstraintClass_MNIST/TA/Protected expert/SVHN",
+          "n": 26032,
+          "correct": 14070,
+          "changed": 26032
+        },
+        {
+          "key": "MNIST/NativeConstraintClass_MNIST/TA/All experts/MNIST",
+          "n": 10000,
+          "correct": 5628,
+          "changed": 10000
+        },
+        {
+          "key": "MNIST/NativeConstraintClass_MNIST/TA/All experts/SVHN",
+          "n": 26032,
+          "correct": 13649,
+          "changed": 26032
+        },
+        {
+          "key": "SVHN/Unprotected/TA/None/SVHN",
+          "n": 26032,
+          "correct": 24032,
+          "changed": 224
+        },
+        {
+          "key": "SVHN/Unprotected/TA/None/MNIST",
+          "n": 10000,
+          "correct": 9934,
+          "changed": 12
+        },
+        {
+          "key": "SVHN/Unprotected/TA/Protected expert/SVHN",
+          "n": 26032,
+          "correct": 23777,
+          "changed": 265
+        },
+        {
+          "key": "SVHN/Unprotected/TA/Protected expert/MNIST",
+          "n": 10000,
+          "correct": 9934,
+          "changed": 14
+        },
+        {
+          "key": "SVHN/Unprotected/TA/All experts/SVHN",
+          "n": 26032,
+          "correct": 23842,
+          "changed": 276
+        },
+        {
+          "key": "SVHN/Unprotected/TA/All experts/MNIST",
+          "n": 10000,
+          "correct": 9929,
+          "changed": 12
+        },
+        {
+          "key": "SVHN/NativeConstraintClass_SVHN/TA/None/SVHN",
+          "n": 26032,
+          "correct": 22012,
+          "changed": 26032
+        },
+        {
+          "key": "SVHN/NativeConstraintClass_SVHN/TA/None/MNIST",
+          "n": 10000,
+          "correct": 8766,
+          "changed": 10000
+        },
+        {
+          "key": "SVHN/NativeConstraintClass_SVHN/TA/Protected expert/SVHN",
+          "n": 26032,
+          "correct": 14016,
+          "changed": 26032
+        },
+        {
+          "key": "SVHN/NativeConstraintClass_SVHN/TA/Protected expert/MNIST",
+          "n": 10000,
+          "correct": 6999,
+          "changed": 10000
+        },
+        {
+          "key": "SVHN/NativeConstraintClass_SVHN/TA/All experts/SVHN",
+          "n": 26032,
+          "correct": 13396,
+          "changed": 26032
+        },
+        {
+          "key": "SVHN/NativeConstraintClass_SVHN/TA/All experts/MNIST",
+          "n": 10000,
+          "correct": 6980,
+          "changed": 10000
+        }
+      ],
+      "matched_comparisons": 12,
+      "maximum_numpy_score_difference": 7.105427357601002e-15,
+      "official_indices_and_labels": true,
+      "paired_counts_intervals_exact_mcnemar": true,
+      "per_class": true,
+      "new_real_image_forwards": 0,
+      "new_model_calls": 0,
+      "calibration_sha256": "ca5476a76fe91f3c6711e0881ec1f9a52b718ad2f42b96d07ad7748ac1add34a",
+      "corrected_scores_sha256": "e85abe4a5b7f1b0a54c4ac1518046c866cd501a94ce99d8d9f303dbbd2348f3a"
+    },
+    "definition_local_commit": "6e9d471",
+    "public_before_execution": false,
+    "interpretation": "Fixed correction partially restores both target tasks without original target,real images,clean-teacher source or secretparameters. OriginalAGA-only rows remain valid. These observations do not establish knowledge removal or all-attacker robustness.",
+    "runtime_cleanup": {
+      "files": [
+        {
+          "source": "/tmp/posthoc_ellipse_calibration.py",
+          "archive": "outputs/native_ellipse_calibration_20261026/source_archive/posthoc_ellipse_calibration.py",
+          "sha256": "1abf2f3ae55fba7b2532236043c16fc5b9652ac3c869ca97985a3311311a567a",
+          "bytes": 5803
+        },
+        {
+          "source": "/tmp/posthoc_ellipse_calibration.json",
+          "archive": "outputs/native_ellipse_calibration_20261026/source_archive/posthoc_ellipse_calibration.json",
+          "sha256": "a0c785cf564ca9c4cebc11f3dad841cd31ab48f6d8d6c164db0616dc129eb2da",
+          "bytes": 5788
+        }
+      ],
+      "removed_temporary_files": 2,
+      "unique_models_scores_deleted": 0
+    }
+  }
 }

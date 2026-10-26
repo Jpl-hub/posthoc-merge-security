@@ -8,5 +8,33 @@ MNIST & Unprotected & 99.69 & 99.37 & 99.30 & 99.32 \\
 MNIST & Defense 2 & 99.61 & 9.80 & 9.80 & 9.80 \\
 SVHN & Unprotected & 97.46 & 92.50 & 91.56 & 91.77 \\
 SVHN & Defense 2 & 96.98 & 6.70 & 6.70 & 6.70 \\
+DTD & Unprotected & 79.41 & 69.31 & 68.40 & 68.78 \\
+DTD & Defense 2 & 76.12 & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+
+% Exact deletion controls from the frozen joint MNIST point, no refit.
+\begin{tabular}{lrrrr}
+\toprule
+Changes & Standalone & TA & AGA (target) & AGA (both) \\
+\midrule
+A only & 99.70 & 99.37 & 99.31 & 99.34 \\
+B and output bias only & 9.80 & 9.80 & 9.80 & 9.80 \\
+Joint A/B & 99.61 & 9.80 & 9.80 & 9.80 \\
+Without A SVD projectors & 99.68 & 9.80 & 9.80 & 9.80 \\
+Uniform layer inputs & 99.62 & 9.80 & 9.80 & 9.80 \\
+\bottomrule
+\end{tabular}
+
+% Fixed 64-noise probability-division calibration. No original expert or real data.
+% Each unprotected control receives the same correction independently.
+\begin{tabular}{llrrr}
+\toprule
+Task & Method & TA + calibration & AGA (target) + calibration & AGA (both) + calibration \\
+\midrule
+MNIST & Unprotected & 99.34 & 99.29 & 99.29 \\
+MNIST & Defense 2 & 89.21 & 56.34 & 56.28 \\
+SVHN & Unprotected & 92.32 & 91.34 & 91.59 \\
+SVHN & Defense 2 & 84.56 & 53.84 & 51.46 \\
 \bottomrule
 \end{tabular}
