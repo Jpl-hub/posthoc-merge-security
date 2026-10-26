@@ -1,6 +1,6 @@
 {
-  "status": "新双状态无数据A/B构造e70b：独立MNIST10.10%，停止融合/AGA，完整分数与16上下文重放通过。已核明原补偿在融合下仍抵消约98.8%；原生约束下B条件最优及固定约束外层梯度已核对，尚无对应新模型。",
-  "updated_utc": "2026-10-26T06:49:32.390855+00:00",
+  "status": "约束A/B唯一a31b已冻结，原生功能界全程固定；40步192.75秒，0图片。下一完整MNIST评价；尚无新准确率结论。",
+  "updated_utc": "2026-10-26T06:53:27.022142+00:00",
   "current_state": "research_state.json",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -14,22 +14,16 @@
     }
   ],
   "latest_core_trial": {
-    "point_sha256": "e70b71d379b9dfdb3e8a9fe9bfd9e127261523d3203e367e0a5ae82eb5381bda",
-    "closed": true,
-    "record": "results/data_free_compensation/population_compensation_result.json:two_state_construction_result",
-    "native_before_after": [
-      99.69,
-      10.1
-    ],
-    "parameter_distance": 72.34503113851801,
+    "point_sha256": "a31b050ecb3118f074f043a65ab3c93ab227ead81e4fb6c318b2b139c8a66e53",
+    "closed": false,
+    "record": "results/data_free_compensation/population_compensation_result.json:native_constrained_construction_result",
     "real_construction_images": 0,
+    "synthetic_construction_images": 0,
     "original_expert_updates": 0,
-    "seconds": 114.94904704391956,
-    "postprocess_LBFGS_iterations": 40,
-    "objective_evaluations": 43,
-    "TA_and_AGA_evaluated": false,
-    "context_score_replays": 16,
-    "context_maximum_error": 0.0
+    "seconds": 192.75455757975578,
+    "postprocess_A_steps": 40,
+    "parameter_distance": 2.2727646493178604,
+    "TA_and_AGA_evaluated": false
   },
   "next_action": "固定原生误差界下的唯一A/B约束构造：实参梯度误差3.25e-8已通过。tau全过程不变，冻结末点后完整独立评价；通过才TA/AGA。",
   "engineering_cleanup": {
