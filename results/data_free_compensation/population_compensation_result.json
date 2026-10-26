@@ -12987,5 +12987,61 @@
     "new_full_AGA_calls": 2,
     "new_real_evaluation_image_forwards": 277136,
     "conclusion": "A-only retains standalone and fails to protect; B-only damages standalone and fusion; joint A/B retains standalone while reducing fusion accuracy. This deletion test supports compensation, not SVD necessity or all-attacker robustness."
+  },
+  "native_ellipse_no_A_SVD_point": {
+    "status": "sole_native_ellipse_classification_frozen_before_images",
+    "point_sha256": "537a2f648a65147ae2e15a255c0e84bb8ca362d05c719ac66adffb4a2c5be5b7",
+    "source_sha256": "498848ac121288aa617ca0cca838f9a16807a82f24c81652ebaf5e47773162a6",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "source_counts": {
+      "native_teacher_retained": 800,
+      "native_n": 800,
+      "public_class0": {
+        "direct": 800,
+        "recovered": 800
+      }
+    },
+    "public_objective": -13.34066085493253,
+    "native_limit": 3.9324341376407537,
+    "native_minimum": 0.3182536053803524,
+    "native_final": 0.5134177919867167,
+    "native_final_FP32": 0.5134177920099496,
+    "native_groups": [
+      {
+        "population": "task_layer",
+        "n": 16384,
+        "variance": 79.14436889714108
+      },
+      {
+        "population": "generated_native",
+        "n": 800,
+        "variance": 6.812061375916116
+      }
+    ],
+    "ridge": 2.9786824884272652e-05,
+    "original_tail_maximum_error": 1.942210661454169e-05,
+    "derivative_check": {
+      "finite_difference": -49.11045647038037,
+      "autograd": -49.11045647056642,
+      "relative_error": 3.7127682131851155e-12
+    },
+    "iterations": 500,
+    "stop_reason": "iteration_limit",
+    "metrics": {
+      "A_relative": 0.9996194067825314,
+      "B_relative": 4.25196036902103,
+      "logical_D": 4.420114321137948
+    },
+    "seconds": 83.06704702228308,
+    "real_images": 0,
+    "new_full_AGA_calls": 0,
+    "matching_calls": 1,
+    "original_expert_updates": 0,
+    "synthetic_images_reused": 160,
+    "generated_views": 800,
+    "synthetic_native_layer_inputs": 16384,
+    "scope": "SharedB conditionalnativequadratic/completepublicclassifier construction. OrdinaryFW/ellipsoid/Choleskyarenotnewalgorithm. Finitegapnotglobalguarantee. NativeboundequalA-onlysourcevalue,notnaturalaccuracy. Head/classesexplicitallowed;no partner/test/closedB read.",
+    "full_source_trace_record_sha256": "75958d7077d4c43533b945a6798d34e06b1f0677d1a3ffea7a293e67260e847b",
+    "frozen_before_real_images": true
   }
 }
