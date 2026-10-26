@@ -1,0 +1,76 @@
+{
+  "status": "defined_before_execution",
+  "output": "outputs/generated_prefix_20261025",
+  "target": "MNIST",
+  "algorithm_reference": {
+    "local_commit": "dbd7dfb022191dabf10af6f9bd23236da191ecae",
+    "helper": "_impl/defenses.py:_fit_nonlinear_mlp_layer",
+    "helper_sha256": "132822e0dcf2d975bd9716bbb2f496cc7ae7aeb6298e7d4aef19217e7deb2b12",
+    "prior_data_assisted_point": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b"
+  },
+  "source": {
+    "path": "outputs/row_compensation_20261025/source.pt",
+    "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2",
+    "base_generated_images": 160,
+    "views": [
+      [
+        0,
+        0
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        -7,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        -7
+      ]
+    ],
+    "group_size": 8,
+    "source_views": 800,
+    "batch_size": 40,
+    "selection": "All existing final clean original/public-source images and all five predefined views, in original grouped order. No source regeneration, filtering or protected-model inputs.",
+    "real_images": 0
+  },
+  "basis": {
+    "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+    "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+  },
+  "rank": 32,
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "damping": 0.01,
+  "matrix_bounds": [
+    2.0,
+    4.0
+  ],
+  "permission": "Only original frozen target, public base, fixed classifier, original task SVD and existing clean generated inputs. No real construction data, partner, test, old protected parameter or exposed witness is used for fitting.",
+  "fit": "Same fixed task-complement reflection and original ridge helper. Fit all 50 token outputs to the frozen teacher block output minus actual modified student post-attention residual and output bias. Recompute actual student prefix before each of 12 fits. No optimizer/teacher training.",
+  "source_measurement": "Generated teacher agreement and task-change statistics are descriptive, not true-label accuracy. No new small-sample source gate. Only nonfinite solve or original predeclared per-matrix bounds stop construction.",
+  "native_evaluation": "Freeze unique FP32 release and SHA, then complete MNIST with existing experiment.native --test-only --max-accuracy-loss-pp .5 and independent --verify; historical strictR separately. No real images before release.",
+  "fusion_if_native_passes": "Existing fixed TA.5, MNIST/SVHN, original-author AGA target-only/both; reuse cached original and partner AGA and matched baseline/native scores; full per-class/paired/original128batch-context replay.",
+  "comparison_limits": "This checks whether an existing data-assisted algorithm is feasible with generated inputs. It is not a new algorithm or an isolated equal-sample causal comparison: old source had 1024 real images, this source has 800 views of 160 generated images.",
+  "no_retry": "One fixed generated-source run. No strength/layer/rank/damping/source/seed variants or choice from test results. Does not repair the closed last-MLP score-neutral point.",
+  "public_before_execution": false,
+  "implementation_sha256": "0f9d81b0c5a644e720e951fdbe0524dbc2fed193d4bf7c83d95ba31988427dd1"
+}

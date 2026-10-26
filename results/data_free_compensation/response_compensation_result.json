@@ -1,0 +1,751 @@
+{
+  "geometry": {
+    "rows": [
+      {
+        "layer": 0,
+        "rank": 512,
+        "condition_number": 126.08678860044083,
+        "relative_A_change": 1.7963910216289627,
+        "relative_B_change": 0.7626948077283245,
+        "nonlinear_task_response_relative_error": 2.3461517173473112e-07,
+        "numpy_relative_B_change_error": 1.4375944878963764e-11
+      },
+      {
+        "layer": 1,
+        "rank": 512,
+        "condition_number": 116.07796962019214,
+        "relative_A_change": 1.9391897251550767,
+        "relative_B_change": 0.2411796723831889,
+        "nonlinear_task_response_relative_error": 5.589021725427301e-07
+      },
+      {
+        "layer": 2,
+        "rank": 512,
+        "condition_number": 122.65035543433729,
+        "relative_A_change": 1.9485970568420632,
+        "relative_B_change": 0.10924314055086616,
+        "nonlinear_task_response_relative_error": 4.295779092444718e-07
+      },
+      {
+        "layer": 3,
+        "rank": 512,
+        "condition_number": 89.30398380175598,
+        "relative_A_change": 1.9446805549067334,
+        "relative_B_change": 0.09901811301314219,
+        "nonlinear_task_response_relative_error": 4.560610022963374e-07
+      },
+      {
+        "layer": 4,
+        "rank": 512,
+        "condition_number": 89.09326556771333,
+        "relative_A_change": 1.9428765251572218,
+        "relative_B_change": 0.11981241234530349,
+        "nonlinear_task_response_relative_error": 4.832589297620871e-07
+      },
+      {
+        "layer": 5,
+        "rank": 512,
+        "condition_number": 110.43473509661008,
+        "relative_A_change": 1.945185692619135,
+        "relative_B_change": 0.2517407107887921,
+        "nonlinear_task_response_relative_error": 5.808022365272336e-07
+      },
+      {
+        "layer": 6,
+        "rank": 512,
+        "condition_number": 141.77301962118204,
+        "relative_A_change": 1.943786612835612,
+        "relative_B_change": 0.4334051264005214,
+        "nonlinear_task_response_relative_error": 7.911086754575081e-07
+      },
+      {
+        "layer": 7,
+        "rank": 512,
+        "condition_number": 135.55451953476242,
+        "relative_A_change": 1.94473351846982,
+        "relative_B_change": 0.4402007820426513,
+        "nonlinear_task_response_relative_error": 9.083977374757524e-07
+      },
+      {
+        "layer": 8,
+        "rank": 512,
+        "condition_number": 118.63195616666518,
+        "relative_A_change": 1.9446127995937,
+        "relative_B_change": 0.48335001040473274,
+        "nonlinear_task_response_relative_error": 1.1140439255541423e-06
+      },
+      {
+        "layer": 9,
+        "rank": 512,
+        "condition_number": 92.31514864215163,
+        "relative_A_change": 1.9291706285063528,
+        "relative_B_change": 0.4497079446393674,
+        "nonlinear_task_response_relative_error": 1.0171141866521793e-06
+      },
+      {
+        "layer": 10,
+        "rank": 512,
+        "condition_number": 106.06700625949759,
+        "relative_A_change": 1.9384870537465004,
+        "relative_B_change": 0.4222330395565203,
+        "nonlinear_task_response_relative_error": 7.251392730722728e-07
+      },
+      {
+        "layer": 11,
+        "rank": 512,
+        "condition_number": 98.29466501647138,
+        "relative_A_change": 1.9572699283885506,
+        "relative_B_change": 0.4184919413049791,
+        "nonlinear_task_response_relative_error": 2.9777729082525184e-07,
+        "numpy_relative_B_change_error": 7.051226269538802e-11
+      }
+    ],
+    "source_sha256": "29a6fac1035749f876780489d836c69ccbc35656addd69bf746d55b845b1a2ed",
+    "source_images": 0,
+    "new_defense_points": 0,
+    "parameter_updates": 0,
+    "new_AGA_calls": 0,
+    "seconds": 17.23790738079697,
+    "task_seed": 2026102603,
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "local_task_vector_forwards": 18432,
+    "definition_local_commit": "5c3c506",
+    "status": "new_task_response_geometry_passed_no_model_release",
+    "gradient_check": {
+      "direction_autograd": 134.03475637475847,
+      "direction_finite_difference": 134.03475599247372,
+      "relative_direction_error": 2.8310100638666326e-09,
+      "task_response_error": 2.2705350195792517e-15,
+      "new_model_points": 0,
+      "new_images": 0,
+      "new_AGA_calls": 0,
+      "scope": "FP64toy11hidden7input3output5task8evaluationvectors,notCLIPfunctionguarantee"
+    }
+  },
+  "parameter_recount_definition": {
+    "source_sha256": "b979af769f2e2cb45b7c46d4d8eb3a1fd00cecefec0f83e7a85f4ddda7dcdc83",
+    "source": "\"\"\"Recount the declared response-correction/free-part geometry without images.\"\"\"\nimport json\nfrom pathlib import Path\n\nimport numpy as np\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.io import digest\nfrom _impl.models import initialize, load_checkpoint\n\n\n@torch.no_grad()\ndef main():\n    initialize()\n    root = Path(\"outputs/response_compensation_20261026\")\n    cfg = json.loads((root / \"protocol.json\").read_text())\n    meta = json.loads((root / \"results.json\").read_text())\n    assert digest(root / \"point.pt\") == meta[\"point_sha256\"]\n    expert = load_checkpoint(\"MNIST/finetuned.pt\")\n    state = expert.state_dict()\n    edits = torch.load(root / \"point.pt\", map_location=\"cpu\", weights_only=False)\n    entries = {v[\"source_key\"]: v for v in torch.load(cfg[\"basis\"][\"path\"], map_location=\"cpu\", weights_only=False).values()}\n    rows = []\n    for i in range(12):\n        p = f\"model.visual.transformer.resblocks.{i}.\"\n        A, B, a, b = [state[p + \"mlp.\" + k].double().cuda() for k in\n                      [\"c_fc.weight\", \"c_proj.weight\", \"c_fc.bias\", \"c_proj.bias\"]]\n        Ap, Bp = [edits[p + \"mlp.\" + k].double().cuda() for k in [\"c_fc.weight\", \"c_proj.weight\"]]\n        V = entries[p + \"mlp.c_fc.weight\"][\"v\"].cuda()\n        gamma, beta = [state[p + \"ln_2.\" + k].double().cuda() for k in [\"weight\", \"bias\"]]\n        G = V / gamma[:, None]\n        _, _, vh = torch.linalg.svd(G.sum(0, keepdim=True), full_matrices=True)\n        Q = torch.linalg.qr(G @ vh[1:].T, mode=\"reduced\").Q\n        sobol = torch.quasirandom.SobolEngine(31, scramble=True, seed=cfg[\"task_seed\"] + i)\n        coefficients = torch.erfinv(2 * sobol.draw(cfg[\"task_probes\"]).double() - 1).cuda()\n        residual = coefficients @ Q.T\n        residual *= 768 ** .5 / residual.norm(dim=1, keepdim=True)\n        X = F.layer_norm(residual, (768,), gamma, beta, expert.model.visual.transformer.resblocks[i].ln_2.eps).float()\n        H, Hp = [z * torch.sigmoid(1.702 * z) for z in [F.linear(X, w.float(), a.float()) for w in [A, Ap]]]\n        Y = F.linear(H, B.float(), b.float()).double().T - b[:, None]\n        Hp = Hp.double().T\n        U, singular, vh = torch.linalg.svd(Hp, full_matrices=False)\n        keep = singular > torch.finfo(torch.double).eps * max(Hp.shape) * singular[0]\n        correction = (((Y - B @ Hp) @ vh[keep].T) / singular[keep]) @ U[:, keep].T\n        free = Bp - B - correction\n        norm = B.norm()\n        minimal, freedom, total = [float(v.norm() / norm) for v in [correction, free, Bp - B]]\n        orthogonality = float((correction * free).sum() / (1 + correction.norm() * free.norm()))\n        row = dict(layer=i, minimum_response_correction=minimal, free_relative_norm=freedom,\n                   actual_B_relative_norm=total, declared_total_bound_given_A=(minimal ** 2 + 1) ** .5,\n                   pythagorean_squared_error=abs(total ** 2 - minimal ** 2 - freedom ** 2),\n                   correction_free_relative_inner_product=orthogonality,\n                   task_response_error=float((Bp @ Hp - Y).norm() / (1 + Y.norm())))\n        assert freedom <= 1 + 1e-5 and row[\"pythagorean_squared_error\"] < 1e-5\n        assert int(keep.sum()) == cfg[\"task_probes\"]\n        if i in [0, 11]:\n            hn, en = Hp.cpu().numpy(), (Y - B @ Hp).cpu().numpy()\n            solution = np.linalg.lstsq(hn.T, en.T, rcond=np.finfo(float).eps * max(hn.shape))[0].T\n            row[\"numpy_correction_relative_error\"] = float(np.linalg.norm(solution - correction.cpu().numpy()) / (1 + np.linalg.norm(solution)))\n            assert row[\"numpy_correction_relative_error\"] < 1e-8\n        rows.append(row)\n    result = dict(rows=rows, source_sha256=digest(__file__), source=Path(__file__).read_text(),\n                  point_sha256=meta[\"point_sha256\"], local_layer_vector_forwards=12 * cfg[\"task_probes\"] * 2,\n                  new_full_image_forwards=0, new_model_points=0, new_AGA_calls=0)\n    (root / \"parameter_recount.json\").write_text(json.dumps(result, indent=2) + \"\\n\")\n    print(json.dumps(rows))\n\n\nif __name__ == \"__main__\":\n    main()\n",
+    "scope": "Weights and originalnewtaskprobesonly,notadditionalclassificationexperiment. Recountpromisedminimum/free/totalparameter rangesafterpointfreeze,beforenative."
+  },
+  "status": "native_failed_closed",
+  "point_sha256": "665d801780e74884693c57f0ef98a4ec2606186583ee24a755956f753a4de441",
+  "source_sha256": "29a6fac1035749f876780489d836c69ccbc35656addd69bf746d55b845b1a2ed",
+  "source": "\"\"\"One Data-Free joint A/B construction with nonlinear task response compensation.\"\"\"\nimport copy\nimport json\nimport time\nimport sys\nfrom pathlib import Path\n\nimport torch\nimport torch.nn.functional as F\nfrom torch.func import functional_call\n\nfrom _impl.io import digest\nfrom _impl.metrics import logical_parameter_distance\nfrom _impl.models import checked_models, initialize\n\n\ndef response_compensation(Ap, B, a, b, X, Y, Z):\n    z = F.linear(X, Ap, a)\n    H = (z * torch.sigmoid(1.702 * z)).double().T\n    factor = torch.linalg.cholesky(H.T @ H)\n    coefficients = torch.cholesky_solve(((Y.double().T - b[:, None]) - B @ H).T, factor).T\n    correction = coefficients @ H.T\n    free = Z - torch.cholesky_solve((Z @ H).T, factor).T @ H.T\n    free = free * (B.norm() / free.norm().clamp_min(1e-30)).clamp(max=1)\n    return B + correction + free\n\n\ndef main():\n    initialize()\n    start = time.monotonic()\n    protocol = Path(\"results/data_free_compensation/response_compensation_protocol.json\")\n    cfg = json.loads(protocol.read_text())\n    assert digest(__file__) == cfg[\"source_sha256\"]\n    check_only = \"--geometry-only\" in sys.argv\n    out = Path(cfg[\"output\"] + (\"_geometry\" if check_only else \"\"))\n    out.mkdir(exist_ok=False)\n    (out / \"protocol.json\").write_text(protocol.read_text())\n    for key in [\"source\", \"basis\"]:\n        assert digest(cfg[key][\"path\"]) == cfg[key][\"sha256\"]\n    base, expert, head, pins = checked_models(cfg[\"target\"])\n    del base\n    original = {k: v.clone() for k, v in expert.state_dict().items()}\n    published = copy.deepcopy(expert).cuda().eval().requires_grad_(False)\n    basis = torch.load(cfg[\"basis\"][\"path\"], map_location=\"cpu\", weights_only=False)\n    entries = {r[\"source_key\"]: r for r in basis.values()}\n    variables, geometry, keys = [], [], []\n    for i in range(12):\n        prefix = f\"model.visual.transformer.resblocks.{i}.\"\n        A, B, a, b = [original[prefix + \"mlp.\" + k].double().cuda() for k in\n                      [\"c_fc.weight\", \"c_proj.weight\", \"c_fc.bias\", \"c_proj.bias\"]]\n        V = entries[prefix + \"mlp.c_fc.weight\"][\"v\"].cuda()\n        N = torch.linalg.qr(V, mode=\"complete\").Q[:, 32:]\n        variables.extend([\n            torch.nn.Parameter(torch.zeros(736, 736, device=\"cuda\")),\n            torch.nn.Parameter(torch.zeros_like(B, dtype=torch.float)),\n        ])\n        keys.extend([prefix + \"mlp.c_fc.weight\", prefix + \"mlp.c_proj.weight\"])\n        gamma, beta = [original[prefix + \"ln_2.\" + k].double().cuda()\n                       for k in [\"weight\", \"bias\"]]\n        G = V / gamma[:, None]\n        _, _, vh = torch.linalg.svd(G.sum(0, keepdim=True), full_matrices=True)\n        task_Q = torch.linalg.qr(G @ vh[1:].T, mode=\"reduced\").Q\n        sobol = torch.quasirandom.SobolEngine(31, scramble=True, seed=cfg[\"task_seed\"] + i)\n        coefficients = torch.erfinv(2 * sobol.draw(cfg[\"task_probes\"]).double() - 1)\n        assert torch.isfinite(coefficients).all()\n        residual = coefficients.cuda() @ task_Q.T\n        residual *= 768 ** .5 / residual.norm(dim=1, keepdim=True)\n        eps = published.model.visual.transformer.resblocks[i].ln_2.eps\n        X = F.layer_norm(residual, (768,), gamma, beta, eps).float()\n        with torch.no_grad():\n            z = F.linear(X, A.float(), a.float())\n            Y = F.linear(z * torch.sigmoid(1.702 * z), B.float(), b.float())\n            assert float((Y - Y.mean(0)).square().mean()) > 0\n        geometry.append(dict(A=A, B=B, a=a, b=b, V=V, N=N, AN=A @ N,\n                             X=X, Y=Y, task_variance=(Y - Y.mean(0)).square().mean(),\n                             I=torch.eye(736, dtype=torch.double, device=\"cuda\")))\n    counters = dict(generated_image_forwards=0, input_gradient_model_forwards=0,\n                    pixel_optimizer_steps=0, joint_AB_library_iterations=0,\n                    full_objective_evaluations=0, local_task_vector_forwards=12 * cfg[\"task_probes\"])\n\n    def pairs():\n        result = []\n        for T, Z, g in zip(variables[::2], variables[1::2], geometry):\n            skew = (T.double() - T.double().T) / 2\n            C = torch.linalg.solve(g[\"I\"] - skew, g[\"I\"] + skew)\n            K = (C - C.T) / 2\n            S = -torch.linalg.solve(g[\"I\"] - K, g[\"I\"] + K)\n            Ap = g[\"A\"] + g[\"AN\"] @ (S - g[\"I\"]) @ g[\"N\"].T\n            Bp = response_compensation(Ap.float(), g[\"B\"], g[\"a\"].float(),\n                                       g[\"b\"], g[\"X\"], g[\"Y\"], Z.double())\n            counters[\"local_task_vector_forwards\"] += len(g[\"X\"])\n            result.extend([Ap.float(), Bp.float()])\n        return result\n\n    @torch.no_grad()\n    def materialize():\n        for key, value in zip(keys, pairs()):\n            published.state_dict()[key].copy_(value)\n\n    if check_only:\n        with torch.no_grad():\n            matrices = pairs()\n            rows = []\n            for i, (Ap, Bp, g) in enumerate(zip(matrices[::2], matrices[1::2], geometry)):\n                z = F.linear(g[\"X\"], Ap, g[\"a\"].float())\n                H = (z * torch.sigmoid(1.702 * z)).double().T\n                singular = torch.linalg.svdvals(H)\n                actual = F.linear(H.T.float(), Bp, g[\"b\"].float())\n                error = float((actual - g[\"Y\"]).norm() / (1 + g[\"Y\"].norm()))\n                row = dict(layer=i, rank=int((singular > torch.finfo(torch.double).eps * max(H.shape) * singular[0]).sum()),\n                           condition_number=float(singular[0] / singular[-1]),\n                           relative_A_change=float((Ap.double() - g[\"A\"]).norm() / g[\"A\"].norm()),\n                           relative_B_change=float((Bp.double() - g[\"B\"]).norm() / g[\"B\"].norm()),\n                           nonlinear_task_response_relative_error=error)\n                assert row[\"rank\"] == cfg[\"task_probes\"] and error < 1e-4\n                if i in [0, 11]:\n                    import numpy as np\n                    hn = H.cpu().numpy()\n                    E = (g[\"Y\"].double().T - g[\"b\"][:, None] - g[\"B\"] @ H).cpu().numpy()\n                    correction = np.linalg.lstsq(hn.T, E.T, rcond=np.finfo(float).eps * max(hn.shape))[0].T\n                    row[\"numpy_relative_B_change_error\"] = abs(float(np.linalg.norm(correction) / float(g[\"B\"].norm())) - row[\"relative_B_change\"])\n                    assert row[\"numpy_relative_B_change_error\"] < 1e-6\n                rows.append(row)\n            result = dict(rows=rows, source_sha256=digest(__file__),source=Path(__file__).read_text(),\n                          source_images=0,new_defense_points=0,parameter_updates=0,new_AGA_calls=0,\n                          seconds=time.monotonic()-start,task_seed=cfg[\"task_seed\"],checkpoint_sha256=pins,\n                          local_task_vector_forwards=counters[\"local_task_vector_forwards\"] + 12 * cfg[\"task_probes\"])\n            (out / \"results.json\").write_text(json.dumps(result,indent=2)+\"\\n\")\n            print(\"GEOMETRY\",json.dumps(rows),flush=True)\n        return\n\n    norm = expert.val_preprocess.transforms[-1]\n    mean = torch.tensor(norm.mean, device=\"cuda\")[None, :, None, None]\n    std = torch.tensor(norm.std, device=\"cuda\")[None, :, None, None]\n    raw = torch.load(cfg[\"source\"][\"path\"], map_location=\"cpu\", weights_only=False)\n    pixels = raw[\"final\"].clone()\n    del raw\n    groups = [torch.nn.Parameter(x.cuda()) for x in pixels.split(8)]\n    pixel_optimizers = [torch.optim.Adam([x], lr=.05) for x in groups]\n    history = [pixels]\n    expert.cuda().eval()\n    head.cuda().eval()\n\n    def views(x):\n        x = F.interpolate(x, (224, 224), mode=\"bilinear\", align_corners=False)\n        return (torch.cat([torch.roll(x, tuple(s), (2, 3)) for s in cfg[\"source\"][\"views\"]]) - mean) / std\n\n    def score(model, x):\n        counters[\"generated_image_forwards\"] += len(x)\n        if torch.is_grad_enabled() and x.requires_grad:\n            counters[\"input_gradient_model_forwards\"] += len(x)\n        return head(model(x))\n\n    def KL(student, teacher):\n        return 16 * F.kl_div(F.log_softmax(student / 4, dim=1),\n                             F.softmax(teacher / 4, dim=1), reduction=\"batchmean\")\n\n    @torch.no_grad()\n    def image_pool(x):\n        return torch.cat([views(v.cuda()).cpu() for v in x.split(8)])\n\n    pools, rounds, trace = [image_pool(pixels)], [], []\n    materialize()\n    for cycle in range(3):\n        first, last = [], []\n        for index, (group, optimizer) in enumerate(zip(groups, pixel_optimizers)):\n            for step in range(32):\n                x = views(group)\n                loss = KL(score(published, x), score(expert, x))\n                if step == 0:\n                    first.append(float(loss.detach()))\n                optimizer.zero_grad(set_to_none=True)\n                (-loss).backward()\n                assert group.grad is not None and torch.isfinite(group.grad).all()\n                optimizer.step()\n                counters[\"pixel_optimizer_steps\"] += 1\n                with torch.no_grad():\n                    group.clamp_(0, 1)\n            with torch.no_grad():\n                x = views(group)\n                last.append(float(KL(score(published, x), score(expert, x))))\n            if index % 5 == 0 or index == len(groups) - 1:\n                print(\"INPUT\", cycle + 1, index, first[-1], last[-1], flush=True)\n        history.append(torch.cat([x.detach().cpu() for x in groups]))\n        pools.append(image_pool(history[-1]))\n        images = torch.cat(pools)\n        batches = list(images.split(40))\n        with torch.no_grad():\n            targets = [score(expert, x.cuda()).detach() for x in batches]\n        optimizer = torch.optim.LBFGS(variables, lr=1., max_iter=40, max_eval=60,\n                                      history_size=5, line_search_fn=\"strong_wolfe\")\n\n        def closure():\n            optimizer.zero_grad(set_to_none=True)\n            actual = pairs()\n            leaves = [x.detach().requires_grad_() for x in actual]\n            overrides = dict(zip(keys, leaves))\n            classification = 0.\n            for x, target in zip(batches, targets):\n                counters[\"generated_image_forwards\"] += len(x)\n                logits = head(functional_call(published, overrides, (x.cuda(),)))\n                loss = KL(logits, target) * len(x) / len(images)\n                assert torch.isfinite(loss)\n                loss.backward()\n                classification += float(loss.detach())\n            torch.autograd.backward(actual, grad_tensors=[p.grad for p in leaves])\n            assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in variables)\n            counters[\"full_objective_evaluations\"] += 1\n            row = dict(cycle=cycle + 1, evaluation=counters[\"full_objective_evaluations\"],\n                       classification_KL=classification, total=classification)\n            trace.append(row)\n            (out / \"progress.json\").write_text(json.dumps(dict(trace=trace, rounds=rounds, counters=counters), indent=2))\n            print(\"JOINT_FIT\", json.dumps(row), flush=True)\n            return torch.tensor(classification, device=\"cuda\")\n\n        optimizer.step(closure)\n        counters[\"joint_AB_library_iterations\"] += int(optimizer.state[variables[0]][\"n_iter\"])\n        materialize()\n        with torch.no_grad():\n            before = torch.cat([x.cpu() for x in targets])\n            after = torch.cat([score(published, x.cuda()).cpu() for x in batches])\n        row = dict(cycle=cycle + 1, source_views=len(images),\n                   critic_KL_before=sum(first) / len(first), critic_KL_after=sum(last) / len(last),\n                   source_KL=float(KL(after, before)),\n                   teacher_prediction_changes=int((after.argmax(1) != before.argmax(1)).sum()))\n        rounds.append(row)\n        print(\"ROUND\", json.dumps(row), flush=True)\n        del optimizer\n    materialize()\n    with torch.no_grad():\n        rows = []\n        state = published.state_dict()\n        for i, g in enumerate(geometry):\n            p = f\"model.visual.transformer.resblocks.{i}.mlp.\"\n            A, B = [state[p + k].double() for k in [\"c_fc.weight\", \"c_proj.weight\"]]\n            z = F.linear(g[\"X\"], A.float(), g[\"a\"].float())\n            actual = F.linear(z * torch.sigmoid(1.702 * z), B.float(), g[\"b\"].float())\n            error = float((actual - g[\"Y\"]).norm() / (1 + g[\"Y\"].norm()))\n            counters[\"local_task_vector_forwards\"] += len(z)\n            da, db = float((A - g[\"A\"]).norm() / g[\"A\"].norm()), float((B - g[\"B\"]).norm() / g[\"B\"].norm())\n            lower = 2 ** .5 * float(g[\"AN\"].norm() / g[\"A\"].norm())\n            assert error < 1e-4 and da >= lower - 1e-5\n            rows.append(dict(layer=i,relative_A_distance=da,relative_B_distance=db,\n                             guaranteed_A_lower_bound=lower,nonlinear_task_response_relative_error=error,\n                             task_A_parameter_error=float(((A-g[\"A\"])@g[\"V\"]).norm()/(A-g[\"A\"]).norm())))\n        assert all(p.grad is None for p in expert.parameters())\n        assert all(torch.equal(v, expert.state_dict()[k].cpu()) for k, v in original.items())\n        edits = {key: state[key].cpu().clone() for key in keys}\n    torch.save(edits, out / \"point.pt\")\n    torch.save(history, out / \"inputs.pt\")\n    torch.save(dict(before=before, after=after), out / \"source_scores.pt\")\n    result = dict(status=\"one_nonlinear_response_point_frozen\",point_sha256=digest(out / \"point.pt\"),\n                  source_sha256=digest(__file__),source=Path(__file__).read_text(),\n                  protocol_sha256=digest(protocol),checkpoint_sha256=pins,\n                  parameter_distance=logical_parameter_distance(edits, original),\n                  per_layer=rows,rounds=rounds,trace=trace,counters=counters,\n                  input_history_sha256=digest(out / \"inputs.pt\"),source_scores_sha256=digest(out / \"source_scores.pt\"),\n                  original_expert_updates=0,real_construction_images=0,new_AGA_calls=0,\n                  seconds=time.monotonic()-start,scope=cfg[\"scope\"])\n    (out / \"results.json\").write_text(json.dumps(result, indent=2) + \"\\n\")\n    print(\"POINT_FROZEN\", result[\"point_sha256\"], flush=True)\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "protocol_sha256": "804d424066c6a87a95480b0025d2cbcb1fc4d94001ac48f375a089b107bc450e",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "parameter_distance": 6.729433161477576,
+  "per_layer": [
+    {
+      "layer": 0,
+      "relative_A_distance": 1.7557958314305124,
+      "relative_B_distance": 0.5093922911773596,
+      "guaranteed_A_lower_bound": 1.2702402730747124,
+      "nonlinear_task_response_relative_error": 2.401933159035252e-07,
+      "task_A_parameter_error": 2.902760888028393e-09
+    },
+    {
+      "layer": 1,
+      "relative_A_distance": 1.9278559930293604,
+      "relative_B_distance": 0.2560178262713429,
+      "guaranteed_A_lower_bound": 1.3712142046392426,
+      "nonlinear_task_response_relative_error": 5.455190716929792e-07,
+      "task_A_parameter_error": 2.6791026958603027e-09
+    },
+    {
+      "layer": 2,
+      "relative_A_distance": 1.939916738981278,
+      "relative_B_distance": 0.1620717380500129,
+      "guaranteed_A_lower_bound": 1.377866192700095,
+      "nonlinear_task_response_relative_error": 4.304335448068741e-07,
+      "task_A_parameter_error": 2.672044533746874e-09
+    },
+    {
+      "layer": 3,
+      "relative_A_distance": 1.937871305124099,
+      "relative_B_distance": 0.1551523345496868,
+      "guaranteed_A_lower_bound": 1.3750968076162944,
+      "nonlinear_task_response_relative_error": 4.5674187276745215e-07,
+      "task_A_parameter_error": 2.6655097074922332e-09
+    },
+    {
+      "layer": 4,
+      "relative_A_distance": 1.9367565705540923,
+      "relative_B_distance": 0.1654993924432501,
+      "guaranteed_A_lower_bound": 1.3738211659587274,
+      "nonlinear_task_response_relative_error": 4.778087259182939e-07,
+      "task_A_parameter_error": 2.6773623303332067e-09
+    },
+    {
+      "layer": 5,
+      "relative_A_distance": 1.9363283679829686,
+      "relative_B_distance": 0.23293270557081003,
+      "guaranteed_A_lower_bound": 1.3754539938767354,
+      "nonlinear_task_response_relative_error": 5.422311915026512e-07,
+      "task_A_parameter_error": 2.6671515001887588e-09
+    },
+    {
+      "layer": 6,
+      "relative_A_distance": 1.9319130927518593,
+      "relative_B_distance": 0.3605906733178368,
+      "guaranteed_A_lower_bound": 1.3744646950874861,
+      "nonlinear_task_response_relative_error": 6.559371286130045e-07,
+      "task_A_parameter_error": 2.667907141016185e-09
+    },
+    {
+      "layer": 7,
+      "relative_A_distance": 1.9304049387907252,
+      "relative_B_distance": 0.3346654128440987,
+      "guaranteed_A_lower_bound": 1.3751342585288873,
+      "nonlinear_task_response_relative_error": 6.888748202982242e-07,
+      "task_A_parameter_error": 2.6827146621474885e-09
+    },
+    {
+      "layer": 8,
+      "relative_A_distance": 1.9235237732244403,
+      "relative_B_distance": 0.3681205555404283,
+      "guaranteed_A_lower_bound": 1.3750488973648938,
+      "nonlinear_task_response_relative_error": 8.098655257526843e-07,
+      "task_A_parameter_error": 2.706312861819415e-09
+    },
+    {
+      "layer": 9,
+      "relative_A_distance": 1.9014455555680996,
+      "relative_B_distance": 0.36615389482466215,
+      "guaranteed_A_lower_bound": 1.364129633485891,
+      "nonlinear_task_response_relative_error": 7.767391707602656e-07,
+      "task_A_parameter_error": 2.72658786756554e-09
+    },
+    {
+      "layer": 10,
+      "relative_A_distance": 1.9164213132443355,
+      "relative_B_distance": 0.31057407401144604,
+      "guaranteed_A_lower_bound": 1.3707173409498064,
+      "nonlinear_task_response_relative_error": 6.054921755094256e-07,
+      "task_A_parameter_error": 2.6988803810375506e-09
+    },
+    {
+      "layer": 11,
+      "relative_A_distance": 1.9508847886896465,
+      "relative_B_distance": 0.38589858970966706,
+      "guaranteed_A_lower_bound": 1.38399883899164,
+      "nonlinear_task_response_relative_error": 2.8105537808187364e-07,
+      "task_A_parameter_error": 2.6579263607166123e-09
+    }
+  ],
+  "rounds": [
+    {
+      "cycle": 1,
+      "source_views": 1600,
+      "critic_KL_before": 10.703874969482422,
+      "critic_KL_after": 18.511754989624023,
+      "source_KL": 8.444026947021484,
+      "teacher_prediction_changes": 873
+    },
+    {
+      "cycle": 2,
+      "source_views": 2400,
+      "critic_KL_before": 6.595398330688477,
+      "critic_KL_after": 60.2419095993042,
+      "source_KL": 7.21580171585083,
+      "teacher_prediction_changes": 1107
+    },
+    {
+      "cycle": 3,
+      "source_views": 3200,
+      "critic_KL_before": 4.738377842307091,
+      "critic_KL_after": 43.32452030181885,
+      "source_KL": 5.865199565887451,
+      "teacher_prediction_changes": 1183
+    }
+  ],
+  "counters": {
+    "generated_image_forwards": 500800,
+    "input_gradient_model_forwards": 153600,
+    "pixel_optimizer_steps": 1920,
+    "joint_AB_library_iterations": 120,
+    "full_objective_evaluations": 138,
+    "local_task_vector_forwards": 890880
+  },
+  "input_history_sha256": "7b40c7d4687a57dee12f32ef0f742c2d9004d8bee3536a4eb129d089d1fb03fe",
+  "source_scores_sha256": "85ec4d58472f7d843172551b34d64b69640213929894cf8ce3c292dee3c30cd1",
+  "original_expert_updates": 0,
+  "real_construction_images": 0,
+  "new_AGA_calls": 0,
+  "seconds": 705.0913086039945,
+  "scope": "One newresponse-conditionedjointA/B experiment. Unlikeclosed15c4globalaffineequationandsofttaskloss, andunlikeclosed737fixedhiddenA/64probes, A adjustable and B follows fullnonlinear taskresponse. No oldpointcontinuation ordiagnosticrepair.",
+  "definition_local_commit": "5c3c506",
+  "geometry_verified_before_construction_commit": "5fa699d",
+  "raw_result": {
+    "path": "outputs/response_compensation_20261026/results.json",
+    "sha256": "c0482a9b743c47c6e0335afd1006b439da2bc1a652c6f5f3112b80255918fb74"
+  },
+  "objective_trace": {
+    "rows": 138,
+    "first": {
+      "cycle": 1,
+      "evaluation": 1,
+      "classification_KL": 14.607814744114876,
+      "total": 14.607814744114876
+    },
+    "last": {
+      "cycle": 3,
+      "evaluation": 138,
+      "classification_KL": 5.865199387073517,
+      "total": 5.865199387073517
+    },
+    "complete_trace": {
+      "path": "outputs/response_compensation_20261026/results.json",
+      "sha256": "c0482a9b743c47c6e0335afd1006b439da2bc1a652c6f5f3112b80255918fb74"
+    }
+  },
+  "independent_validation_source": "import hashlib,json,math\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.data import official_labels\nroot=Path(\"outputs/response_compensation_20261026\")\nout=root/\"native\"\nmeta=json.loads((out/\"results.json\").read_text())\nassert hashlib.sha256((out/\"full.pt\").read_bytes()).hexdigest()==meta[\"rows\"][0][\"raw_sha256\"]\nd=torch.load(out/\"full.pt\",map_location=\"cpu\",weights_only=False)\na,b=[d[k].double().numpy() for k in [\"before\",\"after\"]]\ny=official_labels(\"MNIST\",False)[d[\"indices\"]]\nnp.testing.assert_array_equal(d[\"indices\"],np.arange(10000));np.testing.assert_array_equal(y,d[\"labels\"])\npa,pb=a.argmax(1),b.argmax(1);ca,cb=pa==y,pb==y\nlost=int(np.sum(ca&~cb));gained=int(np.sum(~ca&cb));n=len(y)\ndelta=cb.astype(float)-ca.astype(float);mean=float(delta.mean());se=float(delta.std(ddof=1)/math.sqrt(n))\nm=lost+gained;k=min(lost,gained)\nterms=np.array([math.lgamma(m+1)-math.lgamma(j+1)-math.lgamma(m-j+1)-m*math.log(2) for j in range(k+1)])\nlogp=min(0.,float(np.logaddexp.reduce(terms))+math.log(2)) if m else 0.\nstats=dict(status=\"passed_independent_numpy_native_counts\",before_correct=int(ca.sum()),after_correct=int(cb.sum()),\n n=n,changed_predictions=int(np.sum(pa!=pb)),lost=lost,gained=gained,\n paired_accuracy_delta_95ci_pp=[100*(mean-1.96*se),100*(mean+1.96*se)],mcnemar_log10_p=logp/math.log(10),\n per_class=[dict(class_id=i,n=int(np.sum(y==i)),before_correct=int(np.sum(ca&(y==i))),after_correct=int(np.sum(cb&(y==i))),\n lost=int(np.sum(ca&~cb&(y==i))),gained=int(np.sum(~ca&cb&(y==i)))) for i in range(10)],\n prediction_class_counts=np.bincount(pb,minlength=10).tolist(),new_image_forwards=0,new_AGA_calls=0)\nassert stats[\"after_correct\"]==meta[\"rows\"][0][\"after_correct\"] and stats[\"before_correct\"]==meta[\"rows\"][0][\"before_correct\"]\nx=dict(native={},independent_numpy_native=stats)\nfor p in sorted(out.glob(\"*.json\")):\n x[\"native\"][p.name]=json.loads(p.read_text());x[\"native\"][p.name+\"_sha256\"]=hashlib.sha256(p.read_bytes()).hexdigest()\nraw=torch.load(root/\"source_scores.pt\",map_location=\"cpu\",weights_only=False)\naa,bb=[raw[k].double().numpy()/4 for k in [\"before\",\"after\"]]\naa-=np.logaddexp.reduce(aa,axis=1,keepdims=True);bb-=np.logaddexp.reduce(bb,axis=1,keepdims=True)\nKL=float(16*np.mean(np.sum(np.exp(aa)*(aa-bb),axis=1)))\nsource_meta=json.loads((root/\"results.json\").read_text());assert abs(KL-source_meta[\"rounds\"][-1][\"source_KL\"])<1e-5\nx[\"independent_numpy_source\"]=dict(KL=KL,agreement=int(np.sum(raw[\"before\"].argmax(1).numpy()==raw[\"after\"].argmax(1).numpy())),\n scalar_KL_error=abs(KL-source_meta[\"rounds\"][-1][\"source_KL\"]),source_scores_sha256=hashlib.sha256((root/\"source_scores.pt\").read_bytes()).hexdigest(),new_image_forwards=0)\nx[\"independent_numpy_source\"][\"prediction_counts_by_800_view_pool\"]=[dict(pool=i//800,teacher=np.bincount(raw[\"before\"][i:i+800].argmax(1).numpy(),minlength=10).tolist(),student=np.bincount(raw[\"after\"][i:i+800].argmax(1).numpy(),minlength=10).tolist())for i in range(0,len(raw[\"before\"]),800)]\n(root/\"independent_complete.json\").write_text(json.dumps(x,indent=2)+\"\\n\")\nprint(json.dumps(dict(native=stats,source=x[\"independent_numpy_source\"])))\n",
+  "parameter_recount": {
+    "rows": [
+      {
+        "layer": 0,
+        "minimum_response_correction": 0.490342220012969,
+        "free_relative_norm": 0.13800367254042473,
+        "actual_B_relative_norm": 0.5093922911773596,
+        "declared_total_bound_given_A": 1.113748397407263,
+        "pythagorean_squared_error": 5.0971723369874766e-11,
+        "correction_free_relative_inner_product": -3.53457596482067e-10,
+        "task_response_error": 6.821105287606687e-09,
+        "numpy_correction_relative_error": 3.597842277406095e-14
+      },
+      {
+        "layer": 1,
+        "minimum_response_correction": 0.20737123473979016,
+        "free_relative_norm": 0.1501409284133761,
+        "actual_B_relative_norm": 0.2560178262713429,
+        "declared_total_bound_given_A": 1.0212750995679396,
+        "pythagorean_squared_error": 1.3632171780297853e-11,
+        "correction_free_relative_inner_product": -1.943342840884227e-10,
+        "task_response_error": 2.2719019035556245e-08
+      },
+      {
+        "layer": 2,
+        "minimum_response_correction": 0.10515920740328093,
+        "free_relative_norm": 0.12332392048764962,
+        "actual_B_relative_norm": 0.1620717380500129,
+        "declared_total_bound_given_A": 1.0055140272028462,
+        "pythagorean_squared_error": 8.421621039422789e-12,
+        "correction_free_relative_inner_product": 2.5519150436899624e-10,
+        "task_response_error": 2.0794492991952796e-08
+      },
+      {
+        "layer": 3,
+        "minimum_response_correction": 0.09466799430652614,
+        "free_relative_norm": 0.12292362577301097,
+        "actual_B_relative_norm": 0.1551523345496868,
+        "declared_total_bound_given_A": 1.0044710195650348,
+        "pythagorean_squared_error": 2.9857765565521888e-12,
+        "correction_free_relative_inner_product": -9.850262043009983e-11,
+        "task_response_error": 2.2988040619806608e-08
+      },
+      {
+        "layer": 4,
+        "minimum_response_correction": 0.10963713395398506,
+        "free_relative_norm": 0.12397478679138269,
+        "actual_B_relative_norm": 0.1654993924432501,
+        "declared_total_bound_given_A": 1.005992197356244,
+        "pythagorean_squared_error": 2.527950071495866e-12,
+        "correction_free_relative_inner_product": -7.38230400082717e-11,
+        "task_response_error": 2.3856279594514418e-08
+      },
+      {
+        "layer": 5,
+        "minimum_response_correction": 0.20223675720217654,
+        "free_relative_norm": 0.11557655195129003,
+        "actual_B_relative_norm": 0.23293270557081003,
+        "declared_total_bound_given_A": 1.020244924497864,
+        "pythagorean_squared_error": 6.36730251857287e-14,
+        "correction_free_relative_inner_product": -1.2004410764135793e-12,
+        "task_response_error": 2.6594439262879697e-08
+      },
+      {
+        "layer": 6,
+        "minimum_response_correction": 0.3490012112655345,
+        "free_relative_norm": 0.09068510463505591,
+        "actual_B_relative_norm": 0.3605906733178368,
+        "declared_total_bound_given_A": 1.0591514742777872,
+        "pythagorean_squared_error": 1.6329607804843604e-11,
+        "correction_free_relative_inner_product": 2.3755733967846207e-10,
+        "task_response_error": 3.627488816316194e-08
+      },
+      {
+        "layer": 7,
+        "minimum_response_correction": 0.3219319544337959,
+        "free_relative_norm": 0.09143716570701349,
+        "actual_B_relative_norm": 0.3346654128440987,
+        "declared_total_bound_given_A": 1.0505428041186915,
+        "pythagorean_squared_error": 3.9844811478007e-12,
+        "correction_free_relative_inner_product": -6.25592685558322e-11,
+        "task_response_error": 3.918173566758531e-08
+      },
+      {
+        "layer": 8,
+        "minimum_response_correction": 0.35117108778631595,
+        "free_relative_norm": 0.1104156262147322,
+        "actual_B_relative_norm": 0.3681205555404283,
+        "declared_total_bound_given_A": 1.0598684507508582,
+        "pythagorean_squared_error": 1.977666294616931e-12,
+        "correction_free_relative_inner_product": 2.427090541110984e-11,
+        "task_response_error": 4.6207891976742994e-08
+      },
+      {
+        "layer": 9,
+        "minimum_response_correction": 0.3348528685630311,
+        "free_relative_norm": 0.1481291028360085,
+        "actual_B_relative_norm": 0.36615389482466215,
+        "declared_total_bound_given_A": 1.054574057894888,
+        "pythagorean_squared_error": 3.3784051944873994e-12,
+        "correction_free_relative_inner_product": 3.290530546907438e-11,
+        "task_response_error": 4.2402046587850943e-08
+      },
+      {
+        "layer": 10,
+        "minimum_response_correction": 0.28542623651081794,
+        "free_relative_norm": 0.12242597337684631,
+        "actual_B_relative_norm": 0.31057407401144604,
+        "declared_total_bound_given_A": 1.0399366021487702,
+        "pythagorean_squared_error": 2.069502555435143e-12,
+        "correction_free_relative_inner_product": 2.8490817608004275e-11,
+        "task_response_error": 3.226588154120109e-08
+      },
+      {
+        "layer": 11,
+        "minimum_response_correction": 0.3837258173465659,
+        "free_relative_norm": 0.040892769825632926,
+        "actual_B_relative_norm": 0.38589858970966706,
+        "declared_total_bound_given_A": 1.0710954686199965,
+        "pythagorean_squared_error": 1.760770457388816e-11,
+        "correction_free_relative_inner_product": 4.95495446009657e-10,
+        "task_response_error": 1.1837493730453059e-08,
+        "numpy_correction_relative_error": 2.9753577435181315e-14
+      }
+    ],
+    "source_sha256": "b979af769f2e2cb45b7c46d4d8eb3a1fd00cecefec0f83e7a85f4ddda7dcdc83",
+    "point_sha256": "665d801780e74884693c57f0ef98a4ec2606186583ee24a755956f753a4de441",
+    "local_layer_vector_forwards": 12288,
+    "new_full_image_forwards": 0,
+    "new_model_points": 0,
+    "new_AGA_calls": 0,
+    "source_exactly_in_parameter_recount_definition": true
+  },
+  "freeze_before_real_images_local_commit": "3e68693",
+  "native": {
+    "before_images.json": {
+      "publication": {
+        "path": "outputs/response_compensation_20261026/point.pt",
+        "sha256": "665d801780e74884693c57f0ef98a4ec2606186583ee24a755956f753a4de441",
+        "reference": "expert"
+      },
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "parameter_distance": 6.729433161477576,
+      "construction_updates": 0
+    },
+    "before_images.json_sha256": "3a36e0e4cf90556a28bcff9ef34c38d9740e06713fc7b71730abab3ebad4f950",
+    "independent_validation.json": {
+      "status": "passed_raw_score_and_official_label_recount",
+      "rows": [
+        {
+          "stage": "full",
+          "n": 10000,
+          "R": 68.66254218222723
+        }
+      ],
+      "results_sha256": "f095ca08b1b987ea53545e5e210f91fd4c2eb94d93ed1ee1a7afa4eee9c16e59",
+      "new_image_forwards": 0
+    },
+    "independent_validation.json_sha256": "8174ae5642fbbc75a878b02d63127ee91384775aa4d520bd4f1597630a9738e1",
+    "protocol.json": {
+      "verify": null,
+      "target": "MNIST",
+      "publication": "outputs/response_compensation_20261026/point.pt",
+      "sha256": "665d801780e74884693c57f0ef98a4ec2606186583ee24a755956f753a4de441",
+      "full_state": false,
+      "test_only": true,
+      "base_reference": false,
+      "indices": null,
+      "indices_sha256": null,
+      "output": "outputs/response_compensation_20261026/native",
+      "task_budget": 0.5,
+      "max_accuracy_loss_pp": 0.5
+    },
+    "protocol.json_sha256": "9364380b9010bf88f53e4cc1ff345bd787828f08daafa36cbb5aded5f46d2377",
+    "results.json": {
+      "rows": [
+        {
+          "n": 10000,
+          "changed": 9039,
+          "R": 68.66254218222723,
+          "stage": "full",
+          "before_correct": 9969,
+          "after_correct": 963,
+          "strict_task_passed": false,
+          "accuracy_loss_pp": 90.06,
+          "passed": false,
+          "raw_sha256": "0ac9bdc85d3534d72fb2492574a10996dd3242b4cfe6c620487f538d029f4cc5"
+        }
+      ],
+      "passed": false,
+      "image_forwards": 20000,
+      "seconds": 22.850439788773656
+    },
+    "results.json_sha256": "f095ca08b1b987ea53545e5e210f91fd4c2eb94d93ed1ee1a7afa4eee9c16e59"
+  },
+  "independent_numpy_native": {
+    "status": "passed_independent_numpy_native_counts",
+    "before_correct": 9969,
+    "after_correct": 963,
+    "n": 10000,
+    "changed_predictions": 9039,
+    "lost": 9010,
+    "gained": 4,
+    "paired_accuracy_delta_95ci_pp": [
+      -90.649072686251,
+      -89.47092731374899
+    ],
+    "mcnemar_log10_p": -2698.743988258095,
+    "per_class": [
+      {
+        "class_id": 0,
+        "n": 980,
+        "before_correct": 979,
+        "after_correct": 5,
+        "lost": 974,
+        "gained": 0
+      },
+      {
+        "class_id": 1,
+        "n": 1135,
+        "before_correct": 1132,
+        "after_correct": 0,
+        "lost": 1132,
+        "gained": 0
+      },
+      {
+        "class_id": 2,
+        "n": 1032,
+        "before_correct": 1030,
+        "after_correct": 0,
+        "lost": 1030,
+        "gained": 0
+      },
+      {
+        "class_id": 3,
+        "n": 1010,
+        "before_correct": 1010,
+        "after_correct": 0,
+        "lost": 1010,
+        "gained": 0
+      },
+      {
+        "class_id": 4,
+        "n": 982,
+        "before_correct": 979,
+        "after_correct": 0,
+        "lost": 979,
+        "gained": 0
+      },
+      {
+        "class_id": 5,
+        "n": 892,
+        "before_correct": 884,
+        "after_correct": 0,
+        "lost": 884,
+        "gained": 0
+      },
+      {
+        "class_id": 6,
+        "n": 958,
+        "before_correct": 954,
+        "after_correct": 958,
+        "lost": 0,
+        "gained": 4
+      },
+      {
+        "class_id": 7,
+        "n": 1028,
+        "before_correct": 1025,
+        "after_correct": 0,
+        "lost": 1025,
+        "gained": 0
+      },
+      {
+        "class_id": 8,
+        "n": 974,
+        "before_correct": 973,
+        "after_correct": 0,
+        "lost": 973,
+        "gained": 0
+      },
+      {
+        "class_id": 9,
+        "n": 1009,
+        "before_correct": 1003,
+        "after_correct": 0,
+        "lost": 1003,
+        "gained": 0
+      }
+    ],
+    "prediction_class_counts": [
+      7,
+      0,
+      0,
+      0,
+      0,
+      0,
+      9993,
+      0,
+      0,
+      0
+    ],
+    "new_image_forwards": 0,
+    "new_AGA_calls": 0
+  },
+  "independent_numpy_source": {
+    "KL": 5.865199331264687,
+    "agreement": 2017,
+    "scalar_KL_error": 2.3462276388386272e-07,
+    "source_scores_sha256": "85ec4d58472f7d843172551b34d64b69640213929894cf8ce3c292dee3c30cd1",
+    "new_image_forwards": 0,
+    "prediction_counts_by_800_view_pool": [
+      {
+        "pool": 0,
+        "teacher": [
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80,
+          80
+        ],
+        "student": [
+          310,
+          32,
+          25,
+          0,
+          70,
+          154,
+          4,
+          35,
+          170,
+          0
+        ]
+      },
+      {
+        "pool": 1,
+        "teacher": [
+          91,
+          80,
+          139,
+          0,
+          80,
+          125,
+          56,
+          80,
+          149,
+          0
+        ],
+        "student": [
+          139,
+          41,
+          83,
+          0,
+          48,
+          183,
+          28,
+          116,
+          162,
+          0
+        ]
+      },
+      {
+        "pool": 2,
+        "teacher": [
+          91,
+          65,
+          1,
+          0,
+          43,
+          12,
+          169,
+          270,
+          149,
+          0
+        ],
+        "student": [
+          96,
+          2,
+          23,
+          0,
+          0,
+          0,
+          138,
+          340,
+          201,
+          0
+        ]
+      },
+      {
+        "pool": 3,
+        "teacher": [
+          146,
+          10,
+          159,
+          0,
+          45,
+          165,
+          48,
+          74,
+          153,
+          0
+        ],
+        "student": [
+          151,
+          0,
+          212,
+          0,
+          0,
+          187,
+          56,
+          47,
+          147,
+          0
+        ]
+      }
+    ]
+  },
+  "closed": true,
+  "fusion_evaluated": false,
+  "new_real_evaluation_image_forwards": 20000,
+  "new_complete_AGA_calls": 0,
+  "finding": "All12finite nonlinear taskresponses maintained (FP32max8.10e-7);sourcefullclassificationstill1183/3200mismatched. FullMNIST99.69->9.63,predictions9993class6and7class0. NoTA/AGA,testbasedrepairorlastpointcontinuation. Neitherfiniteprobes nor sourceagreement prove naturalfunction. Cause not uniquelyattributedtoSVD,sourcepriororoptimizer.",
+  "source_class_distribution_note": "Original800teacherbalanced80perclass;threecriticpools loseclasses3and9. Realpredictioncollapseclass6isnot simplyteacherclass6dominance:syntheticpools stillmanyclasses. No synthetic/realwitness reusedforrepair.",
+  "engineering": {
+    "completed_constructor_lines": 265,
+    "retired_after_exact_archive": true,
+    "new_production_modules": 0,
+    "new_frameworks": 0,
+    "unique_models_inputs_scores_or_failures_deleted": 0,
+    "retired_local_temporary_diagnostic_lines": 185,
+    "parameter_check_lines": 71
+  }
+}

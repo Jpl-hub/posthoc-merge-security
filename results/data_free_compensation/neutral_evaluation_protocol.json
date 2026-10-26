@@ -1,0 +1,154 @@
+{
+  "experiment": "One frozen exact LN-aware equal-class-score numerical A/B point",
+  "output": "outputs/row_compensation_20261025/neutral_response/evaluation",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TA"
+  ],
+  "TIES": {
+    "repository": "https://github.com/prateeky2806/ties-merging",
+    "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+    "path": "external/ties-merging/src/utils/merge_utils.py",
+    "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+    "topk_percent": 20,
+    "coefficient": 1,
+    "resolve_method": "mass",
+    "merge_func": "dis-mean",
+    "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+  },
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "task_budget": 0.5,
+  "utility_seed": null,
+  "utility_n": null,
+  "probe_rank": 32,
+  "test_status": "Complete historically exposed officialMNIST/SVHN benchmarks;not blind;no selection or parameter feedback",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": "Unique minimum-norm exact finite nullspace solve,0optimizersteps. Originaltask32A and originalB,rawclean generatedcache,64signedtaskresponseconstraints;no class0target,realconstructionimages or partner.",
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "Neutral_MNIST": {
+      "label": "LN-aware equal-class-score A/B compensation",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/row_compensation_20261025/neutral_response/point.pt",
+        "sha256": "c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8"
+      },
+      "AGA_edits": {
+        "path": "outputs/row_compensation_20261025/neutral_response/AGA/edits.pt",
+        "sha256": "bebceaab5a71b9b989ce83ab67fab33f87e7136e9597c5450244e5e4d5313d41"
+      },
+      "budget_status": "Unique exact finite minimum-norm solution,no tuned cap;Arelative1.027389,Brelative9.334942;historicalD.5separate.",
+      "function_status": "Complete10000MNIST99.69before/after,declared .5ppaccuracy condition passed;strictR41.5636failsseparately."
+    }
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "defenses": [
+        "Neutral_MNIST"
+      ]
+    }
+  ],
+  "legacy": {
+    "MNIST_SVHN/Unprotected": {
+      "standalone": {
+        "path": "outputs/row_compensation_20261025/neutral_response/native/full.pt",
+        "sha256": "e1b4086e5b8fd8da2fa07388f6a8226ecf76b8b326c26e7c980f0f32b362c075",
+        "native_score_field": "before"
+      },
+      "direct": {
+        "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+        "key_template": "Unprotected/TA/None/{task}"
+      },
+      "AGA_target_only": {
+        "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+        "key_template": "Unprotected/TA/Protected expert/{task}"
+      },
+      "AGA_both": {
+        "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+        "key_template": "Unprotected/TA/All experts/{task}"
+      }
+    },
+    "MNIST_SVHN/Neutral_MNIST": {
+      "standalone": {
+        "path": "outputs/row_compensation_20261025/neutral_response/native/full.pt",
+        "sha256": "e1b4086e5b8fd8da2fa07388f6a8226ecf76b8b326c26e7c980f0f32b362c075",
+        "native_score_field": "after"
+      }
+    }
+  },
+  "source_sha256": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+    "_impl/defenses.py": "b483086bc27198dd97cabdf283b591f70243d438c9907194d869803e602e9785",
+    "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/report.py": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "6815591553f7537d3de6f4adfc32e51cb999ca1f9bb7a88f3b1659c6a88e4b1f",
+    "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+    "experiment/recover.py": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+    "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9",
+    "results/data_free_compensation/neutral_compensation.py": "5194e01b25ec413f64b71187919fcfc94fa966c858e215b91305890e883daf77",
+    "results/data_free_compensation/neutral_compensation_protocol.json": "e299a8d4acdfa20ac45bdf216b7d993a96dd0910db5678f8a3cf6a82c40b7e55"
+  },
+  "original_batch_context_replays": true,
+  "parameter_budget_scope": "Unique minimum-norm solution fixedbeforeimages,no strength selection. Nativecompleteaccuracy loss0pp;oldD.5/R.5retainedseparately.",
+  "native_evaluation": "Complete nativealreadyfinished,source/pointfixedbeforethat measurement. Reuse exact nativebefore/after arrays and originalAGApartner/baselines bySHA;do not repeatnative.",
+  "frozen_point_before_images": "c5ddd6bec62c923da087fadc661e0a72bf21f7c811d76278406fb473d4cb9fe8",
+  "readout_followup": "Samealreadyfixed64uniform-noise probabilitycalibration;ownmergedmodel/publicheadonly,no labels/originaltargetforfit. Fitnew3scope corrections,freezeSHA,thenreadtestscorelabels. Reuse matched unprotectedcorrection bySHA;no new decoder rule.",
+  "AGA_weight_only_execution": {
+    "method": "aga",
+    "seconds": 11.882463190704584,
+    "output_sha256": "bebceaab5a71b9b989ce83ab67fab33f87e7136e9597c5450244e5e4d5313d41",
+    "reference": "original_AGA",
+    "new_training_updates": 0
+  }
+}

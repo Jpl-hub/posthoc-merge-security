@@ -1,665 +1,196 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
-  "active_focus": "Data-free Defense2 core mechanism: task-related preservation and effective numerical parameter change with joint compensation. Whole-network permutation retained as a data-free comparison.",
-  "allow_4090": true,
+  "active_focus": "Defense2 data-free core mechanism: meaningful numerical changes and cross-module compensation preserving standalone function after expert freezing.",
+  "status": "用户已恢复研究授权，4090无法开机，改用3090。GPU空闲，清理15份旧中间缓存及2重复副本，实际释放4.71GB，正同步当前源码与研究状态。",
+  "updated_utc": "2026-10-26T03:23:47.265694+00:00",
+  "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
-    "parameter_budget": 0.5,
-    "parameter_convention": "Separate logical Q/K/V matrices and each edited bias; raw packed-tensor distances are not equivalent.",
-    "full_relative_class_gap_budget": 0.5,
-    "extra_parameter_budget": "Prospective method-specific range justified by structure, standalone function and numerical stability; declare before source/evaluation. Do not retune closed points.",
-    "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
-    "validation_order": "Prospective source construction -> freeze sole point -> independent held-out measurement -> complete native accuracy -> fixed TA and originalAGA. Report any strictR/old small-sample failure separately. Main357 fusion is explicitly post-gate same-point observational followup.",
-    "SVD_role": "Task-direction probe; its orthogonal complement is not a functional zero space.",
-    "historical_tests_not_blind": true,
-    "closed_points_not_retried": true,
-    "parameter_budget_scope": "Historical fixed-distance comparison only; not a universal prerequisite for future Defense2 or full-default paper baselines. Existing protocols and outcomes remain unchanged.",
-    "comparison_policy": "Primary TA/originalAGA with full default baselines and matched standalone function. Parameter distances and resource costs reported explicitly. Historical D0.5 comparison and R0.5 functional check retained."
-  },
-  "user_reporting_preference": "Lead with actual standalone, TA and originalAGA accuracies and name the exact release. Retain the effective7.39%/10.09% structure when discussing later failed candidates; separate efficacy, novelty and targeted recovery permissions. Plain Chinese, no invented labels or sweeping claim that allDefense2 failed.",
-  "user_engineering_preference": "Keep a small set of useful checks; do not add audit entrypoints,repeat checks or stricter process gates without a concrete correctness need. Concentrate on method and actual standalone/TA/AGA accuracy.",
-  "engineering_refactor": {
-    "status": "passed_local_and_3090_regression_checks",
-    "snapshot_commit": "3e6be4c4fe0d2cba86f540b9a4f2ec5fcc126282",
-    "current_config": "configs/evaluate.json",
-    "construction_config": "configs/construct.json",
-    "report_entrypoint": "python -m experiment.report",
-    "validation": "results/engineering_refactor/validation.json",
-    "history": "docs/engineering.md",
-    "legacy_source_paths_belong_to_frozen_commits": true,
-    "GPU_refactor_verification": "passed_real_checkpoints_AGA_and_8_original_context_score_rows",
-    "new_scientific_results": 0,
-    "GPU_validation": "results/engineering_refactor/GPU_validation.json",
-    "pre_refactor_public_snapshot": "c44c1ff184b126dbec7c776c79f12c3ab144e2f7"
-  },
-  "paper_tables": {
-    "status": "24MD/TeXtables201rows807source selections;cross-format pytest and desktop compilation passed",
-    "directory": "results/paper_tables",
-    "markdown": "results/paper_tables/tables.md",
-    "latex": "results/paper_tables/tables.tex",
-    "preview": "results/paper_tables/main.tex",
-    "completion_inventory": "results/paper_tables/README.md",
-    "tables": 24,
-    "figures": 2,
-    "pdf_pages": null,
-    "validation": "results/paper_tables/validation.json",
-    "new_GPU_forwards": 0,
-    "all_comparisons_complete": false,
-    "missing": [
-      "Validated method contribution and stronger scope-specific evidence; no complete eight-task claim",
-      "complete8protected/evaluatedtasks",
-      "fullMergeLock/MergeGuard/ARF/MergeBarrier defenses",
-      "GradErase",
-      "independent defense repeats"
-    ],
-    "fixed_rule_three_task_supplement": "results/residual_coordinate_control/other_tasks/summary.md",
-    "full_default_baseline_supplement": "results/params_reference/other_tasks/summary.md",
-    "data_rows": 201,
-    "task_directed_supplement": "results/task_directed_pairing/other_tasks/summary.md",
-    "selected_source_records": 807,
-    "fixed_distance_ablation": "results/task_directed_pairing/distance_ablation/summary.md",
-    "eight_expert_task_directed_supplement": "results/task_directed_pairing/eight_expert/summary.md",
-    "task_direction_ablation_three_tasks": "results/task_directed_pairing/distance_ablation/other_tasks/tables.md",
-    "modification_extent": "results/task_directed_pairing/amplitude_ablation/summary.md"
-  },
-  "status": "Data-free numericalA/B gives single-pair originalAGA protection;native loss.76pp and directTA60.89 remain. Mainand2componentcontrols completed independently.",
-  "updated_utc": "2026-10-25T09:17:11.869599+00:00",
-  "server": {
-    "status": "3090CPU-only archive;transfer complete,no GPU experiment.",
-    "GPU": "3090 instance in user-selected CPU-only mode",
-    "ssh_control_socket": "/tmp/posthoc_3090_refactor.sock",
-    "research_GPU_processes": 0,
-    "checked_at_utc": "2026-10-25T06:17:14.053142+00:00",
-    "storage": {
-      "available_bytes": {
-        "/root": 2717118464,
-        "/root/autodl-tmp": 3851411456
-      },
-      "reconstructible_training_cache_bytes_removed": 4073198178,
-      "model_bytes_relocated_between_volumes": 1815380936,
-      "record": "results/engineering_refactor/cleanup_20261023.json:resumed_cleanup_20261024",
-      "latest_cleanup": {
-        "record": "results/engineering_refactor/cleanup_20261023.json:additional_cleanup_20261024",
-        "actual_space_gained_bytes": 2710515712,
-        "archive_bytes_relocated": 1515927116,
-        "models_scores_and_failures_preserved": true
-      }
-    },
-    "last_verified_process_snapshot": {
-      "checked_at_utc": "2026-10-25T06:17:14.053142+00:00",
-      "research_GPU_processes": 0
-    },
-    "attempts": "User provided current credentials;interactiveSSH master re-established,process snapshot noGPU jobs."
+    "historical_D_and_R": ".5/.5comparison preserved,not a universal newparametercap;full history at97a3474.",
+    "native_condition": "Prospectivelydeclared<=.5ppcompleteaccuracy loss;oldstrictR separately reported.",
+    "experts_frozen": true,
+    "real_construction_images": 0,
+    "no_partner_test_witness_for_construction_selection_or_repair": true,
+    "no_closed_point_parameter_seed_rank_layer_retries": true,
+    "original_AGA_and_other_processing": "OriginalAGA raw,outputcalibration,knownmodule recovery separate;mergers notcountedasattacks."
   },
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "research_jobs": [],
   "active_GPU_jobs": 0,
-  "current_candidate": {
-    "status": "effective_original_AGA_single_pair_with_native_and_TA_limits",
-    "record": "results/data_free_compensation/row_evaluation_result.json",
-    "construction_record": "results/data_free_compensation/row_compensation_result.json",
-    "ablation_record": "results/data_free_compensation/row_ablation_result.json",
-    "point_sha256": "82ffac347099984e52df0662acbcc8178b16c61a1c3cb20ce9d61c869fd4a364",
-    "native": 98.93,
-    "native_original": 99.69,
-    "native_loss_pp": 0.76,
-    "declared_utility_passed": false,
-    "TA": 60.89,
-    "original_AGA_target": 5.5,
-    "original_AGA_both": 2.38,
-    "strict_R": 64.12920754090881,
-    "logical_D": 3.0622344081125203,
+  "research_jobs": [],
+  "compute": {
+    "primary_GPU": "RTX3090",
+    "primary_root": "/root/autodl-tmp/merge_security_20261009",
+    "ssh_control_socket": "/tmp/posthoc_3090_active.sock",
+    "python": "/root/miniconda3/bin/python",
+    "torch": "2.3.0+cu121",
+    "numpy": "1.26.4",
+    "GPU_memory_MiB": 24576,
+    "GPU_process_check_utc": "2026-10-26T03:23:47.265694+00:00",
+    "active_GPU_jobs": 0,
+    "4090": "Unavailable at user report; no new work there. Oct25/26 raw artifacts remain on its disk.",
+    "3090_data_available_bytes": 6013739008,
+    "3090_system_available_bytes": 5268209664
+  },
+  "latest_core_trial": {
+    "point_sha256": "1a693ec907f5dde6b973692b9247ebeee6f4c56d60088bce06506c0b7b119883",
+    "parameter_distance": 7.2871371127329825,
+    "closed": true,
+    "record": "results/data_free_compensation/local_prefix_result.json",
+    "native_before_after": [
+      99.69,
+      9.14
+    ],
+    "source_agreement": [
+      64,
+      64
+    ],
     "real_construction_images": 0,
-    "classhead_used": true,
-    "teacher_training_updates": 0,
-    "SVD_contribution_independently_proven": false,
-    "onlyA_native_TA_AGAtarget_AGAboth": [
-      99.7,
-      99.37,
-      99.31,
-      99.34
-    ],
-    "onlyB_native_TA_AGAtarget_AGAboth": [
-      44.0,
-      51.39,
-      43.06,
-      38.25
-    ],
-    "frozen_no_test_repair": true,
-    "full_new_AGA_calls_main_and_controls": 3,
-    "source_last_MLP_geometry_matches": 1,
-    "score_context_replays": 560,
-    "maximum_context_score_error": 1.52587890625e-05,
-    "scope": "Fixed TA.5 MNISTtarget/SVHNpartner,complete tests. Not full multitask or all-attacker recovery claim."
+    "original_expert_updates": 0,
+    "TA_and_AGA_evaluated": false,
+    "seconds": 146.53505530022085,
+    "new_real_evaluation_image_forwards": 20000,
+    "independent_raw_recount_status": "Pending next session after user requested rest",
+    "source_archived_and_retired_active_tree": true
   },
-  "comparisons": {
-    "global_task_directed": "results/task_directed_pairing/summary.md;three targets and eight-expert setting,originalAGA effective,known-family public matching exactly recovers158tensors",
-    "Defense1": "results/phase3/tables.md;originalAGA and stronger permissions separately reported",
-    "full_PaRaMS": "results/params_reference/other_tasks/summary.md;full default baseline,not excluded by historical D0.5",
-    "O_B_A_B": "Old effects and complete-task budget counterexamples retained,not strictly feasible historical defenses",
-    "previous_classifier_coupling": {
-      "record": "results/data_free_compensation/classifier_coupling.json",
-      "point_sha256": "069e6091c34fe6f88f0c9b6c1044204228b096e68d9dae33dd6f8bf03e8236de",
-      "native": 99.33,
-      "TA": 99.16,
-      "AGA_target": 99.03,
-      "AGA_both": 99.02
-    }
+  "established_methods": {
+    "Defense1": "results/phase3/bias_weight_only/summary.md: current fully Data-Free MNIST/SVHN result; older data-assisted amplitudes separately retained.",
+    "task_directed_permutation": "results/task_directed_pairing/summary.md;known-family matching scope separate.",
+    "earlier_numerical_references": "results/data_free_compensation/row_evaluation_result.json,decision_evaluation_result.json,decision_no_task_evaluation_result.json;originalAGA effects and fixedoutputcorrection outcomes retained."
   },
-  "closed_points": {
-    "single_final_MLP": "results/nonlinear_compensation/summary.md:99.67native,99.34TA,99.32/99.33AGA;not retried",
-    "finite_P_beta": "results/centered_readout_game/accuracy_evaluation/summary.md:99.64native,94.64TA,91.22/87.79AGA;not retuned",
-    "other_history": "notes/phase2_coupling.md and frozen prior commits;all Q/V/O/head/affine/zero-unit/local-Jacobian closed points remain closed",
-    "pre_LN_attention": "results/nonlinear_pre_ln;all3complete,no generalization benefit;no retry",
-    "same_input_local_teacher": "results/nonlinear_local_function;all3complete,worse utility;no retry",
-    "recovery_game": "results/data_free_compensation/recovery_evaluation.json:14rows224replays0error;no protection,no retry",
-    "alignment_compensation": "MNIST99.69native,99.35TA,99.29/99.31originalAGA;actual O erasure passed but no target protection. No retry.",
-    "signed_function_reference": "787c235d data-free B/b analytic control:99.69native,99.34TA,99.28/99.32originalAGA. Local generated signed task reversal did not yield classification protection;closed,no amplification/task-direction/layer retry.",
-    "classifier_coupling": "069e6091:datafreeusingfrozenhead,native99.33,realTA99.16,originalAGA99.03/99.02;partialpublicproxy84.13/78.26;closed,no repair;record classifier_coupling.json",
-    "active_input_joint_AB": "19d1e2a5:source200/200native/direct/AGA-publicsamepredictions;no protection,no real evaluation.100fixedupdates,D.36275;closed,not a global impossibility.",
-    "adversarial_class_coupling": "19d1e2a5 source failed closed,no natural evaluation,no retry;adversarial_coupling_result.json"
+  "closed_history": "notes/phase2_coupling.md,notes/phase2_related_work_and_novelty.md;all earlierQ/V/O/affine/zero-unit/Jacobian/staticreadout/069e/19d/cyclic/commonresponse/decisionmargin/neutral-responsepoints remain closed.",
+  "engineering": {
+    "production_modules_and_entrypoints_unchanged": false,
+    "new_frameworks": 0,
+    "retired_exploration_sources": 9,
+    "retired_source_lines": 1459,
+    "retired_unreferenced_debug_records": 10,
+    "unique_models_scores_failures_deleted": 0,
+    "record": "results/engineering_refactor/validation.json:oct25_core_cleanup",
+    "previous_full_state_commit": "97a3474",
+    "weight_only_bias_core_lines": 117,
+    "prior_bias_core_lines": 213,
+    "regression_and_behavior_tests_passed": 17,
+    "current_completed_constructor_lines_retired": 265
   },
-  "data_policy": {
-    "construction": "Frozen target/public weights and taskSVD. Separately declared classifier-informed branch may use fixed original target head/classIDs. Zero real construction images, partner inputs or exposed candidate/counterexample reuse. Historical head-free/data-assisted conditions retained.",
-    "SVHN": "Original confirmation512 included24 source overlaps after linked-root metadata exclusion bug;original retained,488 disjoint-only correction in heldout_overlap_correction.json. New pre-LN/local draws explicitly exclude source and linked roots.",
-    "DTD": "results/nonlinear_dtd/evaluation_protocol.json:only913 train images outside historical confirmation;fixed512source/401heldout,heldout previously exposed as old fit,not globally fresh",
-    "ablation": "Both fixed controls fully reported even when utility/source flags fail;no replacement of main357 based on scores"
-  },
+  "next_action": "先恢复当前精简源码和运行环境；围绕无数据完整功能保持研究机制，不重跑关闭点。1a693ec9原始分数留4090，独立复核待该实例可读取时完成，不重建重复实验。",
+  "paper_tables": "Canonical24tablesunchanged;current small MD/TeXsupplement inresults/data_free_compensation. No new report or PPT.",
   "github_sync": {
-    "status": "New finite mechanism results/resource transition prepared for publication; exact final commit in outputs/latest_github_sync_receipt.json",
-    "last_verified_remote_commit": "d71c693dcb2373b4543922fd19cb0d54c36dafd7"
+    "status": "本轮GitHub get_repo返回MCP传输错误，尚未新上传或读回。结果已保存在本地和4090，保留最后一次真实远程提交。",
+    "last_verified_remote_commit": "4c76d4d9ecc2d71d1c3474ad2b78951e432685e5",
+    "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "history": {
-    "full_previous_state_commit": "bf4f3c10e922f2ef30b1f4d297896edf615b579b",
-    "scientific_results_and_failures": "All original result directories and Git history retained",
-    "cleanup": "results/engineering_refactor/validation.json:10completed scripts883lines plus91closed-variant net lines removed;oldGit snapshots/SHA preserved. All unique models/scores/failures retained.",
-    "report_cleanup": {
-      "snapshot": "cc0973910d44ee742e363921e2127518cd093a79",
-      "record": "results/engineering_refactor/validation.json:report_cleanup_20261023",
-      "unique_models_or_raw_results_deleted": false
-    },
-    "cleanup_20261024": "222runtime lines and29configuration lines removed from completed data-assisted constructor;Git7a59e9d/source archive retained;17core+1paper regression passed. Cold diagnostics losslessly archived,one reconstructible activation cache compacted."
-  },
-  "next_action": "Core method first:explicitly maximize effective task-outside numerical change under actual task-function retention,not only weak distance reward. Before another optimizer,review original author row-cosine mechanism and existing work;derive/check feasibility of PLdeltaAPR withdiag((A+deltaA)A0T)=0 using only original/public weights and taskSVD. This is a proposed finite condition,not computed/new defense. Pair any supported structural change with genuine A/B or multilayer functional compensation and fixed TA/originalAGA validation. No19d/069e pixel/weight/counterexample repair;4090soleGPU,3090CPUarchiveonly.",
-  "completed_overnight": {
-    "components": "results/nonlinear_prefix/source_components/results.json;A-only/B-only/no-reconstruction collapse source,full compensation preserves1022/1024",
-    "ablations": "results/nonlinear_prefix/ablations;no_task/no_prefix complete,do not rerun",
-    "generalization": [
-      "results/nonlinear_svhn",
-      "results/nonlinear_dtd"
-    ],
-    "AGA_standalone": "99.44MNIST,results/nonlinear_prefix/AGA_native",
-    "public_reset": "results/nonlinear_prefix/public_reset",
-    "eight_expert": "results/nonlinear_prefix/eight_expert",
-    "coefficients": "results/nonlinear_prefix/coefficients",
-    "pre_LN": "results/nonlinear_pre_ln:all3complete;M99.52/TA26.22/AGA23.08;S96.18/AGA20.79;D40.43/AGA9.10;not a generalization solution",
-    "local_function": "results/nonlinear_local_function:all3complete,42rows672context scores0error and independent NumPy statistics;M99.39/AGA18.26,S95.67,D26.28. Closed,no target weights sweep.",
-    "retained_knowledge": "results/nonlinear_prefix/retained_knowledge:12source-only group records;MLP+readout M1020/1024,S988/1024,D497/512. Official-label/NumPy counts passed. Not test results or new defenses. Initial path error retained;4096repeated forwards plus10240successful.",
-    "public_backbone": "results/nonlinear_public_backbone/summary.md;frozen27eb complete,not replacement of357",
-    "public_backbone_other_tasks": "results/nonlinear_public_backbone/other_tasks/summary.md;both complete,retentionfailed,no repair",
-    "public_backbone_cross_partner": "results/nonlinear_public_backbone/cross_partner/full;35records560context scores0error",
-    "public_backbone_AGA_native": "results/nonlinear_public_backbone/AGA_native/full;99.47%,2rows32contextscores0error",
-    "public_backbone_eight": "results/nonlinear_public_backbone/eight_expert/full;24records384contextscores0error,three datasets only"
-  },
-  "research_followup": {
-    "point_sha256": "27ebc7eacfe0a4afc4277f7f3f35b01c2cf0395c068bfe439dee114ac6256b20",
-    "protocol": "results/nonlinear_public_backbone/protocol.json",
-    "source_snapshot": "1c7c5d4",
-    "evaluation_snapshot": "2ceefaf",
-    "rule": "Return107stored tensors outside MLP/finalLN/P to public base,then unchanged original-teacher12MLP SVD/nonlinear prefix reconstruction. Same1024source/rank32/.01/A2B4. Not a strength/rank/layer retry.",
-    "fixed_reset_D": 0.12888449853775258,
-    "D": 8.832822168638963,
-    "source": "1022/1024 unchanged,0prediction changes",
-    "new_confirmation": "512->511,seed2026102312,source_overlap0",
-    "full_native": "9969->9947/10000;99.47%,loss.22pp,35changes,strictR123.4557failed",
-    "fusion_and_targeted_reset": "Complete,28records448original128contextscores0error;independentNumPy counts/perclass/paired95CI/exactMcNemar passed",
-    "novelty": "Localization/grafting and ridge already known;composition and stronger recovery effectiveness not established",
-    "scope": "Same registered rule complete onMNIST/SVHN/DTD;onlyMNIST retention successful",
-    "actual_results": {
-      "native": 99.47,
-      "TA": 15.65,
-      "AGA_target": 11.57,
-      "AGA_both": 11.52,
-      "reset_native": 46.43,
-      "reset_TA": 84.63,
-      "reset_AGA_target": 84.63,
-      "reset_AGA_both": 84.04,
-      "no_target_TA": 84.06,
-      "no_target_both": 83.46,
-      "reset_gain_pp": 0.57,
-      "reset_gain95CI_pp": [
-        0.36946070705021006,
-        0.77053929294979
-      ]
-    },
-    "summary": "results/nonlinear_public_backbone/summary.md",
-    "limitations": "MNIST-only prototype so far;readout3tensors remain after known-module reset;real.57pp paired gain is not zero leakage or a knowledge quantity;strictRfailed;SVD contribution and full novelty unresolved",
-    "cross_task": {
-      "SVHN": {
-        "native": 95.93577135832821,
-        "original": 97.46081745543947,
-        "AGA_target": 16.05716041794714,
-        "utility_passed": false
-      },
-      "DTD": {
-        "native": 41.808510638297875,
-        "original": 79.41489361702128,
-        "AGA_target": 6.914893617021277,
-        "utility_passed": false
-      }
-    },
-    "additional_partner": {
-      "partner": "DTD",
-      "TA": 11.35,
-      "AGA_target": 18.54,
-      "AGA_both": 17.65,
-      "reset_TA": 51.58,
-      "no_target_TA": 50.47,
-      "paired_gain_pp": 1.11
-    },
-    "eight_expert": {
-      "coefficient": 0.2,
-      "evaluated": [
-        "MNIST",
-        "DTD",
-        "SVHN"
-      ],
-      "TA_MNIST": 79.56,
-      "AGA_target_MNIST": 44.19,
-      "reset_MNIST": 73.5,
-      "no_target_MNIST": 72.99,
-      "paired_gain_pp": 0.51
-    },
-    "AGA_standalone_MNIST": 99.47,
-    "all_original_context_replays_passed": true,
-    "role": "Completed data-assisted reference;excluded from the primary data-free Defense2 route by the Oct23 user instruction."
-  },
-  "teacher_direction": {
-    "focus": "Core method first;maximize effective parameter change while minimizing task-related change,task-vector singular directions as distillation probes;study real joint/minmax objective rather than rename sequential reconstruction",
-    "data_condition": "Explicit Oct23 user requirement:no real training images for primary Defense2 construction. Whole-network task-directed permutation is weight-only;357/27eb used real training images and are completed data-assisted references,not primary candidates. Evaluation images are reported separately.",
-    "comparison_scope": "Do not repeat completed comparisons;user previously said not to chase classmates materials.",
-    "guarantees": "Random smoothing/DP analogy in screenshot is not an established theorem or privacy guarantee.",
-    "source": "Three Oct23provided screenshots actually viewed via /mnt/c/Users/J/AppData/Local/Temp paths;details in phase2_coupling.md",
-    "research_note": "results/data_free_compensation/summary.md;weight-only calculation completed,no new defense point,classification result or optimizer."
-  },
-  "data_free_shared_compensation": {
-    "record": "results/data_free_compensation/joint.json",
-    "new_defense_points": 0,
-    "new_accuracy_results": 0,
-    "scope": "Fixed A convex B step plus envelope directional derivative;A optimization and native/merge efficacy unresolved"
-  },
-  "teacher_screenshots": "Oct23 reread3user-provided screenshots. Focus on core construction;data-free;maximize distance from original while minimizing task-subspace changes using task-vector singular directions as probes;consider minmax;respect schedule. This is not a request to add unrelated methods or a claim of differential privacy.",
-  "data_free_joint_pilot": {
-    "status": "completed_closed_no_fusion_protection",
-    "protocol": "results/data_free_compensation/pilot_protocol.json",
-    "summary": "results/data_free_compensation/summary.md",
-    "point_sha256": "62d9f360e03c64585d709eeef81443f0d4ee29113de28c56d7cf0646219e6ee4",
-    "output": "/root/posthoc_data_free_joint_20261023",
-    "real_construction_images": 0,
-    "teacher_training_updates": 0,
-    "full_width": 3072,
-    "changed_blocks": 1,
-    "iterations": 20,
-    "optimizer_converged": false,
-    "construction_seconds": 158.28168537901365,
-    "logical_D": 1.1006762953350535,
-    "relative_A_B_changes": [
-      1.0,
-      0.45987857848181424
-    ],
-    "synthetic_confirmation_RMS": [
-      0.042533083808657675,
-      0.08403736229899729
-    ],
-    "synthetic_1pct_passed": false,
-    "MNIST_standalone": 99.61,
-    "original_MNIST_standalone": 99.69,
-    "accuracy_loss_pp": 0.08,
-    "strict_R": 91.342534790634,
-    "strict_R_passed": false,
-    "TA_MNIST_SVHN": [
-      99.37,
-      90.9880147510756
-    ],
-    "AGA_target_MNIST_SVHN": [
-      99.32,
-      91.1762446220037
-    ],
-    "AGA_both_MNIST_SVHN": [
-      99.3,
-      90.03149969268593
-    ],
-    "verification": "results/data_free_compensation/pilot_evaluation_validation.json",
-    "records": 14,
-    "context_score_replays": 224,
-    "maximum_score_error": 0.0,
-    "total_evaluation_forward_images": 155392,
-    "interpretation": "Standalone function approximately retained;target fusion already99.37before recovery,so no protection was produced. Larger distance and task-SVD constraints are insufficient. Closed,no steps/strength/layer/seed retry.",
-    "posthoc_scope": "Weight-only and same-source nonlinear self-midpoint diagnostics;not real-partner/full-model causal proof;no new point constructed."
-  },
-  "data_free_mechanism_review": {
-    "status": "mathematical_and_fixed_official_source_review_completed",
-    "record": "notes/phase2_coupling.md",
-    "source_review": "notes/phase2_related_work_and_novelty.md",
-    "hard_constraint_finding": "deltaA V_A=0 and deltaA beta=0 fix the activation on the declared task-LN domain. At fixed inputs,F_t=(1-t)F0+tF1. This is not a real-partner/full-model theorem.",
-    "existing_task_midpoint_endpoint_RMS_ratio": 0.49999999998461303,
-    "finite_coupling": "For a linear two-factor endpoint-preserving change,the self-chord error is-t(1-t)deltaB deltaA. Raw matrix norms do not control this product. General QuickGELU formula in the note.",
-    "covariance_limit": "Same zero mean/variance1 but QuickGELU second moments.369574711737/.424188441157;second moments alone do not identify a nonlinear input distribution.",
-    "official_AGA_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
-    "WUDI_commit": "dc3cd1204a68d1930a32da11c5cddb0cbd7410bb",
-    "ACTMat_commit": "774ee932918cbfab5a11e67a80a168d6185c5ff4",
-    "new_model_points": 0,
-    "new_real_images": 0,
-    "new_model_forwards": 0,
-    "new_optimizer_or_runtime_entrypoints": 0,
-    "scope": "Source-informed mechanism analysis,not a new defense or novelty proof. Do not turn this into a strength/layer/seed retry of the closed pilot."
-  },
-  "data_free_two_state_analysis": {
-    "record": "results/data_free_compensation/joint.json",
-    "derivation": "notes/phase2_coupling.md",
-    "new_CLIP_points": 0,
-    "real_images": 0,
-    "classification_heads_read": 0,
-    "partner_models_read": 0,
-    "new_runtime_entrypoints": 0,
-    "finite_compatibility": "For fixedA and declared activation matrices,C K=T is feasible iffT=T K^+K. This is a standard finite linear condition,not a defense or novelty claim. G not yet a full executable construction.",
-    "same_activation_two_state_minimum_relative_squared_loss": 3.2,
-    "fixed_MNIST_readout_rank": 512,
-    "readout_matrix_shape": [
-      512,
-      767
-    ],
-    "origin_preimage_coordinate_norm": 24.094409935028484,
-    "LN_ball_radius": 27.712812921102035,
-    "readout_direction_representable_in_exact_arithmetic": true,
-    "FP32_direction_error_32examples": 0.006589779543873905,
-    "native_accuracy_or_security_inferred": false,
-    "limitation": "Readout direction preimages are not parameters or upstream network realizations. Very small fixed output magnitude amplifies numeric error. Original small numerical reference failure retained,not a new prerequisite for all methods.",
-    "new_literature": "HNC:fixed official core source read;generic null-space continuation/output restoration already known. Paper ViT uses512realPlaces365images;not current weight-only condition,not executed.",
-    "FP32_reference_limit_1e_minus4_passed": false,
-    "second_order_complete_tail": {
-      "record": "results/data_free_compensation/joint.json:second_order_complete_tail",
-      "source_commit": "7f53b2d",
-      "synthetic_sequences": 8,
-      "tokens_per_sequence": 50,
-      "source_distribution": "Standard Gaussian residual tokens,not upstream task states/images",
-      "normalized_first_derivative_norm": 8.67221713395788e-15,
-      "normalized_second_derivative_norm": 0.556415512446362,
-      "NumPy_Torch_second_derivative_error": 1.1102230246251565e-16,
-      "first_step_native_feature_error": 8.022728831939795e-11,
-      "first_step_midpoint_feature_error": 6.95498988128414e-08,
-      "parameter_files_written": 0,
-      "optimization_steps": 0,
-      "scope": "FP64 finite8response identity only;small midpoint effect below original FP32/FP64 discrepancy. No full-task/native/TA/AGA inference or finite-scale method."
-    },
-    "HNC_official_commit": "8fa8e94459fde94fb130e7c0af833d1e1cc21497"
-  },
-  "written_report": {
-    "date": "2026-10-23",
-    "pdf": "output/pdf/teacher_report_20261023/模型融合保护研究进展_20261023.pdf",
-    "pages": 6,
-    "latex": "output/pdf/teacher_report_20261023/main.tex",
-    "markdown_tables": "output/pdf/teacher_report_20261023/tables.md",
-    "message": "output/pdf/teacher_report_20261023/发送说明.txt",
-    "validation": "output/pdf/teacher_report_20261023/validation.json",
-    "content": "Effective Defense2 parameter permutation first,Defense1 second;methods,matched results,ablations,eight-expert setting;brief recovery scope.No abstract.No claim of completed data-free numerical defense.",
-    "server_copy": "Oct24PDF/source copy andSHA256 verified;see latest_github_sync_receipt.json:server_sync.",
-    "defense2_name": "防御二：基于任务子空间的全网络通道置换",
-    "figures": 3,
-    "report_sha256": "0a47ac5f1bebed9dc17c040f0f180dff6665fe7ecb3dbb72cabc01ea11d7718a",
-    "method_explanation": "TaskSVD channel selection;coordinated layer updates;native function identity;fusion correspondence failure,with simple channel-swap diagram.",
-    "revised_at_utc": "2026-10-23T09:34:36.993068+00:00"
-  },
-  "second_order_synthetic_holdout": {
-    "source_sequences": 8,
-    "heldout_sequences": 64,
-    "holdout_unit_feature_first_derivative_RMS": 0.19150822979569987,
-    "holdout_endpoint_unit_error_RMS": 0.00019151707630591557,
-    "holdout_midpoint_unit_error_RMS": 9.575646380379556e-05,
-    "analytic_Torch_first_derivative_max_error": 8.326672684688674e-17,
-    "new_defense_points": 0,
-    "interpretation": "Exact cancellation is confined to the original finite8responses;independent64responses have nonzero first-order native change. This interpolation does not justify finite-scale preservation."
-  },
-  "exact_group_condition": {
-    "status": "read_only_known_symmetry_applicability",
-    "layer": 11,
-    "target": "MNIST",
-    "source_sha256": "b3023e4a25c079d73460d4ae556e9ad21723ad0b7e1d91e3eff41299773aa13f",
-    "local_definition_commit": "661f04a05d40932c450e49cbfabb1ac2d4d89109",
-    "source_archive_remote": "75fa16b110e09661c24a2c3aaf1ca8dde8ec6bcb",
-    "new_defense_points": 0,
-    "real_images": 0,
-    "seconds": 7.601013032981427,
-    "interpretation": "The3072weighted linear contributions are linearly independent on both declared domains for fixed originalA/B. Thus unchangedB,whole-affine sign flips plus output-bias compensation cannot exactly cancel there. This is neither a new defense nor a restriction on approximate or cross-layer methods.",
-    "record": "results/data_free_compensation/joint.json:exact_group_condition",
-    "minimum_normalized_Gram_eigenvalues": [
-      0.10791574978361683,
-      0.24313544761853192
-    ]
+    "full_previous_state_and_campaign_commit": "4b627f793619ebb1f22628645b10b7ac489ee4ad",
+    "scientific_notes": "notes/phase2_coupling.md and notes/phase2_related_work_and_novelty.md",
+    "unique_weights_scores_failures": "Current raw evidence remains on the 4090 under outputs/row_compensation_20261025; older unique evidence remains on the CPU-only 3090.",
+    "engineering": "已结束的265行临时构造已从活动目录移除，精确源码、唯一权重、输入和分数留4090及Git。没有新增生产模块。"
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
-  "attention_product_review": {
-    "record": "results/data_free_compensation/joint.json:attention_product_review",
-    "source": "frangente/SITH@ee45a342eda4f11bd8fbf73ba48b88aa3f118316",
-    "original_AGA_source": "fb61429f5e6f3517102d506697a150ac26abbdea",
-    "QK_median_relative_gap": 0.02528836680551913,
-    "OV_median_relative_gap": 0.026954931266109736,
-    "seconds": 7.334096776001388,
+  "latest_mechanism_analysis": {
+    "record": "results/data_free_compensation/coupled_compensation_result.json",
+    "fixed_A_task_condition_definition_commit": "eb99130",
+    "task_only_definition_commit": "ac713a1",
+    "all12_feature_ranks": 512,
+    "later11_exactfit_within_old_free_ball": true,
+    "first_layer_old_free_ball_minimum_task_loss": 0.7878013813156683,
+    "first_layer_exact_task_B_relative_change_with_affine_vs_without": [
+      10.931043730786277,
+      0.7631841990341364
+    ],
+    "new_images": 0,
     "new_defense_points": 0,
-    "real_images": 0,
-    "implementation_added": false
-  },
-  "core_method_building": {
-    "record": "results/data_free_compensation/recovery_evaluation.json",
-    "status": "Finite data-free originalAGA-aware game evaluated;native99.66,TA99.35,AGA99.29/99.33,no target protection. Closed source archived and removed fromactive constructor.",
-    "DFAD_official_commit": "c161591aae4c13e53943dcb61c162876421aad7a",
-    "new_model_points": 1,
-    "new_accuracy_results": true,
-    "new_runtime_entrypoints": 0
-  },
-  "recovery_game": {
-    "point_sha256": "59be423108f682430f6ec23c345a04c0e32941e294136aed6ac0c6ad0043e536",
-    "native": 99.66,
-    "original_native": 99.69,
-    "strict_R": 6.974408420714314,
-    "status": "completed_closed_no_fusion_protection",
-    "real_construction_images": 0,
-    "record": "results/data_free_compensation/joint.json:recovery_game",
-    "TA": 99.35,
-    "AGA_target": 99.29,
-    "AGA_both": 99.33,
-    "logical_D": 0.12979409534251668,
-    "validation": "14rows/224original128contextscores0error",
-    "runtime_constructor_removed": true,
-    "source_snapshot": "outputs/recovery_game_20261024/source_snapshot.tar.gz;localGit67959e8/4d9726c"
-  },
-  "head_coupling_condition": {
-    "raw_record": "outputs/2026-10-24_research/head_coupling.json",
-    "status": "finite_head_coupling_condition_checked_no_CLIP_candidate",
-    "kernel_pair_count": 66,
-    "closest_kernel_pair": {
-      "heads": [
-        0,
-        7
-      ],
-      "kernel_relative_difference": 0.946646173751463
-    },
-    "exact_equal_kernel_pairs": 0,
-    "real_images": 0,
-    "new_defense_points": 0,
-    "record": "results/data_free_compensation/joint.json:head_coupling_condition"
-  },
-  "alignment_compensation": {
-    "status": "completed_closed_no_target_fusion_protection",
-    "protocol": "results/data_free_compensation/alignment_protocol.json",
-    "record": "results/data_free_compensation/alignment_evaluation.json",
-    "point_sha256": "28e0e122bcbd8737d71c5f64f1cde1bfc3663ce754eca69095371dbf18b691b9",
-    "native": 99.69,
-    "TA": 99.35,
-    "AGA_target": 99.29,
-    "AGA_both": 99.31,
-    "strict_R": 16.550036407823274,
-    "logical_D": 1.9102225890933735,
-    "real_construction_images": 0,
-    "scores_replayed": 224,
-    "replay_max_error": 0.0,
-    "constructor_removed": true,
-    "source_snapshot": "localGit37cab68/15491c2;3090source_snapshot.tar.gz SHAfa72da29",
-    "component_diagnosis": {
-      "status": "completed_closed_point_read_only",
-      "record": "results/data_free_compensation/joint.json:alignment_component_diagnosis",
-      "O_only_native": 99.68,
-      "B_only_native": 99.68,
-      "joint_native": 99.69,
-      "stored_AGA_native": 99.64,
-      "original_native": 99.69,
-      "new_releases": 0,
-      "new_AGA_calls": 0,
-      "real_evaluation_forwards": 35808,
-      "scores_replayed": 48,
-      "maximum_replay_error": 0.0,
-      "finding": "Both components individually preserve classification;strong task-classification compensation was not established. No point repair or new optimizer."
-    }
-  },
-  "task_function_probe": {
-    "record": "results/data_free_compensation/joint.json:task_function_probe",
-    "status": "fixed_generated_input_response_checked_not_a_defense",
-    "real_images": 0,
-    "new_defense_points": 0,
-    "generated_inputs": 64,
-    "signed_response_mean_before_after": [
-      0.0004692139184891556,
-      0.7369229170053724
-    ],
-    "shifted_response_mean": 0.1041728838567477,
-    "mean_drop": 0.8586380183695818,
-    "independent_numpy_error": 1.3322676295501878e-15,
-    "seconds": 47.94148812498315,
-    "source_embedded_in_raw_record": true,
-    "active_source_functions_added": 0
-  },
-  "population_function_calculation": {
-    "status": "completed_local_function_calculation_not_a_defense",
-    "record": "results/data_free_compensation/joint.json:population_function_calculation",
-    "selected_original_neurons": 8,
-    "whole_MLP_neurons": 3072,
-    "local_domains": [
-      "full_centered_ball767",
-      "task_probe_ball32"
-    ],
-    "independent_numerical_reference_passed": true,
-    "maximum_independent_nonlinear_relative_error": 0.0005240932080440205,
-    "real_images": 0,
-    "new_defense_points": 0,
-    "new_accuracy_results": 0,
-    "active_runtime_functions_added": 0
-  },
-  "signed_function_compensation": {
-    "status": "fixed_soft_penalty_subproblem_closed",
-    "record": "results/data_free_compensation/joint.json:signed_function_compensation",
-    "signed_local_task_response_ratio": 0.9964173835114686,
-    "publications": 0,
-    "real_images": 0,
-    "not_a_general_infeasibility_claim": true
-  },
-  "signed_function_analytic_control": {
-    "status": "completed_closed_no_target_fusion_protection",
-    "record": "results/data_free_compensation/joint.json:signed_function_analytic_control",
-    "point_sha256": "787c235df28214ea18b659ead85c9233b9075d7e55fe40440bbd70a8661e08fc",
-    "native": 99.69,
-    "original_native": 99.69,
-    "new_train_confirmation_correct": 512,
-    "TA": 99.34,
-    "AGA_target": 99.28,
-    "AGA_both": 99.32,
-    "unprotected_TA_AGA_target_both": [
-      99.37,
-      99.3,
-      99.32
-    ],
-    "partner_TA_AGA_target_both": [
-      92.45159803318992,
-      92.72049784880147,
-      91.73709280885063
-    ],
-    "logical_D": 0.5795220459593522,
-    "strict_R": 6.642862443359166,
-    "real_construction_images": 0,
-    "original_AGA_calls": 1,
-    "native_plus_fusion_score_replays": 272,
-    "maximum_replay_error": 0.0,
-    "real_evaluation_forwards": 149376,
-    "new_runtime_functions": 0,
-    "source_archived_in_public_Git_history": "a8bf27b5a33e5ee0763501c5aac11a571829c2d8"
-  },
-  "full_readout_followup": {
-    "status": "completed_read_only_full_prefix_and_final_readout_check",
-    "record": "results/data_free_compensation/joint.json:full_readout_followup",
-    "closed_point_sha256": "787c235df28214ea18b659ead85c9233b9075d7e55fe40440bbd70a8661e08fc",
-    "complete_public_midpoint_signed_ratios_initial_task_generated": [
-      0.9507792529301574,
-      1.0462550622034226
-    ],
-    "complete_public_midpoint_centered_signed_ratios_initial_task_generated": [
-      0.9897642813001682,
-      1.01559207403187
-    ],
-    "generated_inputs_reused": 128,
-    "generated_input_model_forwards": 512,
-    "new_real_images_AGA_publications": [
-      0,
-      0,
-      0
-    ],
-    "new_classification_results": 0,
-    "new_runtime_functions": 0,
-    "source_retired_from_current_tree": true
-  },
-  "compute_resources": {
-    "3090": {
-      "role": "User switched to CPU-only mode; history storage and necessary file transfer only. No GPU experiment.",
-      "root": "/root/autodl-tmp/merge_security_20261009",
-      "socket": "/tmp/posthoc_3090_refactor.sock",
-      "cuda_available": false
-    },
-    "4090": {
-      "authorized_by": "Latest human instruction authorizes new4090GPU;supersedes4090unused rule",
-      "GPU": "RTX4090D24GB",
-      "root": "/root/autodl-tmp/posthoc-merge-security",
-      "socket": "/tmp/posthoc_4090_active.sock",
-      "role": "Sole GPU for future construction, independent checks and final evaluation.",
-      "runtime": "torch2.8.0cu128;existing3090torch2.3.0cu121 remains unchanged",
-      "status": "Current fixed primaryand2componentcontrols completed and independently verified;soleGPUready.",
-      "runtime_record": "results/data_free_compensation/classifier_coupling.json:runtime_4090",
-      "storage_available_bytes": {
-        "/root": 31924256768,
-        "/root/autodl-tmp": 52167065600
-      }
-    }
-  },
-  "previous_data_assisted_reference": {
-    "record": "results/nonlinear_prefix/summary.md",
-    "point_sha256": "3575022126f2d6fe02ba393c7f6df3fff6fb956de78fd1015c5f2d83d43dfb5b",
-    "frozen_unchanged": true,
-    "earlier_state_commit": "0fcc54e225d24f5cbc00384a59f9f4ba335e6223"
-  },
-  "primary_compute": "4090",
-  "mechanism_projection": {
-    "record": "results/data_free_compensation/projection_mechanism.json",
-    "status": "completed_no_new_defense",
-    "new_image_forwards": 0,
     "new_AGA_calls": 0,
-    "source_critical_relative_P_radius": [
-      0.008243491181392337,
-      0.008355417414123363
-    ],
-    "target_own_update_relative_P_radius": 0.01517626618430219,
-    "unrestricted_all10class_capacity_range": [
-      0.018491191025273114,
-      0.033125292254730015
-    ],
-    "interpretation": "Fixed generated-source success is locally fragile to projection changes; the unrestricted readout relaxation does not rule out a more robust function target. No realizability/private-partner guarantee."
+    "scope": "Finiteoriginaltaskvectorsonly;doesnotestablishnaturalaccuracyorrepairclosedpoint."
   },
-  "evaluation_input_transfer": "results/engineering_refactor/compute_4090_20261025.json",
-  "next_core_work": "Establish SVD contribution and cross-task validity of this same mechanism;no main-point tuning on exposed MNIST/SVHN results. Preserve existing effective permutation andDefense1 comparisons."
+  "data_free_requirement": "Both defenses must construct from frozen weights and permitted synthetic inputs only. Defense1 now needs neither real nor synthetic images. Real held-out images are used only after release freezing for evaluation; historical image-calibrated records remain data-assisted.",
+  "previous_core_trial": {
+    "point_sha256": "665d801780e74884693c57f0ef98a4ec2606186583ee24a755956f753a4de441",
+    "parameter_distance": 6.729433161477576,
+    "closed": true,
+    "real_construction_images": 0,
+    "original_expert_updates": 0,
+    "seconds": 705.0913086039945,
+    "record": "results/data_free_compensation/response_compensation_result.json",
+    "native_before_after": [
+      99.69,
+      9.63
+    ],
+    "TA_and_AGA_evaluated": false,
+    "source_agreement": [
+      2017,
+      3200
+    ],
+    "generated_image_forwards": 500800,
+    "input_gradient_model_forwards": 153600,
+    "joint_AB_library_iterations": 120,
+    "full_objective_evaluations": 138,
+    "new_real_evaluation_image_forwards": 20000,
+    "new_complete_AGA_calls": 0,
+    "source_archived_and_retired_active_tree": true,
+    "max_finite_task_response_error": 8.098655257526843e-07
+  },
+  "latest_Defense1": {
+    "record": "results/phase3/bias_weight_only/results.json",
+    "point_sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0",
+    "native_TA_AGAtarget_AGAboth": [
+      99.69,
+      9.8,
+      9.8,
+      9.8
+    ],
+    "real_construction_images": 0,
+    "synthetic_construction_images": 0,
+    "direction_and_amplitude": "weights only",
+    "native_changed_predictions": 0,
+    "native_R": 0.0023300658846215653,
+    "new_complete_AGA_calls": 0,
+    "matched_recovery_transport_source_checked": true,
+    "context_score_replays": 224,
+    "production_tensor_equivalence_verified": true
+  },
+  "latest_source_solver_controls": {
+    "record": "results/data_free_compensation/functional_compensation_result.json",
+    "first_original_Bstep_loss": [
+      15.82703685760498,
+      6.4765448570251465
+    ],
+    "first_group_agreement": [
+      0,
+      40
+    ],
+    "original_order_and_shuffle_agreement": [
+      80,
+      80
+    ],
+    "source_views": 800,
+    "source_order_is_not_sufficient_explanation": true,
+    "new_generated_image_forwards": 27400,
+    "new_real_images": 0,
+    "new_AGA_calls": 0
+  },
+  "writing_and_research_focus": "先讲核心方法、整体算法流程和真实效果。适用条件简短交代，过程核验与历史细节留索引，避免防御性写作及外围补丁挤占核心工作。",
+  "latest_source_prior_comparison": {
+    "record": "results/data_free_compensation/source_prior_result.json",
+    "completed": true,
+    "pseudo_correct_all5shifts": [
+      32,
+      32
+    ],
+    "batch_per_variant": 32,
+    "local_SVD_random_energy_ratios": [
+      1.9257341584978527,
+      2.4366996459410126
+    ],
+    "prefix_response_fit_completed": true,
+    "new_defense_points": 0,
+    "real_images": 0
+  },
+  "user_pause_requested": false,
+  "storage_cleanup": {
+    "record": "results/engineering_refactor/cleanup_20261026.json",
+    "actual_total_available_bytes_increase": 4713619456,
+    "pruned_finished_cache_files": 15,
+    "byte_identical_duplicates_hardlinked": 2,
+    "original_or_unique_release_weights_deleted": 0
+  }
 }

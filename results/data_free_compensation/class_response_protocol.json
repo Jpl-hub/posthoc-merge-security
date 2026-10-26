@@ -1,0 +1,32 @@
+{
+  "status": "defined_before_execution",
+  "purpose": "Finite functional compensation focuses directly on the fixedpublic readout contrast span while preserving complete native outputs and finite taskSVD jointresponses.",
+  "A_rule": "Remove both task singular-space projectors. Use unique rowwise minimum-Frobenius equality solution deltaAi=-(Ai dot A0i)/norm(A0i)^2*A0i. Keep same3072row anchoring conditions and same lastMLP;report any zero rows and actual distance,do not choose amplitude.",
+  "B_rule": "Same fixed.01ridge and simplexSLSQPmaxiter200ftol1e-8. Full768native squared residual loss on10source classgroups+1jointfiniteMLPtaskprobe group. Publicdirect/recovered groups use only the9dimensional centered raw classcontrast span,each normalized by its original clean projectedresidual norm. Freeoutputdirections are fitted only for native;do not spend the public objective suppressing directions that the head does not compare.",
+  "clean_inputs": {
+    "source": {
+      "path": "outputs/row_compensation_20261025/source.pt",
+      "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2"
+    },
+    "original_AGA": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607"
+    }
+  },
+  "reuse_scope": "Onlypinnedoriginal/publiccleansourcecache,no protectedweights,realimages/testscores or exposedwitnesses read duringconstruction. Same160inputs/fiveviews,allretained. No newpixelgeneration.",
+  "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+  "evaluation": "Freeze sole control point first;then same complete nativeMNIST and MNIST/SVHN TA.5/originalAGA target-only/both,no source-confidence selection. Identical original unprotected scores/partnerAGA reused. Report source accuracy,logicaldistance,oldstrictR and native.5pp criterion separately;no main replacement.",
+  "interpretation": "Purposeful change of functionalobjective geometry,not sharedfailedpointstrength/seed/layerretry. Samecleaninputs,sharedtarget,weightcondition,ridgebudget. Preserveallpriorpoints. SVDrole changedfromhardindividualparameterconstraints to finitejointoutputresponses;contributionnotassumed.",
+  "output": "outputs/row_compensation_20261025/class_response",
+  "public_function_target": "One shared centered finalresidual for all generated inputs and all10classes,both public states. Compute the mean of all1600cleanpublic centeredresiduals;normalize it to their pooled RMS norm. Add back only each input residualmean,which finalLayerNorm removes. No targetclass is selected;no tasklabel-dependent cyclicmap.",
+  "mathematical_condition": "Taskfunction retention is imposed on joint finite nonlinear outputs;publicloss targets actualclasscomparisondirections rather than all768dimensions. Exactsameprojectedresponse still needs actualLNscale/bias/unknownprefix checks. Finiteclassloss success is not unseenpartner guarantee;only actualMNIST/SVHN results count.",
+  "no_test_feedback": "Fresh construction from original weights and only the pinned clean teacher/publiccache. Do not read82ff/4c0e pointparameters,real images,real scores,or correction results to set coefficients,direction,norm,seed,layer,rank or optimizationbudget. New functional condition is motivated by algebraic invertibility of the publiccyclicrule;previous releases stayfrozen.",
+  "source_and_evaluation": "First sourcefreeze and hash,samefull800generatedview checks;then completeMNIST and MNIST/SVHN TA.5/originalAGA two scopes. Report fixedknowncyclicinverse separately without fitting or selecting a mapping. Keep both earlier points as scoped references. No new merger/attackeroptimizer.",
+  "task_basis": {
+    "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+    "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+  },
+  "task_probe": "Originaltop32right singularvectorsof lastA taskmatrix,bothsigns,center each vector and normalize to sqrt768,then apply originalLN2gamma/beta.64deterministicfiniteLN-compatible inputs. Joint A/B fullMLP outputs approximate original,not deltaA/deltaB separately constrained. Onegroupnormalizedby original64outputsF-norm. Notrealimageinputs or guaranteed naturalfunctionnullspace.",
+  "class_span": "C=H*diag(publicmeanLN_gamma)*publicmeanP*(W[1:]-W[0])^T,Q=orth(C)9columns. For public state normalizedraw contrasts depend on C^T*centeredresidual/sigma+LN_beta*P*headcontrasts. Objective equalizes Qresponses toward same cleanmean across class. ActualLayerNormvariance and bias remain in fullsource/realforward;not claiming projectederror alone proves classification collapse.",
+  "conditional_solver": "Split deltaB into QZ+(I-QQT)Y. Z weightedridgefits allclass/nativecolumns,Y fits onlynative. Uniqueconvexsolutionpergroupweights:twoFP64Cholesky ridge solves;maximizeconcavedual over31simplexgroups. Fullnativeandprojectedpublic grouperrors give envelopegradient. Onefixedtoyexample verified against independent NumPyKronecker normal equations before CLIPconstruction;notnewresearchresult."
+}

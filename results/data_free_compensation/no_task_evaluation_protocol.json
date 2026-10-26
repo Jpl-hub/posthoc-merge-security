@@ -1,0 +1,157 @@
+{
+  "experiment": "Task SVD deletion control,samegeneratedclean source and fixed functional targets",
+  "output": "outputs/row_compensation_20261025/no_task/evaluation",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TA"
+  ],
+  "TIES": {
+    "repository": "https://github.com/prateeky2806/ties-merging",
+    "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+    "path": "external/ties-merging/src/utils/merge_utils.py",
+    "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+    "topk_percent": 20,
+    "coefficient": 1,
+    "resolve_method": "mass",
+    "merge_func": "dis-mean",
+    "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+  },
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "task_budget": 0.5,
+  "utility_seed": null,
+  "utility_n": null,
+  "probe_rank": 32,
+  "test_status": "Complete historically exposed officialMNIST/SVHN benchmarks;not blind;no selection or parameter feedback",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": "BothA taskprojectors and B taskresponsegroup removed;remaining30groups/ridge/source/prototypes unchanged. Control frozen before natural measurement.",
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "NoTask_MNIST": {
+      "label": "Task SVD constraints removed",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/row_compensation_20261025/no_task/point.pt",
+        "sha256": "4c0e11ecc932b44f9635f695dbfc3165a6462800930ada81ac315f53716e5ebf"
+      },
+      "AGA_edits": {
+        "path": "outputs/row_compensation_20261025/no_task/AGA/edits.pt",
+        "sha256": "aa73de3212f0a253f83fb9ae79eea7e50856ec5891a0f82e741ea8973c9c3780"
+      },
+      "budget_status": "Unconstrained minimum-norm rowcondition and samefunctionalridge;actualdistance reported,no result-based rescaling",
+      "function_status": "Prospectively evaluate completeMNIST standalone;loss<=.5pp utility criterion,strictR separately;all fixed fusion scopes still measured without repair"
+    }
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "defenses": [
+        "NoTask_MNIST"
+      ]
+    }
+  ],
+  "legacy": {
+    "MNIST_SVHN/Unprotected": {
+      "standalone": {
+        "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+        "key_template": "Unprotected/Standalone/None/{task}"
+      },
+      "direct": {
+        "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+        "key_template": "Unprotected/TA/None/{task}"
+      },
+      "AGA_target_only": {
+        "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+        "key_template": "Unprotected/TA/Protected expert/{task}"
+      },
+      "AGA_both": {
+        "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+        "key_template": "Unprotected/TA/All experts/{task}"
+      }
+    }
+  },
+  "source_sha256": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+    "_impl/defenses.py": "b483086bc27198dd97cabdf283b591f70243d438c9907194d869803e602e9785",
+    "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/report.py": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "6815591553f7537d3de6f4adfc32e51cb999ca1f9bb7a88f3b1659c6a88e4b1f",
+    "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+    "experiment/recover.py": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+    "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9",
+    "results/data_free_compensation/row_compensation.py": "5e775d69c84205460271ae0cd2294a7933640798ea3de2a944179ef0ddfafd05",
+    "results/data_free_compensation/row_compensation_protocol.json": "aad909db176df122ca359de94fd7a6e594644b77353fb88ea56faecb1e31e0ed",
+    "results/data_free_compensation/no_task_control.py": "73e346bc9d775b40d23a4881c5ef3dff039d3a3134fe6b9b6fe8637c10482820",
+    "results/data_free_compensation/no_task_protocol.json": "e56edcb22d2f353ee79fbe1e805d8ac6f115dbf706c0d5b9482e29325fbc0db9"
+  },
+  "original_batch_context_replays": true,
+  "parameter_budget_scope": "Actual A norm fixed by geometry; B ridge implied bound prospectively declared. HistoricalD.5/R.5 retained separately,standalone loss<=.5pp reported.",
+  "native_evaluation": "Use existing main_table Standalone row before new fusion rows;reuses original full baseline bySHA. No new native entrypoint or full baseline rerun.",
+  "frozen_point_before_images": "4c0e11ecc932b44f9635f695dbfc3165a6462800930ada81ac315f53716e5ebf",
+  "AGA_weight_only_execution": {
+    "method": "aga",
+    "seconds": 12.138597240671515,
+    "output_sha256": "aa73de3212f0a253f83fb9ae79eea7e50856ec5891a0f82e741ea8973c9c3780",
+    "details": {
+      "known_family": false,
+      "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+      "aligned_reference": {
+        "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+        "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+        "validation": "outputs/feature_noise/independent_validation.json"
+      }
+    },
+    "reference": "original_AGA",
+    "new_training_updates": 0
+  }
+}

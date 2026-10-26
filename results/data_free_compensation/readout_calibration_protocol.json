@@ -1,0 +1,54 @@
+{
+  "status": "defined_before_execution",
+  "output": "outputs/row_compensation_20261025/readout_calibration",
+  "purpose": "Check whether a single input-independent output correction restores the two frozen direct-margin points. Not a new defense, original AGA replacement or classifier fit using real labels.",
+  "paper": "https://proceedings.mlr.press/v139/zhao21c.html",
+  "official_source": {
+    "repository": "tonyzhaozh/few-shot-learning",
+    "commit": "e04d8643be91c2cce63f33e07760ff75d5aa3ad0",
+    "file": "run_classification.py",
+    "sha256": "60787d59863caebc1688e3333659accf759d6f0c615735d1901f1427724ec8fc",
+    "functions": [
+      "eval_accuracy",
+      "get_p_content_free"
+    ],
+    "raw_review_sha256": "89248b0cdce36b31050a8a5b94010db4f5451368a0c7f33c1603600433975bff"
+  },
+  "rule": "For each own fused model, p_cf=mean softmax(logits(noise)); predict argmax(logits(test)-log(p_cf)). This is the official diagonal probability division computed stably in log space. One fixed rule, no scale/temperature/mapping/source/seed selection.",
+  "adaptation": "Original paper uses content-free language strings; here exactly64 fixed unoptimized uniform-noise images are image-domain probes, not an official CLIP reproduction or a claim that noise represents the natural task.",
+  "input_seed": 2026102509,
+  "input_n": 64,
+  "input_definition": "CPU torch.rand(64,3,32,32), uniform[0,1],bilinear224 align_cornersFalse,originalCLIPnormalization,batches8,no labels/no pixel optimization.",
+  "attacker_information": "Own already-created fused model, fixed public classifier/class IDs and synthetic noise. Fitting does not access original target expert, real training/test data, old clean teacher generated cache, protected-source data or labels. Research assembly uses pinned published/original-AGA weights and own partner exactly as the original fixed merging evaluation. The unprotected matched release is corrected by the same rule on itself.",
+  "scopes": [
+    "TA0.5",
+    "originalAGA target-only + TA0.5",
+    "originalAGA both + TA0.5"
+  ],
+  "evaluation_protocols": [
+    "results/data_free_compensation/decision_evaluation_protocol.json",
+    "results/data_free_compensation/decision_no_task_evaluation_protocol.json"
+  ],
+  "raw_scores": [
+    {
+      "name": "Unprotected",
+      "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+      "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51"
+    },
+    {
+      "name": "Decision_MNIST",
+      "path": "outputs/row_compensation_20261025/decision_margin/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+      "sha256": "85b6b72db6d78c424edfdf6d8885992422351c7806ccf258f42f94449abc8d57"
+    },
+    {
+      "name": "DecisionNoTask_MNIST",
+      "path": "outputs/row_compensation_20261025/decision_margin_no_task/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+      "sha256": "7be397762d20966b5f156554c00251825b9d5839f4b84c1f9387e4831c051b2f"
+    }
+  ],
+  "freeze_order": "Save calibration vectors andSHA before opening any raw test score or label file. Then read frozen full MNIST/SVHN scores for evaluation only. No defense parameter changes, no choice of decoder from these results.",
+  "checks": "Independent NumPy stable softmax/mean/log-prior and predictions; official full labels/indices; classwise and paired changes; preserve original raw scores and same matched unprotected controls.",
+  "mechanism": "If logits(x)=task_signal(x)+constant_bias and content-free inputs identify that bias, subtracting logprior cancels it up to a class-independent scalar. Probe-dependent residuals and feature-normalization can violate that model; actual results required. Failure of one fixed correction does not prove erased class information.",
+  "cost": "576 generated-image forwards,0 new natural-image forwards,0 new AGA,0 defense/teacher updates. Retire the one-off source after exact source archive; no production entrypoint or new framework.",
+  "public_before_execution": false
+}

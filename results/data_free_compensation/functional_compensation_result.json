@@ -1,0 +1,1374 @@
+{
+  "status": "closed_complete_native_accuracy_failed",
+  "point_sha256": "7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192",
+  "source": "\"\"\"One Data-Free classification fit with joint A/B task-response constraints.\"\"\"\nimport copy\nimport json\nimport math\nimport time\nfrom pathlib import Path\n\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.io import digest\nfrom _impl.metrics import logical_parameter_distance\nfrom _impl.models import checked_models, initialize\n\n\n@torch.no_grad()\ndef joint_constraint(state, entries, block, prefix):\n    A, B, a = [state[prefix + \"mlp.\" + k].double().cuda()\n               for k in [\"c_fc.weight\", \"c_proj.weight\", \"c_fc.bias\"]]\n    ba, bb = [entries[prefix + \"mlp.\" + k + \".weight\"] for k in [\"c_fc\", \"c_proj\"]]\n    ua, va, vb = [v.cuda() for v in [ba[\"u\"], ba[\"v\"], bb[\"v\"]]]\n    columns = torch.cat([ua, A @ va, vb, a[:, None]], dim=1)\n    columns = columns[:, columns.norm(dim=0) > 0]\n    columns /= columns.norm(dim=0)\n    C, s, _ = torch.linalg.svd(columns, full_matrices=False)\n    C = C[:, s > s[0] * 1e-10]\n    Ap = (2 * C @ (C.T @ A) - A).float()\n    Bt = (2 * (B @ C) @ C.T - B).float().double()\n    r = torch.cat([va.T, -va.T])\n    r -= r.mean(1, keepdim=True)\n    r *= math.sqrt(768) / r.norm(dim=1, keepdim=True)\n    gamma, beta = [state[prefix + \"ln_2.\" + k].double().cuda()\n                   for k in [\"weight\", \"bias\"]]\n    X = F.layer_norm(r, (768,), gamma, beta, block.ln_2.eps)\n    phi = lambda z: z * torch.sigmoid(1.702 * z)\n    H = phi(F.linear(X, Ap.double(), a)).T\n    Y = B @ phi(F.linear(X, A, a)).T\n    U, s, vh = torch.linalg.svd(H, full_matrices=False)\n    keep = s > torch.finfo(torch.double).eps * max(H.shape) * s[0]\n    Q = U[:, keep]\n    inverse = (vh[keep].T / s[keep]) @ Q.T\n    affine = B + (Y - B @ H) @ inverse\n    initial = Bt + (Y - Bt @ H) @ inverse\n    assert float((initial @ H - Y).norm() / (1 + Y.norm())) < 1e-10\n    radius = ((4 * B.norm()).square() - (affine - B).square().sum()).sqrt()\n    return Ap, initial.float(), dict(\n        affine=affine.float(), Q=Q.float(), radius=radius.float(),\n        H=H, Y=Y, original=B, vb=vb, X=X, a=a,\n    )\n\n\ndef main():\n    initialize()\n    start = time.monotonic()\n    path = Path(\"results/data_free_compensation/functional_compensation_protocol.json\")\n    cfg = json.loads(path.read_text())\n    assert digest(__file__) == cfg[\"implementation_sha256\"]\n    out = Path(cfg[\"output\"])\n    out.mkdir(exist_ok=False)\n    (out / \"protocol.json\").write_text(path.read_text())\n    for k in [\"source\", \"basis\"]:\n        assert digest(cfg[k][\"path\"]) == cfg[k][\"sha256\"]\n    base, expert, head, pins = checked_models(cfg[\"target\"])\n    del base\n    original = {k: v.clone() for k, v in expert.state_dict().items()}\n    published = copy.deepcopy(expert).cuda().eval().requires_grad_(False)\n    basis = torch.load(cfg[\"basis\"][\"path\"], map_location=\"cpu\", weights_only=False)\n    entries = {v[\"source_key\"]: v for v in basis.values()}\n    rules, parameters = [], []\n    for i in cfg[\"layers\"]:\n        prefix = f\"model.visual.transformer.resblocks.{i}.\"\n        block = published.model.visual.transformer.resblocks[i]\n        Ap, Bp, rule = joint_constraint(original, entries, block, prefix)\n        with torch.no_grad():\n            block.mlp.c_fc.weight.copy_(Ap)\n            block.mlp.c_proj.weight.copy_(Bp)\n        parameters.append(block.mlp.c_proj.weight)\n        rules.append(rule)\n    optimizer = torch.optim.Adam(parameters, lr=cfg[\"publication_lr\"])\n    raw = torch.load(cfg[\"source\"][\"path\"], map_location=\"cpu\", weights_only=False)\n    pixels = raw[\"final\"].clone()\n    del raw\n    groups = [torch.nn.Parameter(x.clone().cuda())\n              for x in pixels.split(cfg[\"source\"][\"group_size\"])]\n    pixel_optimizers = [torch.optim.Adam([x], lr=cfg[\"source\"][\"pixel_lr\"]) for x in groups]\n    history = [pixels]\n    norm = expert.val_preprocess.transforms[-1]\n    mean = torch.tensor(norm.mean, device=\"cuda\")[None, :, None, None]\n    std = torch.tensor(norm.std, device=\"cuda\")[None, :, None, None]\n    expert.cuda().eval()\n    head.cuda().eval()\n    counters = dict(generated_full_image_forwards=0, input_gradient_model_forwards=0,\n                    pixel_optimizer_steps=0, publication_B_gradient_steps=0)\n    temperature = cfg[\"source\"][\"temperature\"]\n\n    def views(x):\n        x = F.interpolate(x, (224, 224), mode=\"bilinear\", align_corners=False)\n        return (torch.cat([torch.roll(x, tuple(s), (2, 3))\n                           for s in cfg[\"source\"][\"views\"]]) - mean) / std\n\n    def logits(model, x):\n        counters[\"generated_full_image_forwards\"] += len(x)\n        if torch.is_grad_enabled() and x.requires_grad:\n            counters[\"input_gradient_model_forwards\"] += len(x)\n        return head(model(x))\n\n    def divergence(student, teacher):\n        return temperature ** 2 * F.kl_div(\n            F.log_softmax(student / temperature, dim=1),\n            F.softmax(teacher / temperature, dim=1), reduction=\"batchmean\")\n\n    @torch.no_grad()\n    def image_pool(x):\n        return torch.cat([views(v.cuda()).cpu()\n                          for v in x.split(cfg[\"source\"][\"group_size\"])])\n\n    @torch.no_grad()\n    def project():\n        for B, rule in zip(parameters, rules):\n            free = B - rule[\"affine\"]\n            free -= (free @ rule[\"Q\"]) @ rule[\"Q\"].T\n            free *= (rule[\"radius\"] / free.norm().clamp_min(1e-30)).clamp(max=1)\n            B.copy_(rule[\"affine\"] + free)\n\n    pools, rounds = [image_pool(pixels)], []\n    for cycle in range(cfg[\"source\"][\"rounds\"]):\n        for B in parameters:\n            B.requires_grad_(False)\n            B.grad = None\n        first, last = [], []\n        for group_index, (group, actor) in enumerate(zip(groups, pixel_optimizers)):\n            for step in range(cfg[\"source\"][\"pixel_steps_per_round\"]):\n                x = views(group)\n                loss = divergence(logits(published, x), logits(expert, x))\n                if step == 0:\n                    first.append(float(loss.detach()))\n                actor.zero_grad(set_to_none=True)\n                (-loss).backward()\n                assert group.grad is not None and torch.isfinite(group.grad).all()\n                actor.step()\n                counters[\"pixel_optimizer_steps\"] += 1\n                with torch.no_grad():\n                    group.clamp_(0, 1)\n            with torch.no_grad():\n                x = views(group)\n                last.append(float(divergence(logits(published, x), logits(expert, x))))\n            if group_index % 5 == 0 or group_index == len(groups) - 1:\n                print(\"INPUT_SEARCH\", cycle + 1, group_index, first[-1], last[-1], flush=True)\n        history.append(torch.cat([x.detach().cpu() for x in groups]))\n        pools.append(image_pool(history[-1]))\n        images = torch.cat(pools)\n        batches = list(images.split(cfg[\"source\"][\"batch_size\"]))\n        with torch.no_grad():\n            targets = [logits(expert, x.cuda()).detach() for x in batches]\n        for B in parameters:\n            B.requires_grad_(True)\n        epoch_losses = []\n        for epoch in range(cfg[\"publication_epochs_per_round\"]):\n            total = 0\n            for x, target in zip(batches, targets):\n                loss = divergence(logits(published, x.cuda()), target)\n                optimizer.zero_grad(set_to_none=True)\n                loss.backward()\n                assert torch.isfinite(loss) and all(\n                    p.grad is not None and torch.isfinite(p.grad).all() for p in parameters)\n                optimizer.step()\n                project()\n                counters[\"publication_B_gradient_steps\"] += 1\n                total += float(loss.detach()) * len(x)\n            epoch_losses.append(total / len(images))\n            print(\"CLASSIFICATION_FIT\", cycle + 1, epoch + 1, epoch_losses[-1], flush=True)\n        with torch.no_grad():\n            after = torch.cat([logits(published, x.cuda()).cpu() for x in batches])\n            before = torch.cat([x.cpu() for x in targets])\n        row = dict(cycle=cycle + 1, source_views=len(images),\n                   critic_KL_before=sum(first) / len(first),\n                   critic_KL_after=sum(last) / len(last), epoch_losses=epoch_losses,\n                   source_prediction_changes=int((after.argmax(1) != before.argmax(1)).sum()),\n                   source_KL_after=float(divergence(after, before)))\n        rounds.append(row)\n        (out / \"progress.json\").write_text(json.dumps(dict(rounds=rounds, counters=counters), indent=2))\n        print(\"ROUND\", json.dumps(row), flush=True)\n    with torch.no_grad():\n        rows = []\n        for i, B, rule in zip(cfg[\"layers\"], parameters, rules):\n            delta = B.double() - rule[\"original\"]\n            error = float((B.double() @ rule[\"H\"] - rule[\"Y\"]).norm() / (1 + rule[\"Y\"].norm()))\n            distance = float(delta.norm() / rule[\"original\"].norm())\n            assert error < 1e-4 and distance <= 4 + 1e-5\n            Akey = f\"model.visual.transformer.resblocks.{i}.mlp.c_fc.weight\"\n            rows.append(dict(layer=i, relative_A_distance=float(\n                                 (published.state_dict()[Akey].double() - original[Akey].cuda()).norm()\n                                 / original[Akey].norm()), relative_B_distance=distance,\n                             joint_probe_relative_error=error,\n                             B_parameter_task_energy_ratio=float(\n                                 (delta @ rule[\"vb\"]).square().sum() / delta.square().sum()),\n                             B_parameter_task_relative_response=float(\n                                 (delta @ rule[\"vb\"]).norm() / (rule[\"original\"] @ rule[\"vb\"]).norm())))\n        assert all(p.grad is None for p in expert.parameters())\n        assert all(torch.equal(v.cpu(), expert.state_dict()[k].cpu()) for k, v in original.items())\n        edits = {k: v.detach().cpu() for k, v in published.state_dict().items()\n                 if not torch.equal(v.cpu(), original[k])}\n    torch.save(edits, out / \"point.pt\")\n    torch.save(history, out / \"inputs.pt\")\n    torch.save(dict(before=before, after=after), out / \"source_scores.pt\")\n    result = dict(status=\"unique_functional_constraint_point_frozen\",\n                  point_sha256=digest(out / \"point.pt\"), source=Path(__file__).read_text(),\n                  source_sha256=digest(__file__), protocol_sha256=digest(path),\n                  checkpoint_sha256=pins, rounds=rounds, per_layer=rows, counters=counters,\n                  input_history_sha256=digest(out / \"inputs.pt\"),\n                  source_scores_sha256=digest(out / \"source_scores.pt\"),\n                  parameter_distance=logical_parameter_distance(edits, original),\n                  seconds=time.monotonic() - start, real_construction_images=0,\n                  original_expert_parameter_updates=0, new_AGA_calls=0,\n                  scope=cfg[\"scope\"])\n    (out / \"results.json\").write_text(json.dumps(result, indent=2) + \"\\n\")\n    print(\"POINT_FROZEN\", result[\"point_sha256\"], flush=True)\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "source_sha256": "8674b92609f823763a5c32bea101cb6c1ae9b87616ab99d9f478b294b616bc62",
+  "protocol_sha256": "bbb896b1a41acab7daa284de5a7ef2d0d191dd5231d016a085a95306808cd805",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "rounds": [
+    {
+      "cycle": 1,
+      "source_views": 1600,
+      "critic_KL_before": 10.669528007507324,
+      "critic_KL_after": 25.535999965667724,
+      "epoch_losses": [
+        14.037578690052033,
+        17.858651065826415,
+        15.007721662521362,
+        14.200675976276397,
+        14.14941041469574,
+        14.122425925731658,
+        14.100242042541504,
+        14.079346466064454
+      ],
+      "source_prediction_changes": 1359,
+      "source_KL_after": 13.785521507263184
+    },
+    {
+      "cycle": 2,
+      "source_views": 2400,
+      "critic_KL_before": 17.093491077423096,
+      "critic_KL_after": 18.018017387390138,
+      "epoch_losses": [
+        15.470713384946187,
+        15.435630544026692,
+        15.406450549761454,
+        15.379625233014425,
+        15.354924233754476,
+        15.333497826258341,
+        15.314668091138204,
+        15.29600780804952
+      ],
+      "source_prediction_changes": 1998,
+      "source_KL_after": 15.03271484375
+    },
+    {
+      "cycle": 3,
+      "source_views": 3200,
+      "critic_KL_before": 17.743159914016722,
+      "critic_KL_after": 18.014855766296385,
+      "epoch_losses": [
+        16.022319918870927,
+        16.00406454205513,
+        15.99606499671936,
+        15.97513023018837,
+        15.95082021355629,
+        15.939118081331253,
+        15.914408951997757,
+        15.900052887201308
+      ],
+      "source_prediction_changes": 2637,
+      "source_KL_after": 15.637434005737305
+    }
+  ],
+  "per_layer": [
+    {
+      "layer": 0,
+      "relative_A_distance": 1.563334426833152,
+      "relative_B_distance": 1.967291111455117,
+      "joint_probe_relative_error": 5.478405888606331e-08,
+      "B_parameter_task_energy_ratio": 0.020402449726841305,
+      "B_parameter_task_relative_response": 0.7811222699257109
+    },
+    {
+      "layer": 1,
+      "relative_A_distance": 1.857581318516053,
+      "relative_B_distance": 2.0702011599068078,
+      "joint_probe_relative_error": 3.061573144416824e-07,
+      "B_parameter_task_energy_ratio": 0.009113834288119852,
+      "B_parameter_task_relative_response": 1.6047349330606142
+    },
+    {
+      "layer": 2,
+      "relative_A_distance": 1.8767032580830656,
+      "relative_B_distance": 2.0617638815905885,
+      "joint_probe_relative_error": 3.0868309891898876e-07,
+      "B_parameter_task_energy_ratio": 0.017974650125366354,
+      "B_parameter_task_relative_response": 2.3334457083059856
+    },
+    {
+      "layer": 3,
+      "relative_A_distance": 1.8795209154082038,
+      "relative_B_distance": 2.063792597384938,
+      "joint_probe_relative_error": 3.5119574041961364e-07,
+      "B_parameter_task_energy_ratio": 0.014395384750807996,
+      "B_parameter_task_relative_response": 2.3032627812643356
+    },
+    {
+      "layer": 4,
+      "relative_A_distance": 1.881481277201236,
+      "relative_B_distance": 2.0636149413333897,
+      "joint_probe_relative_error": 3.479605305938732e-07,
+      "B_parameter_task_energy_ratio": 0.008599839991727365,
+      "B_parameter_task_relative_response": 1.7544001965475557
+    },
+    {
+      "layer": 5,
+      "relative_A_distance": 1.8893978055736709,
+      "relative_B_distance": 2.0587696886975406,
+      "joint_probe_relative_error": 3.4379461053303215e-07,
+      "B_parameter_task_energy_ratio": 0.006962040361404298,
+      "B_parameter_task_relative_response": 1.5341832941756592
+    },
+    {
+      "layer": 6,
+      "relative_A_distance": 1.887052073616094,
+      "relative_B_distance": 2.0605003752727677,
+      "joint_probe_relative_error": 3.531214632287058e-07,
+      "B_parameter_task_energy_ratio": 0.006894230219325222,
+      "B_parameter_task_relative_response": 1.5568909189401139
+    },
+    {
+      "layer": 7,
+      "relative_A_distance": 1.8857060696839318,
+      "relative_B_distance": 2.0759230130086914,
+      "joint_probe_relative_error": 3.914813589579627e-07,
+      "B_parameter_task_energy_ratio": 0.008218504907137967,
+      "B_parameter_task_relative_response": 1.790130850315979
+    },
+    {
+      "layer": 8,
+      "relative_A_distance": 1.8840313716001627,
+      "relative_B_distance": 2.079451864813153,
+      "joint_probe_relative_error": 3.1708496303187267e-07,
+      "B_parameter_task_energy_ratio": 0.008558837095858694,
+      "B_parameter_task_relative_response": 1.7569490418968179
+    },
+    {
+      "layer": 9,
+      "relative_A_distance": 1.8635797727695125,
+      "relative_B_distance": 2.201938035376692,
+      "joint_probe_relative_error": 2.4084263862286776e-07,
+      "B_parameter_task_energy_ratio": 0.014882545994507999,
+      "B_parameter_task_relative_response": 2.5264558262068033
+    },
+    {
+      "layer": 10,
+      "relative_A_distance": 1.880823315171047,
+      "relative_B_distance": 2.011085928308376,
+      "joint_probe_relative_error": 2.815132298623867e-07,
+      "B_parameter_task_energy_ratio": 0.0018427525795298191,
+      "B_parameter_task_relative_response": 0.7954870496577401
+    },
+    {
+      "layer": 11,
+      "relative_A_distance": 1.8810597390136958,
+      "relative_B_distance": 2.096631322640904,
+      "joint_probe_relative_error": 2.575798942654768e-07,
+      "B_parameter_task_energy_ratio": 0.007428468960901273,
+      "B_parameter_task_relative_response": 1.437404787477517
+    }
+  ],
+  "counters": {
+    "generated_full_image_forwards": 230400,
+    "input_gradient_model_forwards": 153600,
+    "pixel_optimizer_steps": 1920,
+    "publication_B_gradient_steps": 1440
+  },
+  "input_history_sha256": "d93d96d43afdc0e2799f6a5cc9cc35cd6524d85088e911efefd1e5fe7e9251fe",
+  "source_scores_sha256": "c1d90aa1618129e4d6d7985f40ca6ded43fde4712ccae98b804e00fe17e3bd4e",
+  "parameter_distance": 9.622995127200621,
+  "seconds": 226.12906228657812,
+  "real_construction_images": 0,
+  "original_expert_parameter_updates": 0,
+  "new_AGA_calls": 0,
+  "scope": "One finite feasibility experiment for Defense2. KL adversarial distillation,reflection,SVD,pseudoinverse and projectedAdam are standard. No innovation or global minimax claim. Local64probe constraints do not guarantee natural-task preservation or fusion security.",
+  "definition_local_commit": "05773f8",
+  "public_before_execution": false,
+  "native": {
+    "before_images.json": {
+      "publication": {
+        "path": "outputs/functional_compensation_20261025/point.pt",
+        "sha256": "7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192",
+        "reference": "expert"
+      },
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "parameter_distance": 9.622995127200621,
+      "construction_updates": 0
+    },
+    "before_images.json_sha256": "bec047538aa56b60d863b36a006e0d7c407e16fd89b340b2eafd9a2a1aca0f76",
+    "independent_validation.json": {
+      "status": "passed_raw_score_and_official_label_recount",
+      "rows": [
+        {
+          "stage": "full",
+          "n": 10000,
+          "R": 69.28659810380846
+        }
+      ],
+      "results_sha256": "37a40d3dd2fb44f2e25296d60056dd7caa13e5a260aa31698ed881fc38bb5947",
+      "new_image_forwards": 0
+    },
+    "independent_validation.json_sha256": "29cc7d084d03409c2b085d5e05a522193914082069d7ef391faed091f46a336a",
+    "protocol.json": {
+      "verify": null,
+      "target": "MNIST",
+      "publication": "outputs/functional_compensation_20261025/point.pt",
+      "sha256": "7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192",
+      "full_state": false,
+      "test_only": true,
+      "base_reference": false,
+      "indices": null,
+      "indices_sha256": null,
+      "output": "outputs/functional_compensation_20261025/native",
+      "task_budget": 0.5,
+      "max_accuracy_loss_pp": 0.5
+    },
+    "protocol.json_sha256": "95f88e3fe7688e9856f51c1d4642796eaab280ab6b93fee0030670dd7ba89bc9",
+    "results.json": {
+      "rows": [
+        {
+          "n": 10000,
+          "changed": 9026,
+          "R": 69.28659810380846,
+          "stage": "full",
+          "before_correct": 9969,
+          "after_correct": 974,
+          "strict_task_passed": false,
+          "accuracy_loss_pp": 89.95,
+          "passed": false,
+          "raw_sha256": "e174eab2a97628db126e699eb3f21acd32ec38f32d4c5ed5d6ac41bfa39f30fb"
+        }
+      ],
+      "passed": false,
+      "image_forwards": 20000,
+      "seconds": 21.38421519473195
+    },
+    "results.json_sha256": "37a40d3dd2fb44f2e25296d60056dd7caa13e5a260aa31698ed881fc38bb5947"
+  },
+  "independent_FP64_distances": {
+    "status": "FP64_distance_recount_passed",
+    "per_layer": [
+      {
+        "layer": 0,
+        "A": 1.5632425049299417,
+        "B": 1.9672911114550211
+      },
+      {
+        "layer": 1,
+        "A": 1.8574885603961662,
+        "B": 2.070201159906741
+      },
+      {
+        "layer": 2,
+        "A": 1.8766187178879383,
+        "B": 2.061763881590476
+      },
+      {
+        "layer": 3,
+        "A": 1.8794405159966776,
+        "B": 2.063792597384847
+      },
+      {
+        "layer": 4,
+        "A": 1.8814004665832067,
+        "B": 2.063614941333299
+      },
+      {
+        "layer": 5,
+        "A": 1.8893267613115607,
+        "B": 2.0587696886974682
+      },
+      {
+        "layer": 6,
+        "A": 1.8869863494932826,
+        "B": 2.0605003752726803
+      },
+      {
+        "layer": 7,
+        "A": 1.8856358419785417,
+        "B": 2.075923013008616
+      },
+      {
+        "layer": 8,
+        "A": 1.8839571693962438,
+        "B": 2.079451864813054
+      },
+      {
+        "layer": 9,
+        "A": 1.8635018985299163,
+        "B": 2.20193803537661
+      },
+      {
+        "layer": 10,
+        "A": 1.8807475381733738,
+        "B": 2.0110859283083027
+      },
+      {
+        "layer": 11,
+        "A": 1.8809906557768252,
+        "B": 2.0966313226408038
+      }
+    ],
+    "D": 9.622995127200621,
+    "fixed_A_matches_geometry": true,
+    "changed_tensors": 24,
+    "point_dtypes": "FP32",
+    "note": "Original source per-layer A denominator used FP32 torch.norm; these FP64 distances correct only that metadata. Point/optimization/budgets/native results unchanged.",
+    "new_image_forwards": 0,
+    "new_AGA_calls": 0
+  },
+  "new_real_evaluation_image_forwards": 20000,
+  "new_complete_AGA_calls": 0,
+  "fusion_evaluated": false,
+  "independent_numpy_native": {
+    "status": "passed_independent_numpy_native_counts",
+    "before_correct": 9969,
+    "after_correct": 974,
+    "n": 10000,
+    "changed_predictions": 9026,
+    "lost": 8996,
+    "gained": 1,
+    "paired_accuracy_delta_95ci_pp": [
+      -90.53998543022755,
+      -89.36001456977245
+    ],
+    "mcnemar_log10_p": -2704.1116950043393,
+    "per_class": [
+      {
+        "class_id": 0,
+        "n": 980,
+        "before_correct": 979,
+        "after_correct": 0,
+        "lost": 979,
+        "gained": 0
+      },
+      {
+        "class_id": 1,
+        "n": 1135,
+        "before_correct": 1132,
+        "after_correct": 0,
+        "lost": 1132,
+        "gained": 0
+      },
+      {
+        "class_id": 2,
+        "n": 1032,
+        "before_correct": 1030,
+        "after_correct": 0,
+        "lost": 1030,
+        "gained": 0
+      },
+      {
+        "class_id": 3,
+        "n": 1010,
+        "before_correct": 1010,
+        "after_correct": 0,
+        "lost": 1010,
+        "gained": 0
+      },
+      {
+        "class_id": 4,
+        "n": 982,
+        "before_correct": 979,
+        "after_correct": 0,
+        "lost": 979,
+        "gained": 0
+      },
+      {
+        "class_id": 5,
+        "n": 892,
+        "before_correct": 884,
+        "after_correct": 0,
+        "lost": 884,
+        "gained": 0
+      },
+      {
+        "class_id": 6,
+        "n": 958,
+        "before_correct": 954,
+        "after_correct": 0,
+        "lost": 954,
+        "gained": 0
+      },
+      {
+        "class_id": 7,
+        "n": 1028,
+        "before_correct": 1025,
+        "after_correct": 0,
+        "lost": 1025,
+        "gained": 0
+      },
+      {
+        "class_id": 8,
+        "n": 974,
+        "before_correct": 973,
+        "after_correct": 974,
+        "lost": 0,
+        "gained": 1
+      },
+      {
+        "class_id": 9,
+        "n": 1009,
+        "before_correct": 1003,
+        "after_correct": 0,
+        "lost": 1003,
+        "gained": 0
+      }
+    ],
+    "new_image_forwards": 0,
+    "new_AGA_calls": 0
+  },
+  "finding": "Complete MNIST99.69 to9.74; all predictions class8. Finite joint probes pass and B balls are interior, but retained synthetic-source classification itself remains unsolved. This specific fit is closed; no fusion/AGA or test-based repair. It does not establish infeasibility of the objective or all data-free numerical defenses.",
+  "source_fit_condition": {
+    "status": "read_only_source_first_order_condition",
+    "source_KL": 15.637434971332555,
+    "score_replay_errors": [
+      0.0,
+      0.0
+    ],
+    "rows": [
+      {
+        "layer": 0,
+        "gradient_norm": 0.06996698195470837,
+        "tangent_gradient_norm": 0.05431648585417378,
+        "relative_B_distance": 1.967291111455117
+      },
+      {
+        "layer": 1,
+        "gradient_norm": 0.03695382619039522,
+        "tangent_gradient_norm": 0.030492629615908012,
+        "relative_B_distance": 2.0702011599068078
+      },
+      {
+        "layer": 2,
+        "gradient_norm": 0.03130971656924162,
+        "tangent_gradient_norm": 0.02930760032359462,
+        "relative_B_distance": 2.0617638815905885
+      },
+      {
+        "layer": 3,
+        "gradient_norm": 0.027354933755550842,
+        "tangent_gradient_norm": 0.025283890573910093,
+        "relative_B_distance": 2.063792597384938
+      },
+      {
+        "layer": 4,
+        "gradient_norm": 0.023236713366360726,
+        "tangent_gradient_norm": 0.02164053543780841,
+        "relative_B_distance": 2.0636149413333897
+      },
+      {
+        "layer": 5,
+        "gradient_norm": 0.01981934157461734,
+        "tangent_gradient_norm": 0.01769091871761702,
+        "relative_B_distance": 2.0587696886975406
+      },
+      {
+        "layer": 6,
+        "gradient_norm": 0.018609899686100124,
+        "tangent_gradient_norm": 0.01621908195339114,
+        "relative_B_distance": 2.0605003752727677
+      },
+      {
+        "layer": 7,
+        "gradient_norm": 0.017823732143634044,
+        "tangent_gradient_norm": 0.014984125207302964,
+        "relative_B_distance": 2.0759230130086914
+      },
+      {
+        "layer": 8,
+        "gradient_norm": 0.025134371791723155,
+        "tangent_gradient_norm": 0.02150689165178378,
+        "relative_B_distance": 2.079451864813153
+      },
+      {
+        "layer": 9,
+        "gradient_norm": 0.04480222529974828,
+        "tangent_gradient_norm": 0.03337030231395245,
+        "relative_B_distance": 2.201938035376692
+      },
+      {
+        "layer": 10,
+        "gradient_norm": 0.0521849065210994,
+        "tangent_gradient_norm": 0.04625005372205133,
+        "relative_B_distance": 2.011085928308376
+      },
+      {
+        "layer": 11,
+        "gradient_norm": 0.005936505152020958,
+        "tangent_gradient_norm": 0.0029684611551022456,
+        "relative_B_distance": 2.096631322640904
+      }
+    ],
+    "total_gradient_norm": 0.12240834174174388,
+    "tangent_gradient_norm": 0.10183888431456861,
+    "tangent_to_total_gradient_norm": 0.8319603293820241,
+    "negative_tangent_directional_derivative": -0.01037115835843609,
+    "all_B_balls_strictly_interior": true,
+    "new_generated_image_forwards": 6400,
+    "new_real_image_forwards": 0,
+    "new_parameter_updates": 0,
+    "new_AGA_calls": 0,
+    "seconds": 10.22095399722457,
+    "scope": "Nonzero feasible first-order descent shows this iterate has not solved the retained-source classification fit. It does not guarantee a practical convergent optimizer,natural retention or merge protection.",
+    "definition_local_commit": "527bd27",
+    "source": "import hashlib,json,math,time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.models import apply,checked_models,initialize\nfrom _impl.io import digest\ninitialize();start=time.monotonic()\nroot=Path(\"outputs/functional_compensation_20261025\")\nresult=json.loads((root/\"results.json\").read_text())\nassert result[\"point_sha256\"]==\"7378228f132c8502a2d9eb00308b8e7a1456760a2e3c00d36114a771dfef4192\"\nassert digest(root/\"inputs.pt\")==result[\"input_history_sha256\"]\nbase,expert,head,pins=checked_models(\"MNIST\");del base\npub=apply(expert,dict(path=str(root/\"point.pt\"),sha256=result[\"point_sha256\"]))\nhistory=torch.load(root/\"inputs.pt\",map_location=\"cpu\",weights_only=False)\ncached=torch.load(root/\"source_scores.pt\",map_location=\"cpu\",weights_only=False)\nbasis=torch.load(\"outputs/phase2_task_subspace_comparison_20261020/basis.pt\",map_location=\"cpu\",weights_only=False)\nentries={v[\"source_key\"]:v for v in basis.values()}\npub.cuda();expert.cuda();head.cuda()\nparameters=[pub.model.visual.transformer.resblocks[i].mlp.c_proj.weight for i in range(12)]\nfor p in parameters:p.requires_grad_(True)\nnorm=expert.val_preprocess.transforms[-1]\nmean=torch.tensor(norm.mean,device=\"cuda\")[None,:,None,None]\nstd=torch.tensor(norm.std,device=\"cuda\")[None,:,None,None]\nshifts=[[0,0],[7,0],[-7,0],[0,7],[0,-7]]\nbefore=[];after=[];loss_total=0.\nfor pixels in history:\n for group in pixels.split(8):\n  x=F.interpolate(group.cuda(),(224,224),mode=\"bilinear\",align_corners=False)\n  x=(torch.cat([torch.roll(x,tuple(s),(2,3)) for s in shifts])-mean)/std\n  with torch.no_grad():target=head(expert(x))\n  scores=head(pub(x))\n  loss=16*F.kl_div(F.log_softmax(scores/4,dim=1),F.softmax(target/4,dim=1),reduction=\"batchmean\")\n  (loss/80).backward();loss_total+=float(loss.detach())/80\n  before.append(target.cpu());after.append(scores.detach().cpu())\na,b=torch.cat(before),torch.cat(after)\nerrors=[float((a-cached[\"before\"]).abs().max()),float((b-cached[\"after\"]).abs().max())]\nassert max(errors)<.0005 and abs(loss_total-result[\"rounds\"][-1][\"source_KL_after\"])<1e-4\nphi=lambda z:z*torch.sigmoid(1.702*z)\nrows=[]\nwith torch.no_grad():\n state=expert.state_dict()\n for i,B in enumerate(parameters):\n  prefix=f\"model.visual.transformer.resblocks.{i}.\"\n  block=pub.model.visual.transformer.resblocks[i]\n  va=entries[prefix+\"mlp.c_fc.weight\"][\"v\"].cuda()\n  r=torch.cat([va.T,-va.T]);r-=r.mean(1,keepdim=True);r*=math.sqrt(768)/r.norm(dim=1,keepdim=True)\n  gamma,beta=[state[prefix+\"ln_2.\"+k].double() for k in [\"weight\",\"bias\"]]\n  X=F.layer_norm(r,(768,),gamma,beta,block.ln_2.eps)\n  H=phi(F.linear(X,block.mlp.c_fc.weight.double(),block.mlp.c_fc.bias.double())).T\n  U,s,_=torch.linalg.svd(H,full_matrices=False)\n  Q=U[:,s>torch.finfo(torch.double).eps*max(H.shape)*s[0]]\n  gradient=B.grad.double()\n  tangent=gradient-(gradient@Q)@Q.T\n  original=state[prefix+\"mlp.c_proj.weight\"].double()\n  rows.append(dict(layer=i,gradient_norm=float(gradient.norm()),tangent_gradient_norm=float(tangent.norm()),relative_B_distance=float((B.double()-original).norm()/original.norm())))\n assert all(p.grad is None for p in expert.parameters())\ntotal=sum(r[\"gradient_norm\"]**2 for r in rows);tangent=sum(r[\"tangent_gradient_norm\"]**2 for r in rows)\nout=dict(status=\"read_only_source_first_order_condition\",source_KL=loss_total,score_replay_errors=errors,rows=rows,total_gradient_norm=math.sqrt(total),tangent_gradient_norm=math.sqrt(tangent),tangent_to_total_gradient_norm=math.sqrt(tangent/total),negative_tangent_directional_derivative=-tangent,all_B_balls_strictly_interior=all(r[\"relative_B_distance\"]<4 for r in rows),new_generated_image_forwards=6400,new_real_image_forwards=0,new_parameter_updates=0,new_AGA_calls=0,seconds=time.monotonic()-start,scope=\"Nonzero feasible first-order descent shows this iterate has not solved the retained-source classification fit. It does not guarantee a practical convergent optimizer,natural retention or merge protection.\")\n(root/\"source_fit_condition.json\").write_text(json.dumps(out,indent=2)+\"\\n\")\nprint(json.dumps({k:v for k,v in out.items() if k!=\"rows\"}))\n",
+    "source_sha256": "f78c022ee63d010b6b00cb28569d0fc393fedb9fdb050f10b933d948fc842e36"
+  },
+  "source_retired_active_tree": true,
+  "source_only_batch_order_check": {
+    "status": "source_only_batch_order_control",
+    "source_views": 800,
+    "source_base_images": 160,
+    "teacher_class_counts": [
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80,
+      80
+    ],
+    "original_batch_class_counts": [
+      [
+        40,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        40,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        40,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        40,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        40,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        40,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        40,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        40,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        40,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        40,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        40,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        40,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        40
+      ]
+    ],
+    "initial_KL": 10.669526100158691,
+    "initial_agreement": 80,
+    "rows": [
+      {
+        "branch": "original_order",
+        "epochs": [
+          {
+            "epoch": 1,
+            "KL": 13.361647605895996,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 2,
+            "KL": 12.39319133758545,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 3,
+            "KL": 10.506364822387695,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 4,
+            "KL": 10.467368125915527,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 5,
+            "KL": 10.462508201599121,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 6,
+            "KL": 10.45878791809082,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 7,
+            "KL": 10.456046104431152,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 8,
+            "KL": 10.453879356384277,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          }
+        ],
+        "final": {
+          "epoch": 8,
+          "KL": 10.453879356384277,
+          "agreement": 80,
+          "predicted_class_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            800,
+            0
+          ]
+        }
+      },
+      {
+        "branch": "shuffled",
+        "epochs": [
+          {
+            "epoch": 1,
+            "KL": 10.472481727600098,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 2,
+            "KL": 10.446390151977539,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 3,
+            "KL": 10.437804222106934,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 4,
+            "KL": 10.43307876586914,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 5,
+            "KL": 10.430998802185059,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 6,
+            "KL": 10.431344985961914,
+            "agreement": 80,
+            "predicted_class_counts": [
+              800,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "epoch": 7,
+            "KL": 10.428069114685059,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          },
+          {
+            "epoch": 8,
+            "KL": 10.428654670715332,
+            "agreement": 80,
+            "predicted_class_counts": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              800,
+              0
+            ]
+          }
+        ],
+        "final": {
+          "epoch": 8,
+          "KL": 10.428654670715332,
+          "agreement": 80,
+          "predicted_class_counts": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            800,
+            0
+          ]
+        }
+      }
+    ],
+    "counters": {
+      "generated_image_forwards": 27200,
+      "publication_B_gradient_steps": 320
+    },
+    "score_and_orders_sha256": "4d58c14a73a88cc5b001d19503fe400e275e125104677575721e6707c7ef3351",
+    "shuffle_seed": 2026102507,
+    "epochs": 8,
+    "batch_size": 40,
+    "lr": 0.001,
+    "original_source_sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2",
+    "geometry_source_sha256": "8674b92609f823763a5c32bea101cb6c1ae9b87616ab99d9f478b294b616bc62",
+    "original_expert_updates": 0,
+    "pixel_updates": 0,
+    "real_construction_images": 0,
+    "new_real_evaluation_images": 0,
+    "new_defense_publications": 0,
+    "new_AGA_calls": 0,
+    "seconds": 29.435001897625625,
+    "scope": "Same original800generated views,initialization,loss,projection,Adam and160updates/branch;only minibatch order changes. All inputs retained. No source-augmentation history,real accuracy or new complete defense evaluation. A useful source-only result would not establish natural retention or merge protection.",
+    "source": "import ast,copy,hashlib,json,math,time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.models import checked_models,initialize\nfrom _impl.io import digest\ninitialize();start=time.monotonic()\nroot=Path(\"outputs/functional_compensation_20261025\")\nout=root/\"batch_order_20261026\";out.mkdir(exist_ok=False)\nmeta=json.loads((root/\"results.json\").read_text())\nassert hashlib.sha256(meta[\"source\"].encode()).hexdigest()==\"8674b92609f823763a5c32bea101cb6c1ae9b87616ab99d9f478b294b616bc62\"\nfn=next(n for n in ast.parse(meta[\"source\"]).body if isinstance(n,ast.FunctionDef) and n.name==\"joint_constraint\")\nscope=dict(torch=torch,F=F,math=math)\nexec(compile(ast.Module(body=[fn],type_ignores=[]),\"<frozen-joint-constraint>\",\"exec\"),scope)\ncfg=json.loads((root/\"protocol.json\").read_text())\nfor k in [\"source\",\"basis\"]:assert digest(cfg[k][\"path\"])==cfg[k][\"sha256\"]\nbase,expert,head,pins=checked_models(\"MNIST\");del base\noriginal={k:v.clone() for k,v in expert.state_dict().items()}\ninitial=copy.deepcopy(expert).cuda().eval().requires_grad_(False)\nentries={v[\"source_key\"]:v for v in torch.load(cfg[\"basis\"][\"path\"],map_location=\"cpu\",weights_only=False).values()}\nrules=[]\nfor i in range(12):\n p=f\"model.visual.transformer.resblocks.{i}.\";block=initial.model.visual.transformer.resblocks[i]\n A,B,rule=scope[\"joint_constraint\"](original,entries,block,p)\n with torch.no_grad():block.mlp.c_fc.weight.copy_(A);block.mlp.c_proj.weight.copy_(B)\n rules.append(rule)\nraw=torch.load(cfg[\"source\"][\"path\"],map_location=\"cpu\",weights_only=False)[\"final\"]\nnorm=expert.val_preprocess.transforms[-1]\nmean=torch.tensor(norm.mean,device=\"cuda\")[None,:,None,None];std=torch.tensor(norm.std,device=\"cuda\")[None,:,None,None]\nimages=[]\nwith torch.no_grad():\n for pixels in raw.split(8):\n  x=F.interpolate(pixels.cuda(),(224,224),mode=\"bilinear\",align_corners=False)\n  images.append(((torch.cat([torch.roll(x,tuple(s),(2,3)) for s in cfg[\"source\"][\"views\"]])-mean)/std).cpu())\nimages=torch.cat(images);expert.cuda();head.cuda();counters=dict(generated_image_forwards=0,publication_B_gradient_steps=0)\ndef scores(model,x):\n counters[\"generated_image_forwards\"]+=len(x)\n return head(model(x))\ndef KL(a,b):return 16*F.kl_div(F.log_softmax(a/4,dim=1),F.softmax(b/4,dim=1),reduction=\"batchmean\")\nwith torch.no_grad():\n teacher=torch.cat([scores(expert,x.cuda()).cpu() for x in images.split(40)])\n baseline=torch.cat([scores(initial,x.cuda()).cpu() for x in images.split(40)])\nrows=[];saved=dict(teacher=teacher,initial=baseline)\nfor branch in [\"original_order\",\"shuffled\"]:\n pub=copy.deepcopy(initial).eval().requires_grad_(False)\n parameters=[pub.model.visual.transformer.resblocks[i].mlp.c_proj.weight for i in range(12)]\n for p in parameters:p.requires_grad_(True)\n optimizer=torch.optim.Adam(parameters,lr=.001)\n generator=torch.Generator().manual_seed(2026102507)\n epochs=[];orders=[]\n for epoch in range(8):\n  order=torch.arange(len(images)) if branch==\"original_order\" else torch.randperm(len(images),generator=generator)\n  assert torch.equal(order.sort().values,torch.arange(len(images)))\n  orders.append(order)\n  for ids in order.split(40):\n   loss=KL(scores(pub,images[ids].cuda()),teacher[ids].cuda())\n   optimizer.zero_grad(set_to_none=True);loss.backward()\n   assert torch.isfinite(loss) and all(p.grad is not None and torch.isfinite(p.grad).all() for p in parameters)\n   optimizer.step();counters[\"publication_B_gradient_steps\"]+=1\n   with torch.no_grad():\n    for B,rule in zip(parameters,rules):\n     free=B-rule[\"affine\"];free-=(free@rule[\"Q\"])@rule[\"Q\"].T\n     free*=(rule[\"radius\"]/free.norm().clamp_min(1e-30)).clamp(max=1)\n     B.copy_(rule[\"affine\"]+free)\n  with torch.no_grad():\n   after=torch.cat([scores(pub,x.cuda()).cpu() for x in images.split(40)])\n  row=dict(epoch=epoch+1,KL=float(KL(after,teacher)),agreement=int((after.argmax(1)==teacher.argmax(1)).sum()),\n   predicted_class_counts=torch.bincount(after.argmax(1),minlength=10).tolist())\n  epochs.append(row);print(\"BATCH_ORDER\",branch,json.dumps(row),flush=True)\n saved[branch]=after;saved[branch+\"_orders\"]=torch.stack(orders)\n rows.append(dict(branch=branch,epochs=epochs,final=epochs[-1]))\n del pub,parameters,optimizer\nassert all(p.grad is None for p in expert.parameters())\ntorch.save(saved,out/\"scores_and_orders.pt\")\nresult=dict(status=\"source_only_batch_order_control\",source_views=len(images),source_base_images=len(raw),\n teacher_class_counts=torch.bincount(teacher.argmax(1),minlength=10).tolist(),\n original_batch_class_counts=[torch.bincount(x.argmax(1),minlength=10).tolist() for x in teacher.split(40)],\n initial_KL=float(KL(baseline,teacher)),initial_agreement=int((baseline.argmax(1)==teacher.argmax(1)).sum()),\n rows=rows,counters=counters,score_and_orders_sha256=digest(out/\"scores_and_orders.pt\"),\n shuffle_seed=2026102507,epochs=8,batch_size=40,lr=.001,original_source_sha256=cfg[\"source\"][\"sha256\"],\n geometry_source_sha256=meta[\"source_sha256\"],original_expert_updates=0,pixel_updates=0,\n real_construction_images=0,new_real_evaluation_images=0,new_defense_publications=0,new_AGA_calls=0,\n seconds=time.monotonic()-start,\n scope=\"Same original800generated views,initialization,loss,projection,Adam and160updates/branch;only minibatch order changes. All inputs retained. No source-augmentation history,real accuracy or new complete defense evaluation. A useful source-only result would not establish natural retention or merge protection.\")\n(out/\"results.json\").write_text(json.dumps(result,indent=2)+\"\\n\")\nprint(\"BATCH_ORDER_DONE\",json.dumps({k:v for k,v in result.items() if k not in [\"rows\",\"original_batch_class_counts\"]}),flush=True)\n",
+    "source_sha256": "be8b04f39a348e615992183cbb96f01ee162d53f4bb022ededfc5c8066c66783",
+    "definition_local_commit": "82a3d3a",
+    "public_before_execution": false,
+    "independent_validation": {
+      "status": "independent_numpy_source_recount_passed",
+      "batch_order": [
+        {
+          "branch": "original_order",
+          "agreement": 80,
+          "per_class": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0
+          ],
+          "KL_FP64": 10.45387946992909,
+          "KL_FP32_record_error": 1.1354481266323546e-07
+        },
+        {
+          "branch": "shuffled",
+          "agreement": 80,
+          "per_class": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0
+          ],
+          "KL_FP64": 10.428655399627829,
+          "KL_FP32_record_error": 7.289124965836891e-07
+        }
+      ],
+      "all_orders_are_permutations": true,
+      "first_update": [
+        {
+          "stage": "initial",
+          "KL_FP64": 15.827036757197684,
+          "agreement": 0
+        },
+        {
+          "stage": "after_first_step",
+          "KL_FP64": 6.476545108530213,
+          "agreement": 40
+        }
+      ],
+      "toy": {
+        "old_direction_derivative": 0.07692307538461543,
+        "project_gradient_first_derivative": -0.38461536461538604
+      },
+      "new_image_forwards": 0,
+      "new_parameter_updates": 0,
+      "new_AGA_calls": 0,
+      "source": "import hashlib,json,math\nfrom pathlib import Path\nimport numpy as np\nimport torch\nr=Path(\"outputs/functional_compensation_20261025\")\np=r/\"batch_order_20261026\"\nx=json.loads((p/\"results.json\").read_text())\nassert hashlib.sha256((p/\"scores_and_orders.pt\").read_bytes()).hexdigest()==x[\"score_and_orders_sha256\"]\nraw=torch.load(p/\"scores_and_orders.pt\",map_location=\"cpu\",weights_only=False)\na=raw[\"teacher\"].double().numpy();t=a.argmax(1)\ndef kl(b):\n b=b.astype(np.float64);aa=a/4;bb=b/4\n aa=aa-np.logaddexp.reduce(aa,axis=1,keepdims=True)\n bb=bb-np.logaddexp.reduce(bb,axis=1,keepdims=True)\n return float(16*np.mean(np.sum(np.exp(aa)*(aa-bb),axis=1)))\nrows=[]\nfor branch in [\"original_order\",\"shuffled\"]:\n b=raw[branch].double().numpy();order=raw[branch+\"_orders\"].numpy()\n assert order.shape==(8,800)\n np.testing.assert_array_equal(np.sort(order,axis=1),np.tile(np.arange(800),(8,1)))\n ref=next(v[\"final\"] for v in x[\"rows\"] if v[\"branch\"]==branch)\n count=int(np.sum(b.argmax(1)==t));classes=np.bincount(b.argmax(1),minlength=10).tolist()\n assert count==ref[\"agreement\"] and classes==ref[\"predicted_class_counts\"]\n # Stored batchmean used FP32 reductions; independent FP64 tolerance .00001.\n error=abs(kl(b)-ref[\"KL\"]);assert error<1e-5\n rows.append(dict(branch=branch,agreement=count,per_class=[int(np.sum((t==k)&(b.argmax(1)==k))) for k in range(10)],KL_FP64=kl(b),KL_FP32_record_error=error))\nnp.testing.assert_array_equal(np.bincount(t,minlength=10),x[\"teacher_class_counts\"])\nu=np.array([3.,-2.]);P=np.outer(u,u)/(u@u);g=np.array([1.,2.])\ntoy=dict(old_direction_derivative=float(g@(-P@(g/(np.abs(g)+1e-8)))),project_gradient_first_derivative=float(g@(-P@((P@g)/(np.abs(P@g)+1e-8)))))\nassert toy[\"old_direction_derivative\"]>0 and toy[\"project_gradient_first_derivative\"]<0\nf=torch.load(r/\"first_update_scores_20261026.pt\",map_location=\"cpu\",weights_only=False)\nfirst=[]\nfor name in [\"initial\",\"after_first_step\"]:\n aa=f[\"before\"].double().numpy()/4;b=f[name].double().numpy()/4\n aa-=np.logaddexp.reduce(aa,axis=1,keepdims=True);b-=np.logaddexp.reduce(b,axis=1,keepdims=True)\n value=float(16*np.mean(np.sum(np.exp(aa)*(aa-b),axis=1)))\n first.append(dict(stage=name,KL_FP64=value,agreement=int(np.sum(f[name].numpy().argmax(1)==f[\"before\"].numpy().argmax(1)))))\nout=dict(status=\"independent_numpy_source_recount_passed\",batch_order=rows,all_orders_are_permutations=True,first_update=first,toy=toy,new_image_forwards=0,new_parameter_updates=0,new_AGA_calls=0)\n(p/\"independent_validation.json\").write_text(json.dumps(out,indent=2)+\"\\n\")\nprint(json.dumps(out))\n",
+      "source_sha256": "841a3ffc243b96649c1cc82a7473bbdcebab66e6ab639ff3b92251a473cc33ed"
+    }
+  },
+  "update_geometry": {
+    "status": "fresh_initialization_direction_check_only",
+    "torch_version": "2.8.0+cu128",
+    "Adam_default_signature": "(params: Union[collections.abc.Iterable[torch.Tensor], collections.abc.Iterable[dict[str, Any]], collections.abc.Iterable[tuple[str, torch.Tensor]]], lr: Union[float, torch.Tensor] = 0.001, betas: tuple[typing.Union[float, torch.Tensor], typing.Union[float, torch.Tensor]] = (0.9, 0.999), eps: float = 1e-08, weight_decay: float = 0, amsgrad: bool = False, *, foreach: Optional[bool] = None, maximize: bool = False, capturable: bool = False, differentiable: bool = False, fused: Optional[bool] = None, decoupled_weight_decay: bool = False)",
+    "original_source_sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2",
+    "initialization_function_source_sha256": "6dd31f462750eccc847f878ab210c3d4b7cadca24e8823d02cc5fdee453f0028",
+    "loss": 15.82703685760498,
+    "generated_views": 40,
+    "new_generated_image_forwards": 80,
+    "rows": [
+      {
+        "layer": 0,
+        "raw_gradient_norm": 59.91374833940708,
+        "feasible_gradient_norm": 55.08099808095917,
+        "raw_adam_direction_norm": 1535.9376437917006,
+        "projected_adam_direction_norm": 1118.6854508925283,
+        "corrected_direction_norm": 1441.6590725951885,
+        "raw_projected_directional_derivative": -19553.53314085744,
+        "feasible_gradient_first_directional_derivative": -25892.232510110174,
+        "raw_projection_descent_cosine": 0.31733315581633365,
+        "corrected_descent_cosine": 0.32606570861330886
+      },
+      {
+        "layer": 1,
+        "raw_gradient_norm": 69.71638580961245,
+        "feasible_gradient_norm": 63.54269985895758,
+        "raw_adam_direction_norm": 1535.9919595905683,
+        "projected_adam_direction_norm": 1369.3631551144358,
+        "corrected_direction_norm": 1493.7610656982226,
+        "raw_projected_directional_derivative": -47631.86676638223,
+        "feasible_gradient_first_directional_derivative": -53621.51547145723,
+        "raw_projection_descent_cosine": 0.547410723332154,
+        "corrected_descent_cosine": 0.564926938988375
+      },
+      {
+        "layer": 2,
+        "raw_gradient_norm": 71.454841826787,
+        "feasible_gradient_norm": 65.50719713328768,
+        "raw_adam_direction_norm": 1535.9937168360457,
+        "projected_adam_direction_norm": 1410.5874694424535,
+        "corrected_direction_norm": 1503.8004243035775,
+        "raw_projected_directional_derivative": -55730.82917642123,
+        "feasible_gradient_first_directional_derivative": -60489.23486376257,
+        "raw_projection_descent_cosine": 0.6031237983965866,
+        "corrected_descent_cosine": 0.6140431210669487
+      },
+      {
+        "layer": 3,
+        "raw_gradient_norm": 85.22237395152612,
+        "feasible_gradient_norm": 77.51113091181263,
+        "raw_adam_direction_norm": 1535.995079032944,
+        "projected_adam_direction_norm": 1398.0876633115065,
+        "corrected_direction_norm": 1505.0056035423308,
+        "raw_projected_directional_derivative": -63457.8500650995,
+        "feasible_gradient_first_directional_derivative": -69908.13321985357,
+        "raw_projection_descent_cosine": 0.5855808655637879,
+        "corrected_descent_cosine": 0.5992741089252563
+      },
+      {
+        "layer": 4,
+        "raw_gradient_norm": 113.42664043012316,
+        "feasible_gradient_norm": 101.0813830303478,
+        "raw_adam_direction_norm": 1535.9954443401664,
+        "projected_adam_direction_norm": 1364.6198350866712,
+        "corrected_direction_norm": 1506.645923553945,
+        "raw_projected_directional_derivative": -74888.31799946338,
+        "feasible_gradient_first_directional_derivative": -87094.09614309916,
+        "raw_projection_descent_cosine": 0.5429142256618626,
+        "corrected_descent_cosine": 0.5718818851380424
+      },
+      {
+        "layer": 5,
+        "raw_gradient_norm": 123.288317145142,
+        "feasible_gradient_norm": 107.0549018254705,
+        "raw_adam_direction_norm": 1535.99511266169,
+        "projected_adam_direction_norm": 1306.2241555941005,
+        "corrected_direction_norm": 1503.0959753644192,
+        "raw_projected_directional_derivative": -72276.02689407206,
+        "feasible_gradient_first_directional_derivative": -86982.9843918374,
+        "raw_projection_descent_cosine": 0.5168565239969819,
+        "corrected_descent_cosine": 0.5405564263271468
+      },
+      {
+        "layer": 6,
+        "raw_gradient_norm": 107.16853774799102,
+        "feasible_gradient_norm": 90.95979328163949,
+        "raw_adam_direction_norm": 1535.9938131754227,
+        "projected_adam_direction_norm": 1211.4884735991448,
+        "corrected_direction_norm": 1489.0128565286057,
+        "raw_projected_directional_derivative": -53007.26926951867,
+        "feasible_gradient_first_directional_derivative": -71119.9521916052,
+        "raw_projection_descent_cosine": 0.4810239280215542,
+        "corrected_descent_cosine": 0.5251018444220699
+      },
+      {
+        "layer": 7,
+        "raw_gradient_norm": 106.45755671603067,
+        "feasible_gradient_norm": 91.58179759410474,
+        "raw_adam_direction_norm": 1535.9929921041341,
+        "projected_adam_direction_norm": 1263.5731472554214,
+        "corrected_direction_norm": 1490.5820386257403,
+        "raw_projected_directional_derivative": -51143.48690799682,
+        "feasible_gradient_first_directional_derivative": -67824.74398834608,
+        "raw_projection_descent_cosine": 0.4419577793348528,
+        "corrected_descent_cosine": 0.4968475077609412
+      },
+      {
+        "layer": 8,
+        "raw_gradient_norm": 95.99896202658103,
+        "feasible_gradient_norm": 88.68299790404102,
+        "raw_adam_direction_norm": 1535.9457638681574,
+        "projected_adam_direction_norm": 1314.2311191625768,
+        "corrected_direction_norm": 1456.2777690092473,
+        "raw_projected_directional_derivative": -47008.777163277846,
+        "feasible_gradient_first_directional_derivative": -59612.973316251984,
+        "raw_projection_descent_cosine": 0.403335865096426,
+        "corrected_descent_cosine": 0.4615897942407358
+      },
+      {
+        "layer": 9,
+        "raw_gradient_norm": 67.1461764913078,
+        "feasible_gradient_norm": 64.09858393941997,
+        "raw_adam_direction_norm": 1524.6397379041935,
+        "projected_adam_direction_norm": 1291.1076208397174,
+        "corrected_direction_norm": 1300.4898136273466,
+        "raw_projected_directional_derivative": -24210.77196780686,
+        "feasible_gradient_first_directional_derivative": -34233.502154515605,
+        "raw_projection_descent_cosine": 0.29254842037468987,
+        "corrected_descent_cosine": 0.41067280117941024
+      },
+      {
+        "layer": 10,
+        "raw_gradient_norm": 56.08406037276299,
+        "feasible_gradient_norm": 53.691139939092444,
+        "raw_adam_direction_norm": 1532.6099770435344,
+        "projected_adam_direction_norm": 1352.0722238005403,
+        "corrected_direction_norm": 1333.6237889367226,
+        "raw_projected_directional_derivative": -25292.940188383174,
+        "feasible_gradient_first_directional_derivative": -31325.582461374463,
+        "raw_projection_descent_cosine": 0.34841496570967256,
+        "corrected_descent_cosine": 0.4374850296285123
+      },
+      {
+        "layer": 11,
+        "raw_gradient_norm": 30.27697617430757,
+        "feasible_gradient_norm": 23.277604009928147,
+        "raw_adam_direction_norm": 1535.9730102915405,
+        "projected_adam_direction_norm": 1130.6459802513089,
+        "corrected_direction_norm": 1463.5929594441452,
+        "raw_projected_directional_derivative": -13189.168666498434,
+        "feasible_gradient_first_directional_derivative": -16365.440669183656,
+        "raw_projection_descent_cosine": 0.5011324241450931,
+        "corrected_descent_cosine": 0.48036252217271036
+      }
+    ],
+    "toy": {
+      "raw_after_projection_derivative": 0.07692307538461546,
+      "gradient_first_derivative": -0.3846153646153856
+    },
+    "raw_projected_directional_derivative": -547390.8382057777,
+    "gradient_first_directional_derivative": -664470.391381397,
+    "raw_descent_cosine": 0.456684607795324,
+    "gradient_first_descent_cosine": 0.49309577349044065,
+    "source_score_sha256": "b353eed32fe5964db675bdb98e110a6d4624548b53a5d5cf395ce970bc274e58",
+    "original_expert_updates": 0,
+    "publication_optimizer_steps": 0,
+    "new_defense_publications": 0,
+    "new_real_images": 0,
+    "new_AGA_calls": 0,
+    "seconds": 7.230774479918182,
+    "scope": "First fresh B-update only,not Adam's unavailable later moments. Reuses original first40synthetic views and original-weight initialization,not closed-point weights or witness inputs. No step applied. This can identify initial directional efficiency,not establish the cause of final failure or efficacy of a new solver.",
+    "definition_local_commit": "8d14783"
+  },
+  "first_update": {
+    "status": "exact_original_first_step_reproduction",
+    "initial_loss": 15.82703685760498,
+    "after_first_step_loss": 6.4765448570251465,
+    "original_lr": 0.001,
+    "changed_source_predictions_initial": 40,
+    "changed_source_predictions_after": 0,
+    "new_generated_image_forwards": 120,
+    "new_real_images": 0,
+    "original_expert_updates": 0,
+    "reproduced_original_publication_optimizer_steps": 1,
+    "new_defense_publications": 0,
+    "new_AGA_calls": 0,
+    "score_sha256": "fb53df38c1fe4f645aa047fb7cce704f4d8ada3798241e7367b73420b41c73ed",
+    "seconds": 6.620361420325935,
+    "scope": "One reproduction of the original first step and its original40synthetic views. No alternative learning rate,line search,new model release or natural-image feedback.",
+    "definition_local_commit": "f37e5d0"
+  }
+}

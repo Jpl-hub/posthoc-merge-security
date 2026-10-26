@@ -1,0 +1,94 @@
+{
+  "scope": "Read primary papers and official source;no new merger implementation or claimed reproduction.",
+  "TSV": {
+    "paper": "https://openaccess.thecvf.com/content/CVPR2025/papers/Gargiulo_Task_Singular_Vectors_Reducing_Task_Interference_in_Model_Merging_CVPR_2025_paper.pdf",
+    "repository": "https://github.com/AntoAndGar/task_singular_vectors",
+    "commit": "a6c97188f7aa0bb20753de4f2939be89dd64f1c3",
+    "reviewed": [
+      "main.py",
+      "config/config.yaml",
+      "src/eval/eval_utils.py",
+      "src/eval/aggregation.py",
+      "src/utils/TSVM_utils.py"
+    ],
+    "raw_source_archive_4090": "outputs/row_compensation_20261025/paper_source_review.json",
+    "raw_sha256": "10f7d244c69432f8c8ff3cb34c7a69eed779becef795de07de1013752aa97752",
+    "findings": "Tasklayer SVD and orthogonalization are established. Main evaluation constructs vectors separately from val/test evaluation. Officialcode chooses a coefficient on validation before test and reports absolute/normalizedaccuracy;default8tasks/31points differs from our fixedTA.5 pair.",
+    "installed_or_run": false
+  },
+  "PaRaMS": {
+    "paper": "https://arxiv.org/html/2503.07661v1",
+    "reviewed_sections": [
+      "5.1",
+      "5.2",
+      "H.1",
+      "H.2"
+    ],
+    "findings": "Report standalonebefore/after and merging both target/partner;deleting individual modules isolates contribution;coefficient/taskcount sensitivity and cost are separate. Different coefficients or taskaverages must not be mixed with our fixedpair."
+  },
+  "AGA": {
+    "paper": "https://arxiv.org/html/2606.30360v1",
+    "fixed_kernel_commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "reviewed_sections": [
+      "3.2",
+      "4.1",
+      "11.5",
+      "11.6"
+    ],
+    "findings": "Separate protected-task accuracy from cross-task average. Defenseagnostic core applies to all candidateexperts;our targetonly/both explicitly separated. Standalonepostattack and parameter sensitivity are distinct evaluations,not additional attackalgorithms."
+  },
+  "our_priority": "Numericalposthoc mechanism and non-invertible fused function,without actualconstructionimages;not importing more fusion algorithms. SVD contribution must follow our ablation evidence.",
+  "EMMET_MEMIT": {
+    "repository": "scalable-model-editing/unified-model-editing",
+    "commit": "23d72b560e52992e675377cc2d1deed7a45b1cd0",
+    "raw_sha256": "823c9be81e8fb3bb2a334ac5b1789ad36008067c219f9360a42805db257f4b5f",
+    "files": {
+      "emmet/emmet_main.py": {
+        "sha256": "8bec703dbfc6957ecbb07eac1b7ec6756dc9c31d200348f6a55ca3987548a566",
+        "git_blob": "e77e76a71f1182aa525debe0c918b9b883d06525",
+        "bytes": 14832
+      },
+      "memit/memit_main.py": {
+        "sha256": "0707742ec48ed3bf53fbc6e45d78c1d3aa89a49355d018674b7a71ae381b47e5",
+        "git_blob": "55ef158bab4c2688e9c5bb3d369e58f127664604",
+        "bytes": 14153
+      }
+    },
+    "paper": "https://arxiv.org/html/2403.14236v2",
+    "sections_read": [
+      "3",
+      "4",
+      "5",
+      "5.1",
+      "7"
+    ],
+    "source_archive_4090": "outputs/row_compensation_20261025/conditional_feasibility/editing_source_review.json",
+    "installed_or_executed": false,
+    "source_findings": "Officialcode recomputes currentlayerkeys and finalresidual;distributes residual over remaininglayers. EMMETusescovinverseandkeyGramregularization,MEMITuseslinear solveofcovpluskeyGram. Preservationcovariance is computedfrom mom2_dataset activations. This is not a datafreepipeline to copy into our frozenCLIP experiment.",
+    "contribution_boundary": "Equalityconstraints,regularizedassociativememory and residualdistribution are existingtechniques. Papercomparison distinguishes optimizationobjective from layerdistribution;cannotclaimourpinv/ridge asnewmethod."
+  },
+  "AlphaEdit_LEACE": {
+    "papers": [
+      "https://arxiv.org/html/2410.02355v3",
+      "https://arxiv.org/html/2306.03819v3"
+    ],
+    "sections_read": [
+      "AlphaEdit3.1-3.3/equations7-14",
+      "LEACE3-4"
+    ],
+    "official_code_read_web": [
+      "https://github.com/jianghoucheng/AlphaEdit/blob/main/AlphaEdit/AlphaEdit_main.py",
+      "https://github.com/EleutherAI/concept-erasure/blob/main/concept_erasure/leace.py"
+    ],
+    "source_byte_pinning": "BothdirectAPIrequests404;web maincode read,but no newfixedcommit/bytearchive. PreviousfixedMEMIT/EMMET23d72b56stillavailable. Neither imported nor executed.",
+    "findings": "Preservedkey nullspace projection and minimum-norm editing are established. LEACE uses centered feature/concept covariances with whitening;its convex-loss linear-guardedness result is not a fixed-head score-neutrality guarantee. AlphaEditcode uses key/cacheprojected solve and residualdivision acrosslayers,with corpus covariance in get_cov. These statistics are not copied as datafree.",
+    "ours": "ExactLayerNorm-affine neutralhead constraints plus one finite native/task-probe-preserving parameter solve;no claimthatstandardpseudo-inverse/nullspace isoriginal,thatallhiddenfeatureinformationiserased,or unknownpartnersguaranteed.",
+    "installed_or_run": false
+  },
+  "Pre_LN_structure": {
+    "paper": "https://proceedings.mlr.press/v119/xiong20b.html",
+    "official_code_read": "https://github.com/openai/CLIP/blob/main/clip/model.py",
+    "scope": "Pre-LN residual architecture only, not transfer of the paper initialization theorem to frozen-task security. Actual executed forward/LN/QuickGELU source embedded in the radial condition record.",
+    "ours": "A finite algebraic condition for the closed last-MLP class-equality objective; not a new defense, accuracy result, universal impossibility or prerequisite for all methods."
+  }
+}

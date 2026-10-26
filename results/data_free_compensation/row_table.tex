@@ -1,14 +1,45 @@
-% Complete MNIST test; partner SVHN; fixed TA coefficient 0.5.
-% Same frozen82ff point; strict component deletion, no refitting.
+% Complete MNIST, SVHN partner, TA0.5, original-author AGA.
+% Unique fixed point; source condition and standalone retention are not merge protection.
 \begin{tabular}{lrrrr}
 \toprule
-Method & Standalone & TA & AGA (target) & AGA (both) \\
+Setting & Standalone & TA & AGA (target) & AGA (both) \\
 \midrule
 Unprotected & 99.69 & 99.37 & 99.30 & 99.32 \\
-A only & 99.70 & 99.37 & 99.31 & 99.34 \\
-B only & 44.00 & 51.39 & 43.06 & 38.25 \\
-A+B & 98.93 & 60.89 & 5.50 & 2.38 \\
+Fixed conditional point & 99.69 & 97.31 & 78.22 & 77.20 \\
 \bottomrule
 \end{tabular}
-% Accuracy in percent. Native utility loss of A+B is0.76pp, above its0.5pp prospective reference.
-% This is one evaluated task/pair;SVD contribution has not been isolated by these component controls.
+% Separate Data-Free native checks; no merger/AGA evaluation for failed native points.
+% Agreement is with the original teacher on synthetic construction inputs, not accuracy.
+% Records: generated_prefix_result.json, adaptive_inputs_result.json,
+% functional_compensation_result.json. Source sizes and objectives differ.
+\begin{tabular}{lrrr}
+\toprule
+Construction & Synthetic agreement & Original native & Modified native \\
+\midrule
+Fixed-input block reconstruction & 800/800 & 99.69 & 45.17 \\
+Active-input block reconstruction & 2851/3200 & 99.69 & 71.65 \\
+Joint-response classification fit & 563/3200 & 99.69 & 9.74 \\
+Full-objective solver control & 385/800 & 99.69 & 9.82 \\
+Joint A/B nonlinear response fit & 906/3200 & 99.69 & 15.08 \\
+Response-conditioned joint A/B & 2017/3200 & 99.69 & 9.63 \\
+Full-prefix and local task responses & 64/64 & 99.69 & 9.14 \\
+\bottomrule
+\end{tabular}
+% Input-generation comparison only. Pseudo-label agreement is not native accuracy.
+\begin{tabular}{lrrr}
+\toprule
+Synthetic input objective & Images & All five shifts agree & SVD/random response energy \\
+\midrule
+Class cross-entropy & 32 & 32/32 & 1.93 \\
+Class cross-entropy with paper priors & 32 & 32/32 & 2.44 \\
+\bottomrule
+\end{tabular}
+% Same predeclared output calibration, no true-label fitting; attacker can retain raw AGA.
+\begin{tabular}{lrrr}
+\toprule
+Setting & TA & AGA (target) & AGA (both) \\
+\midrule
+Unprotected & 99.34 & 99.29 & 99.29 \\
+Fixed conditional point & 87.22 & 60.33 & 56.33 \\
+\bottomrule
+\end{tabular}

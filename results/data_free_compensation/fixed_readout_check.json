@@ -1,0 +1,216 @@
+{
+  "status": "completed_fixed_public_inverse_no_mapping_fit",
+  "rule": "decoded=(argmax(logits)-1)%10",
+  "rows": [
+    {
+      "point": "task_SVD",
+      "key": "Unprotected/TA/None/MNIST",
+      "n": 10000,
+      "before_correct": 9937,
+      "public_inverse_correct": 4,
+      "public_inverse_accuracy_percent": 0.04,
+      "raw_sha256": "635530b0448e45574f868494be2da62ca80148a49d3c0181d3db07d703e5ddef"
+    },
+    {
+      "point": "task_SVD",
+      "key": "Unprotected/TA/Protected expert/MNIST",
+      "n": 10000,
+      "before_correct": 9930,
+      "public_inverse_correct": 4,
+      "public_inverse_accuracy_percent": 0.04,
+      "raw_sha256": "635530b0448e45574f868494be2da62ca80148a49d3c0181d3db07d703e5ddef"
+    },
+    {
+      "point": "task_SVD",
+      "key": "Unprotected/TA/All experts/MNIST",
+      "n": 10000,
+      "before_correct": 9932,
+      "public_inverse_correct": 3,
+      "public_inverse_accuracy_percent": 0.03,
+      "raw_sha256": "635530b0448e45574f868494be2da62ca80148a49d3c0181d3db07d703e5ddef"
+    },
+    {
+      "point": "task_SVD",
+      "key": "Numerical_MNIST/TA/None/MNIST",
+      "n": 10000,
+      "before_correct": 6089,
+      "public_inverse_correct": 3803,
+      "public_inverse_accuracy_percent": 38.03,
+      "raw_sha256": "635530b0448e45574f868494be2da62ca80148a49d3c0181d3db07d703e5ddef"
+    },
+    {
+      "point": "task_SVD",
+      "key": "Numerical_MNIST/TA/Protected expert/MNIST",
+      "n": 10000,
+      "before_correct": 550,
+      "public_inverse_correct": 9350,
+      "public_inverse_accuracy_percent": 93.5,
+      "raw_sha256": "635530b0448e45574f868494be2da62ca80148a49d3c0181d3db07d703e5ddef"
+    },
+    {
+      "point": "task_SVD",
+      "key": "Numerical_MNIST/TA/All experts/MNIST",
+      "n": 10000,
+      "before_correct": 238,
+      "public_inverse_correct": 9665,
+      "public_inverse_accuracy_percent": 96.65,
+      "raw_sha256": "635530b0448e45574f868494be2da62ca80148a49d3c0181d3db07d703e5ddef"
+    },
+    {
+      "point": "no_task_SVD",
+      "key": "Unprotected/TA/None/MNIST",
+      "n": 10000,
+      "before_correct": 9937,
+      "public_inverse_correct": 4,
+      "public_inverse_accuracy_percent": 0.04,
+      "raw_sha256": "de33ecd91c01e33846e35d065b02e0da8a5d557dd3a81590cc8edd00dd2afaca"
+    },
+    {
+      "point": "no_task_SVD",
+      "key": "Unprotected/TA/Protected expert/MNIST",
+      "n": 10000,
+      "before_correct": 9930,
+      "public_inverse_correct": 4,
+      "public_inverse_accuracy_percent": 0.04,
+      "raw_sha256": "de33ecd91c01e33846e35d065b02e0da8a5d557dd3a81590cc8edd00dd2afaca"
+    },
+    {
+      "point": "no_task_SVD",
+      "key": "Unprotected/TA/All experts/MNIST",
+      "n": 10000,
+      "before_correct": 9932,
+      "public_inverse_correct": 3,
+      "public_inverse_accuracy_percent": 0.03,
+      "raw_sha256": "de33ecd91c01e33846e35d065b02e0da8a5d557dd3a81590cc8edd00dd2afaca"
+    },
+    {
+      "point": "no_task_SVD",
+      "key": "NoTask_MNIST/TA/None/MNIST",
+      "n": 10000,
+      "before_correct": 21,
+      "public_inverse_correct": 9887,
+      "public_inverse_accuracy_percent": 98.87,
+      "raw_sha256": "de33ecd91c01e33846e35d065b02e0da8a5d557dd3a81590cc8edd00dd2afaca"
+    },
+    {
+      "point": "no_task_SVD",
+      "key": "NoTask_MNIST/TA/Protected expert/MNIST",
+      "n": 10000,
+      "before_correct": 180,
+      "public_inverse_correct": 9726,
+      "public_inverse_accuracy_percent": 97.26,
+      "raw_sha256": "de33ecd91c01e33846e35d065b02e0da8a5d557dd3a81590cc8edd00dd2afaca"
+    },
+    {
+      "point": "no_task_SVD",
+      "key": "NoTask_MNIST/TA/All experts/MNIST",
+      "n": 10000,
+      "before_correct": 139,
+      "public_inverse_correct": 9769,
+      "public_inverse_accuracy_percent": 97.69,
+      "raw_sha256": "de33ecd91c01e33846e35d065b02e0da8a5d557dd3a81590cc8edd00dd2afaca"
+    }
+  ],
+  "permissions": "Methodinformed fixedreadout correction;known publiccyclicwrongclassrule and targethead/classIDs. Separatefrom defenseagnostic originalAGA,no originalexpert or traininglabels for construction.",
+  "new_image_forwards": 0,
+  "new_weight_updates": 0,
+  "new_AGA_calls": 0,
+  "source_sha256": "5d8e375b153e704b9275a24b9f8c2903631a4eeb4b72542b6160171bfabe0ca2",
+  "seconds": 0.42541360203176737,
+  "full_confusions_on_4090": true,
+  "noncyclic_followup": {
+    "record": {
+      "rule": "(argmax(logits)-1)%10;unchangedpreviouslyfixedrule,no label-fitting",
+      "rows": [
+        {
+          "point": "shared_response",
+          "key": "Unprotected/TA/None/MNIST",
+          "before_correct": 9937,
+          "fixed_inverse_correct": 4,
+          "n": 10000
+        },
+        {
+          "point": "shared_response",
+          "key": "Unprotected/TA/Protected expert/MNIST",
+          "before_correct": 9930,
+          "fixed_inverse_correct": 4,
+          "n": 10000
+        },
+        {
+          "point": "shared_response",
+          "key": "Unprotected/TA/All experts/MNIST",
+          "before_correct": 9932,
+          "fixed_inverse_correct": 3,
+          "n": 10000
+        },
+        {
+          "point": "shared_response",
+          "key": "SharedResponse_MNIST/TA/None/MNIST",
+          "before_correct": 7923,
+          "fixed_inverse_correct": 23,
+          "n": 10000
+        },
+        {
+          "point": "shared_response",
+          "key": "SharedResponse_MNIST/TA/Protected expert/MNIST",
+          "before_correct": 8729,
+          "fixed_inverse_correct": 17,
+          "n": 10000
+        },
+        {
+          "point": "shared_response",
+          "key": "SharedResponse_MNIST/TA/All experts/MNIST",
+          "before_correct": 8787,
+          "fixed_inverse_correct": 20,
+          "n": 10000
+        },
+        {
+          "point": "class_response",
+          "key": "Unprotected/TA/None/MNIST",
+          "before_correct": 9937,
+          "fixed_inverse_correct": 4,
+          "n": 10000
+        },
+        {
+          "point": "class_response",
+          "key": "Unprotected/TA/Protected expert/MNIST",
+          "before_correct": 9930,
+          "fixed_inverse_correct": 4,
+          "n": 10000
+        },
+        {
+          "point": "class_response",
+          "key": "Unprotected/TA/All experts/MNIST",
+          "before_correct": 9932,
+          "fixed_inverse_correct": 3,
+          "n": 10000
+        },
+        {
+          "point": "class_response",
+          "key": "ClassResponse_MNIST/TA/None/MNIST",
+          "before_correct": 9468,
+          "fixed_inverse_correct": 42,
+          "n": 10000
+        },
+        {
+          "point": "class_response",
+          "key": "ClassResponse_MNIST/TA/Protected expert/MNIST",
+          "before_correct": 9449,
+          "fixed_inverse_correct": 22,
+          "n": 10000
+        },
+        {
+          "point": "class_response",
+          "key": "ClassResponse_MNIST/TA/All experts/MNIST",
+          "before_correct": 9497,
+          "fixed_inverse_correct": 20,
+          "n": 10000
+        }
+      ],
+      "new_images": 0,
+      "new_updates": 0,
+      "source_sha256": "2df3d923a650cdb616c2e1b253d823a65d444f27f1fdcd1e92afc785f1290260"
+    },
+    "sha256": "c5aef7b6de5c18ea8eb36da8ff569a5331e01630eda04dddaaa1be6e88257261"
+  }
+}

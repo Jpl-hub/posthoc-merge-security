@@ -1,0 +1,54 @@
+{
+  "status": "fixed_no_task_constraint_ablation_frozen_not_main_replacement",
+  "point_sha256": "4c0e11ecc932b44f9635f695dbfc3165a6462800930ada81ac315f53716e5ebf",
+  "A_relative": 0.9996194067825314,
+  "B_relative": 3.0331223490798513,
+  "logical_D": 3.1935983064411744,
+  "zero_A_rows": 0,
+  "max_row_inner_product": 4.0145030745855625e-11,
+  "independent_A_solve_error": 9.62807022553648e-17,
+  "metrics": {
+    "native": {
+      "teacher_class_retained": 799,
+      "wrong_cyclic_class": 1,
+      "changed_from_clean": 1
+    },
+    "direct": {
+      "teacher_class_retained": 0,
+      "wrong_cyclic_class": 800,
+      "changed_from_clean": 800
+    },
+    "recovered": {
+      "teacher_class_retained": 0,
+      "wrong_cyclic_class": 800,
+      "changed_from_clean": 800
+    }
+  },
+  "source_full_vs_tail_error": 2.47955322265625e-05,
+  "solver_success": true,
+  "solver_message": "Optimization terminated successfully",
+  "solver_iterations": 59,
+  "weighted_ridge_solves": 121,
+  "relative_dual_gap": 4.575286869911251e-05,
+  "envelope_derivative_error": 3.7241750048405686e-11,
+  "solver_arrays_sha256": "01bc41413613518e6f9424b74ad10df7115c4401a1024bc02be753eda9391e18",
+  "source_arrays_sha256": "b7c36ef917de4fcacf148d426f30cd4294bb614ce4982310a51f0f31b29e53a1",
+  "protocol_sha256": "e56edcb22d2f353ee79fbe1e805d8ac6f115dbf706c0d5b9482e29325fbc0db9",
+  "source_sha256": "73e346bc9d775b40d23a4881c5ef3dff039d3a3134fe6b9b6fe8637c10482820",
+  "checkpoint_sha256": {
+    "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+    "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+    "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+  },
+  "new_generated_inputs": 0,
+  "new_pixel_updates": 0,
+  "generated_image_forwards": 2400,
+  "real_construction_images": 0,
+  "original_expert_updates": 0,
+  "author_last_MLP_matches": 1,
+  "new_full_AGA_calls": 0,
+  "seconds": 20.399651300162077,
+  "source_archive": "\"\"\"Fixed removal of both task-SVD constraints; no refitting of the main point.\"\"\"\nimport copy\nimport hashlib\nimport json\nimport time\nfrom pathlib import Path\n\nimport numpy as np\nimport torch\nimport torch.nn.functional as F\nfrom scipy.optimize import minimize\n\nfrom _impl.attacks import load_author\nfrom _impl.io import digest\nfrom _impl.merge import merge\nfrom _impl.models import checked_models, initialize\n\ninitialize()\nstart = time.perf_counter()\nprotocol = Path('results/data_free_compensation/no_task_protocol.json')\ncfg = json.loads(protocol.read_text())\nout = Path('outputs/row_compensation_20261025/no_task')\nout.mkdir(exist_ok=False)\n(out/'protocol.json').write_text(json.dumps(cfg,indent=2)+'\\n')\nfor ref in cfg['clean_inputs'].values():\n    assert digest(ref['path']) == ref['sha256']\nraw = torch.load(cfg['clean_inputs']['source']['path'],map_location='cpu',weights_only=False)\nprototypes = torch.load(cfg['clean_inputs']['prototypes']['path'],map_location='cpu',weights_only=False)['centered_residual'].cuda()\nbase,expert,head,pins = checked_models('MNIST')\naligned = copy.deepcopy(expert)\naligned.load_state_dict(torch.load(cfg['clean_inputs']['original_AGA']['path'],map_location='cpu',weights_only=False),strict=True)\nse,sb = expert.state_dict(),base.state_dict()\nkey = 'model.visual.transformer.resblocks.11.mlp.'\noriginalA,A0 = [s[key+'c_fc.weight'].double().cuda() for s in [se,sb]]\ndelta = -(originalA*A0).sum(1,keepdim=True)/A0.square().sum(1,keepdim=True)*A0\nAp = (originalA+delta).float().cpu()\nan,pn = [x.cpu().numpy() for x in [originalA,A0]]\ndn = -np.sum(an*pn,axis=1,keepdims=True)/np.sum(pn*pn,axis=1,keepdims=True)*pn\nindependent = float(np.linalg.norm(dn-delta.cpu().numpy())/np.linalg.norm(dn))\nassert independent<1e-10\nauthor,sha = load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))\nassert sha == cfg['author_text_sha256']\npi = author['solve_permutation'](Ap,sb[key+'c_fc.weight']).cuda()\nassert sorted(pi.tolist())==list(range(len(Ap)))\nA=Ap.double().cuda()\nB,a,b = [se[key+k].double().cuda() for k in ['c_proj.weight','c_fc.bias','c_proj.bias']]\nB0,a0,b0 = [sb[key+k].double().cuda() for k in ['c_proj.weight','c_fc.bias','c_proj.bias']]\ncache={n:{k:t.double().cuda() for k,t in row.items()} for n,row in raw['cache'].items()}\nrequested=raw['requested'].cuda();teacher_class=raw['teacher_class'].cuda()\nactivation=lambda z:z*torch.sigmoid(1.702*z)\nhn=activation(F.linear(cache['native']['x'],A,a)).T\nhd=activation(F.linear(cache['direct']['x'],(A0+A)/2,(a0+a)/2)).T\nha=activation(F.linear(cache['recovered']['x'],(A0+A[pi])/2,(a0+a[pi])/2)).T\nback=torch.empty_like(ha);back[pi]=ha\nfeatures=dict(native=hn,direct=.5*hd,recovered=.5*back)\nbm=(b0+b)/2\nfixed=dict(native=cache['native']['prefix'].T+B@hn+b[:,None],direct=cache['direct']['prefix'].T+(B0+B)@hd/2+bm[:,None],recovered=cache['recovered']['prefix'].T+B@back/2+B0@ha/2+bm[:,None])\ntargets=dict(native=cache['native']['final'].T)\nfor n in ['direct','recovered']:targets[n]=(prototypes[(teacher_class+1)%10]+cache[n]['final'].mean(1,keepdim=True)).T\nks,es,ids,names=[],[],[],[]\nfor n in features:\n    for y in range(10):\n        mask=requested.eq(y);den=cache[n]['final'][mask].square().sum().sqrt()\n        ks.append(features[n][:,mask]/den);es.append((targets[n]-fixed[n])[:,mask]/den)\n        ids.extend([len(names)]*int(mask.sum()));names.append(n+'/'+str(y))\nK,E=torch.cat(ks,1),torch.cat(es,1);groups=torch.tensor(ids,device='cuda')\nrho=.01;ridge=rho/float(B.square().sum());trace=[]\ndef solve(weights):\n    lam=torch.tensor(np.maximum(weights,0),dtype=torch.double,device='cuda')\n    scale=lam[groups].sqrt();kw=K*scale;ew=E*scale\n    gram=kw.T@kw;gram.diagonal().add_(ridge)\n    D=torch.cholesky_solve(ew.T,torch.linalg.cholesky(gram)).T@kw.T\n    errors=torch.zeros(30,dtype=torch.double,device='cuda').scatter_add_(0,groups,(D@K-E).square().sum(0))\n    reg=ridge*D.square().sum();value=lam@errors+reg\n    trace.append(dict(call=len(trace)+1,primal=float(errors.max()+reg),dual=float(value)))\n    return D,errors,reg,value\nuniform=np.ones(30)/30;tangent=np.zeros(30);tangent[0]=1/np.sqrt(2);tangent[1]=-1/np.sqrt(2)\n_,er,_,_=solve(uniform);ad=float(er.cpu().numpy()@tangent);step=1e-5\nfd=float((solve(uniform+step*tangent)[3]-solve(uniform-step*tangent)[3])/(2*step))\nassert abs(fd-ad)<1e-6*(1+abs(ad)),(fd,ad)\ndef objective(weights):\n    _,errors,_,value=solve(weights)\n    return -float(value),-errors.cpu().numpy()\nopt=minimize(objective,uniform,jac=True,bounds=[(0.,1.)]*30,constraints=[dict(type='eq',fun=lambda p:p.sum()-1,jac=lambda p:np.ones(30))],method='SLSQP',options=dict(maxiter=200,ftol=1e-8))\nweights=np.maximum(opt.x,0);weights/=weights.sum();D,errors,reg,value=solve(weights)\nE0=float(torch.zeros(30,dtype=torch.double,device='cuda').scatter_add_(0,groups,E.square().sum(0)).max())\nassert float(D.norm()/B.norm())<=np.sqrt(E0/rho)*(1+1e-7)\nedits={key+'c_fc.weight':Ap,key+'c_proj.weight':(B+D).float().cpu()}\ntorch.save(edits,out/'point.pt');point_sha=digest(out/'point.pt')\ntorch.save(dict(assignment=pi.cpu(),weights=weights,errors=errors.cpu(),group_names=names,trace=trace),out/'solver.pt')\ncandidate=copy.deepcopy(expert);candidate.load_state_dict(se|edits,strict=True)\nar=copy.deepcopy(aligned);ar.load_state_dict(aligned.state_dict()|{key+'c_fc.weight':Ap[pi.cpu()],key+'c_fc.bias':se[key+'c_fc.bias'][pi.cpu()],key+'c_proj.weight':edits[key+'c_proj.weight'][:,pi.cpu()]},strict=True)\nmodels=dict(native=candidate,direct=merge(base,candidate,base,.5),recovered=merge(base,ar,base,.5))\nnormalizer=expert.val_preprocess.transforms[-1]\nmean=torch.tensor(normalizer.mean,device='cuda')[None,:,None,None];std=torch.tensor(normalizer.std,device='cuda')[None,:,None,None]\nW=head.weight.cuda();arrays={};metrics={};spot=0.\ndef images(x):\n    x=F.interpolate(x,(224,224),mode='bilinear',align_corners=False)\n    return (torch.cat([torch.roll(x,tuple(s),(2,3)) for s in [[0,0],[7,0],[-7,0],[0,7],[0,-7]]])-mean)/std\nfor n,m in models.items():\n    m.cuda().eval().requires_grad_(False)\n    with torch.no_grad():\n        scores=torch.cat([(F.normalize(m(images(raw['final'][i:i+8].cuda())),dim=-1)@W.T).cpu() for i in range(0,160,8)])\n        block=m.model.visual.transformer.resblocks[11]\n        z=F.linear(cache[n]['x'].float(),block.mlp.c_fc.weight,block.mlp.c_fc.bias)\n        r=cache[n]['prefix'].float()+F.linear(activation(z),block.mlp.c_proj.weight,block.mlp.c_proj.bias)\n        v=m.model.visual;tail=(F.normalize(v.ln_post(r)@v.proj,dim=-1)@W.T).cpu()\n        spot=max(spot,float((scores-tail).abs().max()));pred=scores.argmax(1).cuda()\n        metrics[n]=dict(teacher_class_retained=int(pred.eq(teacher_class).sum()),wrong_cyclic_class=int(pred.eq((teacher_class+1)%10).sum()),changed_from_clean=int(pred.ne(cache[n]['scores'].argmax(1)).sum()))\n        arrays[n]=dict(actual=scores,tail=tail)\n    m.cpu()\nassert spot<5e-4,spot\ntorch.save(arrays,out/'source_scores.pt')\nactualA=A-originalA;actualB=edits[key+'c_proj.weight'].double().cuda()-B\nra=float(actualA.norm()/originalA.norm());rb=float(actualB.norm()/B.norm())\nsource=Path(__file__).read_text()\nresult=dict(status='fixed_no_task_constraint_ablation_frozen_not_main_replacement',point_sha256=point_sha,A_relative=ra,B_relative=rb,logical_D=(ra*ra+rb*rb)**.5,zero_A_rows=int(Ap.norm(dim=1).eq(0).sum()),max_row_inner_product=float((A*A0).sum(1).abs().max()),independent_A_solve_error=independent,metrics=metrics,source_full_vs_tail_error=spot,solver_success=bool(opt.success),solver_message=str(opt.message),solver_iterations=int(opt.nit),weighted_ridge_solves=len(trace),relative_dual_gap=float((errors.max()+reg-value)/(1+errors.max()+reg)),envelope_derivative_error=abs(fd-ad),solver_arrays_sha256=digest(out/'solver.pt'),source_arrays_sha256=digest(out/'source_scores.pt'),protocol_sha256=digest(protocol),source=source,source_sha256=hashlib.sha256(source.encode()).hexdigest(),checkpoint_sha256=pins,new_generated_inputs=0,new_pixel_updates=0,generated_image_forwards=2400,real_construction_images=0,original_expert_updates=0,author_last_MLP_matches=1,new_full_AGA_calls=0,seconds=time.perf_counter()-start)\n(out/'results.json').write_text(json.dumps(result,indent=2,allow_nan=False)+'\\n')\nprint(json.dumps({k:v for k,v in result.items() if k!='source'},indent=2))\n",
+  "source_definition_local_commit": "e3939e5906f4077a73083dcaad1c93fe610b423b",
+  "source_public_before_execution": false
+}

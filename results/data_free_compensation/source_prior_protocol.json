@@ -1,0 +1,66 @@
+{
+  "target": "MNIST",
+  "output": "outputs/source_prior_20261026",
+  "seed": 2026102604,
+  "source_sha256": "9b4c347eff565d9afe3ae6e16c250fa77b2bd70a6f128df08fef9124e7a4da99",
+  "official_reference": {
+    "paper": "https://arxiv.org/html/2203.02250v3",
+    "repository": "https://github.com/zkkli/PSAQ-ViT",
+    "commit": "d2c726fe33d6dd474a5f2e2e88d36a354c9d7a7d",
+    "generate_data_sha256": "308cf57c0b2796e8824b654361ae1aac7b52542122f9f179d7628f32597fa429",
+    "kde_sha256": "dc67ca7bf399e3dcbf0b940d2dd84c6d7ec7d63f101622dc0932f911ee601999"
+  },
+  "comparison": [
+    "confidence_only: CE",
+    "paper_priors: CE + negative patch entropy + .05 abs(TV-target)"
+  ],
+  "batch": 32,
+  "resolution": 224,
+  "steps_per_variant": 1000,
+  "pseudo_labels": "arange32 mod10; sharedbalancedclassguidance",
+  "initial": "Same CPU torch.randn(seed) normalized RGB batch, cloned forbothvariants",
+  "pixel_optimizer": {
+    "name": "Adam",
+    "lr": 0.2,
+    "betas": [
+      0.5,
+      0.9
+    ],
+    "eps": 1e-08,
+    "schedule": "Two500step phases,each100linearwarmupand400cosine. Optimizerstatecarriedbetweenphases."
+  },
+  "tv_target": 2882.4712562800605,
+  "patch_metric": "Actual attentionweightedV perhead fromnativeMHAqkv. Meanheads,removeCLS,all49x49cosinesincludingdiagonal. Nativeoutputcheckonce. Same officialV1code convention.",
+  "KDE": {
+    "bandwidth": 0.01,
+    "grid_points": 10,
+    "pdf_epsilon": 0.0001,
+    "integration": "trapezoid"
+  },
+  "adaptation": "Frozen CLIP ViT-B/32 andMNISThead,49patches. CLIPnormalization/bounds. Classguidance10classes,sharedbalancedlabels. No horizontalflip. Keep32batchandTVtarget2500-3000fromofficialV1code;its suitability forCLIPdigits ispartofthis comparison.",
+  "assessment_shifts": [
+    [
+      0,
+      0
+    ],
+    [
+      8,
+      0
+    ],
+    [
+      -8,
+      0
+    ],
+    [
+      0,
+      8
+    ],
+    [
+      0,
+      -8
+    ]
+  ],
+  "outputs": "Bothlast1000stepimages,all32contact sheets,completepseudo label/scores acrossall5shifts,base/expertcomparison,inputSHAandcosts. No beststep/visualselection.",
+  "access": "Frozen originalexpert/classifier andsyntheticpixels. Publicbaseonlyforpostgenerationassessment. No realimages,partners orfaileddefensepoints.",
+  "scope": "One matched source-generation comparison using a known paper prior, adapted to CLIP. No defense parameter updates, native test, merger, or AGA execution."
+}

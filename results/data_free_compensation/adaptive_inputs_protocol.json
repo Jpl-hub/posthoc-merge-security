@@ -1,0 +1,86 @@
+{
+  "status": "defined_before_execution",
+  "target": "MNIST",
+  "output": "outputs/adaptive_inputs_20261025",
+  "source": {
+    "path": "outputs/row_compensation_20261025/source.pt",
+    "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2",
+    "use": "Only the160clean original/public-model final pixel inputs; do not read old protected points, cached protected activations or diagnostic witnesses. Keep all inputs.",
+    "base_count": 160,
+    "group_size": 8,
+    "views": [
+      [
+        0,
+        0
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        -7,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        -7
+      ]
+    ],
+    "batch_size": 40,
+    "resize": "bilinear224,align_cornersFalse",
+    "rounds": 3,
+    "pixel_steps_per_round": 32,
+    "pixel_lr": 0.05,
+    "temperature": 4.0,
+    "critic": "Maximize forwardKL(original||current publication) by minimizing its negative. Input gradients flow through both frozen models. No teacher-confidence/class-label loss or test feedback. Adam states persist across rounds; pixels clamp to[0,1].",
+    "pool": "All original800views plus every round final800views;1600,2400,3200views. No filtering, best-step selection or removal of difficult inputs."
+  },
+  "basis": {
+    "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+    "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+  },
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "rank": 32,
+  "damping": 0.01,
+  "matrix_bounds": [
+    2.0,
+    4.0
+  ],
+  "fit_helper": {
+    "commit": "e6d7667",
+    "name": "_fit_nonlinear_mlp_layer",
+    "sha256": "132822e0dcf2d975bd9716bbb2f496cc7ae7aeb6298e7d4aef19217e7deb2b12"
+  },
+  "initialization": "Original frozen target. Reflect all12A once using original task32complement rule before input search;B starts original. No closed-point weights are loaded. Each subsequent B fit uses the same original reflection template and original basis, not the old protected point.",
+  "fit": "Per round, capture teacher block outputs on entire retained pool. Reconstruct all50tokens using each actual modified student prefix and unchanged original ridge helper.36conditional fits maximum; no model-parameter gradient optimizer.",
+  "mechanism": "Large task-complement A change is an explicit maximizer within the fixed task-preserving orthogonal-reflection family. Conditional B fits compensate nonlinear task function. Active synthetic inputs expose the current function discrepancy instead of treating original-model confidence as coverage. Protection under real merging is an empirical question.",
+  "not_same_as_19d": "No weak distance-reward coefficient or projected A/B gradient actor;A is fixed at the large task-complement reflection. No old19d/7d/c5point or witness loaded.",
+  "permission": "Original target, public base, fixed original classifier, original taskSVD and permitted clean synthetic input pool only. No real images, partner, test or exposed confirmation for construction/selection/repair.",
+  "evaluation": "After third round, freeze one FP32 release and SHA; source metrics descriptive. Complete native MNIST with<=0.5ppaccuracy loss,oldstrictRreported. Only if passed,same TA0.5 andAGA target/both,matched baseline/partnerAGA and native score reuse;full perclass/paired/original128context replay.",
+  "no_retry": "One3round construction, no source/seed/layer/rank/temperature/step/damping/cap or best-iteration retry from test results. Numerical/range failure stops and preserves evidence.",
+  "novelty": "Active data-free input generation,KL,reflection,SVD andridge are established. This is not official ABM reproduction or a proven global minimax solver: input search maximizes outputKL while conditional fits reconstruct block outputs. No new-method claim before evidence.",
+  "references": {
+    "ABM_paper": "https://papers.neurips.cc/paper_files/paper/2019/file/fe663a72b27bdc613873fbbb512f6f67-Paper.pdf",
+    "official_solver": "https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/solver.py",
+    "review": "Input step retains teacher/student input derivatives; official student updates and attention penalty are not imported. Test-accuracy checkpoint selection is not adopted."
+  },
+  "public_before_execution": false,
+  "implementation_sha256": "a7613aadaa635f8cda472a072192f3f5d7585d9c5b5392e03d280597541422fa"
+}

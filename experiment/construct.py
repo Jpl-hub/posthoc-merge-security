@@ -1,16 +1,14 @@
 """Construct a defense from the target/base; no partner or test-based selection."""
 
 import argparse
-import json
 import time
 from pathlib import Path
 
 import torch
 
 from _impl.baselines import params_default, verify_edits
-from _impl.data import dataset
 from _impl.defenses import construct_bias
-from _impl.io import check_files, digest, new_output, save_json
+from _impl.io import digest, new_output, save_json
 from _impl.models import checked_models, initialize
 from _impl.subspace import build_basis, task_pairing
 from cfg import load_config, require_root
@@ -27,8 +25,6 @@ def main():
     p.add_argument("--protocol", default="configs/construct.json")
     p.add_argument("--output", required=True)
     p.add_argument("--variant", choices=["task_aware", "distance_only"], default="task_aware")
-    p.add_argument("--indices", help="Frozen target-training index JSON for Defense1")
-    p.add_argument("--indices-sha256", help="Previously frozen index-file SHA256; no new sampling")
     a = p.parse_args()
     require_root()
     initialize()
@@ -71,16 +67,7 @@ def main():
         )
         return
     if a.method == "bias":
-        if not a.indices or not a.indices_sha256:
-            p.error("bias requires --indices and --indices-sha256")
-        c = cfg["bias"]
-        check_files({a.indices: a.indices_sha256})
-        indices = json.loads(Path(a.indices).read_text())
-        train = dataset(a.target, "data", expert.val_preprocess, True)
-        _, edits, calibration, details = construct_bias(
-            expert, anchor, head, train, indices, c, a.target
-        )
-        torch.save(calibration, out / "calibration.pt")
+        edits, details = construct_bias(expert, anchor, head, cfg["bias"])
     else:
         c = cfg["params"]
         edits = params_default(expert, anchor, c["path"], c["sha256"])

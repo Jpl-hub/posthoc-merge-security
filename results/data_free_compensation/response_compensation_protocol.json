@@ -1,0 +1,124 @@
+{
+  "target": "MNIST",
+  "basis": {
+    "path": "outputs/phase2_task_subspace_comparison_20261020/basis.pt",
+    "sha256": "99b5f25e7868dd8fd1e9712cf2cca37600f470e8345f5782869e9a0d67d71344"
+  },
+  "source": {
+    "path": "outputs/row_compensation_20261025/source.pt",
+    "sha256": "70c887a933ce49867453fa5fbbf3e7f56111a9b3052cd05c2d6a61b4b132f5a2",
+    "views": [
+      [
+        0,
+        0
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        -7,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        -7
+      ]
+    ],
+    "base_count": 160,
+    "all_inputs_retained": true
+  },
+  "task_probes": 512,
+  "input_search": "Same3rounds32pixelsteps,l r.05,T4,20groups8,fiveviews. Bothmodelsinputderivatives;nooriginalparametergradient. Retainoriginal800andallroundfinal800pools:1600/2400/3200,no filtering.",
+  "solver": {
+    "library": "torch2.8 LBFGS",
+    "reset_each_round_for_changed_objective": true,
+    "lr": 1.0,
+    "max_iter": 40,
+    "max_eval": 60,
+    "history_size": 5,
+    "line_search_fn": "strong_wolfe",
+    "matrix_compute": "FP64AparameterizationandresponseGram/Choleskysolve;actualAp,Htask/modelFP32. AllsourcegradientsaccumulateonactualA/Bleaves thenVJPthroughnonlinearresponsemapping. No newoptimizer."
+  },
+  "permission": "Onlyoriginaltarget/publicweights,fixedtargethead,taskSVD,originalclean generatedpoolandfreshweight-taskvectors. No real training/test/partner/exposedconfirmation orclosedpointweights/hardinputs for construction/selection/repair.",
+  "references": [
+    "https://arxiv.org/html/2007.13171v1",
+    "https://arxiv.org/html/2609.39078v1",
+    "https://github.com/polo5/ZeroShotKnowledgeTransfer/blob/e24915d713672554800372c777c9014e3399e13b/solver.py",
+    "https://docs.pytorch.org/docs/2.8/generated/torch.optim.LBFGS.html"
+  ],
+  "status": "defined_before_execution",
+  "output": "outputs/response_compensation_20261026",
+  "task_seed": 2026102603,
+  "source_sha256": "29a6fac1035749f876780489d836c69ccbc35656addd69bf746d55b845b1a2ed",
+  "geometry": {
+    "A": "OriginalA,V,N. Same variable orthogonalS on originaltaskV complement, S=-Cayley(skew(Cayley(rawT)));Anew=A+AN(S-I)Nt. No published/counterexample weights loaded.",
+    "B": "H=phi(AnewX+a),Y=originalfullnonlinearMLPresponse minusoriginalb. B0=B+(Y-BH)Hplus;Bnew=B0+Z(I-HHplus),freeFrobeniusnorm<=||B||. FullcolumnrankH viaFP64Cholesky,actualmodelFP32. Every Achange updates this nonlinearcompensation;no globalBnewAnew=BA constraint.",
+    "math_boundary": "Standard dependentlinearconstraint,variableprojection andKD,notnewmathematicssolver. Only finite taskprobes,notfullnaturalfunctionguarantee."
+  },
+  "parameter_ranges": {
+    "A_by_layer": [
+      [
+        1.2702402730747124,
+        1.796391021654762
+      ],
+      [
+        1.3712142046392426,
+        1.9391897251194534
+      ],
+      [
+        1.377866192700095,
+        1.9485970568518547
+      ],
+      [
+        1.3750968076162944,
+        1.9446805549069102
+      ],
+      [
+        1.3738211659587274,
+        1.9428765251740507
+      ],
+      [
+        1.3754539938767354,
+        1.9451856925607192
+      ],
+      [
+        1.3744646950874861,
+        1.9437866127957235
+      ],
+      [
+        1.3751342585288873,
+        1.9447335184954222
+      ],
+      [
+        1.3750488973648938,
+        1.9446127995796025
+      ],
+      [
+        1.364129633485891,
+        1.9291706285107864
+      ],
+      [
+        1.3707173409498064,
+        1.9384870537512018
+      ],
+      [
+        1.38399883899164,
+        1.9572699284105948
+      ]
+    ],
+    "B": "Prospectivelydefinedminimumresponsecorrectionplusorthogonalfreeradius||Boriginal||. RelativeBdistance squared=minimumcorrectiondistance squared+free distance squared(up to FP32). No fixedtotalB4orD.5cap;actualminimum/free/totaldistancealwaysreport. Legalweightsandfreshsyntheticprobesdeterminecorrection,neverrealtest.",
+    "task_accuracy": "CompleteMNIST loss<=.5pp;oldstrictR separately preserved."
+  },
+  "task_probe_distribution": "Same51231dimSobolLNtaskdomain,independentfixedseed2026102603+i. Originalteacheronly;notold512diagnostic/sourceoroldpoint. No selection.",
+  "objective": "Complete T²KL(original||publication),T4,all original/activegeneratedpools. Nonlinear taskresponse finite equality enforced by Bmapping,not softtaskpenalty. No classforcing/publicwrongclass fitting.",
+  "calibration_protocol": "--geometry-only first readsoriginalweights/newtaskvectors,checksall12ranks/FP32response andNumPyfirstlast;noimages/points. Ifpassedexecuteone3roundconstructor fromoriginalweights.",
+  "evaluation": "Lastthirdroundpointonly frozenbeforeonecompleteMNIST;sourceoutputnotcriterionforbeststepselection. Ifnativeaccuracy loss<=.5ppthen fixedTA.5/authorAGA target/both,matchedbaselines,partner/perclass/paired/original128batchscores.",
+  "failure": "Any nonfinite,rank/Choleskyfailure or FP32responsefailure preserveslog/stops;no rank/range/seed changes from outcomes. Nativeutilityfail closes without fusion.",
+  "scope": "One newresponse-conditionedjointA/B experiment. Unlikeclosed15c4globalaffineequationandsofttaskloss, andunlikeclosed737fixedhiddenA/64probes, A adjustable and B follows fullnonlinear taskresponse. No oldpointcontinuation ordiagnosticrepair.",
+  "public_before_execution": false
+}

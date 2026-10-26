@@ -26,23 +26,19 @@
     "noise_seed": 20261014,
     "numerical_relative_tolerance": 1e-10,
     "proxy_beta": 0.5,
-    "native_cache": {
-      "MNIST": "outputs/covariance_noise_mnist",
-      "DTD": "outputs/covariance_noise_dtd"
-    },
     "bias_safety": 2.0
   },
   "params": {
     "path": "external/PaRaMS/src/PaRaMS/PaRaMS_algorithm.py",
     "sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60"
   },
-  "scope": "Engineering reorganization only. Same fixed task32,F=T-2I,greedy gain1e-10,lexicographic disjoint swaps and frozen published definitions. Not a new algorithm or new evaluation result.",
+  "scope": "Task-directed permutation and basis are unchanged. Bias direction and amplitude now use frozen weights only; no image indices or activation calibration. Historical data-assisted construction remains in Git.",
   "source_sha256": {
     "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
     "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
     "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
     "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
-    "_impl/defenses.py": "b483086bc27198dd97cabdf283b591f70243d438c9907194d869803e602e9785",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
     "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
     "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
     "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
@@ -53,7 +49,7 @@
     "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
     "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
     "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
-    "experiment/construct.py": "6815591553f7537d3de6f4adfc32e51cb999ca1f9bb7a88f3b1659c6a88e4b1f",
+    "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
     "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
     "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
     "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",

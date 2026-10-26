@@ -35,7 +35,6 @@ FROZEN_BODIES = json.loads(Path("results/engineering_refactor/snapshot.json").re
         ("experiments/author_protocol_audit.py", "_impl.metrics", ["logical_parameter_distance"]),
         ("experiments/phase3_evaluate.py", "_impl.metrics", ["row_metrics"]),
         ("experiments/params_reference.py", "_impl.baselines", ["verify_edits"]),
-        ("experiments/projection_bias_noise.py", "_impl.defenses", ["construct_bias"]),
     ],
 )
 def test_frozen_algorithm_bodies(old_path, new_module, names):
@@ -48,7 +47,7 @@ def test_frozen_algorithm_bodies(old_path, new_module, names):
         body = ast.dump(ast.Module(body=current[name].body, type_ignores=[]))
         assert (
             hashlib.sha256(body.encode()).hexdigest()
-            == FROZEN_BODIES[old_path + ":" + ("construct" if name == "construct_bias" else name)]
+            == FROZEN_BODIES[old_path + ":" + name]
         )
 
 
