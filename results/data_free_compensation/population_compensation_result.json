@@ -7406,6 +7406,318 @@
       "not_claimed_stationary": true,
       "full_trace": "outputs/native_ellipse_classification_20261026/point/result.json",
       "full_trace_sha256": "3350c5d327646512f5f55bd4dfe8d8cd002d6802cfb54e5050bd3666de55e4f2"
+    },
+    "freeze_before_real_images_commit": "6d56537"
+  },
+  "native_ellipse_native_result": {
+    "rows": [
+      {
+        "n": 10000,
+        "changed": 11,
+        "R": 44.81121690570889,
+        "stage": "full",
+        "before_correct": 9969,
+        "after_correct": 9961,
+        "strict_task_passed": false,
+        "accuracy_loss_pp": 0.08,
+        "passed": true,
+        "raw_sha256": "ad9e309c7a97c395596d21d2c706a590e360721ad66421fa61826daadf4e919b"
+      }
+    ],
+    "passed": true,
+    "image_forwards": 10000,
+    "baseline_new_forwards": 0,
+    "seconds": 11.091728512197733,
+    "paired": {
+      "n": 10000,
+      "correct": 9961,
+      "accuracy_percent": 99.61,
+      "changed_predictions": 11,
+      "paired": {
+        "both_correct": 9960,
+        "lost": 9,
+        "gained": 1,
+        "both_wrong": 30,
+        "loss_pp": 0.08,
+        "exact_mcnemar_p": 0.021484375
+      },
+      "mcnemar_log10_p": -1.6678772758176055,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.14196390343201487,
+        -0.018036096567985146
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1133,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1030,
+          "original_correct": 1030
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1010,
+          "original_correct": 1010
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 978,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 883,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 949,
+          "original_correct": 954
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1025,
+          "original_correct": 1025
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 973,
+          "original_correct": 973
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 1001,
+          "original_correct": 1003
+        }
+      ]
+    }
+  },
+  "native_ellipse_native_validation": {
+    "status": "passed_raw_score_and_official_label_recount",
+    "rows": [
+      {
+        "stage": "full",
+        "n": 10000,
+        "R": 44.81121690570889
+      }
+    ],
+    "results_sha256": "30fd8b755093f02d3bc5dfe25ae49b71711294fbd5f0251da71102cdc4145619",
+    "new_image_forwards": 0
+  },
+  "native_ellipse_context_replay": {
+    "status": "passed",
+    "source_sha256": "b748a9c28e7146354f0cfcee2a2a662796df96e81dbb2f2041141b0c9be6c707",
+    "score_replays": 16,
+    "original_batch_size": 128,
+    "context_image_forwards": 1936,
+    "maximum_score_error": 0.0,
+    "tolerance": 0.0002,
+    "new_expert_updates": 0,
+    "new_AGA": 0
+  },
+  "native_ellipse_AGA_execution": {
+    "method": "aga",
+    "seconds": 10.389036864042282,
+    "output_sha256": "432ed158e0b60aa4912655f79e9c6c6d9ab9414c91ad445a77872cb63419c94f",
+    "details": {
+      "known_family": false,
+      "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+      "aligned_reference": {
+        "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+        "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+        "validation": "outputs/feature_noise/independent_validation.json"
+      }
+    },
+    "reference": "original_AGA",
+    "new_training_updates": 0
+  },
+  "native_ellipse_evaluation_protocol": {
+    "experiment": "Native functional constraint with complete public classification objective",
+    "output": "outputs/native_ellipse_classification_20261026/evaluation",
+    "tasks": {
+      "MNIST": {
+        "classes": 10,
+        "test_n": 10000
+      },
+      "SVHN": {
+        "classes": 10,
+        "test_n": 26032
+      }
+    },
+    "TA_coefficient": 0.5,
+    "mergers": [
+      "TA"
+    ],
+    "TIES": {
+      "repository": "https://github.com/prateeky2806/ties-merging",
+      "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+      "path": "external/ties-merging/src/utils/merge_utils.py",
+      "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+      "topk_percent": 20,
+      "coefficient": 1,
+      "resolve_method": "mass",
+      "merge_func": "dis-mean",
+      "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+    },
+    "pilot_n": 64,
+    "replay_n": 16,
+    "score_tolerance": 0.0005,
+    "task_budget": 0.5,
+    "utility_seed": null,
+    "utility_n": null,
+    "probe_rank": 32,
+    "test_status": "Complete historically exposed officialMNIST/SVHN benchmarks;not blind;no selection or parameter feedback",
+    "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+    "defense_optimization": "FreshoriginalArowcondition;nativefunctionalquadraticfrom16384layerprobesand800originalgeneratedprefixes. Fixedbound=A-onlysourcevalue. StandardFW500steps,lastpoint,no testfeedback. Publicnormalizedclass0gapobjective. 0realimages.",
+    "attacker_data": false,
+    "attack_gradient_steps": 0,
+    "AGA_references": {
+      "MNIST": {
+        "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+        "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+        "validation": "outputs/feature_noise/independent_validation.json"
+      },
+      "SVHN": {
+        "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+        "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+        "validation": "outputs/feature_noise/independent_validation.json"
+      }
+    },
+    "AGA": {
+      "repository": "https://github.com/krumpguo/secure-merge-attack",
+      "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+      "file": "utils_attack_B32.py",
+      "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+      "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+      "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+    },
+    "defenses": {
+      "NativeConstraintClass_MNIST": {
+        "label": "A/B with native function constraint and public class objective",
+        "target": "MNIST",
+        "release": {
+          "path": "outputs/native_ellipse_classification_20261026/point/point.pt",
+          "sha256": "828daa484b64f27f99df4cbb657366572c951f21585dbde6136bf7a8f4d72dc1"
+        },
+        "AGA_edits": {
+          "path": "outputs/native_ellipse_classification_20261026/AGA/edits.pt",
+          "sha256": "432ed158e0b60aa4912655f79e9c6c6d9ab9414c91ad445a77872cb63419c94f"
+        },
+        "budget_status": "A1.02739,B2.67213,logicalD3.02937;source-nativebound fixedbeforeupdates,notoldD.5compliant.",
+        "function_status": "CompleteMNIST99.61vs99.69,.08pp loss;strictR44.81122failsretained. OriginalandcandidatefullscorescachedbySHA."
+      }
+    },
+    "cases": [
+      {
+        "target": "MNIST",
+        "partner": "SVHN",
+        "defenses": [
+          "NativeConstraintClass_MNIST"
+        ]
+      }
+    ],
+    "legacy": {
+      "MNIST_SVHN/Unprotected": {
+        "standalone": {
+          "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+          "key_template": "Unprotected/Standalone/None/{task}"
+        },
+        "direct": {
+          "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+          "key_template": "Unprotected/TA/None/{task}"
+        },
+        "AGA_target_only": {
+          "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+          "key_template": "Unprotected/TA/Protected expert/{task}"
+        },
+        "AGA_both": {
+          "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+          "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+          "key_template": "Unprotected/TA/All experts/{task}"
+        }
+      },
+      "MNIST_SVHN/NativeConstraintClass_MNIST": {
+        "standalone": {
+          "path": "outputs/native_ellipse_classification_20261026/native/full.pt",
+          "sha256": "ad9e309c7a97c395596d21d2c706a590e360721ad66421fa61826daadf4e919b",
+          "native_score_field": "after",
+          "key_template": "already_evaluated_native"
+        }
+      }
+    },
+    "source_sha256": {
+      "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+      "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+      "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+      "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+      "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+      "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+      "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+      "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+      "_impl/report.py": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+      "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+      "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+      "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+      "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+      "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+      "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+      "experiment/recover.py": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+      "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+    },
+    "original_batch_context_replays": true,
+    "parameter_budget_scope": "A1.02739,B2.67213,logicalD3.02937;source-nativebound fixedbeforeupdates,notoldD.5compliant.",
+    "native_evaluation": "CompleteMNIST99.61vs99.69,.08pp loss;strictR44.81122failsretained. OriginalandcandidatefullscorescachedbySHA.",
+    "frozen_point_before_images": "6d56537648d6e627cc7e7c2ecfd6ac369665f330"
+  },
+  "native_ellipse_SVHN_transfer_definition": {
+    "status": "before_execution",
+    "algorithm": "ExactlysameoriginalArowSVD32condition,nativequad two populations,rho=.01traceG/3073,tau=A-onlysourcevalue,publicclass0logmeanexpgap,500FW/line settings. No target-dependenthyperparameters or source/taskselection. No newdefensefamily.",
+    "changes": "Targetweights/head/cleanAGA source contexts becomeSVHN;onlyprior-generated original-onlysourcecacheb6c0ae isreused. NewSVHNlayerinputsuseexactsame full-spectrum LN rule andseed2026102641. No earlierSVHNprotectedB ornaturaltestsloadedinconstruction.",
+    "source_reuse": "OldcleanSVHN sourcegenerator same160/128steps/3states/5views/seed2026102507;original/public/cleanAGAonly. Do notregenerateorclaimnew309600imageforwards. Existingprototypesnotused.",
+    "native_evaluation": "OriginalSVHN scores only beforefield ofold54d1b357fullfile,26032labels/indicesverifiedafternewreleasefreezing. Onlycandidate forwardsnew. Same<=.5ppaccuracy condition andoldstrictRseparately;no retuning iffailed.",
+    "transfer_scope": "MNISTrawpositiveisnotyetcross-tasksuccess. SameSVHNfixedalgorithm mustpassindependentnativeandtrueTA/AGA. FrozenMNIST828dunchanged.",
+    "sources": {
+      "native_inputs.py": {
+        "content": "\"\"\"Same full-spectrum native layer input rule, fixed transfer to SVHN.\"\"\"\nimport json,time\nfrom pathlib import Path\nimport torch\nfrom _impl.io import digest\nfrom _impl.models import initialize,load_checkpoint\ninitialize();torch.set_default_dtype(torch.float64);start=time.perf_counter();root=Path('outputs/native_ellipse_classification_SVHN_20261026');root.mkdir(exist_ok=False)\nold=Path('outputs/decision_transfer_20261026/source');assert digest(old/'source.pt')=='b6c0aedbfbf45a3421d63deee926de0bccca5bec61b2ebbc94c4f53613aa8a4c';(root/'source').symlink_to(old.resolve(),target_is_directory=True)\ns=load_checkpoint('SVHN/finetuned.pt').state_dict();base=load_checkpoint('zeroshot.pt').state_dict();key='model.visual.transformer.resblocks.11.';A,A0,g=[x.double().cuda() for x in [s[key+'mlp.c_fc.weight'],base[key+'mlp.c_fc.weight'],s[key+'ln_2.weight']]];factor=(A-A0)/g;factor-=factor.mean(1,keepdim=True);factor/=factor.norm();rng=torch.Generator(device='cuda').manual_seed(2026102641);rows=[]\nfor _ in range(64):\n u=torch.randn(256,len(A),generator=rng,device='cuda')@factor;u-=u.mean(1,keepdim=True);u*=768**.5*torch.rand(256,1,generator=rng,device='cuda').pow(1/767)/u.norm(dim=1,keepdim=True);assert u.sum(1).abs().max()<1e-10 and torch.all(u.square().sum(1)<768);rows.append(u.cpu())\ntorch.save(torch.cat(rows),root/'native_layer_inputs.pt');r=dict(layer_input_sha256=digest(root/'native_layer_inputs.pt'),source_sha256=digest(__file__),source=Path(__file__).read_text(),n=16384,seconds=time.perf_counter()-start,seed=2026102641,source_cache_sha256=digest(old/'source.pt'),reused_original_only_generated_images=160,new_pixel_steps=0,new_images=0,new_models=0,new_expert_updates=0,new_AGA=0)\n(root/'native_layer_inputs.json').write_text(json.dumps(r,indent=2)+'\\n');print(json.dumps({k:v for k,v in r.items() if k!='source'}))\n",
+        "sha256": "c922f67545895fde700e2f12a75e82a67d95f393514fbb318b6f0d7d2d4b536a"
+      },
+      "construct.py": {
+        "content": "\"\"\"One conditional B solve: native functional ellipsoid and complete public class gaps.\"\"\"\nimport json,math,time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.io import digest\nfrom _impl.models import initialize,checked_models\nfrom _impl.attacks import load_author\nfrom _impl.metrics import logical_parameter_distance\ninitialize();torch.set_default_dtype(torch.float64);start=time.perf_counter();root=Path('outputs/native_ellipse_classification_SVHN_20261026');out=root/'point';out.mkdir(exist_ok=False)\nmeta=json.loads((root/'source/result.json').read_text());assert digest(root/'source/source.pt')==meta['source_arrays_sha256'];raw=torch.load(root/'source/source.pt',map_location='cpu',weights_only=False);base,expert,head,pins=checked_models('SVHN');s,bs=expert.state_dict(),base.state_dict();k='model.visual.transformer.resblocks.11.mlp.';to=lambda v:v.double().cuda()\nA,A0,a,a0,B,B0,b,b0,gamma,beta=[to(v) for v in [s[k+'c_fc.weight'],bs[k+'c_fc.weight'],s[k+'c_fc.bias'],bs[k+'c_fc.bias'],s[k+'c_proj.weight'],bs[k+'c_proj.weight'],s[k+'c_proj.bias'],bs[k+'c_proj.bias'],s['model.visual.transformer.resblocks.11.ln_2.weight'],s['model.visual.transformer.resblocks.11.ln_2.bias']]]\nD=A-A0;U,_,Vh=torch.linalg.svd(D,full_matrices=False);U,V=U[:,:32],Vh[:32].T;A0r=A0-(A0@V)@V.T;K=A0r@A0r.T;G=-(U@U.T)*K;G.diagonal().add_(K.diagonal());lam=torch.cholesky_solve((-(A*A0).sum(1))[:,None],torch.linalg.cholesky(G));dA=lam*A0r;dA-=U@(U.T@dA);Ap=(A+dA).float().double();del K,G\nauthor,sha=load_author(Path('external/secure-merge-attack/utils_attack_B32.py'));assert sha=='4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778';pi=author['solve_permutation'](Ap.float().cpu(),A0.float().cpu()).cuda();assert sorted(pi.tolist())==list(range(len(A)))\nRorig=torch.cat([B,b[:,None]],1);cache={name:{key:to(v) for key,v in row.items()} for name,row in raw['cache'].items()};activate=lambda z:z*torch.sigmoid(1.702*z)\ndef augmented(x):return torch.cat([activate(x@Ap.T+a).T,torch.ones(1,len(x),device='cuda')],0)\nG=torch.zeros(3073,3073,device='cuda');T=torch.zeros_like(Rorig);constant=G.new_zeros(());groups=[]\nsource=root/'native_layer_inputs.pt';assert digest(source)==json.loads((root/'native_layer_inputs.json').read_text())['layer_input_sha256'];u=torch.load(source,map_location='cpu',weights_only=False)\nfor name,count in [('task_layer',len(u)),('generated_native',len(cache['native']['x']))]:\n gi=torch.zeros_like(G);ti=torch.zeros_like(T);yy=G.new_zeros(());ys=torch.zeros(768,device='cuda')\n for lo in range(0,count,256):\n  x=beta+gamma*u[lo:lo+256].cuda() if name=='task_layer' else cache['native']['x'][lo:lo+256];H=augmented(x);Y=activate(x@A.T+a)@B.T+b if name=='task_layer' else cache['native']['final'][lo:lo+256]-cache['native']['prefix'][lo:lo+256]\n  gi+=H@H.T;ti+=Y.T@H.T;yy+=Y.square().sum();ys+=Y.sum(0)\n variance=yy/count-ys.square().sum()/count**2;assert variance>0;scale=1/(count*variance);G+=gi*scale;T+=ti*scale;constant+=yy*scale;groups.append(dict(population=name,n=count,variance=float(variance)))\nrho=.01*G.trace()/len(G);G+=rho*torch.eye(len(G),device='cuda');T+=rho*Rorig;constant+=rho*Rorig.square().sum();L=torch.linalg.cholesky(G);RN=torch.cholesky_solve(T.T,L).T\nnative=lambda R:float(((R@G)*R).sum()-2*(R*T).sum()+constant)\ntau=native(Rorig);minimum=native(RN);radius2=tau-minimum;assert radius2>1e-12,(tau,minimum)\nhidden={};fixed={};readouts={};W=to(head.weight);assert float(head.bias.abs().max())==0;eps=expert.model.visual.ln_post.eps\nfor name in ['native','direct','recovered']:\n x=cache[name]['x']\n if name=='native':H=activate(x@Ap.T+a).T;fixed[name]=cache[name]['prefix'].T;hidden[name]=torch.cat([H,torch.ones(1,H.shape[1],device='cuda')],0)\n else:\n  AA,aa=(Ap,a) if name=='direct' else (Ap[pi],a[pi]);H=activate(x@((AA+A0)/2).T+(aa+a0)/2).T;fixed[name]=cache[name]['prefix'].T+(B0@H+b0[:,None])/2\n  if name=='recovered':back=torch.empty_like(H);back[pi]=H;H=back\n  hidden[name]=torch.cat([H,torch.ones(1,H.shape[1],device='cuda')],0)/2\n names=['model.visual.ln_post.weight','model.visual.ln_post.bias','model.visual.proj'];readouts[name]=[to(s[key] if name=='native' else (s[key]+bs[key])/2) for key in names]\ndef classify(r,params):\n g,beta,P=params;z=F.layer_norm(r.T,(768,),g,beta,eps)@P;return F.normalize(z,dim=-1)@W.T\noriginal_tail_error=max(float((classify(cache[name]['final'].T,readouts[name])-cache[name]['scores']).abs().max()) for name in cache);assert original_tail_error<.0005,original_tail_error\ndef public(R):\n scores={name:classify(fixed[name]+R@hidden[name],readouts[name]) for name in ['direct','recovered']};gaps=torch.cat([v[:,1:]-v[:,:1] for v in scores.values()]);return torch.logsumexp(gaps.flatten(),0)-math.log(gaps.numel()),scores\nR=RN.clone();trace=[];stop='iteration_limit';derivative=None\nfor iteration in range(500):\n R=R.detach().requires_grad_(True);loss,scores=public(R);assert torch.isfinite(loss);grad=torch.autograd.grad(loss,R)[0];dual=torch.cholesky_solve(grad.T,L).T;dn=float((dual*grad).sum());assert dn>=0\n if dn<1e-24:stop='zero_public_gradient';R=R.detach();break\n oracle=RN-(radius2/dn)**.5*dual;assert native(oracle)<=tau+1e-8\n direction=oracle-R.detach();gap=float((grad*(R.detach()-oracle)).sum());assert gap>=-1e-8\n if iteration==0:\n  v=direction*(Rorig.norm()/direction.norm());step=1e-6;fd=float((public(R.detach()+step*v)[0]-public(R.detach()-step*v)[0])/(2*step));ad=float((grad*v).sum());error=abs(fd-ad)/(1+abs(fd));assert error<1e-5,(fd,ad,error);derivative=dict(finite_difference=fd,autograd=ad,relative_error=error)\n if gap<=1e-6*(1+abs(float(loss))):stop='small_conditional_gradient_gap';R=R.detach();break\n step=1.;accepted=False\n with torch.no_grad():\n  for backtrack in range(24):\n   proposal=R.detach()+step*direction;value,_=public(proposal)\n   if float(value)<=float(loss)-1e-4*step*gap:accepted=True;R=proposal;break\n   step*=.5\n  if not accepted:stop='fixed_line_search_stalled';R=R.detach();break\n  nv=native(R);assert nv<=tau+1e-8\n  row=dict(iteration=iteration+1,public_objective=float(value),conditional_gradient_gap=gap,native_quadratic=nv,native_limit=tau,step=step,public_class0_before_step={name:int(v.argmax(1).eq(0).sum()) for name,v in scores.items()});trace.append(row)\n  if iteration%25==0:print(json.dumps(row),flush=True)\nR=R.detach();edits={k+'c_fc.weight':Ap.float().cpu(),k+'c_proj.weight':R[:,:-1].float().cpu(),k+'c_proj.bias':R[:,-1].float().cpu()};assert all(torch.isfinite(v).all() for v in edits.values());torch.save(edits,out/'point.pt');Rf=torch.cat([to(edits[k+'c_proj.weight']),to(edits[k+'c_proj.bias'])[:,None]],1)\nwith torch.no_grad():\n objective,public_scores=public(Rf);native_scores=classify(fixed['native']+Rf@hidden['native'],readouts['native']);source_counts=dict(native_teacher_retained=int((native_scores.argmax(1).cpu()==raw['teacher_class']).sum()),native_n=len(native_scores),public_class0={name:int(v.argmax(1).eq(0).sum()) for name,v in public_scores.items()})\nresult=dict(status='sole_native_ellipse_classification_frozen_before_images',point_sha256=digest(out/'point.pt'),source_sha256=digest(__file__),source=Path(__file__).read_text(),source_cache_sha256=meta['source_arrays_sha256'],source_counts=source_counts,public_objective=float(objective),native_limit=tau,native_minimum=minimum,native_final=native(R),native_final_FP32=native(Rf),native_groups=groups,ridge=float(rho),original_tail_maximum_error=original_tail_error,derivative_check=derivative,iterations=len(trace),stop_reason=stop,trace=trace,metrics=dict(A_relative=float((Ap-A).norm()/A.norm()),B_relative=float((Rf[:,:-1]-B).norm()/B.norm()),logical_D=logical_parameter_distance(edits,s)),seconds=time.perf_counter()-start,real_images=0,new_full_AGA_calls=0,matching_calls=1,original_expert_updates=0,synthetic_images_reused=160,generated_views=800,synthetic_native_layer_inputs=16384,scope='SharedB conditionalnativequadratic/completepublicclassifier construction. OrdinaryFW/ellipsoid/Choleskyarenotnewalgorithm. Finitegapnotglobalguarantee. NativeboundequalA-onlysourcevalue,notnaturalaccuracy. Head/classesexplicitallowed;no partner/test/closedB read.')\n(out/'result.json').write_text(json.dumps(result,indent=2)+'\\n');print(json.dumps({k:v for k,v in result.items() if k not in ['source','trace']}),flush=True)\n",
+        "sha256": "06a2e69af3d0d1076b54f02ae17f066f889aa37ea57f5cdb1ccec3ca74678964"
+      },
+      "native.py": {
+        "content": "\"\"\"Evaluate one frozen SVHN publication; reuse the pinned original full scores.\"\"\"\nimport json,time\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.data import dataset,make_loader,official_labels\nfrom _impl.evaluate import evaluate\nfrom _impl.io import digest,new_output,save_json\nfrom _impl.metrics import task_change,row_metrics\nfrom _impl.models import checked_models,apply,initialize\ninitialize();start=time.perf_counter();root=Path('outputs/native_ellipse_classification_SVHN_20261026')\nresult=json.loads((root/'point/result.json').read_text());ref=dict(path=str(root/'point/point.pt'),sha256=result['point_sha256'])\nbaseline='outputs/decision_transfer_20261026/native/full.pt'\nassert digest(baseline)=='54d1b357555a62f8d451ded11a1c1ed6073832a3ebc7db097e37ac4e35d700c2'\ncached=torch.load(baseline,map_location='cpu',weights_only=False);raw=dict(indices=cached['indices'],target=torch.as_tensor(cached['labels']),logits=cached['before'])\nassert raw['indices']==list(range(26032))\nlabels=official_labels('SVHN');np.testing.assert_array_equal(raw['target'].numpy(),labels)\n_,expert,head,pins=checked_models('SVHN');model=apply(expert,ref)\nout=new_output(str(root/'native'),dict(target='SVHN',task_budget=.5,max_accuracy_loss_pp=.5,publication=ref,baseline_scores=baseline))\nsave_json(out/'before_images.json',dict(publication=ref,checkpoint_sha256=pins,source_sha256=digest(__file__)))\nsink=[];evaluate(model,head,make_loader(dataset('SVHN','data',expert.val_preprocess)),'cuda',logit_sink=sink.append)\na,b=raw['logits'].double(),torch.cat(sink).double();row=task_change(a.numpy(),b.numpy());row.update(stage='full',before_correct=int((a.argmax(1).numpy()==labels).sum()),after_correct=int((b.argmax(1).numpy()==labels).sum()))\nrow.update(strict_task_passed=row['changed']==0 and row['R']<=.5,accuracy_loss_pp=100*(row['before_correct']-row['after_correct'])/row['n']);row['passed']=row['accuracy_loss_pp']<=.5\ntorch.save(dict(indices=raw['indices'],labels=labels,before=a,after=b),out/'full.pt');row['raw_sha256']=digest(out/'full.pt')\nsave_json(out/'results.json',dict(rows=[row],passed=row['passed'],image_forwards=26032,baseline_new_forwards=0,seconds=time.perf_counter()-start,paired=row_metrics(b,torch.tensor(labels),a,10)))\nprint(json.dumps(row),flush=True)\n",
+        "sha256": "e7376d526c9054e67963921b6d1f689dd7365acf3cd1411e39272d7003f10d54"
+      },
+      "replay.py": {
+        "content": "\"\"\"Read-only replay in the unchanged original 128-image evaluation contexts.\"\"\"\nimport json\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.models import initialize,checked_models,apply\nfrom _impl.data import dataset\nfrom _impl.io import digest\ninitialize();root=Path('outputs/native_ellipse_classification_SVHN_20261026');r=json.loads((root/'point/result.json').read_text());ref=dict(path=str(root/'point/point.pt'),sha256=r['point_sha256'])\n_,e,h,_=checked_models('SVHN');m=apply(e,ref).cuda();h.cuda();d=dataset('SVHN','data',e.val_preprocess)\ns=torch.load(root/'native/full.pt',map_location='cpu',weights_only=False)['after'];ids=np.linspace(0,len(s)-1,16,dtype=int);maximum=0.;count=0\nwith torch.no_grad():\n for block in sorted(set(ids//128)):\n  start,end=int(block*128),min(int((block+1)*128),len(s));x=torch.stack([d[i][0] for i in range(start,end)]).cuda();actual=h(m(x)).cpu().double();wanted=ids[(ids>=start)&(ids<end)];subset=actual[wanted-start]\n  np.testing.assert_array_equal(subset.argmax(1).numpy(),s[wanted].argmax(1).numpy());maximum=max(maximum,float((subset-s[wanted]).abs().max()));count+=end-start\nassert maximum<=.0002,maximum\nr=dict(status='passed',source_sha256=digest(__file__),score_replays=16,original_batch_size=128,context_image_forwards=count,maximum_score_error=maximum,tolerance=.0002,new_expert_updates=0,new_AGA=0)\n(root/'context_replay.json').write_text(json.dumps(r,indent=2)+'\\n');print(json.dumps(r),flush=True)\n",
+        "sha256": "bdc82ee67ef4d77750aec77e5aa6c7169c0fc5f4864349d1858b931ee75b2d88"
+      }
     }
   }
 }
