@@ -2726,5 +2726,114 @@
     "scope": "Declareddistributionaveragesnotworstcase,naturalstatisticsorclassificationproof. Existingpointnotrepaired;sourceMSEthresholdunchanged. No sourceparameterorlayerselection.",
     "source_sha256": "fc8b9261bceef7dd09963a792f0a38160d12abfaaad1aabdba97dc1e1635398f",
     "source": "\"\"\"Read-only exact local compensation decomposition in three fixed states.\"\"\"\nimport json,time\nfrom pathlib import Path\nimport torch\nfrom _impl.models import initialize,load_checkpoint\nfrom _impl.io import digest\ninitialize();start=time.perf_counter();torch.set_default_dtype(torch.float64)\nroot=Path('outputs/population_compensation_20261026/first_layer_observation');out=root/'state_compensation';out.mkdir(exist_ok=False)\nassert digest(root/'point/point.pt')=='10d52fd7fa1d4fda08e5c99fbbdb52e81c07dcecfce46aa59ba97cf8cb82532f'\nassert digest(root/'AGA/edits.pt')=='149d6eab06647c16894e8a06c1478e873c93816732a47022c47d6d87d64a1f00'\ne=load_checkpoint('MNIST/finetuned.pt').state_dict();base=load_checkpoint('zeroshot.pt').state_dict();p=e|torch.load(root/'point/point.pt',map_location='cpu',weights_only=False)\na=torch.load('outputs/feature_noise/artifacts/original_AGA.pt',map_location='cpu',weights_only=False);q=a|torch.load(root/'AGA/edits.pt',map_location='cpu',weights_only=False)\nkeys=[k for k in e if k.startswith('model.visual.transformer.resblocks.0.')];mean=lambda x:{k:(x[k].double()+base[k].double())/2 for k in keys}\nV=torch.load('outputs/population_compensation_20261026/joint_fit/first_layer_fit.pt',map_location='cpu',weights_only=False)['task_basis'].cuda()\npre='model.visual.transformer.resblocks.0.'\ndef terms(s):\n A=s[pre+'mlp.c_fc.weight'].double().cuda();bias=s[pre+'mlp.c_fc.bias'].double().cuda();gamma=s[pre+'ln_2.weight'].double().cuda();beta=s[pre+'ln_2.bias'].double().cuda();W=A*gamma;W-=W.mean(1,keepdim=True)\n return W,A@beta+bias,s[pre+'mlp.c_proj.weight'].double().cuda(),s[pre+'mlp.c_proj.bias'].double().cuda()\nrows=[];maximum=0.\nfor state,left,right in [('native',e,p),('direct_public',mean(e),mean(p)),('AGA_public',mean(a),mean(q))]:\n W0,mu0,B0,b0=terms(left);W1,mu1,B1,b1=terms(right);dB,db=B1-B0,b1-b0\n for domain,dim in [('full',767),('task',32)]:\n  rng=torch.Generator(device='cuda').manual_seed(2026102620+(domain=='task'));N=4096;energies=[];oldsum=torch.zeros(768,device='cuda');oldnorm=0.\n  for _ in range(N//256):\n   u=torch.randn(256,768 if domain=='full' else 32,generator=rng,device='cuda')\n   if domain=='full':u-=u.mean(1,keepdim=True)\n   u*=768**.5*torch.rand(256,1,generator=rng,device='cuda').pow(1/dim)/u.norm(dim=1,keepdim=True)\n   if domain=='task':u=u@V.T\n   z0=u@W0.T+mu0;z1=u@W1.T+mu1;h0=z0*torch.sigmoid(1.702*z0);h1=z1*torch.sigmoid(1.702*z1)\n   A=(h1-h0)@B0.T;B=h0@dB.T+db;C=(h1-h0)@dB.T\n   old=h0@B0.T+b0;direct=h1@B1.T+b1-old;error=float((direct-A-B-C).abs().max());maximum=max(maximum,error)\n   assert error<1e-10,error\n   energies.append(torch.stack([A.square().sum(1),B.square().sum(1),C.square().sum(1),direct.square().sum(1),(A*B).sum(1),(A*C).sum(1),(B*C).sum(1)],1).cpu());oldsum+=old.sum(0);oldnorm+=float(old.square().sum())\n  vals=torch.cat(energies);variance=oldnorm/N-float((oldsum/N).square().sum());m=vals.mean(0)/variance\n  assert abs(float(m[3]-m[:3].sum()-2*m[4:].sum()))<1e-8\n  row=dict(state=state,domain=domain,n=N,relative_energies=dict(zip(['A_change','B_and_bias_change','cross_term','joint_change','cross_A_B','cross_A_cross','cross_B_cross'],map(float,m))),joint_MSE_sampling_SE=float(vals[:,3].std()/N**.5/variance),cancellation_fraction=float(1-m[3]/m[:3].sum()))\n  rows.append(row);print(json.dumps(row),flush=True)\nresult=dict(rows=rows,source=Path(__file__).read_text(),source_sha256=digest(__file__),maximum_decomposition_identity_error=maximum,seconds=time.perf_counter()-start,new_images=0,new_parameter_changes=0,new_AGA=0,full_encoder_forwards=0,local_hidden_vector_forwards=6*4096*2,source_scope='Frozen failedpointread-only. Inputballs declared artificial,notnaturalstatistics. Allthree terms can cancel in any state;localMSE/cancellation is notclassificationeffect. No partner/test used andno candidate generated.')\n(out/'result.json').write_text(json.dumps(result,indent=2)+'\\n')\n"
+  },
+  "compensation_state_result": {
+    "rows": [
+      {
+        "state": "native",
+        "domain": "full",
+        "n": 4096,
+        "relative_energies": {
+          "A_change": 0.4395567850307556,
+          "B_and_bias_change": 0.15906435281032816,
+          "cross_term": 0.07509646369152312,
+          "joint_change": 0.000595793791524065,
+          "cross_A_B": -0.26112358096168187,
+          "cross_A_cross": -0.17761914744795712,
+          "cross_B_cross": 0.10218182453909756
+        },
+        "joint_MSE_sampling_SE": 5.179764796501e-06,
+        "cancellation_fraction": 0.9991156624226994
+      },
+      {
+        "state": "native",
+        "domain": "task",
+        "n": 4096,
+        "relative_energies": {
+          "A_change": 0.08015585529360818,
+          "B_and_bias_change": 0.04365036626432498,
+          "cross_term": 0.008466828642955691,
+          "joint_change": 4.856311804891715e-05,
+          "cross_A_B": -0.05767536078877206,
+          "cross_A_cross": -0.02257667444141389,
+          "cross_B_cross": 0.014139791688765987
+        },
+        "joint_MSE_sampling_SE": 4.3727983144604313e-07,
+        "cancellation_fraction": 0.9996328570485434
+      },
+      {
+        "state": "direct_public",
+        "domain": "full",
+        "n": 4096,
+        "relative_energies": {
+          "A_change": 0.08043440624912628,
+          "B_and_bias_change": 0.03965704188415565,
+          "cross_term": 0.00337767206847599,
+          "joint_change": 0.0015198094391864563,
+          "cross_A_B": -0.05575742774186123,
+          "cross_A_cross": -0.016026079174800093,
+          "cross_B_cross": 0.010808851535375592
+        },
+        "joint_MSE_sampling_SE": 2.5210655880415965e-05,
+        "cancellation_fraction": 0.9876907729098339
+      },
+      {
+        "state": "direct_public",
+        "domain": "task",
+        "n": 4096,
+        "relative_energies": {
+          "A_change": 0.018577382418819576,
+          "B_and_bias_change": 0.010891189928705348,
+          "cross_term": 0.000502832698213339,
+          "joint_change": 0.0004387782048338923,
+          "cross_A_B": -0.013829026524718535,
+          "cross_A_cross": -0.002607842251238197,
+          "cross_B_cross": 0.0016705553555045464
+        },
+        "joint_MSE_sampling_SE": 1.2909311608828206e-05,
+        "cancellation_fraction": 0.9853601056018465
+      },
+      {
+        "state": "AGA_public",
+        "domain": "full",
+        "n": 4096,
+        "relative_energies": {
+          "A_change": 0.08022189495586,
+          "B_and_bias_change": 0.03946346514658172,
+          "cross_term": 0.0034372596087416346,
+          "joint_change": 0.0014954248785522025,
+          "cross_A_B": -0.05555792358367723,
+          "cross_A_cross": -0.016156935715399494,
+          "cross_B_cross": 0.010901261882761136
+        },
+        "joint_MSE_sampling_SE": 2.7670317148940727e-05,
+        "cancellation_fraction": 0.987854182423505
+      },
+      {
+        "state": "AGA_public",
+        "domain": "task",
+        "n": 4096,
+        "relative_energies": {
+          "A_change": 0.018575994143410605,
+          "B_and_bias_change": 0.010504872547605201,
+          "cross_term": 0.0005245981165816869,
+          "joint_change": 0.0004560089952576954,
+          "cross_A_B": -0.013595546569192481,
+          "cross_A_cross": -0.0027193096301241448,
+          "cross_B_cross": 0.001740128293146726
+        },
+        "joint_MSE_sampling_SE": 1.3185802901017788e-05,
+        "cancellation_fraction": 0.9845971344067305
+      }
+    ],
+    "source_sha256": "fc8b9261bceef7dd09963a792f0a38160d12abfaaad1aabdba97dc1e1635398f",
+    "maximum_decomposition_identity_error": 9.137135492665038e-14,
+    "seconds": 4.018553253263235,
+    "new_images": 0,
+    "new_parameter_changes": 0,
+    "new_AGA": 0,
+    "full_encoder_forwards": 0,
+    "local_hidden_vector_forwards": 49152,
+    "source_scope": "Frozen failedpointread-only. Inputballs declared artificial,notnaturalstatistics. Allthree terms can cancel in any state;localMSE/cancellation is notclassificationeffect. No partner/test used andno candidate generated."
   }
 }
