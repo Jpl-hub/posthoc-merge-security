@@ -1,11 +1,18 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-26T14:25:07.218971+00:00",
+  "updated_utc": "2026-10-26T15:45:17.715726+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "核心方法优先：改善独立能力与融合保护的取舍，研究A/B共同改变及SVD的实际作用。当前三任务冻结点已完整评价，不再仅因自定0.5阈值否决，不用测试/伙伴修补旧点。",
+  "research_jobs": [
+    {
+      "status": "registered_not_started",
+      "task": "teacher-only synthetic transition diagnostic",
+      "record": "results/data_free_compensation/paper_protocol_review.json:ABM_transition_review_20261026",
+      "new_defense_points": 0
+    }
+  ],
+  "next_action": "原冻结三任务点的教师合成图插值检查：判断类别交界处功能是否保持，不产生新权重，不据此修补旧点。",
   "github_sync": {
     "status": "Verified GitHub publication and readback completed",
     "scientific_remote_commit": "f41ae5ab9760640308287a8c54cc3e7eccd3b2f1",
