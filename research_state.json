@@ -1,8 +1,8 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2 data-free core mechanism: meaningful numerical changes and cross-module compensation preserving standalone function after expert freezing.",
-  "status": "3090已恢复并完成4.71GB清理。连续输入补偿测量完成：固定大幅A改动后，完整B条件补偿仍有明显非线性误差；无新防御模型。核心机制研究继续，目前无GPU作业。",
-  "updated_utc": "2026-10-26T04:04:14.659419+00:00",
+  "status": "无数据联合功能导数检查通过。第一层固定求解将补偿目标降低96.94%，参数改动保持，但完整域误差未达到事前条件；40步结束仍非驻点。未产生完整新防御模型或分类/融合成绩。",
+  "updated_utc": "2026-10-26T04:38:19.186158+00:00",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": ".5/.5comparison preserved,not a universal newparametercap;full history at97a3474.",
@@ -25,7 +25,7 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "GPU_process_check_utc": "2026-10-26T03:56:01.691890+00:00",
+    "GPU_process_check_utc": "2026-10-26T04:38:19.186200+00:00",
     "active_GPU_jobs": 0,
     "4090": "Unavailable at user report; no new work there. Oct25/26 raw artifacts remain on its disk.",
     "3090_data_available_bytes": 6007599104,
@@ -72,11 +72,11 @@
     "regression_and_behavior_tests_passed": 17,
     "current_completed_constructor_lines_retired": 265
   },
-  "next_action": "基于完整非线性功能矩，推导A/B共同少变而任务补空间参数大变的可解关系；不复用已关闭大反射点、不直接引入新的生成网络。",
+  "next_action": "继续研究连续非线性功能条件下可解的联合补偿，区分源求解未完成与机制不可行；固定已结束求解不加步数、换种子或据真实图修补。",
   "paper_tables": "Canonical24tablesunchanged;current small MD/TeXsupplement inresults/data_free_compensation. No new report or PPT.",
   "github_sync": {
-    "status": "积压、清理及连续输入测量结果已发布并逐字读回；当前论文源码核对新增待同步。",
-    "last_verified_remote_commit": "fe1c691c42cd5a3a2e751f558dcfd4a626a985f8",
+    "status": "联合导数结果和固定第一层求解定义已公开读回；本次结果正在轻量同步。",
+    "last_verified_remote_commit": "d44968edff462f8d4b8d8610b861a754979c5e66",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "history": {
@@ -221,5 +221,41 @@
     "CVLM_commit": "f122cab9e8c1b1f07c6643d37db848a925164682",
     "upstream_runs": 0,
     "new_models": 0
+  },
+  "latest_joint_gradient_check": {
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_gradient_result",
+    "passed": true,
+    "seconds": 13.113718569977209,
+    "max_actual_directional_derivative_relative_error": 1.71431205233349e-05,
+    "new_models": 0,
+    "images": 0
+  },
+  "latest_joint_functional_fit": {
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_fit_result",
+    "kind": "First-layer weight-only functional feasibility calculation; not a full defense model",
+    "completed": true,
+    "source_condition_passed": false,
+    "effective_parameter_distance": 0.5,
+    "raw_A_relative_change": 0.6532623620649469,
+    "B_relative_change": 0.7864659106108473,
+    "outside_energy_fraction": 0.8971378128993298,
+    "full_task_relative_MSE": [
+      0.000584397903232494,
+      4.47610403040277e-05
+    ],
+    "independent_full_task_MSE": [
+      0.0005843758031985106,
+      4.622599898500351e-05
+    ],
+    "objective_reduction_fraction": 0.9693545768806348,
+    "seconds": 51.00802091602236,
+    "library_iterations": 40,
+    "objective_evaluations": 44,
+    "final_sphere_tangent_gradient_norm": 0.0009182015801657405,
+    "new_real_images": 0,
+    "new_model_image_forwards": 0,
+    "new_full_defense_models": 0,
+    "new_AGA_calls": 0,
+    "closed_fixed_solve": true
   }
 }

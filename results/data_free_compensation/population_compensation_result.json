@@ -527,5 +527,476 @@
     "independent_check": "Same actual QuickGELU, original continuous domains, fixed fresh latent seeds2026102610/11;16384vectors/domain. No image input or model/classification forward. Parameter arrays and all solver trace retained even on failure.",
     "novelty_boundary": "Spherical kernels, conditional regression, sphereparameterization, variable projection and LBFGS are established. This tests a different continuous joint-function condition, not a new optimizer or claimed successful novel Defense2.",
     "before_execution_revision": "Initial raw-A-radius proposal was not executed. Before the solve, use effective W distance as the fixed radius and enforce taskoutside energy in the parameterization, so the objective cannot satisfy large raw distance merely in smallgamma directions."
+  },
+  "joint_fit_result": {
+    "metrics": {
+      "A_relative_change": 0.6532623620649469,
+      "normalized_weight_relative_change": 0.5,
+      "outside_energy_fraction": 0.8971378128993298,
+      "outside_relative_change": 0.47358679587255437,
+      "removed_LN_affine_null_residual": 1.1078428780971932e-17,
+      "B_relative_change": 0.7864659106108473,
+      "first_bias_relative_change": 0.1677013652802293,
+      "output_bias_relative_change": 1.0381524542118161,
+      "full_task_relative_MSE": [
+        0.000584397903232494,
+        4.47610403040277e-05
+      ],
+      "objective": 0.0006291618160040332
+    },
+    "independent_latent_checks": [
+      {
+        "domain": "full",
+        "n": 16384,
+        "relative_MSE": 0.0005843758031985106,
+        "MSE_standard_error": 2.2203538310186816e-06
+      },
+      {
+        "domain": "task",
+        "n": 16384,
+        "relative_MSE": 4.622599898500351e-05,
+        "MSE_standard_error": 2.2167112466398743e-07
+      }
+    ],
+    "source_condition_passed": false,
+    "parameter_record": {
+      "path": "outputs/population_compensation_20261026/joint_fit/first_layer_fit.pt",
+      "sha256": "ea3c4db2733aabc502a9f81927d7c4116567c9b904419aa4d285f2d339289781"
+    },
+    "LBFGS_iterations": 40,
+    "objective_evaluations": 44,
+    "trace": [
+      {
+        "evaluation": 1,
+        "objective": 0.020530368060294735,
+        "full_task_MSE": [
+          0.02000397425920559,
+          0.000526388100743614
+        ],
+        "B_relative_change": 1.1647688333754702
+      },
+      {
+        "evaluation": 2,
+        "objective": 0.020522611922228165,
+        "full_task_MSE": [
+          0.019996455167372574,
+          0.0005261510569753406
+        ],
+        "B_relative_change": 1.1645175380024928
+      },
+      {
+        "evaluation": 3,
+        "objective": 0.02045319823828657,
+        "full_task_MSE": [
+          0.019929159871778495,
+          0.0005240326907519537
+        ],
+        "B_relative_change": 1.1622597104425996
+      },
+      {
+        "evaluation": 4,
+        "objective": 0.019797872637460807,
+        "full_task_MSE": [
+          0.01929356975809781,
+          0.0005042974178936413
+        ],
+        "B_relative_change": 1.1401412870015832
+      },
+      {
+        "evaluation": 5,
+        "objective": 0.015081187294114095,
+        "full_task_MSE": [
+          0.014715678365042156,
+          0.000365505219637673
+        ],
+        "B_relative_change": 0.9389893133927598
+      },
+      {
+        "evaluation": 6,
+        "objective": 0.01309778950085044,
+        "full_task_MSE": [
+          0.012782488952510482,
+          0.0003152975382725262
+        ],
+        "B_relative_change": 0.8438250843038588
+      },
+      {
+        "evaluation": 7,
+        "objective": 0.01062430764599152,
+        "full_task_MSE": [
+          0.01036258729654712,
+          0.00026171794809102763
+        ],
+        "B_relative_change": 0.7501542011331701
+      },
+      {
+        "evaluation": 8,
+        "objective": 0.00912264600109726,
+        "full_task_MSE": [
+          0.008887223874312244,
+          0.0002354198611190412
+        ],
+        "B_relative_change": 0.7236528635811363
+      },
+      {
+        "evaluation": 9,
+        "objective": 0.008053034385136285,
+        "full_task_MSE": [
+          0.007837183226727126,
+          0.0002158490742809937
+        ],
+        "B_relative_change": 0.6911488997169906
+      },
+      {
+        "evaluation": 10,
+        "objective": 0.007078312586968132,
+        "full_task_MSE": [
+          0.006884487637415739,
+          0.00019382304633087046
+        ],
+        "B_relative_change": 0.6577793534775036
+      },
+      {
+        "evaluation": 11,
+        "objective": 0.005948820331580103,
+        "full_task_MSE": [
+          0.005776252476781459,
+          0.00017256608344333633
+        ],
+        "B_relative_change": 0.6298180368885894
+      },
+      {
+        "evaluation": 12,
+        "objective": 0.005258438163362427,
+        "full_task_MSE": [
+          0.005095971879115066,
+          0.0001624645124605903
+        ],
+        "B_relative_change": 0.6256194192184833
+      },
+      {
+        "evaluation": 13,
+        "objective": 0.004756281690366611,
+        "full_task_MSE": [
+          0.004604888609355973,
+          0.00015139140376277773
+        ],
+        "B_relative_change": 0.6061417863342955
+      },
+      {
+        "evaluation": 14,
+        "objective": 0.004229510459604752,
+        "full_task_MSE": [
+          0.004090946673315146,
+          0.0001385621889336306
+        ],
+        "B_relative_change": 0.5874274711862006
+      },
+      {
+        "evaluation": 15,
+        "objective": 0.0037075669289205206,
+        "full_task_MSE": [
+          0.00358120959226082,
+          0.00012635573359527606
+        ],
+        "B_relative_change": 0.5860817460698657
+      },
+      {
+        "evaluation": 16,
+        "objective": 0.003331923903205843,
+        "full_task_MSE": [
+          0.003214110246657995,
+          0.00011781204835557629
+        ],
+        "B_relative_change": 0.5834654448090022
+      },
+      {
+        "evaluation": 17,
+        "objective": 0.0031106009171184114,
+        "full_task_MSE": [
+          0.0029984859179241264,
+          0.00011211344659549453
+        ],
+        "B_relative_change": 0.57028227659398
+      },
+      {
+        "evaluation": 18,
+        "objective": 0.0026858079889504854,
+        "full_task_MSE": [
+          0.002584273953514763,
+          0.00010153256422678325
+        ],
+        "B_relative_change": 0.5522837197569151
+      },
+      {
+        "evaluation": 19,
+        "objective": 0.002502879574331466,
+        "full_task_MSE": [
+          0.0024062827309906426,
+          9.659533846944313e-05
+        ],
+        "B_relative_change": 0.5597287183246877
+      },
+      {
+        "evaluation": 20,
+        "objective": 0.0022610280273603844,
+        "full_task_MSE": [
+          0.002170042356131855,
+          9.0984187567623e-05
+        ],
+        "B_relative_change": 0.5530985559367697
+      },
+      {
+        "evaluation": 21,
+        "objective": 0.002098066700426193,
+        "full_task_MSE": [
+          0.0020112964544131474,
+          8.676877731974987e-05
+        ],
+        "B_relative_change": 0.5486094176231874
+      },
+      {
+        "evaluation": 22,
+        "objective": 0.0018899684136618094,
+        "full_task_MSE": [
+          0.0018084549245619619,
+          8.151200501563098e-05
+        ],
+        "B_relative_change": 0.5494546203592108
+      },
+      {
+        "evaluation": 23,
+        "objective": 0.0018482255653947243,
+        "full_task_MSE": [
+          0.001768695758869005,
+          7.952820513379034e-05
+        ],
+        "B_relative_change": 0.5704695958688927
+      },
+      {
+        "evaluation": 24,
+        "objective": 0.0016211026312598171,
+        "full_task_MSE": [
+          0.0015467067299223482,
+          7.439433658164593e-05
+        ],
+        "B_relative_change": 0.5613287737427952
+      },
+      {
+        "evaluation": 25,
+        "objective": 0.0015428767089181806,
+        "full_task_MSE": [
+          0.0014704976930007725,
+          7.23774654864849e-05
+        ],
+        "B_relative_change": 0.5584600299958008
+      },
+      {
+        "evaluation": 26,
+        "objective": 0.001454581634813685,
+        "full_task_MSE": [
+          0.001384509397436299,
+          7.007067021772431e-05
+        ],
+        "B_relative_change": 0.5619333107194229
+      },
+      {
+        "evaluation": 27,
+        "objective": 0.001311923316867082,
+        "full_task_MSE": [
+          0.0012457572074517688,
+          6.616444038761094e-05
+        ],
+        "B_relative_change": 0.5821436864537964
+      },
+      {
+        "evaluation": 28,
+        "objective": 0.0013256202201446519,
+        "full_task_MSE": [
+          0.001259027990744248,
+          6.659027530015885e-05
+        ],
+        "B_relative_change": 0.63740896072381
+      },
+      {
+        "evaluation": 29,
+        "objective": 0.001244899612203875,
+        "full_task_MSE": [
+          0.0011805493178430753,
+          6.434852713517973e-05
+        ],
+        "B_relative_change": 0.6020971324304336
+      },
+      {
+        "evaluation": 30,
+        "objective": 0.0011875308597130941,
+        "full_task_MSE": [
+          0.0011248307377078764,
+          6.269828262648442e-05
+        ],
+        "B_relative_change": 0.6159359206809039
+      },
+      {
+        "evaluation": 31,
+        "objective": 0.0011082604330720518,
+        "full_task_MSE": [
+          0.0010481145166832768,
+          6.0143940740066565e-05
+        ],
+        "B_relative_change": 0.6415528967790923
+      },
+      {
+        "evaluation": 32,
+        "objective": 0.0010579695434811327,
+        "full_task_MSE": [
+          0.000999676932898562,
+          5.8290507835881074e-05
+        ],
+        "B_relative_change": 0.6641728677681815
+      },
+      {
+        "evaluation": 33,
+        "objective": 0.0010035621895746463,
+        "full_task_MSE": [
+          0.0009467807679025796,
+          5.677927939994982e-05
+        ],
+        "B_relative_change": 0.6706176512719916
+      },
+      {
+        "evaluation": 34,
+        "objective": 0.0009522219451373467,
+        "full_task_MSE": [
+          0.0008970363853796495,
+          5.518340206169988e-05
+        ],
+        "B_relative_change": 0.6726478330566512
+      },
+      {
+        "evaluation": 35,
+        "objective": 0.0009098746606586909,
+        "full_task_MSE": [
+          0.0008559973802127707,
+          5.387510479705362e-05
+        ],
+        "B_relative_change": 0.6748558345469465
+      },
+      {
+        "evaluation": 36,
+        "objective": 0.0008813110621925523,
+        "full_task_MSE": [
+          0.0008267675559715074,
+          5.4541342563311686e-05
+        ],
+        "B_relative_change": 0.6719254143039307
+      },
+      {
+        "evaluation": 37,
+        "objective": 0.0008200769511478135,
+        "full_task_MSE": [
+          0.0007694282056168397,
+          5.0646475909709186e-05
+        ],
+        "B_relative_change": 0.6899676599302846
+      },
+      {
+        "evaluation": 38,
+        "objective": 0.0007921606975840079,
+        "full_task_MSE": [
+          0.0007424992429700399,
+          4.965914385981847e-05
+        ],
+        "B_relative_change": 0.69715762560212
+      },
+      {
+        "evaluation": 39,
+        "objective": 0.0007590525321910535,
+        "full_task_MSE": [
+          0.000710597235496955,
+          4.845293359154254e-05
+        ],
+        "B_relative_change": 0.7063015364129971
+      },
+      {
+        "evaluation": 40,
+        "objective": 0.0007362971080127083,
+        "full_task_MSE": [
+          0.0006840918648050224,
+          5.220290023919335e-05
+        ],
+        "B_relative_change": 0.703821799035011
+      },
+      {
+        "evaluation": 41,
+        "objective": 0.0006933072099295335,
+        "full_task_MSE": [
+          0.0006469453305178354,
+          4.6359343013369276e-05
+        ],
+        "B_relative_change": 0.7355568782710029
+      },
+      {
+        "evaluation": 42,
+        "objective": 0.0006727916966562662,
+        "full_task_MSE": [
+          0.0006278678869469221,
+          4.4921213398069776e-05
+        ],
+        "B_relative_change": 0.744778581879279
+      },
+      {
+        "evaluation": 43,
+        "objective": 0.000650271112538417,
+        "full_task_MSE": [
+          0.0006062368844007383,
+          4.4031532327545914e-05
+        ],
+        "B_relative_change": 0.7599811958063345
+      },
+      {
+        "evaluation": 44,
+        "objective": 0.0006291618160040332,
+        "full_task_MSE": [
+          0.000584397903232494,
+          4.47610403040277e-05
+        ],
+        "B_relative_change": 0.7864659106108473
+      }
+    ],
+    "seconds": 51.00802091602236,
+    "real_images": 0,
+    "model_image_forwards": 0,
+    "original_expert_updates": 0,
+    "full_defense_models": 0,
+    "new_AGA_calls": 0,
+    "independent_layer_vector_forwards": 65536,
+    "source_sha256": "a26d20e41c2862b05447634a14a5392b9f294bed17c8fa9edab26304120e9b91",
+    "helper_sha256": "c9b949884663380004e811caca1b09d1d5c5f65f502a3a36e21f85fd78492df2",
+    "definition_local": "d7c83bb4416a2de8a77860224cc161a26cb751a6",
+    "definition_remote": "d44968edff462f8d4b8d8610b861a754979c5e66",
+    "definition_exact_readback_before_execution": true,
+    "closure_check": {
+      "objective": 0.0006291618160040332,
+      "gradient_norm": 0.0009212596839317461,
+      "sphere_tangent_gradient_norm": 0.0009182015801657405,
+      "projected_gradient_times_original_weight_norm": 0.025755909595132083,
+      "relative_saved_conditional_B_error": 0.0,
+      "parameter_sha256": "ea3c4db2733aabc502a9f81927d7c4116567c9b904419aa4d285f2d339289781",
+      "real_images": 0,
+      "new_parameters_saved_or_applied": 0,
+      "optimizer_steps": 0,
+      "source": "import importlib.util,json,torch\nfrom pathlib import Path\nfrom _impl.models import initialize,load_checkpoint\nfrom _impl.io import digest\ninitialize();torch.set_default_dtype(torch.float64)\nroot=Path('outputs/population_compensation_20261026/joint_fit')\nf=root/'first_layer_fit.pt';assert digest(f)=='ea3c4db2733aabc502a9f81927d7c4116567c9b904419aa4d285f2d339289781'\np=Path('outputs/population_compensation_20261026/joint_gradient/calculation.py')\nassert digest(p)=='c9b949884663380004e811caca1b09d1d5c5f65f502a3a36e21f85fd78492df2'\nspec=importlib.util.spec_from_file_location('moments',p);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)\nmodel=load_checkpoint('MNIST/finetuned.pt').cuda();block=model.model.visual.transformer.resblocks[0]\nr=torch.load(f,map_location='cuda',weights_only=False)\nA,gamma,beta=block.mlp.c_fc.weight.double(),block.ln_2.weight.double(),block.ln_2.bias.double()\nW=A*gamma;W-=W.mean(1,keepdim=True);mu=A@beta+block.mlp.c_fc.bias.double()\nW1=r['A']*gamma;W1-=W1.mean(1,keepdim=True)\nB=torch.cat([block.mlp.c_proj.weight.double(),block.mlp.c_proj.bias.double()[:,None]],1)\ndomains,ridge=m.original_terms(W,mu,B,r['task_basis'])\nwith torch.no_grad():loss,changed,errors=m.conditional(W1,mu,B,domains,ridge)\ngrad=m.blocked_gradient(W1,mu,changed,B,domains)\ndelta=W1-W;tangent=grad-delta*(grad*delta).sum()/delta.square().sum()\nsaved=torch.cat([r['B'],r['b'][:,None]],1)\nresult=dict(objective=float(loss),gradient_norm=float(grad.norm()),sphere_tangent_gradient_norm=float(tangent.norm()),\n projected_gradient_times_original_weight_norm=float(tangent.norm()*W.norm()),\n relative_saved_conditional_B_error=float((saved-changed).norm()/changed.norm()),\n parameter_sha256=digest(f),real_images=0,new_parameters_saved_or_applied=0,optimizer_steps=0,\n source=Path(__file__).read_text(),source_sha256=digest(__file__),\n scope='Read-only final-source stationarity diagnostic. No new candidate, step, model image or natural-task conclusion. Fixed LBFGS solve ended at40iterations; positive tangent gradient is not an infeasibility theorem.')\n(root/'closure_check.json').write_text(json.dumps(result,indent=2)+'\\n')\nprint(json.dumps({k:v for k,v in result.items() if k!='source'}))\n",
+      "source_sha256": "ada13dd9e6b2812fa725a238c9a9d04e178b1b98827489c1032eddc0edf96073",
+      "scope": "Read-only final-source stationarity diagnostic. No new candidate, step, model image or natural-task conclusion. Fixed LBFGS solve ended at40iterations; positive tangent gradient is not an infeasibility theorem."
+    },
+    "interpretation": {
+      "initial_objective": 0.020530368060294735,
+      "objective_reduction_fraction": 0.9693545768806348,
+      "closed_fixed_solve": true,
+      "reason": "完整输入球的输出误差未达到预声明1e-4条件；40库内步结束，不能声称已求到驻点或补偿不可行。",
+      "scope": "第一层的纯权重数值补偿计算。原专家冻结，0图片/完整防御模型/分类或AGA评价。旧完整MNIST9.14失败仍是最近完整模型，未被替换。",
+      "task_kernel_vs_independent_MSE_relative_difference": 0.03169122816471888,
+      "kernel_precision": "有限15阶矩是数值目标；任务域独立QuickGELU误差比核预测约高3.2%，不称精确全域功能等式。"
+    }
   }
 }
