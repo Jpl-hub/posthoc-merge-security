@@ -1,8 +1,8 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2 data-free core mechanism: meaningful numerical changes and cross-module compensation preserving standalone function after expert freezing.",
-  "status": "新4090环境及原始模型已核对；同一无数据数值方法正在做固定SVHN任务验证。3090已完成源权重条件和NumPy独立计算；尚无本批完整分类成绩。",
-  "updated_utc": "2026-10-26T05:17:14.932994+00:00",
+  "status": "新4090已投入使用。固定SVHN数值构造独立准确率97.46%到94.27%，未通过保持要求，停止该点融合/AGA。源与完整分数独立核对通过，16分数原上下文重放误差0。",
+  "updated_utc": "2026-10-26T05:28:05.785024+00:00",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": ".5/.5comparison preserved,not a universal newparametercap;full history at97a3474.",
@@ -15,17 +15,8 @@
   },
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "new4090",
-      "stage": "SVHNclean synthetic source",
-      "PID": 2741,
-      "protocol": "results/data_free_compensation/task_transfer_protocol.json",
-      "frozen_before_execution_local": "022df029e72fbbdaf1a7caf2f6c3bdde3f1a0953",
-      "raw": "outputs/decision_transfer_20261026"
-    }
-  ],
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
   "compute": {
     "primary_GPU": "RTX4090",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
@@ -34,13 +25,14 @@
     "torch": "2.8.0+cu128",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_GPU": "RTX3090",
     "secondary_root": "/root/autodl-tmp/merge_security_20261009",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "Previous17811 host remains unavailable. ItsOct25/26 rawscores/models have not been restored onto this new host.",
-    "record": "results/engineering_refactor/compute_4090_20261026.json"
+    "record": "results/engineering_refactor/compute_4090_20261026.json",
+    "secondary_role": "User asked whether to switch3090toCPU-only;recommendedyes. No further3090GPUjobs scheduled. Actual platformmode change not performed byagent."
   },
   "latest_core_trial": {
     "point_sha256": "1a693ec907f5dde6b973692b9247ebeee6f4c56d60088bce06506c0b7b119883",
@@ -83,10 +75,10 @@
     "regression_and_behavior_tests_passed": 17,
     "current_completed_constructor_lines_retired": 265
   },
-  "next_action": "完成固定SVHN构造，先冻结再完整独立评价；通过原生<=.5pp才评价TA.5与原AGA。原第一层连续求解保持关闭；不改源、步数或任务外幅度追分。",
+  "next_action": "集中研究无数据A/B联合补偿对真实任务功能的保持；不以有限SVD探针或合成源保持代替完整任务，不修补已关闭SVHN点。计算集中4090，3090仅CPU/存储。",
   "paper_tables": "Canonical24tablesunchanged;current small MD/TeXsupplement inresults/data_free_compensation. No new report or PPT.",
   "github_sync": {
-    "status": "新SVHN执行前定义022df02及运行状态本地提交；GitHub接口报Unknown tool，未宣称公开。上次已核远程提交见receipt。",
+    "status": "本批固定SVHN定义、原始结果及MD/TeX已本地提交待同步；GitHub接口Unknown tool，远程最新仍以receipt为准。",
     "last_verified_remote_commit": "199dc2e521aa26a7ce0dd45a69c990e204dad9b3",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -268,5 +260,28 @@
     "new_full_defense_models": 0,
     "new_AGA_calls": 0,
     "closed_fixed_solve": true
+  },
+  "latest_fixed_task_transfer": {
+    "status": "closed_SVHN_native_accuracy_loss_3.19pp_no_TA_or_AGA",
+    "cost": {
+      "geometry_seconds": 10.60813840595074,
+      "synthetic_source_seconds": 233.3238755837083,
+      "compensation_seconds": 15.959548715502024,
+      "native_seconds": 24.735648334026337,
+      "synthetic_full_image_forwards": 312000,
+      "real_evaluation_image_forwards": 26032,
+      "original_context_image_forwards": 1968,
+      "new_full_AGA_calls": 0,
+      "new_original_expert_updates": 0,
+      "new_defense_points": 1
+    },
+    "scope": "First fixed SVHN transfer,not a new effective defense. MNIST original scores unchanged. No repair or source/parameter retry.",
+    "TA_and_AGA_evaluated": false,
+    "record": "results/data_free_compensation/task_transfer_result.json",
+    "point_sha256": "6e5018c45aa19e945b70eebdcd9666724c7eaaef29a425753b7798872bedb71c",
+    "native_accuracy": [
+      97.46081745543947,
+      94.26859250153657
+    ]
   }
 }
