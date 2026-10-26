@@ -171,5 +171,30 @@
     "executions": 0,
     "new_models": 0,
     "source_sha256": "6fdf570e5286a525f5c274f8e60f42360f7150c72d90988297bc6a096fffc3ff"
+  },
+  "ACTMat": {
+    "paper": "https://arxiv.org/html/2604.01329v2",
+    "date": "2026-09-30",
+    "official_repository": "https://github.com/marawangamal/actmat",
+    "commit": "774ee932918cbfab5a11e67a80a168d6185c5ff4",
+    "read_sections": [
+      "3.1-3.4",
+      "4.3",
+      "5",
+      "A.1-A.2",
+      "C.4-C.5"
+    ],
+    "official_core": "src/merging.py213-227:d.T@d,ordinarypseudoinverse. No biasaugmentation or nonlinearlatentgeneration.",
+    "theory": "FullbatchconstantstepSGDangularboundwithcross/correlation/drift errors. Inputsecondmoment,notcenteredcovariance. Onlyproportional; equalcommon scale cancelsitslinearmergingsolution. ExperimentsAdamWdo notturnSGDassumptionsintoidentity.",
+    "relevance": "Useweightspectrumasaninputfunctionalpriorratherthanuniformfullsphere,providedscale/mean/nonlinearconsistency declared. Notinstallingmergeroraddingattackbenchmark. Estimator/SVD/momentclosure arenotnewdefense.",
+    "gap": "Scaleandmean neededforQuickGELU momentsdonotgenerallycancelasinlinearRegMean. Nextcheck ofbiasaugmentedmomentcompletion isourhypothesis,notpaperclaim.",
+    "weight_check_definition": {
+      "status": "before_execution",
+      "question": "Canbias-augmentedtaskGrams providephysicallyconsistent LNinput andQuickGELUmeanmoments? Reportall12originalMNISTlayers,no selection.",
+      "math": "DA=Ae-A0,da=ae-a0,gamma/beta=originalLN2. InputhypothesisM=[DA,da].T[DA,da]/||da||^2. E=(DA/gamma)-da*(beta/gamma). LNnormalizedinputnorm2=||E||F^2/||da||^2must<=d,andsuminput2=||E1||²/||da||²must0ifexact. Hiddenmean=DB.Tdb/||db||²must>=-W(exp(-1))/1.702. Theseareexactnecessaryconditionsforinterpretationasactualmoments,notrequiredaccuracyoftheapproximateACTMatestimator.",
+      "metrics": "FullspectrumAgram participationrank/top32fraction,affinemomentconsistency;first/lastindependentNumPy. Noimages/head/partner/publishedpoints/fitting.",
+      "source": "\"\"\"Read-only task-weight moment checks before using them for nonlinear compensation.\"\"\"\nimport json,time\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom scipy.special import lambertw\nfrom _impl.models import initialize,load_checkpoint\nfrom _impl.io import digest\ninitialize();torch.set_default_dtype(torch.float64);start=time.perf_counter()\ns=load_checkpoint('MNIST/finetuned.pt').state_dict();base=load_checkpoint('zeroshot.pt').state_dict();rows=[];lower=-float(lambertw(np.exp(-1)).real)/1.702\nfor i in range(12):\n k=f'model.visual.transformer.resblocks.{i}.';to=lambda v:v.double().cuda()\n D=to(s[k+'mlp.c_fc.weight']-base[k+'mlp.c_fc.weight']);da=to(s[k+'mlp.c_fc.bias']-base[k+'mlp.c_fc.bias']);g=to(s[k+'ln_2.weight']);b=to(s[k+'ln_2.bias']);assert torch.all(g!=0) and da.square().sum()>0\n C=D.T@D;eig=torch.linalg.eigvalsh(C);energy=float(C.trace());effective=float(C.trace().square()/C.square().sum());mean_fraction=float(eig[-1]/C.trace());top32=float(eig[-32:].sum()/C.trace())\n E=D/g-da[:,None]*(b/g)[None,:];den=da.square().sum();mean=E.T@da/den;norm2=E.square().sum()/den;center2=E.sum(1).square().sum()/den\n DB=to(s[k+'mlp.c_proj.weight']-base[k+'mlp.c_proj.weight']);db=to(s[k+'mlp.c_proj.bias']-base[k+'mlp.c_proj.bias']);assert db.square().sum()>0;hmean=DB.T@db/db.square().sum()\n row=dict(layer=i,A_input_gram_participation_rank=effective,A_input_top_eigenvalue_energy_fraction=mean_fraction,A_input_top32_energy_fraction=top32,A_input_smallest_eigenvalue=float(eig[0]),augmented_hypothesis_normalized_input_squared_norm=float(norm2),actual_LN_squared_norm_upper_bound=len(g),augmented_hypothesis_sum_input_squared=float(center2),actual_LN_sum_input_squared=0.,augmented_hypothesis_mean_input_norm=float(mean.norm()),hidden_augmented_mean_min=float(hmean.min()),hidden_augmented_mean_max=float(hmean.max()),QuickGELU_global_lower_bound=lower,hidden_augmented_means_below_lower_bound=int((hmean<lower-1e-8).sum()),hidden_units=len(hmean))\n if i in [0,11]:\n  dn,an,gn,bn=[x.cpu().numpy() for x in [D,da,g,b]];en=dn/gn-an[:,None]*(bn/gn)[None,:];n=float((en*en).sum()/(an@an));cn=float((en.sum(1)**2).sum()/(an@an));mn=en.T@an/(an@an);dBn,dbn=DB.cpu().numpy(),db.cpu().numpy();hmean_n=dBn.T@dbn/(dbn@dbn)\n  err=max(abs(n-float(norm2))/(1+abs(n)),abs(cn-float(center2))/(1+abs(cn)),float(np.max(np.abs(mn-mean.cpu().numpy()))/(1+np.max(np.abs(mn)))),float(np.max(np.abs(hmean_n-hmean.cpu().numpy()))/(1+np.max(np.abs(hmean_n)))))\n  assert err<1e-10;row['independent_numpy_max_relative_error']=err\n rows.append(row);print(json.dumps(row),flush=True)\nout=Path('outputs/population_compensation_20261026/ACTMat_moment_check');out.mkdir(exist_ok=False)\nresult=dict(rows=rows,seconds=time.perf_counter()-start,source=Path(__file__).read_text(),source_sha256=digest(__file__),expert_updates=0,new_images=0,new_models=0,new_AGA=0,scope='OriginalMNIST/publicweights only,all12MLPs. ACTMat shape estimator isup-to-scale uncenteredsecondmoment. Appendingbias asconstant anddividingbybias-Gram isour explicit hypothesis,notofficialalgorithm. LayerNormsupport/energy andQuickGELUmeanbounds testthishypothesiswithoutdata. Mismatch doesnotrejectallapproximatecovariancepriors orproveallcompensationimpossible. No fitted parameterssaved/applied.')\n(out/'result.json').write_text(json.dumps(result,indent=2)+'\\n');print(json.dumps({k:v for k,v in result.items() if k not in ['source','rows']}),flush=True)\n",
+      "source_sha256": "8006f0ad9a59af9d8da9939816c41fdb3c945a598fd451e0fcdb4b0a82c01542"
+    }
   }
 }
