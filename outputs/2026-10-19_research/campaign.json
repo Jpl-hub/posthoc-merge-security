@@ -1,18 +1,17 @@
 {
-  "status": "无数据数值A/B补偿在MNIST/SVHN保住独立任务并显著降低TA/AGA准确率；DTD独立保持失败。固定无数据输出校正可部分恢复，SVD单删项未证明贡献，不能称完整稳健Defense2。",
-  "updated_utc": "2026-10-26T13:58:33.166249+00:00",
+  "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
+  "updated_utc": "2026-10-26T14:21:43.095474+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "补齐固定DTD权重的TA/AGA观察评价，保留独立损失和历史失败；核心研究继续解决A/B共同改变与任务功能保持，不重构或加步数修补旧点。",
+  "next_action": "核心方法优先：改善独立能力与融合保护的取舍，研究A/B共同改变及SVD的实际作用。当前三任务冻结点已完整评价，不再仅因自定0.5阈值否决，不用测试/伙伴修补旧点。",
   "github_sync": {
-    "status": "Plugin read access restored; remote71643527 verified unchanged; current backlog pending publication.",
-    "remote_commit": "71643527e4403b4ff7485100f2f83b0ccd23265e",
-    "local_snapshot": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
-    "verified_files": 13,
-    "receipt": "outputs/latest_github_sync_receipt.json",
-    "pending": "Current verified local results after8ca189d remain unsynchronized. Last exact remote71643527 unchanged."
+    "status": "Verified backlog published; newest DTD completed observation awaiting final synchronization in this turn",
+    "remote_commit": "fe71c29090e3ced1bfdb7f042f1eb6b3f27be9bd",
+    "local_snapshot": "3815d13531af7a213ab5dd07ad32938a90844803",
+    "tree_sha": "0feb7570742a9a32610e54cf8967f41ffa15b08c",
+    "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
     {
@@ -82,10 +81,21 @@
     "original": 79.41489361702128,
     "protected": 76.11702127659575,
     "native_loss_pp": 3.297872340425528,
-    "TA_and_AGA_run": false,
-    "status": "closed_no_retuning",
+    "TA_and_AGA_run": true,
+    "status": "historical_native_gate_failed; frozen observation completed and independently verified",
     "record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_DTD_closure",
-    "followup": "Frozen publication observation preregistered; no new construction; historical closure unchanged."
+    "followup": "Same b8c70428 release;14 rows,224 original-batch score replays passed;0new defense parameters",
+    "TA_AGAtarget_AGAboth": [
+      2.127659574468085,
+      2.127659574468085,
+      2.127659574468085
+    ],
+    "partner_MNIST_TA_AGAtarget_AGAboth": [
+      98.44,
+      75.64,
+      68.61
+    ],
+    "observation_record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_DTD_observation_result"
   },
   "fixed_output_calibration": {
     "attacker_access": "Own fused model,public classifier,64fixed randomnoise;no original target expert or real data",
