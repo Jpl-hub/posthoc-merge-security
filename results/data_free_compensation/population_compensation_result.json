@@ -2908,5 +2908,534 @@
       "content": "\"\"\"Evaluate one frozen MNIST publication; reuse the pinned original full scores.\"\"\"\nimport json,time\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.data import dataset,make_loader,official_labels\nfrom _impl.evaluate import evaluate\nfrom _impl.io import digest,new_output,save_json\nfrom _impl.metrics import task_change,row_metrics\nfrom _impl.models import checked_models,apply,initialize\ninitialize();start=time.perf_counter();root=Path('outputs/two_state_functional_20261026')\nresult=json.loads((root/'result.json').read_text());ref=dict(path=str(root/'point.pt'),sha256=result['point_sha256'])\nbaseline='outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt'\nassert digest(baseline)=='f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51'\nraw=torch.load(baseline,map_location='cpu',weights_only=False)['Unprotected/Standalone/None/MNIST']\nassert raw['indices']==list(range(10000))\nlabels=official_labels('MNIST');np.testing.assert_array_equal(raw['target'].numpy(),labels)\n_,expert,head,pins=checked_models('MNIST');model=apply(expert,ref)\nout=new_output(str(root/'native'),dict(target='MNIST',task_budget=.5,max_accuracy_loss_pp=.5,publication=ref,baseline_scores=baseline))\nsave_json(out/'before_images.json',dict(publication=ref,checkpoint_sha256=pins,source_sha256=digest(__file__)))\nsink=[];evaluate(model,head,make_loader(dataset('MNIST','data',expert.val_preprocess)),'cuda',logit_sink=sink.append)\na,b=raw['logits'].double(),torch.cat(sink).double();row=task_change(a.numpy(),b.numpy());row.update(stage='full',before_correct=int((a.argmax(1).numpy()==labels).sum()),after_correct=int((b.argmax(1).numpy()==labels).sum()))\nrow.update(strict_task_passed=row['changed']==0 and row['R']<=.5,accuracy_loss_pp=100*(row['before_correct']-row['after_correct'])/row['n']);row['passed']=row['accuracy_loss_pp']<=.5\ntorch.save(dict(indices=raw['indices'],labels=labels,before=a,after=b),out/'full.pt');row['raw_sha256']=digest(out/'full.pt')\nsave_json(out/'results.json',dict(rows=[row],passed=row['passed'],image_forwards=10000,baseline_new_forwards=0,seconds=time.perf_counter()-start,paired=row_metrics(b,torch.tensor(labels),a,10)))\nprint(json.dumps(row),flush=True)\n",
       "before_new_native_images": true
     }
+  },
+  "two_state_construction_result": {
+    "status": "sole_two_state_publication_frozen_before_images",
+    "point_sha256": "e70b71d379b9dfdb3e8a9fe9bfd9e127261523d3203e367e0a5ae82eb5381bda",
+    "metrics": {
+      "A_relative": 0.6096949193611034,
+      "B_relative": 34.105217670080435,
+      "effective_W_change": 0.49999999999999994,
+      "outside_energy_fraction": 0.8,
+      "logical_D": 72.34503113851801
+    },
+    "objective": 0.7456991947953185,
+    "native_full_task_public_full_task_MSE": [
+      0.22730085000426467,
+      0.02662879726470193,
+      0.38070644317968566,
+      0.11105629842638584
+    ],
+    "independent_latent_response": [
+      {
+        "state": "native",
+        "domain": "full",
+        "n": 4096,
+        "relative_MSE": 0.22952279929816805,
+        "sampling_SE": 0.002103487185031474
+      },
+      {
+        "state": "native",
+        "domain": "task",
+        "n": 4096,
+        "relative_MSE": 0.02698415162707404,
+        "sampling_SE": 0.0004948930773597022
+      },
+      {
+        "state": "public",
+        "domain": "full",
+        "n": 4096,
+        "relative_MSE": 0.38533816035470686,
+        "sampling_SE": 0.002785090118955297
+      },
+      {
+        "state": "public",
+        "domain": "task",
+        "n": 4096,
+        "relative_MSE": 0.11328422182140174,
+        "sampling_SE": 0.0016745356487028972
+      }
+    ],
+    "LBFGS_iterations": 40,
+    "objective_evaluations": 43,
+    "trace": [
+      {
+        "evaluation": 1,
+        "objective": 5.27652890649106,
+        "native_full_task_public_full_task_MSE": [
+          1.2429822922658296,
+          0.3395618091821167,
+          2.1669321142311797,
+          1.527050738219494
+        ]
+      },
+      {
+        "evaluation": 2,
+        "objective": 5.268689428768849,
+        "native_full_task_public_full_task_MSE": [
+          1.2442046564287312,
+          0.3384065502521164,
+          2.1657667270442724,
+          1.5203095263894948
+        ]
+      },
+      {
+        "evaluation": 3,
+        "objective": 5.199261080530433,
+        "native_full_task_public_full_task_MSE": [
+          1.2530799689763923,
+          0.3286718736193471,
+          2.1553530859699395,
+          1.4621540519727936
+        ]
+      },
+      {
+        "evaluation": 4,
+        "objective": 4.705958135290812,
+        "native_full_task_public_full_task_MSE": [
+          1.2264347136793896,
+          0.2854784930243953,
+          2.0672831094230095,
+          1.1267594966844205
+        ]
+      },
+      {
+        "evaluation": 5,
+        "objective": 4.110678758548663,
+        "native_full_task_public_full_task_MSE": [
+          1.147775499956312,
+          0.24162251328112175,
+          1.85464900390408,
+          0.8666295174261165
+        ]
+      },
+      {
+        "evaluation": 6,
+        "objective": 3.3141339528126155,
+        "native_full_task_public_full_task_MSE": [
+          1.0471983804731584,
+          0.18226369012433738,
+          1.427854261935318,
+          0.6568154793941987
+        ]
+      },
+      {
+        "evaluation": 7,
+        "objective": 2.555677390925823,
+        "native_full_task_public_full_task_MSE": [
+          0.8212216886567691,
+          0.1170165982246117,
+          1.069870049662584,
+          0.5475673063495964
+        ]
+      },
+      {
+        "evaluation": 8,
+        "objective": 2.2548450384073115,
+        "native_full_task_public_full_task_MSE": [
+          0.6754071234727983,
+          0.0986933740677374,
+          0.9734189751872088,
+          0.5073237278600452
+        ]
+      },
+      {
+        "evaluation": 9,
+        "objective": 2.071428599693853,
+        "native_full_task_public_full_task_MSE": [
+          0.5800107814239128,
+          0.08495683230441071,
+          0.9355576237773819,
+          0.47090141981591305
+        ]
+      },
+      {
+        "evaluation": 10,
+        "objective": 1.9714699633753838,
+        "native_full_task_public_full_task_MSE": [
+          0.5358056556496409,
+          0.07649714157462044,
+          0.904349557058859,
+          0.4548155609154838
+        ]
+      },
+      {
+        "evaluation": 11,
+        "objective": 1.8509301021214737,
+        "native_full_task_public_full_task_MSE": [
+          0.49863026972370694,
+          0.07135388457855324,
+          0.8516756136453535,
+          0.4292679765151878
+        ]
+      },
+      {
+        "evaluation": 12,
+        "objective": 1.7320824734151095,
+        "native_full_task_public_full_task_MSE": [
+          0.4924697569605966,
+          0.06821606500692387,
+          0.7899190531652741,
+          0.38147521296231446
+        ]
+      },
+      {
+        "evaluation": 13,
+        "objective": 1.6178309267556563,
+        "native_full_task_public_full_task_MSE": [
+          0.4641653924320027,
+          0.06360061808566977,
+          0.7536734815700633,
+          0.33638879596285776
+        ]
+      },
+      {
+        "evaluation": 14,
+        "objective": 1.5491397268266949,
+        "native_full_task_public_full_task_MSE": [
+          0.44579648513443487,
+          0.060454536997103236,
+          0.7307161181159701,
+          0.31216939170733005
+        ]
+      },
+      {
+        "evaluation": 15,
+        "objective": 1.4854751644790334,
+        "native_full_task_public_full_task_MSE": [
+          0.4304127544057304,
+          0.05751086554806465,
+          0.7023267950117429,
+          0.2952210782732791
+        ]
+      },
+      {
+        "evaluation": 16,
+        "objective": 1.4278331074176227,
+        "native_full_task_public_full_task_MSE": [
+          0.413852700398625,
+          0.055371220215097126,
+          0.6794433031127249,
+          0.2791619706166809
+        ]
+      },
+      {
+        "evaluation": 17,
+        "objective": 1.371292030003427,
+        "native_full_task_public_full_task_MSE": [
+          0.3966364476660195,
+          0.05332953025401982,
+          0.6564939445249445,
+          0.26482805718806623
+        ]
+      },
+      {
+        "evaluation": 18,
+        "objective": 1.3157890316872802,
+        "native_full_task_public_full_task_MSE": [
+          0.3848201889314587,
+          0.051562510616330166,
+          0.6279190253826795,
+          0.25148315218205497
+        ]
+      },
+      {
+        "evaluation": 19,
+        "objective": 1.2712346069180764,
+        "native_full_task_public_full_task_MSE": [
+          0.368755966024255,
+          0.04982325828716375,
+          0.6132157317281794,
+          0.23943530161661053
+        ]
+      },
+      {
+        "evaluation": 20,
+        "objective": 1.2402293542821121,
+        "native_full_task_public_full_task_MSE": [
+          0.3563695810773875,
+          0.04811886461242839,
+          0.6037412721279779,
+          0.23199514503597574
+        ]
+      },
+      {
+        "evaluation": 21,
+        "objective": 1.1887426430740304,
+        "native_full_task_public_full_task_MSE": [
+          0.3451272285154256,
+          0.04536888220275978,
+          0.5833687590409106,
+          0.21487317362640837
+        ]
+      },
+      {
+        "evaluation": 22,
+        "objective": 1.1675640641543203,
+        "native_full_task_public_full_task_MSE": [
+          0.3466282993877537,
+          0.043788168937918724,
+          0.5669486300182857,
+          0.21019463888638706
+        ]
+      },
+      {
+        "evaluation": 23,
+        "objective": 1.137277169339914,
+        "native_full_task_public_full_task_MSE": [
+          0.329783593710778,
+          0.04267257111674398,
+          0.5632857269988124,
+          0.20153061761505328
+        ]
+      },
+      {
+        "evaluation": 24,
+        "objective": 1.1040770426232778,
+        "native_full_task_public_full_task_MSE": [
+          0.3171970301526041,
+          0.04093079806055214,
+          0.5523749451344863,
+          0.1935693340932285
+        ]
+      },
+      {
+        "evaluation": 25,
+        "objective": 1.0823195393554346,
+        "native_full_task_public_full_task_MSE": [
+          0.30961565242425126,
+          0.04009167796355582,
+          0.5440682956351404,
+          0.18853886731678646
+        ]
+      },
+      {
+        "evaluation": 26,
+        "objective": 1.0453621473562056,
+        "native_full_task_public_full_task_MSE": [
+          0.3081292867768381,
+          0.03875729491623343,
+          0.5206678118119709,
+          0.1778026463481017
+        ]
+      },
+      {
+        "evaluation": 27,
+        "objective": 1.0228495648177958,
+        "native_full_task_public_full_task_MSE": [
+          0.3056518491294045,
+          0.03826872709799126,
+          0.5079756687782968,
+          0.1709482984199025
+        ]
+      },
+      {
+        "evaluation": 28,
+        "objective": 1.0070726877881284,
+        "native_full_task_public_full_task_MSE": [
+          0.2978344883186505,
+          0.03735700313048467,
+          0.5046345584908232,
+          0.16724149043657383
+        ]
+      },
+      {
+        "evaluation": 29,
+        "objective": 0.9693426222436208,
+        "native_full_task_public_full_task_MSE": [
+          0.2854078314729488,
+          0.034732478634462605,
+          0.4902958138837003,
+          0.15890112815908553
+        ]
+      },
+      {
+        "evaluation": 30,
+        "objective": 0.9467479378582047,
+        "native_full_task_public_full_task_MSE": [
+          0.28006710398784074,
+          0.033855058887974986,
+          0.48038126240569895,
+          0.15243906369981627
+        ]
+      },
+      {
+        "evaluation": 31,
+        "objective": 0.9219035631028779,
+        "native_full_task_public_full_task_MSE": [
+          0.2815230712391868,
+          0.03349935587102354,
+          0.4629452830151725,
+          0.14393033955324033
+        ]
+      },
+      {
+        "evaluation": 32,
+        "objective": 0.9003956938208556,
+        "native_full_task_public_full_task_MSE": [
+          0.27119799745157863,
+          0.032328594574826466,
+          0.4572163808100241,
+          0.13964702427864475
+        ]
+      },
+      {
+        "evaluation": 33,
+        "objective": 0.8842241696284676,
+        "native_full_task_public_full_task_MSE": [
+          0.2630952386744897,
+          0.031017024211023935,
+          0.45263451786583725,
+          0.13747154060329841
+        ]
+      },
+      {
+        "evaluation": 34,
+        "objective": 0.8612276349185088,
+        "native_full_task_public_full_task_MSE": [
+          0.25651516312978345,
+          0.030275174472802,
+          0.44002889130088596,
+          0.13440232963302856
+        ]
+      },
+      {
+        "evaluation": 35,
+        "objective": 0.8510585605612058,
+        "native_full_task_public_full_task_MSE": [
+          0.2604586509788949,
+          0.030335541492038348,
+          0.42977141744131225,
+          0.1304869556960223
+        ]
+      },
+      {
+        "evaluation": 36,
+        "objective": 0.8372400928460455,
+        "native_full_task_public_full_task_MSE": [
+          0.24995777810285377,
+          0.029491988962497037,
+          0.4296969678580145,
+          0.12808712850600196
+        ]
+      },
+      {
+        "evaluation": 37,
+        "objective": 0.8233405250010689,
+        "native_full_task_public_full_task_MSE": [
+          0.24427333963179726,
+          0.02860992862849999,
+          0.42526459249634085,
+          0.12518625891339416
+        ]
+      },
+      {
+        "evaluation": 38,
+        "objective": 0.8118229022608283,
+        "native_full_task_public_full_task_MSE": [
+          0.24324660107116966,
+          0.0282035808142003,
+          0.4182678841278655,
+          0.12209840546788263
+        ]
+      },
+      {
+        "evaluation": 39,
+        "objective": 0.8039345370568844,
+        "native_full_task_public_full_task_MSE": [
+          0.2521353632158142,
+          0.028498642978416918,
+          0.403505404609497,
+          0.11978881240493003
+        ]
+      },
+      {
+        "evaluation": 40,
+        "objective": 0.7822309876874738,
+        "native_full_task_public_full_task_MSE": [
+          0.2393337221429416,
+          0.02791039299025225,
+          0.39998909087145046,
+          0.11499121440142528
+        ]
+      },
+      {
+        "evaluation": 41,
+        "objective": 0.7740529282843768,
+        "native_full_task_public_full_task_MSE": [
+          0.23467738678897954,
+          0.027292912282360537,
+          0.3978245662754846,
+          0.11425139386604523
+        ]
+      },
+      {
+        "evaluation": 42,
+        "objective": 0.760686857643401,
+        "native_full_task_public_full_task_MSE": [
+          0.22870756711701834,
+          0.026761703254475563,
+          0.3921188881856288,
+          0.11309189503843285
+        ]
+      },
+      {
+        "evaluation": 43,
+        "objective": 0.7456991947953185,
+        "native_full_task_public_full_task_MSE": [
+          0.22730085000426467,
+          0.02662879726470193,
+          0.38070644317968566,
+          0.11105629842638584
+        ]
+      }
+    ],
+    "seconds": 114.94904704391956,
+    "source_sha256": "4d92a8396624c65c9cf09139ed3f469eb2b0bd9c0dba23d4d63ccb4d29e6d731",
+    "helper_sha256": "e139b67d3a2c7665c0ae05f5ab401ce8a2fddac0616fcba4a7d49ff2e4f44c92",
+    "real_images": 0,
+    "synthetic_images": 0,
+    "original_expert_updates": 0,
+    "full_model_forwards": 0,
+    "new_AGA": 0,
+    "frozen_before_images": true
+  },
+  "two_state_mapped_check_result": {
+    "status": "passed",
+    "toy": {
+      "objective": 6.371123974149172,
+      "native_full_task_and_public_full_task_MSE": [
+        0.7247198401691299,
+        0.5840291769302207,
+        2.4033715206581387,
+        2.6590032128744507
+      ],
+      "B_relative": 1.7830259514430393,
+      "directional_autograd": -2.7798503818068507,
+      "directional_finite_difference": -2.7798046236160445,
+      "relative_directional_error": 1.2105967202726818e-05,
+      "through_solve_vs_envelope_relative_error": 4.1406279039418425e-15
+    },
+    "original_first_layer": {
+      "objective": 5.282966074605341,
+      "native_full_task_and_public_full_task_MSE": [
+        1.2422211635343112,
+        0.3361705855737586,
+        2.177379289312007,
+        1.5271929545352372
+      ],
+      "B_relative": 19.96097536919006,
+      "directional_autograd": 0.5335106164026648,
+      "directional_finite_difference": 0.5335113685411841,
+      "relative_directional_error": 4.904681730269048e-07
+    },
+    "seconds": 7.8962530344724655,
+    "real_images": 0,
+    "synthetic_images": 0,
+    "full_model_forwards": 0,
+    "optimizer_steps": 0,
+    "new_models": 0,
+    "new_AGA": 0,
+    "source_sha256": "e139b67d3a2c7665c0ae05f5ab401ce8a2fddac0616fcba4a7d49ff2e4f44c92"
   }
 }
