@@ -1,11 +1,24 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-27T15:21:41.338740+00:00",
+  "updated_utc": "2026-10-27T15:22:51.105135+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Run registered finite task-response construction check; start one original-weight point only if identities and derivatives pass. Manual follow-up; no automation.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "40815",
+      "pid": 13343,
+      "output": "outputs/joint_task_response_20261027",
+      "log": "outputs/joint_task_response_20261027/run.log",
+      "status": "running_numerical_check_then_one_construction_and_evaluation",
+      "started_utc": "2026-10-27T15:22:51.105135+00:00",
+      "timeout_seconds": 14400,
+      "registered_commit": "759a782",
+      "protocol_sha256": "efd49051497e95825979ac4aaf4f960c8b0927b40fa1e956e4f23a1504bc99dc",
+      "manual_followup": true
+    }
+  ],
+  "next_action": "Read one registered job log/results at manual follow-up. If identities/derivative pass, queue constructs one frozen point and evaluates standalone,TA.5,originalAGA and fixednoise correction. No repeat or retuning of closed points.",
   "github_sync": {
     "status": "Main99debfd confirmed;fetch_blob then failed connector HTTPtransport. Latestlocalresults pending publication;receipt authoritative.",
     "last_verified_remote_commit": "99debfd16a8cb3aaf2291816bae7bd23a09a4f98",
@@ -311,10 +324,11 @@
     "new_full_image_forwards": 0
   },
   "joint_task_response_progress": {
-    "status": "registered_not_started",
+    "status": "check_running",
     "record": "results/data_free_compensation/paper_protocol_review.json:joint_task_response_definition_20261027",
     "protocol_sha256": "efd49051497e95825979ac4aaf4f960c8b0927b40fa1e956e4f23a1504bc99dc",
     "real_construction_images": 0,
-    "new_points_planned": 1
+    "new_points_planned": 1,
+    "pid": 13343
   }
 }

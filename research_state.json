@@ -22,7 +22,7 @@
     "torch": "2.8.0+cu128",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_GPU": "RTX3090",
     "secondary_root": "/root/autodl-tmp/merge_security_20261009",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
@@ -30,7 +30,7 @@
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/engineering_refactor/compute_4090_20261026.json",
     "secondary_role": "All other hosts CPU/storage only per user",
-    "verified_utc": "2026-10-27T14:49:38.469010+00:00",
+    "verified_utc": "2026-10-27T15:22:51.105135+00:00",
     "primary_available_GiB": 44,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:40815",
@@ -89,10 +89,23 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-27T15:21:41.338740+00:00",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Run registered finite task-response construction check; start one original-weight point only if identities and derivatives pass. Manual follow-up; no automation.",
+  "updated_utc": "2026-10-27T15:22:51.105135+00:00",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "40815",
+      "pid": 13343,
+      "output": "outputs/joint_task_response_20261027",
+      "log": "outputs/joint_task_response_20261027/run.log",
+      "status": "running_numerical_check_then_one_construction_and_evaluation",
+      "started_utc": "2026-10-27T15:22:51.105135+00:00",
+      "timeout_seconds": 14400,
+      "registered_commit": "759a782",
+      "protocol_sha256": "efd49051497e95825979ac4aaf4f960c8b0927b40fa1e956e4f23a1504bc99dc",
+      "manual_followup": true
+    }
+  ],
+  "next_action": "Read one registered job log/results at manual follow-up. If identities/derivative pass, queue constructs one frozen point and evaluates standalone,TA.5,originalAGA and fixednoise correction. No repeat or retuning of closed points.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -369,10 +382,11 @@
     "new_full_image_forwards": 0
   },
   "joint_task_response_progress": {
-    "status": "registered_not_started",
+    "status": "check_running",
     "record": "results/data_free_compensation/paper_protocol_review.json:joint_task_response_definition_20261027",
     "protocol_sha256": "efd49051497e95825979ac4aaf4f960c8b0927b40fa1e956e4f23a1504bc99dc",
     "real_construction_images": 0,
-    "new_points_planned": 1
+    "new_points_planned": 1,
+    "pid": 13343
   }
 }
