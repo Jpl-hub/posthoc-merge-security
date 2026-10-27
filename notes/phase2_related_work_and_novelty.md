@@ -1173,3 +1173,12 @@ Oct27：使用[Sener与Koltun，NeurIPS2018](https://proceedings.neurips.cc/pape
 复核O’Leary与Rust的[变量投影原文](https://www.cs.umd.edu/users/oleary/software/varpro.pdf)§2.2：含线性系数的活动约束会改变导数处理，不能直接套用无约束内层最小二乘的结论。对本项目而言，完整分类条件属于A/B共同变量的非线性条件，先给无约束方向、再不断缩步不等于求解了这个问题。[Boyd与Vandenberghe](https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf)的约束梯度与KKT，以及Sener与Koltun的双目标最小范数组合，均是已有工具，不作为原创性主张。
 
 冻结4ed点的7200精确类别次序及一项原生响应误差，数值Jacobian满行秩，且其零空间存在同时改善距离和公开融合目标的方向。标准正则水平集结论说明局部有限曲线的数学依据，但没有保证可走多远、是否跨AGA指派变化，或自然任务上的准确率。该检查区别于已失败的完整隐藏特征重建；也不是把早期局部Jacobian算法重新命名。尚需完成的实质是有限非线性补偿、实际融合破坏和SVD的作用证据。
+
+Oct27补充：[Carlini与Wagner，2017](https://arxiv.org/pdf/1608.04644)及其[固定c6b8f6a官方代码](https://github.com/carlini/nn_robust_attacks/blob/c6b8f6a254e82a79a52cfbc673b632cad5ea1ab1/l2_attack.py)86—98行给出非定向教师类别与最大其他类别的分数差。本项目只借用这一标准分类条件，未运行其图像攻击，也不把普通间隔损失称为防御创新。当前新构造结合原任务功能不等式，但真实TA/AGA仍约99%，失败关闭。顺序二次近似参考Duchi/Boyd/Mattingley讲义§1.1—2；原始目标非凸、AGA指派离散，不能由有限直线搜索停止声称约束驻点或不可行。SVD贡献与有限数值补偿的实际保护仍是研究问题。
+
+
+### 2026-10-27：输入导数匹配已有工作及使用范围
+
+核读[Knowledge Transfer with Jacobian Matching，ICML2018](https://proceedings.mlr.press/v80/srinivas18a/srinivas18a.pdf)§3、4、4.1、5.1、6.1。输入导数匹配本身是已有蒸馏方法；原实验使用真实数据，不是本文的无数据防御。§5.1的保持界同时依赖损失的平滑性与两组输入的覆盖距离，不能从合成源导数小就推出自然任务保持。论文表1也并非所有设置都从导数项受益。没有找到可固定的作者对应官方实现，未采用搜索结果中的第三方distillation-zoo代码，未声称复现该论文。
+
+对本项目含QuickGELU/LN的光滑残差e，完整小高斯噪声展开有E||e(x+σz)||²=||e(x)||²+σ²(||J_e||F²+e·Δe)+O(σ⁴)，还含残差与Hessian迹项。只保留Jacobian项是额外近似，不能把论文一阶线性化写成此处任意有限变化的精确恒等式。导数匹配可作为候选保持工具，不能作为新方法贡献或未经检验的保证。当前只完成两个既有模型的输入响应对照，没有新增防御优化器。

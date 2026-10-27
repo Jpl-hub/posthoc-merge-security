@@ -22278,6 +22278,1781 @@
       "standard_reference": "https://stanford.edu/class/ee364b/lectures/seq_notes.pdf §1.1–2",
       "new_defense_points": 0,
       "new_production_modules": 0
+    },
+    "artifact_availability_after_20261027_release": {
+      "status": "original_source_host_released_before_raw_artifact_copy_completed",
+      "record": "results/engineering_refactor/server_consolidation_20261027.json",
+      "missing_original_point_sha256": "e6191ca8c9936f7d71ae7ad8e0969b60c6e81785f18bd4148da946724a8032e9",
+      "missing_original_native_scores_sha256": "7dfd8ef9cf6798d53257b48eaa48f3ac92a135f15f5a5e4b2b29cca7a8a4fb05",
+      "missing_original_fusion_scores_sha256": "3f39c739e874955e3c790f3dd97fbf932e9608d3e278f36c0cc9e95f65ae65c0",
+      "historical_results_and_checks": "Previously completed checks remain historical results. Current raw files unavailable, not claimed currently replayable.",
+      "source_code": "Exact source SHA recovered from local immutable registration; no changed point or rerun."
     }
+  },
+  "joint_function_result_20261027": {
+    "status": "completed_independently_verified_no_effective_fusion_protection",
+    "source_sha256": "e1a5b5fb927b3aff6800775ea79f10e72e42c7b3dea4f165f1a483c4f2532296",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "layer_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe",
+    "point_sha256": "e5b12c2d23678bda7f458487169fbff1759d82e83c0a38f7d0faaffd273331b2",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "initial": {
+      "distance_squared": 1.0540922189123285,
+      "native": 0.06556075574294341,
+      "native_slack": 8.188101357353567,
+      "public": 14.020268196811205,
+      "initialization_fraction": 1.0
+    },
+    "native_limit": 1.264483612297785,
+    "native_final": 1.2644456862626479,
+    "min_class_numerator": 7.350720123094646,
+    "source_feasible": true,
+    "native_teacher_retained": 800,
+    "native_n": 800,
+    "public_objective": 10.03055528638981,
+    "public_correct": {
+      "direct": 800,
+      "recovered": 800
+    },
+    "metrics": {
+      "A_relative": 1.0294880930198742,
+      "B_relative": 0.6202966792194688,
+      "logical_D": 1.2093679301289597,
+      "effective_A_distance_squared": 1.0727769445539987,
+      "left_task_relative": 6.50039910099501e-10,
+      "right_task_relative": 1.2669705060106922e-09,
+      "anchor_diagonal_relative": 4.994105989809377e-09
+    },
+    "iterations": 23,
+    "stop_reason": "finite_inequality_line_search_stalled",
+    "last_rejections": {
+      "actual_native_inequality_or_parameter_range": 9,
+      "public_margin_after_exact_matching": 7
+    },
+    "derivative_checks": [
+      {
+        "inequality_derivative_error": 1.091273315989087e-07,
+        "public_derivative_error": 4.581233170597443e-10
+      }
+    ],
+    "seconds": 118.90148111432791,
+    "matching_calls": 36,
+    "complete_AGA_calls": 0,
+    "real_images": 0,
+    "model_image_forwards": 0,
+    "original_expert_updates": 0,
+    "scope": "One source-only joint inequality construction. Standard margin and QP tools,not optimizer novelty. No parameter sweep,partner,test or previous release loading. Finite synthetic conditions do not guarantee natural utility or unknown-partner protection.",
+    "closed_do_not_resume": true,
+    "registration_local_commit": "e155c5d",
+    "completed_utc": "2026-10-27T10:43:22.995959+00:00",
+    "native_original": 99.69,
+    "native_TA_AGAtarget_AGAboth": [
+      99.66,
+      99.36,
+      99.29,
+      99.31
+    ],
+    "partner_SVHN_TA_AGAtarget_AGAboth": [
+      92.44775660725261,
+      92.390135218193,
+      91.28764597418562
+    ],
+    "native": {
+      "rows": [
+        {
+          "n": 10000,
+          "changed": 9,
+          "R": 56.79104897352457,
+          "stage": "full",
+          "before_correct": 9969,
+          "after_correct": 9966,
+          "strict_task_passed": false,
+          "accuracy_loss_pp": 0.03,
+          "passed": true,
+          "raw_sha256": "fe5987969756d6b421b5711a39f682152ec472d5a6593be067f8b451c6cf33a5"
+        }
+      ],
+      "passed": true,
+      "image_forwards": 10000,
+      "baseline_new_forwards": 0,
+      "seconds": 12.264723896980286
+    },
+    "context_replay": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 27296,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 2.288818359375e-05,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "65fcc1478e2ccc483b43e5f574fe033ebefa90d417b62942d9ea2741f10dda84",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "native_context_replay": {
+      "status": "passed",
+      "source_sha256": "67e814ae275c34925ccf459215bf0f2f84de4d3d20ee03a51843b9b31204d4ae",
+      "score_replays": 16,
+      "original_batch_size": 128,
+      "context_image_forwards": 1936,
+      "maximum_score_error": 0.0,
+      "tolerance": 0.0002,
+      "new_expert_updates": 0,
+      "new_AGA": 0
+    },
+    "source_independent_recount": {
+      "status": "read_only_source_recount_passed",
+      "point_sha256": "e5b12c2d23678bda7f458487169fbff1759d82e83c0a38f7d0faaffd273331b2",
+      "source_sha256": "0b18cebf568e31bca87733f17714934e0a1b15d255181538a8ad632faa58faa3",
+      "numpy_class_numerator_max_error": 2.1316282072803006e-13,
+      "native_class_correct": 800,
+      "public_class_rows": [
+        {
+          "scope": "direct",
+          "correct": 800,
+          "n": 800,
+          "minimum_margin": 1.2921702301907416,
+          "maximum_margin": 3.5212655291518082
+        },
+        {
+          "scope": "recovered",
+          "correct": 800,
+          "n": 800,
+          "minimum_margin": 1.1098538908894042,
+          "maximum_margin": 3.715307799960833
+        }
+      ],
+      "native_error": 1.2644456862626479,
+      "native_limit": 1.264483612297785,
+      "native_response_slack": 3.792603513708137e-05,
+      "direction_QP": {
+        "dual_iterations": 26,
+        "dual_success": true,
+        "dual_message": "CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL",
+        "primal_violation": 1.4866127114922048e-10,
+        "primal_dual_gap": -5.018037547988019e-11,
+        "complementarity": 9.857066939237609e-11,
+        "active_constraints": 1,
+        "normalized_slopes": [
+          -0.028081690271996772,
+          -0.02808169002008621
+        ],
+        "step_norm": 0.05299207688306162
+      },
+      "response_first_derivative": 3.417173541462627e-05,
+      "response_second_derivative": 16.41015128243045,
+      "finite_difference_errors": [
+        3.408651329944723e-10,
+        2.6659724738919977e-07
+      ],
+      "response_uses_original_teacher_error": 9.533539987223247e-13,
+      "new_defense_points": 0,
+      "parameter_updates": 0,
+      "real_images": 0,
+      "complete_AGA_calls": 0,
+      "single_layer_matching_calls": 2,
+      "seconds": 13.864499613642693,
+      "scope": "A fresh read-only direction at the same frozen FP32 point,not an exact replay of the final FP64 rejected step. Curvature explains why linear response feasibility alone does not guarantee finite feasibility;not proof of the sole failure cause or a new method."
+    },
+    "evaluation_driver_fix": {
+      "cause": "Driver filled AGA hash but omitted the completed native score hash; explicit implementation error",
+      "field": "legacy.MNIST_SVHN/JointFunction_MNIST.standalone.sha256",
+      "sha256": "fe5987969756d6b421b5711a39f682152ec472d5a6593be067f8b451c6cf33a5",
+      "already_completed_native_and_AGA_reused": true,
+      "failed_attempt_real_image_forwards": 0,
+      "failed_attempt_imported_rows": 7,
+      "weights_or_data_changes": 0
+    },
+    "evaluation_seconds": 93.24870838224888,
+    "complete_AGA_execution": {
+      "method": "aga",
+      "seconds": 5.455492004752159,
+      "output_sha256": "3495ce74dd2f215bd23f53f691a03b2694bb63df6d16997c3d63041e34f85a35",
+      "details": {
+        "known_family": false,
+        "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "aligned_reference": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "reference": "original_AGA",
+      "new_training_updates": 0
+    },
+    "full_evaluation_image_forwards": 118096,
+    "context_replay_image_forwards": 29232,
+    "local_backup": {
+      "verified_files": 37,
+      "total_files": 37,
+      "not_yet_copied": [],
+      "backup_archive": "outputs/joint_function_20261027_backup.tar",
+      "backup_archive_sha256": "eed31b3cdce438c75da8b3202ce84356fab931f7ec61fd6a3ae831700ec74a44"
+    },
+    "interpretation": "Native complete accuracy retained;public synthetic classes and real fused tasks remain correct. No effective protection. Functional inequalities replace unnecessarily fixed response values,but this finite path reached response boundary and re-matching rejection;neither global convergence nor impossibility established. No source bound,seed,rank,range,layer or data retuning.",
+    "production_modules_added": 0,
+    "new_synthetic_image_forwards": 0,
+    "existing_synthetic_construction_images": 160,
+    "existing_synthetic_contexts": 800,
+    "task_spectrum_layer_inputs": 16384,
+    "paired_summary": [
+      {
+        "key": "JointFunction_MNIST/Standalone/None/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.66000000000001,
+        "changed": 9,
+        "lost": 6,
+        "gained": 3,
+        "paired_delta_95ci_pp": [
+          -0.08879999999999999,
+          0.02879999999999999
+        ],
+        "exact_mcnemar_p": 0.5078124999999997,
+        "log10_p": -0.29429661300501303
+      },
+      {
+        "key": "JointFunction_MNIST/TA/None/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.36,
+        "changed": 18,
+        "lost": 9,
+        "gained": 8,
+        "paired_delta_95ci_pp": [
+          -0.09081667351154556,
+          0.07081667351154555
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "JointFunction_MNIST/TA/None/SVHN",
+        "n": 26032,
+        "accuracy_percent": 92.4477566072526,
+        "changed": 419,
+        "lost": 180,
+        "gained": 167,
+        "paired_delta_95ci_pp": [
+          -0.19019327873260017,
+          0.09031620436259402
+        ],
+        "exact_mcnemar_p": 0.5195089066864578,
+        "log10_p": -0.2844070023096487
+      },
+      {
+        "key": "JointFunction_MNIST/TA/Protected expert/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.29,
+        "changed": 12,
+        "lost": 6,
+        "gained": 5,
+        "paired_delta_95ci_pp": [
+          -0.07500880093048819,
+          0.055008800930488176
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "JointFunction_MNIST/TA/Protected expert/SVHN",
+        "n": 26032,
+        "accuracy_percent": 92.390135218193,
+        "changed": 471,
+        "lost": 246,
+        "gained": 144,
+        "paired_delta_95ci_pp": [
+          -0.5404417781911417,
+          -0.24320911301967565
+        ],
+        "exact_mcnemar_p": 2.7108537158309575e-07,
+        "log10_p": -6.566893917359204
+      },
+      {
+        "key": "JointFunction_MNIST/TA/All experts/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.31,
+        "changed": 14,
+        "lost": 7,
+        "gained": 6,
+        "paired_delta_95ci_pp": [
+          -0.0806720668871642,
+          0.06067206688716419
+        ],
+        "exact_mcnemar_p": 0.9999999999999998,
+        "log10_p": -9.64327466553287e-17
+      },
+      {
+        "key": "JointFunction_MNIST/TA/All experts/SVHN",
+        "n": 26032,
+        "accuracy_percent": 91.28764597418562,
+        "changed": 576,
+        "lost": 304,
+        "gained": 178,
+        "paired_delta_95ci_pp": [
+          -0.6492179288520835,
+          -0.31882140734951464
+        ],
+        "exact_mcnemar_p": 1.0325255394213756e-08,
+        "log10_p": -7.986099197305848
+      }
+    ],
+    "all_14_rows_and_per_class": {
+      "path": "outputs/joint_function_20261027/paired_check.json",
+      "sha256": "1a81591f08379987fa8484f3f1e081bc1f7741bf1f4beb35d9206aab51a3c109",
+      "status": "passed_independent_numpy_counts_CI_exact_binomial_recurrence",
+      "stored": "40815 and verified local backup;all14rows retained there"
+    }
+  },
+  "joint_conditional_result_20261027": {
+    "status": "completed_verified_native_function_failed_closed",
+    "definitions_sha256": "746864c7c32b945ff63b4e14307d12230d66543f4dd8f0412f47e6156ed55dc2",
+    "constructor_sha256": "7c7139eb09f6d9895cb6cf77ce3375dcd97c1a779e2c6b4dca7b945d4d07e208",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "layer_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe",
+    "point_sha256": "d921a7cff445cbbd3ed6927bc755df884725b93c8983ba0bde075cfeb4467a2d",
+    "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "initial": {
+      "distance_squared": 1.0540922189123285,
+      "native": 0.06556075574294341,
+      "native_slack": 8.188101357353567,
+      "public": 14.020268196811205,
+      "initialization_fraction": 1.0,
+      "Z_norm": 1.4201805208843247e-12,
+      "conditional_minimum": 0.06556075574295761
+    },
+    "native_limit": 1.264483612297785,
+    "native_final": 0.06882602712571323,
+    "min_class_numerator": 8.34898913189101,
+    "source_feasible": true,
+    "native_teacher_retained": 800,
+    "native_n": 800,
+    "public_objective": -8.403646166349638,
+    "public_correct": {
+      "direct": 0,
+      "recovered": 0
+    },
+    "metrics": {
+      "A_relative": 1.414665535774953,
+      "B_relative": 1.058371165064655,
+      "logical_D": 1.7814041520362993,
+      "effective_A_distance_squared": 2.966745868322645,
+      "left_task_relative": 1.8430918765500391e-09,
+      "right_task_relative": 2.8819476152609674e-09,
+      "anchor_diagonal_relative": 2.2028772195902824e-08
+    },
+    "iterations": 123,
+    "stop_reason": "conditional_finite_line_search_stalled",
+    "last_rejections": {
+      "public_after_exact_matching": 16
+    },
+    "seconds": 1422.639369957149,
+    "matching_calls": 661,
+    "complete_AGA_calls": 1,
+    "real_images": 0,
+    "model_image_forwards": 0,
+    "original_expert_updates": 0,
+    "scope": "One original-weight construction using exact A-dependent native response ellipsoid plus actual native class inequalities. Standard completion of squares,MGDA,ball projection,Cholesky are computational tools,not novelty. No test/partner/previous release loading or tuning. Only one final point.",
+    "native_original": 99.69,
+    "native_TA_AGAtarget_AGAboth": [
+      46.75,
+      0.51,
+      0.96,
+      0.84
+    ],
+    "partner_SVHN_TA_AGAtarget_AGAboth": [
+      2.2165027658266747,
+      3.591733251382913,
+      3.7338660110633066
+    ],
+    "native_paired": {
+      "n": 10000,
+      "correct": 4675,
+      "accuracy_percent": 46.75,
+      "changed_predictions": 5321,
+      "paired": {
+        "both_correct": 4673,
+        "lost": 5296,
+        "gained": 2,
+        "both_wrong": 29,
+        "loss_pp": 52.94,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -1587.4086111233576,
+      "paired_accuracy_delta_95ci_pp": [
+        -53.9191383895153,
+        -51.9608616104847
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 297,
+          "original_correct": 979
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 0,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 0,
+          "original_correct": 1030
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 378,
+          "original_correct": 1010
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 50,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 869,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 921,
+          "original_correct": 954
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 243,
+          "original_correct": 1025
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 952,
+          "original_correct": 973
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 965,
+          "original_correct": 1003
+        }
+      ]
+    },
+    "context_score_replays": 240,
+    "calibrated_MNIST_TA_AGAtarget_AGAboth": [
+      66.85,
+      44.13,
+      41.84
+    ],
+    "calibration_scope": "Same64noise fixedoutput rule; no model repair or new real forwards;originalAGA separate",
+    "calibration_result_sha256": "d52c9e6908daf143872bfb2379e93c400c3b9fbae1a5330f705d7c78658cdfe9",
+    "paired_check_sha256": "7df5f8bc0cb3e2d0e7cb34a69b7ed58c3a59fa7768ee5851caa2d013454e7242",
+    "native_replay": {
+      "status": "passed",
+      "source_sha256": "f796a2dfb78ef2947390cb0b13be0e0522deb6bda3e55bbf40679b74aa3a5861",
+      "score_replays": 16,
+      "original_batch_size": 128,
+      "context_image_forwards": 1936,
+      "maximum_score_error": 0.0,
+      "tolerance": 0.0002,
+      "new_expert_updates": 0,
+      "new_AGA": 0
+    },
+    "fusion_verification": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 27296,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 2.288818359375e-05,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "2fe2862819e4c8759cb05cc7e594bb0c85591da1b4e6815164de3c7b61fdfb9d",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "backup": {
+      "path": "outputs/joint_conditional_20261027_backup.tar",
+      "sha256": "51ea0b71f8c5d7b2f4bcee239fcb2f7551cea51ef049c89dfbc3d14e3d4462c8",
+      "bytes": 71741440,
+      "location": "retained40815 and local",
+      "content_verified": true
+    },
+    "closed_do_not_resume": true,
+    "conclusion": "Source800/800 native preservation and0/800public correct do not generalize to naturalMNIST. No successful new defense. Existing effective releases unchanged."
+  },
+  "joint_conditional_generalization_result_20261027": {
+    "status": "completed_read_only",
+    "rows": [
+      {
+        "group": "construction",
+        "model": "original",
+        "n": 800,
+        "retained": 800,
+        "full_vs_cached_max_error": 1.33514404296875e-05,
+        "per_teacher_class": [
+          {
+            "class_id": 0,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 1,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 2,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 3,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 4,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 5,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 6,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 7,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 8,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 9,
+            "n": 80,
+            "retained": 80
+          }
+        ]
+      },
+      {
+        "group": "construction",
+        "model": "existing_effective",
+        "n": 800,
+        "retained": 800,
+        "full_vs_cached_max_error": 5.2928924560546875e-05,
+        "per_teacher_class": [
+          {
+            "class_id": 0,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 1,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 2,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 3,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 4,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 5,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 6,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 7,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 8,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 9,
+            "n": 80,
+            "retained": 80
+          }
+        ]
+      },
+      {
+        "group": "construction",
+        "model": "joint_conditional",
+        "n": 800,
+        "retained": 800,
+        "full_vs_cached_max_error": 0.00011730194091796875,
+        "per_teacher_class": [
+          {
+            "class_id": 0,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 1,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 2,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 3,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 4,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 5,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 6,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 7,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 8,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 9,
+            "n": 80,
+            "retained": 80
+          }
+        ]
+      },
+      {
+        "group": "independent",
+        "model": "original",
+        "n": 800,
+        "retained": 800,
+        "full_vs_cached_max_error": 1.33514404296875e-05,
+        "per_teacher_class": [
+          {
+            "class_id": 0,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 1,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 2,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 3,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 4,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 5,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 6,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 7,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 8,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 9,
+            "n": 80,
+            "retained": 80
+          }
+        ]
+      },
+      {
+        "group": "independent",
+        "model": "existing_effective",
+        "n": 800,
+        "retained": 798,
+        "full_vs_cached_max_error": 4.673004150390625e-05,
+        "per_teacher_class": [
+          {
+            "class_id": 0,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 1,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 2,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 3,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 4,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 5,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 6,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 7,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 8,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 9,
+            "n": 80,
+            "retained": 78
+          }
+        ]
+      },
+      {
+        "group": "independent",
+        "model": "joint_conditional",
+        "n": 800,
+        "retained": 798,
+        "full_vs_cached_max_error": 0.0001544952392578125,
+        "per_teacher_class": [
+          {
+            "class_id": 0,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 1,
+            "n": 80,
+            "retained": 78
+          },
+          {
+            "class_id": 2,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 3,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 4,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 5,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 6,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 7,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 8,
+            "n": 80,
+            "retained": 80
+          },
+          {
+            "class_id": 9,
+            "n": 80,
+            "retained": 80
+          }
+        ]
+      }
+    ],
+    "seconds": 6.099452696740627,
+    "source_sha256": "1e476cef7c940802f867ba06bd19fe12ffd8d572b42bad8f55d5aafbab44b979",
+    "protocol_sha256": "0428b79a0612830ec4e37d66324b2f96178dba65ba7c8ae3992486b1155e46f8",
+    "raw_sha256": "7f31146caf62abaf7136301dc275344149a9c888a8695621a90994e48f2c974a",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "real_images": 0,
+    "new_defense_points": 0,
+    "complete_AGA_calls": 0,
+    "synthetic_full_model_forwards": 4800,
+    "interpretation": "Independent teacher-generated inputs diagnose source generalization only; no natural-data guarantee, no parameter repair or selection.",
+    "generation": {
+      "stage": "clean_MNIST_synthetic_source_only",
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "source_sha256": "eac44077c60f0683c7125a8547735c91716a3d633df2d353ddc233083b8b8661",
+      "source_arrays_sha256": "cf8f8a908561fd92208f6664dad1fedd8b0a4a9ede3b756af92b2f929b0621d7",
+      "generated_image_forwards": 309600,
+      "pixel_optimizer_batch_steps": 2560,
+      "seconds": 234.84796944260597,
+      "real_images": 0,
+      "expert_updates": 0,
+      "protected_parameters_used": false,
+      "clean_requested": {
+        "native": 800,
+        "direct": 800,
+        "recovered": 800
+      }
+    },
+    "backup": {
+      "path": "outputs/joint_conditional_diagnostic_20261027.tar",
+      "sha256": "b4a1df9e578a8842130b746e13bb95d7ae3d3b98204026595cfebed84944aa5f",
+      "bytes": 49203200,
+      "verified_locations": [
+        "local",
+        "40815"
+      ]
+    },
+    "finding": "Both frozen models retain798/800teacher classes on one independently generated source,despite naturalMNIST99.61 versus46.75. Complete forward/cache class predictions agree on all4800evaluations. Current synthetic family does not distinguish natural function preservation;cannot attribute solely to memorizing the160construction images or to cache/fullforward mismatch. No model repaired or selected."
+  },
+  "input_response_result_20261027": {
+    "rows": [
+      {
+        "group": "construction",
+        "model": "original",
+        "n": 800,
+        "task_direction_relative_rms": 0.0,
+        "complement_direction_relative_rms": 0.0,
+        "finite_chord_relative_rms": 0.0,
+        "centered_score_relative_rms": 0.0
+      },
+      {
+        "group": "construction",
+        "model": "existing_effective",
+        "n": 800,
+        "task_direction_relative_rms": 1.0326594519212267,
+        "complement_direction_relative_rms": 3.580314831254948,
+        "finite_chord_relative_rms": 0.8671492842385147,
+        "centered_score_relative_rms": 0.0463010410902012
+      },
+      {
+        "group": "construction",
+        "model": "joint_conditional",
+        "n": 800,
+        "task_direction_relative_rms": 1.791651258551766,
+        "complement_direction_relative_rms": 14.83347020611302,
+        "finite_chord_relative_rms": 2.8283717029364697,
+        "centered_score_relative_rms": 0.016158367882374697
+      },
+      {
+        "group": "independent",
+        "model": "original",
+        "n": 800,
+        "task_direction_relative_rms": 0.0,
+        "complement_direction_relative_rms": 0.0,
+        "finite_chord_relative_rms": 0.0,
+        "centered_score_relative_rms": 0.0
+      },
+      {
+        "group": "independent",
+        "model": "existing_effective",
+        "n": 800,
+        "task_direction_relative_rms": 1.0394784747106565,
+        "complement_direction_relative_rms": 3.5564832940070854,
+        "finite_chord_relative_rms": 0.8743838136873935,
+        "centered_score_relative_rms": 0.07347498261342869
+      },
+      {
+        "group": "independent",
+        "model": "joint_conditional",
+        "n": 800,
+        "task_direction_relative_rms": 1.7994507786319383,
+        "complement_direction_relative_rms": 15.064861647904573,
+        "finite_chord_relative_rms": 2.8073791284612084,
+        "centered_score_relative_rms": 0.18947016312474788
+      }
+    ],
+    "seconds": 5.710520587861538,
+    "source_sha256": "4b8feb778b8a75303696367f86e2599992273c071a39e8305990a8ecd8ec05c3",
+    "protocol_sha256": "e94408bf0b23e755466004b4f270ba80aaa61203094685e8467c65e42c994f08",
+    "arrays_sha256": "4f3b58f2de1f55b7316308eb974510d43ed9daa299868b50f85cb7b8fac17659",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "finite_difference_max_relative_error": 4.2884229774696865e-11,
+    "real_images": 0,
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "full_model_image_forwards": 0,
+    "scope": "Existing synthetic prefixes only. Complete last residual block and readout differentiated; original LN maps task-input coordinates to residual directions. No natural-data guarantee or optimization.",
+    "independent_numpy_recount": {
+      "rows": 6,
+      "maximum_difference": 0
+    },
+    "finding": "A taskprojection preservation does not preserve the full nonlinear score response. Independent synthetic prefixes: task-direction relativeRMS1.0395(existing)vs1.7995(failed);complement3.5565vs15.0649. This separates these two frozen points,but does not prove causation or a universal acceptance threshold. Existing effective point has nonzero response difference,so strict derivative equality is not required by its observed accuracy.",
+    "next_condition": "For e(h)=g_changed(h)-g_original(h), e(h+d)=e(h)+integral_0^1 J_e(h+td)d dt. A possible finite native condition must control functionerror plus the integrated response over a declared inputset. A derivative penalty at source alone is not that guarantee. No new optimization or repaired release selected."
+  },
+  "joint_task_response_result_20261027": {
+    "status": "completed_verified_native_function_failed_closed",
+    "definitions_sha256": "4f461a141587aa7aae3c771a65a53d5da53d82a4c3263ce823280bfd07207f93",
+    "constructor_sha256": "c1fed471d02d0ac8fecb0acb7349b76fee8bbf5939877103c1af0b2e285e7851",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "layer_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe",
+    "point_sha256": "179e8654afe1dbde13bc736c4d125305c1ee7618d24dc164ba21a33e12e6a832",
+    "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "initial": {
+      "distance_squared": 1.0540922189123285,
+      "native": 0.12360881470391244,
+      "native_components": [
+        0.0854022826311912,
+        0.03820653207272124
+      ],
+      "native_slack": 8.251548481370294,
+      "public": 13.967025744130357,
+      "initialization_fraction": 1.0,
+      "Z_norm": 6.637460900278591e-17,
+      "conditional_minimum": 0.12360881470389096
+    },
+    "native_limit": 1.584698316635909,
+    "native_final": 0.12659899463066163,
+    "min_class_numerator": 8.372210160146402,
+    "source_feasible": true,
+    "native_teacher_retained": 800,
+    "native_n": 800,
+    "public_objective": -6.658887260375593,
+    "public_correct": {
+      "direct": 0,
+      "recovered": 0
+    },
+    "metrics": {
+      "A_relative": 1.388267116853568,
+      "B_relative": 1.183060323358303,
+      "logical_D": 1.872684036015114,
+      "effective_A_distance_squared": 2.809546713948602,
+      "left_task_relative": 1.880676445828711e-09,
+      "right_task_relative": 2.84780669505055e-09,
+      "anchor_diagonal_relative": 2.480304680437762e-08
+    },
+    "iterations": 100,
+    "stop_reason": "conditional_finite_line_search_stalled",
+    "last_rejections": {
+      "public_after_exact_matching": 16
+    },
+    "seconds": 2385.74254860729,
+    "matching_calls": 510,
+    "complete_AGA_calls": 1,
+    "real_images": 0,
+    "model_image_forwards": 0,
+    "original_expert_updates": 0,
+    "native_components": [
+      0.08394560825100122,
+      0.042653386379660395
+    ],
+    "component_limits": [
+      1.264483612297785,
+      0.320214704338124
+    ],
+    "finite_layer_contexts": 51200,
+    "scope": "One original-weight construction with native values and finite task-direction response differences in the A-dependent conditional compensation,plus individual original A-only component bounds. Standard completion of squares,MGDA,ball projection,Cholesky are computational tools,not novelty. No test/partner/previous release loading or tuning. Only one final point.",
+    "completed_utc": "2026-10-27T16:06:16Z",
+    "checked_utc": "2026-10-27T16:13:55.216685+00:00",
+    "native_original": 99.69,
+    "native_TA_AGAtarget_AGAboth": [
+      52.080000000000005,
+      3.6900000000000004,
+      0.77,
+      0.7799999999999999
+    ],
+    "partner_SVHN_TA_AGAtarget_AGAboth": [
+      5.051475107559926,
+      3.8183773816840816,
+      4.160264290104487
+    ],
+    "native_paired": {
+      "n": 10000,
+      "correct": 5208,
+      "accuracy_percent": 52.080000000000005,
+      "changed_predictions": 4784,
+      "paired": {
+        "both_correct": 5205,
+        "lost": 4764,
+        "gained": 3,
+        "both_wrong": 28,
+        "loss_pp": 47.61,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -1424.4523750335538,
+      "paired_accuracy_delta_95ci_pp": [
+        -48.5901054332723,
+        -46.6298945667277
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 297,
+          "original_correct": 979
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 0,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 11,
+          "original_correct": 1030
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 770,
+          "original_correct": 1010
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 2,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 390,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 921,
+          "original_correct": 954
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 896,
+          "original_correct": 1025
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 946,
+          "original_correct": 973
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 975,
+          "original_correct": 1003
+        }
+      ]
+    },
+    "context_score_replays": 240,
+    "native_replay": {
+      "status": "passed",
+      "source_sha256": "e415562ec3b39b1e7b5bc1856c65bbdda88bd3bd9cbae2731f51f36d19a4ed8c",
+      "score_replays": 16,
+      "original_batch_size": 128,
+      "context_image_forwards": 1936,
+      "maximum_score_error": 0.0,
+      "tolerance": 0.0002,
+      "new_expert_updates": 0,
+      "new_AGA": 0
+    },
+    "fusion_verification": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 27296,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 2.288818359375e-05,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "c95b2f887da174a4811c0503e00dd5a8d07e04312631d35a9d32f022f60b8072",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "paired_check_sha256": "a03f067f47e007df55db4b0bd13185f71f986135005ec19dc418b7b92b87145f",
+    "calibrated_MNIST_TA_AGAtarget_AGAboth": [
+      66.31,
+      61.150000000000006,
+      57.04
+    ],
+    "calibration_scope": "Same fixed64noise output correction; separate from original AGA, no defense update",
+    "calibration_result_sha256": "58e73ed5860b846d6a25e12d416ed67704944b9d83da2e36ec5f772f87a5893e",
+    "backup": {
+      "path": "outputs/joint_task_response_20261027_backup.tar",
+      "sha256": "9efb2a4f10b28796049e4fbf45d07d5e7ee745e5524b16cd9fc5247f8e911b4f",
+      "bytes": 71772160,
+      "location": "retained40815 and local",
+      "content_verified": true
+    },
+    "closed_do_not_resume": true,
+    "conclusion": "Joint finite task-direction response constraint did not preserve natural standalone function:99.69 to52.08. Low TA/AGA is not a valid defense result. The original800synthetic classes remained unchanged and both finite bounds passed;these source conditions are insufficient for this construction. Existing effective publications unchanged. Do not add same-family directions or retune bounds from this test result."
+  },
+  "native_fit_controls_result_20261028": {
+    "status": "completed_read_only_mechanism_control",
+    "controls": [
+      {
+        "name": "effective_native_fit",
+        "publication": {
+          "path": "outputs/joint_task_response_20261027/native_fit_controls/effective_native_fit/point.pt",
+          "sha256": "1e603ddfd200002ec711ba793a443432c57490a45b41d6015e0cdcde273e2c3c"
+        },
+        "distance": 1.206114783404223
+      },
+      {
+        "name": "joint_native_fit",
+        "publication": {
+          "path": "outputs/joint_task_response_20261027/native_fit_controls/joint_native_fit/point.pt",
+          "sha256": "53bb4be8379fb837edc481a618f6ddd061661a2b146b34a288ade8e4a288bea9"
+        },
+        "distance": 1.5666016233937827
+      },
+      {
+        "name": "joint_A_only",
+        "publication": {
+          "path": "outputs/joint_task_response_20261027/native_fit_controls/joint_A_only/point.pt",
+          "sha256": "2a101ce701b0fcb2394ea0ee7cab16544cea1c32d20b8c1eb3d10bd6426b338d"
+        },
+        "distance": 1.4146655357748676
+      },
+      {
+        "name": "joint_finite_native_fit",
+        "publication": {
+          "path": "outputs/joint_task_response_20261027/native_fit_controls/joint_finite_native_fit/point.pt",
+          "sha256": "b50d2d632332d75f409adab99edd24146339654639b820d473363452abcb3a75"
+        },
+        "distance": 1.656948916049818
+      },
+      {
+        "name": "joint_finite_A_only",
+        "publication": {
+          "path": "outputs/joint_task_response_20261027/native_fit_controls/joint_finite_A_only/point.pt",
+          "sha256": "26d602c9cb7f34bc323ef65cfbe6f2b65ea60ecad84a6c3d780b3cfc40d68f59"
+        },
+        "distance": 1.388267116853476
+      }
+    ],
+    "fits": [
+      {
+        "name": "effective",
+        "published_sha256": "828daa484b64f27f99df4cbb657366572c951f21585dbde6136bf7a8f4d72dc1",
+        "native_center_error": 0.06556075573925907,
+        "published_error": 0.3243036996569088,
+        "protection_component_squared": 0.2587429439175971,
+        "identity_error": 5.262457136723242e-14,
+        "numpy_stationarity": 2.0687350439991054e-15,
+        "finite_responses": false
+      },
+      {
+        "name": "joint",
+        "published_sha256": "d921a7cff445cbbd3ed6927bc755df884725b93c8983ba0bde075cfeb4467a2d",
+        "native_center_error": 0.03983704875423876,
+        "published_error": 0.06882602712996749,
+        "protection_component_squared": 0.028988978375698526,
+        "identity_error": 3.0205005163708165e-14,
+        "numpy_stationarity": 4.287177880526492e-15,
+        "finite_responses": false
+      },
+      {
+        "name": "joint_finite",
+        "published_sha256": "179e8654afe1dbde13bc736c4d125305c1ee7618d24dc164ba21a33e12e6a832",
+        "native_center_error": 0.09067974165396804,
+        "published_error": 0.12659899463599572,
+        "protection_component_squared": 0.03591925298208212,
+        "identity_error": 5.4442561570056114e-14,
+        "numpy_stationarity": 5.218970021864997e-15,
+        "finite_responses": true
+      }
+    ],
+    "rows": [
+      {
+        "name": "effective_native_fit",
+        "n": 10000,
+        "correct": 9968,
+        "accuracy_percent": 99.68,
+        "changed_predictions": 1,
+        "paired": {
+          "both_correct": 9968,
+          "lost": 1,
+          "gained": 0,
+          "both_wrong": 31,
+          "loss_pp": 0.01,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.029600000000000726,
+          0.009600000000000726
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1030,
+            "original_correct": 1030
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "original_correct": 1010
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 954,
+            "original_correct": 954
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1025,
+            "original_correct": 1025
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "original_correct": 973
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1003,
+            "original_correct": 1003
+          }
+        ],
+        "raw_sha256": "fbad2eebd3a12c4a8effdb8e3265169789aeeb0dcb839e69de29a87b8ef261a9",
+        "replay_n": 16,
+        "replay_error": 0.0,
+        "replay_image_forwards": 1936,
+        "evaluation": {
+          "correct": 9968,
+          "n": 10000,
+          "top1": 0.9968,
+          "evaluation_seconds": 7.040516741573811,
+          "peak_gpu_bytes": 1934433280
+        }
+      },
+      {
+        "name": "joint_native_fit",
+        "n": 10000,
+        "correct": 9969,
+        "accuracy_percent": 99.69,
+        "changed_predictions": 2,
+        "paired": {
+          "both_correct": 9968,
+          "lost": 1,
+          "gained": 1,
+          "both_wrong": 30,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.027719971855757145,
+          0.027719971855757145
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1133,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1030,
+            "original_correct": 1030
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "original_correct": 1010
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 954,
+            "original_correct": 954
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1025,
+            "original_correct": 1025
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "original_correct": 973
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1002,
+            "original_correct": 1003
+          }
+        ],
+        "raw_sha256": "8b2607afecd91daaa73ecd7630de2a4cd67dedc8a0aec5af67efa37a7992e294",
+        "replay_n": 16,
+        "replay_error": 0.0,
+        "replay_image_forwards": 1936,
+        "evaluation": {
+          "correct": 9969,
+          "n": 10000,
+          "top1": 0.9969,
+          "evaluation_seconds": 6.727853126823902,
+          "peak_gpu_bytes": 1946562560
+        }
+      },
+      {
+        "name": "joint_A_only",
+        "n": 10000,
+        "correct": 9968,
+        "accuracy_percent": 99.68,
+        "changed_predictions": 9,
+        "paired": {
+          "both_correct": 9964,
+          "lost": 5,
+          "gained": 4,
+          "both_wrong": 27,
+          "loss_pp": 0.01,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.0688026135366135,
+          0.04880261353661349
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1134,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1028,
+            "original_correct": 1030
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "original_correct": 1010
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 885,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 953,
+            "original_correct": 954
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1026,
+            "original_correct": 1025
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "original_correct": 973
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1001,
+            "original_correct": 1003
+          }
+        ],
+        "raw_sha256": "d1f23a436f601f9cc0f6acafe2811e92d53bc2f145a2dbd84dc8af5770df59b3",
+        "replay_n": 16,
+        "replay_error": 0.0,
+        "replay_image_forwards": 1936,
+        "evaluation": {
+          "correct": 9968,
+          "n": 10000,
+          "top1": 0.9968,
+          "evaluation_seconds": 6.889832638204098,
+          "peak_gpu_bytes": 1946562560
+        }
+      },
+      {
+        "name": "joint_finite_native_fit",
+        "n": 10000,
+        "correct": 9969,
+        "accuracy_percent": 99.69,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9969,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 31,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1030,
+            "original_correct": 1030
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "original_correct": 1010
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 954,
+            "original_correct": 954
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1025,
+            "original_correct": 1025
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "original_correct": 973
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1003,
+            "original_correct": 1003
+          }
+        ],
+        "raw_sha256": "9d0a350ed63dc9a5181ad0f5531089ddce3a7ed0cfafb20064aefa6056f4b560",
+        "replay_n": 16,
+        "replay_error": 0.0,
+        "replay_image_forwards": 1936,
+        "evaluation": {
+          "correct": 9969,
+          "n": 10000,
+          "top1": 0.9969,
+          "evaluation_seconds": 6.397610440850258,
+          "peak_gpu_bytes": 1946562560
+        }
+      },
+      {
+        "name": "joint_finite_A_only",
+        "n": 10000,
+        "correct": 9965,
+        "accuracy_percent": 99.65,
+        "changed_predictions": 11,
+        "paired": {
+          "both_correct": 9962,
+          "lost": 7,
+          "gained": 3,
+          "both_wrong": 28,
+          "loss_pp": 0.04,
+          "exact_mcnemar_p": 0.34375
+        },
+        "mcnemar_log10_p": -0.46375729316168074,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.10197878250617941,
+          0.021978782506179406
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1134,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1027,
+            "original_correct": 1030
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "original_correct": 1010
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 977,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 953,
+            "original_correct": 954
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1026,
+            "original_correct": 1025
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "original_correct": 973
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1002,
+            "original_correct": 1003
+          }
+        ],
+        "raw_sha256": "876907edd3eb8e523d9b53d2da445d0f99bd4ad1020ff3ad883dc4744389749e",
+        "replay_n": 16,
+        "replay_error": 0.0,
+        "replay_image_forwards": 1936,
+        "evaluation": {
+          "correct": 9965,
+          "n": 10000,
+          "top1": 0.9965,
+          "evaluation_seconds": 6.716990254819393,
+          "peak_gpu_bytes": 1946562560
+        }
+      }
+    ],
+    "new_real_forward_images": 59680,
+    "new_AGA": 0,
+    "new_defense_candidates": 0,
+    "real_construction_images": 0,
+    "seconds": 61.888738341629505,
+    "source_sha256": "c59196be316ecee654cfcbffb26801bddf9e4fb0196c5a9b0948af46a4c5d24a",
+    "protocol_sha256": "99c055412cdf8549a45001d7550f7fdd66d168b1a417065f320dc12002dd5e1e",
+    "backup": {
+      "path": "outputs/native_fit_controls_20261028.tar",
+      "sha256": "df8b40f5b0f18280c6627e6fd0725648d2f7ba19e28df28f602dc47a438373e6",
+      "bytes": 101027840,
+      "locations": "40815andlocal,hashverified"
+    },
+    "interpretation": "At these frozenAs, native-only fittedB restores99.68/99.69/99.69 standalone;A-onlyfailedparentsretain99.68/99.65. The final B protection component driveslargeindependentdamage in twofailedpoints;Achange alone isnot sufficient explanation. Fusion ofcontrols pending;no neweffective defense."
   }
 }

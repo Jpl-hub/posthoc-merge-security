@@ -18,24 +18,24 @@
     "primary_GPU": "RTX4090",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
     "ssh_control_socket": "/tmp/posthoc_4090_40815.sock",
-    "python": "/root/miniconda3/bin/python",
+    "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.8.0+cu128",
-    "numpy": "2.3.2 (base image,not experiment runtime)",
+    "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_GPU": "RTX3090",
     "secondary_root": "/root/autodl-tmp/merge_security_20261009",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
     "secondary_torch": "2.3.0+cu121",
-    "old_4090": "Previous17811 host remains unavailable. ItsOct25/26 rawscores/models have not been restored onto this new host.",
+    "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/engineering_refactor/compute_4090_20261026.json",
     "secondary_role": "All other hosts CPU/storage only per user",
-    "verified_utc": "2026-10-27T08:54:01.996578+00:00",
-    "primary_available_GiB": 50,
+    "verified_utc": "2026-10-27T16:12:38.742667+00:00",
+    "primary_available_GiB": 44,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:40815",
-    "previous_primary_role": "23800 unavailable; completed raw evidence not yet migrated",
-    "primary_workspace_status": "fresh instance;project and dedicated runtime not installed"
+    "previous_primary_role": "23800 permanently released before archive completed; latest ineffective point raw artifacts lost",
+    "primary_workspace_status": "Original MNIST/SVHN assets SHA-verified; scientific outputs and17existing regression checks restored"
   },
   "current_effective_numerical_candidates": [
     {
@@ -89,10 +89,21 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-27T08:54:01.996578+00:00",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Restore the active4090 workspace from verified retained assets; preserve old-instance unique results before release. Continue functional-inequality mechanism analysis; no new experiment registered or running.",
+  "updated_utc": "2026-10-27T16:49:18.619812+00:00",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "40815",
+      "pid": 16023,
+      "status": "running_fixed_native_fit_TA_and_AGA_controls",
+      "output": "outputs/joint_task_response_20261027/native_fit_controls",
+      "log": "outputs/joint_task_response_20261027/native_fit_controls/fusion.log",
+      "timeout_seconds": 2400,
+      "registered_commit": "18710ad",
+      "defense_candidates": 0
+    }
+  ],
+  "next_action": "Manual follow-up in15minutes:complete allthree fixednativefit TA/AGA controls,notnewdefenseorfailedpointrepair. Check whether protective B component isneededforfusiondamage. Do not duplicate jobs.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -109,9 +120,9 @@
     "last_verified_temporary_files_removed": 33
   },
   "github_sync": {
-    "status": "result closure pending current sync",
-    "last_verified_remote_commit": "fd05285455a50a7c0445ee8efca3ee36a571e26d",
-    "last_verified_local_commit": "74f2c49fb10c95e898449635d17b2b392e031989",
+    "status": "GitHub main99debfd readable again;pending current scientific snapshot publication/readback.",
+    "last_verified_remote_commit": "99debfd16a8cb3aaf2291816bae7bd23a09a4f98",
+    "last_verified_local_commit": "822d25ada29923aeebe51658e28e86f01435058c",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -253,7 +264,9 @@
     "complete_AGA_calls": 1,
     "context_score_replays": 240,
     "real_evaluation_completed": true,
-    "closed_do_not_resume": true
+    "closed_do_not_resume": true,
+    "raw_artifacts_currently_available": false,
+    "availability_record": "results/engineering_refactor/server_consolidation_20261027.json"
   },
   "latest_functional_formulation_review": {
     "status": "formulation_review_only_no_new_experiment",
@@ -276,52 +289,134 @@
     "new_production_modules": 0
   },
   "server_consolidation": {
-    "updated_utc": "2026-10-27T08:54:01.996578+00:00",
-    "desired_roles": "One active4090;3090CPU retained for archives. Additional machines released only after unique-file migration and destination hash verification.",
-    "new_4090": {
-      "endpoint": "connect.cqa1.seetacloud.com:40815",
-      "hostname": "autodl-container-9cd04aa11e-a90ef48d",
-      "ssh_control_socket": "/tmp/posthoc_4090_40815.sock",
-      "GPU": "RTX4090",
-      "GPU_utilization_percent": 0,
-      "project_present": false,
-      "data_disk_GiB_available": 50,
-      "status": "SSH_verified_fresh_instance_no_project_or_jobs"
-    },
-    "archive_3090": {
-      "endpoint": "region-41.seetacloud.com:55548",
-      "ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
-      "root": "/root/autodl-tmp/merge_security_20261009",
-      "data_available_GiB": 5.5,
-      "system_available_GiB": 5.0,
-      "status": "SSH_verified_retain"
-    },
-    "old_4090s": [
-      {
-        "endpoint": "connect.bjb2.seetacloud.com:23800",
-        "status": "SSH_closed_before_login",
-        "known_evidence": "Oct27 joint_classification and joint_finite raw results/source/publications; lightweight results retrieved, full archive not verified elsewhere",
-        "release_ready": false
-      },
-      {
-        "endpoint": "connect.nmb1.seetacloud.com:34125",
-        "status": "SSH_closed_before_login",
-        "known_evidence": "Oct26 data-free compensation source/publications/evaluation; complete backup not verified",
-        "release_ready": false
-      },
-      {
-        "endpoint": "connect.cqa1.seetacloud.com:17811",
-        "status": "SSH_closed_before_login",
-        "known_evidence": "Prior Oct25/26 raw scores/models explicitly recorded as not restored",
-        "release_ready": false
-      }
+    "record": "results/engineering_refactor/server_consolidation_20261027.json",
+    "retained_compute": "4090:40815",
+    "retained_archive": "3090 CPU mode",
+    "source_23800": "Permanently released before complete migration; latest failed-point raw artifacts lost, detailed index retained",
+    "source_34125": "All8220 file contents backed up and verified; permanent release cleared",
+    "source_17811": "All551 original-file contents covered;353 new contents SHA-verified in40815 archive;permanent release cleared",
+    "new4090_restore": "Required originals,authorAGA references and34125 outputs restored;17811 records retained in separate archive",
+    "active_research_jobs": 0,
+    "next": "No further old4090 access required; continue Defense2 core construction on40815"
+  },
+  "joint_function_progress": {
+    "status": "completed_independently_verified_no_effective_fusion_protection",
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_function_result_20261027",
+    "point_sha256": "e5b12c2d23678bda7f458487169fbff1759d82e83c0a38f7d0faaffd273331b2",
+    "source_sha256": "e1a5b5fb927b3aff6800775ea79f10e72e42c7b3dea4f165f1a483c4f2532296",
+    "accepted_steps": 23,
+    "construction_seconds": 118.90148111432791,
+    "native_TA_AGAtarget_AGAboth": [
+      99.66,
+      99.36,
+      99.29,
+      99.31
     ],
-    "local_free_GiB": {
-      "D": 22,
-      "C": 6
-    },
-    "released_instances": 0,
-    "deleted_unique_evidence": 0,
-    "next": "Bring old instances up in CPU mode;inventory and copy unique evidence to retained storage, compare SHA before any permanent release. No GPU needed for migration."
+    "partner_SVHN_TA_AGAtarget_AGAboth": [
+      92.44775660725261,
+      92.390135218193,
+      91.28764597418562
+    ],
+    "source_feasible": true,
+    "public_synthetic_correct": [
+      800,
+      800
+    ],
+    "public_synthetic_n_each": 800,
+    "stop": "finite_inequality_line_search_stalled",
+    "complete_AGA_calls": 1,
+    "context_score_replays": 240,
+    "closed_do_not_resume": true,
+    "raw_artifacts_available": true
+  },
+  "joint_conditional_progress": {
+    "status": "completed_native_function_failed_no_new_effective_defense",
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_conditional_result_20261027",
+    "point_sha256": "d921a7cff445cbbd3ed6927bc755df884725b93c8983ba0bde075cfeb4467a2d",
+    "native_TA_AGAtarget_AGAboth": [
+      46.75,
+      0.51,
+      0.96,
+      0.84
+    ],
+    "source_native_retained": 800,
+    "source_public_correct": [
+      0,
+      0
+    ],
+    "accepted_steps": 123,
+    "construction_seconds": 1422.639369957149,
+    "closed_do_not_resume": true
+  },
+  "joint_conditional_generalization": {
+    "status": "completed_read_only",
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_conditional_generalization_result_20261027",
+    "fresh_retained_existing_and_new": [
+      798,
+      798
+    ],
+    "n_each": 800,
+    "max_full_vs_cached_score_error": 0.0001544952392578125,
+    "class_disagreements_full_vs_cached": 0,
+    "generation_seconds": 234.84796944260597,
+    "evaluation_seconds": 6.099452696740627,
+    "new_defense_points": 0,
+    "new_real_images": 0
+  },
+  "latest_input_response_check": {
+    "status": "completed_read_only_no_new_defense",
+    "record": "results/data_free_compensation/population_compensation_result.json:input_response_result_20261027",
+    "seconds": 5.710520587861538,
+    "independent_task_response_relative_rms": [
+      1.0394784747106565,
+      1.7994507786319383
+    ],
+    "independent_complement_response_relative_rms": [
+      3.5564832940070854,
+      15.064861647904573
+    ],
+    "real_images": 0,
+    "new_defense_points": 0,
+    "new_full_image_forwards": 0
+  },
+  "joint_task_response_progress": {
+    "status": "completed_independently_verified_native_function_failed",
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_task_response_result_20261027",
+    "protocol_sha256": "efd49051497e95825979ac4aaf4f960c8b0927b40fa1e956e4f23a1504bc99dc",
+    "real_construction_images": 0,
+    "new_points_planned": 1,
+    "pid": 13343,
+    "numerical_check_seconds": 57.21555523574352,
+    "derivative_relative_error": 7.2233545753690695e-09,
+    "first_accepted_iteration": 1,
+    "point_sha256": "179e8654afe1dbde13bc736c4d125305c1ee7618d24dc164ba21a33e12e6a832",
+    "native_TA_AGAtarget_AGAboth": [
+      52.08,
+      3.69,
+      0.77,
+      0.78
+    ],
+    "native_original": 99.69,
+    "accepted_steps": 100,
+    "construction_seconds": 2385.74254860729,
+    "closed_do_not_resume": true,
+    "context_score_replays": 240,
+    "backup_sha256": "9efb2a4f10b28796049e4fbf45d07d5e7ee745e5524b16cd9fc5247f8e911b4f"
+  },
+  "latest_native_fit_controls": {
+    "status": "standalone_complete_fusion_running",
+    "record": "results/data_free_compensation/population_compensation_result.json:native_fit_controls_result_20261028",
+    "center_native_accuracy": [
+      99.68,
+      99.69,
+      99.69
+    ],
+    "A_only_failed_parents": [
+      99.68,
+      99.65
+    ],
+    "standalone_context_replays": 80,
+    "replay_max_error": 0.0,
+    "new_defense_candidates": 0
   }
 }
