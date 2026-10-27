@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-10-27T09:46:45.923535+00:00",
+  "updated_utc": "2026-10-27T10:04:16.224705+00:00",
   "retained_compute": "connect.cqa1.seetacloud.com:40815",
   "retained_archive": "3090 CPU mode",
   "source_23800": {
@@ -144,8 +144,20 @@
     ]
   },
   "source_17811": {
-    "status": "not_accessible_no_release_clearance",
-    "note": "Earlier raw-score/model migration was incomplete; current preserved copies not yet inventoried."
+    "status": "READY_FOR_PERMANENT_RELEASE",
+    "source_files": 551,
+    "source_bytes": 4909697622,
+    "distinct_new_contents": 353,
+    "new_content_bytes": 2487199300,
+    "destination": "/root/autodl-tmp/research_archive/2026-10-27/17811 on40815",
+    "Defense1_primary_result": "14files independently retained and SHA-verified in local17811_bias_weight_only.tar",
+    "release_ready": true,
+    "release_clearance_given": true,
+    "verified_original_files": 551,
+    "verified_new_content_files": 353,
+    "source_manifest_sha256": "39801af2a052ac93bc4c9104a56234a2f0b6d95b99e379817482ec00ea00db6c",
+    "release_check": "outputs/server_migration_20261027/17811_release_check.json",
+    "source_links": []
   },
   "new4090_runtime": {
     "torch": "2.8.0+cu128",
@@ -154,7 +166,7 @@
     "scipy": "1.13.1",
     "open_clip_torch": "2.0.2",
     "cuda_smoke": "sum([1,2]^2)=5 on4090",
-    "project_restore": "Large assets still transferring from3090 and verified local tar; no dependence on34125 remains",
+    "project_restore": "Required MNIST/SVHN originals and authorAGA references restored;34125 scientific outputs restored;17811 unique records SHA-verified in separate research_archive",
     "active_research_jobs": 0,
     "migration_regression_checks": {
       "tests": [
@@ -164,7 +176,13 @@
       "passed": 17,
       "seconds": 2.4,
       "pytest": "8.3.3"
-    }
+    },
+    "baseline_input_validation": {
+      "files": 66,
+      "bytes": 2400533724,
+      "status": "SHA256_verified"
+    },
+    "source_directory_aliases_restored": 3
   },
   "new_production_modules": 0,
   "new_research_experiments": 0,
@@ -180,5 +198,6 @@
       }
     ],
     "complete_original_artifacts_deleted": 0
-  }
+  },
+  "conclusion": "34125 and17811 both cleared for permanent release after full source-file-content coverage checks. Retain40815 GPU and3090 CPU archive.23800 latest failed-point raw-file loss separately documented."
 }
