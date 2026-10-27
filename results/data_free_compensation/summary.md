@@ -84,3 +84,6 @@ DTD使用47类各16张、共752张合成图，其他设置与两个数字任务�
 - [此前数值分类目标](decision_no_task_evaluation_result.json)、[额外输出校正权限](readout_calibration_result.json)。
 
 这些历史探索输入和目标不同，不作为当前方法的等条件消融。
+
+
+2026-10-27联合求解固定点d921a7cf：MNIST独立46.75%（原99.69%），TA0.51%，AGA仅目标0.96%、双方0.84%。虽然构造源分类全部保持，真实独立能力损失52.94个百分点，故关闭且不替换已有有效发布。14行配对/逐类与240个上下文分数核对完成；完整记录见`population_compensation_result.json:joint_conditional_result_20261027`。

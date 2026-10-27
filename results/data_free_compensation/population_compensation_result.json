@@ -22614,5 +22614,197 @@
       "status": "passed_independent_numpy_counts_CI_exact_binomial_recurrence",
       "stored": "40815 and verified local backup;all14rows retained there"
     }
+  },
+  "joint_conditional_result_20261027": {
+    "status": "completed_verified_native_function_failed_closed",
+    "definitions_sha256": "746864c7c32b945ff63b4e14307d12230d66543f4dd8f0412f47e6156ed55dc2",
+    "constructor_sha256": "7c7139eb09f6d9895cb6cf77ce3375dcd97c1a779e2c6b4dca7b945d4d07e208",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "layer_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe",
+    "point_sha256": "d921a7cff445cbbd3ed6927bc755df884725b93c8983ba0bde075cfeb4467a2d",
+    "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "initial": {
+      "distance_squared": 1.0540922189123285,
+      "native": 0.06556075574294341,
+      "native_slack": 8.188101357353567,
+      "public": 14.020268196811205,
+      "initialization_fraction": 1.0,
+      "Z_norm": 1.4201805208843247e-12,
+      "conditional_minimum": 0.06556075574295761
+    },
+    "native_limit": 1.264483612297785,
+    "native_final": 0.06882602712571323,
+    "min_class_numerator": 8.34898913189101,
+    "source_feasible": true,
+    "native_teacher_retained": 800,
+    "native_n": 800,
+    "public_objective": -8.403646166349638,
+    "public_correct": {
+      "direct": 0,
+      "recovered": 0
+    },
+    "metrics": {
+      "A_relative": 1.414665535774953,
+      "B_relative": 1.058371165064655,
+      "logical_D": 1.7814041520362993,
+      "effective_A_distance_squared": 2.966745868322645,
+      "left_task_relative": 1.8430918765500391e-09,
+      "right_task_relative": 2.8819476152609674e-09,
+      "anchor_diagonal_relative": 2.2028772195902824e-08
+    },
+    "iterations": 123,
+    "stop_reason": "conditional_finite_line_search_stalled",
+    "last_rejections": {
+      "public_after_exact_matching": 16
+    },
+    "seconds": 1422.639369957149,
+    "matching_calls": 661,
+    "complete_AGA_calls": 1,
+    "real_images": 0,
+    "model_image_forwards": 0,
+    "original_expert_updates": 0,
+    "scope": "One original-weight construction using exact A-dependent native response ellipsoid plus actual native class inequalities. Standard completion of squares,MGDA,ball projection,Cholesky are computational tools,not novelty. No test/partner/previous release loading or tuning. Only one final point.",
+    "native_original": 99.69,
+    "native_TA_AGAtarget_AGAboth": [
+      46.75,
+      0.51,
+      0.96,
+      0.84
+    ],
+    "partner_SVHN_TA_AGAtarget_AGAboth": [
+      2.2165027658266747,
+      3.591733251382913,
+      3.7338660110633066
+    ],
+    "native_paired": {
+      "n": 10000,
+      "correct": 4675,
+      "accuracy_percent": 46.75,
+      "changed_predictions": 5321,
+      "paired": {
+        "both_correct": 4673,
+        "lost": 5296,
+        "gained": 2,
+        "both_wrong": 29,
+        "loss_pp": 52.94,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -1587.4086111233576,
+      "paired_accuracy_delta_95ci_pp": [
+        -53.9191383895153,
+        -51.9608616104847
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 297,
+          "original_correct": 979
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 0,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 0,
+          "original_correct": 1030
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 378,
+          "original_correct": 1010
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 50,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 869,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 921,
+          "original_correct": 954
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 243,
+          "original_correct": 1025
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 952,
+          "original_correct": 973
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 965,
+          "original_correct": 1003
+        }
+      ]
+    },
+    "context_score_replays": 240,
+    "calibrated_MNIST_TA_AGAtarget_AGAboth": [
+      66.85,
+      44.13,
+      41.84
+    ],
+    "calibration_scope": "Same64noise fixedoutput rule; no model repair or new real forwards;originalAGA separate",
+    "calibration_result_sha256": "d52c9e6908daf143872bfb2379e93c400c3b9fbae1a5330f705d7c78658cdfe9",
+    "paired_check_sha256": "7df5f8bc0cb3e2d0e7cb34a69b7ed58c3a59fa7768ee5851caa2d013454e7242",
+    "native_replay": {
+      "status": "passed",
+      "source_sha256": "f796a2dfb78ef2947390cb0b13be0e0522deb6bda3e55bbf40679b74aa3a5861",
+      "score_replays": 16,
+      "original_batch_size": 128,
+      "context_image_forwards": 1936,
+      "maximum_score_error": 0.0,
+      "tolerance": 0.0002,
+      "new_expert_updates": 0,
+      "new_AGA": 0
+    },
+    "fusion_verification": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 27296,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 2.288818359375e-05,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "2fe2862819e4c8759cb05cc7e594bb0c85591da1b4e6815164de3c7b61fdfb9d",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "backup": {
+      "path": "outputs/joint_conditional_20261027_backup.tar",
+      "sha256": "51ea0b71f8c5d7b2f4bcee239fcb2f7551cea51ef049c89dfbc3d14e3d4462c8",
+      "bytes": 71741440,
+      "location": "retained40815 and local",
+      "content_verified": true
+    },
+    "closed_do_not_resume": true,
+    "conclusion": "Source800/800 native preservation and0/800public correct do not generalize to naturalMNIST. No successful new defense. Existing effective releases unchanged."
   }
 }

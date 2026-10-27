@@ -22,7 +22,7 @@
     "torch": "2.8.0+cu128",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_GPU": "RTX3090",
     "secondary_root": "/root/autodl-tmp/merge_security_20261009",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
@@ -30,7 +30,7 @@
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/engineering_refactor/compute_4090_20261026.json",
     "secondary_role": "All other hosts CPU/storage only per user",
-    "verified_utc": "2026-10-27T11:01:39.119500+00:00",
+    "verified_utc": "2026-10-27T14:13:09.750622+00:00",
     "primary_available_GiB": 44,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:40815",
@@ -89,21 +89,10 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-27T11:01:39.119500+00:00",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "status": "source_construction_running",
-      "record": "results/data_free_compensation/paper_protocol_review.json:joint_conditional_definition_20261027",
-      "path": "outputs/joint_conditional_20261027",
-      "registration_local_commit": "43d1280",
-      "constructor_sha256": "7c7139eb09f6d9895cb6cf77ce3375dcd97c1a779e2c6b4dca7b945d4d07e208",
-      "source_timeout_pid": 6242,
-      "evaluation_queue_timeout_pid": 6286,
-      "real_images_before_freeze": 0
-    }
-  ],
-  "next_action": "Let the unique original-weight conditional-compensation construction finish,then source-gated fullnative/TA/originalAGA evaluation already queued;do not duplicate or alter active source.",
+  "updated_utc": "2026-10-27T14:13:09.750622+00:00",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Read-only full-model/cache check and one independent original-teacher synthetic source; keep both publications frozen. User will manually request next check; no automation.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -120,7 +109,7 @@
     "last_verified_temporary_files_removed": 33
   },
   "github_sync": {
-    "status": "Current result committed locally;connector Unknown tool,publication pending",
+    "status": "New local results pending; first connector request this turn failed HTTP transport; no remote publication claimed.",
     "last_verified_remote_commit": "99debfd16a8cb3aaf2291816bae7bd23a09a4f98",
     "last_verified_local_commit": "822d25ada29923aeebe51658e28e86f01435058c",
     "receipt": "outputs/latest_github_sync_receipt.json"
@@ -330,13 +319,22 @@
     "raw_artifacts_available": true
   },
   "joint_conditional_progress": {
-    "status": "source_construction_running",
-    "record": "results/data_free_compensation/paper_protocol_review.json:joint_conditional_definition_20261027",
-    "path": "outputs/joint_conditional_20261027",
-    "registration_local_commit": "43d1280",
-    "constructor_sha256": "7c7139eb09f6d9895cb6cf77ce3375dcd97c1a779e2c6b4dca7b945d4d07e208",
-    "source_timeout_pid": 6242,
-    "evaluation_queue_timeout_pid": 6286,
-    "real_images_before_freeze": 0
+    "status": "completed_native_function_failed_no_new_effective_defense",
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_conditional_result_20261027",
+    "point_sha256": "d921a7cff445cbbd3ed6927bc755df884725b93c8983ba0bde075cfeb4467a2d",
+    "native_TA_AGAtarget_AGAboth": [
+      46.75,
+      0.51,
+      0.96,
+      0.84
+    ],
+    "source_native_retained": 800,
+    "source_public_correct": [
+      0,
+      0
+    ],
+    "accepted_steps": 123,
+    "construction_seconds": 1422.639369957149,
+    "closed_do_not_resume": true
   }
 }
