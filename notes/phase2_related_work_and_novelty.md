@@ -1167,3 +1167,9 @@ Oct26补读[ABM §4.4](https://papers.neurips.cc/paper_files/paper/2019/file/fe6
 
 
 Oct27：使用[Sener与Koltun，NeurIPS2018](https://proceedings.neurips.cc/paper_files/paper/2018/file/432aca3a1e345e339f35a30c8f65edce-Paper.pdf)的两个参数梯度最小范数组合，官方代码固定[bf5bbb30](https://github.com/isl-org/MultiObjectiveOptimization/blob/bf5bbb30371489a47f6440691d8934b70f7dfc3b/multi_task/min_norm_solvers.py)。这里使用论文精确端点0/1，未采用官方代码的.001/.999端点偏移，也不是MGDA-UB。该标准工具没有处理本项目的非线性功能不等式，不能由缩步停止推出约束驻点。联合A/B唯一点独立99.64%，TA/AGA仍99%以上，没有新的有效防御；新意仍须来自可用的功能保持和融合破坏机制，而非优化器名称。
+
+### 2026-10-27：约束求解与方法机制的边界
+
+复核O’Leary与Rust的[变量投影原文](https://www.cs.umd.edu/users/oleary/software/varpro.pdf)§2.2：含线性系数的活动约束会改变导数处理，不能直接套用无约束内层最小二乘的结论。对本项目而言，完整分类条件属于A/B共同变量的非线性条件，先给无约束方向、再不断缩步不等于求解了这个问题。[Boyd与Vandenberghe](https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf)的约束梯度与KKT，以及Sener与Koltun的双目标最小范数组合，均是已有工具，不作为原创性主张。
+
+冻结4ed点的7200精确类别次序及一项原生响应误差，数值Jacobian满行秩，且其零空间存在同时改善距离和公开融合目标的方向。标准正则水平集结论说明局部有限曲线的数学依据，但没有保证可走多远、是否跨AGA指派变化，或自然任务上的准确率。该检查区别于已失败的完整隐藏特征重建；也不是把早期局部Jacobian算法重新命名。尚需完成的实质是有限非线性补偿、实际融合破坏和SVD的作用证据。
