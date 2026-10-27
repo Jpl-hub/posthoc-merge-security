@@ -22288,5 +22288,331 @@
       "historical_results_and_checks": "Previously completed checks remain historical results. Current raw files unavailable, not claimed currently replayable.",
       "source_code": "Exact source SHA recovered from local immutable registration; no changed point or rerun."
     }
+  },
+  "joint_function_result_20261027": {
+    "status": "completed_independently_verified_no_effective_fusion_protection",
+    "source_sha256": "e1a5b5fb927b3aff6800775ea79f10e72e42c7b3dea4f165f1a483c4f2532296",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "layer_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe",
+    "point_sha256": "e5b12c2d23678bda7f458487169fbff1759d82e83c0a38f7d0faaffd273331b2",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "initial": {
+      "distance_squared": 1.0540922189123285,
+      "native": 0.06556075574294341,
+      "native_slack": 8.188101357353567,
+      "public": 14.020268196811205,
+      "initialization_fraction": 1.0
+    },
+    "native_limit": 1.264483612297785,
+    "native_final": 1.2644456862626479,
+    "min_class_numerator": 7.350720123094646,
+    "source_feasible": true,
+    "native_teacher_retained": 800,
+    "native_n": 800,
+    "public_objective": 10.03055528638981,
+    "public_correct": {
+      "direct": 800,
+      "recovered": 800
+    },
+    "metrics": {
+      "A_relative": 1.0294880930198742,
+      "B_relative": 0.6202966792194688,
+      "logical_D": 1.2093679301289597,
+      "effective_A_distance_squared": 1.0727769445539987,
+      "left_task_relative": 6.50039910099501e-10,
+      "right_task_relative": 1.2669705060106922e-09,
+      "anchor_diagonal_relative": 4.994105989809377e-09
+    },
+    "iterations": 23,
+    "stop_reason": "finite_inequality_line_search_stalled",
+    "last_rejections": {
+      "actual_native_inequality_or_parameter_range": 9,
+      "public_margin_after_exact_matching": 7
+    },
+    "derivative_checks": [
+      {
+        "inequality_derivative_error": 1.091273315989087e-07,
+        "public_derivative_error": 4.581233170597443e-10
+      }
+    ],
+    "seconds": 118.90148111432791,
+    "matching_calls": 36,
+    "complete_AGA_calls": 0,
+    "real_images": 0,
+    "model_image_forwards": 0,
+    "original_expert_updates": 0,
+    "scope": "One source-only joint inequality construction. Standard margin and QP tools,not optimizer novelty. No parameter sweep,partner,test or previous release loading. Finite synthetic conditions do not guarantee natural utility or unknown-partner protection.",
+    "closed_do_not_resume": true,
+    "registration_local_commit": "e155c5d",
+    "completed_utc": "2026-10-27T10:43:22.995959+00:00",
+    "native_original": 99.69,
+    "native_TA_AGAtarget_AGAboth": [
+      99.66,
+      99.36,
+      99.29,
+      99.31
+    ],
+    "partner_SVHN_TA_AGAtarget_AGAboth": [
+      92.44775660725261,
+      92.390135218193,
+      91.28764597418562
+    ],
+    "native": {
+      "rows": [
+        {
+          "n": 10000,
+          "changed": 9,
+          "R": 56.79104897352457,
+          "stage": "full",
+          "before_correct": 9969,
+          "after_correct": 9966,
+          "strict_task_passed": false,
+          "accuracy_loss_pp": 0.03,
+          "passed": true,
+          "raw_sha256": "fe5987969756d6b421b5711a39f682152ec472d5a6593be067f8b451c6cf33a5"
+        }
+      ],
+      "passed": true,
+      "image_forwards": 10000,
+      "baseline_new_forwards": 0,
+      "seconds": 12.264723896980286
+    },
+    "context_replay": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 27296,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 2.288818359375e-05,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "65fcc1478e2ccc483b43e5f574fe033ebefa90d417b62942d9ea2741f10dda84",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "native_context_replay": {
+      "status": "passed",
+      "source_sha256": "67e814ae275c34925ccf459215bf0f2f84de4d3d20ee03a51843b9b31204d4ae",
+      "score_replays": 16,
+      "original_batch_size": 128,
+      "context_image_forwards": 1936,
+      "maximum_score_error": 0.0,
+      "tolerance": 0.0002,
+      "new_expert_updates": 0,
+      "new_AGA": 0
+    },
+    "source_independent_recount": {
+      "status": "read_only_source_recount_passed",
+      "point_sha256": "e5b12c2d23678bda7f458487169fbff1759d82e83c0a38f7d0faaffd273331b2",
+      "source_sha256": "0b18cebf568e31bca87733f17714934e0a1b15d255181538a8ad632faa58faa3",
+      "numpy_class_numerator_max_error": 2.1316282072803006e-13,
+      "native_class_correct": 800,
+      "public_class_rows": [
+        {
+          "scope": "direct",
+          "correct": 800,
+          "n": 800,
+          "minimum_margin": 1.2921702301907416,
+          "maximum_margin": 3.5212655291518082
+        },
+        {
+          "scope": "recovered",
+          "correct": 800,
+          "n": 800,
+          "minimum_margin": 1.1098538908894042,
+          "maximum_margin": 3.715307799960833
+        }
+      ],
+      "native_error": 1.2644456862626479,
+      "native_limit": 1.264483612297785,
+      "native_response_slack": 3.792603513708137e-05,
+      "direction_QP": {
+        "dual_iterations": 26,
+        "dual_success": true,
+        "dual_message": "CONVERGENCE: NORM_OF_PROJECTED_GRADIENT_<=_PGTOL",
+        "primal_violation": 1.4866127114922048e-10,
+        "primal_dual_gap": -5.018037547988019e-11,
+        "complementarity": 9.857066939237609e-11,
+        "active_constraints": 1,
+        "normalized_slopes": [
+          -0.028081690271996772,
+          -0.02808169002008621
+        ],
+        "step_norm": 0.05299207688306162
+      },
+      "response_first_derivative": 3.417173541462627e-05,
+      "response_second_derivative": 16.41015128243045,
+      "finite_difference_errors": [
+        3.408651329944723e-10,
+        2.6659724738919977e-07
+      ],
+      "response_uses_original_teacher_error": 9.533539987223247e-13,
+      "new_defense_points": 0,
+      "parameter_updates": 0,
+      "real_images": 0,
+      "complete_AGA_calls": 0,
+      "single_layer_matching_calls": 2,
+      "seconds": 13.864499613642693,
+      "scope": "A fresh read-only direction at the same frozen FP32 point,not an exact replay of the final FP64 rejected step. Curvature explains why linear response feasibility alone does not guarantee finite feasibility;not proof of the sole failure cause or a new method."
+    },
+    "evaluation_driver_fix": {
+      "cause": "Driver filled AGA hash but omitted the completed native score hash; explicit implementation error",
+      "field": "legacy.MNIST_SVHN/JointFunction_MNIST.standalone.sha256",
+      "sha256": "fe5987969756d6b421b5711a39f682152ec472d5a6593be067f8b451c6cf33a5",
+      "already_completed_native_and_AGA_reused": true,
+      "failed_attempt_real_image_forwards": 0,
+      "failed_attempt_imported_rows": 7,
+      "weights_or_data_changes": 0
+    },
+    "evaluation_seconds": 93.24870838224888,
+    "complete_AGA_execution": {
+      "method": "aga",
+      "seconds": 5.455492004752159,
+      "output_sha256": "3495ce74dd2f215bd23f53f691a03b2694bb63df6d16997c3d63041e34f85a35",
+      "details": {
+        "known_family": false,
+        "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "aligned_reference": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "reference": "original_AGA",
+      "new_training_updates": 0
+    },
+    "full_evaluation_image_forwards": 118096,
+    "context_replay_image_forwards": 29232,
+    "local_backup": {
+      "verified_files": 37,
+      "total_files": 37,
+      "not_yet_copied": [],
+      "backup_archive": "outputs/joint_function_20261027_backup.tar",
+      "backup_archive_sha256": "eed31b3cdce438c75da8b3202ce84356fab931f7ec61fd6a3ae831700ec74a44"
+    },
+    "interpretation": "Native complete accuracy retained;public synthetic classes and real fused tasks remain correct. No effective protection. Functional inequalities replace unnecessarily fixed response values,but this finite path reached response boundary and re-matching rejection;neither global convergence nor impossibility established. No source bound,seed,rank,range,layer or data retuning.",
+    "production_modules_added": 0,
+    "new_synthetic_image_forwards": 0,
+    "existing_synthetic_construction_images": 160,
+    "existing_synthetic_contexts": 800,
+    "task_spectrum_layer_inputs": 16384,
+    "paired_summary": [
+      {
+        "key": "JointFunction_MNIST/Standalone/None/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.66000000000001,
+        "changed": 9,
+        "lost": 6,
+        "gained": 3,
+        "paired_delta_95ci_pp": [
+          -0.08879999999999999,
+          0.02879999999999999
+        ],
+        "exact_mcnemar_p": 0.5078124999999997,
+        "log10_p": -0.29429661300501303
+      },
+      {
+        "key": "JointFunction_MNIST/TA/None/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.36,
+        "changed": 18,
+        "lost": 9,
+        "gained": 8,
+        "paired_delta_95ci_pp": [
+          -0.09081667351154556,
+          0.07081667351154555
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "JointFunction_MNIST/TA/None/SVHN",
+        "n": 26032,
+        "accuracy_percent": 92.4477566072526,
+        "changed": 419,
+        "lost": 180,
+        "gained": 167,
+        "paired_delta_95ci_pp": [
+          -0.19019327873260017,
+          0.09031620436259402
+        ],
+        "exact_mcnemar_p": 0.5195089066864578,
+        "log10_p": -0.2844070023096487
+      },
+      {
+        "key": "JointFunction_MNIST/TA/Protected expert/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.29,
+        "changed": 12,
+        "lost": 6,
+        "gained": 5,
+        "paired_delta_95ci_pp": [
+          -0.07500880093048819,
+          0.055008800930488176
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "JointFunction_MNIST/TA/Protected expert/SVHN",
+        "n": 26032,
+        "accuracy_percent": 92.390135218193,
+        "changed": 471,
+        "lost": 246,
+        "gained": 144,
+        "paired_delta_95ci_pp": [
+          -0.5404417781911417,
+          -0.24320911301967565
+        ],
+        "exact_mcnemar_p": 2.7108537158309575e-07,
+        "log10_p": -6.566893917359204
+      },
+      {
+        "key": "JointFunction_MNIST/TA/All experts/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.31,
+        "changed": 14,
+        "lost": 7,
+        "gained": 6,
+        "paired_delta_95ci_pp": [
+          -0.0806720668871642,
+          0.06067206688716419
+        ],
+        "exact_mcnemar_p": 0.9999999999999998,
+        "log10_p": -9.64327466553287e-17
+      },
+      {
+        "key": "JointFunction_MNIST/TA/All experts/SVHN",
+        "n": 26032,
+        "accuracy_percent": 91.28764597418562,
+        "changed": 576,
+        "lost": 304,
+        "gained": 178,
+        "paired_delta_95ci_pp": [
+          -0.6492179288520835,
+          -0.31882140734951464
+        ],
+        "exact_mcnemar_p": 1.0325255394213756e-08,
+        "log10_p": -7.986099197305848
+      }
+    ],
+    "all_14_rows_and_per_class": {
+      "path": "outputs/joint_function_20261027/paired_check.json",
+      "sha256": "1a81591f08379987fa8484f3f1e081bc1f7741bf1f4beb35d9206aab51a3c109",
+      "status": "passed_independent_numpy_counts_CI_exact_binomial_recurrence",
+      "stored": "40815 and verified local backup;all14rows retained there"
+    }
   }
 }
