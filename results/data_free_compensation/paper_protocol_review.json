@@ -896,5 +896,272 @@
     },
     "independent_numpy_source": "import hashlib\nimport json\nfrom pathlib import Path\nimport numpy as np\n\nroot = Path('tmp/teacher_transitions_result')\nsha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()\nassert sha(root/'result.json') == 'c7ed3e1504fafb2e103d494fa12dafbafae6676b8d4b59727015809c4337d41d'\nassert sha(root/'scores.npz') == 'ceac6edfa6c3a409529280b3a7d61b01f19e67e11a5814fd98c8fdee7e73f6ab'\nmeta = json.loads((root/'result.json').read_text())\na = np.load(root/'scores.npz')\nmax_error = 0.\nchecks = []\nfor row in meta['rows']:\n    task,C = row['task'],row['classes']\n    teacher = a[task+'_teacher']\n    assert teacher.shape == (C*19,C)\n    np.testing.assert_array_equal(teacher[:C].argmax(1),np.arange(C))\n    np.testing.assert_array_equal(teacher[17*C:18*C].argmax(1),np.arange(C))\n    assert np.all(teacher[18*C:19*C].argmax(1) != np.arange(C))\n    brackets = a[task+'_brackets']\n    np.testing.assert_array_equal(brackets[1]-brackets[0],np.full(C,1/256))\n    assert np.all((brackets>=0)&(brackets<=1))\n    np.testing.assert_array_equal(a[task+'_alpha'][:,0],np.linspace(0,1,17))\n    masks = dict(endpoints=np.r_[np.arange(C),np.arange(16*C,17*C)],\n                 interior=np.arange(C,16*C),left_bracket=np.arange(17*C,18*C),\n                 right_bracket=np.arange(18*C,19*C))\n    softmax = lambda s: np.exp(s-s.max(1,keepdims=True))/np.exp(s-s.max(1,keepdims=True)).sum(1,keepdims=True)\n    for mode,groups in row['metrics'].items():\n        p = a[task+'_'+mode]\n        for name,m in groups.items():\n            idx = masks[name]\n            assert len(idx)==m['n']\n            assert int(np.sum(p[idx].argmax(1)==teacher[idx].argmax(1)))==m['same']\n            tv = float(np.abs(softmax(p[idx])-softmax(teacher[idx])).sum(1).mean()/2)\n            delta = p[idx]-teacher[idx]\n            centered = float(np.linalg.norm(delta-delta.mean(1,keepdims=True),axis=1).mean())\n            max_error = max(max_error,abs(tv-m['mean_probability_TV']),abs(centered-m['mean_centered_score_error']))\n    replay = np.max(np.abs(a[task+'_replay']-a[task+'_joint'][a[task+'_selected']]))\n    original = np.max(np.abs(a[task+'_original']-teacher))\n    assert abs(replay-row['protected_replay_max_error'])<1e-12 and replay<1e-4\n    assert abs(original-row['original_tail_max_error'])<1e-12 and original<1e-4\n    assert row['original_image_forwards']==C*27 and row['protected_replay_forwards']==4\n    path_classes = [len(np.unique(teacher[:17*C].reshape(17,C,C)[:,i].argmax(1))) for i in range(C)]\n    checks.append(dict(task=task,n=C*19,mode_groups=16,teacher_brackets_verified=C,\n                       paths_visiting_more_than_two_classes=int(np.sum(np.array(path_classes)>2)),\n                       maximum_tail_or_full_replay_error=float(max(original,replay))))\nassert max_error<1e-12\nresult = dict(status='passed_independent_numpy_recount',rows=checks,\n    maximum_metric_error=max_error,new_image_forwards=0,raw_result_sha256=sha(root/'result.json'),\n    raw_scores_sha256=sha(root/'scores.npz'),source_sha256=sha(Path(__file__)),\n    teacher_image_forwards=sum(r['original_image_forwards'] for r in meta['rows']),\n    protected_replay_forwards=12,\n    scope='Checks every stored class score,all groups and interpolation brackets; no claim that synthetic paths represent natural images.')\n(root/'numpy_validation.json').write_text(json.dumps(result,indent=2)+'\\n',encoding='utf-8',newline='\\n')\nprint(json.dumps(result,indent=2))\n",
     "interpretation": "All synthetic class-confident endpoints retained; joint A/B changes differ on14/150,7/150,46/705interior points. Very close teacher bracket agreement is7/20,9/20,47/94,which is sensitive to small boundary displacement and is not a universal pass criterion. DTD is not worse than MNIST in this diagnostic,so this is not a causal explanation of the larger natural DTD loss. Many paths visit third classes;all retained. No new weights or old-point repair."
+  },
+  "classification_condition_20261027": {
+    "status": "completed_source_only",
+    "question": "Can a finite classification-preserving B subproblem avoid exact reconstruction of every hidden feature and avoid the old sufficient condition excluding the teacher itself?",
+    "derivation": "Let sigma(h)=sqrt(mean((h-mean(h))^2)+eps), and a_j,c_j be the exact LayerNorm/projection/class-head contrast. Correct classification requires f_j(h)=a_j^T h+c_j sigma(h)>=0. At the fixed clean teacher h0 let ell0(h)=mean(Hh0*Hh)/sigma(h0)+eps/sigma(h0), a global affine lower bound on sigma. Then L_j(h)=a_j^T h+min(c_j,0)*sigma(h)+max(c_j,0)*ell0(h)<=f_j(h); L_j is concave and equals f_j at h0. The constraints L_j>=0 are convex in B when A is fixed. A remains a nonlinear outer variable. There is no .5pp or half-margin condition in this calculation.",
+    "boundary": "Sufficient, not necessary away from the anchor. Does not dominate the old zero lower bound globally when ell0<0. Finite source classification is not a natural-task guarantee. Standard convexity and supporting planes, not a new defense or new theorem.",
+    "sources": [
+      "https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf#page=81",
+      "notes/phase2_coupling.md: Oct25 exact decision identity and sufficient SOC discussion",
+      "notes/phase2_coupling.md"
+    ],
+    "calculation": "All original 800/800/3760 clean native source contexts. Recompute the existing A geometry from original weights and use original B; no prior defense B or exposed interpolation is read. Compare original teacher, A-only, teacher mean-shift, negated residual, and teacher/A-only midpoint. Last three are algebraic checks, not image or defense candidates. Verify exact full readout, lower-bound validity, tightness, concavity and classification counts. Independent NumPy recomputation follows.",
+    "source_sha256": "5e11c2e238d3b3c0db12c2b62854cc3269412e8f719e46c40851d3ff8c60b91c",
+    "source": "\"\"\"Check a finite native classification condition; no new model is constructed.\"\"\"\nimport json, time\nfrom pathlib import Path\nimport numpy as np\nimport torch\nimport torch.nn.functional as F\nfrom _impl.models import initialize, checked_models\nfrom _impl.io import digest\n\ninitialize()\ntorch.set_default_dtype(torch.float64)\nstart = time.perf_counter()\nout = Path('outputs/classification_condition_20261027')\nout.mkdir(exist_ok=False)\ncases = [\n    ('MNIST', 'outputs/native_ellipse_classification_20261026', '33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5'),\n    ('SVHN', 'outputs/native_ellipse_classification_SVHN_20261026', 'b6c0aedbfbf45a3421d63deee926de0bccca5bec61b2ebbc94c4f53613aa8a4c'),\n    ('DTD', 'outputs/native_ellipse_classification_DTD_20261026', 'f503e4503bed1d65cb3c155662f3eb9552077b1de07aaf37e442439cbfc5d48c'),\n]\nrows = []\nfor task, root, expected in cases:\n    path = Path(root) / 'source/source.pt'\n    assert digest(path) == expected\n    raw = torch.load(path, map_location='cpu', weights_only=False)['cache']['native']\n    base, expert, head, pins = checked_models(task)\n    s, bs = expert.state_dict(), base.state_dict()\n    key = 'model.visual.transformer.resblocks.11.mlp.'\n    to = lambda x: x.double().cuda()\n    A, A0, a, B, b = [to(x) for x in (s[key+'c_fc.weight'], bs[key+'c_fc.weight'], s[key+'c_fc.bias'], s[key+'c_proj.weight'], s[key+'c_proj.bias'])]\n    u, _, vh = torch.linalg.svd(A-A0, full_matrices=False)\n    u, v = u[:, :32], vh[:32].T\n    a0r = A0 - (A0@v)@v.T\n    gram = a0r@a0r.T\n    kernel = -(u@u.T)*gram\n    kernel.diagonal().add_(gram.diagonal())\n    lam = torch.cholesky_solve((-(A*A0).sum(1))[:, None], torch.linalg.cholesky(kernel))\n    da = lam*a0r\n    da -= u@(u.T@da)\n    changed_A = (A+da).float().double()\n    x, prefix, h0 = [to(raw[k]) for k in ('x', 'prefix', 'final')]\n    z = x@changed_A.T+a\n    ha = prefix+(z*torch.sigmoid(1.702*z))@B.T+b\n    g, beta, P = [to(s[k]) for k in ('model.visual.ln_post.weight', 'model.visual.ln_post.bias', 'model.visual.proj')]\n    W, eps = to(head.weight), float(expert.model.visual.ln_post.eps)\n    assert float(head.bias.abs().max()) == 0\n    pw = P@W.T\n    linear = g[:, None]*pw\n    linear -= linear.mean(0, keepdim=True)\n    bias = beta@pw\n    hc0 = h0-h0.mean(1, keepdim=True)\n    sigma0 = (hc0.square().mean(1)+eps).sqrt()\n    teacher = raw['scores'].argmax(1).cuda()\n    ids = torch.arange(len(h0), device='cuda')\n    c = bias[teacher, None]-bias[None, :]\n    mask = torch.arange(len(W), device='cuda')[None, :] != teacher[:, None]\n    np_arrays = {k: val.detach().cpu().numpy() for k, val in dict(h0=h0, ha=ha, gamma=g, beta=beta, P=P, W=W, teacher=teacher).items()}\n    np_arrays['eps'] = np.array(eps)\n    np.savez_compressed(out/f'{task}.npz', **np_arrays)\n    tests = {}\n    lower_values = {}\n    for name, h in [('teacher', h0), ('A_only', ha), ('mean_shift', h0+1), ('negated_residual', -h0), ('midpoint', (h0+ha)/2)]:\n        hc = h-h.mean(1, keepdim=True)\n        sigma = (hc.square().mean(1)+eps).sqrt()\n        tangent = (hc0*hc).mean(1)/sigma0+eps/sigma0\n        score_linear = h@linear\n        ah = score_linear[ids, teacher, None]-score_linear\n        exact = ah+c*sigma[:, None]\n        lower = ah+c.clamp(max=0)*sigma[:, None]+c.clamp(min=0)*tangent[:, None]\n        old = ah+c.clamp(max=0)*sigma[:, None]\n        features = F.layer_norm(h, (768,), g, beta, eps)@P\n        scores = F.normalize(features, dim=-1)@W.T\n        direct = (scores[ids, teacher, None]-scores)*features.norm(dim=1)[:, None]*sigma[:, None]\n        error = float((direct-exact).abs().max())\n        bound_error = float((lower-exact).clamp(min=0).max())\n        assert error < 1e-8 and bound_error < 1e-8, (task, name, error, bound_error)\n        tests[name] = dict(n=len(h), teacher_predictions_retained=int(scores.argmax(1).eq(teacher).sum()),\n            exact_pair_conditions=int((exact[mask]>=-1e-8).sum()), pairs=int(mask.sum()),\n            old_excludes_true_pairs=int(((exact>=0)&(old < -1e-8)&mask).sum()),\n            new_excludes_true_pairs=int(((exact>=0)&(lower < -1e-8)&mask).sum()),\n            new_condition_all_classes=int(torch.where(mask, lower, torch.inf).amin(1).ge(-1e-8).sum()),\n            maximum_identity_error=error, maximum_lower_bound_violation=bound_error,\n            maximum_tangent_sigma_difference=float((sigma-tangent).abs().max()))\n        lower_values[name] = lower\n    tangent_error = float((lower_values['teacher']-(h0@linear)[ids, teacher, None]+h0@linear-c*sigma0[:, None]).abs().max())\n    concavity_violation = float(((lower_values['teacher']+lower_values['A_only'])/2-lower_values['midpoint']).clamp(min=0).max())\n    assert tangent_error < 1e-8 and concavity_violation < 1e-8\n    rows.append(dict(task=task, input_sha256=expected, checkpoint_sha256=pins, arrays_sha256=digest(out/f'{task}.npz'),\n        tests=tests, teacher_tightness_error=tangent_error, midpoint_concavity_violation=concavity_violation))\n    print(json.dumps(rows[-1]), flush=True)\n    del base, expert, head, A, A0, a, B, b, u, v, gram, kernel, da, raw\n    torch.cuda.empty_cache()\nresult = dict(scope='Original weights and existing clean synthetic source only. A-only is recomputed from the declared geometry, not a new publication. No protected B, partner, real image, interpolation diagnostic or test record is loaded.',\n    rows=rows, source=Path(__file__).read_text(), source_sha256=digest(__file__), seconds=time.perf_counter()-start,\n    new_defense_models=0, real_images=0, full_image_forwards=0, original_expert_updates=0,\n    conclusion='The sign-aware tangent gives a globally sufficient convex inner condition in B for fixed A, and is tight at the teacher residual. It is not necessary away from the anchor, not a guarantee for unseen inputs, and not convex jointly in A and B.')\n(out/'result.json').write_text(json.dumps(result, indent=2)+'\\n')\n",
+    "production_modules_added": 0,
+    "new_defense_models": 0,
+    "real_images": 0,
+    "defined_utc": "2026-10-26T16:37:48.697168+00:00",
+    "definition_local_commit": "5c6b8dcc32b5e4840219753209a26049c82a40c5",
+    "definition_remote": "unavailable: github.compare_commits returned Unknown tool; not claimed published before calculation",
+    "result": {
+      "scope": "Original weights and existing clean synthetic source only. A-only is recomputed from the declared geometry, not a new publication. No protected B, partner, real image, interpolation diagnostic or test record is loaded.",
+      "rows": [
+        {
+          "task": "MNIST",
+          "input_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+          "checkpoint_sha256": {
+            "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+            "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+            "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+          },
+          "arrays_sha256": "dfb6c02564f4944ff788e36d0809cc2d66dc6e0f6488a82fa8efe204830af539",
+          "tests": {
+            "teacher": {
+              "n": 800,
+              "teacher_predictions_retained": 800,
+              "exact_pair_conditions": 7200,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 800,
+              "maximum_identity_error": 3.410605131648481e-13,
+              "maximum_lower_bound_violation": 7.105427357601002e-15,
+              "maximum_tangent_sigma_difference": 2.220446049250313e-16
+            },
+            "A_only": {
+              "n": 800,
+              "teacher_predictions_retained": 800,
+              "exact_pair_conditions": 7200,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 800,
+              "maximum_identity_error": 3.765876499528531e-13,
+              "maximum_lower_bound_violation": 0.0,
+              "maximum_tangent_sigma_difference": 0.012724406779004493
+            },
+            "mean_shift": {
+              "n": 800,
+              "teacher_predictions_retained": 800,
+              "exact_pair_conditions": 7200,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 800,
+              "maximum_identity_error": 5.115907697472721e-13,
+              "maximum_lower_bound_violation": 7.105427357601002e-15,
+              "maximum_tangent_sigma_difference": 2.220446049250313e-16
+            },
+            "negated_residual": {
+              "n": 800,
+              "teacher_predictions_retained": 0,
+              "exact_pair_conditions": 0,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 0,
+              "maximum_identity_error": 3.623767952376511e-13,
+              "maximum_lower_bound_violation": 0.0,
+              "maximum_tangent_sigma_difference": 1.1141024223657214
+            },
+            "midpoint": {
+              "n": 800,
+              "teacher_predictions_retained": 800,
+              "exact_pair_conditions": 7200,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 800,
+              "maximum_identity_error": 3.268496584496461e-13,
+              "maximum_lower_bound_violation": 0.0,
+              "maximum_tangent_sigma_difference": 0.0031077223070690163
+            }
+          },
+          "teacher_tightness_error": 1.199040866595169e-14,
+          "midpoint_concavity_violation": 3.339550858072471e-13
+        },
+        {
+          "task": "SVHN",
+          "input_sha256": "b6c0aedbfbf45a3421d63deee926de0bccca5bec61b2ebbc94c4f53613aa8a4c",
+          "checkpoint_sha256": {
+            "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+            "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+            "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+          },
+          "arrays_sha256": "2846dd410c27f7cfc1e9875b12180deb0fa9cce20e926dd2e536845e84af8286",
+          "tests": {
+            "teacher": {
+              "n": 800,
+              "teacher_predictions_retained": 800,
+              "exact_pair_conditions": 7200,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 800,
+              "maximum_identity_error": 3.552713678800501e-13,
+              "maximum_lower_bound_violation": 7.105427357601002e-15,
+              "maximum_tangent_sigma_difference": 1.1102230246251565e-16
+            },
+            "A_only": {
+              "n": 800,
+              "teacher_predictions_retained": 800,
+              "exact_pair_conditions": 7200,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 800,
+              "maximum_identity_error": 3.481659405224491e-13,
+              "maximum_lower_bound_violation": 0.0,
+              "maximum_tangent_sigma_difference": 0.00941112722269033
+            },
+            "mean_shift": {
+              "n": 800,
+              "teacher_predictions_retained": 800,
+              "exact_pair_conditions": 7200,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 800,
+              "maximum_identity_error": 4.369837824924616e-13,
+              "maximum_lower_bound_violation": 7.105427357601002e-15,
+              "maximum_tangent_sigma_difference": 3.3306690738754696e-16
+            },
+            "negated_residual": {
+              "n": 800,
+              "teacher_predictions_retained": 0,
+              "exact_pair_conditions": 0,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 0,
+              "maximum_identity_error": 3.801403636316536e-13,
+              "maximum_lower_bound_violation": 0.0,
+              "maximum_tangent_sigma_difference": 1.246022428171473
+            },
+            "midpoint": {
+              "n": 800,
+              "teacher_predictions_retained": 800,
+              "exact_pair_conditions": 7200,
+              "pairs": 7200,
+              "old_excludes_true_pairs": 0,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 800,
+              "maximum_identity_error": 3.268496584496461e-13,
+              "maximum_lower_bound_violation": 0.0,
+              "maximum_tangent_sigma_difference": 0.0024352761327551264
+            }
+          },
+          "teacher_tightness_error": 1.1546319456101628e-14,
+          "midpoint_concavity_violation": 3.410605131648481e-13
+        },
+        {
+          "task": "DTD",
+          "input_sha256": "f503e4503bed1d65cb3c155662f3eb9552077b1de07aaf37e442439cbfc5d48c",
+          "checkpoint_sha256": {
+            "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+            "DTD/finetuned.pt": "482e5636cdb4d521376211fdeda0417f73aafab9551d366690bba3e5c0ce0f38",
+            "head_DTD.pt": "19df72206780cac2d269a2847cbd81dceb3859c6f91a722c49427c42a0b829bf"
+          },
+          "arrays_sha256": "c1d2b15e7f9cb8a613570c7259371fe101bc6f8ff25c0ebcba78310bdc83f41a",
+          "tests": {
+            "teacher": {
+              "n": 3760,
+              "teacher_predictions_retained": 3760,
+              "exact_pair_conditions": 172960,
+              "pairs": 172960,
+              "old_excludes_true_pairs": 71,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 3760,
+              "maximum_identity_error": 2.3447910280083306e-13,
+              "maximum_lower_bound_violation": 7.105427357601002e-15,
+              "maximum_tangent_sigma_difference": 1.1102230246251565e-16
+            },
+            "A_only": {
+              "n": 3760,
+              "teacher_predictions_retained": 3760,
+              "exact_pair_conditions": 172960,
+              "pairs": 172960,
+              "old_excludes_true_pairs": 196,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 3760,
+              "maximum_identity_error": 2.4868995751603507e-13,
+              "maximum_lower_bound_violation": 0.0,
+              "maximum_tangent_sigma_difference": 0.023839767890231928
+            },
+            "mean_shift": {
+              "n": 3760,
+              "teacher_predictions_retained": 3760,
+              "exact_pair_conditions": 172960,
+              "pairs": 172960,
+              "old_excludes_true_pairs": 71,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 3760,
+              "maximum_identity_error": 4.405364961712621e-13,
+              "maximum_lower_bound_violation": 1.4210854715202004e-14,
+              "maximum_tangent_sigma_difference": 1.6653345369377348e-16
+            },
+            "negated_residual": {
+              "n": 3760,
+              "teacher_predictions_retained": 0,
+              "exact_pair_conditions": 4870,
+              "pairs": 172960,
+              "old_excludes_true_pairs": 4799,
+              "new_excludes_true_pairs": 4870,
+              "new_condition_all_classes": 0,
+              "maximum_identity_error": 5.115907697472721e-13,
+              "maximum_lower_bound_violation": 0.0,
+              "maximum_tangent_sigma_difference": 0.7173172154960901
+            },
+            "midpoint": {
+              "n": 3760,
+              "teacher_predictions_retained": 3760,
+              "exact_pair_conditions": 172960,
+              "pairs": 172960,
+              "old_excludes_true_pairs": 115,
+              "new_excludes_true_pairs": 0,
+              "new_condition_all_classes": 3760,
+              "maximum_identity_error": 2.1671553440683056e-13,
+              "maximum_lower_bound_violation": 0.0,
+              "maximum_tangent_sigma_difference": 0.006357768476815212
+            }
+          },
+          "teacher_tightness_error": 1.4210854715202004e-14,
+          "midpoint_concavity_violation": 2.4868995751603507e-13
+        }
+      ],
+      "source_sha256": "5e11c2e238d3b3c0db12c2b62854cc3269412e8f719e46c40851d3ff8c60b91c",
+      "seconds": 17.328051384538412,
+      "new_defense_models": 0,
+      "real_images": 0,
+      "full_image_forwards": 0,
+      "original_expert_updates": 0,
+      "conclusion": "The sign-aware tangent gives a globally sufficient convex inner condition in B for fixed A, and is tight at the teacher residual. It is not necessary away from the anchor, not a guarantee for unseen inputs, and not convex jointly in A and B."
+    },
+    "independent_numpy": {
+      "status": "passed",
+      "groups": 15,
+      "maximum_identity_error": 2.5934809855243657e-12,
+      "source": "import json, hashlib\nfrom pathlib import Path\nimport numpy as np\nroot=Path('outputs/classification_condition_20261027')\nr=json.loads((root/'result.json').read_text());checked=[];max_error=0.\nfor row in r['rows']:\n p=root/(row['task']+'.npz');assert hashlib.sha256(p.read_bytes()).hexdigest()==row['arrays_sha256']\n v=np.load(p);h0=v['h0'];ha=v['ha'];g=v['gamma'];beta=v['beta'];P=v['P'];W=v['W'];y=v['teacher'];eps=float(v['eps']);n,d=h0.shape\n hc0=h0-h0.mean(1,keepdims=True);sig0=np.sqrt(np.sum(hc0*hc0,axis=1)/d+eps)\n pw=P@W.T;lin=g[:,None]*pw;lin-=lin.mean(0,keepdims=True);bias=beta@pw;c=bias[y,None]-bias[None,:];ids=np.arange(n);mask=np.arange(len(W))[None,:]!=y[:,None];local={}\n for name,h in [('teacher',h0),('A_only',ha),('mean_shift',h0+1),('negated_residual',-h0),('midpoint',(h0+ha)/2)]:\n  hc=h-h.mean(1,keepdims=True);sig=np.sqrt(np.sum(hc*hc,axis=1)/d+eps);ell=np.sum(hc0*hc,axis=1)/(d*sig0)+eps/sig0\n  q=h@lin;ah=q[ids,y,None]-q;true=ah+c*sig[:,None];lower=ah+np.minimum(c,0)*sig[:,None]+np.maximum(c,0)*ell[:,None];old=ah+np.minimum(c,0)*sig[:,None]\n  z=(hc/sig[:,None]*g+beta)@P;zn=np.linalg.norm(z,axis=1);scores=(z/zn[:,None])@W.T\n  direct=(scores[ids,y,None]-scores)*zn[:,None]*sig[:,None]\n  vals=dict(n=n,teacher_predictions_retained=int(np.sum(scores.argmax(1)==y)),exact_pair_conditions=int(np.sum(true[mask]>=-1e-8)),pairs=int(mask.sum()),old_excludes_true_pairs=int(np.sum((true>=0)&(old < -1e-8)&mask)),new_excludes_true_pairs=int(np.sum((true>=0)&(lower < -1e-8)&mask)),new_condition_all_classes=int(np.sum(np.min(np.where(mask,lower,np.inf),axis=1)>=-1e-8)))\n  for k,value in vals.items():assert value==row['tests'][name][k],(row['task'],name,k,value,row['tests'][name][k])\n  error=float(np.max(abs(direct-true)));assert error<1e-8;assert np.max(lower-true)<1e-8;max_error=max(max_error,error)\n  local[name]=dict(**vals,old_excludes_teacher_inputs=int(np.sum(np.any((old < -1e-8)&mask,axis=1)&np.all(np.where(mask,true,1)>=0,axis=1))),maximum_identity_error=error)\n  if name=='teacher':assert np.max(abs(lower-true))<1e-8\n checked.append(dict(task=row['task'],tests=local))\nout=dict(status='passed',groups=sum(len(v['tests']) for v in checked),maximum_identity_error=max_error,rows=checked,source=Path(__file__).read_text(),source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),raw_result_sha256=hashlib.sha256((root/'result.json').read_bytes()).hexdigest())\n(root/'numpy_validation.json').write_text(json.dumps(out,indent=2)+'\\n');print(json.dumps({k:v for k,v in out.items() if k not in ['source','rows']}));print([(x['task'],x['tests']['teacher']['old_excludes_teacher_inputs']) for x in checked])\n",
+      "source_sha256": "4787aeff42bc4c0ee7572a87fa6c918914c28b14754a7728dd147da7e0acfff9",
+      "raw_result_sha256": "8896f65781f428b7d393ccbe5007d6a88e86396fa9106a9a696a15fb56006576"
+    },
+    "interpretation": "Old sufficient condition excludes 71 true DTD teacher class-pair relations affecting 70 of 3760 clean generated views. New condition keeps every original teacher view and all recomputed A-only source views. This is a correction to a proposed mathematical subproblem, not to the running native-ellipse method, and does not explain its 3.30pp natural DTD loss. No new defense model, publication weights, full image evaluation or AGA call.",
+    "completed_utc": "2026-10-26T16:44:12.189950+00:00",
+    "raw_output": "4090:/root/autodl-tmp/posthoc-merge-security/outputs/classification_condition_20261027",
+    "new_production_modules": 0,
+    "tie_convention": "Nonnegative contrasts make the teacher class a maximizer; strict positive contrasts preserve a unique class. Exact ties require the original argmax tie rule. Direct argmax was separately checked for every recorded source context."
   }
 }

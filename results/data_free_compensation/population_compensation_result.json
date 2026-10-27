@@ -20521,5 +20521,399 @@
     "new_complete_AGA_calls": 1,
     "historical_native_stop_preserved": true,
     "scope": "Post-stop observation of the exact existing DTD model. Accuracy loss remains3.297872pp; no construction, source, parameter or threshold retuning. Not a newly feasible point under the historical .5pp gate. Target and partner effects both reported."
+  },
+  "joint_classification_definition_20261027": {
+    "status": "fixed_before_source_solve",
+    "mechanism": "Jointly update final-MLP A and B/outputbias, maximizing effective task-complement A distance while reducing complete public-base TA.5 and author-AGA.5 class0 gaps. Native finite class inequalities and the full/task nonlinear response bound must remain feasible for every accepted step. Different joint variables and distance objective from old fixedA/B solve; not a solver-only rerun.",
+    "access": "Original MNIST expert/publicbase/fixedhead/classIDs and original clean source cache33670dd5 plus fixed task-layer input10938b05. No protected weights, partner, real images, exposed transition inputs or test scores read during construction. Expert weights frozen.",
+    "variables": "deltaA remains in left/right task32 complement and satisfies diagonal(A_new*A0^T)=0; tangent obtained by the same linear-constraint Gram solve. B and outputbias free subject to native functional condition. Effective A distance uses deltaA*diag(LN2gamma)*centering, excluding the exact LN mean-input null. A-only initial geometry is recomputed from original weights, not a prior publication.",
+    "native_constraints": "Original two populations16384task-layer/800native contexts, normalized original output variances, fixed rho=.01*initialGramtrace/3073. tau=initialA with originalB, fixed for all joint trials. New sign-aware lower bounds L>=0 on every native class pair anchored at originalteacher; actual teacher argmax also checked. No half-margin, R.5 or .5pp constraint. These finite sources are not natural-task guarantees.",
+    "finite_range": "A relative Frobenius<=2,Bweight relative Frobenius<=4 as a declared finite search region; bias under same native ridge. Historical globalD.5 not claimed. This is one bounded local source solve, not unrestricted/global distance maximization.",
+    "initialization": "Conditional minimum-native B for initialA, then only if needed halve its segment toward originalB until all source class bounds/argmax and B range pass; max24halvings. OriginalB is known source-feasible. No initial parameter candidate selection by natural performance.",
+    "objectives": "Minimize f1=-||deltaA*gamma*H||_F^2/||A*gamma*H||_F^2 and f2=logmeanexp(all rival-minus-class0 final normalized logits/head RMSnorm over direct+recovered public contexts). Full LayerNorm/projection/unit feature/head retained. Class0 fixed by index. Extra outputcalibration weakness is not declared solved.",
+    "solver": "Two full parameter gradients in normalized A/R coordinates; project A gradients into fixed linear tangent. Use paper Eq4 exact alpha=clip((bb-cc)/(aa+bb-2cc),0,1), not representation-gradient upper bound. Joint common direction normalized in these coordinates.500accepted-step ceiling,.1initialstep,16binaryhalvings,Armijo1e-4forboth objectives, fixed source feasible checks. Exact author single-layer Hungarian rematching on every otherwise-feasible proposal; no stale matching acceptance. Stop on finite line-search failure or zero common first-order direction, no convergence claim.",
+    "reference": {
+      "paper": "https://proceedings.neurips.cc/paper_files/paper/2018/file/432aca3a1e345e339f35a30c8f65edce-Paper.pdf",
+      "official_repo": "https://github.com/isl-org/MultiObjectiveOptimization",
+      "commit": "bf5bbb30371489a47f6440691d8934b70f7dfc3b",
+      "source": "multi_task/min_norm_solvers.py",
+      "source_sha256": "b78c40ec28639ea82dad6a0afb7c143e9c35251bdcf0e98cc6f6b7c872106a49",
+      "difference": "Official implementation nudges endpoint weights to.999/.001; use exact paper0/1 endpoints. Standard multiobjective gradient tool, not newoptimizer or MTL reproduction."
+    },
+    "freeze_evaluate": "Freeze final FP32 point and SHA before natural images. If no accepted joint step or final source feasibility fails, retain source evidence without a new real-data experiment. Otherwise full MNIST then fixedTA.5/originalAGA-target/both with SVHN partner using existing matched control hashes. Report all tradeoffs; no .5pp universal veto and no tuning from test results. Historical D/R and exposed natural evaluation provenance explicit. Single last point only, no added steps/seed/layer/rank/range retries.",
+    "source_sha256": "4cc92f55aaaffe315731e01a957670cac65e4184cf9e4928ba9e2c6141dfd256",
+    "source": "\"\"\"One joint A/B solve with finite native constraints and two explicit objectives.\"\"\"\nimport json, math, time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.io import digest\nfrom _impl.models import initialize, checked_models\nfrom _impl.attacks import load_author\nfrom _impl.metrics import logical_parameter_distance\n\ninitialize()\ntorch.set_default_dtype(torch.float64)\nstart = time.perf_counter()\nout = Path('outputs/joint_classification_20261027')\nassert out.exists() and not (out/'result.json').exists() and not (out/'point.pt').exists()\nsource = Path('outputs/native_ellipse_classification_20261026/source/source.pt')\nassert digest(source) == '33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5'\nraw = torch.load(source, map_location='cpu', weights_only=False)\nbase, expert, head, pins = checked_models('MNIST')\ns, bs = expert.state_dict(), base.state_dict()\nk = 'model.visual.transformer.resblocks.11.mlp.'\nto = lambda x: x.double().cuda()\nA, A0, a, a0, B, B0, b, b0, gamma, beta = [to(v) for v in [s[k+'c_fc.weight'], bs[k+'c_fc.weight'], s[k+'c_fc.bias'], bs[k+'c_fc.bias'], s[k+'c_proj.weight'], bs[k+'c_proj.weight'], s[k+'c_proj.bias'], bs[k+'c_proj.bias'], s['model.visual.transformer.resblocks.11.ln_2.weight'], s['model.visual.transformer.resblocks.11.ln_2.bias']]]\nU, _, Vh = torch.linalg.svd(A-A0, full_matrices=False)\nU, V = U[:, :32], Vh[:32].T\nA0r = A0-(A0@V)@V.T\nK = A0r@A0r.T\nGrows = -(U@U.T)*K\nGrows.diagonal().add_(K.diagonal())\nLrows = torch.linalg.cholesky(Grows)\nlam = torch.cholesky_solve((-(A*A0).sum(1))[:, None], Lrows)\ndA = lam*A0r\ndA -= U@(U.T@dA)\nAp = A+dA\ndel K, Grows\n\ndef tangent(g):\n    g = g-U@(U.T@g)\n    g = g-(g@V)@V.T\n    lam = torch.cholesky_solve((g*A0).sum(1)[:, None], Lrows)\n    q = lam*A0r\n    return g-q+U@(U.T@q)\n\nactivate = lambda z: z*torch.sigmoid(1.702*z)\naugmented = lambda x, aa: torch.cat([activate(x@aa.T+a).T, torch.ones(1, len(x), device='cuda')], 0)\nRorig = torch.cat([B, b[:, None]], 1)\nna, nr = A.norm(), Rorig.norm()\ncache = {name: {key: to(v) for key, v in row.items()} for name, row in raw['cache'].items()}\nlayer_path = Path('outputs/task_shaped_compensation_20261026/layer_inputs.pt')\nassert digest(layer_path) == '10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe'\nu = torch.load(layer_path, map_location='cuda', weights_only=False)\nxl = beta+gamma*u\npopulations = [(xl, activate(xl@A.T+a)@B.T+b), (cache['native']['x'], cache['native']['final']-cache['native']['prefix'])]\nG = torch.zeros(3073, 3073, device='cuda')\nT = torch.zeros_like(Rorig)\nweights = []\nfor x, y in populations:\n    variance = y.square().sum()/len(y)-y.mean(0).square().sum()\n    w = 1/(len(y)*variance)\n    weights.append(w)\n    for lo in range(0, len(x), 256):\n        H = augmented(x[lo:lo+256], Ap)\n        G += w*(H@H.T)\n        T += w*(y[lo:lo+256].T@H.T)\nrho = .01*G.trace()/len(G)\nG += rho*torch.eye(len(G), device='cuda')\nT += rho*Rorig\nRN = torch.cholesky_solve(T.T, torch.linalg.cholesky(G)).T\ndel G, T, u\n\n@torch.no_grad()\ndef native_function(aa, rr):\n    value = rho*(rr-Rorig).square().sum()\n    for (x, y), w in zip(populations, weights):\n        for lo in range(0, len(x), 1024):\n            error = (rr@augmented(x[lo:lo+1024], aa)).T-y[lo:lo+1024]\n            value += w*error.square().sum()\n    return float(value)\n\nW = to(head.weight)\nassert float(head.bias.abs().max()) == 0\nhead_scale = W.square().sum(1).mean().sqrt()\neps = expert.model.visual.ln_post.eps\nnames = ['model.visual.ln_post.weight', 'model.visual.ln_post.bias', 'model.visual.proj']\nreadouts = {name: [to(s[key] if name == 'native' else (s[key]+bs[key])/2) for key in names] for name in cache}\ndef classify(h, name):\n    g, bb, P = readouts[name]\n    z = F.layer_norm(h, (768,), g, bb, eps)@P\n    return F.normalize(z, dim=-1)@W.T\n\ntail_error = max(float((classify(cache[name]['final'], name)-cache[name]['scores']).abs().max()) for name in cache)\nassert tail_error < .0005\nh0 = cache['native']['final']\nhc0 = h0-h0.mean(1, keepdim=True)\nsigma0 = (hc0.square().mean(1)+eps).sqrt()\nteacher = cache['native']['scores'].argmax(1)\nids = torch.arange(len(h0), device='cuda')\ng, bb, P = readouts['native']\npw = P@W.T\nlinear = g[:, None]*pw\nlinear -= linear.mean(0, keepdim=True)\noffset = bb@pw\nc = offset[teacher, None]-offset[None, :]\nmask = torch.arange(len(W), device='cuda')[None, :] != teacher[:, None]\n\n@torch.no_grad()\ndef native_classes(aa, rr):\n    h = cache['native']['prefix']+(rr@augmented(cache['native']['x'], aa)).T\n    hc = h-h.mean(1, keepdim=True)\n    sigma = (hc.square().mean(1)+eps).sqrt()\n    ell = (hc0*hc).mean(1)/sigma0+eps/sigma0\n    z = h@linear\n    lower = z[ids, teacher, None]-z+c.clamp(max=0)*sigma[:, None]+c.clamp(min=0)*ell[:, None]\n    return float(lower[mask].min()), int(classify(h, 'native').argmax(1).eq(teacher).sum())\n\nauthor, author_sha = load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))\nassert author_sha == '4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778'\nmatching_calls = 0\ndef matching(aa):\n    global matching_calls\n    matching_calls += 1\n    return author['solve_permutation'](aa.detach().float().cpu(), A0.float().cpu()).cuda()\n\ndef public(aa, rr, pi):\n    scores = {}\n    for name in ['direct', 'recovered']:\n        ai, bi = (aa, a) if name == 'direct' else (aa[pi], a[pi])\n        H = activate(cache[name]['x']@((ai+A0)/2).T+(bi+a0)/2).T\n        h = cache[name]['prefix']+(B0@H+b0[:, None]).T/2\n        if name == 'recovered':\n            back = torch.empty_like(H)\n            back[pi] = H\n            H = back\n        h = h+(rr@torch.cat([H, torch.ones(1, H.shape[1], device='cuda')], 0)).T/2\n        scores[name] = classify(h, name)\n    gaps = torch.cat([v[:, 1:]-v[:, :1] for v in scores.values()])/head_scale\n    return torch.logsumexp(gaps.flatten(), 0)-math.log(gaps.numel()), scores\n\noriginal_effective = A*gamma\noriginal_effective -= original_effective.mean(1, keepdim=True)\ndef distance(aa):\n    delta = (aa-A)*gamma\n    delta = delta-delta.mean(1, keepdim=True)\n    return delta.square().sum()/original_effective.square().sum()\n\ntau = native_function(Ap, Rorig)\nfor init_power in range(25):\n    R = Rorig+(RN-Rorig)*2.**(-init_power)\n    slack, retained = native_classes(Ap, R)\n    if slack > 0 and retained == len(h0) and float((R[:, :-1]-B).norm()/B.norm()) <= 4:\n        break\nelse:\n    raise RuntimeError('No feasible initialization on the fixed native segment')\nassert native_function(Ap, R) <= tau+1e-8\npi = matching(Ap)\ninitial = dict(distance_squared=float(distance(Ap)), native=native_function(Ap, R), native_slack=slack, public=float(public(Ap, R, pi)[0]), initialization_fraction=2.**(-init_power))\ntrace, derivative = [], None\nstop = 'iteration_limit'\naccepted, failures = False, {}\nfor it in range(500):\n    Ap = Ap.detach().requires_grad_(True)\n    R = R.detach().requires_grad_(True)\n    f1 = -distance(Ap)\n    f2, _ = public(Ap, R, pi)\n    gd = tangent(torch.autograd.grad(f1, Ap)[0])*na\n    ga, gr = torch.autograd.grad(f2, (Ap, R))\n    gp, gq = tangent(ga)*na, gr*nr\n    aa, bb, cc = float(gd.square().sum()), float(gp.square().sum()+gq.square().sum()), float((gd*gp).sum())\n    den = aa+bb-2*cc\n    weight = min(1., max(0., (bb-cc)/den)) if den > 0 else .5\n    ca, cr = weight*gd+(1-weight)*gp, (1-weight)*gq\n    norm = (ca.square().sum()+cr.square().sum()).sqrt()\n    if float(norm) < 1e-12:\n        stop = 'zero_common_first_order_direction'; break\n    da, dr = -ca*na/norm, -cr*nr/norm\n    sd = float((gd*(da/na)).sum())\n    sp = float((gp*(da/na)).sum()+(gq*(dr/nr)).sum())\n    assert sd < 0 and sp < 0, (sd, sp)\n    if it == 0:\n        step = 1e-6\n        fd1 = float((-distance(Ap.detach()+step*da)+distance(Ap.detach()-step*da))/(2*step))\n        fd2 = float((public(Ap.detach()+step*da, R.detach()+step*dr, pi)[0]-public(Ap.detach()-step*da, R.detach()-step*dr, pi)[0])/(2*step))\n        derivative = dict(distance_analytic=sd, distance_numeric=fd1, public_analytic=sp, public_numeric=fd2, matching_fixed_for_derivative=True)\n        assert max(abs(fd1-sd), abs(fd2-sp)) < 1e-5\n    accepted = False\n    failures = {}\n    with torch.no_grad():\n        for bt in range(16):\n            step = .1*2.**(-bt)\n            trial_a, trial_r = Ap+step*da, R+step*dr\n            f1_new = -float(distance(trial_a))\n            if float((trial_a-A).norm()/na) > 2 or float((trial_r[:, :-1]-B).norm()/B.norm()) > 4:\n                reason = 'declared_parameter_range'\n            elif f1_new > float(f1)+1e-4*step*sd:\n                reason = 'distance'\n            else:\n                slack, retained = native_classes(trial_a, trial_r)\n                if slack < 0 or retained != len(h0):\n                    reason = 'native_classification'\n                else:\n                    nv = native_function(trial_a, trial_r)\n                    if nv > tau+1e-8:\n                        reason = 'native_function'\n                    else:\n                        new_pi = matching(trial_a)\n                        f2_new, scores = public(trial_a, trial_r, new_pi)\n                        if float(f2_new) <= float(f2)+1e-4*step*sp:\n                            changed_matches = int(new_pi.ne(pi).sum())\n                            Ap, R, pi = trial_a.detach(), trial_r.detach(), new_pi\n                            accepted = True; break\n                        reason = 'public_after_exact_matching'\n            failures[reason] = failures.get(reason, 0)+1\n    if not accepted:\n        stop = 'finite_line_search_stalled'; break\n    row = dict(iteration=it+1, distance_squared=-f1_new, public=float(f2_new), native=nv, native_limit=tau, native_minimum_class_slack=slack, step=step, mixture_weight=weight, changed_matches=changed_matches, public_class0={key:int(v.argmax(1).eq(0).sum()) for key,v in scores.items()}, rejected=failures)\n    trace.append(row)\n    if it%10 == 0:\n        print(json.dumps(row), flush=True)\nAp, R = Ap.detach(), R.detach()\nedits = {k+'c_fc.weight': Ap.float().cpu(), k+'c_proj.weight': R[:, :-1].float().cpu(), k+'c_proj.bias': R[:, -1].float().cpu()}\ntorch.save(edits, out/'point.pt')\naf = to(edits[k+'c_fc.weight'])\nrf = torch.cat([to(edits[k+'c_proj.weight']), to(edits[k+'c_proj.bias'])[:, None]], 1)\npif = matching(af)\nwith torch.no_grad():\n    objective, scores = public(af, rf, pif)\n    slack, retained = native_classes(af, rf)\n    nv = native_function(af, rf)\n    delta = af-A\n    metrics = dict(A_relative=float(delta.norm()/na), B_relative=float((rf[:, :-1]-B).norm()/B.norm()), logical_D=logical_parameter_distance(edits, s), effective_A_distance_squared=float(distance(af)), left_task_relative=float((U.T@delta).norm()/delta.norm()), right_task_relative=float((delta@V).norm()/delta.norm()), anchor_diagonal_relative=float((af*A0).sum(1).abs().max()/(af.norm(dim=1)*A0.norm(dim=1)).mean()))\nresult = dict(status='unique_FP32_point_frozen_before_real_images', point_sha256=digest(out/'point.pt'), source=Path(__file__).read_text(), source_sha256=digest(__file__), source_cache_sha256=digest(source), layer_input_sha256=digest(layer_path), checkpoint_sha256=pins, author_sha256=author_sha, initial=initial, native_limit=tau, native_final=nv, native_class_slack=slack, native_teacher_retained=retained, native_n=len(h0), source_feasible=bool(nv<=tau+1e-7 and slack>=-1e-7 and retained==len(h0) and metrics['A_relative']<=2.000001 and metrics['B_relative']<=4.000001), public_objective=float(objective), public_class0={key:int(v.argmax(1).eq(0).sum()) for key,v in scores.items()}, iterations=len(trace), stop_reason=stop, last_rejections=failures if not accepted else {}, trace=trace, derivative_check=derivative, metrics=metrics, seconds=time.perf_counter()-start, matching_calls=matching_calls, complete_AGA_calls=0, real_images=0, original_expert_updates=0, model_image_forwards=0, scope='One joint source-only construction. Two exact parameter gradients, paper two-objective formula with endpoints0/1; not MGDA-UB or a new optimizer. Matching recomputed in each otherwise-feasible proposal. Fixed teacher tangent conditions and native functional bound apply to complete finite source, not unseen data. No convergence, global maximum or full SVD contribution claim.')\n(out/'result.json').write_text(json.dumps(result, indent=2)+'\\n')\nprint(json.dumps({key:value for key,value in result.items() if key not in ['source','trace']}), flush=True)\n",
+    "source_archive": "4090:outputs/joint_classification_20261027/source.py",
+    "new_production_modules": 0,
+    "defined_utc": "2026-10-26T17:03:40.991660+00:00",
+    "input_pin_correction": {
+      "original_source_sha256": "8b6db6f4b968bade385e67f545795f5197117f9b0181b39dae5dd8615a4abdd0",
+      "reason": "Transcription added one extra f to the existing layer-input hash. The assertion stopped before layer-input loading or optimizer steps. Real file hash matches original task_shaped result and original native_ellipse archived source; data and algorithm unchanged. Original source/log retained on4090.",
+      "correct_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe"
+    }
+  },
+  "joint_classification_source_result_20261027": {
+    "status": "unique_FP32_point_frozen_before_real_images",
+    "point_sha256": "4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d",
+    "source": "\"\"\"One joint A/B solve with finite native constraints and two explicit objectives.\"\"\"\nimport json, math, time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.io import digest\nfrom _impl.models import initialize, checked_models\nfrom _impl.attacks import load_author\nfrom _impl.metrics import logical_parameter_distance\n\ninitialize()\ntorch.set_default_dtype(torch.float64)\nstart = time.perf_counter()\nout = Path('outputs/joint_classification_20261027')\nassert out.exists() and not (out/'result.json').exists() and not (out/'point.pt').exists()\nsource = Path('outputs/native_ellipse_classification_20261026/source/source.pt')\nassert digest(source) == '33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5'\nraw = torch.load(source, map_location='cpu', weights_only=False)\nbase, expert, head, pins = checked_models('MNIST')\ns, bs = expert.state_dict(), base.state_dict()\nk = 'model.visual.transformer.resblocks.11.mlp.'\nto = lambda x: x.double().cuda()\nA, A0, a, a0, B, B0, b, b0, gamma, beta = [to(v) for v in [s[k+'c_fc.weight'], bs[k+'c_fc.weight'], s[k+'c_fc.bias'], bs[k+'c_fc.bias'], s[k+'c_proj.weight'], bs[k+'c_proj.weight'], s[k+'c_proj.bias'], bs[k+'c_proj.bias'], s['model.visual.transformer.resblocks.11.ln_2.weight'], s['model.visual.transformer.resblocks.11.ln_2.bias']]]\nU, _, Vh = torch.linalg.svd(A-A0, full_matrices=False)\nU, V = U[:, :32], Vh[:32].T\nA0r = A0-(A0@V)@V.T\nK = A0r@A0r.T\nGrows = -(U@U.T)*K\nGrows.diagonal().add_(K.diagonal())\nLrows = torch.linalg.cholesky(Grows)\nlam = torch.cholesky_solve((-(A*A0).sum(1))[:, None], Lrows)\ndA = lam*A0r\ndA -= U@(U.T@dA)\nAp = A+dA\ndel K, Grows\n\ndef tangent(g):\n    g = g-U@(U.T@g)\n    g = g-(g@V)@V.T\n    lam = torch.cholesky_solve((g*A0).sum(1)[:, None], Lrows)\n    q = lam*A0r\n    return g-q+U@(U.T@q)\n\nactivate = lambda z: z*torch.sigmoid(1.702*z)\naugmented = lambda x, aa: torch.cat([activate(x@aa.T+a).T, torch.ones(1, len(x), device='cuda')], 0)\nRorig = torch.cat([B, b[:, None]], 1)\nna, nr = A.norm(), Rorig.norm()\ncache = {name: {key: to(v) for key, v in row.items()} for name, row in raw['cache'].items()}\nlayer_path = Path('outputs/task_shaped_compensation_20261026/layer_inputs.pt')\nassert digest(layer_path) == '10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe'\nu = torch.load(layer_path, map_location='cuda', weights_only=False)\nxl = beta+gamma*u\npopulations = [(xl, activate(xl@A.T+a)@B.T+b), (cache['native']['x'], cache['native']['final']-cache['native']['prefix'])]\nG = torch.zeros(3073, 3073, device='cuda')\nT = torch.zeros_like(Rorig)\nweights = []\nfor x, y in populations:\n    variance = y.square().sum()/len(y)-y.mean(0).square().sum()\n    w = 1/(len(y)*variance)\n    weights.append(w)\n    for lo in range(0, len(x), 256):\n        H = augmented(x[lo:lo+256], Ap)\n        G += w*(H@H.T)\n        T += w*(y[lo:lo+256].T@H.T)\nrho = .01*G.trace()/len(G)\nG += rho*torch.eye(len(G), device='cuda')\nT += rho*Rorig\nRN = torch.cholesky_solve(T.T, torch.linalg.cholesky(G)).T\ndel G, T, u\n\n@torch.no_grad()\ndef native_function(aa, rr):\n    value = rho*(rr-Rorig).square().sum()\n    for (x, y), w in zip(populations, weights):\n        for lo in range(0, len(x), 1024):\n            error = (rr@augmented(x[lo:lo+1024], aa)).T-y[lo:lo+1024]\n            value += w*error.square().sum()\n    return float(value)\n\nW = to(head.weight)\nassert float(head.bias.abs().max()) == 0\nhead_scale = W.square().sum(1).mean().sqrt()\neps = expert.model.visual.ln_post.eps\nnames = ['model.visual.ln_post.weight', 'model.visual.ln_post.bias', 'model.visual.proj']\nreadouts = {name: [to(s[key] if name == 'native' else (s[key]+bs[key])/2) for key in names] for name in cache}\ndef classify(h, name):\n    g, bb, P = readouts[name]\n    z = F.layer_norm(h, (768,), g, bb, eps)@P\n    return F.normalize(z, dim=-1)@W.T\n\ntail_error = max(float((classify(cache[name]['final'], name)-cache[name]['scores']).abs().max()) for name in cache)\nassert tail_error < .0005\nh0 = cache['native']['final']\nhc0 = h0-h0.mean(1, keepdim=True)\nsigma0 = (hc0.square().mean(1)+eps).sqrt()\nteacher = cache['native']['scores'].argmax(1)\nids = torch.arange(len(h0), device='cuda')\ng, bb, P = readouts['native']\npw = P@W.T\nlinear = g[:, None]*pw\nlinear -= linear.mean(0, keepdim=True)\noffset = bb@pw\nc = offset[teacher, None]-offset[None, :]\nmask = torch.arange(len(W), device='cuda')[None, :] != teacher[:, None]\n\n@torch.no_grad()\ndef native_classes(aa, rr):\n    h = cache['native']['prefix']+(rr@augmented(cache['native']['x'], aa)).T\n    hc = h-h.mean(1, keepdim=True)\n    sigma = (hc.square().mean(1)+eps).sqrt()\n    ell = (hc0*hc).mean(1)/sigma0+eps/sigma0\n    z = h@linear\n    lower = z[ids, teacher, None]-z+c.clamp(max=0)*sigma[:, None]+c.clamp(min=0)*ell[:, None]\n    return float(lower[mask].min()), int(classify(h, 'native').argmax(1).eq(teacher).sum())\n\nauthor, author_sha = load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))\nassert author_sha == '4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778'\nmatching_calls = 0\ndef matching(aa):\n    global matching_calls\n    matching_calls += 1\n    return author['solve_permutation'](aa.detach().float().cpu(), A0.float().cpu()).cuda()\n\ndef public(aa, rr, pi):\n    scores = {}\n    for name in ['direct', 'recovered']:\n        ai, bi = (aa, a) if name == 'direct' else (aa[pi], a[pi])\n        H = activate(cache[name]['x']@((ai+A0)/2).T+(bi+a0)/2).T\n        h = cache[name]['prefix']+(B0@H+b0[:, None]).T/2\n        if name == 'recovered':\n            back = torch.empty_like(H)\n            back[pi] = H\n            H = back\n        h = h+(rr@torch.cat([H, torch.ones(1, H.shape[1], device='cuda')], 0)).T/2\n        scores[name] = classify(h, name)\n    gaps = torch.cat([v[:, 1:]-v[:, :1] for v in scores.values()])/head_scale\n    return torch.logsumexp(gaps.flatten(), 0)-math.log(gaps.numel()), scores\n\noriginal_effective = A*gamma\noriginal_effective -= original_effective.mean(1, keepdim=True)\ndef distance(aa):\n    delta = (aa-A)*gamma\n    delta = delta-delta.mean(1, keepdim=True)\n    return delta.square().sum()/original_effective.square().sum()\n\ntau = native_function(Ap, Rorig)\nfor init_power in range(25):\n    R = Rorig+(RN-Rorig)*2.**(-init_power)\n    slack, retained = native_classes(Ap, R)\n    if slack > 0 and retained == len(h0) and float((R[:, :-1]-B).norm()/B.norm()) <= 4:\n        break\nelse:\n    raise RuntimeError('No feasible initialization on the fixed native segment')\nassert native_function(Ap, R) <= tau+1e-8\npi = matching(Ap)\ninitial = dict(distance_squared=float(distance(Ap)), native=native_function(Ap, R), native_slack=slack, public=float(public(Ap, R, pi)[0]), initialization_fraction=2.**(-init_power))\ntrace, derivative = [], None\nstop = 'iteration_limit'\naccepted, failures = False, {}\nfor it in range(500):\n    Ap = Ap.detach().requires_grad_(True)\n    R = R.detach().requires_grad_(True)\n    f1 = -distance(Ap)\n    f2, _ = public(Ap, R, pi)\n    gd = tangent(torch.autograd.grad(f1, Ap)[0])*na\n    ga, gr = torch.autograd.grad(f2, (Ap, R))\n    gp, gq = tangent(ga)*na, gr*nr\n    aa, bb, cc = float(gd.square().sum()), float(gp.square().sum()+gq.square().sum()), float((gd*gp).sum())\n    den = aa+bb-2*cc\n    weight = min(1., max(0., (bb-cc)/den)) if den > 0 else .5\n    ca, cr = weight*gd+(1-weight)*gp, (1-weight)*gq\n    norm = (ca.square().sum()+cr.square().sum()).sqrt()\n    if float(norm) < 1e-12:\n        stop = 'zero_common_first_order_direction'; break\n    da, dr = -ca*na/norm, -cr*nr/norm\n    sd = float((gd*(da/na)).sum())\n    sp = float((gp*(da/na)).sum()+(gq*(dr/nr)).sum())\n    assert sd < 0 and sp < 0, (sd, sp)\n    if it == 0:\n        step = 1e-6\n        fd1 = float((-distance(Ap.detach()+step*da)+distance(Ap.detach()-step*da))/(2*step))\n        fd2 = float((public(Ap.detach()+step*da, R.detach()+step*dr, pi)[0]-public(Ap.detach()-step*da, R.detach()-step*dr, pi)[0])/(2*step))\n        derivative = dict(distance_analytic=sd, distance_numeric=fd1, public_analytic=sp, public_numeric=fd2, matching_fixed_for_derivative=True)\n        assert max(abs(fd1-sd), abs(fd2-sp)) < 1e-5\n    accepted = False\n    failures = {}\n    with torch.no_grad():\n        for bt in range(16):\n            step = .1*2.**(-bt)\n            trial_a, trial_r = Ap+step*da, R+step*dr\n            f1_new = -float(distance(trial_a))\n            if float((trial_a-A).norm()/na) > 2 or float((trial_r[:, :-1]-B).norm()/B.norm()) > 4:\n                reason = 'declared_parameter_range'\n            elif f1_new > float(f1)+1e-4*step*sd:\n                reason = 'distance'\n            else:\n                slack, retained = native_classes(trial_a, trial_r)\n                if slack < 0 or retained != len(h0):\n                    reason = 'native_classification'\n                else:\n                    nv = native_function(trial_a, trial_r)\n                    if nv > tau+1e-8:\n                        reason = 'native_function'\n                    else:\n                        new_pi = matching(trial_a)\n                        f2_new, scores = public(trial_a, trial_r, new_pi)\n                        if float(f2_new) <= float(f2)+1e-4*step*sp:\n                            changed_matches = int(new_pi.ne(pi).sum())\n                            Ap, R, pi = trial_a.detach(), trial_r.detach(), new_pi\n                            accepted = True; break\n                        reason = 'public_after_exact_matching'\n            failures[reason] = failures.get(reason, 0)+1\n    if not accepted:\n        stop = 'finite_line_search_stalled'; break\n    row = dict(iteration=it+1, distance_squared=-f1_new, public=float(f2_new), native=nv, native_limit=tau, native_minimum_class_slack=slack, step=step, mixture_weight=weight, changed_matches=changed_matches, public_class0={key:int(v.argmax(1).eq(0).sum()) for key,v in scores.items()}, rejected=failures)\n    trace.append(row)\n    if it%10 == 0:\n        print(json.dumps(row), flush=True)\nAp, R = Ap.detach(), R.detach()\nedits = {k+'c_fc.weight': Ap.float().cpu(), k+'c_proj.weight': R[:, :-1].float().cpu(), k+'c_proj.bias': R[:, -1].float().cpu()}\ntorch.save(edits, out/'point.pt')\naf = to(edits[k+'c_fc.weight'])\nrf = torch.cat([to(edits[k+'c_proj.weight']), to(edits[k+'c_proj.bias'])[:, None]], 1)\npif = matching(af)\nwith torch.no_grad():\n    objective, scores = public(af, rf, pif)\n    slack, retained = native_classes(af, rf)\n    nv = native_function(af, rf)\n    delta = af-A\n    metrics = dict(A_relative=float(delta.norm()/na), B_relative=float((rf[:, :-1]-B).norm()/B.norm()), logical_D=logical_parameter_distance(edits, s), effective_A_distance_squared=float(distance(af)), left_task_relative=float((U.T@delta).norm()/delta.norm()), right_task_relative=float((delta@V).norm()/delta.norm()), anchor_diagonal_relative=float((af*A0).sum(1).abs().max()/(af.norm(dim=1)*A0.norm(dim=1)).mean()))\nresult = dict(status='unique_FP32_point_frozen_before_real_images', point_sha256=digest(out/'point.pt'), source=Path(__file__).read_text(), source_sha256=digest(__file__), source_cache_sha256=digest(source), layer_input_sha256=digest(layer_path), checkpoint_sha256=pins, author_sha256=author_sha, initial=initial, native_limit=tau, native_final=nv, native_class_slack=slack, native_teacher_retained=retained, native_n=len(h0), source_feasible=bool(nv<=tau+1e-7 and slack>=-1e-7 and retained==len(h0) and metrics['A_relative']<=2.000001 and metrics['B_relative']<=4.000001), public_objective=float(objective), public_class0={key:int(v.argmax(1).eq(0).sum()) for key,v in scores.items()}, iterations=len(trace), stop_reason=stop, last_rejections=failures if not accepted else {}, trace=trace, derivative_check=derivative, metrics=metrics, seconds=time.perf_counter()-start, matching_calls=matching_calls, complete_AGA_calls=0, real_images=0, original_expert_updates=0, model_image_forwards=0, scope='One joint source-only construction. Two exact parameter gradients, paper two-objective formula with endpoints0/1; not MGDA-UB or a new optimizer. Matching recomputed in each otherwise-feasible proposal. Fixed teacher tangent conditions and native functional bound apply to complete finite source, not unseen data. No convergence, global maximum or full SVD contribution claim.')\n(out/'result.json').write_text(json.dumps(result, indent=2)+'\\n')\nprint(json.dumps({key:value for key,value in result.items() if key not in ['source','trace']}), flush=True)\n",
+    "source_sha256": "4cc92f55aaaffe315731e01a957670cac65e4184cf9e4928ba9e2c6141dfd256",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "layer_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "initial": {
+      "distance_squared": 1.0540922189123285,
+      "native": 0.06556075574294341,
+      "native_slack": 8.188101357353567,
+      "public": 0.003226551611158257,
+      "initialization_fraction": 1.0
+    },
+    "native_limit": 1.264483612297785,
+    "native_final": 1.2535105274820597,
+    "native_class_slack": 0.00028406926214907813,
+    "native_teacher_retained": 800,
+    "native_n": 800,
+    "source_feasible": true,
+    "public_objective": -0.021571781751685393,
+    "public_class0": {
+      "direct": 80,
+      "recovered": 80
+    },
+    "iterations": 8,
+    "stop_reason": "finite_line_search_stalled",
+    "last_rejections": {
+      "native_classification": 16
+    },
+    "trace": [
+      {
+        "iteration": 1,
+        "distance_squared": 1.0716964821896398,
+        "public": -0.01060415266748116,
+        "native": 0.43297255211918184,
+        "native_limit": 1.264483612297785,
+        "native_minimum_class_slack": 3.9326342670587726,
+        "step": 0.05,
+        "mixture_weight": 0.9740039677810555,
+        "changed_matches": 1499,
+        "public_class0": {
+          "direct": 80,
+          "recovered": 80
+        },
+        "rejected": {
+          "native_classification": 1
+        }
+      },
+      {
+        "iteration": 2,
+        "distance_squared": 1.0771975935929725,
+        "public": -0.01607514995752446,
+        "native": 0.7840120051247738,
+        "native_limit": 1.264483612297785,
+        "native_minimum_class_slack": 1.9649035045240635,
+        "step": 0.0125,
+        "mixture_weight": 0.9430675997071436,
+        "changed_matches": 616,
+        "public_class0": {
+          "direct": 80,
+          "recovered": 80
+        },
+        "rejected": {
+          "native_classification": 3
+        }
+      },
+      {
+        "iteration": 3,
+        "distance_squared": 1.0801125902209316,
+        "public": -0.019165358722014858,
+        "native": 1.031372944326483,
+        "native_limit": 1.264483612297785,
+        "native_minimum_class_slack": 0.8806685441492492,
+        "step": 0.00625,
+        "mixture_weight": 0.9327638254895589,
+        "changed_matches": 394,
+        "public_class0": {
+          "direct": 80,
+          "recovered": 80
+        },
+        "rejected": {
+          "native_classification": 4
+        }
+      },
+      {
+        "iteration": 4,
+        "distance_squared": 1.081611263479484,
+        "public": -0.020764850658375522,
+        "native": 1.1721867631768372,
+        "native_limit": 1.264483612297785,
+        "native_minimum_class_slack": 0.3126582480447515,
+        "step": 0.003125,
+        "mixture_weight": 0.9278503671339604,
+        "changed_matches": 274,
+        "public_class0": {
+          "direct": 80,
+          "recovered": 80
+        },
+        "rejected": {
+          "native_classification": 5
+        }
+      },
+      {
+        "iteration": 5,
+        "distance_squared": 1.082370831215728,
+        "public": -0.021516653831318067,
+        "native": 1.2478831494627503,
+        "native_limit": 1.264483612297785,
+        "native_minimum_class_slack": 0.02155335475300224,
+        "step": 0.0015625,
+        "mixture_weight": 0.925304846510378,
+        "changed_matches": 107,
+        "public_class0": {
+          "direct": 80,
+          "recovered": 80
+        },
+        "rejected": {
+          "native_classification": 6
+        }
+      },
+      {
+        "iteration": 6,
+        "distance_squared": 1.0824185199463916,
+        "public": -0.021564328196607363,
+        "native": 1.2527488179569435,
+        "native_limit": 1.264483612297785,
+        "native_minimum_class_slack": 0.0031601374332714816,
+        "step": 9.765625e-05,
+        "mixture_weight": 0.9239950473104552,
+        "changed_matches": 0,
+        "public_class0": {
+          "direct": 80,
+          "recovered": 80
+        },
+        "rejected": {
+          "native_classification": 10
+        }
+      },
+      {
+        "iteration": 7,
+        "distance_squared": 1.0824244828341887,
+        "public": -0.02157029085998019,
+        "native": 1.2533581447783242,
+        "native_limit": 1.264483612297785,
+        "native_minimum_class_slack": 0.0008593719642977504,
+        "step": 1.220703125e-05,
+        "mixture_weight": 0.9239121273783696,
+        "changed_matches": 0,
+        "public_class0": {
+          "direct": 80,
+          "recovered": 80
+        },
+        "rejected": {
+          "native_classification": 13
+        }
+      },
+      {
+        "iteration": 8,
+        "distance_squared": 1.0824259736194606,
+        "public": -0.021571781631227083,
+        "native": 1.2535105141759983,
+        "native_limit": 1.264483612297785,
+        "native_minimum_class_slack": 0.0002841293435367209,
+        "step": 3.0517578125e-06,
+        "mixture_weight": 0.9239017613916322,
+        "changed_matches": 0,
+        "public_class0": {
+          "direct": 80,
+          "recovered": 80
+        },
+        "rejected": {
+          "native_classification": 15
+        }
+      }
+    ],
+    "derivative_check": {
+      "distance_analytic": -0.27919979993084953,
+      "distance_numeric": -0.27919979994628363,
+      "public_analytic": -0.2791997999308505,
+      "public_numeric": -0.27919980016832824,
+      "matching_fixed_for_derivative": true
+    },
+    "metrics": {
+      "A_relative": 1.029917856454158,
+      "B_relative": 0.6181638904707956,
+      "logical_D": 1.2084453822243508,
+      "effective_A_distance_squared": 1.0824259736379431,
+      "left_task_relative": 6.50150974484368e-10,
+      "right_task_relative": 1.2723816859609767e-09,
+      "anchor_diagonal_relative": 7.252222013411117e-09
+    },
+    "seconds": 26.893529627472162,
+    "matching_calls": 10,
+    "complete_AGA_calls": 0,
+    "real_images": 0,
+    "original_expert_updates": 0,
+    "model_image_forwards": 0,
+    "scope": "One joint source-only construction. Two exact parameter gradients, paper two-objective formula with endpoints0/1; not MGDA-UB or a new optimizer. Matching recomputed in each otherwise-feasible proposal. Fixed teacher tangent conditions and native functional bound apply to complete finite source, not unseen data. No convergence, global maximum or full SVD contribution claim.",
+    "freeze_note": "Frozen on previous4090 before real-image evaluation; moved byte-identically to new4090 due GPU availability. Eight accepted steps, finite search stopped; not a stationary/global solution."
+  },
+  "joint_classification_evaluation_definition_20261027": {
+    "protocol": {
+      "experiment": "Joint A/B effective-distance and classification-constrained fixed point",
+      "output": "outputs/joint_classification_20261027/evaluation",
+      "tasks": {
+        "MNIST": {
+          "classes": 10,
+          "test_n": 10000
+        },
+        "SVHN": {
+          "classes": 10,
+          "test_n": 26032
+        }
+      },
+      "TA_coefficient": 0.5,
+      "mergers": [
+        "TA"
+      ],
+      "TIES": {
+        "repository": "https://github.com/prateeky2806/ties-merging",
+        "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+        "path": "external/ties-merging/src/utils/merge_utils.py",
+        "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+        "topk_percent": 20,
+        "coefficient": 1,
+        "resolve_method": "mass",
+        "merge_func": "dis-mean",
+        "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+      },
+      "pilot_n": 64,
+      "replay_n": 16,
+      "score_tolerance": 0.0005,
+      "task_budget": 0.5,
+      "utility_seed": null,
+      "utility_n": null,
+      "probe_rank": 32,
+      "test_status": "Complete historically exposed officialMNIST/SVHN benchmarks;not blind;no selection or parameter feedback",
+      "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+      "defense_optimization": "Jointly update final-MLP A and B/outputbias, maximizing effective task-complement A distance while reducing complete public-base TA.5 and author-AGA.5 class0 gaps. Native finite class inequalities and the full/task nonlinear response bound must remain feasible for every accepted step. Different joint variables and distance objective from old fixedA/B solve; not a solver-only rerun.",
+      "attacker_data": false,
+      "attack_gradient_steps": 0,
+      "AGA_references": {
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "SVHN": {
+          "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+          "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "AGA": {
+        "repository": "https://github.com/krumpguo/secure-merge-attack",
+        "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+        "file": "utils_attack_B32.py",
+        "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+        "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+      },
+      "defenses": {
+        "JointClassification_MNIST": {
+          "label": "Joint A/B numerical construction",
+          "target": "MNIST",
+          "release": {
+            "path": "outputs/joint_classification_20261027/point.pt",
+            "sha256": "4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d"
+          },
+          "AGA_edits": {
+            "path": "outputs/joint_classification_20261027/AGA/edits.pt",
+            "sha256": "PENDING_EXECUTION"
+          },
+          "budget_status": "A<=2,B<=4 declared source region; actual logicalD1.208445; not oldD.5",
+          "function_status": "Complete native accuracy to be evaluated, no .5pp veto"
+        }
+      },
+      "cases": [
+        {
+          "target": "MNIST",
+          "partner": "SVHN",
+          "defenses": [
+            "JointClassification_MNIST"
+          ]
+        }
+      ],
+      "legacy": {
+        "MNIST_SVHN/Unprotected": {
+          "standalone": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/Standalone/None/{task}"
+          },
+          "direct": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/TA/None/{task}"
+          },
+          "AGA_target_only": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/TA/Protected expert/{task}"
+          },
+          "AGA_both": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/TA/All experts/{task}"
+          }
+        },
+        "MNIST_SVHN/JointClassification_MNIST": {
+          "standalone": {
+            "path": "outputs/joint_classification_20261027/native/full.pt",
+            "sha256": "PENDING_EXECUTION",
+            "native_score_field": "after",
+            "key_template": "already_evaluated_native"
+          }
+        }
+      },
+      "source_sha256": {
+        "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+        "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+        "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+        "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+        "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+        "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+        "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+        "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+        "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+        "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+        "_impl/report.py": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+        "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+        "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+        "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+        "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+        "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+        "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+        "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+        "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+        "experiment/recover.py": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+        "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+      },
+      "original_batch_context_replays": true,
+      "parameter_budget_scope": "A<=2,B<=4 declared source region; actual logicalD1.208445; not oldD.5",
+      "native_evaluation": "Report complete native accuracy,paired changes and historical R; all frozen points evaluated without .5pp veto"
+    },
+    "driver_source": {
+      "native.py": "\"\"\"Evaluate one frozen MNIST publication; reuse the pinned original full scores.\"\"\"\nimport json,time\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.data import dataset,make_loader,official_labels\nfrom _impl.evaluate import evaluate\nfrom _impl.io import digest,new_output,save_json\nfrom _impl.metrics import task_change,row_metrics\nfrom _impl.models import checked_models,apply,initialize\ninitialize();start=time.perf_counter();root=Path('outputs/joint_classification_20261027')\nresult=json.loads((root/'source_result.json').read_text());ref=dict(path=str(root/'point.pt'),sha256=result['point_sha256'])\nbaseline='outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt'\nassert digest(baseline)=='f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51'\nraw=torch.load(baseline,map_location='cpu',weights_only=False)['Unprotected/Standalone/None/MNIST']\nassert raw['indices']==list(range(10000))\nlabels=official_labels('MNIST');np.testing.assert_array_equal(raw['target'].numpy(),labels)\n_,expert,head,pins=checked_models('MNIST');model=apply(expert,ref)\nout=new_output(str(root/'native'),dict(target='MNIST',task_budget=.5,max_accuracy_loss_pp=.5,publication=ref,baseline_scores=baseline))\nsave_json(out/'before_images.json',dict(publication=ref,checkpoint_sha256=pins,source_sha256=digest(__file__)))\nsink=[];evaluate(model,head,make_loader(dataset('MNIST','data',expert.val_preprocess)),'cuda',logit_sink=sink.append)\na,b=raw['logits'].double(),torch.cat(sink).double();row=task_change(a.numpy(),b.numpy());row.update(stage='full',before_correct=int((a.argmax(1).numpy()==labels).sum()),after_correct=int((b.argmax(1).numpy()==labels).sum()))\nrow.update(strict_task_passed=row['changed']==0 and row['R']<=.5,accuracy_loss_pp=100*(row['before_correct']-row['after_correct'])/row['n']);row['passed']=row['accuracy_loss_pp']<=.5\ntorch.save(dict(indices=raw['indices'],labels=labels,before=a,after=b),out/'full.pt');row['raw_sha256']=digest(out/'full.pt')\nsave_json(out/'results.json',dict(rows=[row],passed=row['passed'],image_forwards=10000,baseline_new_forwards=0,seconds=time.perf_counter()-start,paired=row_metrics(b,torch.tensor(labels),a,10)))\nprint(json.dumps(row),flush=True)\n",
+      "replay.py": "\"\"\"Read-only replay in the unchanged original 128-image evaluation contexts.\"\"\"\nimport json\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.models import initialize,checked_models,apply\nfrom _impl.data import dataset\nfrom _impl.io import digest\ninitialize();root=Path('outputs/joint_classification_20261027');r=json.loads((root/'source_result.json').read_text());ref=dict(path=str(root/'point.pt'),sha256=r['point_sha256'])\n_,e,h,_=checked_models('MNIST');m=apply(e,ref).cuda();h.cuda();d=dataset('MNIST','data',e.val_preprocess)\ns=torch.load(root/'native/full.pt',map_location='cpu',weights_only=False)['after'];ids=np.linspace(0,len(s)-1,16,dtype=int);maximum=0.;count=0\nwith torch.no_grad():\n for block in sorted(set(ids//128)):\n  start,end=int(block*128),min(int((block+1)*128),len(s));x=torch.stack([d[i][0] for i in range(start,end)]).cuda();actual=h(m(x)).cpu().double();wanted=ids[(ids>=start)&(ids<end)];subset=actual[wanted-start]\n  np.testing.assert_array_equal(subset.argmax(1).numpy(),s[wanted].argmax(1).numpy());maximum=max(maximum,float((subset-s[wanted]).abs().max()));count+=end-start\nassert maximum<=.0002,maximum\nr=dict(status='passed',source_sha256=digest(__file__),score_replays=16,original_batch_size=128,context_image_forwards=count,maximum_score_error=maximum,tolerance=.0002,new_expert_updates=0,new_AGA=0)\n(root/'context_replay.json').write_text(json.dumps(r,indent=2)+'\\n');print(json.dumps(r),flush=True)\n",
+      "evaluate.sh": "set -euo pipefail\ncd /root/autodl-tmp/posthoc-merge-security\nexport OPENBLAS_NUM_THREADS=4\nexport PYTHONPATH=.\npy=/root/autodl-tmp/posthoc-env/bin/python\nroot=outputs/joint_classification_20261027\n$py \"$root/native.py\"\n$py -m experiment.native --verify \"$root/native\"\n$py \"$root/replay.py\"\n$py -m experiment.recover --target MNIST --method aga --protocol \"$root/evaluate.json\" --publication \"$root/point.pt\" --sha256 4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d --aligned-reference --output \"$root/AGA\"\n$py - <<'PY'\nimport json\nfrom pathlib import Path\nfrom _impl.io import digest\nroot=Path('outputs/joint_classification_20261027')\np=root/'evaluate.json';c=json.loads(p.read_text());name='JointClassification_MNIST'\nc['defenses'][name]['AGA_edits']['sha256']=digest(root/'AGA/edits.pt')\nc['legacy']['MNIST_SVHN/'+name]['standalone']['sha256']=digest(root/'native/full.pt')\nc['frozen_point_before_images']='2d663fc;source_result point4ed13229'\n(root/'evaluate.complete.json').write_text(json.dumps(c,ensure_ascii=False,indent=2)+'\\n')\nPY\n$py -m experiment.main_table --protocol \"$root/evaluate.complete.json\" --case 0\n$py -m experiment.main_table --verify \"$root/evaluation/full/00_MNIST_SVHN\"\n"
+    },
+    "driver_sha256": {
+      "native.py": "4978fa517e0dada1304c2b575c25a8f888edf56c94483e1d1bbd49b09e8e9567",
+      "replay.py": "9b162bb40e75851dab0825dbb58b22a72b8b6690220985c46214970a1eff5550",
+      "evaluate.sh": "094609880adea90998fb2a9c85ae82b1bd38cae176c7f39875933b6251228716"
+    },
+    "policy": "Matched unprotected native/fusion scores reused with SHA. Original fullAGA once, TA.5 both scopes, full128-context replay. Only artifact SHA placeholders filled after execution; scientific settings fixed."
   }
 }

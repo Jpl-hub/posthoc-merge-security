@@ -17,7 +17,7 @@
   "compute": {
     "primary_GPU": "RTX4090",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "ssh_control_socket": "/tmp/posthoc_4090_34125.sock",
+    "ssh_control_socket": "/tmp/posthoc_4090_23800.sock",
     "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.8.0+cu128",
     "numpy": "1.26.4",
@@ -29,10 +29,12 @@
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "Previous17811 host remains unavailable. ItsOct25/26 rawscores/models have not been restored onto this new host.",
     "record": "results/engineering_refactor/compute_4090_20261026.json",
-    "secondary_role": "CPU/storage only; no GPU jobs",
-    "verified_utc": "2026-10-26T15:54:32.058598+00:00",
-    "primary_available_GiB": 45,
-    "ssh_access": "Windows OpenSSH connected via verified public hostname alias;old WSL control socket currently unavailable"
+    "secondary_role": "All other hosts CPU/storage only per user",
+    "verified_utc": "2026-10-27T03:36:23.628501+00:00",
+    "primary_available_GiB": 49,
+    "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
+    "primary_endpoint": "connect.bjb2.seetacloud.com:23800",
+    "previous_primary_role": "34125 host now CPU/storage only; preserved source point and scores"
   },
   "current_effective_numerical_candidates": [
     {
@@ -84,10 +86,10 @@
     "byte_identical_duplicates_hardlinked": 2,
     "original_or_unique_release_weights_deleted": 0
   },
-  "updated_utc": "2026-10-26T14:25:07.218971+00:00",
+  "updated_utc": "2026-10-27T03:36:23.628501+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "核心方法优先：改善独立能力与融合保护的取舍，研究A/B共同改变及SVD的实际作用。当前三任务冻结点已完整评价，不再仅因自定0.5阈值否决，不用测试/伙伴修补旧点。",
+  "next_action": "完成冻结4ed13229联合A/B点的独立、TA.5及AGA两范围评价；已登记，不因源目标或真实成绩继续改参数。新4090迁移后运行。",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -102,12 +104,9 @@
     "retired_temporary_source_and_config_files": 22
   },
   "github_sync": {
-    "status": "Verified GitHub publication and readback completed",
-    "scientific_remote_commit": "f41ae5ab9760640308287a8c54cc3e7eccd3b2f1",
-    "equivalent_local_scientific_commit": "1e85a4c09847893bcd67694b3fcda7769dd42d31",
-    "scientific_tree": "6474df981b8fb356b155e22bd56699edfaf2a208",
-    "readback": "main identical; full Markdown and TeX files fetched; remote tree equals local tree",
-    "server_lightweight_files_verified": 11,
+    "status": "Plugin read access restored; current results being prepared for synchronization",
+    "last_verified_remote_commit": "e1c3587fe394eb27a2d18a3856ffcafaf7c9aea8",
+    "last_verified_local_commit": "2faeee5ac433d2026a6c1bbaec216e460785bab4",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -181,5 +180,19 @@
     "latest_function_check": "Fixed teacher-only synthetic transitions:all endpoints preserved;interior same teacher MNIST136/150,SVHN143/150,DTD659/705. No natural-data causal claim;no new defense point.",
     "transition_record": "results/data_free_compensation/paper_protocol_review.json:ABM_transition_review_20261026"
   },
-  "threshold_review": "notes/parameter_scale_and_threat_model.md#2026-10-26四种05的来源与修正"
+  "threshold_review": "notes/parameter_scale_and_threat_model.md#2026-10-26四种05的来源与修正",
+  "classification_condition_review": {
+    "record": "results/data_free_compensation/paper_protocol_review.json:classification_condition_20261027",
+    "new_defense_models": 0,
+    "summary": "备用旧条件排除70个DTD原教师合成视图的71条正确类别比较；新条件在原教师处精确且三任务源核对通过。并非当前有效方法的实现错误，不解释自然DTD损失。",
+    "independent_numpy": "15groups passed;max full-readout identity error2.60e-12"
+  },
+  "joint_construction": {
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_classification_source_result_20261027",
+    "point_sha256": "4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d",
+    "accepted_steps": 8,
+    "source_feasible": true,
+    "stop": "finite line search blocked by source classification constraints; no convergence claim",
+    "real_evaluation": "pending compute migration; not a new successful defense"
+  }
 }
