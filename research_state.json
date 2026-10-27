@@ -18,9 +18,9 @@
     "primary_GPU": "RTX4090",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
     "ssh_control_socket": "/tmp/posthoc_4090_40815.sock",
-    "python": "/root/miniconda3/bin/python",
+    "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.8.0+cu128",
-    "numpy": "2.3.2 (base image,not experiment runtime)",
+    "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
     "active_GPU_jobs": 0,
     "secondary_GPU": "RTX3090",
@@ -34,8 +34,8 @@
     "primary_available_GiB": 50,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:40815",
-    "previous_primary_role": "23800 unavailable; completed raw evidence not yet migrated",
-    "primary_workspace_status": "fresh instance;project and dedicated runtime not installed"
+    "previous_primary_role": "23800 permanently released before archive completed; latest ineffective point raw artifacts lost",
+    "primary_workspace_status": "Runtime and GPU smoke verified; original model assets still transferring"
   },
   "current_effective_numerical_candidates": [
     {
@@ -89,10 +89,10 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-27T08:54:01.996578+00:00",
+  "updated_utc": "2026-10-27T09:50:14.761967+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Restore the active4090 workspace from verified retained assets; preserve old-instance unique results before release. Continue functional-inequality mechanism analysis; no new experiment registered or running.",
+  "next_action": "No further34125 access required; finish new4090 restoration from retained copies, then continue core functional-inequality mechanism work. No new research experiment running.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -109,9 +109,9 @@
     "last_verified_temporary_files_removed": 33
   },
   "github_sync": {
-    "status": "result closure pending current sync",
-    "last_verified_remote_commit": "fd05285455a50a7c0445ee8efca3ee36a571e26d",
-    "last_verified_local_commit": "74f2c49fb10c95e898449635d17b2b392e031989",
+    "status": "Consolidation result pending this publication",
+    "last_verified_remote_commit": "99debfd16a8cb3aaf2291816bae7bd23a09a4f98",
+    "last_verified_local_commit": "822d25ada29923aeebe51658e28e86f01435058c",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -253,7 +253,9 @@
     "complete_AGA_calls": 1,
     "context_score_replays": 240,
     "real_evaluation_completed": true,
-    "closed_do_not_resume": true
+    "closed_do_not_resume": true,
+    "raw_artifacts_currently_available": false,
+    "availability_record": "results/engineering_refactor/server_consolidation_20261027.json"
   },
   "latest_functional_formulation_review": {
     "status": "formulation_review_only_no_new_experiment",
@@ -276,52 +278,13 @@
     "new_production_modules": 0
   },
   "server_consolidation": {
-    "updated_utc": "2026-10-27T08:54:01.996578+00:00",
-    "desired_roles": "One active4090;3090CPU retained for archives. Additional machines released only after unique-file migration and destination hash verification.",
-    "new_4090": {
-      "endpoint": "connect.cqa1.seetacloud.com:40815",
-      "hostname": "autodl-container-9cd04aa11e-a90ef48d",
-      "ssh_control_socket": "/tmp/posthoc_4090_40815.sock",
-      "GPU": "RTX4090",
-      "GPU_utilization_percent": 0,
-      "project_present": false,
-      "data_disk_GiB_available": 50,
-      "status": "SSH_verified_fresh_instance_no_project_or_jobs"
-    },
-    "archive_3090": {
-      "endpoint": "region-41.seetacloud.com:55548",
-      "ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
-      "root": "/root/autodl-tmp/merge_security_20261009",
-      "data_available_GiB": 5.5,
-      "system_available_GiB": 5.0,
-      "status": "SSH_verified_retain"
-    },
-    "old_4090s": [
-      {
-        "endpoint": "connect.bjb2.seetacloud.com:23800",
-        "status": "SSH_closed_before_login",
-        "known_evidence": "Oct27 joint_classification and joint_finite raw results/source/publications; lightweight results retrieved, full archive not verified elsewhere",
-        "release_ready": false
-      },
-      {
-        "endpoint": "connect.nmb1.seetacloud.com:34125",
-        "status": "SSH_closed_before_login",
-        "known_evidence": "Oct26 data-free compensation source/publications/evaluation; complete backup not verified",
-        "release_ready": false
-      },
-      {
-        "endpoint": "connect.cqa1.seetacloud.com:17811",
-        "status": "SSH_closed_before_login",
-        "known_evidence": "Prior Oct25/26 raw scores/models explicitly recorded as not restored",
-        "release_ready": false
-      }
-    ],
-    "local_free_GiB": {
-      "D": 22,
-      "C": 6
-    },
-    "released_instances": 0,
-    "deleted_unique_evidence": 0,
-    "next": "Bring old instances up in CPU mode;inventory and copy unique evidence to retained storage, compare SHA before any permanent release. No GPU needed for migration."
+    "record": "results/engineering_refactor/server_consolidation_20261027.json",
+    "retained_compute": "4090:40815",
+    "retained_archive": "3090 CPU mode",
+    "source_23800": "Permanently released before complete migration; latest failed-point raw artifacts lost, detailed index retained",
+    "source_34125": "All8220 file contents backed up and verified; permanent release cleared",
+    "source_17811": "Not inventoried; no release clearance",
+    "new4090_restore": "Original baseline assets from3090 and scientific outputs from verified local tar still transferring",
+    "active_research_jobs": 0
   }
 }
