@@ -1,25 +1,13 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-27T14:14:16.712819+00:00",
+  "updated_utc": "2026-10-27T14:30:50.465892+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "status": "running_read_only_diagnostic",
-      "path": "outputs/joint_conditional_20261027",
-      "pid": 11544,
-      "registration_local_commit": "10f5d7b",
-      "work": "One fresh original-teacher synthetic source and full-model/cache consistency for two frozen publications",
-      "timeout_seconds": 1200,
-      "expected_minutes": 5,
-      "manual_next_check_minutes": 10,
-      "new_defense_points": 0
-    }
-  ],
-  "next_action": "User manual check after10minutes;read generalization.log/result without automatic wakeups;do not repeat source or tune frozen points.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Core-method work must address source-family function preservation;one fresh source failed to distinguish effective and failed releases. No new GPUjob launched,no seed/count/iteration rerun or test-based repair. User-directed continuation;no automatic reminders.",
   "github_sync": {
-    "status": "New local results pending; first connector request this turn failed HTTP transport; no remote publication claimed.",
+    "status": "Main99debfd confirmed;fetch_blob then failed connector HTTPtransport. Latestlocalresults pending publication;receipt authoritative.",
     "last_verified_remote_commit": "99debfd16a8cb3aaf2291816bae7bd23a09a4f98",
     "last_verified_local_commit": "822d25ada29923aeebe51658e28e86f01435058c",
     "receipt": "outputs/latest_github_sync_receipt.json"
@@ -290,5 +278,20 @@
     "accepted_steps": 123,
     "construction_seconds": 1422.639369957149,
     "closed_do_not_resume": true
+  },
+  "joint_conditional_generalization": {
+    "status": "completed_read_only",
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_conditional_generalization_result_20261027",
+    "fresh_retained_existing_and_new": [
+      798,
+      798
+    ],
+    "n_each": 800,
+    "max_full_vs_cached_score_error": 0.0001544952392578125,
+    "class_disagreements_full_vs_cached": 0,
+    "generation_seconds": 234.84796944260597,
+    "evaluation_seconds": 6.099452696740627,
+    "new_defense_points": 0,
+    "new_real_images": 0
   }
 }
