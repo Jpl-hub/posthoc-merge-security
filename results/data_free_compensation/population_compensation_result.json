@@ -23210,5 +23210,84 @@
       ]
     },
     "finding": "Both frozen models retain798/800teacher classes on one independently generated source,despite naturalMNIST99.61 versus46.75. Complete forward/cache class predictions agree on all4800evaluations. Current synthetic family does not distinguish natural function preservation;cannot attribute solely to memorizing the160construction images or to cache/fullforward mismatch. No model repaired or selected."
+  },
+  "input_response_result_20261027": {
+    "rows": [
+      {
+        "group": "construction",
+        "model": "original",
+        "n": 800,
+        "task_direction_relative_rms": 0.0,
+        "complement_direction_relative_rms": 0.0,
+        "finite_chord_relative_rms": 0.0,
+        "centered_score_relative_rms": 0.0
+      },
+      {
+        "group": "construction",
+        "model": "existing_effective",
+        "n": 800,
+        "task_direction_relative_rms": 1.0326594519212267,
+        "complement_direction_relative_rms": 3.580314831254948,
+        "finite_chord_relative_rms": 0.8671492842385147,
+        "centered_score_relative_rms": 0.0463010410902012
+      },
+      {
+        "group": "construction",
+        "model": "joint_conditional",
+        "n": 800,
+        "task_direction_relative_rms": 1.791651258551766,
+        "complement_direction_relative_rms": 14.83347020611302,
+        "finite_chord_relative_rms": 2.8283717029364697,
+        "centered_score_relative_rms": 0.016158367882374697
+      },
+      {
+        "group": "independent",
+        "model": "original",
+        "n": 800,
+        "task_direction_relative_rms": 0.0,
+        "complement_direction_relative_rms": 0.0,
+        "finite_chord_relative_rms": 0.0,
+        "centered_score_relative_rms": 0.0
+      },
+      {
+        "group": "independent",
+        "model": "existing_effective",
+        "n": 800,
+        "task_direction_relative_rms": 1.0394784747106565,
+        "complement_direction_relative_rms": 3.5564832940070854,
+        "finite_chord_relative_rms": 0.8743838136873935,
+        "centered_score_relative_rms": 0.07347498261342869
+      },
+      {
+        "group": "independent",
+        "model": "joint_conditional",
+        "n": 800,
+        "task_direction_relative_rms": 1.7994507786319383,
+        "complement_direction_relative_rms": 15.064861647904573,
+        "finite_chord_relative_rms": 2.8073791284612084,
+        "centered_score_relative_rms": 0.18947016312474788
+      }
+    ],
+    "seconds": 5.710520587861538,
+    "source_sha256": "4b8feb778b8a75303696367f86e2599992273c071a39e8305990a8ecd8ec05c3",
+    "protocol_sha256": "e94408bf0b23e755466004b4f270ba80aaa61203094685e8467c65e42c994f08",
+    "arrays_sha256": "4f3b58f2de1f55b7316308eb974510d43ed9daa299868b50f85cb7b8fac17659",
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "finite_difference_max_relative_error": 4.2884229774696865e-11,
+    "real_images": 0,
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "full_model_image_forwards": 0,
+    "scope": "Existing synthetic prefixes only. Complete last residual block and readout differentiated; original LN maps task-input coordinates to residual directions. No natural-data guarantee or optimization.",
+    "independent_numpy_recount": {
+      "rows": 6,
+      "maximum_difference": 0
+    },
+    "finding": "A taskprojection preservation does not preserve the full nonlinear score response. Independent synthetic prefixes: task-direction relativeRMS1.0395(existing)vs1.7995(failed);complement3.5565vs15.0649. This separates these two frozen points,but does not prove causation or a universal acceptance threshold. Existing effective point has nonzero response difference,so strict derivative equality is not required by its observed accuracy.",
+    "next_condition": "For e(h)=g_changed(h)-g_original(h), e(h+d)=e(h)+integral_0^1 J_e(h+td)d dt. A possible finite native condition must control functionerror plus the integrated response over a declared inputset. A derivative penalty at source alone is not that guarantee. No new optimization or repaired release selected."
   }
 }
