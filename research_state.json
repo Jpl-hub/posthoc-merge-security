@@ -88,7 +88,7 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-27T05:30:35.851515+00:00",
+  "updated_utc": "2026-10-27T05:34:49.186161+00:00",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
@@ -99,6 +99,15 @@
       "log": "outputs/joint_finite_20261027/run.log",
       "source_sha256": "70343cf75cc33d990cf94e0391722e2b65013b261aabcd409cf10185e36151ae",
       "pre_execution_local_commit": "1d03907301c195027ae319f59d665c6dfd1c8b61"
+    },
+    {
+      "role": "serial existing evaluation after source completion",
+      "host": "4090:23800",
+      "pid": 5486,
+      "source_pid": 5313,
+      "log": "outputs/joint_finite_20261027/evaluation.log",
+      "stages": "freeze-SHA,complete-native,original-context-replay,originalAGA-once,TA.5-target/partner,NumPy-paired",
+      "stop_if_source_fails": true
     }
   ],
   "next_action": "Continue the one running finite A/B construction;no duplicate launch. Freeze finalpoint then complete native/TA.5/authorAGA and matched partner evaluation if source-feasible.",

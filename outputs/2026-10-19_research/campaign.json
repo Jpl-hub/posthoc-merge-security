@@ -1,6 +1,6 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-27T05:30:35.851515+00:00",
+  "updated_utc": "2026-10-27T05:34:49.186161+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 1,
@@ -13,6 +13,15 @@
       "log": "outputs/joint_finite_20261027/run.log",
       "source_sha256": "70343cf75cc33d990cf94e0391722e2b65013b261aabcd409cf10185e36151ae",
       "pre_execution_local_commit": "1d03907301c195027ae319f59d665c6dfd1c8b61"
+    },
+    {
+      "role": "serial existing evaluation after source completion",
+      "host": "4090:23800",
+      "pid": 5486,
+      "source_pid": 5313,
+      "log": "outputs/joint_finite_20261027/evaluation.log",
+      "stages": "freeze-SHA,complete-native,original-context-replay,originalAGA-once,TA.5-target/partner,NumPy-paired",
+      "stop_if_source_fails": true
     }
   ],
   "next_action": "Continue the one running finite A/B construction;no duplicate launch. Freeze finalpoint then complete native/TA.5/authorAGA and matched partner evaluation if source-feasible.",
