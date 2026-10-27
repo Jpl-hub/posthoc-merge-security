@@ -22,7 +22,7 @@
     "torch": "2.8.0+cu128",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_GPU": "RTX3090",
     "secondary_root": "/root/autodl-tmp/merge_security_20261009",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
@@ -30,7 +30,7 @@
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/engineering_refactor/compute_4090_20261026.json",
     "secondary_role": "All other hosts CPU/storage only per user",
-    "verified_utc": "2026-10-27T16:12:38.742667+00:00",
+    "verified_utc": "2026-10-27T16:59:27.685130+00:00",
     "primary_available_GiB": 44,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:40815",
@@ -89,21 +89,10 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-27T16:49:18.619812+00:00",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "40815",
-      "pid": 16023,
-      "status": "running_fixed_native_fit_TA_and_AGA_controls",
-      "output": "outputs/joint_task_response_20261027/native_fit_controls",
-      "log": "outputs/joint_task_response_20261027/native_fit_controls/fusion.log",
-      "timeout_seconds": 2400,
-      "registered_commit": "18710ad",
-      "defense_candidates": 0
-    }
-  ],
-  "next_action": "Manual follow-up in15minutes:complete allthree fixednativefit TA/AGA controls,notnewdefenseorfailedpointrepair. Check whether protective B component isneededforfusiondamage. Do not duplicate jobs.",
+  "updated_utc": "2026-10-27T16:59:27.685130+00:00",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Study how the B protection component can preserve complete native classification, based on original weights and allowed synthetic inputs. Native-only fitting recovers native ability but loses all fusion protection. No queued job; no automatic wakeup or failed-point retries.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -120,9 +109,9 @@
     "last_verified_temporary_files_removed": 33
   },
   "github_sync": {
-    "status": "GitHub main99debfd readable again;pending current scientific snapshot publication/readback.",
-    "last_verified_remote_commit": "99debfd16a8cb3aaf2291816bae7bd23a09a4f98",
-    "last_verified_local_commit": "822d25ada29923aeebe51658e28e86f01435058c",
+    "status": "Previous snapshot verified; current native-fit fusion completion pending publication.",
+    "last_verified_remote_commit": "608fdd9d6eb2c8d87276bf6cb53360826c79197f",
+    "last_verified_local_commit": "db68501213734a0707a319af532d860b015949fd",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -404,7 +393,7 @@
     "backup_sha256": "9efb2a4f10b28796049e4fbf45d07d5e7ee745e5524b16cd9fc5247f8e911b4f"
   },
   "latest_native_fit_controls": {
-    "status": "standalone_complete_fusion_running",
+    "status": "complete_standalone_and_fusion_no_new_effective_defense",
     "record": "results/data_free_compensation/population_compensation_result.json:native_fit_controls_result_20261028",
     "center_native_accuracy": [
       99.68,
@@ -417,6 +406,29 @@
     ],
     "standalone_context_replays": 80,
     "replay_max_error": 0.0,
-    "new_defense_candidates": 0
+    "new_defense_candidates": 0,
+    "fusion_record": "results/data_free_compensation/population_compensation_result.json:native_fit_fusion_result_20261028",
+    "native_TA_AGAtarget_AGAboth": [
+      [
+        99.68,
+        99.36,
+        99.31,
+        99.33
+      ],
+      [
+        99.69,
+        99.37,
+        99.31,
+        99.32
+      ],
+      [
+        99.69,
+        99.36,
+        99.29,
+        99.3
+      ]
+    ],
+    "fusion_context_replays": 672,
+    "maximum_fusion_replay_error": 2.288818359375e-05
   }
 }

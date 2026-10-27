@@ -1,26 +1,15 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-27T16:49:18.619812+00:00",
+  "updated_utc": "2026-10-27T16:59:27.685130+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "40815",
-      "pid": 16023,
-      "status": "running_fixed_native_fit_TA_and_AGA_controls",
-      "output": "outputs/joint_task_response_20261027/native_fit_controls",
-      "log": "outputs/joint_task_response_20261027/native_fit_controls/fusion.log",
-      "timeout_seconds": 2400,
-      "registered_commit": "18710ad",
-      "defense_candidates": 0
-    }
-  ],
-  "next_action": "Manual follow-up in15minutes:complete allthree fixednativefit TA/AGA controls,notnewdefenseorfailedpointrepair. Check whether protective B component isneededforfusiondamage. Do not duplicate jobs.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Study how the B protection component can preserve complete native classification, based on original weights and allowed synthetic inputs. Native-only fitting recovers native ability but loses all fusion protection. No queued job; no automatic wakeup or failed-point retries.",
   "github_sync": {
-    "status": "GitHub main99debfd readable again;pending current scientific snapshot publication/readback.",
-    "last_verified_remote_commit": "99debfd16a8cb3aaf2291816bae7bd23a09a4f98",
-    "last_verified_local_commit": "822d25ada29923aeebe51658e28e86f01435058c",
+    "status": "Previous snapshot verified; current native-fit fusion completion pending publication.",
+    "last_verified_remote_commit": "608fdd9d6eb2c8d87276bf6cb53360826c79197f",
+    "last_verified_local_commit": "db68501213734a0707a319af532d860b015949fd",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -346,7 +335,7 @@
     "backup_sha256": "9efb2a4f10b28796049e4fbf45d07d5e7ee745e5524b16cd9fc5247f8e911b4f"
   },
   "latest_native_fit_controls": {
-    "status": "standalone_complete_fusion_running",
+    "status": "complete_standalone_and_fusion_no_new_effective_defense",
     "record": "results/data_free_compensation/population_compensation_result.json:native_fit_controls_result_20261028",
     "center_native_accuracy": [
       99.68,
@@ -359,6 +348,29 @@
     ],
     "standalone_context_replays": 80,
     "replay_max_error": 0.0,
-    "new_defense_candidates": 0
+    "new_defense_candidates": 0,
+    "fusion_record": "results/data_free_compensation/population_compensation_result.json:native_fit_fusion_result_20261028",
+    "native_TA_AGAtarget_AGAboth": [
+      [
+        99.68,
+        99.36,
+        99.31,
+        99.33
+      ],
+      [
+        99.69,
+        99.37,
+        99.31,
+        99.32
+      ],
+      [
+        99.69,
+        99.36,
+        99.29,
+        99.3
+      ]
+    ],
+    "fusion_context_replays": 672,
+    "maximum_fusion_replay_error": 2.288818359375e-05
   }
 }
