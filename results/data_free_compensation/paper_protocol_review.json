@@ -2075,6 +2075,93 @@
         "sha256": "4f461a141587aa7aae3c771a65a53d5da53d82a4c3263ce823280bfd07207f93",
         "source": "\"\"\"Joint A/B compensation using the complete native-response quadratic.\"\"\"\nimport json, math, time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.io import digest\nfrom _impl.models import initialize, checked_models\nfrom _impl.attacks import load_author\nfrom _impl.metrics import logical_parameter_distance\n\ninitialize()\ntorch.set_default_dtype(torch.float64)\nstart = time.perf_counter()\nout = Path('outputs/joint_task_response_20261027')\nassert out.exists() and not (out/'result.json').exists() and not (out/'point.pt').exists()\nsource = Path('outputs/native_ellipse_classification_20261026/source/source.pt')\nassert digest(source) == '33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5'\nraw = torch.load(source, map_location='cpu', weights_only=False)\nbase, expert, head, pins = checked_models('MNIST')\ns, bs = expert.state_dict(), base.state_dict()\nk = 'model.visual.transformer.resblocks.11.mlp.'\nto = lambda x: x.double().cuda()\nA, A0, a, a0, B, B0, b, b0, gamma, beta = [to(v) for v in [s[k+'c_fc.weight'], bs[k+'c_fc.weight'], s[k+'c_fc.bias'], bs[k+'c_fc.bias'], s[k+'c_proj.weight'], bs[k+'c_proj.weight'], s[k+'c_proj.bias'], bs[k+'c_proj.bias'], s['model.visual.transformer.resblocks.11.ln_2.weight'], s['model.visual.transformer.resblocks.11.ln_2.bias']]]\nU, _, Vh = torch.linalg.svd(A-A0, full_matrices=False)\nU, V = U[:, :32], Vh[:32].T\nA0r = A0-(A0@V)@V.T\nK = A0r@A0r.T\nGrows = -(U@U.T)*K\nGrows.diagonal().add_(K.diagonal())\nLrows = torch.linalg.cholesky(Grows)\nlam = torch.cholesky_solve((-(A*A0).sum(1))[:, None], Lrows)\ndA = lam*A0r\ndA -= U@(U.T@dA)\nAp = A+dA\ndel K, Grows\n\ndef tangent(g):\n    g = g-U@(U.T@g)\n    g = g-(g@V)@V.T\n    lam = torch.cholesky_solve((g*A0).sum(1)[:, None], Lrows)\n    q = lam*A0r\n    return g-q+U@(U.T@q)\n\nactivate = lambda z: z*torch.sigmoid(1.702*z)\naugmented = lambda x, aa: torch.cat([activate(x@aa.T+a).T, torch.ones(1, len(x), device='cuda')], 0)\nRorig = torch.cat([B, b[:, None]], 1)\nna, nr = A.norm(), Rorig.norm()\ncache = {name: {key: to(v) for key, v in row.items()} for name, row in raw['cache'].items()}\nlayer_path = Path('outputs/task_shaped_compensation_20261026/layer_inputs.pt')\nassert digest(layer_path) == '10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe'\nu = torch.load(layer_path, map_location='cuda', weights_only=False)\nxl = beta+gamma*u\npopulations = [(xl, activate(xl@A.T+a)@B.T+b), (cache['native']['x'], cache['native']['final']-cache['native']['prefix'])]\nweights = []\ntrace_G = torch.zeros((),device='cuda')\nfor x, y in populations:\n    variance = y.square().sum()/len(y)-y.mean(0).square().sum()\n    w = 1/(len(y)*variance)\n    weights.append(w)\n    for lo in range(0,len(x),512):\n        trace_G += w*augmented(x[lo:lo+512],Ap).square().sum()\nrho = .01*trace_G/3073\n\n@torch.no_grad()\ndef native_function(aa, rr):\n    value = rho*(rr-Rorig).square().sum()\n    for (x, y), w in zip(populations, weights):\n        for lo in range(0, len(x), 1024):\n            error = (rr@augmented(x[lo:lo+1024], aa)).T-y[lo:lo+1024]\n            value += w*error.square().sum()\n    return float(value)\n\nW = to(head.weight)\nassert float(head.bias.abs().max()) == 0\nhead_scale = W.square().sum(1).mean().sqrt()\neps = expert.model.visual.ln_post.eps\nnames = ['model.visual.ln_post.weight', 'model.visual.ln_post.bias', 'model.visual.proj']\nreadouts = {name: [to(s[key] if name == 'native' else (s[key]+bs[key])/2) for key in names] for name in cache}\ndef classify(h, name):\n    g, bb, P = readouts[name]\n    z = F.layer_norm(h, (768,), g, bb, eps)@P\n    return F.normalize(z, dim=-1)@W.T\n\ntail_error = max(float((classify(cache[name]['final'], name)-cache[name]['scores']).abs().max()) for name in cache)\nassert tail_error < .0005\nh0 = cache['native']['final']\nhc0 = h0-h0.mean(1, keepdim=True)\nsigma0 = (hc0.square().mean(1)+eps).sqrt()\nteacher = cache['native']['scores'].argmax(1)\nids = torch.arange(len(h0), device='cuda')\ng, bb, P = readouts['native']\npw = P@W.T\nlinear = g[:, None]*pw\nlinear -= linear.mean(0, keepdim=True)\noffset = bb@pw\nc = offset[teacher, None]-offset[None, :]\nmask = torch.arange(len(W), device='cuda')[None, :] != teacher[:, None]\n\nauthor, author_sha = load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))\nassert author_sha == '4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778'\nmatching_calls = 0\ndef matching(aa):\n    global matching_calls\n    matching_calls += 1\n    return author['solve_permutation'](aa.detach().float().cpu(), A0.float().cpu()).cuda()\n\ndef public(aa, rr, pi):\n    scores = {}\n    for name in ['direct', 'recovered']:\n        ai, bi = (aa, a) if name == 'direct' else (aa[pi], a[pi])\n        H = activate(cache[name]['x']@((ai+A0)/2).T+(bi+a0)/2).T\n        h = cache[name]['prefix']+(B0@H+b0[:, None]).T/2\n        if name == 'recovered':\n            back = torch.empty_like(H)\n            back[pi] = H\n            H = back\n        h = h+(rr@torch.cat([H, torch.ones(1, H.shape[1], device='cuda')], 0)).T/2\n        scores[name] = classify(h, name)\n    margins = []\n    for v in scores.values():\n        other = v.masked_fill(~mask, -torch.inf).max(1).values\n        margins.append(v[ids, teacher]-other)\n    # Unnormalised logsumexp upper-bounds the worst teacher-class margin.\n    # Negative objective implies every public synthetic context is misclassified.\n    return torch.logsumexp(torch.cat(margins), 0), scores\n\noriginal_effective = A*gamma\noriginal_effective -= original_effective.mean(1, keepdim=True)\ndef distance(aa):\n    delta = (aa-A)*gamma\n    delta = delta-delta.mean(1, keepdim=True)\n    return delta.square().sum()/original_effective.square().sum()\n\nvalue_limit = native_function(Ap,Rorig)\npi = matching(Ap)\nx = cache['native']['x']; m = len(W)-1\nother = torch.arange(len(W),device='cuda').expand(len(x),-1)\nother = other[other!=teacher[:,None]].reshape(len(x),m)\nlinpair = linear[:,teacher].T[:,None,:]-linear.T[other]\ncpair = offset[teacher,None]-offset[other]\n\n# Add finite response changes along every original rank32 task direction.\n# No image generation, changed-model feedback or real inputs enter these probes.\nnative_value_function = native_function\nprefix = cache['native']['prefix']\nsig = ((prefix-prefix.mean(1,keepdim=True)).square().mean(1)+expert.model.visual.transformer.resblocks[11].ln_2.eps).sqrt()\nassert bool((gamma != 0).all())\nnormal_eps = expert.model.visual.transformer.resblocks[11].ln_2.eps\nshifted, owner = [], []\nwith torch.no_grad():\n    for i in range(len(prefix)):\n        direction = sig[i]*V.T/gamma\n        hh = torch.cat([prefix[i]+direction, prefix[i]-direction])\n        shifted.append(F.layer_norm(hh,(768,),gamma,beta,normal_eps))\n        owner.append(torch.full((64,),i,dtype=torch.long,device='cuda'))\n    xf = torch.cat(shifted); owner = torch.cat(owner)\n    yf = torch.cat([(activate(xf[lo:lo+512]@A.T+a)-activate(x[owner[lo:lo+512]]@A.T+a))@B.T\n                    for lo in range(0,len(xf),512)])\n    wf = 1/yf.square().sum()\n\ndef feature(aa,number,lo,hi):\n    if number < 2:\n        return augmented(populations[number][0][lo:hi],aa)\n    values = activate(xf[lo:hi]@aa.T+a)-activate(x[owner[lo:hi]]@aa.T+a)\n    return torch.cat([values.T,torch.zeros(1,len(values),device='cuda')],0)\n\nfunctional_targets = [y for _,y in populations]+[yf]\nfunctional_weights = weights+[wf]\n\n@torch.no_grad()\ndef response_components(aa,rr):\n    values = [native_value_function(aa,rr),0.]\n    for lo in range(0,len(xf),512):\n        err = (rr@feature(aa,2,lo,lo+512)).T-yf[lo:lo+512]\n        values[1] += float(wf*err.square().sum())\n    return values\n\n@torch.no_grad()\ndef native_function(aa,rr):\n    return sum(response_components(aa,rr))\n\ncomponent_limits = response_components(Ap,Rorig)\nassert abs(component_limits[0]-value_limit)<1e-10\ntau = sum(component_limits)\nconstant = rho*Rorig.square().sum()+sum(w*y.square().sum() for y,w in zip(functional_targets,functional_weights))\n\ndef conditional(aa):\n    G = rho*torch.eye(Rorig.shape[1],device='cuda')\n    T = rho*Rorig\n    for number,(y,w) in enumerate(zip(functional_targets,functional_weights)):\n        for lo in range(0,len(y),512):\n            H = feature(aa,number,lo,lo+512)\n            G = G+w*(H@H.T)\n            T = T+w*(y[lo:lo+512].T@H.T)\n    L = torch.linalg.cholesky(G)\n    center = torch.cholesky_solve(T.T,L).T\n    emin = constant-(T*center).sum()\n    return center,L,emin\n\ndef reconstruct(aa,z):\n    center,L,emin = conditional(aa)\n    room = tau-emin\n    if float(room.detach())<=0:\n        return None,emin,L\n    rr = center+room.sqrt()*torch.linalg.solve_triangular(L.T,z.T,upper=True).T\n    return rr,emin,L\n\ndef class_values(aa,rr):\n    hh = cache['native']['prefix']+(rr@augmented(x,aa)).T\n    sigma = ((hh-hh.mean(1,keepdim=True)).square().mean(1)+eps).sqrt()\n    return (linpair*hh[:,None,:]).sum(2)+cpair*sigma[:,None]\n\n# The two finite response bounds are fixed at the same A-only counterfactual.\n# The original expert, not an effective or failed publication, defines every bound.\ncenter,L,emin = conditional(Ap)\nfor init_power in range(25):\n    R = Rorig+(center-Rorig)*2.**(-init_power)\n    components = response_components(Ap,R)\n    if (float(class_values(Ap,R).min())>0 and\n        all(v<=lim+1e-8 for v,lim in zip(components,component_limits)) and\n        float((R[:,:-1]-B).norm()/B.norm())<=4):\n        break\nelse:\n    raise RuntimeError('No source-feasible finite-response initialization')\ninitial = dict(distance_squared=float(distance(Ap)),native=native_function(Ap,R),native_components=components,\n               native_slack=float(class_values(Ap,R).min()),\n               public=float(public(Ap,R,pi)[0]),initialization_fraction=2.**(-init_power))\nprint(json.dumps(dict(stage='initialized',component_limits=component_limits,\n                     initial=initial,finite_layer_contexts=len(xf))),flush=True)\n"
       }
+    },
+    "preconstruction_check": {
+      "status": "numerical_derivative_resolution_diagnostic",
+      "definitions_sha256": "4f461a141587aa7aae3c771a65a53d5da53d82a4c3263ce823280bfd07207f93",
+      "check_sha256": "5fc6721fe644ce24d8265001f266040a8a8c0afe0f42f4ecfe7927f0a1b53262",
+      "checks": [
+        {
+          "A": "original",
+          "R": "conditional_center",
+          "direct_error": 6.997652501316175e-13,
+          "quadratic_error": 7.034373084024992e-13,
+          "identity_error": 3.672058270881702e-15
+        },
+        {
+          "A": "original",
+          "R": "original_B",
+          "direct_error": 9.533539987223247e-13,
+          "quadratic_error": 9.570260573134925e-13,
+          "identity_error": 3.6720585911678125e-15
+        },
+        {
+          "A": "original",
+          "boundary_z_norm": 4.0002919869504143e-07,
+          "finite_response": 9.533539987223247e-13,
+          "limit": 1.584698316635909
+        },
+        {
+          "A": "row_anchor_initializer",
+          "R": "conditional_center",
+          "direct_error": 0.12360881470391244,
+          "quadratic_error": 0.12360881470389096,
+          "identity_error": 2.148281552649678e-14
+        },
+        {
+          "A": "row_anchor_initializer",
+          "R": "original_B",
+          "direct_error": 1.584698316635909,
+          "quadratic_error": 1.5846983166358937,
+          "identity_error": 1.532107773982716e-14
+        },
+        {
+          "A": "row_anchor_initializer",
+          "boundary_z_norm": 0.9999999999999948,
+          "finite_response": 1.584698316635909,
+          "limit": 1.584698316635909
+        }
+      ],
+      "numpy_small_identity_error": 2.220446049250313e-16,
+      "derivatives": [
+        {
+          "h": 0.0001,
+          "finite_difference": 245.61195360906396,
+          "autograd": 246.03301528453136,
+          "relative_error": 0.0017044753106479414
+        },
+        {
+          "h": 1e-05,
+          "finite_difference": 246.03498794171227,
+          "autograd": 246.03301528453136,
+          "relative_error": 7.985398950186244e-06
+        },
+        {
+          "h": 1e-06,
+          "finite_difference": 246.03296420089293,
+          "autograd": 246.03301528453136,
+          "relative_error": 2.0678870946160785e-07
+        },
+        {
+          "h": 1e-07,
+          "finite_difference": 246.0330135001243,
+          "autograd": 246.03301528453136,
+          "relative_error": 7.2233545753690695e-09
+        }
+      ],
+      "finite_feature_numpy_error": 3.9968028886505635e-15,
+      "finite_target_numpy_error": 5.722419066378492e-16,
+      "component_limits": [
+        1.264483612297785,
+        0.320214704338124
+      ],
+      "initial_components": [
+        0.0854022826311912,
+        0.03820653207272124
+      ],
+      "real_images": 0,
+      "new_defense_points": 0,
+      "seconds": 57.21555523574352
     }
   }
 }
