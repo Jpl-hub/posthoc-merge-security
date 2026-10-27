@@ -1578,6 +1578,109 @@
     "definitions_sha256": "746864c7c32b945ff63b4e14307d12230d66543f4dd8f0412f47e6156ed55dc2",
     "check_sha256": "365eed0e6a7cf4a7ee6116c22ae3b164f18df4132d472a9c36d529961db7f442",
     "reference": "OLeary/Rust variable projection §1-2;standard positive-definite quadratic completion. Exact ellipsoid algebra already used at fixedA in the effective method;A dependence is explicitly recalculated here. Not claimed as a new solver.",
+    "production_modules_added": 0,
+    "initial_check_status": "Finite derivative at h1e-5 relative error4.604976e-5 exceeded unchanged1e-5 tolerance;no optimization launched",
+    "resolution_diagnostic": {
+      "defined_utc": "2026-10-27T10:56:47.147000+00:00",
+      "purpose": "Read-only derivative convergence at h1e-4,1e-5,1e-6,1e-7;do not change model/source/solver or acceptance tolerance",
+      "source_sha256": "4972f81aa0d26582a68632bd26d5aec417cf14d6513cac7b2d8bde86a1a438d9"
+    },
+    "result": {
+      "status": "numerical_derivative_resolution_diagnostic",
+      "definitions_sha256": "746864c7c32b945ff63b4e14307d12230d66543f4dd8f0412f47e6156ed55dc2",
+      "check_sha256": "4972f81aa0d26582a68632bd26d5aec417cf14d6513cac7b2d8bde86a1a438d9",
+      "checks": [
+        {
+          "A": "original",
+          "R": "conditional_center",
+          "direct_error": 5.842838956664026e-13,
+          "quadratic_error": 5.826450433232822e-13,
+          "identity_error": 1.6388523431204763e-15
+        },
+        {
+          "A": "original",
+          "R": "original_B",
+          "direct_error": 9.533539987223247e-13,
+          "quadratic_error": 9.51715146238027e-13,
+          "identity_error": 1.6388524842977502e-15
+        },
+        {
+          "A": "original",
+          "boundary_z_norm": 5.402538000745173e-07,
+          "finite_response": 9.533539987223247e-13,
+          "limit": 1.264483612297785
+        },
+        {
+          "A": "row_anchor_initializer",
+          "R": "conditional_center",
+          "direct_error": 0.06556075574294343,
+          "quadratic_error": 0.06556075574295761,
+          "identity_error": 1.4183099139586375e-14
+        },
+        {
+          "A": "row_anchor_initializer",
+          "R": "original_B",
+          "direct_error": 1.264483612297785,
+          "quadratic_error": 1.2644836122978012,
+          "identity_error": 1.6209256159527285e-14
+        },
+        {
+          "A": "row_anchor_initializer",
+          "boundary_z_norm": 1.0,
+          "finite_response": 1.2644836122977683,
+          "limit": 1.264483612297785
+        }
+      ],
+      "numpy_small_identity_error": 2.220446049250313e-16,
+      "derivatives": [
+        {
+          "h": 0.0001,
+          "finite_difference": 206.6469648167768,
+          "autograd": 206.87249184078516,
+          "relative_error": 0.0010849296220545356
+        },
+        {
+          "h": 1e-05,
+          "finite_difference": 206.86291936238274,
+          "autograd": 206.87249184078516,
+          "relative_error": 4.604976020468494e-05
+        },
+        {
+          "h": 1e-06,
+          "finite_difference": 206.87247286588217,
+          "autograd": 206.87249184078516,
+          "relative_error": 9.128145247943643e-08
+        },
+        {
+          "h": 1e-07,
+          "finite_difference": 206.87249287831833,
+          "autograd": 206.87249184078516,
+          "relative_error": 4.991199931019388e-09
+        }
+      ],
+      "real_images": 0,
+      "new_defense_points": 0,
+      "seconds": 22.174276016652584
+    },
+    "interpretation": "Original1e-5 finite difference resolution failed the fixed derivative tolerance;h1e-6 and1e-7 converge to the same derivative with relative errors9.13e-8/4.99e-9. No model,source,optimization or tolerance change;initial failure retained."
+  },
+  "joint_conditional_definition_20261027": {
+    "created_utc": "2026-10-27T10:59:21.727554+00:00",
+    "status": "registered_before_execution",
+    "target": "MNIST",
+    "output": "outputs/joint_conditional_20261027",
+    "definitions_source": "\"\"\"Joint A/B compensation using the complete native-response quadratic.\"\"\"\nimport json, math, time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.io import digest\nfrom _impl.models import initialize, checked_models\nfrom _impl.attacks import load_author\nfrom _impl.metrics import logical_parameter_distance\n\ninitialize()\ntorch.set_default_dtype(torch.float64)\nstart = time.perf_counter()\nout = Path('outputs/joint_conditional_20261027')\nassert out.exists() and not (out/'result.json').exists() and not (out/'point.pt').exists()\nsource = Path('outputs/native_ellipse_classification_20261026/source/source.pt')\nassert digest(source) == '33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5'\nraw = torch.load(source, map_location='cpu', weights_only=False)\nbase, expert, head, pins = checked_models('MNIST')\ns, bs = expert.state_dict(), base.state_dict()\nk = 'model.visual.transformer.resblocks.11.mlp.'\nto = lambda x: x.double().cuda()\nA, A0, a, a0, B, B0, b, b0, gamma, beta = [to(v) for v in [s[k+'c_fc.weight'], bs[k+'c_fc.weight'], s[k+'c_fc.bias'], bs[k+'c_fc.bias'], s[k+'c_proj.weight'], bs[k+'c_proj.weight'], s[k+'c_proj.bias'], bs[k+'c_proj.bias'], s['model.visual.transformer.resblocks.11.ln_2.weight'], s['model.visual.transformer.resblocks.11.ln_2.bias']]]\nU, _, Vh = torch.linalg.svd(A-A0, full_matrices=False)\nU, V = U[:, :32], Vh[:32].T\nA0r = A0-(A0@V)@V.T\nK = A0r@A0r.T\nGrows = -(U@U.T)*K\nGrows.diagonal().add_(K.diagonal())\nLrows = torch.linalg.cholesky(Grows)\nlam = torch.cholesky_solve((-(A*A0).sum(1))[:, None], Lrows)\ndA = lam*A0r\ndA -= U@(U.T@dA)\nAp = A+dA\ndel K, Grows\n\ndef tangent(g):\n    g = g-U@(U.T@g)\n    g = g-(g@V)@V.T\n    lam = torch.cholesky_solve((g*A0).sum(1)[:, None], Lrows)\n    q = lam*A0r\n    return g-q+U@(U.T@q)\n\nactivate = lambda z: z*torch.sigmoid(1.702*z)\naugmented = lambda x, aa: torch.cat([activate(x@aa.T+a).T, torch.ones(1, len(x), device='cuda')], 0)\nRorig = torch.cat([B, b[:, None]], 1)\nna, nr = A.norm(), Rorig.norm()\ncache = {name: {key: to(v) for key, v in row.items()} for name, row in raw['cache'].items()}\nlayer_path = Path('outputs/task_shaped_compensation_20261026/layer_inputs.pt')\nassert digest(layer_path) == '10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe'\nu = torch.load(layer_path, map_location='cuda', weights_only=False)\nxl = beta+gamma*u\npopulations = [(xl, activate(xl@A.T+a)@B.T+b), (cache['native']['x'], cache['native']['final']-cache['native']['prefix'])]\nG = torch.zeros(3073, 3073, device='cuda')\nT = torch.zeros_like(Rorig)\nweights = []\nfor x, y in populations:\n    variance = y.square().sum()/len(y)-y.mean(0).square().sum()\n    w = 1/(len(y)*variance)\n    weights.append(w)\n    for lo in range(0, len(x), 256):\n        H = augmented(x[lo:lo+256], Ap)\n        G += w*(H@H.T)\n        T += w*(y[lo:lo+256].T@H.T)\nrho = .01*G.trace()/len(G)\nG += rho*torch.eye(len(G), device='cuda')\nT += rho*Rorig\nRN = torch.cholesky_solve(T.T, torch.linalg.cholesky(G)).T\ndel G, T, u\n\n@torch.no_grad()\ndef native_function(aa, rr):\n    value = rho*(rr-Rorig).square().sum()\n    for (x, y), w in zip(populations, weights):\n        for lo in range(0, len(x), 1024):\n            error = (rr@augmented(x[lo:lo+1024], aa)).T-y[lo:lo+1024]\n            value += w*error.square().sum()\n    return float(value)\n\nW = to(head.weight)\nassert float(head.bias.abs().max()) == 0\nhead_scale = W.square().sum(1).mean().sqrt()\neps = expert.model.visual.ln_post.eps\nnames = ['model.visual.ln_post.weight', 'model.visual.ln_post.bias', 'model.visual.proj']\nreadouts = {name: [to(s[key] if name == 'native' else (s[key]+bs[key])/2) for key in names] for name in cache}\ndef classify(h, name):\n    g, bb, P = readouts[name]\n    z = F.layer_norm(h, (768,), g, bb, eps)@P\n    return F.normalize(z, dim=-1)@W.T\n\ntail_error = max(float((classify(cache[name]['final'], name)-cache[name]['scores']).abs().max()) for name in cache)\nassert tail_error < .0005\nh0 = cache['native']['final']\nhc0 = h0-h0.mean(1, keepdim=True)\nsigma0 = (hc0.square().mean(1)+eps).sqrt()\nteacher = cache['native']['scores'].argmax(1)\nids = torch.arange(len(h0), device='cuda')\ng, bb, P = readouts['native']\npw = P@W.T\nlinear = g[:, None]*pw\nlinear -= linear.mean(0, keepdim=True)\noffset = bb@pw\nc = offset[teacher, None]-offset[None, :]\nmask = torch.arange(len(W), device='cuda')[None, :] != teacher[:, None]\n\n@torch.no_grad()\ndef native_classes(aa, rr):\n    h = cache['native']['prefix']+(rr@augmented(cache['native']['x'], aa)).T\n    hc = h-h.mean(1, keepdim=True)\n    sigma = (hc.square().mean(1)+eps).sqrt()\n    ell = (hc0*hc).mean(1)/sigma0+eps/sigma0\n    z = h@linear\n    lower = z[ids, teacher, None]-z+c.clamp(max=0)*sigma[:, None]+c.clamp(min=0)*ell[:, None]\n    return float(lower[mask].min()), int(classify(h, 'native').argmax(1).eq(teacher).sum())\n\nauthor, author_sha = load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))\nassert author_sha == '4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778'\nmatching_calls = 0\ndef matching(aa):\n    global matching_calls\n    matching_calls += 1\n    return author['solve_permutation'](aa.detach().float().cpu(), A0.float().cpu()).cuda()\n\ndef public(aa, rr, pi):\n    scores = {}\n    for name in ['direct', 'recovered']:\n        ai, bi = (aa, a) if name == 'direct' else (aa[pi], a[pi])\n        H = activate(cache[name]['x']@((ai+A0)/2).T+(bi+a0)/2).T\n        h = cache[name]['prefix']+(B0@H+b0[:, None]).T/2\n        if name == 'recovered':\n            back = torch.empty_like(H)\n            back[pi] = H\n            H = back\n        h = h+(rr@torch.cat([H, torch.ones(1, H.shape[1], device='cuda')], 0)).T/2\n        scores[name] = classify(h, name)\n    margins = []\n    for v in scores.values():\n        other = v.masked_fill(~mask, -torch.inf).max(1).values\n        margins.append(v[ids, teacher]-other)\n    # Unnormalised logsumexp upper-bounds the worst teacher-class margin.\n    # Negative objective implies every public synthetic context is misclassified.\n    return torch.logsumexp(torch.cat(margins), 0), scores\n\noriginal_effective = A*gamma\noriginal_effective -= original_effective.mean(1, keepdim=True)\ndef distance(aa):\n    delta = (aa-A)*gamma\n    delta = delta-delta.mean(1, keepdim=True)\n    return delta.square().sum()/original_effective.square().sum()\n\ntau = native_function(Ap, Rorig)\nfor init_power in range(25):\n    R = Rorig+(RN-Rorig)*2.**(-init_power)\n    slack, retained = native_classes(Ap, R)\n    if slack > 0 and retained == len(h0) and float((R[:, :-1]-B).norm()/B.norm()) <= 4:\n        break\nelse:\n    raise RuntimeError('No feasible initialization on the fixed native segment')\nassert native_function(Ap, R) <= tau+1e-8\npi = matching(Ap)\ninitial = dict(distance_squared=float(distance(Ap)), native=native_function(Ap, R), native_slack=slack, public=float(public(Ap, R, pi)[0]), initialization_fraction=2.**(-init_power))\n# Preserve exact finite classification numerators, not the teacher tangent bound.\nx=cache['native']['x']; m=len(W)-1; n=len(x)*m\nother=torch.arange(len(W),device='cuda').expand(len(x),-1)\nother=other[other!=teacher[:,None]].reshape(len(x),m)\nlinpair=linear[:,teacher].T[:,None,:]-linear.T[other]\ncpair=offset[teacher,None]-offset[other]\n\ndef finite_values(aa,rr):\n    H=augmented(x,aa).T\n    h=cache['native']['prefix']+H@rr.T\n    sigma=((h-h.mean(1,keepdim=True)).square().mean(1)+eps).sqrt()\n    values=(linpair*h[:,None,:]).sum(2)+cpair*sigma[:,None]\n    return torch.cat([values.flatten(),torch.tensor([native_function(aa,rr)],device='cuda')])\n\n# For fixed A, the complete native condition is exactly an ellipsoid in R.\n# R=RN(A)+sqrt(tau-Emin(A))*Z*L(A)^(-1), ||Z||F<=1.\nconstant = rho*Rorig.square().sum()+sum(w*y.square().sum() for (_,y),w in zip(populations,weights))\n\ndef conditional(aa):\n    G = rho*torch.eye(Rorig.shape[1], device='cuda')\n    T = rho*Rorig\n    for (xx,y),w in zip(populations,weights):\n        for lo in range(0,len(xx),512):\n            H = augmented(xx[lo:lo+512],aa)\n            G = G+w*(H@H.T)\n            T = T+w*(y[lo:lo+512].T@H.T)\n    L = torch.linalg.cholesky(G)\n    center = torch.cholesky_solve(T.T,L).T\n    emin = constant-(T*center).sum()\n    return center,L,emin\n\n\ndef reconstruct(aa,z):\n    center,L,emin = conditional(aa)\n    room = tau-emin\n    if float(room.detach())<=0:\n        return None,emin,L\n    rr = center+room.sqrt()*torch.linalg.solve_triangular(L.T,z.T,upper=True).T\n    return rr,emin,L\n\n\ndef class_values(aa,rr):\n    hh = cache['native']['prefix']+(rr@augmented(x,aa)).T\n    sigma = ((hh-hh.mean(1,keepdim=True)).square().mean(1)+eps).sqrt()\n    return (linpair*hh[:,None,:]).sum(2)+cpair*sigma[:,None]\n",
+    "definitions_sha256": "746864c7c32b945ff63b4e14307d12230d66543f4dd8f0412f47e6156ed55dc2",
+    "constructor_source": "\"\"\"One source-only A/B construction in exact native-response coordinates.\"\"\"\nimport source as kernel\nfrom source import *\n\ncheck=json.loads((out/'derivative_resolution.json').read_text())\nassert check['definitions_sha256']==digest(out/'source.py')\nassert check['derivatives'][-1]['relative_error']<1e-5\nassert check['derivatives'][-2]['relative_error']<1e-5\ncenter,L,emin=conditional(Ap)\nZ=((R-center)@L/(tau-emin).sqrt()).detach()\nassert float(Z.norm())<=1+1e-8\ninitial['Z_norm']=float(Z.norm());initial['conditional_minimum']=float(emin)\ninitial['public']=float(public(Ap,R,pi)[0])\ndot=lambda p,q:sum((a*b).sum() for a,b in zip(p,q))\nnorm=lambda p:dot(p,p).sqrt()\ntrace=[];stop='iteration_limit';failures={}\nfor it in range(500):\n    av,zv=Ap.detach().requires_grad_(True),Z.detach().requires_grad_(True)\n    rv,emin,L=reconstruct(av,zv)\n    assert rv is not None\n    f1,f2=-distance(av),public(av,rv,pi)[0]\n    gd=(tangent(torch.autograd.grad(f1,av,retain_graph=True)[0])*na,torch.zeros_like(Z))\n    ga,gz=torch.autograd.grad(f2,(av,zv));gp=(tangent(ga)*na,gz)\n    scales=[norm(g) for g in [gd,gp]]\n    gradients=[tuple(v/n for v in g) for g,n in zip([gd,gp],scales)]\n    dd,pp,dp=[float(v) for v in [dot(gradients[0],gradients[0]),dot(gradients[1],gradients[1]),dot(*gradients)]]\n    den=dd+pp-2*dp;mix=min(1.,max(0.,(pp-dp)/den)) if den>0 else .5\n    direction=tuple(-mix*a-(1-mix)*b for a,b in zip(*gradients))\n    if float(norm(direction))<1e-10:\n        stop='no_common_first_order_direction';break\n    failures={};accepted=False\n    with torch.no_grad():\n        for bt in range(16):\n            step=.1*2.**(-bt)\n            aa=Ap+step*na*direction[0]\n            zz=Z+step*direction[1];zz=zz/max(1.,float(zz.norm()))\n            displacement=((aa-Ap)/na,zz-Z)\n            slopes=[float(dot(g,displacement)) for g in [gd,gp]]\n            if max(slopes)>=0:\n                reason='projected_objective_direction'\n            elif float((aa-A).norm()/na)>2:\n                reason='A_parameter_range'\n            else:\n                rr,minimum,LL=reconstruct(aa,zz)\n                if rr is None:\n                    reason='native_response_set_empty'\n                elif float((rr[:,:-1]-B).norm()/B.norm())>4:\n                    reason='B_parameter_range'\n                elif float(class_values(aa,rr).min())<=0:\n                    reason='native_class_order'\n                elif -float(distance(aa))>float(f1)+1e-4*slopes[0]:\n                    reason='distance'\n                else:\n                    new_pi=matching(aa);new_public,scores=public(aa,rr,new_pi)\n                    if float(new_public)>float(f2)+1e-4*slopes[1]:\n                        reason='public_after_exact_matching'\n                    else:\n                        # Direct original nonlinear evaluation, not only quadratic identity.\n                        error=native_function(aa,rr)\n                        if error>tau+1e-8:\n                            raise RuntimeError('Exact response parameterization identity failed')\n                        accepted=True;break\n            failures[reason]=failures.get(reason,0)+1\n    if not accepted:\n        stop='conditional_finite_line_search_stalled';break\n    changed=int(new_pi.ne(pi).sum());Ap,Z,R,pi=aa.detach(),zz.detach(),rr.detach(),new_pi\n    row=dict(iteration=it+1,distance_squared=float(distance(Ap)),public=float(new_public),native=error,\n        native_minimum=float(minimum),Z_norm=float(Z.norm()),min_class_numerator=float(class_values(Ap,R).min()),\n        step=step,changed_matches=changed,rejected=failures,\n        public_correct={name:int(v.argmax(1).eq(teacher).sum()) for name,v in scores.items()})\n    trace.append(row)\n    with (out/'trace.jsonl').open('a') as f:f.write(json.dumps(row)+'\\n')\n    if it%10==0: print(json.dumps(row),flush=True)\n    del av,zv,rv,L,gradients,ga,gz\nedits={k+'c_fc.weight':Ap.float().cpu(),k+'c_proj.weight':R[:,:-1].float().cpu(),k+'c_proj.bias':R[:,-1].float().cpu()}\ntorch.save(edits,out/'point.pt')\naf=to(edits[k+'c_fc.weight']);rf=torch.cat([to(edits[k+'c_proj.weight']),to(edits[k+'c_proj.bias'])[:,None]],1)\npif=matching(af);pf,scores=public(af,rf,pif);nv=native_function(af,rf);class_min=float(class_values(af,rf).min())\nmetrics=dict(A_relative=float((af-A).norm()/na),B_relative=float((rf[:,:-1]-B).norm()/B.norm()),logical_D=logical_parameter_distance(edits,s),effective_A_distance_squared=float(distance(af)),left_task_relative=float((U.T@(af-A)).norm()/(af-A).norm()),right_task_relative=float(((af-A)@V).norm()/(af-A).norm()),anchor_diagonal_relative=float((af*A0).sum(1).abs().max()/(af.norm(dim=1)*A0.norm(dim=1)).mean()))\nretained=int(classify(cache['native']['prefix']+(rf@augmented(x,af)).T,'native').argmax(1).eq(teacher).sum())\nresult=dict(status='unique_FP32_point_frozen_before_real_images',definitions_sha256=digest(out/'source.py'),constructor_sha256=digest(__file__),source_cache_sha256=digest(source),layer_input_sha256=digest(layer_path),point_sha256=digest(out/'point.pt'),checkpoint_sha256=pins,author_sha256=author_sha,initial=initial,native_limit=tau,native_final=nv,min_class_numerator=class_min,source_feasible=retained==len(x) and class_min>0 and nv<=tau+1e-5 and metrics['A_relative']<=2.000001 and metrics['B_relative']<=4.000001,native_teacher_retained=retained,native_n=len(x),public_objective=float(pf),public_correct={key:int(v.argmax(1).eq(teacher).sum()) for key,v in scores.items()},metrics=metrics,iterations=len(trace),stop_reason=stop,last_rejections=failures,trace=trace,seconds=time.perf_counter()-start,matching_calls=kernel.matching_calls,complete_AGA_calls=0,real_images=0,model_image_forwards=0,original_expert_updates=0,scope='One original-weight construction using exact A-dependent native response ellipsoid plus actual native class inequalities. Standard completion of squares,MGDA,ball projection,Cholesky are computational tools,not novelty. No test/partner/previous release loading or tuning. Only one final point.')\n(out/'source_result.json').write_text(json.dumps(result,indent=2)+'\\n');print(json.dumps({k:v for k,v in result.items() if k not in ['trace','checkpoint_sha256']}),flush=True)\n",
+    "constructor_sha256": "7c7139eb09f6d9895cb6cf77ce3375dcd97c1a779e2c6b4dca7b945d4d07e208",
+    "mechanism": "A changes in original task complements while B/outputbias follow the exact finite native-response ellipsoid recomputed for that A. A and the independent ellipsoid coordinate Z jointly improve effective distance and the input-dependent public classification objective.",
+    "initialization": "Same original-weight row-anchor A/native conditional B as the prior definition;no previous point loaded. Original160synthetic x5 contexts and16384task-spectrum inputs. Same fixed rho,tau,rank32,A<=2/B<=4;0real images or partners.",
+    "function_conditions": "Exact E(A,R)<=tau by R=RN+sqrt(tau-Emin)Z L^-1,||Z||<=1,with rho and tau fixed. Actual positive native class numerators and parameter ranges remain checked. If Emin>=tau reject the proposed A. Bound checked again by original direct nonlinear response sum.",
+    "objectives": "Increase original LN-effective A distance and decrease logsumexp of all teacher-class minus maximum-other public margins over direct and exact author-matched public half fusion. Same criterion as preceding definition,not constant-class targeting.",
+    "solver": "Existing standard two-objective minimum-norm gradient direction in coordinates A/||Aorig||,Z;gradients separately unit normalized. Initial step.1,16 halvings,Armijo1e-4 using actual displacement after unit-ball projection,500accepted maximum. Every public candidate reruns exact author single-layer matching. Finite/class/range failures stop without relaxing conditions.",
+    "stop_and_evaluate": "Unique finalFP32 point only. No sweeps/extra iterations/restarts. If original source conditions pass,freeze and complete nativeMNIST,TA.5 and originalAGA target/both withSVHNpartner;matched archived controls,replays and independentNumPy. No natural-score feedback.",
+    "novelty": "Exact ellipsoid and nonlinear/linear separation are standard. This is an engineering realization of finite joint functional compensation,not a new optimizer or proof of defense. SVD contribution remains unproven.",
+    "old_scheme_boundary": "No resumption of closed e5b12c2d/e619/4ed weights. Sourcefunction bound andpublic objective unchanged. Replaces finite straight-line response enforcement with exact nonlinear A-dependent compensation.",
     "production_modules_added": 0
   }
 }
