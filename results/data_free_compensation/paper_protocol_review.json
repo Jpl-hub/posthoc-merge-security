@@ -1566,5 +1566,18 @@
       }
     ],
     "production_modules_added": 0
+  },
+  "joint_conditional_check_20261027": {
+    "created_utc": "2026-10-27T10:55:03.619588+00:00",
+    "status": "mathematical_check_registered_before_execution",
+    "output": "outputs/joint_conditional_20261027",
+    "question": "Does the complete A-dependent native quadratic admit an exact finite R parameterization with a verified classification derivative?",
+    "math": "G=sum wHHt+rhoI;T=sum wYHt+rhoR0;RN=TG^-1;Emin=c-tr(TRNt);G=LLt. R=RN+sqrt(tau-Emin)*Z*L^-1 with ||Z||F<=1. All response-feasible R represented when Emin<tau. rho and tau fixed at original initializer. Remaining class and parameter conditions still checked separately.",
+    "inputs": "OriginalMNIST/public/head;original160synthetic imagesx5 and16384task-layer vectors;no previous release,test or partner.",
+    "cases": "OriginalA and original-source row-anchor initializer;center and originalB;one fixedNumPy toy and one full-size derivative check. No parameter optimization or release.",
+    "definitions_sha256": "746864c7c32b945ff63b4e14307d12230d66543f4dd8f0412f47e6156ed55dc2",
+    "check_sha256": "365eed0e6a7cf4a7ee6116c22ae3b164f18df4132d472a9c36d529961db7f442",
+    "reference": "OLeary/Rust variable projection §1-2;standard positive-definite quadratic completion. Exact ellipsoid algebra already used at fixedA in the effective method;A dependence is explicitly recalculated here. Not claimed as a new solver.",
+    "production_modules_added": 0
   }
 }
