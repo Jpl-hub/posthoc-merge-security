@@ -1,11 +1,23 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-27T14:13:09.750622+00:00",
+  "updated_utc": "2026-10-27T14:14:16.712819+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Read-only full-model/cache check and one independent original-teacher synthetic source; keep both publications frozen. User will manually request next check; no automation.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "status": "running_read_only_diagnostic",
+      "path": "outputs/joint_conditional_20261027",
+      "pid": 11544,
+      "registration_local_commit": "10f5d7b",
+      "work": "One fresh original-teacher synthetic source and full-model/cache consistency for two frozen publications",
+      "timeout_seconds": 1200,
+      "expected_minutes": 5,
+      "manual_next_check_minutes": 10,
+      "new_defense_points": 0
+    }
+  ],
+  "next_action": "User manual check after10minutes;read generalization.log/result without automatic wakeups;do not repeat source or tune frozen points.",
   "github_sync": {
     "status": "New local results pending; first connector request this turn failed HTTP transport; no remote publication claimed.",
     "last_verified_remote_commit": "99debfd16a8cb3aaf2291816bae7bd23a09a4f98",
