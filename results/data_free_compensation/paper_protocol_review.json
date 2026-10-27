@@ -1163,5 +1163,25 @@
     "raw_output": "4090:/root/autodl-tmp/posthoc-merge-security/outputs/classification_condition_20261027",
     "new_production_modules": 0,
     "tie_convention": "Nonnegative contrasts make the teacher class a maximizer; strict positive contrasts preserve a unique class. Exact ties require the original argmax tie rule. Direct argmax was separately checked for every recorded source context."
+  },
+  "joint_classification_tangent_20261027": {
+    "status": "defined_before_calculation",
+    "created_utc": "2026-10-27T04:37:20.222254+00:00",
+    "question": "At frozen4ed, do both declared objectives admit common local descent while every exact finite native class numerator and the native response error remain unchanged to first order?",
+    "point_sha256": "4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d",
+    "inputs": "Frozen original target/public parameters, original800 synthetic contexts and original16384 layer inputs only;no partner,real image,exposed transition input or new point.",
+    "math": "g_ij=a_ij^T h_i+c_ij sigma(h_i); q_ij=a_ij+c_ij Hh_i/(768 sigma_i). J comprises all800x9 numerators plus native-error derivative. Orthogonal projection removes J^T(JJ^T)^+J from both objective gradients, within the original A equality tangent and normalized A/R coordinates.",
+    "linear_algebra": "Structured analytic Gram;FP64 symmetric eigendecomposition;Moore-Penrose threshold n*machine_epsilon*largest_eigenvalue, no rank tuning. Independently compare fixed first/middle/last analytic rows and Gram to autograd. Report residual and conditioning, including failure.",
+    "objectives": "Exactly prior negative effective-A-distance and complete public direct/author-matched classification objective;one original single-layer match fixed for derivative only,no fullAGA.",
+    "scope": "Diagnostic only,not a candidate or optimizer. Exact first-order numerator preservation is stronger than label preservation and is not proposed as a necessary universal condition. No finite step, convergence, unknown-input guarantee, new accurate defense or novelty claim.",
+    "prior_work": "Earlier exact-hidden reconstruction and local Jacobian methods retained and not restarted. Standard constrained linear algebra and MGDA do not supply method novelty.",
+    "references": [
+      "https://www.cs.umd.edu/users/oleary/software/varpro.pdf",
+      "https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf",
+      "https://proceedings.neurips.cc/paper_files/paper/2018/file/432aca3a1e345e339f35a30c8f65edce-Paper.pdf"
+    ],
+    "new_real_images": 0,
+    "new_defense_points": 0,
+    "production_modules_added": 0
   }
 }
