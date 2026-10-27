@@ -1681,6 +1681,157 @@
     "stop_and_evaluate": "Unique finalFP32 point only. No sweeps/extra iterations/restarts. If original source conditions pass,freeze and complete nativeMNIST,TA.5 and originalAGA target/both withSVHNpartner;matched archived controls,replays and independentNumPy. No natural-score feedback.",
     "novelty": "Exact ellipsoid and nonlinear/linear separation are standard. This is an engineering realization of finite joint functional compensation,not a new optimizer or proof of defense. SVD contribution remains unproven.",
     "old_scheme_boundary": "No resumption of closed e5b12c2d/e619/4ed weights. Sourcefunction bound andpublic objective unchanged. Replaces finite straight-line response enforcement with exact nonlinear A-dependent compensation.",
-    "production_modules_added": 0
+    "production_modules_added": 0,
+    "evaluation_driver_sha256": {
+      "native.py": "07263a51aae1ba5c46c11d4e81336a24d408c3e6a078d51a18faecd51abe3c03",
+      "replay.py": "f796a2dfb78ef2947390cb0b13be0e0522deb6bda3e55bbf40679b74aa3a5861",
+      "paired_check.py": "b7e929ff33f26eac84d2f89130bd82d0854da735106103c4493248efabfc2bda",
+      "evaluate.sh": "9d894c7fb5b3b21045fa9fbe987a85ed99e8de240efc44e0ef87d1194f4d5880"
+    },
+    "evaluation_protocol_before_point_freeze": {
+      "experiment": "Joint numerical A/B compensation with exact native-response parameterization",
+      "output": "outputs/joint_conditional_20261027/evaluation",
+      "tasks": {
+        "MNIST": {
+          "classes": 10,
+          "test_n": 10000
+        },
+        "SVHN": {
+          "classes": 10,
+          "test_n": 26032
+        }
+      },
+      "TA_coefficient": 0.5,
+      "mergers": [
+        "TA"
+      ],
+      "TIES": {
+        "repository": "https://github.com/prateeky2806/ties-merging",
+        "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+        "path": "external/ties-merging/src/utils/merge_utils.py",
+        "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+        "topk_percent": 20,
+        "coefficient": 1,
+        "resolve_method": "mass",
+        "merge_func": "dis-mean",
+        "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+      },
+      "pilot_n": 64,
+      "replay_n": 16,
+      "score_tolerance": 0.0005,
+      "task_budget": 0.5,
+      "utility_seed": null,
+      "utility_n": null,
+      "probe_rank": 32,
+      "test_status": "Complete historically exposed officialMNIST/SVHN benchmarks;not blind;no selection or parameter feedback",
+      "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+      "defense_optimization": "Original-weight jointA/B via exact A-dependent response ellipsoid;no test feedback",
+      "attacker_data": false,
+      "attack_gradient_steps": 0,
+      "AGA_references": {
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "SVHN": {
+          "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+          "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "AGA": {
+        "repository": "https://github.com/krumpguo/secure-merge-attack",
+        "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+        "file": "utils_attack_B32.py",
+        "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+        "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+      },
+      "defenses": {
+        "JointConditional_MNIST": {
+          "label": "Joint A/B finite response compensation",
+          "target": "MNIST",
+          "release": {
+            "path": "outputs/joint_conditional_20261027/point.pt",
+            "sha256": "PENDING_SOURCE_FREEZE"
+          },
+          "AGA_edits": {
+            "path": "outputs/joint_conditional_20261027/AGA/edits.pt",
+            "sha256": "PENDING_EXECUTION",
+            "reference": "original_AGA"
+          },
+          "budget_status": "Same Arelative<=2/Brelative<=4;actualD filled onlyafter freeze",
+          "function_status": "Sourceonly;complete native not yet evaluated"
+        }
+      },
+      "cases": [
+        {
+          "target": "MNIST",
+          "partner": "SVHN",
+          "defenses": [
+            "JointConditional_MNIST"
+          ]
+        }
+      ],
+      "legacy": {
+        "MNIST_SVHN/Unprotected": {
+          "standalone": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/Standalone/None/{task}"
+          },
+          "direct": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/TA/None/{task}"
+          },
+          "AGA_target_only": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/TA/Protected expert/{task}"
+          },
+          "AGA_both": {
+            "path": "outputs/task_directed_pairing_20261022/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+            "sha256": "f2ef03e1325a562257d277fc918227c0a64debc3bc1884e6758627e37c424a51",
+            "key_template": "Unprotected/TA/All experts/{task}"
+          }
+        },
+        "MNIST_SVHN/JointConditional_MNIST": {
+          "standalone": {
+            "path": "outputs/joint_conditional_20261027/native/full.pt",
+            "sha256": "PENDING_EXECUTION",
+            "native_score_field": "after",
+            "key_template": "already_evaluated_native"
+          }
+        }
+      },
+      "source_sha256": {
+        "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+        "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+        "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+        "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+        "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+        "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+        "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+        "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+        "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+        "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+        "_impl/report.py": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+        "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+        "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+        "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+        "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+        "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+        "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+        "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+        "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+        "experiment/recover.py": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+        "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+      },
+      "original_batch_context_replays": true,
+      "parameter_budget_scope": "Predeclared A relative<=2,Bweight relative<=4;final logicalD to be filled after freeze;not historicalD.5",
+      "native_evaluation": "Report complete native accuracy,paired changes and historical R; all frozen points evaluated without .5pp veto"
+    }
   }
 }
