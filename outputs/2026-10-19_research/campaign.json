@@ -1,15 +1,15 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-27T03:36:23.628501+00:00",
+  "updated_utc": "2026-10-27T04:44:59.032437+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "完成冻结4ed13229联合A/B点的独立、TA.5及AGA两范围评价；已登记，不因源目标或真实成绩继续改参数。新4090迁移后运行。",
+  "next_action": "共同方向已算出，完整7200类比较和原生响应误差的一阶变化均近零。下一项核心工作是从原权重定义有限非线性补偿，而非重开4ed点或直接加步数；真实融合效果未新增。保留已有有效发布，SVD贡献仍未证明。",
   "github_sync": {
-    "status": "Plugin read access restored; current results being prepared for synchronization",
-    "last_verified_remote_commit": "e1c3587fe394eb27a2d18a3856ffcafaf7c9aea8",
-    "last_verified_local_commit": "2faeee5ac433d2026a6c1bbaec216e460785bab4",
+    "status": "New read-only finite-classification derivative result locally saved;plugin fetch_commit returned Unknown tool, remote still d1553939.",
+    "last_verified_remote_commit": "d1553939d49edd147ae95826be1c21eaa3f55529",
+    "last_verified_local_commit": "5badde1250f12849017c9ffd1a30adfba87a2141",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -112,10 +112,13 @@
   },
   "core_method_review": {
     "record": "results/data_free_compensation/population_compensation_result.json:core_method_review",
-    "summary": "A补空间约束与联合补偿已核实；当前A是最小范数行正交解，未实现有效距离最大化；SVD单删项没有证明分类收益。原方法效果和额外输出校正分列。",
-    "new_defense_points": 0,
+    "summary": "旧有效方法先固定最小范数A再求B；本轮真正联合距离求解已完成，但融合保护无效。SVD贡献仍未证明。既有有效发布不替换。",
+    "new_defense_points": 1,
     "new_real_images": 0,
-    "production_modules_added": 0
+    "production_modules_added": 0,
+    "latest_function_check": "Fixed teacher-only synthetic transitions:all endpoints preserved;interior same teacher MNIST136/150,SVHN143/150,DTD659/705. No natural-data causal claim;no new defense point.",
+    "transition_record": "results/data_free_compensation/paper_protocol_review.json:ABM_transition_review_20261026",
+    "joint_result": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027"
   },
   "threshold_review": "notes/parameter_scale_and_threat_model.md#2026-10-26四种05的来源与修正",
   "latest_function_check": {
@@ -133,11 +136,42 @@
     "independent_numpy": "15groups passed;max full-readout identity error2.60e-12"
   },
   "joint_construction": {
-    "record": "results/data_free_compensation/population_compensation_result.json:joint_classification_source_result_20261027",
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027",
     "point_sha256": "4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d",
     "accepted_steps": 8,
     "source_feasible": true,
     "stop": "finite line search blocked by source classification constraints; no convergence claim",
-    "real_evaluation": "pending compute migration; not a new successful defense"
+    "real_evaluation": "completed_and_independently_verified_no_effective_protection",
+    "native_TA_AGAtarget_AGAboth": [
+      99.64,
+      99.26,
+      99.24,
+      99.22
+    ],
+    "native_original": 99.69,
+    "complete_AGA_calls": 1,
+    "context_score_replays": 240,
+    "partner_SVHN_TA_AGAtarget_AGAboth": [
+      91.70636140135218,
+      91.78703134603565,
+      90.57314074984635
+    ],
+    "source_constraint_check": "Limiting pair lower bound.000284 versus exact numerator.063619; sufficient-condition conservatism. No constrained optimum or impossibility claim."
+  },
+  "latest_joint_function_check": {
+    "record": "results/data_free_compensation/paper_protocol_review.json:joint_classification_tangent_20261027",
+    "point_sha256": "4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d",
+    "new_defense_points": 0,
+    "real_images": 0,
+    "classification_derivative_rows": 7200,
+    "native_response_derivative_rows": 1,
+    "numerical_rank": 7201,
+    "class_constraint_derivative_max": 2.420771916256115e-13,
+    "both_objective_derivatives": [
+      -0.39379052778440116,
+      -0.39379052778455026
+    ],
+    "seconds": 10.392550993710756,
+    "conclusion": "A common local direction exists despite the old line-search stop; finite nonlinear compensation and actual protection not yet established."
   }
 }

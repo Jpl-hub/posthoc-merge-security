@@ -20555,7 +20555,6 @@
   "joint_classification_source_result_20261027": {
     "status": "unique_FP32_point_frozen_before_real_images",
     "point_sha256": "4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d",
-    "source": "\"\"\"One joint A/B solve with finite native constraints and two explicit objectives.\"\"\"\nimport json, math, time\nfrom pathlib import Path\nimport torch\nimport torch.nn.functional as F\nfrom _impl.io import digest\nfrom _impl.models import initialize, checked_models\nfrom _impl.attacks import load_author\nfrom _impl.metrics import logical_parameter_distance\n\ninitialize()\ntorch.set_default_dtype(torch.float64)\nstart = time.perf_counter()\nout = Path('outputs/joint_classification_20261027')\nassert out.exists() and not (out/'result.json').exists() and not (out/'point.pt').exists()\nsource = Path('outputs/native_ellipse_classification_20261026/source/source.pt')\nassert digest(source) == '33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5'\nraw = torch.load(source, map_location='cpu', weights_only=False)\nbase, expert, head, pins = checked_models('MNIST')\ns, bs = expert.state_dict(), base.state_dict()\nk = 'model.visual.transformer.resblocks.11.mlp.'\nto = lambda x: x.double().cuda()\nA, A0, a, a0, B, B0, b, b0, gamma, beta = [to(v) for v in [s[k+'c_fc.weight'], bs[k+'c_fc.weight'], s[k+'c_fc.bias'], bs[k+'c_fc.bias'], s[k+'c_proj.weight'], bs[k+'c_proj.weight'], s[k+'c_proj.bias'], bs[k+'c_proj.bias'], s['model.visual.transformer.resblocks.11.ln_2.weight'], s['model.visual.transformer.resblocks.11.ln_2.bias']]]\nU, _, Vh = torch.linalg.svd(A-A0, full_matrices=False)\nU, V = U[:, :32], Vh[:32].T\nA0r = A0-(A0@V)@V.T\nK = A0r@A0r.T\nGrows = -(U@U.T)*K\nGrows.diagonal().add_(K.diagonal())\nLrows = torch.linalg.cholesky(Grows)\nlam = torch.cholesky_solve((-(A*A0).sum(1))[:, None], Lrows)\ndA = lam*A0r\ndA -= U@(U.T@dA)\nAp = A+dA\ndel K, Grows\n\ndef tangent(g):\n    g = g-U@(U.T@g)\n    g = g-(g@V)@V.T\n    lam = torch.cholesky_solve((g*A0).sum(1)[:, None], Lrows)\n    q = lam*A0r\n    return g-q+U@(U.T@q)\n\nactivate = lambda z: z*torch.sigmoid(1.702*z)\naugmented = lambda x, aa: torch.cat([activate(x@aa.T+a).T, torch.ones(1, len(x), device='cuda')], 0)\nRorig = torch.cat([B, b[:, None]], 1)\nna, nr = A.norm(), Rorig.norm()\ncache = {name: {key: to(v) for key, v in row.items()} for name, row in raw['cache'].items()}\nlayer_path = Path('outputs/task_shaped_compensation_20261026/layer_inputs.pt')\nassert digest(layer_path) == '10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe'\nu = torch.load(layer_path, map_location='cuda', weights_only=False)\nxl = beta+gamma*u\npopulations = [(xl, activate(xl@A.T+a)@B.T+b), (cache['native']['x'], cache['native']['final']-cache['native']['prefix'])]\nG = torch.zeros(3073, 3073, device='cuda')\nT = torch.zeros_like(Rorig)\nweights = []\nfor x, y in populations:\n    variance = y.square().sum()/len(y)-y.mean(0).square().sum()\n    w = 1/(len(y)*variance)\n    weights.append(w)\n    for lo in range(0, len(x), 256):\n        H = augmented(x[lo:lo+256], Ap)\n        G += w*(H@H.T)\n        T += w*(y[lo:lo+256].T@H.T)\nrho = .01*G.trace()/len(G)\nG += rho*torch.eye(len(G), device='cuda')\nT += rho*Rorig\nRN = torch.cholesky_solve(T.T, torch.linalg.cholesky(G)).T\ndel G, T, u\n\n@torch.no_grad()\ndef native_function(aa, rr):\n    value = rho*(rr-Rorig).square().sum()\n    for (x, y), w in zip(populations, weights):\n        for lo in range(0, len(x), 1024):\n            error = (rr@augmented(x[lo:lo+1024], aa)).T-y[lo:lo+1024]\n            value += w*error.square().sum()\n    return float(value)\n\nW = to(head.weight)\nassert float(head.bias.abs().max()) == 0\nhead_scale = W.square().sum(1).mean().sqrt()\neps = expert.model.visual.ln_post.eps\nnames = ['model.visual.ln_post.weight', 'model.visual.ln_post.bias', 'model.visual.proj']\nreadouts = {name: [to(s[key] if name == 'native' else (s[key]+bs[key])/2) for key in names] for name in cache}\ndef classify(h, name):\n    g, bb, P = readouts[name]\n    z = F.layer_norm(h, (768,), g, bb, eps)@P\n    return F.normalize(z, dim=-1)@W.T\n\ntail_error = max(float((classify(cache[name]['final'], name)-cache[name]['scores']).abs().max()) for name in cache)\nassert tail_error < .0005\nh0 = cache['native']['final']\nhc0 = h0-h0.mean(1, keepdim=True)\nsigma0 = (hc0.square().mean(1)+eps).sqrt()\nteacher = cache['native']['scores'].argmax(1)\nids = torch.arange(len(h0), device='cuda')\ng, bb, P = readouts['native']\npw = P@W.T\nlinear = g[:, None]*pw\nlinear -= linear.mean(0, keepdim=True)\noffset = bb@pw\nc = offset[teacher, None]-offset[None, :]\nmask = torch.arange(len(W), device='cuda')[None, :] != teacher[:, None]\n\n@torch.no_grad()\ndef native_classes(aa, rr):\n    h = cache['native']['prefix']+(rr@augmented(cache['native']['x'], aa)).T\n    hc = h-h.mean(1, keepdim=True)\n    sigma = (hc.square().mean(1)+eps).sqrt()\n    ell = (hc0*hc).mean(1)/sigma0+eps/sigma0\n    z = h@linear\n    lower = z[ids, teacher, None]-z+c.clamp(max=0)*sigma[:, None]+c.clamp(min=0)*ell[:, None]\n    return float(lower[mask].min()), int(classify(h, 'native').argmax(1).eq(teacher).sum())\n\nauthor, author_sha = load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))\nassert author_sha == '4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778'\nmatching_calls = 0\ndef matching(aa):\n    global matching_calls\n    matching_calls += 1\n    return author['solve_permutation'](aa.detach().float().cpu(), A0.float().cpu()).cuda()\n\ndef public(aa, rr, pi):\n    scores = {}\n    for name in ['direct', 'recovered']:\n        ai, bi = (aa, a) if name == 'direct' else (aa[pi], a[pi])\n        H = activate(cache[name]['x']@((ai+A0)/2).T+(bi+a0)/2).T\n        h = cache[name]['prefix']+(B0@H+b0[:, None]).T/2\n        if name == 'recovered':\n            back = torch.empty_like(H)\n            back[pi] = H\n            H = back\n        h = h+(rr@torch.cat([H, torch.ones(1, H.shape[1], device='cuda')], 0)).T/2\n        scores[name] = classify(h, name)\n    gaps = torch.cat([v[:, 1:]-v[:, :1] for v in scores.values()])/head_scale\n    return torch.logsumexp(gaps.flatten(), 0)-math.log(gaps.numel()), scores\n\noriginal_effective = A*gamma\noriginal_effective -= original_effective.mean(1, keepdim=True)\ndef distance(aa):\n    delta = (aa-A)*gamma\n    delta = delta-delta.mean(1, keepdim=True)\n    return delta.square().sum()/original_effective.square().sum()\n\ntau = native_function(Ap, Rorig)\nfor init_power in range(25):\n    R = Rorig+(RN-Rorig)*2.**(-init_power)\n    slack, retained = native_classes(Ap, R)\n    if slack > 0 and retained == len(h0) and float((R[:, :-1]-B).norm()/B.norm()) <= 4:\n        break\nelse:\n    raise RuntimeError('No feasible initialization on the fixed native segment')\nassert native_function(Ap, R) <= tau+1e-8\npi = matching(Ap)\ninitial = dict(distance_squared=float(distance(Ap)), native=native_function(Ap, R), native_slack=slack, public=float(public(Ap, R, pi)[0]), initialization_fraction=2.**(-init_power))\ntrace, derivative = [], None\nstop = 'iteration_limit'\naccepted, failures = False, {}\nfor it in range(500):\n    Ap = Ap.detach().requires_grad_(True)\n    R = R.detach().requires_grad_(True)\n    f1 = -distance(Ap)\n    f2, _ = public(Ap, R, pi)\n    gd = tangent(torch.autograd.grad(f1, Ap)[0])*na\n    ga, gr = torch.autograd.grad(f2, (Ap, R))\n    gp, gq = tangent(ga)*na, gr*nr\n    aa, bb, cc = float(gd.square().sum()), float(gp.square().sum()+gq.square().sum()), float((gd*gp).sum())\n    den = aa+bb-2*cc\n    weight = min(1., max(0., (bb-cc)/den)) if den > 0 else .5\n    ca, cr = weight*gd+(1-weight)*gp, (1-weight)*gq\n    norm = (ca.square().sum()+cr.square().sum()).sqrt()\n    if float(norm) < 1e-12:\n        stop = 'zero_common_first_order_direction'; break\n    da, dr = -ca*na/norm, -cr*nr/norm\n    sd = float((gd*(da/na)).sum())\n    sp = float((gp*(da/na)).sum()+(gq*(dr/nr)).sum())\n    assert sd < 0 and sp < 0, (sd, sp)\n    if it == 0:\n        step = 1e-6\n        fd1 = float((-distance(Ap.detach()+step*da)+distance(Ap.detach()-step*da))/(2*step))\n        fd2 = float((public(Ap.detach()+step*da, R.detach()+step*dr, pi)[0]-public(Ap.detach()-step*da, R.detach()-step*dr, pi)[0])/(2*step))\n        derivative = dict(distance_analytic=sd, distance_numeric=fd1, public_analytic=sp, public_numeric=fd2, matching_fixed_for_derivative=True)\n        assert max(abs(fd1-sd), abs(fd2-sp)) < 1e-5\n    accepted = False\n    failures = {}\n    with torch.no_grad():\n        for bt in range(16):\n            step = .1*2.**(-bt)\n            trial_a, trial_r = Ap+step*da, R+step*dr\n            f1_new = -float(distance(trial_a))\n            if float((trial_a-A).norm()/na) > 2 or float((trial_r[:, :-1]-B).norm()/B.norm()) > 4:\n                reason = 'declared_parameter_range'\n            elif f1_new > float(f1)+1e-4*step*sd:\n                reason = 'distance'\n            else:\n                slack, retained = native_classes(trial_a, trial_r)\n                if slack < 0 or retained != len(h0):\n                    reason = 'native_classification'\n                else:\n                    nv = native_function(trial_a, trial_r)\n                    if nv > tau+1e-8:\n                        reason = 'native_function'\n                    else:\n                        new_pi = matching(trial_a)\n                        f2_new, scores = public(trial_a, trial_r, new_pi)\n                        if float(f2_new) <= float(f2)+1e-4*step*sp:\n                            changed_matches = int(new_pi.ne(pi).sum())\n                            Ap, R, pi = trial_a.detach(), trial_r.detach(), new_pi\n                            accepted = True; break\n                        reason = 'public_after_exact_matching'\n            failures[reason] = failures.get(reason, 0)+1\n    if not accepted:\n        stop = 'finite_line_search_stalled'; break\n    row = dict(iteration=it+1, distance_squared=-f1_new, public=float(f2_new), native=nv, native_limit=tau, native_minimum_class_slack=slack, step=step, mixture_weight=weight, changed_matches=changed_matches, public_class0={key:int(v.argmax(1).eq(0).sum()) for key,v in scores.items()}, rejected=failures)\n    trace.append(row)\n    if it%10 == 0:\n        print(json.dumps(row), flush=True)\nAp, R = Ap.detach(), R.detach()\nedits = {k+'c_fc.weight': Ap.float().cpu(), k+'c_proj.weight': R[:, :-1].float().cpu(), k+'c_proj.bias': R[:, -1].float().cpu()}\ntorch.save(edits, out/'point.pt')\naf = to(edits[k+'c_fc.weight'])\nrf = torch.cat([to(edits[k+'c_proj.weight']), to(edits[k+'c_proj.bias'])[:, None]], 1)\npif = matching(af)\nwith torch.no_grad():\n    objective, scores = public(af, rf, pif)\n    slack, retained = native_classes(af, rf)\n    nv = native_function(af, rf)\n    delta = af-A\n    metrics = dict(A_relative=float(delta.norm()/na), B_relative=float((rf[:, :-1]-B).norm()/B.norm()), logical_D=logical_parameter_distance(edits, s), effective_A_distance_squared=float(distance(af)), left_task_relative=float((U.T@delta).norm()/delta.norm()), right_task_relative=float((delta@V).norm()/delta.norm()), anchor_diagonal_relative=float((af*A0).sum(1).abs().max()/(af.norm(dim=1)*A0.norm(dim=1)).mean()))\nresult = dict(status='unique_FP32_point_frozen_before_real_images', point_sha256=digest(out/'point.pt'), source=Path(__file__).read_text(), source_sha256=digest(__file__), source_cache_sha256=digest(source), layer_input_sha256=digest(layer_path), checkpoint_sha256=pins, author_sha256=author_sha, initial=initial, native_limit=tau, native_final=nv, native_class_slack=slack, native_teacher_retained=retained, native_n=len(h0), source_feasible=bool(nv<=tau+1e-7 and slack>=-1e-7 and retained==len(h0) and metrics['A_relative']<=2.000001 and metrics['B_relative']<=4.000001), public_objective=float(objective), public_class0={key:int(v.argmax(1).eq(0).sum()) for key,v in scores.items()}, iterations=len(trace), stop_reason=stop, last_rejections=failures if not accepted else {}, trace=trace, derivative_check=derivative, metrics=metrics, seconds=time.perf_counter()-start, matching_calls=matching_calls, complete_AGA_calls=0, real_images=0, original_expert_updates=0, model_image_forwards=0, scope='One joint source-only construction. Two exact parameter gradients, paper two-objective formula with endpoints0/1; not MGDA-UB or a new optimizer. Matching recomputed in each otherwise-feasible proposal. Fixed teacher tangent conditions and native functional bound apply to complete finite source, not unseen data. No convergence, global maximum or full SVD contribution claim.')\n(out/'result.json').write_text(json.dumps(result, indent=2)+'\\n')\nprint(json.dumps({key:value for key,value in result.items() if key not in ['source','trace']}), flush=True)\n",
     "source_sha256": "4cc92f55aaaffe315731e01a957670cac65e4184cf9e4928ba9e2c6141dfd256",
     "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
     "layer_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe",
@@ -20757,7 +20756,8 @@
     "original_expert_updates": 0,
     "model_image_forwards": 0,
     "scope": "One joint source-only construction. Two exact parameter gradients, paper two-objective formula with endpoints0/1; not MGDA-UB or a new optimizer. Matching recomputed in each otherwise-feasible proposal. Fixed teacher tangent conditions and native functional bound apply to complete finite source, not unseen data. No convergence, global maximum or full SVD contribution claim.",
-    "freeze_note": "Frozen on previous4090 before real-image evaluation; moved byte-identically to new4090 due GPU availability. Eight accepted steps, finite search stopped; not a stationary/global solution."
+    "freeze_note": "Frozen on previous4090 before real-image evaluation; moved byte-identically to new4090 due GPU availability. Eight accepted steps, finite search stopped; not a stationary/global solution.",
+    "source_record": "joint_classification_definition_20261027:source"
   },
   "joint_classification_evaluation_definition_20261027": {
     "protocol": {
@@ -20915,5 +20915,720 @@
       "evaluate.sh": "094609880adea90998fb2a9c85ae82b1bd38cae176c7f39875933b6251228716"
     },
     "policy": "Matched unprotected native/fusion scores reused with SHA. Original fullAGA once, TA.5 both scopes, full128-context replay. Only artifact SHA placeholders filled after execution; scientific settings fixed."
+  },
+  "joint_classification_evaluation_result_20261027": {
+    "status": "completed_no_effective_fusion_protection",
+    "raw_root": "outputs/joint_classification_20261027",
+    "point_sha256": "4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d",
+    "source_definition_commit": "e39b1db",
+    "point_frozen_local_commit": "2d663fc",
+    "point_frozen_GitHub_commit": "d1553939d49edd147ae95826be1c21eaa3f55529",
+    "read_only_source": {
+      "source_constraint_check.py": "\"\"\"Read the frozen source constraint; no new candidate, samples or optimization.\"\"\"\nimport json\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.io import digest\nfrom _impl.models import checked_models\nroot=Path('outputs/joint_classification_20261027')\ncache_path=Path('outputs/native_ellipse_classification_20261026/source/source.pt')\nassert digest(cache_path)=='33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5'\nassert digest(root/'point.pt')=='4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d'\nraw=torch.load(cache_path,map_location='cpu',weights_only=False)['cache']['native']\n_,expert,head,_=checked_models('MNIST');state=expert.state_dict();edits=torch.load(root/'point.pt',map_location='cpu',weights_only=False)\na=lambda x:x.detach().cpu().numpy().astype(np.float64)\nk='model.visual.transformer.resblocks.11.mlp.'\nx,prefix,h0=[a(raw[name]) for name in ['x','prefix','final']]\nz=x@a(edits[k+'c_fc.weight']).T+a(state[k+'c_fc.bias'])\nh=prefix+(z/(1+np.exp(-1.702*z)))@a(edits[k+'c_proj.weight']).T+a(edits[k+'c_proj.bias'])\ng,b,P=[a(state['model.visual.'+key]) for key in ['ln_post.weight','ln_post.bias','proj']]\nW=a(head.weight);pw=P@W.T;linear=g[:,None]*pw;linear-=linear.mean(0,keepdims=True);offset=b@pw\nteacher=a(raw['scores']).argmax(1);ids=np.arange(len(h));mask=np.arange(len(W))[None,:]!=teacher[:,None]\nhc=h-h.mean(1,keepdims=True);hc0=h0-h0.mean(1,keepdims=True);eps=expert.model.visual.ln_post.eps\nsigma=np.sqrt((hc*hc).mean(1)+eps);sigma0=np.sqrt((hc0*hc0).mean(1)+eps)\nell=(hc0*hc).mean(1)/sigma0+eps/sigma0\nc=offset[teacher,None]-offset[None,:];v=h@linear;v=v[ids,teacher,None]-v\nlower=v+np.minimum(c,0)*sigma[:,None]+np.maximum(c,0)*ell[:,None]\nexact=v+c*sigma[:,None]\nassert np.min((exact-lower)[mask])>=-1e-10\nscores=((hc/sigma[:,None])*g+b)@P;scores=scores/np.linalg.norm(scores,axis=1,keepdims=True)@W.T\nretained=int((scores.argmax(1)==teacher).sum());assert retained==800\nrival=lower.copy();rival[~mask]=np.inf;i,j=np.unravel_index(rival.argmin(),rival.shape)\nresult=dict(status='passed_independent_numpy_frozen_native_constraints',source_sha256=digest(__file__),point_sha256=digest(root/'point.pt'),source_cache_sha256=digest(cache_path),native_teacher_retained=retained,n=len(h),minimum_lower_bound=float(lower[mask].min()),minimum_exact_order_numerator=float(exact[mask].min()),active_pair=dict(source_context=int(i),teacher_class=int(teacher[i]),rival_class=int(j),lower_bound=float(lower[i,j]),exact_numerator=float(exact[i,j]),offset_coefficient=float(c[i,j]),support_gap=float(exact[i,j]-lower[i,j])),positive_offset_pairs=int((c[mask]>0).sum()),scope='Only frozen synthetic source and published weights. No real images, new models, changes, trials or solver retries. A positive support gap is conservatism of the sufficient condition, not a natural-accuracy explanation.')\n(root/'source_constraint_check.json').write_text(json.dumps(result,indent=2)+'\\n');print(json.dumps(result),flush=True)\n",
+      "paired_check.py": "\"\"\"Independent NumPy paired/per-class statistics for the frozen evaluation.\"\"\"\nimport json,math\nfrom pathlib import Path\nimport numpy as np\nimport torch\nfrom _impl.io import digest\nroot=Path('outputs/joint_classification_20261027');folder=root/'evaluation/full/00_MNIST_SVHN'\nrows=json.loads((folder/'results.json').read_text());raw=torch.load(folder/'artifacts/predictions.pt',map_location='cpu',weights_only=False)\nchecks=[]\nfor row in rows:\n key='/'.join([row['defense'],row['merger'],row['attack_scope'],row['dataset']]);control='/'.join(['Unprotected',row['merger'],row['attack_scope'],row['dataset']])\n r=raw[key];y=r['target'].numpy();pred=r['logits'].numpy().argmax(1);before=raw[control]['logits'].numpy().argmax(1)\n assert r['indices']==list(range(len(y)))\n good,old=pred==y,before==y;lost=int((old&~good).sum());gained=int((~old&good).sum());n=len(y)\n assert lost==row['paired']['lost'] and gained==row['paired']['gained'] and int(good.sum())==row['correct']\n differences=good.astype(float)-old.astype(float);half=1.96*np.std(differences,ddof=1)/np.sqrt(n);ci=100*np.array([differences.mean()-half,differences.mean()+half]);np.testing.assert_allclose(ci,row['paired_accuracy_delta_95ci_pp'],atol=1e-12,rtol=0)\n discordant=lost+gained;term=-discordant*math.log(2);total=term\n for k in range(1,min(lost,gained)+1):\n  term+=math.log(discordant-k+1)-math.log(k);total=float(np.logaddexp(total,term))\n logp=0. if not discordant else min(0.,math.log(2)+total)\n p=math.exp(logp);assert abs(p-row['paired']['exact_mcnemar_p'])<1e-10;assert abs(logp/math.log(10)-row['mcnemar_log10_p'])<1e-7\n classes=[]\n for c in range(r['logits'].shape[1]):\n  m=y==c;classes.append(dict(class_id=c,n=int(m.sum()),before_correct=int((old&m).sum()),correct=int((good&m).sum()),lost=int((old&~good&m).sum()),gained=int((~old&good&m).sum())))\n checks.append(dict(key=key,n=n,accuracy_percent=100*good.mean(),changed=int((pred!=before).sum()),lost=lost,gained=gained,paired_delta_95ci_pp=ci.tolist(),exact_mcnemar_p=p,log10_p=logp/math.log(10),per_class=classes))\nout=dict(status='passed_independent_numpy_counts_CI_exact_binomial_recurrence',rows=checks,raw_sha256=digest(folder/'artifacts/predictions.pt'),source_sha256=digest(__file__),new_image_forwards=0)\n(root/'paired_check.json').write_text(json.dumps(out,indent=2)+'\\n');print(json.dumps(dict(status=out['status'],rows=len(checks))),flush=True)\n"
+    },
+    "real_construction_images": 0,
+    "new_complete_AGA_calls": 1,
+    "real_evaluation_image_forwards": 147328,
+    "new_production_modules": 0,
+    "conclusion": "Native MNIST99.69 to99.64;TA99.26,AGA-target99.24,both99.22. No effective protection. This single finite local solve is closed; existing effective publications unchanged. Stop is not a constrained optimum or impossibility result. Teacher support lower bound is conservative at limiting pair; no causal natural-data claim.",
+    "record_index": {
+      "native/results.json": {
+        "path": "outputs/joint_classification_20261027/native/results.json",
+        "sha256": "0ac663b5bd5020d75b2d5432f2e6f99f3ee307b776c2cb5aa28daf128595b5c1"
+      },
+      "native/independent_validation.json": {
+        "path": "outputs/joint_classification_20261027/native/independent_validation.json",
+        "sha256": "5bf1a6b03484af82dacf783219bba5133c98c04c0f806f3dcc95829e109ce6fc"
+      },
+      "context_replay.json": {
+        "path": "outputs/joint_classification_20261027/context_replay.json",
+        "sha256": "82907545d6e0aa84aedf81bb31f8f8f781b99ff82f0081b42e682b61ce203823"
+      },
+      "AGA/execution.json": {
+        "path": "outputs/joint_classification_20261027/AGA/execution.json",
+        "sha256": "a7f7d870e9eb8754762f55d981e34e6f66fc494125c15b32bcd009d39fbb6a90"
+      },
+      "evaluation/full/00_MNIST_SVHN/results.json": {
+        "path": "outputs/joint_classification_20261027/evaluation/full/00_MNIST_SVHN/results.json",
+        "sha256": "c89c151c7ea80e7ef9f59c3c80108d30575b78a20f4a8d7dd4ccd328782267f0"
+      },
+      "evaluation/full/00_MNIST_SVHN/execution.json": {
+        "path": "outputs/joint_classification_20261027/evaluation/full/00_MNIST_SVHN/execution.json",
+        "sha256": "79810c173b6f68b65c24799622fdda71aaf081fae4f624b52a1dbb851f224a08"
+      },
+      "evaluation/full/00_MNIST_SVHN/independent_validation.json": {
+        "path": "outputs/joint_classification_20261027/evaluation/full/00_MNIST_SVHN/independent_validation.json",
+        "sha256": "506d3efbea5ddaf2e663afc95f20f1da2036b5b84fbc8f6070cce2ead4ee7415"
+      },
+      "paired_check.json": {
+        "path": "outputs/joint_classification_20261027/paired_check.json",
+        "sha256": "c5a20d30ab8640541a8c745d600ed737beddba843c10ae319e21a9fa6165032b"
+      },
+      "source_constraint_check.json": {
+        "path": "outputs/joint_classification_20261027/source_constraint_check.json",
+        "sha256": "ec99a4efd9460cc17b0cbe07cbcb9f68c2a4da163f56baa9de0cdb1fee9f65b8"
+      },
+      "migration.json": {
+        "path": "outputs/joint_classification_20261027/migration.json",
+        "sha256": "15869c1a2efdb6a4db4ad78308ff1ad798a2238868901d23c1c214bb46f86532"
+      },
+      "evaluate.complete.json": {
+        "path": "outputs/joint_classification_20261027/evaluate.complete.json",
+        "sha256": "e2a753272f443e57ba8b4c4228be06b5cf16222da2a19228f824c5bc859c4b32"
+      }
+    },
+    "rows": [
+      {
+        "defense": "Unprotected",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9969,
+        "accuracy_percent": 99.69,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9969,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 31,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "mcnemar_log10_p": 0.0
+      },
+      {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9937,
+        "accuracy_percent": 99.37,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9937,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 63,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "mcnemar_log10_p": 0.0
+      },
+      {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "SVHN",
+        "n": 26032,
+        "correct": 24079,
+        "accuracy_percent": 92.49769514443761,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 24079,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 1953,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "mcnemar_log10_p": 0.0
+      },
+      {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9930,
+        "accuracy_percent": 99.3,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9930,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 70,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "mcnemar_log10_p": 0.0
+      },
+      {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "SVHN",
+        "n": 26032,
+        "correct": 24153,
+        "accuracy_percent": 92.7819606637984,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 24153,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 1879,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "mcnemar_log10_p": 0.0
+      },
+      {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9932,
+        "accuracy_percent": 99.32,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9932,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 68,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "mcnemar_log10_p": 0.0
+      },
+      {
+        "defense": "Unprotected",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "SVHN",
+        "n": 26032,
+        "correct": 23890,
+        "accuracy_percent": 91.77166564228642,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 23890,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 2142,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "mcnemar_log10_p": 0.0
+      },
+      {
+        "defense": "JointClassification_MNIST",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9964,
+        "accuracy_percent": 99.64,
+        "changed_predictions": 16,
+        "paired": {
+          "both_correct": 9960,
+          "lost": 9,
+          "gained": 4,
+          "both_wrong": 27,
+          "loss_pp": 0.05,
+          "exact_mcnemar_p": 0.266845703125
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          -0.12066554296045098,
+          0.020665542960450978
+        ],
+        "mcnemar_log10_p": -0.573739786018072
+      },
+      {
+        "defense": "JointClassification_MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9926,
+        "accuracy_percent": 99.26,
+        "changed_predictions": 24,
+        "paired": {
+          "both_correct": 9921,
+          "lost": 16,
+          "gained": 5,
+          "both_wrong": 58,
+          "loss_pp": 0.11,
+          "exact_mcnemar_p": 0.02660369873046875
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          -0.1997970935821597,
+          -0.02020290641784033
+        ],
+        "mcnemar_log10_p": -1.5750579789117054
+      },
+      {
+        "defense": "JointClassification_MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "SVHN",
+        "n": 26032,
+        "correct": 23873,
+        "accuracy_percent": 91.70636140135218,
+        "changed_predictions": 508,
+        "paired": {
+          "both_correct": 23791,
+          "lost": 288,
+          "gained": 82,
+          "both_wrong": 1871,
+          "loss_pp": 0.7913337430854334,
+          "exact_mcnemar_p": 5.7361650485553975e-28
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          -0.9358440813319588,
+          -0.6468234048389078
+        ],
+        "mcnemar_log10_p": -27.24137836106317
+      },
+      {
+        "defense": "JointClassification_MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9924,
+        "accuracy_percent": 99.24,
+        "changed_predictions": 19,
+        "paired": {
+          "both_correct": 9919,
+          "lost": 11,
+          "gained": 5,
+          "both_wrong": 65,
+          "loss_pp": 0.06,
+          "exact_mcnemar_p": 0.210113525390625
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          -0.1383950993567791,
+          0.018395099356779118
+        ],
+        "mcnemar_log10_p": -0.6775459903667739
+      },
+      {
+        "defense": "JointClassification_MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "SVHN",
+        "n": 26032,
+        "correct": 23894,
+        "accuracy_percent": 91.78703134603565,
+        "changed_predictions": 581,
+        "paired": {
+          "both_correct": 23807,
+          "lost": 346,
+          "gained": 87,
+          "both_wrong": 1792,
+          "loss_pp": 0.9949293177627535,
+          "exact_mcnemar_p": 1.2585913896803424e-37
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          -1.1511378240941121,
+          -0.8387208114313949
+        ],
+        "mcnemar_log10_p": -36.9001152436891
+      },
+      {
+        "defense": "JointClassification_MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9922,
+        "accuracy_percent": 99.22,
+        "changed_predictions": 22,
+        "paired": {
+          "both_correct": 9917,
+          "lost": 15,
+          "gained": 5,
+          "both_wrong": 63,
+          "loss_pp": 0.1,
+          "exact_mcnemar_p": 0.04138946533203125
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          -0.18763633043802616,
+          -0.012363669561973845
+        ],
+        "mcnemar_log10_p": -1.3831101837671143
+      },
+      {
+        "defense": "JointClassification_MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "SVHN",
+        "n": 26032,
+        "correct": 23578,
+        "accuracy_percent": 90.57314074984635,
+        "changed_predictions": 720,
+        "paired": {
+          "both_correct": 23473,
+          "lost": 417,
+          "gained": 105,
+          "both_wrong": 2037,
+          "loss_pp": 1.1985248924400738,
+          "exact_mcnemar_p": 5.364661001664556e-45
+        },
+        "paired_accuracy_delta_95ci_pp": [
+          -1.3699328480905262,
+          -1.0271169367896211
+        ],
+        "mcnemar_log10_p": -44.270457716336765
+      }
+    ],
+    "native": [
+      {
+        "n": 10000,
+        "changed": 16,
+        "R": 78.12683299184444,
+        "stage": "full",
+        "before_correct": 9969,
+        "after_correct": 9964,
+        "strict_task_passed": false,
+        "accuracy_loss_pp": 0.05,
+        "passed": true,
+        "raw_sha256": "9dc35c57be7c0eb333d1ce6ba6a9f85af8401ec501908b59dc829a549eec5faf"
+      }
+    ],
+    "context_replay": {
+      "status": "passed",
+      "source_sha256": "9b162bb40e75851dab0825dbb58b22a72b8b6690220985c46214970a1eff5550",
+      "score_replays": 16,
+      "original_batch_size": 128,
+      "context_image_forwards": 1936,
+      "maximum_score_error": 0.0,
+      "tolerance": 0.0002,
+      "new_expert_updates": 0,
+      "new_AGA": 0
+    },
+    "fusion_replay": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 27296,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 2.288818359375e-05,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "bde0cc87f5b9af1cf85b22d540966f5b4fae2560122efa8f9af5026474a388ba",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "source_constraint_check": {
+      "status": "passed_independent_numpy_frozen_native_constraints",
+      "source_sha256": "3f66482f3161809e0665d9230e3e0e021958855be3f0cbc2dc38273a7256426f",
+      "point_sha256": "4ed132290ea1646ed5f9cedf73e3d7818963be4a6bd6718d43c6a938e08b342d",
+      "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+      "native_teacher_retained": 800,
+      "n": 800,
+      "minimum_lower_bound": 0.0002840692623071739,
+      "minimum_exact_order_numerator": 0.06361920410309985,
+      "active_pair": {
+        "source_context": 784,
+        "teacher_class": 9,
+        "rival_class": 0,
+        "lower_bound": 0.0002840692623071739,
+        "exact_numerator": 0.06361920410309985,
+        "offset_coefficient": 4.282638912264275,
+        "support_gap": 0.06333513484079267
+      },
+      "positive_offset_pairs": 3600,
+      "scope": "Only frozen synthetic source and published weights. No real images, new models, changes, trials or solver retries. A positive support gap is conservatism of the sufficient condition, not a natural-accuracy explanation."
+    },
+    "AGA_execution": {
+      "method": "aga",
+      "seconds": 5.937455881386995,
+      "output_sha256": "3bcce182fb2f275e3921336b6eb3c6369284048482d4fb4db420610a8366710c",
+      "details": {
+        "known_family": false,
+        "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "aligned_reference": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "reference": "original_AGA",
+      "new_training_updates": 0
+    },
+    "evaluation_execution": {
+      "completed": true,
+      "pilot": false,
+      "case_index": 0,
+      "rows": 14,
+      "wall_seconds": 88.31259724870324,
+      "GPU": "NVIDIA GeForce RTX 4090",
+      "new_defense_weights": 0,
+      "optimizer_steps": 0,
+      "new_AGA_calls": 0,
+      "cached_author_AGA_weights": true,
+      "defense_feedback": false,
+      "predictions_sha256": "bde0cc87f5b9af1cf85b22d540966f5b4fae2560122efa8f9af5026474a388ba",
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "protocol_sha256": "e2a753272f443e57ba8b4c4228be06b5cf16222da2a19228f824c5bc859c4b32"
+    },
+    "paired_check_summary": {
+      "status": "passed_independent_numpy_counts_CI_exact_binomial_recurrence",
+      "raw_sha256": "bde0cc87f5b9af1cf85b22d540966f5b4fae2560122efa8f9af5026474a388ba",
+      "source_sha256": "52602c9b0f7c24e53388899361f38ff119b15db6696ee4e5113d30c40178d762",
+      "new_image_forwards": 0
+    },
+    "migration": {
+      "status": "all_required_hashes_match",
+      "files": 30,
+      "torch": "2.8.0+cu128",
+      "numpy": "1.26.4",
+      "scipy": "1.13.1",
+      "GPU": "NVIDIA GeForce RTX 4090",
+      "utc": "2026-10-27T03:42:24.272861+00:00",
+      "old_host_role": "CPU storage only",
+      "new_host": "23800",
+      "original_weights_deleted": 0
+    },
+    "record_storage": "Full per-class and paired records preserved on new4090 at exact indexed paths; local table rows omit duplicate class arrays.",
+    "cleanup": {
+      "removed": "/root/autodl-tmp/posthoc-merge-security/checkpoints/ViT-B-32/DTD/finetuned.pt",
+      "bytes": 171737088,
+      "allocated_bytes": 171737088,
+      "sha256": "a4f4cb2a7e24143e68608aff3517f644bcf196e98cc4e78be0410c0236bb432e",
+      "reason": "Incomplete transfer only; exact prefix SHA matches intact453892355-byte original onCPU34125",
+      "intact_source_sha256": "482e5636cdb4d521376211fdeda0417f73aafab9551d366690bba3e5c0ce0f38",
+      "unique_original_models_deleted": 0
+    },
+    "local_temporary_cleanup": {
+      "files": 33,
+      "bytes": 193469,
+      "files_verified_or_disposable": [
+        {
+          "path": "outputs/joint_classification_20261027/data_sha256.txt",
+          "bytes": 294,
+          "sha256": "82809da725263a266ba681ce8b3cdfe0ff996150fbd3b151d80eab05296535ea",
+          "server": "outputs/joint_classification_20261027/data_sha256.txt"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/evaluate.json",
+          "bytes": 7265,
+          "sha256": "2e7c108b02e3e1c983b68cf73be4303f734d17810f5539a039136f303e503d17",
+          "server": "outputs/joint_classification_20261027/evaluate.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/evaluate.sh",
+          "bytes": 1213,
+          "sha256": "094609880adea90998fb2a9c85ae82b1bd38cae176c7f39875933b6251228716",
+          "server": "outputs/joint_classification_20261027/evaluate.sh"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/native.py",
+          "bytes": 2251,
+          "sha256": "4978fa517e0dada1304c2b575c25a8f888edf56c94483e1d1bbd49b09e8e9567",
+          "server": "outputs/joint_classification_20261027/native.py"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/paired_check.py",
+          "bytes": 2386,
+          "sha256": "52602c9b0f7c24e53388899361f38ff119b15db6696ee4e5113d30c40178d762",
+          "server": "outputs/joint_classification_20261027/paired_check.py"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/replay.py",
+          "bytes": 1454,
+          "sha256": "9b162bb40e75851dab0825dbb58b22a72b8b6690220985c46214970a1eff5550",
+          "server": "outputs/joint_classification_20261027/replay.py"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/source_constraint_check.py",
+          "bytes": 2979,
+          "sha256": "3f66482f3161809e0665d9230e3e0e021958855be3f0cbc2dc38273a7256426f",
+          "server": "outputs/joint_classification_20261027/source_constraint_check.py"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/source_result.json",
+          "bytes": 19225,
+          "sha256": "d22aaa00033a9b6dd885df455e6ba5680ed7cd00301a43bebc46169344cb0f3c",
+          "server": "outputs/joint_classification_20261027/source_result.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/transfer_files.txt",
+          "bytes": 366,
+          "sha256": "3b7643d8979ed719fbbad5ae99f58eb9ae9000501333ab659bbd02e5207a260d",
+          "server": "outputs/joint_classification_20261027/transfer_files.txt"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/cleanup.json",
+          "bytes": 471,
+          "sha256": "3e8a61ff0a49b1be561d686e7f35b6c0d999b3ecf2e0c03d50dcb0a1e9fad976",
+          "server": "outputs/joint_classification_20261027/cleanup.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/context_replay.json",
+          "bytes": 295,
+          "sha256": "82907545d6e0aa84aedf81bb31f8f8f781b99ff82f0081b42e682b61ce203823",
+          "server": "outputs/joint_classification_20261027/context_replay.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/evaluate.complete.json",
+          "bytes": 7430,
+          "sha256": "e2a753272f443e57ba8b4c4228be06b5cf16222da2a19228f824c5bc859c4b32",
+          "server": "outputs/joint_classification_20261027/evaluate.complete.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/evaluate.json",
+          "bytes": 7265,
+          "sha256": "2e7c108b02e3e1c983b68cf73be4303f734d17810f5539a039136f303e503d17",
+          "server": "outputs/joint_classification_20261027/evaluate.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/migration.json",
+          "bytes": 3384,
+          "sha256": "15869c1a2efdb6a4db4ad78308ff1ad798a2238868901d23c1c214bb46f86532",
+          "server": "outputs/joint_classification_20261027/migration.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/paired_check.json",
+          "bytes": 29186,
+          "sha256": "c5a20d30ab8640541a8c745d600ed737beddba843c10ae319e21a9fa6165032b",
+          "server": "outputs/joint_classification_20261027/paired_check.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/reference.json",
+          "bytes": 7980,
+          "sha256": "b62e5bb815c1314a3021fbfee4bf6ed46356c6bcc503582589fef1dd459e9b18",
+          "server": "outputs/joint_classification_20261027/reference.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/result.json",
+          "bytes": 19225,
+          "sha256": "d22aaa00033a9b6dd885df455e6ba5680ed7cd00301a43bebc46169344cb0f3c",
+          "server": "outputs/joint_classification_20261027/result.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/source_constraint_check.json",
+          "bytes": 1018,
+          "sha256": "ec99a4efd9460cc17b0cbe07cbcb9f68c2a4da163f56baa9de0cdb1fee9f65b8",
+          "server": "outputs/joint_classification_20261027/source_constraint_check.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/source_result.json",
+          "bytes": 19225,
+          "sha256": "d22aaa00033a9b6dd885df455e6ba5680ed7cd00301a43bebc46169344cb0f3c",
+          "server": "outputs/joint_classification_20261027/source_result.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/AGA/execution.json",
+          "bytes": 596,
+          "sha256": "a7f7d870e9eb8754762f55d981e34e6f66fc494125c15b32bcd009d39fbb6a90",
+          "server": "outputs/joint_classification_20261027/AGA/execution.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/AGA/protocol.json",
+          "bytes": 395,
+          "sha256": "862d3adafccdfd2ebeb46547e502d15298d7d2ffe8aa1eb50e37f37172fbea92",
+          "server": "outputs/joint_classification_20261027/AGA/protocol.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/evaluation/full/00_MNIST_SVHN/execution.json",
+          "bytes": 556,
+          "sha256": "79810c173b6f68b65c24799622fdda71aaf081fae4f624b52a1dbb851f224a08",
+          "server": "outputs/joint_classification_20261027/evaluation/full/00_MNIST_SVHN/execution.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/evaluation/full/00_MNIST_SVHN/independent_validation.json",
+          "bytes": 934,
+          "sha256": "506d3efbea5ddaf2e663afc95f20f1da2036b5b84fbc8f6070cce2ead4ee7415",
+          "server": "outputs/joint_classification_20261027/evaluation/full/00_MNIST_SVHN/independent_validation.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/evaluation/full/00_MNIST_SVHN/protocol.json",
+          "bytes": 7430,
+          "sha256": "e2a753272f443e57ba8b4c4228be06b5cf16222da2a19228f824c5bc859c4b32",
+          "server": "outputs/joint_classification_20261027/evaluation/full/00_MNIST_SVHN/protocol.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/evaluation/full/00_MNIST_SVHN/results.json",
+          "bytes": 27100,
+          "sha256": "c89c151c7ea80e7ef9f59c3c80108d30575b78a20f4a8d7dd4ccd328782267f0",
+          "server": "outputs/joint_classification_20261027/evaluation/full/00_MNIST_SVHN/results.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/native/before_images.json",
+          "bytes": 556,
+          "sha256": "0d3ec481fd571ec55574765c166d10141900eb68b1e3506f222c976dce6f552b",
+          "server": "outputs/joint_classification_20261027/native/before_images.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/native/independent_validation.json",
+          "bytes": 276,
+          "sha256": "5bf1a6b03484af82dacf783219bba5133c98c04c0f806f3dcc95829e109ce6fc",
+          "server": "outputs/joint_classification_20261027/native/independent_validation.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/native/protocol.json",
+          "bytes": 362,
+          "sha256": "08c4cd52eb36b4d85b31ed5ef7812699d519ad7880db1820e47c8c8ba75ded21",
+          "server": "outputs/joint_classification_20261027/native/protocol.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/receipts/native/results.json",
+          "bytes": 2082,
+          "sha256": "0ac663b5bd5020d75b2d5432f2e6f99f3ee307b776c2cb5aa28daf128595b5c1",
+          "server": "outputs/joint_classification_20261027/native/results.json"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/__pycache__/native.cpython-310.pyc",
+          "bytes": 2453,
+          "reason": "disposable bytecode"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/__pycache__/replay.cpython-310.pyc",
+          "bytes": 1893,
+          "reason": "disposable bytecode"
+        },
+        {
+          "path": "outputs/joint_classification_20261027/__pycache__/source_constraint_check.cpython-310.pyc",
+          "bytes": 3541,
+          "reason": "disposable bytecode"
+        },
+        {
+          "path": "outputs/joint_classification_20261027.py",
+          "bytes": 12383,
+          "sha256": "4cc92f55aaaffe315731e01a957670cac65e4184cf9e4928ba9e2c6141dfd256",
+          "server": "outputs/joint_classification_20261027/source.py"
+        }
+      ],
+      "unique_models_or_scores_deleted": 0
+    }
   }
 }
