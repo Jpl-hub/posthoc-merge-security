@@ -21630,5 +21630,654 @@
       ],
       "unique_models_or_scores_deleted": 0
     }
+  },
+  "joint_finite_result_20261027": {
+    "status": "completed_independently_verified_no_effective_fusion_protection",
+    "verified_utc": "2026-10-27T06:04:57Z",
+    "server_directory": "/root/autodl-tmp/posthoc-merge-security/outputs/joint_finite_20261027",
+    "source_summary": {
+      "status": "unique_FP32_point_frozen_before_real_images",
+      "source_sha256": "70343cf75cc33d990cf94e0391722e2b65013b261aabcd409cf10185e36151ae",
+      "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+      "layer_input_sha256": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe",
+      "point_sha256": "e6191ca8c9936f7d71ae7ad8e0969b60c6e81785f18bd4148da946724a8032e9",
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "author_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+      "initial": {
+        "distance_squared": 1.0540922189123285,
+        "native": 0.06556075574294341,
+        "native_slack": 8.188101357353567,
+        "public": 0.003226551611158257,
+        "initialization_fraction": 1.0
+      },
+      "finite_target_minimum": 8.188144024129418,
+      "finite_target_native": 0.06556075574294341,
+      "native_limit": 1.264483612297785,
+      "native_final": 0.06556075619051661,
+      "finite_numerical_error_FP32": 7.190391051387834e-09,
+      "source_feasible": true,
+      "native_teacher_retained": 800,
+      "native_n": 800,
+      "public_objective": -0.0008533686969798282,
+      "metrics": {
+        "A_relative": 1.0275093343765576,
+        "B_relative": 0.6180305555580549,
+        "logical_D": 1.2062765651841232,
+        "effective_A_distance_squared": 1.058579051786949,
+        "left_task_relative": 6.223968829223325e-10,
+        "right_task_relative": 1.2516490049482753e-09,
+        "anchor_diagonal_relative": 4.736578948395162e-09
+      },
+      "iterations": 54,
+      "stop_reason": "finite_corrected_line_search_stalled",
+      "last_rejections": {
+        "finite_native_correction": 10,
+        "public_after_exact_matching": 6
+      },
+      "derivative_checks": [
+        {
+          "stage": "initial_direction",
+          "jacobian_numeric_error": 3.7812724500568304e-10,
+          "tangent_residual": 1.1741492615909437e-13
+        }
+      ],
+      "seconds": 1448.6964431926608,
+      "matching_calls": 73,
+      "complete_AGA_calls": 0,
+      "real_images": 0,
+      "model_image_forwards": 0,
+      "original_expert_updates": 0,
+      "scope": "One original-weight construction with exact finite class-numerator and response-level preservation. Standard tangent projection and chord correction,not a novel optimizer. One final point; no earlier release loaded. No global/native unseen-input guarantee or convergence claim."
+    },
+    "native": {
+      "rows": [
+        {
+          "n": 10000,
+          "changed": 1,
+          "R": 4.554015507613194,
+          "stage": "full",
+          "before_correct": 9969,
+          "after_correct": 9968,
+          "strict_task_passed": false,
+          "accuracy_loss_pp": 0.01,
+          "passed": true,
+          "raw_sha256": "7dfd8ef9cf6798d53257b48eaa48f3ac92a135f15f5a5e4b2b29cca7a8a4fb05"
+        }
+      ],
+      "passed": true,
+      "image_forwards": 10000,
+      "baseline_new_forwards": 0,
+      "seconds": 10.61098787561059,
+      "paired": {
+        "n": 10000,
+        "correct": 9968,
+        "accuracy_percent": 99.68,
+        "changed_predictions": 1,
+        "paired": {
+          "both_correct": 9968,
+          "lost": 1,
+          "gained": 0,
+          "both_wrong": 31,
+          "loss_pp": 0.01,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          -0.029600000000000726,
+          0.009600000000000726
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1030,
+            "original_correct": 1030
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1010,
+            "original_correct": 1010
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 978,
+            "original_correct": 979
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 884,
+            "original_correct": 884
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 954,
+            "original_correct": 954
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1025,
+            "original_correct": 1025
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 973,
+            "original_correct": 973
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 1003,
+            "original_correct": 1003
+          }
+        ]
+      }
+    },
+    "native_validation": {
+      "status": "passed_raw_score_and_official_label_recount",
+      "rows": [
+        {
+          "stage": "full",
+          "n": 10000,
+          "R": 4.554015507613194
+        }
+      ],
+      "results_sha256": "9e1406db036a8874f0a70a1d3888da0701f821c2a68e41734ff72108a56b2cc8",
+      "new_image_forwards": 0
+    },
+    "native_context_replay": {
+      "status": "passed",
+      "source_sha256": "66d9bb542b5a96d1f41e6c755cb252f0a2e03f122536982e4df53f877a59ba0f",
+      "score_replays": 16,
+      "original_batch_size": 128,
+      "context_image_forwards": 1936,
+      "maximum_score_error": 0.0,
+      "tolerance": 0.0002,
+      "new_expert_updates": 0,
+      "new_AGA": 0
+    },
+    "AGA": {
+      "method": "aga",
+      "seconds": 5.5186109989881516,
+      "output_sha256": "d1cf6d2af36774140f64828f2e7e41ee0e54b2c5cb8211e94bdbcdd816232962",
+      "details": {
+        "known_family": false,
+        "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "aligned_reference": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "reference": "original_AGA",
+      "new_training_updates": 0
+    },
+    "evaluation_execution": {
+      "completed": true,
+      "pilot": false,
+      "case_index": 0,
+      "rows": 14,
+      "wall_seconds": 88.07742393016815,
+      "GPU": "NVIDIA GeForce RTX 4090",
+      "new_defense_weights": 0,
+      "optimizer_steps": 0,
+      "new_AGA_calls": 0,
+      "cached_author_AGA_weights": true,
+      "defense_feedback": false,
+      "predictions_sha256": "3f39c739e874955e3c790f3dd97fbf932e9608d3e278f36c0cc9e95f65ae65c0",
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "protocol_sha256": "6432c464d981a785f85978ba214ea17a1240ac9a471a629545b444977c4dd421"
+    },
+    "evaluation_validation": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 27296,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 2.288818359375e-05,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "3f39c739e874955e3c790f3dd97fbf932e9608d3e278f36c0cc9e95f65ae65c0",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "paired_rows": [
+      {
+        "key": "Unprotected/Standalone/None/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.69,
+        "changed": 0,
+        "lost": 0,
+        "gained": 0,
+        "paired_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "Unprotected/TA/None/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.37,
+        "changed": 0,
+        "lost": 0,
+        "gained": 0,
+        "paired_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "Unprotected/TA/None/SVHN",
+        "n": 26032,
+        "accuracy_percent": 92.49769514443761,
+        "changed": 0,
+        "lost": 0,
+        "gained": 0,
+        "paired_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "Unprotected/TA/Protected expert/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.3,
+        "changed": 0,
+        "lost": 0,
+        "gained": 0,
+        "paired_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "Unprotected/TA/Protected expert/SVHN",
+        "n": 26032,
+        "accuracy_percent": 92.7819606637984,
+        "changed": 0,
+        "lost": 0,
+        "gained": 0,
+        "paired_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "Unprotected/TA/All experts/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.32,
+        "changed": 0,
+        "lost": 0,
+        "gained": 0,
+        "paired_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "Unprotected/TA/All experts/SVHN",
+        "n": 26032,
+        "accuracy_percent": 91.77166564228642,
+        "changed": 0,
+        "lost": 0,
+        "gained": 0,
+        "paired_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "JointFinite_MNIST/Standalone/None/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.68,
+        "changed": 1,
+        "lost": 1,
+        "gained": 0,
+        "paired_delta_95ci_pp": [
+          -0.029599999999999998,
+          0.0096
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "JointFinite_MNIST/TA/None/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.33999999999999,
+        "changed": 3,
+        "lost": 3,
+        "gained": 0,
+        "paired_delta_95ci_pp": [
+          -0.06394480049945933,
+          0.003944800499459337
+        ],
+        "exact_mcnemar_p": 0.25000000000000006,
+        "log10_p": -0.6020599913279622
+      },
+      {
+        "key": "JointFinite_MNIST/TA/None/SVHN",
+        "n": 26032,
+        "accuracy_percent": 92.42470805162877,
+        "changed": 70,
+        "lost": 38,
+        "gained": 19,
+        "paired_delta_95ci_pp": [
+          -0.12982544373306837,
+          -0.016148741884632892
+        ],
+        "exact_mcnemar_p": 0.016348103897376048,
+        "log10_p": -1.786532610872744
+      },
+      {
+        "key": "JointFinite_MNIST/TA/Protected expert/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.3,
+        "changed": 2,
+        "lost": 1,
+        "gained": 1,
+        "paired_delta_95ci_pp": [
+          -0.027719971855757145,
+          0.027719971855757145
+        ],
+        "exact_mcnemar_p": 1.0,
+        "log10_p": 0.0
+      },
+      {
+        "key": "JointFinite_MNIST/TA/Protected expert/SVHN",
+        "n": 26032,
+        "accuracy_percent": 92.51306084818684,
+        "changed": 183,
+        "lost": 107,
+        "gained": 37,
+        "paired_delta_95ci_pp": [
+          -0.3591928178261978,
+          -0.17860681339691226
+        ],
+        "exact_mcnemar_p": 4.444353010344137e-09,
+        "log10_p": -8.352191452801442
+      },
+      {
+        "key": "JointFinite_MNIST/TA/All experts/MNIST",
+        "n": 10000,
+        "accuracy_percent": 99.3,
+        "changed": 6,
+        "lost": 4,
+        "gained": 2,
+        "paired_delta_95ci_pp": [
+          -0.06801079919855499,
+          0.028010799198554995
+        ],
+        "exact_mcnemar_p": 0.6875000000000002,
+        "log10_p": -0.16272729749769957
+      },
+      {
+        "key": "JointFinite_MNIST/TA/All experts/SVHN",
+        "n": 26032,
+        "accuracy_percent": 91.44130301167793,
+        "changed": 215,
+        "lost": 120,
+        "gained": 34,
+        "paired_delta_95ci_pp": [
+          -0.4237130464290013,
+          -0.23701221478796242
+        ],
+        "exact_mcnemar_p": 1.8953053686021438e-12,
+        "log10_p": -11.722320807218583
+      }
+    ],
+    "independent_pair_status": "passed_independent_numpy_counts_CI_exact_binomial_recurrence",
+    "before_real_images": {
+      "point_sha256": "e6191ca8c9936f7d71ae7ad8e0969b60c6e81785f18bd4148da946724a8032e9",
+      "protocol_sha256": "8526f9d9a7f6672e879dd84a14823c7542726d72bc3b18aad39c224742517d0e",
+      "native_driver_sha256": "d6fdb454c5c0d68c1efaeaeb2c1c3757d01949ea95b5654d6e79c4981b6fadf1",
+      "source_result_sha256": "2e918bf6db9749bd45043e2e35afed9a56908d4fe7f0886ee75eb1dc84acbf80",
+      "source_only_result": {
+        "metrics": {
+          "A_relative": 1.0275093343765576,
+          "B_relative": 0.6180305555580549,
+          "logical_D": 1.2062765651841232,
+          "effective_A_distance_squared": 1.058579051786949,
+          "left_task_relative": 6.223968829223325e-10,
+          "right_task_relative": 1.2516490049482753e-09,
+          "anchor_diagonal_relative": 4.736578948395162e-09
+        },
+        "native_teacher_retained": 800,
+        "iterations": 54,
+        "stop_reason": "finite_corrected_line_search_stalled",
+        "seconds": 1448.6964431926608
+      }
+    },
+    "files": [
+      {
+        "path": "AGA/edits.pt",
+        "bytes": 18891977,
+        "sha256": "d1cf6d2af36774140f64828f2e7e41ee0e54b2c5cb8211e94bdbcdd816232962"
+      },
+      {
+        "path": "AGA/execution.json",
+        "bytes": 597,
+        "sha256": "c51ef7440c39f2c8ee647dcf0778996ff757f2352a50c4350af120cbd29c49f7"
+      },
+      {
+        "path": "AGA/protocol.json",
+        "bytes": 371,
+        "sha256": "2acf0bce8ee3c0c34a1198d63878e633f5db2701baa51d4e8d13202265dec8f1"
+      },
+      {
+        "path": "after_source.sh",
+        "bytes": 1284,
+        "sha256": "731dbe0a3d2ed0fc458a14cd4d49db340a23a8c6d1f92fbde5313d5a98728e9e"
+      },
+      {
+        "path": "before_real_images.json",
+        "bytes": 908,
+        "sha256": "309691bfd8f0a91f621510995f3ccab218c3c65f0b1e777e0cb3320b6ecf35e3"
+      },
+      {
+        "path": "context_replay.json",
+        "bytes": 295,
+        "sha256": "4547fca18968aeebd2ebb6a08fefde3b0bd8e741b5f1c656334543f51d032512"
+      },
+      {
+        "path": "evaluate.complete.json",
+        "bytes": 7572,
+        "sha256": "6432c464d981a785f85978ba214ea17a1240ac9a471a629545b444977c4dd421"
+      },
+      {
+        "path": "evaluate.json",
+        "bytes": 7478,
+        "sha256": "8526f9d9a7f6672e879dd84a14823c7542726d72bc3b18aad39c224742517d0e"
+      },
+      {
+        "path": "evaluate.template.json",
+        "bytes": 7080,
+        "sha256": "2e3a7e759f54680cb07d4c727f63ecb206fb49d6419df0629fed8c6131314605"
+      },
+      {
+        "path": "evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "bytes": 11853975,
+        "sha256": "3f39c739e874955e3c790f3dd97fbf932e9608d3e278f36c0cc9e95f65ae65c0"
+      },
+      {
+        "path": "evaluation/full/00_MNIST_SVHN/execution.json",
+        "bytes": 556,
+        "sha256": "6dea40bc4c6e028a93f2599f3dcfa5c9671f3492d536b394ceb5e27767792da6"
+      },
+      {
+        "path": "evaluation/full/00_MNIST_SVHN/independent_validation.json",
+        "bytes": 934,
+        "sha256": "4ba60e079b8f5454cf5e317c4b8de0a605d0892efbf57d56a208d6d0e407452a"
+      },
+      {
+        "path": "evaluation/full/00_MNIST_SVHN/protocol.json",
+        "bytes": 7572,
+        "sha256": "6432c464d981a785f85978ba214ea17a1240ac9a471a629545b444977c4dd421"
+      },
+      {
+        "path": "evaluation/full/00_MNIST_SVHN/results.json",
+        "bytes": 26960,
+        "sha256": "63709d04ef6f224c70f81c2c31647e7ee2705dc335b55aa05948e976b0a05cc1"
+      },
+      {
+        "path": "evaluation.log",
+        "bytes": 2783,
+        "sha256": "2f21f4d234548319058148ef0c8743c155d49d9e3111d5dfeb7736c587c62b69"
+      },
+      {
+        "path": "freeze_evaluation.py",
+        "bytes": 1613,
+        "sha256": "e20bc4c96fe99064357154c49ef886459c7793d5e980720b0f326c9ccd9536df"
+      },
+      {
+        "path": "native/before_images.json",
+        "bytes": 548,
+        "sha256": "63a4e018fb1122a067d8a2c132aefe2c6648d52405ec45329aeeef1504ff022f"
+      },
+      {
+        "path": "native/full.pt",
+        "bytes": 1711693,
+        "sha256": "7dfd8ef9cf6798d53257b48eaa48f3ac92a135f15f5a5e4b2b29cca7a8a4fb05"
+      },
+      {
+        "path": "native/independent_validation.json",
+        "bytes": 276,
+        "sha256": "b9a7e40216d707c2fea93744030dce9bc42b4d131e440a9d7fa591be43b20fb5"
+      },
+      {
+        "path": "native/protocol.json",
+        "bytes": 354,
+        "sha256": "0a6abdb3f4f3a4909c4175bb0c437198ab22e26649932d7204114c761f33f40e"
+      },
+      {
+        "path": "native/results.json",
+        "bytes": 2054,
+        "sha256": "9e1406db036a8874f0a70a1d3888da0701f821c2a68e41734ff72108a56b2cc8"
+      },
+      {
+        "path": "native.py",
+        "bytes": 2243,
+        "sha256": "d6fdb454c5c0d68c1efaeaeb2c1c3757d01949ea95b5654d6e79c4981b6fadf1"
+      },
+      {
+        "path": "paired_check.json",
+        "bytes": 29038,
+        "sha256": "dc41f465ffe8a5e90a7738f144d3da80e46592d6c686479b35c3e6a39575507d"
+      },
+      {
+        "path": "paired_check.py",
+        "bytes": 2378,
+        "sha256": "bd51f4dc9ae08648ca5a8d91459e60c40a9a7044e24f6b75cf760c0bb2c08acf"
+      },
+      {
+        "path": "point.pt",
+        "bytes": 18879503,
+        "sha256": "e6191ca8c9936f7d71ae7ad8e0969b60c6e81785f18bd4148da946724a8032e9"
+      },
+      {
+        "path": "replay.py",
+        "bytes": 1446,
+        "sha256": "66d9bb542b5a96d1f41e6c755cb252f0a2e03f122536982e4df53f877a59ba0f"
+      },
+      {
+        "path": "run.log",
+        "bytes": 5843,
+        "sha256": "1ae3abec4052d0336b6516ebe38f782e1607b9b375883f5380d3f3cbed5cd9e0"
+      },
+      {
+        "path": "source.py",
+        "bytes": 16382,
+        "sha256": "70343cf75cc33d990cf94e0391722e2b65013b261aabcd409cf10185e36151ae"
+      },
+      {
+        "path": "source_result.json",
+        "bytes": 61414,
+        "sha256": "2e918bf6db9749bd45043e2e35afed9a56908d4fe7f0886ee75eb1dc84acbf80"
+      },
+      {
+        "path": "trace.jsonl",
+        "bytes": 33106,
+        "sha256": "6321fdb69fa1098c8ff9bb358133e5937f8e374d91fc12b179b842e9efb27d98"
+      }
+    ],
+    "counts": {
+      "complete_AGA_calls": 1,
+      "construction_single_layer_matching_calls": 73,
+      "construction_real_images": 0,
+      "real_evaluation_image_forwards": 118096,
+      "context_replay_image_forwards": 29232,
+      "production_modules_added": 0
+    },
+    "stop_analysis": {
+      "distance_squared_relative_gain_percent": 0.4256584759965598,
+      "initial_native_error_fraction_of_inequality_limit": 0.05184784927643958,
+      "largest_accepted_step": 0.003125,
+      "last_rejections": {
+        "finite_native_correction": 10,
+        "public_after_exact_matching": 6
+      },
+      "interpretation": "Exact preservation of all class numerators and native response error is stronger than retaining labels and a native-error upper bound. This finite path increased distance only0.426percent;no sole-cause,global optimum or impossibility claim. Do not resume this closed point or add iterations."
+    },
+    "formulation_review": {
+      "status": "formulation_review_only_no_new_experiment",
+      "finding": "Keeping every class numerator and response error equal to initialization is stronger than source class preservation plus the original response upper bound.",
+      "finite_condition": "For every frozen-teacher class y, g_ij(A,R)>0; E(A,R)<=tau; original A linear restrictions and parameter ranges retained. These are finite-source conditions, not natural-data guarantees.",
+      "first_order_condition": "Only active inequality rows restrict a tangent cone; J_all*d=0 unnecessarily treats every inactive inequality as an equality. Finite nonlinear checks remain necessary.",
+      "source_evidence": {
+        "distance_squared_relative_gain_percent": 0.4256584759965598,
+        "initial_native_error_fraction_of_inequality_limit": 0.05184784927643958,
+        "largest_accepted_step": 0.003125,
+        "last_rejections": {
+          "finite_native_correction": 10,
+          "public_after_exact_matching": 6
+        },
+        "interpretation": "Exact preservation of all class numerators and native response error is stronger than retaining labels and a native-error upper bound. This finite path increased distance only0.426percent;no sole-cause,global optimum or impossibility claim. Do not resume this closed point or add iterations."
+      },
+      "next": "Derive a construction that uses the stated functional inequalities and an input-dependent fusion effect; no resumed point, extra iterations, retuned seed/rank/range, or optimizer-only novelty claim.",
+      "standard_reference": "https://stanford.edu/class/ee364b/lectures/seq_notes.pdf §1.1–2",
+      "new_defense_points": 0,
+      "new_production_modules": 0
+    }
   }
 }
