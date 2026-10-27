@@ -17,24 +17,25 @@
   "compute": {
     "primary_GPU": "RTX4090",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "ssh_control_socket": "/tmp/posthoc_4090_23800.sock",
-    "python": "/root/autodl-tmp/posthoc-env/bin/python",
+    "ssh_control_socket": "/tmp/posthoc_4090_40815.sock",
+    "python": "/root/miniconda3/bin/python",
     "torch": "2.8.0+cu128",
-    "numpy": "1.26.4",
+    "numpy": "2.3.2 (base image,not experiment runtime)",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_GPU": "RTX3090",
     "secondary_root": "/root/autodl-tmp/merge_security_20261009",
-    "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261026.sock",
+    "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "Previous17811 host remains unavailable. ItsOct25/26 rawscores/models have not been restored onto this new host.",
     "record": "results/engineering_refactor/compute_4090_20261026.json",
     "secondary_role": "All other hosts CPU/storage only per user",
-    "verified_utc": "2026-10-27T05:30:35.851515+00:00",
-    "primary_available_GiB": 47,
+    "verified_utc": "2026-10-27T08:54:01.996578+00:00",
+    "primary_available_GiB": 50,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
-    "primary_endpoint": "connect.bjb2.seetacloud.com:23800",
-    "previous_primary_role": "34125 host now CPU/storage only; preserved source point and scores"
+    "primary_endpoint": "connect.cqa1.seetacloud.com:40815",
+    "previous_primary_role": "23800 unavailable; completed raw evidence not yet migrated",
+    "primary_workspace_status": "fresh instance;project and dedicated runtime not installed"
   },
   "current_effective_numerical_candidates": [
     {
@@ -88,29 +89,10 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-27T05:35:58.179848+00:00",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "role": "one fixed original-weight finite A/B construction",
-      "host": "4090:23800",
-      "pid": 5313,
-      "output": "outputs/joint_finite_20261027",
-      "log": "outputs/joint_finite_20261027/run.log",
-      "source_sha256": "70343cf75cc33d990cf94e0391722e2b65013b261aabcd409cf10185e36151ae",
-      "pre_execution_local_commit": "1d03907301c195027ae319f59d665c6dfd1c8b61"
-    },
-    {
-      "role": "serial existing evaluation after source completion",
-      "host": "4090:23800",
-      "pid": 5486,
-      "source_pid": 5313,
-      "log": "outputs/joint_finite_20261027/evaluation.log",
-      "stages": "freeze-SHA,complete-native,original-context-replay,originalAGA-once,TA.5-target/partner,NumPy-paired",
-      "stop_if_source_fails": true
-    }
-  ],
-  "next_action": "Continue the one running finite A/B construction;no duplicate launch. Freeze finalpoint then complete native/TA.5/authorAGA and matched partner evaluation if source-feasible.",
+  "updated_utc": "2026-10-27T08:54:01.996578+00:00",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Restore the active4090 workspace from verified retained assets; preserve old-instance unique results before release. Continue functional-inequality mechanism analysis; no new experiment registered or running.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -127,9 +109,9 @@
     "last_verified_temporary_files_removed": 33
   },
   "github_sync": {
-    "status": "verified through finite construction definition",
-    "last_verified_remote_commit": "af2c0587bae66d3697524718f141ccadfaa5c60d",
-    "last_verified_local_commit": "1d03907301c195027ae319f59d665c6dfd1c8b61",
+    "status": "result closure pending current sync",
+    "last_verified_remote_commit": "fd05285455a50a7c0445ee8efca3ee36a571e26d",
+    "last_verified_local_commit": "74f2c49fb10c95e898449635d17b2b392e031989",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -251,11 +233,95 @@
     "conclusion": "A common local direction exists despite the old line-search stop; finite nonlinear compensation and actual protection not yet established."
   },
   "finite_construction_progress": {
-    "status": "running",
-    "last_observed_accepted_steps": 18,
-    "source_contexts_retained": "800/800",
-    "real_evaluation_started": false,
-    "no_new_real_accuracy_claim": true,
-    "record": "results/data_free_compensation/paper_protocol_review.json:joint_finite_definition_20261027"
+    "status": "completed_independently_verified_no_effective_fusion_protection",
+    "record": "results/data_free_compensation/population_compensation_result.json:joint_finite_result_20261027",
+    "point_sha256": "e6191ca8c9936f7d71ae7ad8e0969b60c6e81785f18bd4148da946724a8032e9",
+    "accepted_steps": 54,
+    "stop": "finite_corrected_line_search_stalled",
+    "native_TA_AGAtarget_AGAboth": [
+      99.68,
+      99.34,
+      99.3,
+      99.3
+    ],
+    "partner_SVHN_TA_AGAtarget_AGAboth": [
+      92.42470805162877,
+      92.51306084818684,
+      91.44130301167793
+    ],
+    "construction_seconds": 1448.6964431926608,
+    "complete_AGA_calls": 1,
+    "context_score_replays": 240,
+    "real_evaluation_completed": true,
+    "closed_do_not_resume": true
+  },
+  "latest_functional_formulation_review": {
+    "status": "formulation_review_only_no_new_experiment",
+    "finding": "Keeping every class numerator and response error equal to initialization is stronger than source class preservation plus the original response upper bound.",
+    "finite_condition": "For every frozen-teacher class y, g_ij(A,R)>0; E(A,R)<=tau; original A linear restrictions and parameter ranges retained. These are finite-source conditions, not natural-data guarantees.",
+    "first_order_condition": "Only active inequality rows restrict a tangent cone; J_all*d=0 unnecessarily treats every inactive inequality as an equality. Finite nonlinear checks remain necessary.",
+    "source_evidence": {
+      "distance_squared_relative_gain_percent": 0.4256584759965598,
+      "initial_native_error_fraction_of_inequality_limit": 0.05184784927643958,
+      "largest_accepted_step": 0.003125,
+      "last_rejections": {
+        "finite_native_correction": 10,
+        "public_after_exact_matching": 6
+      },
+      "interpretation": "Exact preservation of all class numerators and native response error is stronger than retaining labels and a native-error upper bound. This finite path increased distance only0.426percent;no sole-cause,global optimum or impossibility claim. Do not resume this closed point or add iterations."
+    },
+    "next": "Derive a construction that uses the stated functional inequalities and an input-dependent fusion effect; no resumed point, extra iterations, retuned seed/rank/range, or optimizer-only novelty claim.",
+    "standard_reference": "https://stanford.edu/class/ee364b/lectures/seq_notes.pdf §1.1–2",
+    "new_defense_points": 0,
+    "new_production_modules": 0
+  },
+  "server_consolidation": {
+    "updated_utc": "2026-10-27T08:54:01.996578+00:00",
+    "desired_roles": "One active4090;3090CPU retained for archives. Additional machines released only after unique-file migration and destination hash verification.",
+    "new_4090": {
+      "endpoint": "connect.cqa1.seetacloud.com:40815",
+      "hostname": "autodl-container-9cd04aa11e-a90ef48d",
+      "ssh_control_socket": "/tmp/posthoc_4090_40815.sock",
+      "GPU": "RTX4090",
+      "GPU_utilization_percent": 0,
+      "project_present": false,
+      "data_disk_GiB_available": 50,
+      "status": "SSH_verified_fresh_instance_no_project_or_jobs"
+    },
+    "archive_3090": {
+      "endpoint": "region-41.seetacloud.com:55548",
+      "ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
+      "root": "/root/autodl-tmp/merge_security_20261009",
+      "data_available_GiB": 5.5,
+      "system_available_GiB": 5.0,
+      "status": "SSH_verified_retain"
+    },
+    "old_4090s": [
+      {
+        "endpoint": "connect.bjb2.seetacloud.com:23800",
+        "status": "SSH_closed_before_login",
+        "known_evidence": "Oct27 joint_classification and joint_finite raw results/source/publications; lightweight results retrieved, full archive not verified elsewhere",
+        "release_ready": false
+      },
+      {
+        "endpoint": "connect.nmb1.seetacloud.com:34125",
+        "status": "SSH_closed_before_login",
+        "known_evidence": "Oct26 data-free compensation source/publications/evaluation; complete backup not verified",
+        "release_ready": false
+      },
+      {
+        "endpoint": "connect.cqa1.seetacloud.com:17811",
+        "status": "SSH_closed_before_login",
+        "known_evidence": "Prior Oct25/26 raw scores/models explicitly recorded as not restored",
+        "release_ready": false
+      }
+    ],
+    "local_free_GiB": {
+      "D": 22,
+      "C": 6
+    },
+    "released_instances": 0,
+    "deleted_unique_evidence": 0,
+    "next": "Bring old instances up in CPU mode;inventory and copy unique evidence to retained storage, compare SHA before any permanent release. No GPU needed for migration."
   }
 }
