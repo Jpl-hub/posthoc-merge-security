@@ -12252,5 +12252,23 @@
     },
     "definition_local_commit": "de506a9",
     "conclusion": "On this fixed synthetic cache/public-base proxy, some classification-order errors cannot be removed by any classwise additive offset. Native predictions remain800/800. This is not a new defense or a natural-input/unknown-partner/general-recovery guarantee."
+  },
+  "feature_mean_definition_20261028": {
+    "status": "defined_before_execution_local_only",
+    "defined_utc": "2026-10-28T12:33:34.916518+00:00",
+    "source_path": "outputs/feature_mean_20261028.py",
+    "source_sha256": "50e886fe891c11140778969b747e4cbe8d2e363f080dd29ba98c921da0cca94c",
+    "question": "Does the prior nonremovable logit-offset observation reflect varying MLP changes, or a fixed feature shift followed by normalization?",
+    "cases": "Same frozena62fecdb, original800synthetic views, native/direct-publicbase/AGA-publicbase. Each original/full/mean-only/varying-only; all12 reported. No actual partners, test scores or new model.",
+    "definition": "Delta(x)=r_protected-r_clean; c=mean(Delta) over the fixed source. r_mean=r_clean+c; r_vary=r_clean+Delta-c. Exact LN/projection/unit-normalization evaluated.",
+    "identity": "With centered h, sigma=sqrt(mean(h^2)+eps), numerator=h diag(gamma) P+sigma beta P. Its unit-normalized head scores equal the original readout. A fixed residual shift can change final normalization; pair-offset contradictions alone do not identify a varying MLP cause.",
+    "checks": "Independent NumPy fixed rows, all common-margin LP primal/dual residuals, exact source predictions replay, fixed shift is a class constant in the linear numerator.",
+    "budget": {
+      "new_model": 0,
+      "new_image_forward": 0,
+      "new_AGA": 0,
+      "tail_inputs": 9600
+    },
+    "novelty": "Standard centering and algebra, not an algorithm contribution or a general recovery guarantee."
   }
 }
