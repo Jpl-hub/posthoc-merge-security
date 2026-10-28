@@ -12,6 +12,64 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def attack_comparison(directory):
+    """Collect verified attack rows; MD and TeX use the same table cells."""
+    root = Path(directory)
+    result = json.loads((root / "results.json").read_text())
+    protocol = json.loads((root / "protocol.json").read_text())
+    rows = list(result["reused_rows"])
+    batches = []
+    for index, case in enumerate(protocol["cases"]):
+        folder = Path(protocol["output"]) / "full" / f"{index:02d}_{case['target']}_{case['partner']}"
+        check = folder / "independent_validation.json"
+        if not check.exists():
+            continue
+        validation = json.loads(check.read_text())
+        execution = json.loads((folder / "execution.json").read_text())
+        assert validation["status"] == "passed"
+        assert validation["raw_sha256"] == execution["predictions_sha256"]
+        pipeline = "Public replacement " + case["public_replacement"]["side"]
+        new = json.loads((folder / "results.json").read_text())
+        for row in new:
+            assert sum(c["correct"] for c in row["per_class"]) == row["correct"]
+            rows.append(dict(row, pipeline=pipeline))
+        batches.append(dict(case=index, directory=str(folder), execution=execution, validation=validation))
+    grouped, native = {}, {}
+    for row in rows:
+        assert abs(row["accuracy_percent"] - 100 * row["correct"] / row["n"]) < 1e-8
+        prefix = (row["target"], row["partner"], row["defense"], row["pipeline"])
+        if row["merger"] == "Standalone":
+            native[prefix] = row["accuracy_percent"]
+            continue
+        key = (*prefix, row["attack_scope"])
+        grouped.setdefault(key, {})[row["dataset"]] = row["accuracy_percent"]
+    cells = []
+    for (target, partner, defense, pipeline, scope), values in grouped.items():
+        prefix = (target, partner, defense, pipeline)
+        cells.append([target, partner, defense, pipeline, scope,
+                      f"{native[prefix]:.2f}" if prefix in native else "--",
+                      f"{values[target]:.2f}" if target in values else "--",
+                      f"{values[partner]:.2f}" if partner in values else "--"])
+    headers = ["Target", "Partner", "Defense", "Processing", "AGA scope", "Standalone", "Target accuracy", "Partner accuracy"]
+    md = ["# Attack comparison", "", "All accuracies are percentages. Only completed, verified evaluations appear; missing entries are --.", "",
+          "| " + " | ".join(headers) + " |", "| " + " | ".join(["---"] * len(headers)) + " |"]
+    md += ["| " + " | ".join(row) + " |" for row in cells]
+    md += ["", "Standalone in public-replacement rows is measured after replacement. Calibration rows reuse fused scores and do not imply a new standalone evaluation. No_target uses the public base in place of the entire target expert at the unchanged coefficient. A-only/B-only are frozen deletions, not separately optimized methods. Current coverage is three datasets, not eight."]
+    def tex(text):
+        return text.replace("_", r"\_").replace("%", r"\%").replace("&", r"\&")
+    lines = [r"\begin{table*}[t]", r"\centering\scriptsize", r"\caption{Frozen numerical Defense 2: attack comparison. Accuracy (\%). In replacement rows, standalone accuracy is measured after replacement.}", r"\begin{tabular}{lllllrrr}", r"\toprule",
+             " & ".join(map(tex, headers)) + r" \\", r"\midrule"]
+    lines += [" & ".join(map(tex, row)) + r" \\" for row in cells]
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table*}"]
+    (root / "attack_comparison.md").write_text("\n".join(md) + "\n")
+    (root / "attack_comparison.tex").write_text("\n".join(lines) + "\n")
+    result["new_batches"] = batches
+    result["table_rows"] = cells
+    result["new_full_cases_completed"] = len(batches)
+    (root / "results.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+    print("ATTACK_TABLE", len(cells), "verified new cases", len(batches))
+
+
 def paper_tables(_source, output):
     """Collect frozen comparisons into matching TeX/Markdown paper tables."""
     out = Path(output)
