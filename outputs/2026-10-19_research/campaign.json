@@ -1,24 +1,25 @@
 {
-  "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-28T04:09:32.440608+00:00",
+  "status": "已有无数据数值补偿有效。去掉两处SVD的固定对照MNIST独立99.69、SVHN97.45，TA及AGA分别9.80和6.70。两任务未显示SVD贡献；DTD同规则对照待完成。原三任务主发布保留。",
+  "updated_utc": "2026-10-28T04:31:57.930967+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
       "host": "50837",
-      "status": "registered_not_started",
-      "kind": "Same simultaneous SVD deletion on SVHN",
-      "log": "outputs/joint_task_response_20261027/svhn_double_run.log",
-      "output": "outputs/native_ellipse_no_svd_SVHN_20261028",
+      "status": "registered_waiting_for_required_input_transfer",
+      "kind": "Same simultaneous SVD deletion on DTD",
+      "log": "outputs/joint_task_response_20261027/dtd_double_run.log",
+      "output": "outputs/native_ellipse_no_svd_DTD_20261028",
       "real_construction_images": 0,
       "new_points": 1
     }
   ],
-  "next_action": "Run same fixed double-deletion onSVHN; frozen main publications unchanged. Manual follow-up only.",
+  "next_action": "Complete unchanged DTD component control after validated input transfer; no duplicate jobs or parameter changes. Manual follow-up only.",
   "github_sync": {
-    "status": "GitHub plugin restored; completed control and next fixedSVHN definition pending sync",
-    "last_verified_remote_commit": "0007f7e9b3fac7eaa68e88e9e127fe9bbe1c0abd",
+    "status": "Results and SVHN protocol published/readback verified; current running status local update",
+    "last_verified_remote_commit": "66f9fc5bce3687b7bd354841fadae450cd1eca91",
+    "last_verified_local_commit": "cb5820c78c3f5d163932175fcab73c621af8e431",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -76,7 +77,7 @@
       9.8,
       9.8
     ],
-    "scope": "A/B直接删项支持联合补偿；A投影与任务谱输入各自单删项未显示准确率优势，未联合删除二者。",
+    "scope": "A/B直接删项支持补偿；MNIST及SVHN同时移除两处SVD仍有效且独立损失更小。尚未完成DTD或额外恢复对照，不推广。",
     "record": "results/data_free_compensation/population_compensation_result.json",
     "uniform_layer_inputs": [
       99.62,
@@ -444,5 +445,27 @@
     ],
     "context_score_replays": 240,
     "conclusion": "Both SVD components unnecessary for this MNIST control; no contribution demonstrated. Not a newly selected main method."
+  },
+  "latest_SVHN_SVD_deletion": {
+    "status": "completed_independently_verified",
+    "record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_no_SVD_SVHN_result_20261028",
+    "point_sha256": "3cf53ed47749fd76ec0689686ddc08b0b2490cb39d7e78cf0a887e2bb3d00b8c",
+    "native_original": 97.46081745543947,
+    "native_TA_AGAtarget_AGAboth": [
+      97.44929317762754,
+      6.699446834665028,
+      6.699446834665028,
+      6.699446834665028
+    ],
+    "native_lost_gained": [
+      28,
+      25
+    ],
+    "partner_MNIST": [
+      9.8,
+      9.8,
+      9.8
+    ],
+    "context_score_replays": 240
   }
 }

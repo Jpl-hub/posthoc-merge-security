@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2 data-free core mechanism: meaningful numerical changes and cross-module compensation preserving standalone function after expert freezing.",
-  "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
+  "status": "已有无数据数值补偿有效。去掉两处SVD的固定对照MNIST独立99.69、SVHN97.45，TA及AGA分别9.80和6.70。两任务未显示SVD贡献；DTD同规则对照待完成。原三任务主发布保留。",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -31,7 +31,7 @@
     "record": "results/engineering_refactor/compute_4090_20261028.json",
     "secondary_role": "All other hosts CPU/storage only per user",
     "verified_utc": "2026-10-28T03:55:05.011028+00:00",
-    "primary_available_GiB": 48.6,
+    "primary_available_GiB": 46.7,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.bjb2.seetacloud.com:50837",
     "previous_primary_role": "40815 CPU/storage;all scientific assets retained",
@@ -89,20 +89,20 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-28T04:09:32.440608+00:00",
+  "updated_utc": "2026-10-28T04:31:57.930967+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
       "host": "50837",
-      "status": "registered_not_started",
-      "kind": "Same simultaneous SVD deletion on SVHN",
-      "log": "outputs/joint_task_response_20261027/svhn_double_run.log",
-      "output": "outputs/native_ellipse_no_svd_SVHN_20261028",
+      "status": "registered_waiting_for_required_input_transfer",
+      "kind": "Same simultaneous SVD deletion on DTD",
+      "log": "outputs/joint_task_response_20261027/dtd_double_run.log",
+      "output": "outputs/native_ellipse_no_svd_DTD_20261028",
       "real_construction_images": 0,
       "new_points": 1
     }
   ],
-  "next_action": "Run same fixed double-deletion onSVHN; frozen main publications unchanged. Manual follow-up only.",
+  "next_action": "Complete unchanged DTD component control after validated input transfer; no duplicate jobs or parameter changes. Manual follow-up only.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -119,8 +119,9 @@
     "last_verified_temporary_files_removed": 33
   },
   "github_sync": {
-    "status": "GitHub plugin restored; completed control and next fixedSVHN definition pending sync",
-    "last_verified_remote_commit": "0007f7e9b3fac7eaa68e88e9e127fe9bbe1c0abd",
+    "status": "Results and SVHN protocol published/readback verified; current running status local update",
+    "last_verified_remote_commit": "66f9fc5bce3687b7bd354841fadae450cd1eca91",
+    "last_verified_local_commit": "cb5820c78c3f5d163932175fcab73c621af8e431",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -142,7 +143,7 @@
       9.8,
       9.8
     ],
-    "scope": "A/B直接删项支持联合补偿；A投影与任务谱输入各自单删项未显示准确率优势，未联合删除二者。",
+    "scope": "A/B直接删项支持补偿；MNIST及SVHN同时移除两处SVD仍有效且独立损失更小。尚未完成DTD或额外恢复对照，不推广。",
     "record": "results/data_free_compensation/population_compensation_result.json",
     "uniform_layer_inputs": [
       99.62,
@@ -502,5 +503,27 @@
     ],
     "context_score_replays": 240,
     "conclusion": "Both SVD components unnecessary for this MNIST control; no contribution demonstrated. Not a newly selected main method."
+  },
+  "latest_SVHN_SVD_deletion": {
+    "status": "completed_independently_verified",
+    "record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_no_SVD_SVHN_result_20261028",
+    "point_sha256": "3cf53ed47749fd76ec0689686ddc08b0b2490cb39d7e78cf0a887e2bb3d00b8c",
+    "native_original": 97.46081745543947,
+    "native_TA_AGAtarget_AGAboth": [
+      97.44929317762754,
+      6.699446834665028,
+      6.699446834665028,
+      6.699446834665028
+    ],
+    "native_lost_gained": [
+      28,
+      25
+    ],
+    "partner_MNIST": [
+      9.8,
+      9.8,
+      9.8
+    ],
+    "context_score_replays": 240
   }
 }
