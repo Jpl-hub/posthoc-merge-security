@@ -1,25 +1,13 @@
 {
-  "status": "三个无数据去SVD固定对照已完成：MNIST独立99.69、SVHN97.45、DTD78.09；TA及AGA分别9.80、6.70、2.13。独立损失均较含SVD方案更小，DTD仍损失1.33个百分点；未证明SVD贡献。原主发布保留。",
-  "updated_utc": "2026-10-28T11:31:03.874558+00:00",
+  "status": "三任务去SVD固定对照保留原TA/AGA效果；新增64随机噪声输出校正可恢复：MNIST约50%、SVHN约50–51%、DTD约53–57%。数字任务仍有较大保护差，DTD保护明显变弱。没有新防御或参数修改。",
+  "updated_utc": "2026-10-28T11:50:06.252208+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
-  "research_jobs": [
-    {
-      "host": "12997",
-      "kind": "Fixed64-noise output calibration of three frozen no-SVD controls",
-      "status": "registered_waiting_for_transfer_and_environment",
-      "output": "outputs/no_svd_calibration_20261028",
-      "log": "outputs/no_svd_calibration_20261028_setup/run.log",
-      "new_defense_points": 0,
-      "new_AGA_calls": 0,
-      "new_real_image_forwards": 0,
-      "generated_image_forwards": 1152
-    }
-  ],
-  "next_action": "Finish new3090 minimal input migration, execute preregistered64-noise calibration once, then independent paired/per-class validation. No model retuning.",
+  "research_jobs": [],
+  "next_action": "Core mechanism: distinguish removable class preference from input-dependent classification changes on permitted synthetic inputs; formulate before any new candidate. Do not repeat these completed tests or retune exposed points. No active GPU job or automatic continuation.",
   "github_sync": {
-    "status": "Previous scientific result published; new calibration registration pending",
+    "status": "Prior definition published; calibration results pending batch publication",
     "last_verified_remote_commit": "0aa9789eb0abdb883ad0cdfaba8147d6591616b2",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -78,7 +66,7 @@
       9.8,
       9.8
     ],
-    "scope": "A/B直接删项支持补偿；三个任务同时移除两处SVD均保持目标融合保护，独立损失更小。未证明这两处SVD贡献；额外输出校正未评价，不称所有恢复均失败。",
+    "scope": "三个固定任务删除两处SVD后独立损失更小，原TA/AGA低准确率保留；固定64噪声输出校正能恢复部分能力，DTD接近匹配无保护水平。SVD贡献未证明。",
     "record": "results/data_free_compensation/population_compensation_result.json",
     "uniform_layer_inputs": [
       99.62,
@@ -141,7 +129,67 @@
       53.84142593730793,
       51.45974185617701
     ],
-    "record": "results/data_free_compensation/readout_calibration_result.json:native_ellipse_extension_result"
+    "record": "results/data_free_compensation/readout_calibration_result.json:native_ellipse_extension_result",
+    "latest_no_SVD": {
+      "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_result_20261028",
+      "target_accuracy_percent": {
+        "MNIST": {
+          "Unprotected": [
+            99.33999999999999,
+            99.29,
+            99.29
+          ],
+          "Without_both_SVD_components": [
+            49.28,
+            49.980000000000004,
+            49.95
+          ]
+        },
+        "SVHN": {
+          "Unprotected": [
+            92.31714812538414,
+            91.33758451137062,
+            91.58727719729563
+          ],
+          "Without_both_SVD_components": [
+            50.457129686539645,
+            51.31376767055931,
+            50.215119852489245
+          ]
+        },
+        "DTD": {
+          "Unprotected": [
+            55.69148936170213,
+            55.00000000000001,
+            55.00000000000001
+          ],
+          "Without_both_SVD_components": [
+            57.180851063829785,
+            52.76595744680851,
+            52.76595744680851
+          ]
+        }
+      },
+      "partner_accuracy_percent": {
+        "MNIST": [
+          46.0740626920713,
+          46.18930547019053,
+          45.19437615242778
+        ],
+        "SVHN": [
+          60.209999999999994,
+          62.71,
+          59.56
+        ],
+        "DTD": [
+          99.42,
+          99.42,
+          99.38
+        ]
+      },
+      "independent_checks": 54,
+      "seconds": 38.21115753054619
+    }
   },
   "core_method_review": {
     "record": "results/data_free_compensation/population_compensation_result.json:core_method_review",
@@ -408,7 +456,19 @@
   },
   "setup_job": {
     "host": "12997",
-    "status": "environment_and_minimal_input_transfer_running"
+    "status": "complete_evaluation_completed",
+    "migration": {
+      "files": 42,
+      "bytes": 3388185152,
+      "mismatches": [],
+      "GPU": "NVIDIA GeForce RTX 3090",
+      "torch": "2.3.0+cu121",
+      "torchvision": "0.18.0+cu121",
+      "numpy": "1.26.4",
+      "scipy": "1.13.1",
+      "cuda_available": true,
+      "checked_utc": "2026-10-28T11:44:39.321397+00:00"
+    }
   },
   "latest_readout_population_check": {
     "status": "completed_read_only_no_new_defense",
