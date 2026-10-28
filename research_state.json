@@ -30,12 +30,12 @@
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/engineering_refactor/compute_4090_20261028.json",
     "secondary_role": "All other hosts CPU/storage only per user",
-    "verified_utc": "2026-10-27T16:59:27.685130+00:00",
-    "primary_available_GiB": 44,
+    "verified_utc": "2026-10-28T03:55:05.011028+00:00",
+    "primary_available_GiB": 48.6,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.bjb2.seetacloud.com:50837",
     "previous_primary_role": "40815 CPU/storage;all scientific assets retained",
-    "primary_workspace_status": "Original MNIST/SVHN assets SHA-verified; scientific outputs and17existing regression checks restored"
+    "primary_workspace_status": "MNIST/SVHN frozen evaluation assets fully transferred and verified."
   },
   "current_effective_numerical_candidates": [
     {
@@ -89,21 +89,20 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-28T00:27:23.589094+00:00",
+  "updated_utc": "2026-10-28T04:09:32.440608+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
       "host": "50837",
-      "pid": 2038,
-      "status": "waiting_for_frozen_input_transfer_then_read_only_check",
-      "registered_commit": "119aa10",
-      "log": "outputs/joint_task_response_20261027/readout_population/run.log",
-      "timeout_seconds": 1800,
-      "real_images": 0,
-      "new_models": 0
+      "status": "registered_not_started",
+      "kind": "Same simultaneous SVD deletion on SVHN",
+      "log": "outputs/joint_task_response_20261027/svhn_double_run.log",
+      "output": "outputs/native_ellipse_no_svd_SVHN_20261028",
+      "real_construction_images": 0,
+      "new_points": 1
     }
   ],
-  "next_action": "Manual check in20minutes:new50837 transfer andregisteredcomplete-readout check,no newmodels. Do not duplicate. If source/environment validation fails,preservefailure andrepaironlyimplementation.",
+  "next_action": "Run same fixed double-deletion onSVHN; frozen main publications unchanged. Manual follow-up only.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -120,9 +119,8 @@
     "last_verified_temporary_files_removed": 33
   },
   "github_sync": {
-    "status": "Fusion control results published andreadback verified;new setup andreadout protocol pending.",
-    "last_verified_remote_commit": "4e5790a131f97520234f47150b980c9f459d3edd",
-    "last_verified_local_commit": "486f698b8a90f8ec7e591b13c17ad8951edc7c68",
+    "status": "GitHub plugin restored; completed control and next fixedSVHN definition pending sync",
+    "last_verified_remote_commit": "0007f7e9b3fac7eaa68e88e9e127fe9bbe1c0abd",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -151,7 +149,29 @@
       9.8,
       9.8,
       9.8
-    ]
+    ],
+    "joint_deletion": {
+      "status": "completed_independently_verified",
+      "record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_double_SVD_deletion_result_20261028",
+      "point_sha256": "a62fecdb2d9c3b5e2ab1939b2745cda2482f7d720aad1bb806d0d4527c315b4e",
+      "native_TA_AGAtarget_AGAboth": [
+        99.69,
+        9.8,
+        9.8,
+        9.8
+      ],
+      "native_lost_gained": [
+        1,
+        1
+      ],
+      "partner_SVHN": [
+        6.699446834665028,
+        6.699446834665028,
+        6.699446834665028
+      ],
+      "context_score_replays": 240,
+      "conclusion": "Both SVD components unnecessary for this MNIST control; no contribution demonstrated. Not a newly selected main method."
+    }
   },
   "latest_DTD_result": {
     "original": 79.41489361702128,
@@ -290,14 +310,14 @@
   },
   "server_consolidation": {
     "record": "results/engineering_refactor/server_consolidation_20261027.json",
-    "retained_compute": "4090:40815",
+    "retained_compute": "4090D:50837",
     "retained_archive": "3090 CPU mode",
     "source_23800": "Permanently released before complete migration; latest failed-point raw artifacts lost, detailed index retained",
     "source_34125": "All8220 file contents backed up and verified; permanent release cleared",
     "source_17811": "All551 original-file contents covered;353 new contents SHA-verified in40815 archive;permanent release cleared",
     "new4090_restore": "Required originals,authorAGA references and34125 outputs restored;17811 records retained in separate archive",
     "active_research_jobs": 0,
-    "next": "No further old4090 access required; continue Defense2 core construction on40815"
+    "next": "Use50837 GPU;40815 and3090 are CPU archives."
   },
   "joint_function_progress": {
     "status": "completed_independently_verified_no_effective_fusion_protection",
@@ -444,7 +464,43 @@
   },
   "setup_job": {
     "host": "50837",
-    "status": "transfer_running",
+    "status": "runtime_construction_evaluation_inputs_ready",
     "record": "results/engineering_refactor/compute_4090_20261028.json"
+  },
+  "latest_readout_population_check": {
+    "status": "completed_read_only_no_new_defense",
+    "record": "results/data_free_compensation/population_compensation_result.json:native_readout_population_result_20261028",
+    "artificial_contexts": 16384,
+    "effective_and_failed_teacher_agreement_percent": [
+      84.661865234375,
+      92.132568359375,
+      91.851806640625
+    ],
+    "conclusion": "Complete classification on these artificial layer inputs also fails to rank natural standalone preservation; do not substitute it as an improved condition.",
+    "real_images": 0,
+    "new_models": 0,
+    "seconds": 8.88205736503005
+  },
+  "latest_joint_SVD_deletion": {
+    "status": "completed_independently_verified",
+    "record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_double_SVD_deletion_result_20261028",
+    "point_sha256": "a62fecdb2d9c3b5e2ab1939b2745cda2482f7d720aad1bb806d0d4527c315b4e",
+    "native_TA_AGAtarget_AGAboth": [
+      99.69,
+      9.8,
+      9.8,
+      9.8
+    ],
+    "native_lost_gained": [
+      1,
+      1
+    ],
+    "partner_SVHN": [
+      6.699446834665028,
+      6.699446834665028,
+      6.699446834665028
+    ],
+    "context_score_replays": 240,
+    "conclusion": "Both SVD components unnecessary for this MNIST control; no contribution demonstrated. Not a newly selected main method."
   }
 }
