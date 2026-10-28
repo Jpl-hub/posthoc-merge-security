@@ -1,25 +1,15 @@
 {
-  "status": "已有无数据数值补偿有效。去掉两处SVD的固定对照MNIST独立99.69、SVHN97.45，TA及AGA分别9.80和6.70。两任务未显示SVD贡献；DTD同规则对照待完成。原三任务主发布保留。",
-  "updated_utc": "2026-10-28T04:31:57.930967+00:00",
+  "status": "三个无数据去SVD固定对照已完成：MNIST独立99.69、SVHN97.45、DTD78.09；TA及AGA分别9.80、6.70、2.13。独立损失均较含SVD方案更小，DTD仍损失1.33个百分点；未证明SVD贡献。原主发布保留。",
+  "updated_utc": "2026-10-28T05:06:48.016534+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
-  "research_jobs": [
-    {
-      "host": "50837",
-      "status": "registered_waiting_for_required_input_transfer",
-      "kind": "Same simultaneous SVD deletion on DTD",
-      "log": "outputs/joint_task_response_20261027/dtd_double_run.log",
-      "output": "outputs/native_ellipse_no_svd_DTD_20261028",
-      "real_construction_images": 0,
-      "new_points": 1
-    }
-  ],
-  "next_action": "Complete unchanged DTD component control after validated input transfer; no duplicate jobs or parameter changes. Manual follow-up only.",
+  "research_jobs": [],
+  "next_action": "No active GPU job. Completed three-task control batch. Next necessary fixed evaluation is existing64-noise output calibration on these frozen controls; not yet registered or run. Do not retune or duplicate completed studies. Manual follow-up only.",
   "github_sync": {
-    "status": "Results and SVHN protocol published/readback verified; current running status local update",
-    "last_verified_remote_commit": "66f9fc5bce3687b7bd354841fadae450cd1eca91",
-    "last_verified_local_commit": "cb5820c78c3f5d163932175fcab73c621af8e431",
+    "status": "DTD complete; this result and three-task table pending GitHub publication",
+    "last_verified_remote_commit": "79f4c6f01a22d2254596f2b8c3e82f13f54cca58",
+    "last_verified_local_commit": "8f001b37c26f8fd44e983970270b3aaeb371b1a7",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -77,7 +67,7 @@
       9.8,
       9.8
     ],
-    "scope": "A/B直接删项支持补偿；MNIST及SVHN同时移除两处SVD仍有效且独立损失更小。尚未完成DTD或额外恢复对照，不推广。",
+    "scope": "A/B直接删项支持补偿；三个任务同时移除两处SVD均保持目标融合保护，独立损失更小。未证明这两处SVD贡献；额外输出校正未评价，不称所有恢复均失败。",
     "record": "results/data_free_compensation/population_compensation_result.json",
     "uniform_layer_inputs": [
       99.62,
@@ -467,5 +457,71 @@
       9.8
     ],
     "context_score_replays": 240
+  },
+  "latest_DTD_SVD_deletion": {
+    "status": "completed_independently_verified",
+    "record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_no_SVD_DTD_result_20261028",
+    "task": "DTD",
+    "original_native_percent": 79.41489361702128,
+    "modified_native_percent": 78.08510638297872,
+    "native_loss_pp": 1.3297872340425532,
+    "TA_AGAtarget_AGAboth_percent": [
+      2.127659574468085,
+      2.127659574468085,
+      2.127659574468085
+    ],
+    "point_sha256": "8a7e2ca1904fd467d79940d5c1b0387db006b2acb3bbad75847d2b46e634c822",
+    "native_lost_gained": [
+      40,
+      15
+    ],
+    "partner_MNIST_TA_AGAtarget_AGAboth": [
+      37.09,
+      17.44,
+      16.7
+    ],
+    "context_score_replays": 240
+  },
+  "three_task_no_SVD_summary": {
+    "record": "results/data_free_compensation/population_compensation_result.json:no_SVD_three_task_summary_20261028",
+    "rows": [
+      {
+        "task": "MNIST",
+        "original_native_percent": 99.69,
+        "modified_native_percent": 99.69,
+        "native_loss_pp": 0.0,
+        "TA_AGAtarget_AGAboth_percent": [
+          9.8,
+          9.8,
+          9.8
+        ],
+        "point_sha256": "a62fecdb2d9c3b5e2ab1939b2745cda2482f7d720aad1bb806d0d4527c315b4e"
+      },
+      {
+        "task": "SVHN",
+        "original_native_percent": 97.46081745543945,
+        "modified_native_percent": 97.44929317762754,
+        "native_loss_pp": 0.011524277811923786,
+        "TA_AGAtarget_AGAboth_percent": [
+          6.699446834665028,
+          6.699446834665028,
+          6.699446834665028
+        ],
+        "point_sha256": "3cf53ed47749fd76ec0689686ddc08b0b2490cb39d7e78cf0a887e2bb3d00b8c"
+      },
+      {
+        "task": "DTD",
+        "original_native_percent": 79.41489361702128,
+        "modified_native_percent": 78.08510638297872,
+        "native_loss_pp": 1.3297872340425532,
+        "TA_AGAtarget_AGAboth_percent": [
+          2.127659574468085,
+          2.127659574468085,
+          2.127659574468085
+        ],
+        "point_sha256": "8a7e2ca1904fd467d79940d5c1b0387db006b2acb3bbad75847d2b46e634c822"
+      }
+    ],
+    "context_score_replays": 720
   }
 }
