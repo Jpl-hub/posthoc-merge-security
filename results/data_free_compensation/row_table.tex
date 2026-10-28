@@ -13,7 +13,8 @@ DTD & Defense 2 & 76.12 & 2.13 & 2.13 & 2.13 \\
 \bottomrule
 \end{tabular}
 
-% Exact deletion controls from the frozen joint MNIST point, no refit.
+% First three rows: frozen-component deletion without refit.
+% Remaining rows: preregistered fixed-construction SVD ablations.
 \begin{tabular}{lrrrr}
 \toprule
 Changes & Standalone & TA & AGA (target) & AGA (both) \\
@@ -23,6 +24,7 @@ B and output bias only & 9.80 & 9.80 & 9.80 & 9.80 \\
 Joint A/B & 99.61 & 9.80 & 9.80 & 9.80 \\
 Without A SVD projectors & 99.68 & 9.80 & 9.80 & 9.80 \\
 Uniform layer inputs & 99.62 & 9.80 & 9.80 & 9.80 \\
+Without both SVD components & 99.69 & 9.80 & 9.80 & 9.80 \\
 \bottomrule
 \end{tabular}
 

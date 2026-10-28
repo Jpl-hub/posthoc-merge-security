@@ -1,30 +1,23 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-28T03:57:16.821409+00:00",
+  "updated_utc": "2026-10-28T04:09:32.440608+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
+  "active_GPU_jobs": 0,
   "research_jobs": [
     {
       "host": "50837",
-      "status": "running_construction_then_fixed_evaluation",
-      "definition_commit": "0357b76",
-      "definition": "results/data_free_compensation/population_compensation_result.json:native_ellipse_double_SVD_deletion_definition_20261028",
-      "output": "outputs/native_ellipse_no_svd_20261028",
-      "log": "outputs/joint_task_response_20261027/double_run.log",
-      "new_points": 1,
-      "kind": "missing joint SVD deletion ablation, not a new main method",
+      "status": "registered_not_started",
+      "kind": "Same simultaneous SVD deletion on SVHN",
+      "log": "outputs/joint_task_response_20261027/svhn_double_run.log",
+      "output": "outputs/native_ellipse_no_svd_SVHN_20261028",
       "real_construction_images": 0,
-      "pid": 7349,
-      "python_pid": 7351,
-      "timeout_seconds": 4800,
-      "observed_iteration": 176,
-      "source_sha256": "0c292e12a3d907c375981eba4722bf287450409e24c81b1160cb99e35ca40df8"
+      "new_points": 1
     }
   ],
-  "next_action": "Manual follow-up in30minutes. Check same50837 job and transfer before any action; do not duplicate. Retrieve all native/TA/AGA/per-class/paired results, not source predictions as efficacy.",
+  "next_action": "Run same fixed double-deletion onSVHN; frozen main publications unchanged. Manual follow-up only.",
   "github_sync": {
-    "status": "Local committed; plugin returned Unknown tool github.fetch on first read attempt. No remote publication claimed.",
+    "status": "GitHub plugin restored; completed control and next fixedSVHN definition pending sync",
     "last_verified_remote_commit": "0007f7e9b3fac7eaa68e88e9e127fe9bbe1c0abd",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -90,7 +83,29 @@
       9.8,
       9.8,
       9.8
-    ]
+    ],
+    "joint_deletion": {
+      "status": "completed_independently_verified",
+      "record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_double_SVD_deletion_result_20261028",
+      "point_sha256": "a62fecdb2d9c3b5e2ab1939b2745cda2482f7d720aad1bb806d0d4527c315b4e",
+      "native_TA_AGAtarget_AGAboth": [
+        99.69,
+        9.8,
+        9.8,
+        9.8
+      ],
+      "native_lost_gained": [
+        1,
+        1
+      ],
+      "partner_SVHN": [
+        6.699446834665028,
+        6.699446834665028,
+        6.699446834665028
+      ],
+      "context_score_replays": 240,
+      "conclusion": "Both SVD components unnecessary for this MNIST control; no contribution demonstrated. Not a newly selected main method."
+    }
   },
   "latest_DTD_result": {
     "original": 79.41489361702128,
@@ -391,7 +406,7 @@
   },
   "setup_job": {
     "host": "50837",
-    "status": "runtime_and_construction_inputs_ready_evaluation_inputs_transferring",
+    "status": "runtime_construction_evaluation_inputs_ready",
     "record": "results/engineering_refactor/compute_4090_20261028.json"
   },
   "latest_readout_population_check": {
@@ -407,5 +422,27 @@
     "real_images": 0,
     "new_models": 0,
     "seconds": 8.88205736503005
+  },
+  "latest_joint_SVD_deletion": {
+    "status": "completed_independently_verified",
+    "record": "results/data_free_compensation/population_compensation_result.json:native_ellipse_double_SVD_deletion_result_20261028",
+    "point_sha256": "a62fecdb2d9c3b5e2ab1939b2745cda2482f7d720aad1bb806d0d4527c315b4e",
+    "native_TA_AGAtarget_AGAboth": [
+      99.69,
+      9.8,
+      9.8,
+      9.8
+    ],
+    "native_lost_gained": [
+      1,
+      1
+    ],
+    "partner_SVHN": [
+      6.699446834665028,
+      6.699446834665028,
+      6.699446834665028
+    ],
+    "context_score_replays": 240,
+    "conclusion": "Both SVD components unnecessary for this MNIST control; no contribution demonstrated. Not a newly selected main method."
   }
 }
