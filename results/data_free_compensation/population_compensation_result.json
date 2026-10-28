@@ -35547,5 +35547,7477 @@
         "content": "#!/bin/bash\nset -euo pipefail\ncd /root/autodl-tmp/posthoc-merge-security\nexport PYTHONPATH=.\npy=/root/autodl-tmp/posthoc-env/bin/python\nsrc=outputs/joint_task_response_20261027\nout=outputs/native_ellipse_no_svd_DTD_20261028\n$py - <<'PYINPUT'\nimport time\nfrom pathlib import Path\nfrom _impl.io import digest\nexpected={'checkpoints/ViT-B-32/DTD/finetuned.pt':(453892355,'482e5636cdb4d521376211fdeda0417f73aafab9551d366690bba3e5c0ce0f38'),'checkpoints/ViT-B-32/head_DTD.pt':(97831,'19df72206780cac2d269a2847cbd81dceb3859c6f91a722c49427c42a0b829bf'),'outputs/native_ellipse_classification_DTD_20261026/source/source.pt':(230700061,'f503e4503bed1d65cb3c155662f3eb9552077b1de07aaf37e442439cbfc5d48c')}\nfor attempt in range(180):\n if all(Path(p).exists() and Path(p).stat().st_size==n for p,(n,h) in expected.items()):break\n time.sleep(10)\nelse:raise TimeoutError('Required frozen DTD construction files not transferred')\nfor p,(n,h) in expected.items():assert digest(p)==h,p\nprint('DTD_CONSTRUCTION_INPUTS_VERIFIED',flush=True)\nPYINPUT\n$py \"$src/dtd_double_ablation.py\"\n$py - <<'PYINPUT'\nimport time\nfrom pathlib import Path\nfrom _impl.io import digest\nexpected={'outputs/feature_noise_dtd/artifacts/partner_AGA.pt':(453856254,'a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484'),'outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt':(5871426,'92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12')}\nfor attempt in range(180):\n if all(Path(p).exists() and Path(p).stat().st_size==n for p,(n,h) in expected.items()):break\n time.sleep(10)\nelse:raise TimeoutError('Required frozen DTD evaluation files not transferred')\nfor p,(n,h) in expected.items():assert digest(p)==h,p\nprint('DTD_EVALUATION_INPUTS_VERIFIED',flush=True)\nPYINPUT\n$py \"$src/dtd_double_native.py\"\n$py -m experiment.native --verify \"$out/native\"\n$py \"$src/dtd_double_replay.py\"\n$py - <<'PY'\nimport json,hashlib,subprocess\nfrom pathlib import Path\nsrc=Path('outputs/joint_task_response_20261027');out=Path('outputs/native_ellipse_no_svd_DTD_20261028');cfg=json.loads((src/'dtd_double_evaluate_template.json').read_text());sha=json.loads((out/'point/result.json').read_text())['point_sha256'];next(iter(cfg['defenses'].values()))['release']['sha256']=sha\ncfg['legacy']['DTD_MNIST/Without_both_SVD_components']['standalone']['sha256']=hashlib.sha256((out/'native/full.pt').read_bytes()).hexdigest();(out/'evaluate.json').write_text(json.dumps(cfg,indent=2)+'\\n')\nsubprocess.run(['/root/autodl-tmp/posthoc-env/bin/python','-m','experiment.recover','--target','DTD','--method','aga','--protocol',str(out/'evaluate.json'),'--publication',str(out/'point/point.pt'),'--sha256',sha,'--aligned-reference','--output',str(out/'AGA')],check=True)\nnext(iter(cfg['defenses'].values()))['AGA_edits']['sha256']=hashlib.sha256((out/'AGA/edits.pt').read_bytes()).hexdigest();(out/'evaluate.json').write_text(json.dumps(cfg,indent=2)+'\\n')\nPY\n$py -m experiment.main_table --protocol \"$out/evaluate.json\" --case 0\n$py -m experiment.main_table --verify \"$out/evaluation/full/00_DTD_MNIST\"\n$py \"$src/dtd_double_paired.py\" \"$out\"\ndate -u '+COMPLETED %Y-%m-%dT%H:%M:%SZ'\n"
       }
     }
+  },
+  "native_ellipse_no_SVD_DTD_result_20261028": {
+    "status": "completed_independently_verified_fixed_cross_task_ablation",
+    "point": {
+      "status": "sole_native_ellipse_classification_frozen_before_images",
+      "point_sha256": "8a7e2ca1904fd467d79940d5c1b0387db006b2acb3bbad75847d2b46e634c822",
+      "source_sha256": "1839d4ca9383a253e7276adc0a2785ef4d3529651b36a139ffbf9cd36864509c",
+      "source_cache_sha256": "f503e4503bed1d65cb3c155662f3eb9552077b1de07aaf37e442439cbfc5d48c",
+      "source_counts": {
+        "native_teacher_retained": 3760,
+        "native_n": 3760,
+        "public_class0": {
+          "direct": 3760,
+          "recovered": 3760
+        }
+      },
+      "public_objective": -32.19592657323898,
+      "native_limit": 8.56003293020498,
+      "native_minimum": 1.4445649926917739,
+      "native_final": 1.8245318936210744,
+      "native_final_FP32": 1.8245318937294677,
+      "native_groups": [
+        {
+          "population": "task_layer",
+          "n": 16384,
+          "variance": 35.23701428826041
+        },
+        {
+          "population": "generated_native",
+          "n": 3760,
+          "variance": 3.1750306531207713
+        }
+      ],
+      "ridge": 6.426013721521595e-05,
+      "original_tail_maximum_error": 2.2611463577959512e-05,
+      "derivative_check": {
+        "finite_difference": -209.39527589547424,
+        "autograd": -209.3952758993593,
+        "relative_error": 1.8465475095079287e-11
+      },
+      "iterations": 500,
+      "stop_reason": "iteration_limit",
+      "metrics": {
+        "A_relative": 0.9997442632220137,
+        "B_relative": 3.9043140756635437,
+        "logical_D": 4.050324369533041
+      },
+      "seconds": 302.4274720288813,
+      "real_images": 0,
+      "new_full_AGA_calls": 0,
+      "matching_calls": 1,
+      "original_expert_updates": 0,
+      "synthetic_images_reused": 752,
+      "generated_views": 3760,
+      "synthetic_native_layer_inputs": 16384,
+      "scope": "SharedB conditionalnativequadratic/completepublicclassifier construction. OrdinaryFW/ellipsoid/Choleskyarenotnewalgorithm. Finitegapnotglobalguarantee. NativeboundequalA-onlysourcevalue,notnaturalaccuracy. Head/classesexplicitallowed;no partner/test/closedB read.",
+      "trajectory_summary": {
+        "steps": 500,
+        "first": {
+          "iteration": 1,
+          "public_objective": -14.215217563762064,
+          "conditional_gradient_gap": 3039.4867971449726,
+          "native_quadratic": 8.560032930206795,
+          "native_limit": 8.56003293020498,
+          "step": 1.0,
+          "public_class0_before_step": {
+            "direct": 80,
+            "recovered": 80
+          }
+        },
+        "last": {
+          "iteration": 500,
+          "public_objective": -32.19592657324365,
+          "conditional_gradient_gap": 1.1713116181194825,
+          "native_quadratic": 1.8245318936210744,
+          "native_limit": 8.56003293020498,
+          "step": 0.0001220703125,
+          "public_class0_before_step": {
+            "direct": 3760,
+            "recovered": 3760
+          }
+        }
+      }
+    },
+    "native": {
+      "rows": [
+        {
+          "n": 1880,
+          "changed": 92,
+          "R": 126.64294478527607,
+          "stage": "full",
+          "before_correct": 1493,
+          "after_correct": 1468,
+          "strict_task_passed": false,
+          "accuracy_loss_pp": 1.3297872340425532,
+          "passed": false,
+          "raw_sha256": "2c8d18503e08de55f32630a5e87e042f8104b510b17f6cd28e0e11e39afd20a9"
+        }
+      ],
+      "passed": false,
+      "image_forwards": 1880,
+      "baseline_new_forwards": 0,
+      "seconds": 12.71405878290534,
+      "paired": {
+        "n": 1880,
+        "correct": 1468,
+        "accuracy_percent": 78.08510638297872,
+        "changed_predictions": 92,
+        "paired": {
+          "both_correct": 1453,
+          "lost": 40,
+          "gained": 15,
+          "both_wrong": 372,
+          "loss_pp": 1.3297872340425532,
+          "exact_mcnemar_p": 0.0010158471941252854
+        },
+        "mcnemar_log10_p": -2.9931716146299907,
+        "paired_accuracy_delta_95ci_pp": [
+          -2.100830191505479,
+          -0.5587442765796277
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 33
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 19,
+            "original_correct": 21
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 31
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 34
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 33
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 37
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 25
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 32
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 36
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 31
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 34
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 33
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 31
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 26
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 31
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 20
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 33
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 24,
+            "original_correct": 27
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 39,
+            "original_correct": 38
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 30
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 23,
+            "original_correct": 21
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 36
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 39,
+            "original_correct": 39
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 33
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 33
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 23,
+            "original_correct": 23
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 32
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          }
+        ]
+      }
+    },
+    "native_validation": {
+      "status": "passed_raw_score_and_official_label_recount",
+      "rows": [
+        {
+          "stage": "full",
+          "n": 1880,
+          "R": 126.64294478527607
+        }
+      ],
+      "results_sha256": "47409c412f91db564f5f616f313785977aa1a8fabd571c7cbf09bb0cc52cfe03",
+      "new_image_forwards": 0
+    },
+    "native_context_replay": {
+      "status": "passed",
+      "source_sha256": "7524b85794c1249afe638c9c84e21302b4f49675a35022e59b1dfcb6fba644fd",
+      "score_replays": 16,
+      "original_batch_size": 128,
+      "context_image_forwards": 1880,
+      "maximum_score_error": 0.0,
+      "tolerance": 0.0002,
+      "new_expert_updates": 0,
+      "new_AGA": 0
+    },
+    "AGA": {
+      "method": "aga",
+      "seconds": 12.289914429187775,
+      "output_sha256": "97693de0f1e4b389df8775f851424bf75ec45f83137edba3ac16219ad1fc4141",
+      "details": {
+        "known_family": false,
+        "author_text_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "aligned_reference": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        }
+      },
+      "reference": "original_AGA",
+      "new_training_updates": 0
+    },
+    "evaluation": [
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1493,
+        "accuracy_percent": 79.41489361702128,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 1493,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 387,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 25
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 36
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 36
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 39,
+            "original_correct": 39
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 23,
+            "original_correct": 23
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/Standalone/None/DTD"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1303,
+        "accuracy_percent": 69.30851063829788,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 1303,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 577,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 18,
+            "original_correct": 18
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 14,
+            "original_correct": 14
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 23,
+            "original_correct": 23
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 13,
+            "original_correct": 13
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 4,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 24,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 12,
+            "original_correct": 12
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 11,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/None/DTD"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 9945,
+        "accuracy_percent": 99.45,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9945,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 55,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1026,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1004,
+            "original_correct": 1004
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 977,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 887,
+            "original_correct": 887
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 949,
+            "original_correct": 949
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1022,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 999,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/None/MNIST"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1286,
+        "accuracy_percent": 68.40425531914893,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 1286,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 594,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 16,
+            "original_correct": 16
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 14,
+            "original_correct": 14
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 25
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 12,
+            "original_correct": 12
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 4,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 24,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 11,
+            "original_correct": 11
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 11,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/Protected expert/DTD"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 9945,
+        "accuracy_percent": 99.45,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9945,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 55,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1026,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1004,
+            "original_correct": 1004
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 977,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 888,
+            "original_correct": 888
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 949,
+            "original_correct": 949
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1022,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 998,
+            "original_correct": 998
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/Protected expert/MNIST"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1293,
+        "accuracy_percent": 68.77659574468085,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 1293,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 587,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 18,
+            "original_correct": 18
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 12,
+            "original_correct": 12
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 25
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 12,
+            "original_correct": 12
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 17,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 21
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 4,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 24,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 13,
+            "original_correct": 13
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 26,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 11,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 36
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 27,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 22
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/All experts/DTD"
+        }
+      },
+      {
+        "defense": "Unprotected",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 9942,
+        "accuracy_percent": 99.42,
+        "changed_predictions": 0,
+        "paired": {
+          "both_correct": 9942,
+          "lost": 0,
+          "gained": 0,
+          "both_wrong": 58,
+          "loss_pp": 0.0,
+          "exact_mcnemar_p": 1.0
+        },
+        "mcnemar_log10_p": 0.0,
+        "paired_accuracy_delta_95ci_pp": [
+          0.0,
+          0.0
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 979,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 1132,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 1026,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 1002,
+            "original_correct": 1002
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 977,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 888,
+            "original_correct": 888
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 950,
+            "original_correct": 950
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 1021,
+            "original_correct": 1021
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 970,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 997,
+            "original_correct": 997
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "imported_key": "Unprotected/TA/All experts/MNIST"
+        }
+      },
+      {
+        "defense": "Without_both_SVD_components",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "Standalone",
+        "attack_scope": "None",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 1468,
+        "accuracy_percent": 78.08510638297872,
+        "changed_predictions": 92,
+        "paired": {
+          "both_correct": 1453,
+          "lost": 40,
+          "gained": 15,
+          "both_wrong": 372,
+          "loss_pp": 1.3297872340425532,
+          "exact_mcnemar_p": 0.0010158471941252854
+        },
+        "mcnemar_log10_p": -2.9931716146299907,
+        "paired_accuracy_delta_95ci_pp": [
+          -2.100830191505479,
+          -0.5587442765796277
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 33
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 19,
+            "original_correct": 21
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 37,
+            "original_correct": 37
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 20,
+            "original_correct": 20
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 33
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 29
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 31
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 32
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 31
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 34
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 33
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 37
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 25
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 32
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 35,
+            "original_correct": 36
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 31
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 34
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 33
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 22,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 31
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 25,
+            "original_correct": 26
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 31
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 21,
+            "original_correct": 20
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 32,
+            "original_correct": 33
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 24,
+            "original_correct": 27
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 39,
+            "original_correct": 38
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 28,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 30,
+            "original_correct": 30
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 29,
+            "original_correct": 30
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 23,
+            "original_correct": 21
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 36,
+            "original_correct": 36
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 39,
+            "original_correct": 39
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 31,
+            "original_correct": 33
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 33
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 34,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 23,
+            "original_correct": 23
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 33,
+            "original_correct": 32
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 38,
+            "original_correct": 38
+          }
+        ],
+        "evaluation_seconds": 0.0,
+        "provenance": {
+          "imported_from": "outputs/native_ellipse_no_svd_DTD_20261028/native/full.pt",
+          "imported_key": "already_evaluated_native"
+        }
+      },
+      {
+        "defense": "Without_both_SVD_components",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 40,
+        "accuracy_percent": 2.127659574468085,
+        "changed_predictions": 1855,
+        "paired": {
+          "both_correct": 18,
+          "lost": 1285,
+          "gained": 22,
+          "both_wrong": 555,
+          "loss_pp": 67.18085106382979,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -345.707572033289,
+        "paired_accuracy_delta_95ci_pp": [
+          -69.41383807946329,
+          -64.94786404819628
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 18
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 14
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 23
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 13
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 12
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 31
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 21
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 30
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          }
+        ],
+        "evaluation_seconds": 7.218333821743727,
+        "provenance": {}
+      },
+      {
+        "defense": "Without_both_SVD_components",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "None",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 3709,
+        "accuracy_percent": 37.09,
+        "changed_predictions": 6291,
+        "paired": {
+          "both_correct": 3705,
+          "lost": 6240,
+          "gained": 4,
+          "both_wrong": 51,
+          "loss_pp": 62.36,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -1865.5287616018531,
+        "paired_accuracy_delta_95ci_pp": [
+          -63.311249598183295,
+          -61.40875040181671
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 0,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 964,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 890,
+            "original_correct": 1004
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 487,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 108,
+            "original_correct": 887
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 36,
+            "original_correct": 949
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 250,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 974,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 0,
+            "original_correct": 999
+          }
+        ],
+        "evaluation_seconds": 8.37371975928545,
+        "provenance": {}
+      },
+      {
+        "defense": "Without_both_SVD_components",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 40,
+        "accuracy_percent": 2.127659574468085,
+        "changed_predictions": 1858,
+        "paired": {
+          "both_correct": 17,
+          "lost": 1269,
+          "gained": 23,
+          "both_wrong": 571,
+          "loss_pp": 66.27659574468085,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -339.560792023273,
+        "paired_accuracy_delta_95ci_pp": [
+          -68.52822518343208,
+          -64.02496630592964
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 17
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 16
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 14
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 25
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 12
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 21
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 11
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          }
+        ],
+        "evaluation_seconds": 7.374214205890894,
+        "provenance": {}
+      },
+      {
+        "defense": "Without_both_SVD_components",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "Protected expert",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 1744,
+        "accuracy_percent": 17.44,
+        "changed_predictions": 8257,
+        "paired": {
+          "both_correct": 1740,
+          "lost": 8205,
+          "gained": 4,
+          "both_wrong": 51,
+          "loss_pp": 82.01,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2456.5773603803214,
+        "paired_accuracy_delta_95ci_pp": [
+          -82.76492021408693,
+          -81.25507978591308
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 0,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 770,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 0,
+            "original_correct": 1004
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 0,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 0,
+            "original_correct": 888
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 0,
+            "original_correct": 949
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 0,
+            "original_correct": 1022
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 974,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 0,
+            "original_correct": 998
+          }
+        ],
+        "evaluation_seconds": 8.200592070817947,
+        "provenance": {}
+      },
+      {
+        "defense": "Without_both_SVD_components",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "DTD",
+        "role": "target",
+        "n": 1880,
+        "correct": 40,
+        "accuracy_percent": 2.127659574468085,
+        "changed_predictions": 1856,
+        "paired": {
+          "both_correct": 18,
+          "lost": 1275,
+          "gained": 22,
+          "both_wrong": 565,
+          "loss_pp": 66.64893617021276,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -342.7711947888881,
+        "paired_accuracy_delta_95ci_pp": [
+          -68.89014583402529,
+          -64.40772650640024
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 40,
+            "correct": 40,
+            "original_correct": 18
+          },
+          {
+            "class_id": 1,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 2,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 3,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 4,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 12
+          },
+          {
+            "class_id": 5,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 6,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 7,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 8,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 9,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 10,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 11,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 12,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 25
+          },
+          {
+            "class_id": 13,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 14,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 15,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 12
+          },
+          {
+            "class_id": 16,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 17
+          },
+          {
+            "class_id": 17,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 18,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 19,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 21
+          },
+          {
+            "class_id": 20,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 21,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 4
+          },
+          {
+            "class_id": 22,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 23,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 24,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 24
+          },
+          {
+            "class_id": 25,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 20
+          },
+          {
+            "class_id": 26,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 40
+          },
+          {
+            "class_id": 27,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 33
+          },
+          {
+            "class_id": 28,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 13
+          },
+          {
+            "class_id": 29,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 30,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 38
+          },
+          {
+            "class_id": 31,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 32,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 35
+          },
+          {
+            "class_id": 33,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          },
+          {
+            "class_id": 34,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 35,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 26
+          },
+          {
+            "class_id": 36,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 28
+          },
+          {
+            "class_id": 37,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 11
+          },
+          {
+            "class_id": 38,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 31
+          },
+          {
+            "class_id": 39,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 36
+          },
+          {
+            "class_id": 40,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 37
+          },
+          {
+            "class_id": 41,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 42,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 27
+          },
+          {
+            "class_id": 43,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 34
+          },
+          {
+            "class_id": 44,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 22
+          },
+          {
+            "class_id": 45,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 29
+          },
+          {
+            "class_id": 46,
+            "n": 40,
+            "correct": 0,
+            "original_correct": 32
+          }
+        ],
+        "evaluation_seconds": 7.521798457950354,
+        "provenance": {}
+      },
+      {
+        "defense": "Without_both_SVD_components",
+        "target": "DTD",
+        "partner": "MNIST",
+        "merger": "TA",
+        "attack_scope": "All experts",
+        "dataset": "MNIST",
+        "role": "partner",
+        "n": 10000,
+        "correct": 1670,
+        "accuracy_percent": 16.7,
+        "changed_predictions": 8331,
+        "paired": {
+          "both_correct": 1666,
+          "lost": 8276,
+          "gained": 4,
+          "both_wrong": 54,
+          "loss_pp": 82.72,
+          "exact_mcnemar_p": 0.0
+        },
+        "mcnemar_log10_p": -2477.935528841688,
+        "paired_accuracy_delta_95ci_pp": [
+          -83.46313351653542,
+          -81.97686648346459
+        ],
+        "per_class": [
+          {
+            "class_id": 0,
+            "n": 980,
+            "correct": 0,
+            "original_correct": 979
+          },
+          {
+            "class_id": 1,
+            "n": 1135,
+            "correct": 0,
+            "original_correct": 1132
+          },
+          {
+            "class_id": 2,
+            "n": 1032,
+            "correct": 696,
+            "original_correct": 1026
+          },
+          {
+            "class_id": 3,
+            "n": 1010,
+            "correct": 0,
+            "original_correct": 1002
+          },
+          {
+            "class_id": 4,
+            "n": 982,
+            "correct": 0,
+            "original_correct": 977
+          },
+          {
+            "class_id": 5,
+            "n": 892,
+            "correct": 0,
+            "original_correct": 888
+          },
+          {
+            "class_id": 6,
+            "n": 958,
+            "correct": 0,
+            "original_correct": 950
+          },
+          {
+            "class_id": 7,
+            "n": 1028,
+            "correct": 0,
+            "original_correct": 1021
+          },
+          {
+            "class_id": 8,
+            "n": 974,
+            "correct": 974,
+            "original_correct": 970
+          },
+          {
+            "class_id": 9,
+            "n": 1009,
+            "correct": 0,
+            "original_correct": 997
+          }
+        ],
+        "evaluation_seconds": 8.43347604572773,
+        "provenance": {}
+      }
+    ],
+    "execution": {
+      "completed": true,
+      "pilot": false,
+      "case_index": 0,
+      "rows": 14,
+      "wall_seconds": 59.83736237511039,
+      "GPU": "NVIDIA GeForce RTX 4090 D",
+      "new_defense_weights": 0,
+      "optimizer_steps": 0,
+      "new_AGA_calls": 0,
+      "cached_author_AGA_weights": true,
+      "defense_feedback": false,
+      "predictions_sha256": "20682dbd98e8833ebfba363641ae99c06cc1add452ec1634394438d5dd3ac08a",
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "protocol_sha256": "72730378d2583b2b0975d59cfd75a57d6769f9e58955dfe58a7f844fc1929061"
+    },
+    "independent_validation": {
+      "status": "passed",
+      "rows": 14,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 224,
+      "context_forward_images": 26656,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 1.049041748046875e-05,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "20682dbd98e8833ebfba363641ae99c06cc1add452ec1634394438d5dd3ac08a",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "original_evaluation_source_sha256": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "paired_numpy": {
+      "status": "passed_independent_numpy_counts_CI_exact_binomial_recurrence",
+      "rows": [
+        {
+          "key": "Unprotected/Standalone/None/DTD",
+          "n": 1880,
+          "accuracy_percent": 79.41489361702128,
+          "changed": 0,
+          "lost": 0,
+          "gained": 0,
+          "paired_delta_95ci_pp": [
+            0.0,
+            0.0
+          ],
+          "exact_mcnemar_p": 1.0,
+          "log10_p": 0.0,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 21,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 40,
+              "before_correct": 30,
+              "correct": 30,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 37,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 20,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 40,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 10,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 11,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 12,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 13,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 14,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 15,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 37,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 16,
+              "n": 40,
+              "before_correct": 25,
+              "correct": 25,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 17,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 18,
+              "n": 40,
+              "before_correct": 36,
+              "correct": 36,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 19,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 20,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 21,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 22,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 23,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 24,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 25,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 26,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 26,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 27,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 28,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 20,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 29,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 30,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 31,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 27,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 32,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 33,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 34,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 35,
+              "n": 40,
+              "before_correct": 30,
+              "correct": 30,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 36,
+              "n": 40,
+              "before_correct": 30,
+              "correct": 30,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 37,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 21,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 38,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 39,
+              "n": 40,
+              "before_correct": 36,
+              "correct": 36,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 40,
+              "n": 40,
+              "before_correct": 39,
+              "correct": 39,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 41,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 42,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 43,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 44,
+              "n": 40,
+              "before_correct": 23,
+              "correct": 23,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 45,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 46,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/None/DTD",
+          "n": 1880,
+          "accuracy_percent": 69.30851063829788,
+          "changed": 0,
+          "lost": 0,
+          "gained": 0,
+          "paired_delta_95ci_pp": [
+            0.0,
+            0.0
+          ],
+          "exact_mcnemar_p": 1.0,
+          "log10_p": 0.0,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 40,
+              "before_correct": 18,
+              "correct": 18,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 17,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 27,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 40,
+              "before_correct": 14,
+              "correct": 14,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 37,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 40,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 10,
+              "n": 40,
+              "before_correct": 23,
+              "correct": 23,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 11,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 12,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 26,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 13,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 14,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 15,
+              "n": 40,
+              "before_correct": 13,
+              "correct": 13,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 16,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 17,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 17,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 18,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 19,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 22,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 20,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 21,
+              "n": 40,
+              "before_correct": 4,
+              "correct": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 22,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 20,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 23,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 24,
+              "n": 40,
+              "before_correct": 24,
+              "correct": 24,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 25,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 20,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 26,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 40,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 27,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 28,
+              "n": 40,
+              "before_correct": 12,
+              "correct": 12,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 29,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 30,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 31,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 32,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 33,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 34,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 35,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 26,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 36,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 27,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 37,
+              "n": 40,
+              "before_correct": 11,
+              "correct": 11,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 38,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 39,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 40,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 37,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 41,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 42,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 27,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 43,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 44,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 21,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 45,
+              "n": 40,
+              "before_correct": 30,
+              "correct": 30,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 46,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/None/MNIST",
+          "n": 10000,
+          "accuracy_percent": 99.45,
+          "changed": 0,
+          "lost": 0,
+          "gained": 0,
+          "paired_delta_95ci_pp": [
+            0.0,
+            0.0
+          ],
+          "exact_mcnemar_p": 1.0,
+          "log10_p": 0.0,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 980,
+              "before_correct": 979,
+              "correct": 979,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 1135,
+              "before_correct": 1132,
+              "correct": 1132,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 1032,
+              "before_correct": 1026,
+              "correct": 1026,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 1010,
+              "before_correct": 1004,
+              "correct": 1004,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 982,
+              "before_correct": 977,
+              "correct": 977,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 892,
+              "before_correct": 887,
+              "correct": 887,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 958,
+              "before_correct": 949,
+              "correct": 949,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 1028,
+              "before_correct": 1022,
+              "correct": 1022,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 974,
+              "before_correct": 970,
+              "correct": 970,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 1009,
+              "before_correct": 999,
+              "correct": 999,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/Protected expert/DTD",
+          "n": 1880,
+          "accuracy_percent": 68.40425531914893,
+          "changed": 0,
+          "lost": 0,
+          "gained": 0,
+          "paired_delta_95ci_pp": [
+            0.0,
+            0.0
+          ],
+          "exact_mcnemar_p": 1.0,
+          "log10_p": 0.0,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 17,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 40,
+              "before_correct": 16,
+              "correct": 16,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 26,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 40,
+              "before_correct": 14,
+              "correct": 14,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 37,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 40,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 10,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 22,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 11,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 27,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 12,
+              "n": 40,
+              "before_correct": 25,
+              "correct": 25,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 13,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 14,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 15,
+              "n": 40,
+              "before_correct": 12,
+              "correct": 12,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 16,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 17,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 17,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 18,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 19,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 21,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 20,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 21,
+              "n": 40,
+              "before_correct": 4,
+              "correct": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 22,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 20,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 23,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 24,
+              "n": 40,
+              "before_correct": 24,
+              "correct": 24,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 25,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 20,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 26,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 40,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 27,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 28,
+              "n": 40,
+              "before_correct": 11,
+              "correct": 11,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 29,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 30,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 31,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 32,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 33,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 34,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 35,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 26,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 36,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 37,
+              "n": 40,
+              "before_correct": 11,
+              "correct": 11,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 38,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 39,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 40,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 37,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 41,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 42,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 27,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 43,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 44,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 22,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 45,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 46,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/Protected expert/MNIST",
+          "n": 10000,
+          "accuracy_percent": 99.45,
+          "changed": 0,
+          "lost": 0,
+          "gained": 0,
+          "paired_delta_95ci_pp": [
+            0.0,
+            0.0
+          ],
+          "exact_mcnemar_p": 1.0,
+          "log10_p": 0.0,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 980,
+              "before_correct": 979,
+              "correct": 979,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 1135,
+              "before_correct": 1132,
+              "correct": 1132,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 1032,
+              "before_correct": 1026,
+              "correct": 1026,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 1010,
+              "before_correct": 1004,
+              "correct": 1004,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 982,
+              "before_correct": 977,
+              "correct": 977,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 892,
+              "before_correct": 888,
+              "correct": 888,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 958,
+              "before_correct": 949,
+              "correct": 949,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 1028,
+              "before_correct": 1022,
+              "correct": 1022,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 974,
+              "before_correct": 970,
+              "correct": 970,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 1009,
+              "before_correct": 998,
+              "correct": 998,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/All experts/DTD",
+          "n": 1880,
+          "accuracy_percent": 68.77659574468085,
+          "changed": 0,
+          "lost": 0,
+          "gained": 0,
+          "paired_delta_95ci_pp": [
+            0.0,
+            0.0
+          ],
+          "exact_mcnemar_p": 1.0,
+          "log10_p": 0.0,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 40,
+              "before_correct": 18,
+              "correct": 18,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 17,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 27,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 40,
+              "before_correct": 12,
+              "correct": 12,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 37,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 40,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 10,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 22,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 11,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 12,
+              "n": 40,
+              "before_correct": 25,
+              "correct": 25,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 13,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 14,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 15,
+              "n": 40,
+              "before_correct": 12,
+              "correct": 12,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 16,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 17,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 17,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 18,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 19,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 21,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 20,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 21,
+              "n": 40,
+              "before_correct": 4,
+              "correct": 4,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 22,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 20,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 23,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 24,
+              "n": 40,
+              "before_correct": 24,
+              "correct": 24,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 25,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 20,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 26,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 40,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 27,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 28,
+              "n": 40,
+              "before_correct": 13,
+              "correct": 13,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 29,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 30,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 31,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 27,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 32,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 35,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 33,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 34,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 35,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 26,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 36,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 37,
+              "n": 40,
+              "before_correct": 11,
+              "correct": 11,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 38,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 39,
+              "n": 40,
+              "before_correct": 36,
+              "correct": 36,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 40,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 37,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 41,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 42,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 27,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 43,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 44,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 22,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 45,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 46,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Unprotected/TA/All experts/MNIST",
+          "n": 10000,
+          "accuracy_percent": 99.42,
+          "changed": 0,
+          "lost": 0,
+          "gained": 0,
+          "paired_delta_95ci_pp": [
+            0.0,
+            0.0
+          ],
+          "exact_mcnemar_p": 1.0,
+          "log10_p": 0.0,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 980,
+              "before_correct": 979,
+              "correct": 979,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 1135,
+              "before_correct": 1132,
+              "correct": 1132,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 1032,
+              "before_correct": 1026,
+              "correct": 1026,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 1010,
+              "before_correct": 1002,
+              "correct": 1002,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 982,
+              "before_correct": 977,
+              "correct": 977,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 892,
+              "before_correct": 888,
+              "correct": 888,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 958,
+              "before_correct": 950,
+              "correct": 950,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 1028,
+              "before_correct": 1021,
+              "correct": 1021,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 974,
+              "before_correct": 970,
+              "correct": 970,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 1009,
+              "before_correct": 997,
+              "correct": 997,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Without_both_SVD_components/Standalone/None/DTD",
+          "n": 1880,
+          "accuracy_percent": 78.08510638297872,
+          "changed": 92,
+          "lost": 40,
+          "gained": 15,
+          "paired_delta_95ci_pp": [
+            -2.100830191505491,
+            -0.5587442765796149
+          ],
+          "exact_mcnemar_p": 0.0010158471941252893,
+          "log10_p": -2.993171614630004,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 32,
+              "lost": 2,
+              "gained": 1
+            },
+            {
+              "class_id": 1,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 19,
+              "lost": 2,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 40,
+              "before_correct": 30,
+              "correct": 30,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 37,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 20,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 33,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 29,
+              "lost": 1,
+              "gained": 1
+            },
+            {
+              "class_id": 9,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 40,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 10,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 30,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 11,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 32,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 12,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 31,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 13,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 32,
+              "lost": 2,
+              "gained": 0
+            },
+            {
+              "class_id": 14,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 35,
+              "lost": 0,
+              "gained": 2
+            },
+            {
+              "class_id": 15,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 34,
+              "lost": 3,
+              "gained": 0
+            },
+            {
+              "class_id": 16,
+              "n": 40,
+              "before_correct": 25,
+              "correct": 25,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 17,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 30,
+              "lost": 2,
+              "gained": 0
+            },
+            {
+              "class_id": 18,
+              "n": 40,
+              "before_correct": 36,
+              "correct": 35,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 19,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 33,
+              "lost": 0,
+              "gained": 2
+            },
+            {
+              "class_id": 20,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 36,
+              "lost": 0,
+              "gained": 2
+            },
+            {
+              "class_id": 21,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 25,
+              "lost": 9,
+              "gained": 0
+            },
+            {
+              "class_id": 22,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 31,
+              "lost": 2,
+              "gained": 0
+            },
+            {
+              "class_id": 23,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 22,
+              "lost": 6,
+              "gained": 0
+            },
+            {
+              "class_id": 24,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 30,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 25,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 25,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 26,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 27,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 32,
+              "lost": 0,
+              "gained": 1
+            },
+            {
+              "class_id": 28,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 21,
+              "lost": 0,
+              "gained": 1
+            },
+            {
+              "class_id": 29,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 32,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 30,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 31,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 24,
+              "lost": 3,
+              "gained": 0
+            },
+            {
+              "class_id": 32,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 39,
+              "lost": 0,
+              "gained": 1
+            },
+            {
+              "class_id": 33,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 34,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 28,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 35,
+              "n": 40,
+              "before_correct": 30,
+              "correct": 30,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 36,
+              "n": 40,
+              "before_correct": 30,
+              "correct": 29,
+              "lost": 1,
+              "gained": 0
+            },
+            {
+              "class_id": 37,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 23,
+              "lost": 0,
+              "gained": 2
+            },
+            {
+              "class_id": 38,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 39,
+              "n": 40,
+              "before_correct": 36,
+              "correct": 36,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 40,
+              "n": 40,
+              "before_correct": 39,
+              "correct": 39,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 41,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 31,
+              "lost": 2,
+              "gained": 0
+            },
+            {
+              "class_id": 42,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 34,
+              "lost": 0,
+              "gained": 1
+            },
+            {
+              "class_id": 43,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 34,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 44,
+              "n": 40,
+              "before_correct": 23,
+              "correct": 23,
+              "lost": 0,
+              "gained": 0
+            },
+            {
+              "class_id": 45,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 33,
+              "lost": 0,
+              "gained": 1
+            },
+            {
+              "class_id": 46,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 38,
+              "lost": 0,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Without_both_SVD_components/TA/None/DTD",
+          "n": 1880,
+          "accuracy_percent": 2.127659574468085,
+          "changed": 1855,
+          "lost": 1285,
+          "gained": 22,
+          "paired_delta_95ci_pp": [
+            -69.41383807946335,
+            -64.94786404819622
+          ],
+          "exact_mcnemar_p": 0.0,
+          "log10_p": -345.7075720332895,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 40,
+              "before_correct": 18,
+              "correct": 40,
+              "lost": 0,
+              "gained": 22
+            },
+            {
+              "class_id": 1,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 0,
+              "lost": 17,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 0,
+              "lost": 27,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 40,
+              "before_correct": 14,
+              "correct": 0,
+              "lost": 14,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 0,
+              "lost": 38,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 0,
+              "lost": 37,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 0,
+              "lost": 40,
+              "gained": 0
+            },
+            {
+              "class_id": 10,
+              "n": 40,
+              "before_correct": 23,
+              "correct": 0,
+              "lost": 23,
+              "gained": 0
+            },
+            {
+              "class_id": 11,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 12,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 0,
+              "lost": 26,
+              "gained": 0
+            },
+            {
+              "class_id": 13,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 0,
+              "lost": 32,
+              "gained": 0
+            },
+            {
+              "class_id": 14,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 15,
+              "n": 40,
+              "before_correct": 13,
+              "correct": 0,
+              "lost": 13,
+              "gained": 0
+            },
+            {
+              "class_id": 16,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 0,
+              "lost": 17,
+              "gained": 0
+            },
+            {
+              "class_id": 17,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 0,
+              "lost": 29,
+              "gained": 0
+            },
+            {
+              "class_id": 18,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 0,
+              "lost": 33,
+              "gained": 0
+            },
+            {
+              "class_id": 19,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 0,
+              "lost": 22,
+              "gained": 0
+            },
+            {
+              "class_id": 20,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 21,
+              "n": 40,
+              "before_correct": 4,
+              "correct": 0,
+              "lost": 4,
+              "gained": 0
+            },
+            {
+              "class_id": 22,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 0,
+              "lost": 20,
+              "gained": 0
+            },
+            {
+              "class_id": 23,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 0,
+              "lost": 29,
+              "gained": 0
+            },
+            {
+              "class_id": 24,
+              "n": 40,
+              "before_correct": 24,
+              "correct": 0,
+              "lost": 24,
+              "gained": 0
+            },
+            {
+              "class_id": 25,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 0,
+              "lost": 20,
+              "gained": 0
+            },
+            {
+              "class_id": 26,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 0,
+              "lost": 40,
+              "gained": 0
+            },
+            {
+              "class_id": 27,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 0,
+              "lost": 33,
+              "gained": 0
+            },
+            {
+              "class_id": 28,
+              "n": 40,
+              "before_correct": 12,
+              "correct": 0,
+              "lost": 12,
+              "gained": 0
+            },
+            {
+              "class_id": 29,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 30,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 0,
+              "lost": 38,
+              "gained": 0
+            },
+            {
+              "class_id": 31,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 32,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 33,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 34,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 35,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 0,
+              "lost": 26,
+              "gained": 0
+            },
+            {
+              "class_id": 36,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 0,
+              "lost": 27,
+              "gained": 0
+            },
+            {
+              "class_id": 37,
+              "n": 40,
+              "before_correct": 11,
+              "correct": 0,
+              "lost": 11,
+              "gained": 0
+            },
+            {
+              "class_id": 38,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 0,
+              "lost": 31,
+              "gained": 0
+            },
+            {
+              "class_id": 39,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 40,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 0,
+              "lost": 37,
+              "gained": 0
+            },
+            {
+              "class_id": 41,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 0,
+              "lost": 31,
+              "gained": 0
+            },
+            {
+              "class_id": 42,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 0,
+              "lost": 27,
+              "gained": 0
+            },
+            {
+              "class_id": 43,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 44,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 0,
+              "lost": 21,
+              "gained": 0
+            },
+            {
+              "class_id": 45,
+              "n": 40,
+              "before_correct": 30,
+              "correct": 0,
+              "lost": 30,
+              "gained": 0
+            },
+            {
+              "class_id": 46,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 0,
+              "lost": 33,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Without_both_SVD_components/TA/None/MNIST",
+          "n": 10000,
+          "accuracy_percent": 37.09,
+          "changed": 6291,
+          "lost": 6240,
+          "gained": 4,
+          "paired_delta_95ci_pp": [
+            -63.31124959818326,
+            -61.40875040181675
+          ],
+          "exact_mcnemar_p": 0.0,
+          "log10_p": -1865.5287616018484,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 980,
+              "before_correct": 979,
+              "correct": 0,
+              "lost": 979,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 1135,
+              "before_correct": 1132,
+              "correct": 0,
+              "lost": 1132,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 1032,
+              "before_correct": 1026,
+              "correct": 964,
+              "lost": 62,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 1010,
+              "before_correct": 1004,
+              "correct": 890,
+              "lost": 114,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 982,
+              "before_correct": 977,
+              "correct": 487,
+              "lost": 490,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 892,
+              "before_correct": 887,
+              "correct": 108,
+              "lost": 779,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 958,
+              "before_correct": 949,
+              "correct": 36,
+              "lost": 913,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 1028,
+              "before_correct": 1022,
+              "correct": 250,
+              "lost": 772,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 974,
+              "before_correct": 970,
+              "correct": 974,
+              "lost": 0,
+              "gained": 4
+            },
+            {
+              "class_id": 9,
+              "n": 1009,
+              "before_correct": 999,
+              "correct": 0,
+              "lost": 999,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Without_both_SVD_components/TA/Protected expert/DTD",
+          "n": 1880,
+          "accuracy_percent": 2.127659574468085,
+          "changed": 1858,
+          "lost": 1269,
+          "gained": 23,
+          "paired_delta_95ci_pp": [
+            -68.52822518343211,
+            -64.0249663059296
+          ],
+          "exact_mcnemar_p": 0.0,
+          "log10_p": -339.5607920232721,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 40,
+              "lost": 0,
+              "gained": 23
+            },
+            {
+              "class_id": 1,
+              "n": 40,
+              "before_correct": 16,
+              "correct": 0,
+              "lost": 16,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 0,
+              "lost": 26,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 40,
+              "before_correct": 14,
+              "correct": 0,
+              "lost": 14,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 0,
+              "lost": 38,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 0,
+              "lost": 37,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 0,
+              "lost": 40,
+              "gained": 0
+            },
+            {
+              "class_id": 10,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 0,
+              "lost": 22,
+              "gained": 0
+            },
+            {
+              "class_id": 11,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 0,
+              "lost": 27,
+              "gained": 0
+            },
+            {
+              "class_id": 12,
+              "n": 40,
+              "before_correct": 25,
+              "correct": 0,
+              "lost": 25,
+              "gained": 0
+            },
+            {
+              "class_id": 13,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 0,
+              "lost": 32,
+              "gained": 0
+            },
+            {
+              "class_id": 14,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 15,
+              "n": 40,
+              "before_correct": 12,
+              "correct": 0,
+              "lost": 12,
+              "gained": 0
+            },
+            {
+              "class_id": 16,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 0,
+              "lost": 17,
+              "gained": 0
+            },
+            {
+              "class_id": 17,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 0,
+              "lost": 29,
+              "gained": 0
+            },
+            {
+              "class_id": 18,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 0,
+              "lost": 33,
+              "gained": 0
+            },
+            {
+              "class_id": 19,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 0,
+              "lost": 21,
+              "gained": 0
+            },
+            {
+              "class_id": 20,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 0,
+              "lost": 33,
+              "gained": 0
+            },
+            {
+              "class_id": 21,
+              "n": 40,
+              "before_correct": 4,
+              "correct": 0,
+              "lost": 4,
+              "gained": 0
+            },
+            {
+              "class_id": 22,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 0,
+              "lost": 20,
+              "gained": 0
+            },
+            {
+              "class_id": 23,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 24,
+              "n": 40,
+              "before_correct": 24,
+              "correct": 0,
+              "lost": 24,
+              "gained": 0
+            },
+            {
+              "class_id": 25,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 0,
+              "lost": 20,
+              "gained": 0
+            },
+            {
+              "class_id": 26,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 0,
+              "lost": 40,
+              "gained": 0
+            },
+            {
+              "class_id": 27,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 0,
+              "lost": 33,
+              "gained": 0
+            },
+            {
+              "class_id": 28,
+              "n": 40,
+              "before_correct": 11,
+              "correct": 0,
+              "lost": 11,
+              "gained": 0
+            },
+            {
+              "class_id": 29,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 30,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 0,
+              "lost": 38,
+              "gained": 0
+            },
+            {
+              "class_id": 31,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 32,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 33,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 0,
+              "lost": 32,
+              "gained": 0
+            },
+            {
+              "class_id": 34,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 35,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 0,
+              "lost": 26,
+              "gained": 0
+            },
+            {
+              "class_id": 36,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 37,
+              "n": 40,
+              "before_correct": 11,
+              "correct": 0,
+              "lost": 11,
+              "gained": 0
+            },
+            {
+              "class_id": 38,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 0,
+              "lost": 31,
+              "gained": 0
+            },
+            {
+              "class_id": 39,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 40,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 0,
+              "lost": 37,
+              "gained": 0
+            },
+            {
+              "class_id": 41,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 0,
+              "lost": 29,
+              "gained": 0
+            },
+            {
+              "class_id": 42,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 0,
+              "lost": 27,
+              "gained": 0
+            },
+            {
+              "class_id": 43,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 44,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 0,
+              "lost": 22,
+              "gained": 0
+            },
+            {
+              "class_id": 45,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 0,
+              "lost": 29,
+              "gained": 0
+            },
+            {
+              "class_id": 46,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 0,
+              "lost": 32,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Without_both_SVD_components/TA/Protected expert/MNIST",
+          "n": 10000,
+          "accuracy_percent": 17.44,
+          "changed": 8257,
+          "lost": 8205,
+          "gained": 4,
+          "paired_delta_95ci_pp": [
+            -82.76492021408689,
+            -81.25507978591313
+          ],
+          "exact_mcnemar_p": 0.0,
+          "log10_p": -2456.5773603803277,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 980,
+              "before_correct": 979,
+              "correct": 0,
+              "lost": 979,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 1135,
+              "before_correct": 1132,
+              "correct": 0,
+              "lost": 1132,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 1032,
+              "before_correct": 1026,
+              "correct": 770,
+              "lost": 256,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 1010,
+              "before_correct": 1004,
+              "correct": 0,
+              "lost": 1004,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 982,
+              "before_correct": 977,
+              "correct": 0,
+              "lost": 977,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 892,
+              "before_correct": 888,
+              "correct": 0,
+              "lost": 888,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 958,
+              "before_correct": 949,
+              "correct": 0,
+              "lost": 949,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 1028,
+              "before_correct": 1022,
+              "correct": 0,
+              "lost": 1022,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 974,
+              "before_correct": 970,
+              "correct": 974,
+              "lost": 0,
+              "gained": 4
+            },
+            {
+              "class_id": 9,
+              "n": 1009,
+              "before_correct": 998,
+              "correct": 0,
+              "lost": 998,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Without_both_SVD_components/TA/All experts/DTD",
+          "n": 1880,
+          "accuracy_percent": 2.127659574468085,
+          "changed": 1856,
+          "lost": 1275,
+          "gained": 22,
+          "paired_delta_95ci_pp": [
+            -68.89014583402529,
+            -64.40772650640024
+          ],
+          "exact_mcnemar_p": 0.0,
+          "log10_p": -342.77119478888847,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 40,
+              "before_correct": 18,
+              "correct": 40,
+              "lost": 0,
+              "gained": 22
+            },
+            {
+              "class_id": 1,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 0,
+              "lost": 17,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 0,
+              "lost": 27,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 40,
+              "before_correct": 12,
+              "correct": 0,
+              "lost": 12,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 0,
+              "lost": 38,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 0,
+              "lost": 37,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 9,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 0,
+              "lost": 40,
+              "gained": 0
+            },
+            {
+              "class_id": 10,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 0,
+              "lost": 22,
+              "gained": 0
+            },
+            {
+              "class_id": 11,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 12,
+              "n": 40,
+              "before_correct": 25,
+              "correct": 0,
+              "lost": 25,
+              "gained": 0
+            },
+            {
+              "class_id": 13,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 0,
+              "lost": 32,
+              "gained": 0
+            },
+            {
+              "class_id": 14,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 15,
+              "n": 40,
+              "before_correct": 12,
+              "correct": 0,
+              "lost": 12,
+              "gained": 0
+            },
+            {
+              "class_id": 16,
+              "n": 40,
+              "before_correct": 17,
+              "correct": 0,
+              "lost": 17,
+              "gained": 0
+            },
+            {
+              "class_id": 17,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 0,
+              "lost": 29,
+              "gained": 0
+            },
+            {
+              "class_id": 18,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 0,
+              "lost": 33,
+              "gained": 0
+            },
+            {
+              "class_id": 19,
+              "n": 40,
+              "before_correct": 21,
+              "correct": 0,
+              "lost": 21,
+              "gained": 0
+            },
+            {
+              "class_id": 20,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 21,
+              "n": 40,
+              "before_correct": 4,
+              "correct": 0,
+              "lost": 4,
+              "gained": 0
+            },
+            {
+              "class_id": 22,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 0,
+              "lost": 20,
+              "gained": 0
+            },
+            {
+              "class_id": 23,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 24,
+              "n": 40,
+              "before_correct": 24,
+              "correct": 0,
+              "lost": 24,
+              "gained": 0
+            },
+            {
+              "class_id": 25,
+              "n": 40,
+              "before_correct": 20,
+              "correct": 0,
+              "lost": 20,
+              "gained": 0
+            },
+            {
+              "class_id": 26,
+              "n": 40,
+              "before_correct": 40,
+              "correct": 0,
+              "lost": 40,
+              "gained": 0
+            },
+            {
+              "class_id": 27,
+              "n": 40,
+              "before_correct": 33,
+              "correct": 0,
+              "lost": 33,
+              "gained": 0
+            },
+            {
+              "class_id": 28,
+              "n": 40,
+              "before_correct": 13,
+              "correct": 0,
+              "lost": 13,
+              "gained": 0
+            },
+            {
+              "class_id": 29,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 30,
+              "n": 40,
+              "before_correct": 38,
+              "correct": 0,
+              "lost": 38,
+              "gained": 0
+            },
+            {
+              "class_id": 31,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 0,
+              "lost": 27,
+              "gained": 0
+            },
+            {
+              "class_id": 32,
+              "n": 40,
+              "before_correct": 35,
+              "correct": 0,
+              "lost": 35,
+              "gained": 0
+            },
+            {
+              "class_id": 33,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 0,
+              "lost": 32,
+              "gained": 0
+            },
+            {
+              "class_id": 34,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 35,
+              "n": 40,
+              "before_correct": 26,
+              "correct": 0,
+              "lost": 26,
+              "gained": 0
+            },
+            {
+              "class_id": 36,
+              "n": 40,
+              "before_correct": 28,
+              "correct": 0,
+              "lost": 28,
+              "gained": 0
+            },
+            {
+              "class_id": 37,
+              "n": 40,
+              "before_correct": 11,
+              "correct": 0,
+              "lost": 11,
+              "gained": 0
+            },
+            {
+              "class_id": 38,
+              "n": 40,
+              "before_correct": 31,
+              "correct": 0,
+              "lost": 31,
+              "gained": 0
+            },
+            {
+              "class_id": 39,
+              "n": 40,
+              "before_correct": 36,
+              "correct": 0,
+              "lost": 36,
+              "gained": 0
+            },
+            {
+              "class_id": 40,
+              "n": 40,
+              "before_correct": 37,
+              "correct": 0,
+              "lost": 37,
+              "gained": 0
+            },
+            {
+              "class_id": 41,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 0,
+              "lost": 29,
+              "gained": 0
+            },
+            {
+              "class_id": 42,
+              "n": 40,
+              "before_correct": 27,
+              "correct": 0,
+              "lost": 27,
+              "gained": 0
+            },
+            {
+              "class_id": 43,
+              "n": 40,
+              "before_correct": 34,
+              "correct": 0,
+              "lost": 34,
+              "gained": 0
+            },
+            {
+              "class_id": 44,
+              "n": 40,
+              "before_correct": 22,
+              "correct": 0,
+              "lost": 22,
+              "gained": 0
+            },
+            {
+              "class_id": 45,
+              "n": 40,
+              "before_correct": 29,
+              "correct": 0,
+              "lost": 29,
+              "gained": 0
+            },
+            {
+              "class_id": 46,
+              "n": 40,
+              "before_correct": 32,
+              "correct": 0,
+              "lost": 32,
+              "gained": 0
+            }
+          ]
+        },
+        {
+          "key": "Without_both_SVD_components/TA/All experts/MNIST",
+          "n": 10000,
+          "accuracy_percent": 16.7,
+          "changed": 8331,
+          "lost": 8276,
+          "gained": 4,
+          "paired_delta_95ci_pp": [
+            -83.46313351653545,
+            -81.97686648346456
+          ],
+          "exact_mcnemar_p": 0.0,
+          "log10_p": -2477.935528841683,
+          "per_class": [
+            {
+              "class_id": 0,
+              "n": 980,
+              "before_correct": 979,
+              "correct": 0,
+              "lost": 979,
+              "gained": 0
+            },
+            {
+              "class_id": 1,
+              "n": 1135,
+              "before_correct": 1132,
+              "correct": 0,
+              "lost": 1132,
+              "gained": 0
+            },
+            {
+              "class_id": 2,
+              "n": 1032,
+              "before_correct": 1026,
+              "correct": 696,
+              "lost": 330,
+              "gained": 0
+            },
+            {
+              "class_id": 3,
+              "n": 1010,
+              "before_correct": 1002,
+              "correct": 0,
+              "lost": 1002,
+              "gained": 0
+            },
+            {
+              "class_id": 4,
+              "n": 982,
+              "before_correct": 977,
+              "correct": 0,
+              "lost": 977,
+              "gained": 0
+            },
+            {
+              "class_id": 5,
+              "n": 892,
+              "before_correct": 888,
+              "correct": 0,
+              "lost": 888,
+              "gained": 0
+            },
+            {
+              "class_id": 6,
+              "n": 958,
+              "before_correct": 950,
+              "correct": 0,
+              "lost": 950,
+              "gained": 0
+            },
+            {
+              "class_id": 7,
+              "n": 1028,
+              "before_correct": 1021,
+              "correct": 0,
+              "lost": 1021,
+              "gained": 0
+            },
+            {
+              "class_id": 8,
+              "n": 974,
+              "before_correct": 970,
+              "correct": 974,
+              "lost": 0,
+              "gained": 4
+            },
+            {
+              "class_id": 9,
+              "n": 1009,
+              "before_correct": 997,
+              "correct": 0,
+              "lost": 997,
+              "gained": 0
+            }
+          ]
+        }
+      ],
+      "raw_sha256": "20682dbd98e8833ebfba363641ae99c06cc1add452ec1634394438d5dd3ac08a",
+      "source_sha256": "6bc80b9fc7456d7493a4a288f7d2ddca2384f2d49c3a8d358bff47e6f50868c5",
+      "new_image_forwards": 0
+    },
+    "protocol": {
+      "experiment": "Same simultaneous SVD deletion on DTD, fixed cross-task component control",
+      "output": "outputs/native_ellipse_no_svd_DTD_20261028/evaluation",
+      "tasks": {
+        "DTD": {
+          "classes": 47,
+          "test_n": 1880
+        },
+        "MNIST": {
+          "classes": 10,
+          "test_n": 10000
+        }
+      },
+      "TA_coefficient": 0.5,
+      "mergers": [
+        "TA"
+      ],
+      "TIES": {
+        "repository": "https://github.com/prateeky2806/ties-merging",
+        "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+        "path": "external/ties-merging/src/utils/merge_utils.py",
+        "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+        "topk_percent": 20,
+        "coefficient": 1,
+        "resolve_method": "mass",
+        "merge_func": "dis-mean",
+        "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+      },
+      "pilot_n": 64,
+      "replay_n": 16,
+      "score_tolerance": 0.0005,
+      "task_budget": 0.5,
+      "utility_seed": null,
+      "utility_n": null,
+      "probe_rank": 32,
+      "test_status": "Complete historically exposed officialMNIST/SVHN benchmarks;not blind;no selection or parameter feedback",
+      "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+      "defense_optimization": "One double deletion control from original weights. Same fixed uniform-prior control and no-A-SVD construction;same500steps,source,seed,publicclass0 objective,ridge/native-bound rules. Not a new defense or retuned main point.",
+      "attacker_data": false,
+      "attack_gradient_steps": 0,
+      "AGA_references": {
+        "DTD": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        },
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "AGA": {
+        "repository": "https://github.com/krumpguo/secure-merge-attack",
+        "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+        "file": "utils_attack_B32.py",
+        "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+        "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+        "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+      },
+      "defenses": {
+        "Without_both_SVD_components": {
+          "label": "Without_both_SVD_components",
+          "target": "DTD",
+          "release": {
+            "path": "outputs/native_ellipse_no_svd_DTD_20261028/point/point.pt",
+            "sha256": "8a7e2ca1904fd467d79940d5c1b0387db006b2acb3bbad75847d2b46e634c822"
+          },
+          "AGA_edits": {
+            "path": "outputs/native_ellipse_no_svd_DTD_20261028/AGA/edits.pt",
+            "sha256": "97693de0f1e4b389df8775f851424bf75ec45f83137edba3ac16219ad1fc4141",
+            "reference": "original_AGA"
+          },
+          "budget_status": "Same construction rule; report actual distance, not a D.5 control",
+          "function_status": "Report complete native outcome including failures"
+        }
+      },
+      "cases": [
+        {
+          "target": "DTD",
+          "partner": "MNIST",
+          "defenses": [
+            "Without_both_SVD_components"
+          ]
+        }
+      ],
+      "legacy": {
+        "DTD_MNIST/Unprotected": {
+          "standalone": {
+            "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+            "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+            "key_template": "Unprotected/Standalone/None/{task}"
+          },
+          "direct": {
+            "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+            "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+            "key_template": "Unprotected/TA/None/{task}"
+          },
+          "AGA_target_only": {
+            "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+            "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+            "key_template": "Unprotected/TA/Protected expert/{task}"
+          },
+          "AGA_both": {
+            "path": "outputs/task_directed_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+            "sha256": "92cd11e7be0b81139f048b174af2072951e01b31b138441d9ac59d177602bd12",
+            "key_template": "Unprotected/TA/All experts/{task}"
+          }
+        },
+        "DTD_MNIST/Without_both_SVD_components": {
+          "standalone": {
+            "path": "outputs/native_ellipse_no_svd_DTD_20261028/native/full.pt",
+            "sha256": "2c8d18503e08de55f32630a5e87e042f8104b510b17f6cd28e0e11e39afd20a9",
+            "native_score_field": "after",
+            "key_template": "already_evaluated_native"
+          }
+        }
+      },
+      "source_sha256": {
+        "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+        "_impl/attacks.py": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+        "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+        "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+        "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+        "_impl/evaluate.py": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+        "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+        "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+        "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+        "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+        "_impl/report.py": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+        "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+        "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+        "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+        "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+        "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+        "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+        "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+        "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+        "experiment/recover.py": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+        "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+      },
+      "original_batch_context_replays": true,
+      "parameter_budget_scope": "Actual A/B andbias distances reported;main bound rule unchanged",
+      "native_evaluation": "Reuse fixed full MNIST independent counts and16originalbatch replays bySHA;do not rerun"
+    },
+    "backup": {
+      "path": "outputs/no_svd_DTD_component_20261028.tar",
+      "sha256": "e98e9b99417a560886b676a8f45cae20e4b34ce7c83115a3667aac5c2545dd5f",
+      "bytes": 146534400,
+      "locations": [
+        "local",
+        "50837"
+      ]
+    },
+    "new_real_construction_images": 0,
+    "original_expert_updates": 0,
+    "new_full_AGA_calls": 1,
+    "new_full_evaluation_forwards": 37520,
+    "new_replay_forwards": 28536,
+    "conclusion": "Unchanged double deletion: DTD standalone78.085106 versus original79.414894 and SVD method76.117021;TA/AGA both scopes2.127660. Independent accuracy improves relative to SVD method but still loses1.329787pp relative to original. Historical strictR and.5pp flags remain failed; no test-based model replacement, full-function equality, or stronger-recovery claim."
+  },
+  "no_SVD_three_task_summary_20261028": {
+    "status": "all_three_fixed_controls_completed",
+    "scope": "All preregistered controls retained; main SVD publications retained. Same deletion rules, seed,500steps,conditional-quadratic settings. No accuracy-based retuning or expert training.",
+    "rows": [
+      {
+        "task": "MNIST",
+        "original_native_percent": 99.69,
+        "modified_native_percent": 99.69,
+        "native_loss_pp": 0.0,
+        "TA_AGAtarget_AGAboth_percent": [
+          9.8,
+          9.8,
+          9.8
+        ],
+        "point_sha256": "a62fecdb2d9c3b5e2ab1939b2745cda2482f7d720aad1bb806d0d4527c315b4e"
+      },
+      {
+        "task": "SVHN",
+        "original_native_percent": 97.46081745543945,
+        "modified_native_percent": 97.44929317762754,
+        "native_loss_pp": 0.011524277811923786,
+        "TA_AGAtarget_AGAboth_percent": [
+          6.699446834665028,
+          6.699446834665028,
+          6.699446834665028
+        ],
+        "point_sha256": "3cf53ed47749fd76ec0689686ddc08b0b2490cb39d7e78cf0a887e2bb3d00b8c"
+      },
+      {
+        "task": "DTD",
+        "original_native_percent": 79.41489361702128,
+        "modified_native_percent": 78.08510638297872,
+        "native_loss_pp": 1.3297872340425532,
+        "TA_AGAtarget_AGAboth_percent": [
+          2.127659574468085,
+          2.127659574468085,
+          2.127659574468085
+        ],
+        "point_sha256": "8a7e2ca1904fd467d79940d5c1b0387db006b2acb3bbad75847d2b46e634c822"
+      }
+    ],
+    "source_new_real_images": 0,
+    "new_expert_updates": 0,
+    "total_control_construction_seconds": 493.36881183460355,
+    "total_complete_AGA_calls": 3,
+    "total_original_context_score_replays": 720,
+    "conclusion": "These two SVD components have not shown standalone-accuracy or target-protection benefit on the three fixed evaluated tasks; no general impossibility or across-seed robustness inference. DTD still loses standalone accuracy. Additional output-calibration results are not yet available for these no-SVD controls."
   }
 }
