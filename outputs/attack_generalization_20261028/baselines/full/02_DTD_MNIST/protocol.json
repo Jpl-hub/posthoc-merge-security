@@ -1,0 +1,276 @@
+{
+  "experiment": "Fixed numerical Defense2: public last-MLP replacement, matched controls",
+  "output": "outputs/attack_generalization_20261028/baselines",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "DTD": {
+      "classes": 47,
+      "test_n": 1880
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TA"
+  ],
+  "TIES": {
+    "repository": "https://github.com/prateeky2806/ties-merging",
+    "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+    "path": "external/ties-merging/src/utils/merge_utils.py",
+    "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+    "topk_percent": 20,
+    "coefficient": 1.0,
+    "resolve_method": "mass",
+    "merge_func": "dis-mean",
+    "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+  },
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "test_status": "Historically exposed test sets. Frozen defenses, no tuning or model selection from Phase 3.",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": false,
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "Random_noise_MNIST": {
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/MNIST/Random_noise/release.pt",
+        "sha256": "79f91cbc913c207dcbf13a541929748129097da8018dd37a54ef9c3753e4152b"
+      },
+      "AGA_edits": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/MNIST/Random_noise/AGA_edits.pt",
+        "sha256": "76ee7a891d4049fdca90f246d8a0e08f49ae07a997e98e87912f72d2d82336e8"
+      }
+    },
+    "Random_noise_SVHN": {
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/SVHN/Random_noise/release.pt",
+        "sha256": "3c4f85433eee915f747991b6ade2a873a72538b27b49cdd15cd1e713d37b501d"
+      },
+      "AGA_edits": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/SVHN/Random_noise/AGA_edits.pt",
+        "sha256": "7e491569c9ee4c89d5244c8d4843e6826f11969f1f7d0f6ba7625b2cba6803d0"
+      }
+    },
+    "A_only_SVHN": {
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/SVHN/A_only/release.pt",
+        "sha256": "73ad4b8ada26bd7233e05ac26b848c51d2be00dd8238db97bccb95d7481e9f62"
+      },
+      "AGA_edits": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/SVHN/A_only/AGA_edits.pt",
+        "sha256": "dfa6f39f8e5b197b9397fd3e6dae22ae3f4fe33854746c4acfc0cd68a0cfc4bc"
+      }
+    },
+    "B+b_only_SVHN": {
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/SVHN/B+b_only/release.pt",
+        "sha256": "d562a49487f4f97f7befc09e6c5fda47d86bf25311848c7d028c0889c6e65ee1"
+      },
+      "AGA_edits": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/SVHN/B+b_only/AGA_edits.pt",
+        "sha256": "784c6a4ed36c083a8e9ea08bd166b261ebb78e5907dbf66e81c4fdbd5a8efbd9"
+      }
+    },
+    "Random_noise_DTD": {
+      "target": "DTD",
+      "release": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/DTD/Random_noise/release.pt",
+        "sha256": "975979a4a7f9173dd9ab6f4f4124fbdb23e74a8de5e370b9d632ac7b84e8c066"
+      },
+      "AGA_edits": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/DTD/Random_noise/AGA_edits.pt",
+        "sha256": "995fd8e815d259af692dc01b78720ad6ea6f6e274f957ac3ad0bfde5d53c8496"
+      }
+    },
+    "A_only_DTD": {
+      "target": "DTD",
+      "release": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/DTD/A_only/release.pt",
+        "sha256": "23e5827a40525c4600a5193b029e1bdfc4d047b4947b92a6c94087afd09d7dc9"
+      },
+      "AGA_edits": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/DTD/A_only/AGA_edits.pt",
+        "sha256": "7a98401b6931e28dd6ebfb2a7e06fd1cdaddaf4fda27ea3a4a5eeb152ac1e89c"
+      }
+    },
+    "B+b_only_DTD": {
+      "target": "DTD",
+      "release": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/DTD/B+b_only/release.pt",
+        "sha256": "d3ced1735be75a956df3b519d2008b5a612b592a0b4d2b9152a092c778a13b64"
+      },
+      "AGA_edits": {
+        "path": "outputs/attack_generalization_20261028/baselines/publications/DTD/B+b_only/AGA_edits.pt",
+        "sha256": "fdd99baa1e8b41a9c10b3e59fac7c9ae7483dd335ad78399c3ca01bc78db7602"
+      }
+    }
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "defenses": [
+        "Random_noise_MNIST"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "defenses": [
+        "Random_noise_SVHN",
+        "A_only_SVHN",
+        "B+b_only_SVHN"
+      ]
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "defenses": [
+        "Random_noise_DTD",
+        "A_only_DTD",
+        "B+b_only_DTD"
+      ]
+    }
+  ],
+  "legacy": {
+    "MNIST_SVHN/Unprotected": {
+      "standalone": {
+        "path": "outputs/native_ellipse_classification_20261026/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "5f36e2ff939c328678bafedfc6a1aa1ae6bad7072dd5aa39651499237b1d7ed8",
+        "key_template": "Unprotected/Standalone/None/{task}"
+      },
+      "direct": {
+        "path": "outputs/native_ellipse_classification_20261026/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "5f36e2ff939c328678bafedfc6a1aa1ae6bad7072dd5aa39651499237b1d7ed8",
+        "key_template": "Unprotected/TA/None/{task}"
+      },
+      "AGA_target_only": {
+        "path": "outputs/native_ellipse_classification_20261026/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "5f36e2ff939c328678bafedfc6a1aa1ae6bad7072dd5aa39651499237b1d7ed8",
+        "key_template": "Unprotected/TA/Protected expert/{task}"
+      },
+      "AGA_both": {
+        "path": "outputs/native_ellipse_classification_20261026/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "5f36e2ff939c328678bafedfc6a1aa1ae6bad7072dd5aa39651499237b1d7ed8",
+        "key_template": "Unprotected/TA/All experts/{task}"
+      }
+    },
+    "SVHN_MNIST/Unprotected": {
+      "standalone": {
+        "path": "outputs/native_ellipse_classification_SVHN_20261026/evaluation/full/00_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "79aa6651634c987f9ce8eb55e68fd09409ae42a17dafbee62ff1d8aec5a6451b",
+        "key_template": "Unprotected/Standalone/None/{task}"
+      },
+      "direct": {
+        "path": "outputs/native_ellipse_classification_SVHN_20261026/evaluation/full/00_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "79aa6651634c987f9ce8eb55e68fd09409ae42a17dafbee62ff1d8aec5a6451b",
+        "key_template": "Unprotected/TA/None/{task}"
+      },
+      "AGA_target_only": {
+        "path": "outputs/native_ellipse_classification_SVHN_20261026/evaluation/full/00_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "79aa6651634c987f9ce8eb55e68fd09409ae42a17dafbee62ff1d8aec5a6451b",
+        "key_template": "Unprotected/TA/Protected expert/{task}"
+      },
+      "AGA_both": {
+        "path": "outputs/native_ellipse_classification_SVHN_20261026/evaluation/full/00_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "79aa6651634c987f9ce8eb55e68fd09409ae42a17dafbee62ff1d8aec5a6451b",
+        "key_template": "Unprotected/TA/All experts/{task}"
+      }
+    },
+    "DTD_MNIST/Unprotected": {
+      "standalone": {
+        "path": "outputs/native_ellipse_classification_DTD_20261026/observation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "6c34143fa1853efaa9422aa1a8e3eca9093242c58fcdbba3ee6ee58bc8ab0bf4",
+        "key_template": "Unprotected/Standalone/None/{task}"
+      },
+      "direct": {
+        "path": "outputs/native_ellipse_classification_DTD_20261026/observation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "6c34143fa1853efaa9422aa1a8e3eca9093242c58fcdbba3ee6ee58bc8ab0bf4",
+        "key_template": "Unprotected/TA/None/{task}"
+      },
+      "AGA_target_only": {
+        "path": "outputs/native_ellipse_classification_DTD_20261026/observation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "6c34143fa1853efaa9422aa1a8e3eca9093242c58fcdbba3ee6ee58bc8ab0bf4",
+        "key_template": "Unprotected/TA/Protected expert/{task}"
+      },
+      "AGA_both": {
+        "path": "outputs/native_ellipse_classification_DTD_20261026/observation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "6c34143fa1853efaa9422aa1a8e3eca9093242c58fcdbba3ee6ee58bc8ab0bf4",
+        "key_template": "Unprotected/TA/All experts/{task}"
+      }
+    }
+  },
+  "source_sha256": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "cfbfded3e2e6d16eb6510a9df32dc8de675000b74c884c919d98d107ebaa7869",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/evaluate.py": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/report.py": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+    "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+    "experiment/recover.py": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+    "experiment/report.py": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9"
+  },
+  "original_batch_context_replays": true,
+  "attack_scopes": [
+    "None",
+    "Protected expert",
+    "All experts"
+  ],
+  "attacker_permissions": {
+    "category": [
+      "weight-only"
+    ],
+    "operation": "Fixed original-author AGA; no public replacement in this batch"
+  },
+  "deduplication": "Reuse complete unprotected scores; MNIST A/B deletion controls already exist and are not rerun"
+}

@@ -24,6 +24,7 @@ cfg["attacker_permissions"] = definition["attacker_permissions"]
 cfg["source_sha256"] = {k: digest(k) for k in cfg["source_sha256"]}
 out = Path(cfg["output"])
 out.mkdir(parents=True, exist_ok=False)
+assert digest(out.parent / "official/weight_matching.py") == definition["sha256"]
 base = load_checkpoint("zeroshot.pt")
 state = base.state_dict()
 published = dict(state)

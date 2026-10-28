@@ -47,8 +47,9 @@ Oct25已结束的SVD删除、共同响应和分类响应构造亦按此方式复
 | 冻结发布的独立任务检查 | `experiment.native` |
 | 两专家 TA／原版 AGA 作用范围评价 | `experiment.main_table` |
 | 八专家固定顺序及三个数据集评价 | `experiment.eight_task` |
-| 原版 AGA / 已知家族公开匹配 | `experiment.recover --method aga / patch` |
+| AGA / 已知家族公开匹配 / MLP联合权重匹配 | `experiment.recover --method aga / patch / mlp-match` |
 | 当前统一论文表 | `experiment.report` |
+| 固定攻击泛化对比表 | `experiment.report --attack-directory results/attack_generalization_20261028` |
 | 已结束探索及其他历史补充表 | 固定历史提交与原协议 |
 
 `experiment.native` 的原始分数独立重计与主实验的原批上下文重放是两个检查，不能混称。主实验 `--verify` 保留128张原批上下文和原5e-4误差上限。单独功能检查继续记录原R0.5和改判，不改写历史失败。

@@ -1,11 +1,18 @@
 {
-  "status": "Public replacement and attack inventory registered; assembling traceable execution checkout. No new defense construction.",
-  "updated_utc": "2026-10-28T14:59:44.459227+00:00",
+  "status": "P0_complete; baselines_complete; mergers_in_progress; eight_dataset_inputs_missing",
+  "updated_utc": "2026-10-28T17:20:00Z",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Run fixed last-MLP A/B+b/full public replacements on main/no-SVD releases with matched controls; complete missing DTD calibration, then non-AGA matching and noise baselines.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "12997",
+      "root": "/root/autodl-tmp/posthoc-match-20261028",
+      "log": "outputs/attack_generalization_20261028/mergers.log",
+      "phase": "TIES and DARE full evaluation; original two queues exited0"
+    }
+  ],
+  "next_action": "Finish remaining merger evaluations and import verified results; no defense retuning. Restore missing five tasks before any eight-dataset claim.",
   "github_sync": {
     "status": "latest_results_pending_plugin_unavailable",
     "last_verified_remote_commit": "7f06a12e725e6cae2eec4c32637204dd42146cd3",
@@ -610,6 +617,27 @@
     "conclusion": "Mean-only bias is correctable on this source; varying changes also cause classification contradictions. Both parts contribute. No new model or real accuracy improvement.",
     "seconds": 5.094126299023628
   },
-  "active_focus": "Freeze current numerical Defense2; prioritize non-AGA recovery, matched baselines and complete task coverage per meeting.",
-  "attack_campaign": "results/attack_generalization_20261028/protocol.json"
+  "active_focus": "Freeze numerical Defense2. Complete recovery generalization, matched controls and fixed mergers per meeting.",
+  "attack_campaign": "results/attack_generalization_20261028/protocol.json",
+  "attack_generalization": {
+    "directory": "results/attack_generalization_20261028",
+    "status": "P0_complete; baselines_complete; mergers_in_progress; eight_dataset_inputs_missing",
+    "public_replacement_full_cases": 9,
+    "public_MLP_matching_full_cases": 3,
+    "baseline_full_cases": 3,
+    "DTD_noise_calibration_complete": true,
+    "known_permutation_exact_tensors": 158,
+    "independent_pairing": "outputs/attack_generalization_20261028/paired_comparisons.json",
+    "datasets": [
+      "MNIST",
+      "SVHN",
+      "DTD"
+    ],
+    "test_sizes": [
+      10000,
+      26032,
+      1880
+    ],
+    "new_defense_parameters": false
+  }
 }
