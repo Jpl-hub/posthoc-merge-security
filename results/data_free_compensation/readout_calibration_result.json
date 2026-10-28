@@ -12076,5 +12076,23 @@
       ]
     },
     "scope": "Fixed extra output processing after TA/originalAGA. Same probes/rule on frozen no-SVD controls and own unprotected models. No replacement of old main or new defense."
+  },
+  "source_offset_condition_definition_20261028": {
+    "defined_utc": "2026-10-28T12:20:17.771080+00:00",
+    "status": "defined_before_execution_local_only",
+    "source_path": "outputs/offset_condition_20261028.py",
+    "source_sha256": "00a02ca5ce60086f4ec5c5094e5a519b9ebdf053f4f41c0dd6e26fb7a6dc7a18",
+    "input": "Original frozen MNIST synthetic cache33670dd5 (800 views), original and no-SVD publicationa62fecdb; native,public-base0.5 and original-AGA/public-base0.5 proxies. No actual partner or benchmark scores.",
+    "condition": "For classes a!=b, teacher inputi ofa andj ofb, Cij=s_a(i)-s_b(i)+s_b(j)-s_a(j). IfCij<0, no additive class vector can classify both correctly. More generally b_k-b_y+gamma <= s_y-s_k; maximize common gamma with ordinary difference constraints.",
+    "fixed_reporting": "All6 rows. LP on90 aggregate constraints with primal/dual check; disjoint pair witnesses using fixed classes(0,1),(2,3),(4,5),(6,7),(8,9). Negative tolerance1e-8 numerical only. Same source and fixed publication, no candidate or optimization of defense.",
+    "authority": "Synthetic teacher labels are a mechanism diagnostic only; not an attacker permission and no source-fitted offset applied to real scores.",
+    "novelty": "Standard difference constraints and bipartite matching; not a new defense, guarantee for unknown partners or general recovery.",
+    "reference": "https://courses.csail.mit.edu/6.006/spring11/lectures/lec17.pdf pages6-11",
+    "budget": {
+      "tail_evaluations": 4800,
+      "new_image_forwards": 0,
+      "new_defense_points": 0,
+      "new_AGA_calls": 0
+    }
   }
 }
