@@ -22,7 +22,7 @@
     "torch": "2.8.0+cu128",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_GPU": "RTX3090",
     "secondary_root": "/root/autodl-tmp/merge_security_20261009",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
@@ -89,22 +89,27 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-28T03:55:05.011028+00:00",
-  "active_GPU_jobs": 0,
+  "updated_utc": "2026-10-28T03:57:16.821409+00:00",
+  "active_GPU_jobs": 1,
   "research_jobs": [
     {
       "host": "50837",
-      "status": "registered_not_started",
+      "status": "running_construction_then_fixed_evaluation",
       "definition_commit": "0357b76",
       "definition": "results/data_free_compensation/population_compensation_result.json:native_ellipse_double_SVD_deletion_definition_20261028",
       "output": "outputs/native_ellipse_no_svd_20261028",
       "log": "outputs/joint_task_response_20261027/double_run.log",
       "new_points": 1,
       "kind": "missing joint SVD deletion ablation, not a new main method",
-      "real_construction_images": 0
+      "real_construction_images": 0,
+      "pid": 7349,
+      "python_pid": 7351,
+      "timeout_seconds": 4800,
+      "observed_iteration": 176,
+      "source_sha256": "0c292e12a3d907c375981eba4722bf287450409e24c81b1160cb99e35ca40df8"
     }
   ],
-  "next_action": "Run registered simultaneous SVD deletion once on50837; fixed native/TA/AGA and independent statistics. Manual follow-up only.",
+  "next_action": "Manual follow-up in30minutes. Check same50837 job and transfer before any action; do not duplicate. Retrieve all native/TA/AGA/per-class/paired results, not source predictions as efficacy.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -121,7 +126,7 @@
     "last_verified_temporary_files_removed": 33
   },
   "github_sync": {
-    "status": "New readout result and joint-deletion preregistration pending publication",
+    "status": "Local committed; plugin returned Unknown tool github.fetch on first read attempt. No remote publication claimed.",
     "last_verified_remote_commit": "0007f7e9b3fac7eaa68e88e9e127fe9bbe1c0abd",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -459,6 +464,6 @@
     "conclusion": "Complete classification on these artificial layer inputs also fails to rank natural standalone preservation; do not substitute it as an improved condition.",
     "real_images": 0,
     "new_models": 0,
-    "seconds": 8.882
+    "seconds": 8.88205736503005
   }
 }
