@@ -12,7 +12,7 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from _impl.attacks import public_patch_recovery
+from _impl.attacks import public_mlp_replace, public_patch_recovery
 from _impl.defenses import residual_permutation
 from _impl.io import digest, new_output, save_json
 from _impl.metrics import logical_parameter_distance, paired_logp, task_change
@@ -129,6 +129,19 @@ def test_public_patch_matching_has_only_published_and_public_inputs():
     recovered, detail = public_patch_recovery(published, state)
     assert all(torch.equal(v, recovered[k]) for k, v in state.items())
     assert detail["strict_row_margin"] > 0
+
+
+@pytest.mark.parametrize("side,count", [("A", 2), ("B+b", 2), ("MLP", 4)])
+def test_public_mlp_replacement_preserves_every_other_tensor(side, count):
+    public, _ = small_clip()
+    published = {k: v + 0.25 for k, v in public.items()}
+    before = {k: v.clone() for k, v in published.items()}
+    replaced = public_mlp_replace(published, public, 1, side)
+    changed = [k for k in replaced if not torch.equal(replaced[k], published[k])]
+    assert len(changed) == count
+    assert all(k.startswith("model.visual.transformer.resblocks.1.mlp.") for k in changed)
+    assert all(torch.equal(replaced[k], public[k]) for k in changed)
+    assert all(torch.equal(published[k], before[k]) for k in before)
 
 
 @pytest.mark.parametrize("penalty", [0.0, 2.0])

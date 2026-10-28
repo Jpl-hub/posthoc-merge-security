@@ -51,6 +51,19 @@ def public_mlp_reset(state, public):
     return state | {k: public[k] for k in state if ".mlp." in k}
 
 
+def public_mlp_replace(state, public, layer, side):
+    """Replace a declared MLP side from public weights; no clean expert input."""
+    suffixes = {
+        "A": ("c_fc.weight", "c_fc.bias"),
+        "B+b": ("c_proj.weight", "c_proj.bias"),
+        "MLP": ("c_fc.weight", "c_fc.bias", "c_proj.weight", "c_proj.bias"),
+    }[side]
+    prefix = f"model.visual.transformer.resblocks.{layer}.mlp."
+    keys = [prefix + suffix for suffix in suffixes]
+    assert all(k in state and state[k].shape == public[k].shape for k in keys)
+    return state | {k: public[k].clone() for k in keys}
+
+
 def public_patch_recovery(state, public):
     """Known-family recovery. Inputs are only published and public state dicts."""
     from scipy.optimize import linear_sum_assignment
