@@ -61,7 +61,7 @@ for target, specs in publications.items():
         label = name + "_" + target
         names.append(label)
         cfg["defenses"][label] = dict(target=target, release=release, AGA_edits=dict(path=str(folder / "AGA_edits.pt"), sha256=digest(folder / "AGA_edits.pt")))
-        frozen.append(dict(target=target, control=name, logical_distance=logical_parameter_distance(values, original), tensors=list(values), norm_comparison=norms if name == "Random_noise" else None, AGA_seconds=time.perf_counter()-attack_start, **cfg["defenses"][label]))
+        frozen.append(dict(control=name, logical_distance=logical_parameter_distance(values, original), tensors=list(values), norm_comparison=norms if name == "Random_noise" else None, AGA_seconds=time.perf_counter()-attack_start, **cfg["defenses"][label]))
     partner = "SVHN" if target == "MNIST" else "MNIST"
     cfg["cases"].append(dict(target=target, partner=partner, defenses=names))
     main_path = specs["main"]["path"].split("/point/")[0]

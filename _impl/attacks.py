@@ -64,6 +64,28 @@ def public_mlp_replace(state, public, layer, side):
     return state | {k: public[k].clone() for k in keys}
 
 
+def public_mlp_matching(state, public, layers=range(12)):
+    """Git Re-Basin joint incident-weight objective, restricted to MLP units.
+
+    Independent CLIP MLP permutations have no shared axes, so each assignment
+    is solved exactly once. Attention/residual/LN/projection coordinates stay fixed.
+    """
+    from scipy.optimize import linear_sum_assignment
+
+    result, records = dict(state), []
+    for layer in layers:
+        prefix = f"model.visual.transformer.resblocks.{layer}.mlp."
+        a, bias, b = [prefix + k for k in ("c_fc.weight", "c_fc.bias", "c_proj.weight")]
+        x = torch.cat([public[a].double(), public[bias].double()[:, None], public[b].double().T], 1)
+        y = torch.cat([state[a].double(), state[bias].double()[:, None], state[b].double().T], 1)
+        cost = (x @ y.T).numpy()
+        rows, cols = linear_sum_assignment(cost, maximize=True)
+        order = torch.from_numpy(cols)
+        result[a], result[bias], result[b] = state[a][order], state[bias][order], state[b][:, order]
+        records.append(dict(layer=layer, permutation=cols.tolist(), changed_units=int((rows != cols).sum()), objective_before=float(np.trace(cost)), objective_after=float(cost[rows, cols].sum())))
+    return result, records
+
+
 def public_patch_recovery(state, public):
     """Known-family recovery. Inputs are only published and public state dicts."""
     from scipy.optimize import linear_sum_assignment
