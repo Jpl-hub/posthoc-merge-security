@@ -1,15 +1,26 @@
 {
   "status": "无数据数值A/B补偿在MNIST、SVHN、DTD均显著降低TA/AGA准确率，独立准确率分别损失0.08、0.48、3.30个百分点。SVD单删项未证明贡献，额外输出校正可部分恢复；核心方法仍需改进。",
-  "updated_utc": "2026-10-27T16:59:27.685130+00:00",
+  "updated_utc": "2026-10-28T00:27:23.589094+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Study how the B protection component can preserve complete native classification, based on original weights and allowed synthetic inputs. Native-only fitting recovers native ability but loses all fusion protection. No queued job; no automatic wakeup or failed-point retries.",
+  "research_jobs": [
+    {
+      "host": "50837",
+      "pid": 2038,
+      "status": "waiting_for_frozen_input_transfer_then_read_only_check",
+      "registered_commit": "119aa10",
+      "log": "outputs/joint_task_response_20261027/readout_population/run.log",
+      "timeout_seconds": 1800,
+      "real_images": 0,
+      "new_models": 0
+    }
+  ],
+  "next_action": "Manual check in20minutes:new50837 transfer andregisteredcomplete-readout check,no newmodels. Do not duplicate. If source/environment validation fails,preservefailure andrepaironlyimplementation.",
   "github_sync": {
-    "status": "Previous snapshot verified; current native-fit fusion completion pending publication.",
-    "last_verified_remote_commit": "608fdd9d6eb2c8d87276bf6cb53360826c79197f",
-    "last_verified_local_commit": "db68501213734a0707a319af532d860b015949fd",
+    "status": "Fusion control results published andreadback verified;new setup andreadout protocol pending.",
+    "last_verified_remote_commit": "4e5790a131f97520234f47150b980c9f459d3edd",
+    "last_verified_local_commit": "486f698b8a90f8ec7e591b13c17ad8951edc7c68",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -372,5 +383,10 @@
     ],
     "fusion_context_replays": 672,
     "maximum_fusion_replay_error": 2.288818359375e-05
+  },
+  "setup_job": {
+    "host": "50837",
+    "status": "transfer_running",
+    "record": "results/engineering_refactor/compute_4090_20261028.json"
   }
 }

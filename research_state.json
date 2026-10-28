@@ -15,9 +15,9 @@
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "compute": {
-    "primary_GPU": "RTX4090",
+    "primary_GPU": "NVIDIA GeForce RTX4090D",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "ssh_control_socket": "/tmp/posthoc_4090_40815.sock",
+    "ssh_control_socket": "/tmp/posthoc_4090_50837.sock",
     "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.8.0+cu128",
     "numpy": "1.26.4",
@@ -28,13 +28,13 @@
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
-    "record": "results/engineering_refactor/compute_4090_20261026.json",
+    "record": "results/engineering_refactor/compute_4090_20261028.json",
     "secondary_role": "All other hosts CPU/storage only per user",
     "verified_utc": "2026-10-27T16:59:27.685130+00:00",
     "primary_available_GiB": 44,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
-    "primary_endpoint": "connect.cqa1.seetacloud.com:40815",
-    "previous_primary_role": "23800 permanently released before archive completed; latest ineffective point raw artifacts lost",
+    "primary_endpoint": "connect.bjb2.seetacloud.com:50837",
+    "previous_primary_role": "40815 CPU/storage;all scientific assets retained",
     "primary_workspace_status": "Original MNIST/SVHN assets SHA-verified; scientific outputs and17existing regression checks restored"
   },
   "current_effective_numerical_candidates": [
@@ -89,10 +89,21 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-27T16:59:27.685130+00:00",
+  "updated_utc": "2026-10-28T00:27:23.589094+00:00",
   "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Study how the B protection component can preserve complete native classification, based on original weights and allowed synthetic inputs. Native-only fitting recovers native ability but loses all fusion protection. No queued job; no automatic wakeup or failed-point retries.",
+  "research_jobs": [
+    {
+      "host": "50837",
+      "pid": 2038,
+      "status": "waiting_for_frozen_input_transfer_then_read_only_check",
+      "registered_commit": "119aa10",
+      "log": "outputs/joint_task_response_20261027/readout_population/run.log",
+      "timeout_seconds": 1800,
+      "real_images": 0,
+      "new_models": 0
+    }
+  ],
+  "next_action": "Manual check in20minutes:new50837 transfer andregisteredcomplete-readout check,no newmodels. Do not duplicate. If source/environment validation fails,preservefailure andrepaironlyimplementation.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -109,9 +120,9 @@
     "last_verified_temporary_files_removed": 33
   },
   "github_sync": {
-    "status": "Previous snapshot verified; current native-fit fusion completion pending publication.",
-    "last_verified_remote_commit": "608fdd9d6eb2c8d87276bf6cb53360826c79197f",
-    "last_verified_local_commit": "db68501213734a0707a319af532d860b015949fd",
+    "status": "Fusion control results published andreadback verified;new setup andreadout protocol pending.",
+    "last_verified_remote_commit": "4e5790a131f97520234f47150b980c9f459d3edd",
+    "last_verified_local_commit": "486f698b8a90f8ec7e591b13c17ad8951edc7c68",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -430,5 +441,10 @@
     ],
     "fusion_context_replays": 672,
     "maximum_fusion_replay_error": 2.288818359375e-05
+  },
+  "setup_job": {
+    "host": "50837",
+    "status": "transfer_running",
+    "record": "results/engineering_refactor/compute_4090_20261028.json"
   }
 }
