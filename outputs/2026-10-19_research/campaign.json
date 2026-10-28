@@ -1,15 +1,26 @@
 {
   "status": "三个无数据去SVD固定对照已完成：MNIST独立99.69、SVHN97.45、DTD78.09；TA及AGA分别9.80、6.70、2.13。独立损失均较含SVD方案更小，DTD仍损失1.33个百分点；未证明SVD贡献。原主发布保留。",
-  "updated_utc": "2026-10-28T05:06:48.016534+00:00",
+  "updated_utc": "2026-10-28T11:31:03.874558+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "No active GPU job. Completed three-task control batch. Next necessary fixed evaluation is existing64-noise output calibration on these frozen controls; not yet registered or run. Do not retune or duplicate completed studies. Manual follow-up only.",
+  "research_jobs": [
+    {
+      "host": "12997",
+      "kind": "Fixed64-noise output calibration of three frozen no-SVD controls",
+      "status": "registered_waiting_for_transfer_and_environment",
+      "output": "outputs/no_svd_calibration_20261028",
+      "log": "outputs/no_svd_calibration_20261028_setup/run.log",
+      "new_defense_points": 0,
+      "new_AGA_calls": 0,
+      "new_real_image_forwards": 0,
+      "generated_image_forwards": 1152
+    }
+  ],
+  "next_action": "Finish new3090 minimal input migration, execute preregistered64-noise calibration once, then independent paired/per-class validation. No model retuning.",
   "github_sync": {
-    "status": "DTD complete; this result and three-task table pending GitHub publication",
-    "last_verified_remote_commit": "79f4c6f01a22d2254596f2b8c3e82f13f54cca58",
-    "last_verified_local_commit": "8f001b37c26f8fd44e983970270b3aaeb371b1a7",
+    "status": "Previous scientific result published; new calibration registration pending",
+    "last_verified_remote_commit": "0aa9789eb0abdb883ad0cdfaba8147d6591616b2",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -396,9 +407,8 @@
     "maximum_fusion_replay_error": 2.288818359375e-05
   },
   "setup_job": {
-    "host": "50837",
-    "status": "runtime_construction_evaluation_inputs_ready",
-    "record": "results/engineering_refactor/compute_4090_20261028.json"
+    "host": "12997",
+    "status": "environment_and_minimal_input_transfer_running"
   },
   "latest_readout_population_check": {
     "status": "completed_read_only_no_new_defense",
