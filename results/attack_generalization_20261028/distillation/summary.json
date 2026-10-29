@@ -1,0 +1,105 @@
+{
+  "status": "completed_independently_verified_defense_bypassed_under_fixed_data_assisted_access",
+  "target": "MNIST",
+  "partner": "SVHN",
+  "task_scope": "MNIST only; not a three-task result",
+  "unlabeled_images": 2048,
+  "ground_truth_labels_used": false,
+  "student_epochs": 50,
+  "student_training_steps": 800,
+  "new_student_training_steps": 0,
+  "training_seconds_original_student": 226.01298648491502,
+  "historical_unprotected_training_reused": true,
+  "same_finite_teacher_labels": true,
+  "unique_student_models": 1,
+  "independent_training_repetitions": 0,
+  "new_AGA_calls": 1,
+  "AGA_seconds": 6.870385138085112,
+  "new_defense_weights": 0,
+  "rows": 21,
+  "full_context_replays": 336,
+  "pilot_context_replays": 336,
+  "maximum_replay_error": 0.0,
+  "new_image_forwards_including_queries_and_replays": 163776,
+  "complete_target_test_n": 10000,
+  "complete_partner_test_n": 26032,
+  "teacher_query_budget_reused_control": 2048,
+  "models": {
+    "Unprotected": {
+      "standalone_MNIST": 99.69,
+      "None": {
+        "MNIST": 99.37,
+        "SVHN": 92.49769514443761
+      },
+      "Protected expert": {
+        "MNIST": 99.3,
+        "SVHN": 92.7819606637984
+      },
+      "All experts": {
+        "MNIST": 99.32,
+        "SVHN": 91.77166564228642
+      }
+    },
+    "KD_Unprotected": {
+      "standalone_MNIST": 98.5,
+      "None": {
+        "MNIST": 95.53,
+        "SVHN": 95.95497848801475
+      },
+      "Protected expert": {
+        "MNIST": 95.35,
+        "SVHN": 95.93577135832821
+      },
+      "All experts": {
+        "MNIST": 95.25,
+        "SVHN": 95.29425322679779
+      }
+    },
+    "KD_Defense2": {
+      "standalone_MNIST": 98.5,
+      "None": {
+        "MNIST": 95.53,
+        "SVHN": 95.95497848801475
+      },
+      "Protected expert": {
+        "MNIST": 95.35,
+        "SVHN": 95.93577135832821
+      },
+      "All experts": {
+        "MNIST": 95.25,
+        "SVHN": 95.29425322679779
+      }
+    }
+  },
+  "conclusion": "The fixed 2048 teacher labels are identical, giving the identical optimization problem and final student. Matched full scores and parameters coincide. Defense2 adds no protection in this fixed stronger-permission MNIST experiment; original weight-only AGA result remains a different permission setting. TA95.53 is still3.84pp below unprotected original expert TA99.37.",
+  "raw_backup": {
+    "path": "outputs/numerical_distillation_20261029.tar.gz",
+    "sha256": "ddc2837781f5b88c7546dc92a6f0b7719bb2e0bbe15089a2c1cd7b1b4acfccbf",
+    "bytes": 8603152,
+    "server_path": "/root/autodl-tmp/numerical_distillation_20261029.tar.gz",
+    "verified_locations": [
+      "local",
+      "55548"
+    ],
+    "contains": "All current pilot/full raw scores, new teacher queries, frozen sources, source protocol, independent paired validation, log and exit code; weights excluded",
+    "server_only_weight_files": {
+      "KD_Unprotected": {
+        "path": "/root/posthoc_evaluation_cache/phase3_distillation_mnist_20261019/Unprotected_student.pt",
+        "sha256": "e12b20562e8f1c4a7d0d76ca02b0968e2071fe967f28847241415ca2544dc0f8",
+        "reference": "public_base"
+      },
+      "KD_Defense2": {
+        "path": "/root/posthoc_evaluation_cache/phase3_distillation_mnist_20261019/Unprotected_student.pt",
+        "sha256": "e12b20562e8f1c4a7d0d76ca02b0968e2071fe967f28847241415ca2544dc0f8",
+        "reference": "public_base"
+      }
+    },
+    "server_only_AGA_weight_files": {
+      "e12b20562e8f1c4a7d0d76ca02b0968e2071fe967f28847241415ca2544dc0f8": {
+        "path": "outputs/attack_generalization_20261029/distillation_MNIST/KD_Unprotected_AGA.pt",
+        "sha256": "23b3707a0456231cc4ea3b2817be1c37b33effd42dc12e063cc419baf6382a25",
+        "seconds": 6.870385138085112
+      }
+    }
+  }
+}

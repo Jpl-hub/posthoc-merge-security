@@ -7355,5 +7355,98 @@
       "results/attack_generalization_20261028/unmask/full/pre_evaluation.json": "1544b35040af3f893dac9a2a53c0c814583a910049df5d513f53d69be03c421a",
       "results/attack_generalization_20261028/unmask/independent_validation.json": "db2fd70fd0546d1f109faf7cae043777ca3c1b78c07e59379bc3ba42bf71a7cc"
     }
+  },
+  "distillation_extension": {
+    "full_records": 21,
+    "table_rows": [
+      [
+        "Original expert",
+        "None",
+        "99.69",
+        "99.37",
+        "92.50"
+      ],
+      [
+        "Original expert",
+        "Target",
+        "99.69",
+        "99.30",
+        "92.78"
+      ],
+      [
+        "Original expert",
+        "Both",
+        "99.69",
+        "99.32",
+        "91.77"
+      ],
+      [
+        "Student from unprotected",
+        "None",
+        "98.50",
+        "95.53",
+        "95.95"
+      ],
+      [
+        "Student from unprotected",
+        "Target",
+        "98.50",
+        "95.35",
+        "95.94"
+      ],
+      [
+        "Student from unprotected",
+        "Both",
+        "98.50",
+        "95.25",
+        "95.29"
+      ],
+      [
+        "Student from Defense 2",
+        "None",
+        "98.50",
+        "95.53",
+        "95.95"
+      ],
+      [
+        "Student from Defense 2",
+        "Target",
+        "98.50",
+        "95.35",
+        "95.94"
+      ],
+      [
+        "Student from Defense 2",
+        "Both",
+        "98.50",
+        "95.25",
+        "95.29"
+      ]
+    ],
+    "independent_validation": "results/attack_generalization_20261028/distillation/paired_validation.json",
+    "validation": {
+      "status": "passed",
+      "rows": 21,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 336,
+      "context_forward_images": 40944,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 0.0,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "ba235fe49c8aa69477fdee7c7106d5d8fa372579c04b4c68d5a0afa538aa7340",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+      "original_evaluation_source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "source_sha256": {
+      "results/attack_generalization_20261028/distillation/evaluation/full/00_MNIST_SVHN/results.json": "4a691be6edae1e319d9c49a124456a0dfccdface318466c3ce00911e8e888893",
+      "results/attack_generalization_20261028/distillation/paired_validation.json": "c5c7535cb31eed03e3c7d4e261153f866958e7a693916fcbe6fa79fb237f8324"
+    }
   }
 }
