@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Freeze numerical Defense2. Complete recovery generalization, matched controls and fixed mergers per meeting.",
-  "status": "numerical_MNIST_distillation_completed_no_matched_protection_gap",
+  "status": "SVHN_DTD_matched_distillation_registered_before_execution",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -90,7 +90,7 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-29T10:04:40.117974+00:00",
+  "updated_utc": "2026-10-29T11:24:00.924985+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
@@ -105,7 +105,7 @@
       "exit_code": 0
     }
   ],
-  "next_action": "Current finite batch finished. Next missing attack coverage is the same fixed data-assisted recovery for SVHN/DTD with matched controls; missing official Cars/EuroSAT/SUN397 tests remain separate. No automatic wakeup and no new defense tuning.",
+  "next_action": "Run fixed SVHN/DTD matched data-assisted recovery, then full original-context verification; no defense retuning. Eight-task missing data remains separate.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -124,8 +124,8 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "latest_distillation_results_pending_plugin_unavailable",
-    "last_verified_remote_commit": "e43e51a5936e512a04351b700f5392c3b6b6ae8a",
+    "status": "MNIST_results_published_new_registration_pending",
+    "last_verified_remote_commit": "0f8582dddc84eb3b95d00a5c99483ab05c940835",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -991,5 +991,28 @@
       },
       "record": "results/attack_generalization_20261028/distillation/summary.json"
     }
+  },
+  "distillation_other_tasks": {
+    "status": "registered_not_started",
+    "tasks": [
+      "SVHN",
+      "DTD"
+    ],
+    "training_images": [
+      2048,
+      1880
+    ],
+    "epochs": 50,
+    "steps_per_student": [
+      800,
+      750
+    ],
+    "maximum_students": 4,
+    "maximum_full_training_steps": 3100,
+    "pilot_steps_maximum": 4,
+    "new_defense_models": 0,
+    "scripts": "results/attack_generalization_20261028/distillation/run_other_tasks.sh",
+    "expected_minutes": 40,
+    "automatic_wakeup": false
   }
 }
