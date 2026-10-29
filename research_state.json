@@ -90,8 +90,8 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-29T11:26:10.237644+00:00",
-  "active_GPU_jobs": 1,
+  "updated_utc": "2026-10-29T14:11:42.250954+00:00",
+  "active_GPU_jobs": 0,
   "research_jobs": [
     {
       "name": "numerical_MNIST_distillation",
@@ -103,9 +103,17 @@
       "new_defense_models": 0,
       "new_student_training_steps": 0,
       "exit_code": 0
+    },
+    {
+      "name": "numerical_SVHN_DTD_distillation",
+      "status": "completed_independently_verified",
+      "server": "55548",
+      "pid": 29351,
+      "exit_code": 0,
+      "records": "results/attack_generalization_20261028/distillation/other_tasks_deployment.json"
     }
   ],
-  "next_action": "Run fixed SVHN/DTD matched data-assisted recovery, then full original-context verification; no defense retuning. Eight-task missing data remains separate.",
+  "next_action": "Keep all frozen results; complete missing evaluation and matched baselines. Core-method priority: explain and address recovery by data-free public module replacement before another registered construction. Extra-data KD is a separate supplement, not a universal defense veto; no tuning on exposed tests.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -124,8 +132,8 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "scientific_results_and_next_protocol_verified_remote; live_state_pending",
-    "last_verified_remote_commit": "af340a5aef348713f6f9bbe450be9eda9943bfa2",
+    "status": "latest_scientific_results_verified_remote; interpretation_update_pending",
+    "last_verified_remote_commit": "fc80252930152dcb7fb2e03e7385926e0c11a21d",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
