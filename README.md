@@ -33,7 +33,7 @@
 
 最新三任务攻击对照已完成：TIES、DARE下仍有融合保护；已知末层MLP位置、用公开基座替换B及偏置后，融合准确率恢复至99.35%、92.39%、66.81%。两种结果的恢复操作和权限不同，详见[完整对照表](results/attack_generalization_20261028/attack_comparison.md)。
 
-同一数值防御二的[八专家融合评价](results/attack_generalization_20261028/eight_expert/comparison.md)已完成：固定TA0.2，MNIST/SVHN/DTD保护任务准确率为9.81%/6.70%/2.39%，AGA仅处理保护专家后为9.80%/6.70%/2.13%。表中同时保留无保护和伙伴结果。这里只完整评价三个数据集，未形成八任务平均。
+同一数值防御二的[八专家融合评价](results/attack_generalization_20261028/eight_expert/comparison.md)已完成：固定TA0.2，MNIST/SVHN/DTD保护任务准确率为9.81%/6.70%/2.39%，AGA仅处理保护专家后为9.80%/6.70%/2.13%。表中同时保留无保护和伙伴结果。已补齐GTSRB和RESISC45，现有五个完整数据集；Cars、EuroSAT、SUN397仍缺失，不报八任务平均。
 
 | 通道置换对照 | MNIST | DTD | SVHN |
 |---|---:|---:|---:|
@@ -41,6 +41,8 @@
 | AGA 仅处理保护专家后，TA 融合 | 9.80% | 2.39% | 6.45% |
 
 该对照使用任务 SVD 选择共同通道顺序；三份冻结发布保持完整独立预测。知道变换家族后的公开匹配能够恢复，针对性恢复与原版 AGA 分列。[方法](results/task_directed_pairing/method.md) · [完整结果与恢复](results/task_directed_pairing/summary.md) · [论文表格](results/paper_tables/README.md)。防御一及完整 PaRaMS 对照继续保留。
+
+[Unmask补充](results/attack_generalization_20261028/unmask/comparison.md)也已完成。它对保护和匹配无保护模型产生相同预测，不能据此再算一次防御成功。公开模块替换仍能恢复，攻击泛化问题尚未解决。
 
 ## 代码结构
 
@@ -63,7 +65,7 @@ experiment/
   defense2.py                # 当前数值防御二的固定 MNIST 构造源码
   native.py                  # 冻结发布的独立任务检查
   main_table.py              # 主实验：TA / 原版 AGA / 匹配基线
-  eight_task.py              # 八专家融合，当前仅评价三个数据集
+  eight_task.py              # 八专家融合及Unmask，当前评价五个数据集
   recover.py                 # 两种恢复权限分别执行
   report.py                  # 论文图表入口，无需模型或 GPU
 configs/                     # 当前配置、模型和外部源码指纹
@@ -130,7 +132,7 @@ python -m experiment.eight_task --help
 python -m experiment.recover --help
 ```
 
-八专家参与不等于八数据集已评价；当前配置仅评价 MNIST、DTD、SVHN。TA/TIES/DARE 是融合算法，AGA 是恢复攻击。已知家族匹配另外报告，不能把它写成原版 AGA。
+八专家参与不等于八数据集已评价；当前数值发布已评价 MNIST、SVHN、DTD、GTSRB、RESISC45，旧配置的三数据集范围保留。TA/TIES/DARE 是融合算法，AGA 是恢复攻击。已知家族匹配另外报告，不能把它写成原版 AGA。
 
 ## 检查
 

@@ -7074,7 +7074,7 @@
     "contains": "All three full merger cases, pilots, original scores, exit code and 18-case independent paired checks"
   },
   "eight_expert_extension": {
-    "full_records": 36,
+    "full_records": 60,
     "table_rows": [
       [
         "MNIST",
@@ -7082,7 +7082,9 @@
         "None",
         "94.00",
         "74.42",
-        "52.18"
+        "52.18",
+        "65.08",
+        "72.00"
       ],
       [
         "MNIST",
@@ -7090,7 +7092,9 @@
         "None",
         "9.81",
         "7.05",
-        "41.22"
+        "41.22",
+        "38.18",
+        "63.51"
       ],
       [
         "MNIST",
@@ -7098,7 +7102,9 @@
         "Target",
         "93.23",
         "73.90",
-        "52.34"
+        "52.34",
+        "65.16",
+        "72.19"
       ],
       [
         "MNIST",
@@ -7106,7 +7112,9 @@
         "Target",
         "9.80",
         "6.70",
-        "33.35"
+        "33.35",
+        "22.49",
+        "60.71"
       ],
       [
         "SVHN",
@@ -7114,7 +7122,9 @@
         "None",
         "94.00",
         "74.42",
-        "52.18"
+        "52.18",
+        "65.08",
+        "72.00"
       ],
       [
         "SVHN",
@@ -7122,7 +7132,9 @@
         "None",
         "9.80",
         "6.70",
-        "32.66"
+        "32.66",
+        "34.13",
+        "60.37"
       ],
       [
         "SVHN",
@@ -7130,7 +7142,9 @@
         "Target",
         "93.78",
         "72.53",
-        "52.18"
+        "52.18",
+        "64.87",
+        "72.19"
       ],
       [
         "SVHN",
@@ -7138,7 +7152,9 @@
         "Target",
         "9.80",
         "6.70",
-        "33.46"
+        "33.46",
+        "24.70",
+        "57.98"
       ],
       [
         "DTD",
@@ -7146,7 +7162,9 @@
         "None",
         "94.00",
         "74.42",
-        "52.18"
+        "52.18",
+        "65.08",
+        "72.00"
       ],
       [
         "DTD",
@@ -7154,7 +7172,9 @@
         "None",
         "90.72",
         "65.04",
-        "2.39"
+        "2.39",
+        "56.74",
+        "63.62"
       ],
       [
         "DTD",
@@ -7162,7 +7182,9 @@
         "Target",
         "94.06",
         "74.46",
-        "51.38"
+        "51.38",
+        "65.04",
+        "72.05"
       ],
       [
         "DTD",
@@ -7170,30 +7192,168 @@
         "Target",
         "76.66",
         "54.28",
-        "2.13"
+        "2.13",
+        "45.49",
+        "55.13"
       ]
     ],
-    "validation": {
-      "status": "passed",
-      "rows": 36,
-      "raw_sha256": "74b155d2af9149d0fadf0a8a0ad73f09c35e8261e8f99c80ae2b2fc8a0fa78f7",
-      "score_replays": 576,
-      "maximum_context_score_error": 0.0,
-      "wall_seconds": 1313.1134304970037,
-      "source_sha256": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
-      "new_image_forwards": 448528,
-      "production_image_forwards": 379120,
-      "replay_context_image_forwards": 69408,
-      "reused_evaluation_records": 6,
-      "new_AGA_calls": 0,
-      "new_defense_weights": 0,
-      "expert_training_updates": 0,
-      "scope": "Frozen numerical Defense2, eight experts and three full evaluated datasets; only three evaluated datasets, no eight-task average or complete paper reproduction."
+    "validations": {
+      "results/attack_generalization_20261028/eight_expert": {
+        "status": "passed",
+        "rows": 36,
+        "raw_sha256": "74b155d2af9149d0fadf0a8a0ad73f09c35e8261e8f99c80ae2b2fc8a0fa78f7",
+        "score_replays": 576,
+        "maximum_context_score_error": 0.0,
+        "wall_seconds": 1313.1134304970037,
+        "source_sha256": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+        "new_image_forwards": 448528,
+        "production_image_forwards": 379120,
+        "replay_context_image_forwards": 69408,
+        "reused_evaluation_records": 6,
+        "new_AGA_calls": 0,
+        "new_defense_weights": 0,
+        "expert_training_updates": 0,
+        "scope": "Frozen numerical Defense2, eight experts and three full evaluated datasets; only three evaluated datasets, no eight-task average or complete paper reproduction."
+      },
+      "results/attack_generalization_20261028/eight_expert_extra": {
+        "status": "passed",
+        "rows": 24,
+        "raw_sha256": "88369a3c296138576d27f5c7ea65a7008ca012f4bf0737c2c8ab7160907f873e",
+        "score_replays": 384,
+        "maximum_context_score_error": 0.0,
+        "wall_seconds": 813.6517195609631,
+        "source_sha256": "a00a4c8e362a4114b9922333979833625ef91a319da549308127dd0aa2237cda",
+        "new_image_forwards": 236748,
+        "production_image_forwards": 189300,
+        "replay_context_image_forwards": 47448,
+        "reused_evaluation_records": 4,
+        "new_AGA_calls": 0,
+        "new_defense_weights": 0,
+        "expert_training_updates": 0,
+        "scope": "Eight-expert TA0.2: GTSRB and RESISC45 additional evaluated partner tasks",
+        "evaluated_datasets": [
+          "GTSRB",
+          "RESISC45"
+        ]
+      }
     },
-    "independent_validation": "results/attack_generalization_20261028/eight_expert/independent_validation.json",
+    "datasets": [
+      "MNIST",
+      "SVHN",
+      "DTD",
+      "GTSRB",
+      "RESISC45"
+    ],
     "source_sha256": {
       "results/attack_generalization_20261028/eight_expert/full/results.json": "d2db60f94989130f6bbb37f813fc078b877292d3a99acce3c2c324a2bf0de9d4",
-      "results/attack_generalization_20261028/eight_expert/independent_validation.json": "440813598323b48b094d40764096896b05d64940e7d10ae0ec79e8b11e773884"
+      "results/attack_generalization_20261028/eight_expert/full/pre_evaluation.json": "f406c876e359c55964d63c61c0f16df950be3cc24eefa32aa4f81fb6e78ddc9a",
+      "results/attack_generalization_20261028/eight_expert/independent_validation.json": "440813598323b48b094d40764096896b05d64940e7d10ae0ec79e8b11e773884",
+      "results/attack_generalization_20261028/eight_expert_extra/full/results.json": "30cbc7417855b14eeb5ff4844e4c1939197cb24f06a443e1316fca9cfc018665",
+      "results/attack_generalization_20261028/eight_expert_extra/full/pre_evaluation.json": "f406c876e359c55964d63c61c0f16df950be3cc24eefa32aa4f81fb6e78ddc9a",
+      "results/attack_generalization_20261028/eight_expert_extra/independent_validation.json": "dc814ca9d830a63b713f0752d56c63c76f2912337e84b6eead45163b44d5095f"
+    }
+  },
+  "unmask_extension": {
+    "full_records": 30,
+    "table_rows": [
+      [
+        "MNIST",
+        "Unprotected",
+        "Unmask",
+        "11.35",
+        "17.97",
+        "6.06",
+        "5.13",
+        "5.46"
+      ],
+      [
+        "MNIST",
+        "Defense 2",
+        "Unmask",
+        "11.35",
+        "17.97",
+        "6.06",
+        "5.13",
+        "5.46"
+      ],
+      [
+        "SVHN",
+        "Unprotected",
+        "Unmask",
+        "11.35",
+        "12.58",
+        "6.81",
+        "4.66",
+        "5.75"
+      ],
+      [
+        "SVHN",
+        "Defense 2",
+        "Unmask",
+        "11.35",
+        "12.58",
+        "6.81",
+        "4.66",
+        "5.75"
+      ],
+      [
+        "DTD",
+        "Unprotected",
+        "Unmask",
+        "11.35",
+        "15.35",
+        "6.12",
+        "5.60",
+        "5.06"
+      ],
+      [
+        "DTD",
+        "Defense 2",
+        "Unmask",
+        "11.35",
+        "15.35",
+        "6.12",
+        "5.60",
+        "5.06"
+      ]
+    ],
+    "validations": {
+      "results/attack_generalization_20261028/unmask": {
+        "status": "passed",
+        "rows": 30,
+        "raw_sha256": "abfe31dec4db9c26f51ae0dd993f71ad45d953009b2fa6831fc4aaa015ef103a",
+        "score_replays": 480,
+        "maximum_context_score_error": 0.0,
+        "wall_seconds": 1177.7884079200448,
+        "source_sha256": "a00a4c8e362a4114b9922333979833625ef91a319da549308127dd0aa2237cda",
+        "new_image_forwards": 399480,
+        "production_image_forwards": 341052,
+        "replay_context_image_forwards": 58428,
+        "reused_evaluation_records": 0,
+        "new_AGA_calls": 0,
+        "new_defense_weights": 0,
+        "expert_training_updates": 0,
+        "scope": "MergeGuard Unmask formula on eight-expert TA0.2; three protected tasks and five evaluated datasets",
+        "evaluated_datasets": [
+          "MNIST",
+          "SVHN",
+          "DTD",
+          "GTSRB",
+          "RESISC45"
+        ]
+      }
+    },
+    "datasets": [
+      "MNIST",
+      "SVHN",
+      "DTD",
+      "GTSRB",
+      "RESISC45"
+    ],
+    "source_sha256": {
+      "results/attack_generalization_20261028/unmask/full/results.json": "c86129a5aa0f6ec9313299918ed33f239973e259022c25a9eb7799f48238fccf",
+      "results/attack_generalization_20261028/unmask/full/pre_evaluation.json": "1544b35040af3f893dac9a2a53c0c814583a910049df5d513f53d69be03c421a",
+      "results/attack_generalization_20261028/unmask/independent_validation.json": "db2fd70fd0546d1f109faf7cae043777ca3c1b78c07e59379bc3ba42bf71a7cc"
     }
   }
 }

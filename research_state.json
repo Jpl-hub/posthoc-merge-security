@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Freeze numerical Defense2. Complete recovery generalization, matched controls and fixed mergers per meeting.",
-  "status": "additional_eight_expert_datasets_running_Unmask_queued",
+  "status": "five_dataset_eight_expert_and_Unmask_completed_verified",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -22,19 +22,19 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-attack-20261028",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_12997.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
     "secondary_role": "12997 CPU archive only; no GPU work on any other host",
-    "verified_utc": "2026-10-29T06:12:18.746699+00:00",
-    "primary_available_GiB": 5.4,
+    "verified_utc": "2026-10-29T08:48:53.921936+00:00",
+    "primary_available_GiB": 5.2,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary_role": "50837 accessible in CPU mode; existing assets preserved",
-    "primary_workspace_status": "Additional two datasets pilot/full active; Unmask waits for successful completion",
+    "primary_workspace_status": "Both finite queues completed, exit0; no GPU job running",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "connect.nmb2.seetacloud.com:12997"
   },
@@ -90,31 +90,33 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-29T06:12:18.746699+00:00",
-  "active_GPU_jobs": 1,
+  "updated_utc": "2026-10-29T08:48:53.921936+00:00",
+  "active_GPU_jobs": 0,
   "research_jobs": [
     {
       "name": "eight_expert_extra",
-      "status": "pilot_running_then_full",
+      "status": "completed_independently_verified",
       "pid": 10596,
       "server": "55548",
       "output": "outputs/attack_generalization_20261029/eight_expert_extra",
       "protocol": "results/attack_generalization_20261028/eight_expert_extra/protocol.json",
       "new_defense_weights": 0,
-      "new_AGA_calls": 0
+      "new_AGA_calls": 0,
+      "exit_code": 0
     },
     {
       "name": "Unmask",
-      "status": "queued_after_extra_evaluation_success",
+      "status": "completed_independently_verified",
       "pid": 10933,
       "server": "55548",
       "output": "outputs/attack_generalization_20261029/unmask",
       "protocol": "results/attack_generalization_20261028/unmask/protocol.json",
       "new_defense_weights": 0,
-      "new_AGA_calls": 0
+      "new_AGA_calls": 0,
+      "exit_code": 0
     }
   ],
-  "next_action": "On manual follow-up, inspect finite queues10596/10933, collect completed full scores and independently recount all indices/per-class/pairs before MD/TeX. No rerun of completed three-dataset evaluation. Cars/EuroSAT/SUN397 test inputs remain missing. No automatic wakeups.",
+  "next_action": "Keep frozen releases; complete missing Cars/EuroSAT/SUN397 official test inputs and a source-verified data-assisted recovery protocol. No new defense tuning, repeated completed evaluations or automatic wakeup.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -133,7 +135,7 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "latest_results_pending_github_tool_unavailable",
+    "status": "publication_in_progress",
     "last_verified_remote_commit": "7f06a12e725e6cae2eec4c32637204dd42146cd3",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -695,7 +697,7 @@
   "attack_campaign": "results/attack_generalization_20261028/protocol.json",
   "attack_generalization": {
     "directory": "results/attack_generalization_20261028",
-    "status": "18 two-expert cases and 36 eight-expert records completed; independent verification passed",
+    "status": "18 two-expert cases; 60 eight-expert TA/AGA records on five full datasets; 30 Unmask records completed and independently verified",
     "public_replacement_full_cases": 9,
     "public_MLP_matching_full_cases": 3,
     "baseline_full_cases": 3,
@@ -789,7 +791,7 @@
       }
     },
     "eight_expert_extra": {
-      "status": "running",
+      "status": "completed_independently_verified",
       "evaluated_datasets": [
         "GTSRB",
         "RESISC45"
@@ -800,10 +802,31 @@
       },
       "author_loader_validation": "results/attack_generalization_20261028/eight_expert_extra/data_validation.json",
       "source_commit": "b648aa4",
-      "same_frozen_merged_models": true
+      "same_frozen_merged_models": true,
+      "directory": "results/attack_generalization_20261028/eight_expert_extra",
+      "full_records": 24,
+      "pilot_and_full_independent_rows": 48,
+      "full_context_replays": 384,
+      "maximum_context_score_error": 0.0,
+      "pilot_seconds": 120.89616902905982,
+      "full_seconds": 813.6517195609631,
+      "total_image_forwards": 239564,
+      "raw_backup": {
+        "path": "outputs/numerical_extra_unmask_20261029.tar.gz",
+        "sha256": "9aa50bd4b62c1a861234151356803a497e920206ff3812c470cba09b50c8f250",
+        "bytes": 55441074,
+        "server_path": "/root/autodl-tmp/numerical_extra_unmask_20261029.tar.gz",
+        "verified_locations": [
+          "local",
+          "55548"
+        ],
+        "contains": "Both pilots/full scores, official indices, independent NumPy comparisons, frozen sources, protocols, logs and original input failure"
+      },
+      "new_AGA_calls": 0,
+      "new_defense_parameters": 0
     },
     "Unmask": {
-      "status": "queued",
+      "status": "completed_independently_verified",
       "source_commit": "50ec3d0",
       "protocol": "results/attack_generalization_20261028/unmask/protocol.json",
       "coefficient": 0.2,
@@ -816,7 +839,56 @@
         "DTD",
         "GTSRB",
         "RESISC45"
-      ]
+      ],
+      "directory": "results/attack_generalization_20261028/unmask",
+      "full_records": 30,
+      "pilot_and_full_independent_rows": 60,
+      "full_context_replays": 480,
+      "maximum_context_score_error": 0.0,
+      "pilot_seconds": 129.4644408550812,
+      "full_seconds": 1177.7884079200448,
+      "total_image_forwards": 403320,
+      "raw_backup": {
+        "path": "outputs/numerical_extra_unmask_20261029.tar.gz",
+        "sha256": "9aa50bd4b62c1a861234151356803a497e920206ff3812c470cba09b50c8f250",
+        "bytes": 55441074,
+        "server_path": "/root/autodl-tmp/numerical_extra_unmask_20261029.tar.gz",
+        "verified_locations": [
+          "local",
+          "55548"
+        ],
+        "contains": "Both pilots/full scores, official indices, independent NumPy comparisons, frozen sources, protocols, logs and original input failure"
+      },
+      "new_AGA_calls": 0,
+      "new_defense_parameters": 0,
+      "matched_control_changed_predictions": 0,
+      "maximum_score_difference_from_matched_control": 1.52587890625e-05,
+      "target_accuracy_percent": {
+        "MNIST": 11.35,
+        "SVHN": 12.576828518746158,
+        "DTD": 6.117021276595745
+      },
+      "conclusion": "All fifteen matched comparisons have identical predictions. Unmask lowers unprotected accuracy too; low protected accuracy does not demonstrate an additional defense success."
+    },
+    "eight_expert_combined_result": {
+      "directory": "results/attack_generalization_20261028/eight_expert",
+      "participants": 8,
+      "evaluated_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45"
+      ],
+      "full_records": 60,
+      "table_rows": 12,
+      "same_12_frozen_merged_parameter_hashes": true,
+      "missing_test_datasets": [
+        "Cars",
+        "EuroSAT",
+        "SUN397"
+      ],
+      "eight_task_average_reported": false
     }
   }
 }

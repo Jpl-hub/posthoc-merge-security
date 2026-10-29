@@ -128,44 +128,67 @@ def attack_comparison(directory):
     result["new_batches"] = batches
     result["table_rows"] = cells
     result["new_full_cases_completed"] = len(batches)
-    eight = root / "eight_expert"
-    if (eight / "independent_validation.json").exists():
-        audit = json.loads((eight / "independent_validation.json").read_text())
-        assert audit["status"] == "passed_independent_numpy_metrics_and_frozen_artifact_hashes"
-        full = json.loads((eight / "full/results.json").read_text())
-        validation = json.loads((eight / "full/validation.json").read_text())
-        audited = next(s for s in audit["stages"] if s["stage"] == "full")
-        assert validation["raw_sha256"] == audited["raw_sha256"]
-        expected = {r["key"]: r for r in audited["rows"]}
-        grouped_eight = {}
-        for row in full:
-            key = "/".join(row[k] for k in ["target", "defense", "attack_scope", "dataset"])
-            assert (row["n"], row["correct"]) == (expected[key]["n"], expected[key]["correct"])
-            name = "Defense 2" if row["defense"].startswith("Defense2_") else "Unprotected"
-            group = (row["target"], name, short.get(row["attack_scope"], row["attack_scope"]))
-            grouped_eight.setdefault(group, {})[row["dataset"]] = 100 * row["correct"] / row["n"]
-        eight_cells = [list(key) + [f"{values[t]:.2f}" for t in ["MNIST", "SVHN", "DTD"]]
+    for extension, folders, title, processing, note in [
+        ("eight_expert_extension", ["eight_expert", "eight_expert_extra"],
+         "Eight-expert fusion", "AGA",
+         "AGA processes only the protected expert. Additional datasets use identical merged weights."),
+        ("unmask_extension", ["unmask"], "Unmask", "Attack",
+         "Subtract 0.2 times the whole published visual weights from the fused model, including in the unprotected control. "
+         "No AGA. The protected and matched unprotected models make identical predictions on all five datasets; "
+         "low accuracy here does not establish an additional defense success."),
+    ]:
+        paths = [root / f for f in folders if (root / f / "independent_validation.json").exists()]
+        if not paths:
+            continue
+        full, sources, validations, grouped_eight = [], {}, {}, {}
+        parameters = None
+        for folder in paths:
+            audit = json.loads((folder / "independent_validation.json").read_text())
+            assert audit["status"] == "passed_independent_numpy_metrics_and_frozen_artifact_hashes"
+            batch = json.loads((folder / "full/results.json").read_text())
+            validation = json.loads((folder / "full/validation.json").read_text())
+            audited = next(s for s in audit["stages"] if s["stage"] == "full")
+            assert validation["raw_sha256"] == audited["raw_sha256"]
+            expected = {r["key"]: r for r in audited["rows"]}
+            assert len(expected) == len(batch)
+            current = json.loads((folder / "full/pre_evaluation.json").read_text())
+            assert parameters is None or current == parameters
+            parameters = current
+            for row in batch:
+                key = "/".join(row[k] for k in ["target", "defense", "attack_scope", "dataset"])
+                assert (row["n"], row["correct"]) == (expected[key]["n"], expected[key]["correct"])
+                name = "Defense 2" if row["defense"].startswith("Defense2_") else "Unprotected"
+                group = (row["target"], name, short.get(row["attack_scope"], row["attack_scope"]))
+                values = grouped_eight.setdefault(group, {})
+                assert row["dataset"] not in values
+                values[row["dataset"]] = 100 * row["correct"] / row["n"]
+            full.extend(batch)
+            validations[str(folder)] = validation
+            for name in ["full/results.json", "full/pre_evaluation.json", "independent_validation.json"]:
+                p = folder / name
+                sources[str(p)] = hashlib.sha256(p.read_bytes()).hexdigest()
+        datasets = [t for t in ["MNIST", "SVHN", "DTD", "GTSRB", "RESISC45"]
+                    if any(t in v for v in grouped_eight.values())]
+        assert all(set(v) == set(datasets) for v in grouped_eight.values())
+        eight_cells = [list(key) + [f"{values[t]:.2f}" for t in datasets]
                        for key, values in grouped_eight.items()]
-        headers = ["Protected task", "Defense", "AGA", "MNIST", "SVHN", "DTD"]
-        note = ("Eight experts, TA coefficient 0.2. Only three full datasets are evaluated; "
-                "no eight-task average. AGA processes only the protected expert. "
-                "Same frozen releases; no reconstruction or tuning.")
-        lines = ["# Eight-expert fusion", "", note, "", "| " + " | ".join(headers) + " |",
+        headers = ["Protected task", "Defense", processing] + datasets
+        note = (f"Eight experts, TA coefficient 0.2. {len(datasets)} complete datasets evaluated; "
+                "no eight-task average. Same frozen releases; no reconstruction or tuning. " + note)
+        lines = ["# " + title, "", note, "", "| " + " | ".join(headers) + " |",
                  "| " + " | ".join(["---"] * len(headers)) + " |"]
         lines += ["| " + " | ".join(row) + " |" for row in eight_cells]
-        (eight / "comparison.md").write_text("\n".join(lines) + "\n")
-        lines = [r"\begin{table}[t]", r"\centering\small",
-                 r"\caption{Eight-expert fusion on three datasets. Accuracy (\%).}",
-                 r"\begin{tabular}{lllrrr}", r"\toprule",
+        (paths[0] / "comparison.md").write_text("\n".join(lines) + "\n")
+        lines = [r"\begin{table*}[t]", r"\centering\small",
+                 r"\caption{" + title + r". Accuracy (\%).}",
+                 r"\begin{tabular}{lll" + "r" * len(datasets) + "}", r"\toprule",
                  " & ".join(headers) + r" \\", r"\midrule"]
         lines += [" & ".join(tex(v) for v in row) + r" \\" for row in eight_cells]
-        lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}", "% " + note]
-        (eight / "comparison.tex").write_text("\n".join(lines) + "\n")
-        result["eight_expert_extension"] = dict(
-            full_records=len(full), table_rows=eight_cells, validation=validation,
-            independent_validation=str(eight / "independent_validation.json"),
-            source_sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in
-                           [eight / "full/results.json", eight / "independent_validation.json"]},
+        lines += [r"\bottomrule", r"\end{tabular}", r"\end{table*}", "% " + note]
+        (paths[0] / "comparison.tex").write_text("\n".join(lines) + "\n")
+        result[extension] = dict(
+            full_records=len(full), table_rows=eight_cells, validations=validations,
+            datasets=datasets, source_sha256=sources,
         )
     (root / "results.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     print("ATTACK_TABLE", len(cells), "verified new cases", len(batches))
