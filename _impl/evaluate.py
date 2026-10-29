@@ -19,7 +19,7 @@ def case_models(cfg, case, anchor, originals, aligned, name):
     """Assemble fixed releases and optional public replacement controls."""
     import copy
 
-    from .attacks import public_mlp_replace
+    from .attacks import public_mlp_replace, published_bias_projection
 
     target = case["target"]
     spec = cfg["defenses"].get(name)
@@ -37,6 +37,10 @@ def case_models(cfg, case, anchor, originals, aligned, name):
             public_mlp_replace(own.state_dict(), anchor.state_dict(), **case["public_replacement"]),
             strict=True,
         )
+    if case.get("published_bias_projection"):
+        assert scopes == ["None"], "Bias projection is evaluated separately from AGA"
+        own = copy.deepcopy(own)
+        own.load_state_dict(published_bias_projection(own.state_dict()), strict=True)
     return own, attacked
 
 
@@ -233,6 +237,7 @@ def run(protocol, case_index, pilot):
             new_image_forwards=sum(r["n"] for r in rows if not r["provenance"]),
             evaluated_parameter_sha256=fingerprints,
             public_replacement=case.get("public_replacement"),
+            published_bias_projection=bool(case.get("published_bias_projection")),
             cached_author_AGA_weights=True,
             defense_feedback=False,
             predictions_sha256=digest(out / "artifacts/predictions.pt"),

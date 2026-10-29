@@ -51,6 +51,15 @@ def public_mlp_reset(state, public):
     return state | {k: public[k] for k in state if ".mlp." in k}
 
 
+def published_bias_projection(state):
+    """Known-location cleanup from the published projection and LN bias only."""
+    p = state["model.visual.proj"].double()
+    key = "model.visual.ln_post.bias"
+    beta = state[key].double()
+    value = p @ torch.linalg.lstsq(p, beta, driver="gelsd").solution
+    return state | {key: value.to(state[key].dtype)}
+
+
 def public_mlp_replace(state, public, layer, side):
     """Replace a declared MLP side from public weights; no clean expert input."""
     suffixes = {
