@@ -1,11 +1,32 @@
 {
-  "status": "three_task_attacks_and_eight_expert_three_dataset_evaluation_complete",
-  "updated_utc": "2026-10-29T05:36:46.206606+00:00",
+  "status": "additional_eight_expert_datasets_running_Unmask_queued",
+  "updated_utc": "2026-10-29T06:12:18.746699+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Complete missing Cars/EuroSAT/SUN397 test inputs and integrate official RESISC45/GTSRB loaders before any eight-dataset claim. Existing three-task attack and eight-expert evaluations are complete; do not repeat. No automatic wakeups.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "name": "eight_expert_extra",
+      "status": "pilot_running_then_full",
+      "pid": 10596,
+      "server": "55548",
+      "output": "outputs/attack_generalization_20261029/eight_expert_extra",
+      "protocol": "results/attack_generalization_20261028/eight_expert_extra/protocol.json",
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0
+    },
+    {
+      "name": "Unmask",
+      "status": "queued_after_extra_evaluation_success",
+      "pid": 10933,
+      "server": "55548",
+      "output": "outputs/attack_generalization_20261029/unmask",
+      "protocol": "results/attack_generalization_20261028/unmask/protocol.json",
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0
+    }
+  ],
+  "next_action": "On manual follow-up, inspect finite queues10596/10933, collect completed full scores and independently recount all indices/per-class/pairs before MD/TeX. No rerun of completed three-dataset evaluation. Cars/EuroSAT/SUN397 test inputs remain missing. No automatic wakeups.",
   "github_sync": {
     "status": "latest_results_pending_github_tool_unavailable",
     "last_verified_remote_commit": "7f06a12e725e6cae2eec4c32637204dd42146cd3",
@@ -688,6 +709,36 @@
           "defense2_AGA_target": 2.127659574468085
         }
       }
+    },
+    "eight_expert_extra": {
+      "status": "running",
+      "evaluated_datasets": [
+        "GTSRB",
+        "RESISC45"
+      ],
+      "test_sizes": {
+        "GTSRB": 12630,
+        "RESISC45": 6300
+      },
+      "author_loader_validation": "results/attack_generalization_20261028/eight_expert_extra/data_validation.json",
+      "source_commit": "b648aa4",
+      "same_frozen_merged_models": true
+    },
+    "Unmask": {
+      "status": "queued",
+      "source_commit": "50ec3d0",
+      "protocol": "results/attack_generalization_20261028/unmask/protocol.json",
+      "coefficient": 0.2,
+      "formula_source": "https://arxiv.org/html/2511.11851v1#S7",
+      "paper_relation_preserved": "subtraction coefficient equals TA coefficient",
+      "official_attack_code": false,
+      "evaluated_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45"
+      ]
     }
   }
 }
