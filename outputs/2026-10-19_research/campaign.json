@@ -1,9 +1,9 @@
 {
-  "status": "SVHN_DTD_matched_distillation_registered_before_execution",
-  "updated_utc": "2026-10-29T11:24:00.924985+00:00",
+  "status": "SVHN_DTD_matched_distillation_running",
+  "updated_utc": "2026-10-29T11:26:10.237644+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
+  "active_GPU_jobs": 1,
   "research_jobs": [
     {
       "name": "numerical_MNIST_distillation",
@@ -19,8 +19,8 @@
   ],
   "next_action": "Run fixed SVHN/DTD matched data-assisted recovery, then full original-context verification; no defense retuning. Eight-task missing data remains separate.",
   "github_sync": {
-    "status": "MNIST_results_published_new_registration_pending",
-    "last_verified_remote_commit": "0f8582dddc84eb3b95d00a5c99483ab05c940835",
+    "status": "scientific_results_and_next_protocol_verified_remote; live_state_pending",
+    "last_verified_remote_commit": "af340a5aef348713f6f9bbe450be9eda9943bfa2",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -933,7 +933,7 @@
     }
   },
   "distillation_other_tasks": {
-    "status": "registered_not_started",
+    "status": "running",
     "tasks": [
       "SVHN",
       "DTD"
@@ -953,6 +953,8 @@
     "new_defense_models": 0,
     "scripts": "results/attack_generalization_20261028/distillation/run_other_tasks.sh",
     "expected_minutes": 40,
-    "automatic_wakeup": false
+    "automatic_wakeup": false,
+    "pid": 29351,
+    "remote_registration_commit": "af340a5aef348713f6f9bbe450be9eda9943bfa2"
   }
 }
