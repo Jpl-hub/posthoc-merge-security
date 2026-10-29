@@ -142,6 +142,42 @@ All accuracies are percentages. Only completed, verified evaluations appear; mis
 | MNIST | SVHN | Defense 2 w/o SVD | DARE+TA | None | 99.69 | 9.80 | 6.70 |
 | MNIST | SVHN | Defense 2 w/o SVD | DARE+TA | Protected expert | 99.69 | 9.80 | 6.70 |
 | MNIST | SVHN | Defense 2 w/o SVD | DARE+TA | All experts | 99.69 | 9.80 | 6.70 |
+| SVHN | MNIST | Unprotected | TIES | None | 97.46 | 94.37 | 99.34 |
+| SVHN | MNIST | Unprotected | TIES | Protected expert | 97.46 | 93.75 | 99.37 |
+| SVHN | MNIST | Unprotected | TIES | All experts | 97.46 | 94.18 | 99.36 |
+| SVHN | MNIST | Unprotected | DARE+TA | None | 97.46 | 92.51 | 99.37 |
+| SVHN | MNIST | Unprotected | DARE+TA | Protected expert | 97.46 | 91.59 | 99.37 |
+| SVHN | MNIST | Unprotected | DARE+TA | All experts | 97.46 | 91.77 | 99.32 |
+| SVHN | MNIST | Defense 2 | TIES | None | 96.98 | 28.89 | 36.25 |
+| SVHN | MNIST | Defense 2 | TIES | Protected expert | 96.98 | 27.43 | 32.27 |
+| SVHN | MNIST | Defense 2 | TIES | All experts | 96.98 | 27.64 | 32.06 |
+| SVHN | MNIST | Defense 2 | DARE+TA | None | 96.98 | 6.70 | 9.80 |
+| SVHN | MNIST | Defense 2 | DARE+TA | Protected expert | 96.98 | 6.70 | 9.80 |
+| SVHN | MNIST | Defense 2 | DARE+TA | All experts | 96.98 | 6.70 | 9.80 |
+| SVHN | MNIST | Defense 2 w/o SVD | TIES | None | 97.45 | 8.16 | 10.33 |
+| SVHN | MNIST | Defense 2 w/o SVD | TIES | Protected expert | 97.45 | 14.06 | 11.48 |
+| SVHN | MNIST | Defense 2 w/o SVD | TIES | All experts | 97.45 | 14.83 | 12.15 |
+| SVHN | MNIST | Defense 2 w/o SVD | DARE+TA | None | 97.45 | 6.70 | 9.80 |
+| SVHN | MNIST | Defense 2 w/o SVD | DARE+TA | Protected expert | 97.45 | 6.70 | 9.80 |
+| SVHN | MNIST | Defense 2 w/o SVD | DARE+TA | All experts | 97.45 | 6.70 | 9.80 |
+| DTD | MNIST | Unprotected | TIES | None | 79.41 | 74.26 | 99.60 |
+| DTD | MNIST | Unprotected | TIES | Protected expert | 79.41 | 73.51 | 99.60 |
+| DTD | MNIST | Unprotected | TIES | All experts | 79.41 | 73.51 | 99.61 |
+| DTD | MNIST | Unprotected | DARE+TA | None | 79.41 | 69.47 | 99.47 |
+| DTD | MNIST | Unprotected | DARE+TA | Protected expert | 79.41 | 68.40 | 99.46 |
+| DTD | MNIST | Unprotected | DARE+TA | All experts | 79.41 | 68.94 | 99.43 |
+| DTD | MNIST | Defense 2 | TIES | None | 76.12 | 3.30 | 90.68 |
+| DTD | MNIST | Defense 2 | TIES | Protected expert | 76.12 | 2.50 | 88.85 |
+| DTD | MNIST | Defense 2 | TIES | All experts | 76.12 | 2.50 | 88.27 |
+| DTD | MNIST | Defense 2 | DARE+TA | None | 76.12 | 2.29 | 98.68 |
+| DTD | MNIST | Defense 2 | DARE+TA | Protected expert | 76.12 | 2.13 | 84.31 |
+| DTD | MNIST | Defense 2 | DARE+TA | All experts | 76.12 | 2.13 | 81.05 |
+| DTD | MNIST | Defense 2 w/o SVD | TIES | None | 78.09 | 3.40 | 49.55 |
+| DTD | MNIST | Defense 2 w/o SVD | TIES | Protected expert | 78.09 | 2.34 | 53.27 |
+| DTD | MNIST | Defense 2 w/o SVD | TIES | All experts | 78.09 | 2.39 | 49.49 |
+| DTD | MNIST | Defense 2 w/o SVD | DARE+TA | None | 78.09 | 2.13 | 46.73 |
+| DTD | MNIST | Defense 2 w/o SVD | DARE+TA | Protected expert | 78.09 | 2.13 | 16.41 |
+| DTD | MNIST | Defense 2 w/o SVD | DARE+TA | All experts | 78.09 | 2.13 | 15.73 |
 | MNIST | SVHN | Unprotected | MLP matching | None | 99.69 | 99.37 | 92.50 |
 | MNIST | SVHN | Defense 2 | MLP matching | None | 99.61 | 9.80 | 6.70 |
 | MNIST | SVHN | Defense 2 w/o SVD | MLP matching | None | 99.69 | 9.80 | 6.70 |
