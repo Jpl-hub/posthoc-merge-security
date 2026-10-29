@@ -1,37 +1,26 @@
 {
-  "status": "five_dataset_eight_expert_and_Unmask_completed_verified",
-  "updated_utc": "2026-10-29T08:48:53.921936+00:00",
+  "status": "numerical_MNIST_distillation_completed_no_matched_protection_gap",
+  "updated_utc": "2026-10-29T10:04:40.117974+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
-      "name": "eight_expert_extra",
-      "status": "completed_independently_verified",
-      "pid": 10596,
+      "name": "numerical_MNIST_distillation",
+      "status": "completed_independently_verified_defense_bypassed_under_fixed_data_assisted_access",
       "server": "55548",
-      "output": "outputs/attack_generalization_20261029/eight_expert_extra",
-      "protocol": "results/attack_generalization_20261028/eight_expert_extra/protocol.json",
-      "new_defense_weights": 0,
-      "new_AGA_calls": 0,
-      "exit_code": 0
-    },
-    {
-      "name": "Unmask",
-      "status": "completed_independently_verified",
-      "pid": 10933,
-      "server": "55548",
-      "output": "outputs/attack_generalization_20261029/unmask",
-      "protocol": "results/attack_generalization_20261028/unmask/protocol.json",
-      "new_defense_weights": 0,
-      "new_AGA_calls": 0,
+      "pid": 24745,
+      "output": "outputs/attack_generalization_20261029/distillation_MNIST",
+      "protocol": "results/attack_generalization_20261028/distillation/protocol.json",
+      "new_defense_models": 0,
+      "new_student_training_steps": 0,
       "exit_code": 0
     }
   ],
-  "next_action": "Keep frozen releases; complete missing Cars/EuroSAT/SUN397 official test inputs and a source-verified data-assisted recovery protocol. No new defense tuning, repeated completed evaluations or automatic wakeup.",
+  "next_action": "Current finite batch finished. Next missing attack coverage is the same fixed data-assisted recovery for SVHN/DTD with matched controls; missing official Cars/EuroSAT/SUN397 tests remain separate. No automatic wakeup and no new defense tuning.",
   "github_sync": {
-    "status": "publication_in_progress",
-    "last_verified_remote_commit": "7f06a12e725e6cae2eec4c32637204dd42146cd3",
+    "status": "latest_distillation_results_pending_plugin_unavailable",
+    "last_verified_remote_commit": "e43e51a5936e512a04351b700f5392c3b6b6ae8a",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -829,6 +818,118 @@
         "SUN397"
       ],
       "eight_task_average_reported": false
+    },
+    "distillation": {
+      "status": "completed_independently_verified_defense_bypassed_under_fixed_data_assisted_access",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "unlabeled_images": 2048,
+      "epochs": 50,
+      "maximum_new_student_backward_steps": 800,
+      "unprotected_student_reused": true,
+      "protocol": "results/attack_generalization_20261028/distillation/protocol.json",
+      "new_defense_models": 0,
+      "query_disagreements": 0,
+      "new_student_training_steps": 0,
+      "task_scope": "MNIST only; not a three-task result",
+      "ground_truth_labels_used": false,
+      "student_epochs": 50,
+      "student_training_steps": 800,
+      "training_seconds_original_student": 226.01298648491502,
+      "historical_unprotected_training_reused": true,
+      "same_finite_teacher_labels": true,
+      "unique_student_models": 1,
+      "independent_training_repetitions": 0,
+      "new_AGA_calls": 1,
+      "AGA_seconds": 6.870385138085112,
+      "new_defense_weights": 0,
+      "rows": 21,
+      "full_context_replays": 336,
+      "pilot_context_replays": 336,
+      "maximum_replay_error": 0.0,
+      "new_image_forwards_including_queries_and_replays": 163776,
+      "complete_target_test_n": 10000,
+      "complete_partner_test_n": 26032,
+      "teacher_query_budget_reused_control": 2048,
+      "models": {
+        "Unprotected": {
+          "standalone_MNIST": 99.69,
+          "None": {
+            "MNIST": 99.37,
+            "SVHN": 92.49769514443761
+          },
+          "Protected expert": {
+            "MNIST": 99.3,
+            "SVHN": 92.7819606637984
+          },
+          "All experts": {
+            "MNIST": 99.32,
+            "SVHN": 91.77166564228642
+          }
+        },
+        "KD_Unprotected": {
+          "standalone_MNIST": 98.5,
+          "None": {
+            "MNIST": 95.53,
+            "SVHN": 95.95497848801475
+          },
+          "Protected expert": {
+            "MNIST": 95.35,
+            "SVHN": 95.93577135832821
+          },
+          "All experts": {
+            "MNIST": 95.25,
+            "SVHN": 95.29425322679779
+          }
+        },
+        "KD_Defense2": {
+          "standalone_MNIST": 98.5,
+          "None": {
+            "MNIST": 95.53,
+            "SVHN": 95.95497848801475
+          },
+          "Protected expert": {
+            "MNIST": 95.35,
+            "SVHN": 95.93577135832821
+          },
+          "All experts": {
+            "MNIST": 95.25,
+            "SVHN": 95.29425322679779
+          }
+        }
+      },
+      "conclusion": "The fixed 2048 teacher labels are identical, giving the identical optimization problem and final student. Matched full scores and parameters coincide. Defense2 adds no protection in this fixed stronger-permission MNIST experiment; original weight-only AGA result remains a different permission setting. TA95.53 is still3.84pp below unprotected original expert TA99.37.",
+      "raw_backup": {
+        "path": "outputs/numerical_distillation_20261029.tar.gz",
+        "sha256": "ddc2837781f5b88c7546dc92a6f0b7719bb2e0bbe15089a2c1cd7b1b4acfccbf",
+        "bytes": 8603152,
+        "server_path": "/root/autodl-tmp/numerical_distillation_20261029.tar.gz",
+        "verified_locations": [
+          "local",
+          "55548"
+        ],
+        "contains": "All current pilot/full raw scores, new teacher queries, frozen sources, source protocol, independent paired validation, log and exit code; weights excluded",
+        "server_only_weight_files": {
+          "KD_Unprotected": {
+            "path": "/root/posthoc_evaluation_cache/phase3_distillation_mnist_20261019/Unprotected_student.pt",
+            "sha256": "e12b20562e8f1c4a7d0d76ca02b0968e2071fe967f28847241415ca2544dc0f8",
+            "reference": "public_base"
+          },
+          "KD_Defense2": {
+            "path": "/root/posthoc_evaluation_cache/phase3_distillation_mnist_20261019/Unprotected_student.pt",
+            "sha256": "e12b20562e8f1c4a7d0d76ca02b0968e2071fe967f28847241415ca2544dc0f8",
+            "reference": "public_base"
+          }
+        },
+        "server_only_AGA_weight_files": {
+          "e12b20562e8f1c4a7d0d76ca02b0968e2071fe967f28847241415ca2544dc0f8": {
+            "path": "outputs/attack_generalization_20261029/distillation_MNIST/KD_Unprotected_AGA.pt",
+            "sha256": "23b3707a0456231cc4ea3b2817be1c37b33effd42dc12e063cc419baf6382a25",
+            "seconds": 6.870385138085112
+          }
+        }
+      },
+      "record": "results/attack_generalization_20261028/distillation/summary.json"
     }
   }
 }

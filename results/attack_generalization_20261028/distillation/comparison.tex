@@ -1,0 +1,20 @@
+\begin{table*}[t]
+\centering\small
+\caption{Data-assisted recovery on MNIST. Accuracy (\%).}
+\begin{tabular}{llrrr}
+\toprule
+Model & AGA & Standalone MNIST & Fused MNIST & Fused SVHN \\
+\midrule
+Original expert & None & 99.69 & 99.37 & 92.50 \\
+Original expert & Target & 99.69 & 99.30 & 92.78 \\
+Original expert & Both & 99.69 & 99.32 & 91.77 \\
+Student from unprotected & None & 98.50 & 95.53 & 95.95 \\
+Student from unprotected & Target & 98.50 & 95.35 & 95.94 \\
+Student from unprotected & Both & 98.50 & 95.25 & 95.29 \\
+Student from Defense 2 & None & 98.50 & 95.53 & 95.95 \\
+Student from Defense 2 & Target & 98.50 & 95.35 & 95.94 \\
+Student from Defense 2 & Both & 98.50 & 95.25 & 95.29 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+% TA0.5. Extra 2048 unlabeled MNIST training images; teacher hard labels; public-base student, 50 epochs. All query labels are identical, so the registered rule reuses one historical final student. These are not independently trained students. Standalone measures the evaluated model, not the original protected teacher. Matched student predictions and scores are identical. Only MNIST protection is tested.
