@@ -1,9 +1,9 @@
 {
-  "status": "defense1_other_targets_running",
-  "updated_utc": "2026-10-29T14:49:46.682395+00:00",
+  "status": "defense1_weight_only_three_tasks_completed",
+  "updated_utc": "2026-10-29T16:00:21.024378+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
+  "active_GPU_jobs": 0,
   "research_jobs": [
     {
       "name": "numerical_MNIST_distillation",
@@ -26,15 +26,16 @@
     },
     {
       "name": "Defense1_weight_only_SVHN_DTD",
-      "status": "running",
+      "status": "completed_independently_verified",
       "server": "55548",
       "pid": 37176,
-      "records": "results/phase3/bias_weight_only/other_tasks/deployment.json"
+      "records": "results/phase3/bias_weight_only/other_tasks/deployment.json",
+      "exit_code": 0
     }
   ],
-  "next_action": "Complete the two missing weight-only Defense1 target cases using the unchanged formula. Numerical Defense2 stays frozen while addressing the public B+b replacement weakness; no permutation expansion or test-driven retuning.",
+  "next_action": "Defense1 weight-only three-task TA/AGA coverage is complete; do not repeat it. Focus numerical Defense2 on the public B+b replacement limitation with a distinct finite mechanism before new construction. Permutation remains historical; no new optimizer or closed-point retuning.",
   "github_sync": {
-    "status": "new_changes_pending_plugin_fetch_unavailable",
+    "status": "new_completed_batch_pending_plugin_fetch_unavailable",
     "last_verified_remote_commit": "0be969f3fec0f14938b1f2c7d6e9954c42fd6392",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -996,7 +997,7 @@
     "retention": "Existing evidence and recovery positive controls retained; removed from main README method table and common commands."
   },
   "Defense1_other_tasks": {
-    "status": "running",
+    "status": "completed_independently_verified",
     "protocol": "results/phase3/bias_weight_only/other_tasks/protocol.json",
     "targets": [
       "SVHN",
@@ -1007,6 +1008,37 @@
     "record": "results/phase3/bias_weight_only/other_tasks/deployment.json",
     "SVHN_native_before": 97.46081745543947,
     "SVHN_native_after": 97.46081745543947,
-    "SVHN_native_changed": 0
+    "SVHN_native_changed": 0,
+    "exit_code": 0,
+    "results": "results/phase3/bias_weight_only/other_tasks/results.json",
+    "native_prediction_changes": {
+      "SVHN": 0,
+      "DTD": 0
+    },
+    "TA_AGAtarget_AGAboth": {
+      "SVHN": [
+        6.699446834665028,
+        6.699446834665028,
+        6.699446834665028
+      ],
+      "DTD": [
+        2.127659574468085,
+        2.127659574468085,
+        2.127659574468085
+      ]
+    },
+    "backup": {
+      "directory": "outputs/bias_weight_only_20261029",
+      "manifest": "outputs/bias_weight_only_20261029/manifest.json",
+      "manifest_sha256": "649614ba77915ba69092151cc740dcfe6edbb399d55f096a9f9134f5144ad2d1",
+      "files": 64,
+      "bytes": 28213163,
+      "verified_locations": [
+        "local",
+        "55548"
+      ],
+      "server_directory": "/root/autodl-tmp/posthoc-merge-security/outputs/bias_weight_only_20261029",
+      "compressed_duplicate_created": false
+    }
   }
 }

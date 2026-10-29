@@ -19,7 +19,7 @@
 
 `experiment/defense2.py` 从产生当前 MNIST 发布的原始源码整理而来，只调整排版、注释和程序入口，计算语句保持相同。它是固定 MNIST 构造，不是三个任务通用命令：运行需要原合成缓存 `outputs/native_ellipse_classification_20261026/source/` 和 `outputs/task_shaped_compensation_20261026/layer_inputs.pt`，输出目录必须尚不存在。当前评价直接加载已冻结权重，无需重新构造。SVHN、DTD 的实际执行源码及哈希仍在 `results/data_free_compensation/population_compensation_result.json` 的对应任务定义中。
 
-防御一和防御二的当前构造要求均为Data-Free。防御一已改为只由权重确定噪声方向和幅度，MNIST独立99.69%，融合及AGA后均为9.80%；构造没有使用真实或合成图片。[结果与方法](results/phase3/bias_weight_only/summary.md)。历史数据辅助结果单列保留。
+防御一和防御二的当前构造均不使用真实图片。防御一的方向和幅度完全由权重确定，也不使用合成图片；三个保护任务的完整独立预测均保持不变，TA及AGA后MNIST/SVHN/DTD准确率分别为9.80%/6.70%/2.13%，伙伴准确率也明显降低。[三任务完整表](results/phase3/bias_weight_only/other_tasks/summary.md)。历史图片辅助幅度单独保留。
 
 当前数值防御二修改最后一个MLP的A、B及输出偏置。A在所选任务方向的补空间改变，B补偿独立模型输出；构造只使用冻结权重、固定分类头和合成输入。固定TA系数为0.5，完整测试准确率如下：
 
@@ -112,7 +112,7 @@ python -m experiment.main_table --verify outputs/refactored/main/full/00_MNIST_S
 
 `configs/evaluate.json` 列出六个保护方向；每组同时报告目标与伙伴，原版 AGA 仅保护专家／全部专家分别列出。它们是**新入口的复现命令**，不是声称本次又跑了一遍这些实验。已完成结果无需重复运行。
 
-防御一只由权重构造，不读真实图片或合成图片。固定公式补测SVHN和DTD的定义见[两任务实验](results/phase3/bias_weight_only/other_tasks/protocol.json)。
+防御一只由权重构造，不读真实图片或合成图片。SVHN和DTD已完成，固定定义见[两任务实验](results/phase3/bias_weight_only/other_tasks/protocol.json)。
 
 ```bash
 python -m experiment.construct --method bias --target SVHN --protocol results/phase3/bias_weight_only/other_tasks/protocol.json --output outputs/new_bias_SVHN

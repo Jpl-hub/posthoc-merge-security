@@ -1,0 +1,5754 @@
+{
+  "status": "completed_independently_verified",
+  "completed_utc": "2026-10-29T15:59:44.063171+00:00",
+  "exit_code": 0,
+  "new_targets": [
+    "SVHN",
+    "DTD"
+  ],
+  "historical_MNIST_reference": "results/phase3/bias_weight_only/results.json",
+  "historical_MNIST_sha256": "1071c533658f039d2469c4ca92ca916f56dc4e7917bfb36d4a32be53327de860",
+  "historical_control_selection": "sum per_class.original_correct from corresponding verified Defense1 rows; not new inference",
+  "new_batches": {
+    "SVHN": {
+      "construction": {
+        "release_sha256": "b69746723d049316865f30b8d9eca86825f9b58852170bb56e991c421afff8ee",
+        "publication_reference": "expert",
+        "checkpoint_sha256": {
+          "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+          "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+          "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+        },
+        "method": "bias",
+        "target": "SVHN",
+        "seconds": 0.9397037039743736,
+        "details": {
+          "noise_family": "projection_bias",
+          "edited_key": "model.visual.ln_post.bias",
+          "projection_rank": 512,
+          "exact_complement_dimension": 256,
+          "noise_seed": 20261014,
+          "requested_class": 0,
+          "proxy_collapse_class": 0,
+          "amplitude": 931.4260529653367,
+          "delta_norm": 11220.33139115897,
+          "ideal_embedding_null_error": 4.0335887561353944e-15,
+          "fp32_embedding_constant_error": 8.26407112727773e-05,
+          "proxy_margin_lower_bounds": [
+            289.7572154843193,
+            277.9471218811214,
+            292.73445270120146,
+            268.83442458953004,
+            269.9362163737952,
+            286.9716595482371,
+            232.85644064526156,
+            281.46757776458867,
+            330.21094458415325
+          ],
+          "amplitude_source": "analytic LayerNorm norm bound from weights",
+          "real_construction_images": 0,
+          "synthetic_construction_images": 0,
+          "teacher_training_updates": 0,
+          "optimizer_steps": 0,
+          "parameter_search": false,
+          "limitation": "The norm bound covers the public-base proxy. Actual partners and attacks require evaluation."
+        },
+        "expert_training_updates": 0
+      },
+      "native": {
+        "rows": [
+          {
+            "n": 26032,
+            "changed": 0,
+            "R": 0.010182876142975894,
+            "stage": "full",
+            "before_correct": 25371,
+            "after_correct": 25371,
+            "strict_task_passed": true,
+            "accuracy_loss_pp": 0.0,
+            "passed": true,
+            "raw_sha256": "d3f09fb5513beeae8defdecfc488193c6363b35299857bc3f7205f02b305cab5"
+          }
+        ],
+        "passed": true,
+        "image_forwards": 52064,
+        "seconds": 55.09121000091545
+      },
+      "native_independent": {
+        "status": "passed_raw_score_and_official_label_recount",
+        "rows": [
+          {
+            "stage": "full",
+            "n": 26032,
+            "R": 0.010182876142975894
+          }
+        ],
+        "results_sha256": "bb6c258626d1d3f0d062fca85a667cacb8a954a1e80a35a8ce190f3714b1bf79",
+        "new_image_forwards": 0
+      },
+      "evaluation": {
+        "pilot": {
+          "execution": {
+            "completed": true,
+            "pilot": true,
+            "case_index": 0,
+            "rows": 14,
+            "wall_seconds": 45.52078061806969,
+            "GPU": "NVIDIA GeForce RTX 3090",
+            "new_defense_weights": 0,
+            "optimizer_steps": 0,
+            "new_AGA_calls": 0,
+            "new_image_forwards": 896,
+            "evaluated_parameter_sha256": {
+              "Unprotected/Standalone/None": "0bc575fa3f8b3e9ea3695434cfdae4af9646e566db65f7a9da6ff51a862dc57e",
+              "Unprotected/TA/None": "4bfd2559f8b30b1418efa795b70d4f1d23a17d4c8878c034acebe123167f4690",
+              "Unprotected/TA/Protected expert": "03ca88c0b6dcb29c40b92c9d0a197be4d3eb322c081d73754bd2796740e654e1",
+              "Unprotected/TA/All experts": "6d9076d2f92ed10ae715ec2a1d6af72caecbf753cfdb07213090a6a654983e22",
+              "Defense1/Standalone/None": "725587552758731f5eb3a1401b39f42bd20540e5d88cfaf7d3597b1a771e18d5",
+              "Defense1/TA/None": "6252af29a18913f33641b955bd079fe102a2b909dbecd1d0cc9f2315b62b9ed9",
+              "Defense1/TA/Protected expert": "91de7c1258589346e0346d0821a7684ecd86f90e74f6323c063d5e7b9b35aee6",
+              "Defense1/TA/All experts": "5ad9cd8feb86ad0cadb9780514a6672e6877f0dc0299a8e4a475c946a4d74697"
+            },
+            "public_replacement": null,
+            "cached_author_AGA_weights": true,
+            "defense_feedback": false,
+            "predictions_sha256": "a5bf05374e5e7c0524d91d01399a6e9938b9df517039fa9554e309c622968d1c",
+            "source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "protocol_sha256": "1deb5c893383f7e3b76bc6e724085d93cf5a14005b62f40fd4d980e7843e89ee"
+          },
+          "validation": {
+            "status": "passed",
+            "rows": 14,
+            "official_label_numpy_recount": true,
+            "full_image_prediction_replays": 224,
+            "context_forward_images": 896,
+            "original_evaluation_batch_size": 128,
+            "maximum_score_error": 0.0,
+            "score_tolerance": 0.0005,
+            "explicit_TA_reconstruction": true,
+            "original_TIES_functions": false,
+            "independent_TIES_small_numpy_fixture": false,
+            "independent_full_TIES_reimplementation": false,
+            "raw_sha256": "a5bf05374e5e7c0524d91d01399a6e9938b9df517039fa9554e309c622968d1c",
+            "DARE_NumPy_mask_arithmetic": false,
+            "DARE_independent_RNG": false,
+            "source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "original_evaluation_source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+          },
+          "raw_path": "outputs/bias_weight_only_20261029/SVHN/evaluation/pilot/00_SVHN_MNIST/artifacts/predictions.pt",
+          "results_path": "outputs/bias_weight_only_20261029/SVHN/evaluation/pilot/00_SVHN_MNIST/results.json",
+          "results_sha256": "6ba8fe4a40e7b0924dde7c03abeb6c59820feda256c9ed970ac189f47f2bf5f0"
+        },
+        "full": {
+          "execution": {
+            "completed": true,
+            "pilot": false,
+            "case_index": 0,
+            "rows": 14,
+            "wall_seconds": 141.0732446629554,
+            "GPU": "NVIDIA GeForce RTX 3090",
+            "new_defense_weights": 0,
+            "optimizer_steps": 0,
+            "new_AGA_calls": 0,
+            "new_image_forwards": 108096,
+            "evaluated_parameter_sha256": {
+              "Unprotected/Standalone/None": "0bc575fa3f8b3e9ea3695434cfdae4af9646e566db65f7a9da6ff51a862dc57e",
+              "Unprotected/TA/None": "4bfd2559f8b30b1418efa795b70d4f1d23a17d4c8878c034acebe123167f4690",
+              "Unprotected/TA/Protected expert": "03ca88c0b6dcb29c40b92c9d0a197be4d3eb322c081d73754bd2796740e654e1",
+              "Unprotected/TA/All experts": "6d9076d2f92ed10ae715ec2a1d6af72caecbf753cfdb07213090a6a654983e22",
+              "Defense1/Standalone/None": "725587552758731f5eb3a1401b39f42bd20540e5d88cfaf7d3597b1a771e18d5",
+              "Defense1/TA/None": "6252af29a18913f33641b955bd079fe102a2b909dbecd1d0cc9f2315b62b9ed9",
+              "Defense1/TA/Protected expert": "91de7c1258589346e0346d0821a7684ecd86f90e74f6323c063d5e7b9b35aee6",
+              "Defense1/TA/All experts": "5ad9cd8feb86ad0cadb9780514a6672e6877f0dc0299a8e4a475c946a4d74697"
+            },
+            "public_replacement": null,
+            "cached_author_AGA_weights": true,
+            "defense_feedback": false,
+            "predictions_sha256": "35a822553141d0f672f7eff3e545272be6358a8ca668208d0834c8f17055e133",
+            "source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "protocol_sha256": "1deb5c893383f7e3b76bc6e724085d93cf5a14005b62f40fd4d980e7843e89ee"
+          },
+          "validation": {
+            "status": "passed",
+            "rows": 14,
+            "official_label_numpy_recount": true,
+            "full_image_prediction_replays": 224,
+            "context_forward_images": 27360,
+            "original_evaluation_batch_size": 128,
+            "maximum_score_error": 1.1444091796875e-05,
+            "score_tolerance": 0.0005,
+            "explicit_TA_reconstruction": true,
+            "original_TIES_functions": false,
+            "independent_TIES_small_numpy_fixture": false,
+            "independent_full_TIES_reimplementation": false,
+            "raw_sha256": "35a822553141d0f672f7eff3e545272be6358a8ca668208d0834c8f17055e133",
+            "DARE_NumPy_mask_arithmetic": false,
+            "DARE_independent_RNG": false,
+            "source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "original_evaluation_source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+          },
+          "raw_path": "outputs/bias_weight_only_20261029/SVHN/evaluation/full/00_SVHN_MNIST/artifacts/predictions.pt",
+          "results_path": "outputs/bias_weight_only_20261029/SVHN/evaluation/full/00_SVHN_MNIST/results.json",
+          "results_sha256": "2ab139ccd3466af554d13675713c274af3cffb1c48772c5e42b00940f6958cd6",
+          "rows": [
+            {
+              "defense": "Unprotected",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "Standalone",
+              "attack_scope": "None",
+              "dataset": "SVHN",
+              "role": "target",
+              "n": 26032,
+              "correct": 25371,
+              "accuracy_percent": 97.46081745543947,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 25371,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 661,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 1744,
+                  "correct": 1708,
+                  "original_correct": 1708
+                },
+                {
+                  "class_id": 1,
+                  "n": 5099,
+                  "correct": 5001,
+                  "original_correct": 5001
+                },
+                {
+                  "class_id": 2,
+                  "n": 4149,
+                  "correct": 4076,
+                  "original_correct": 4076
+                },
+                {
+                  "class_id": 3,
+                  "n": 2882,
+                  "correct": 2736,
+                  "original_correct": 2736
+                },
+                {
+                  "class_id": 4,
+                  "n": 2523,
+                  "correct": 2492,
+                  "original_correct": 2492
+                },
+                {
+                  "class_id": 5,
+                  "n": 2384,
+                  "correct": 2316,
+                  "original_correct": 2316
+                },
+                {
+                  "class_id": 6,
+                  "n": 1977,
+                  "correct": 1924,
+                  "original_correct": 1924
+                },
+                {
+                  "class_id": 7,
+                  "n": 2019,
+                  "correct": 1975,
+                  "original_correct": 1975
+                },
+                {
+                  "class_id": 8,
+                  "n": 1660,
+                  "correct": 1601,
+                  "original_correct": 1601
+                },
+                {
+                  "class_id": 9,
+                  "n": 1595,
+                  "correct": 1542,
+                  "original_correct": 1542
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/bias_weight_only_20261029/SVHN/native/full.pt",
+                "imported_key": "released/standalone/SVHN"
+              },
+              "predicted_class_counts": [
+                1750,
+                5120,
+                4126,
+                2809,
+                2541,
+                2371,
+                1993,
+                2021,
+                1656,
+                1645
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "None",
+              "dataset": "SVHN",
+              "role": "target",
+              "n": 26032,
+              "correct": 24079,
+              "accuracy_percent": 92.49769514443761,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 24079,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 1953,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 1744,
+                  "correct": 1708,
+                  "original_correct": 1708
+                },
+                {
+                  "class_id": 1,
+                  "n": 5099,
+                  "correct": 4800,
+                  "original_correct": 4800
+                },
+                {
+                  "class_id": 2,
+                  "n": 4149,
+                  "correct": 3977,
+                  "original_correct": 3977
+                },
+                {
+                  "class_id": 3,
+                  "n": 2882,
+                  "correct": 2457,
+                  "original_correct": 2457
+                },
+                {
+                  "class_id": 4,
+                  "n": 2523,
+                  "correct": 2289,
+                  "original_correct": 2289
+                },
+                {
+                  "class_id": 5,
+                  "n": 2384,
+                  "correct": 2305,
+                  "original_correct": 2305
+                },
+                {
+                  "class_id": 6,
+                  "n": 1977,
+                  "correct": 1711,
+                  "original_correct": 1711
+                },
+                {
+                  "class_id": 7,
+                  "n": 2019,
+                  "correct": 1826,
+                  "original_correct": 1826
+                },
+                {
+                  "class_id": 8,
+                  "n": 1660,
+                  "correct": 1583,
+                  "original_correct": 1583
+                },
+                {
+                  "class_id": 9,
+                  "n": 1595,
+                  "correct": 1423,
+                  "original_correct": 1423
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/None/SVHN"
+              },
+              "predicted_class_counts": [
+                2069,
+                5138,
+                4126,
+                2539,
+                2352,
+                2550,
+                1773,
+                1891,
+                2028,
+                1566
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "None",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 9937,
+              "accuracy_percent": 99.37,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 9937,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 63,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 975,
+                  "original_correct": 975
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 1133,
+                  "original_correct": 1133
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 1026,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 1009,
+                  "original_correct": 1009
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 979,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 884,
+                  "original_correct": 884
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 944,
+                  "original_correct": 944
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 1018,
+                  "original_correct": 1018
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 970,
+                  "original_correct": 970
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 999,
+                  "original_correct": 999
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/None/MNIST"
+              },
+              "predicted_class_counts": [
+                983,
+                1141,
+                1033,
+                1014,
+                987,
+                887,
+                949,
+                1029,
+                973,
+                1004
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "Protected expert",
+              "dataset": "SVHN",
+              "role": "target",
+              "n": 26032,
+              "correct": 23836,
+              "accuracy_percent": 91.56422864167179,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 23836,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 2196,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 1744,
+                  "correct": 1702,
+                  "original_correct": 1702
+                },
+                {
+                  "class_id": 1,
+                  "n": 5099,
+                  "correct": 4767,
+                  "original_correct": 4767
+                },
+                {
+                  "class_id": 2,
+                  "n": 4149,
+                  "correct": 3961,
+                  "original_correct": 3961
+                },
+                {
+                  "class_id": 3,
+                  "n": 2882,
+                  "correct": 2392,
+                  "original_correct": 2392
+                },
+                {
+                  "class_id": 4,
+                  "n": 2523,
+                  "correct": 2249,
+                  "original_correct": 2249
+                },
+                {
+                  "class_id": 5,
+                  "n": 2384,
+                  "correct": 2297,
+                  "original_correct": 2297
+                },
+                {
+                  "class_id": 6,
+                  "n": 1977,
+                  "correct": 1676,
+                  "original_correct": 1676
+                },
+                {
+                  "class_id": 7,
+                  "n": 2019,
+                  "correct": 1798,
+                  "original_correct": 1798
+                },
+                {
+                  "class_id": 8,
+                  "n": 1660,
+                  "correct": 1584,
+                  "original_correct": 1584
+                },
+                {
+                  "class_id": 9,
+                  "n": 1595,
+                  "correct": 1410,
+                  "original_correct": 1410
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/Protected expert/SVHN"
+              },
+              "predicted_class_counts": [
+                2082,
+                5171,
+                4141,
+                2465,
+                2324,
+                2584,
+                1742,
+                1869,
+                2100,
+                1554
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "Protected expert",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 9939,
+              "accuracy_percent": 99.39,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 9939,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 61,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 975,
+                  "original_correct": 975
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 1134,
+                  "original_correct": 1134
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 1026,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 1009,
+                  "original_correct": 1009
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 979,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 884,
+                  "original_correct": 884
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 943,
+                  "original_correct": 943
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 1019,
+                  "original_correct": 1019
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 971,
+                  "original_correct": 971
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 999,
+                  "original_correct": 999
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/Protected expert/MNIST"
+              },
+              "predicted_class_counts": [
+                983,
+                1141,
+                1033,
+                1013,
+                987,
+                888,
+                948,
+                1028,
+                975,
+                1004
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "All experts",
+              "dataset": "SVHN",
+              "role": "target",
+              "n": 26032,
+              "correct": 23890,
+              "accuracy_percent": 91.77166564228642,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 23890,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 2142,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 1744,
+                  "correct": 1700,
+                  "original_correct": 1700
+                },
+                {
+                  "class_id": 1,
+                  "n": 5099,
+                  "correct": 4797,
+                  "original_correct": 4797
+                },
+                {
+                  "class_id": 2,
+                  "n": 4149,
+                  "correct": 3972,
+                  "original_correct": 3972
+                },
+                {
+                  "class_id": 3,
+                  "n": 2882,
+                  "correct": 2374,
+                  "original_correct": 2374
+                },
+                {
+                  "class_id": 4,
+                  "n": 2523,
+                  "correct": 2260,
+                  "original_correct": 2260
+                },
+                {
+                  "class_id": 5,
+                  "n": 2384,
+                  "correct": 2300,
+                  "original_correct": 2300
+                },
+                {
+                  "class_id": 6,
+                  "n": 1977,
+                  "correct": 1677,
+                  "original_correct": 1677
+                },
+                {
+                  "class_id": 7,
+                  "n": 2019,
+                  "correct": 1806,
+                  "original_correct": 1806
+                },
+                {
+                  "class_id": 8,
+                  "n": 1660,
+                  "correct": 1590,
+                  "original_correct": 1590
+                },
+                {
+                  "class_id": 9,
+                  "n": 1595,
+                  "correct": 1414,
+                  "original_correct": 1414
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/All experts/SVHN"
+              },
+              "predicted_class_counts": [
+                2053,
+                5213,
+                4148,
+                2440,
+                2327,
+                2588,
+                1739,
+                1878,
+                2094,
+                1552
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "All experts",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 9932,
+              "accuracy_percent": 99.32,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 9932,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 68,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 975,
+                  "original_correct": 975
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 1133,
+                  "original_correct": 1133
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 1024,
+                  "original_correct": 1024
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 1009,
+                  "original_correct": 1009
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 977,
+                  "original_correct": 977
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 885,
+                  "original_correct": 885
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 942,
+                  "original_correct": 942
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 1017,
+                  "original_correct": 1017
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 971,
+                  "original_correct": 971
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 999,
+                  "original_correct": 999
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/All experts/MNIST"
+              },
+              "predicted_class_counts": [
+                984,
+                1142,
+                1031,
+                1013,
+                984,
+                890,
+                946,
+                1027,
+                977,
+                1006
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "Standalone",
+              "attack_scope": "None",
+              "dataset": "SVHN",
+              "role": "target",
+              "n": 26032,
+              "correct": 25371,
+              "accuracy_percent": 97.46081745543947,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 25371,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 661,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 1744,
+                  "correct": 1708,
+                  "original_correct": 1708
+                },
+                {
+                  "class_id": 1,
+                  "n": 5099,
+                  "correct": 5001,
+                  "original_correct": 5001
+                },
+                {
+                  "class_id": 2,
+                  "n": 4149,
+                  "correct": 4076,
+                  "original_correct": 4076
+                },
+                {
+                  "class_id": 3,
+                  "n": 2882,
+                  "correct": 2736,
+                  "original_correct": 2736
+                },
+                {
+                  "class_id": 4,
+                  "n": 2523,
+                  "correct": 2492,
+                  "original_correct": 2492
+                },
+                {
+                  "class_id": 5,
+                  "n": 2384,
+                  "correct": 2316,
+                  "original_correct": 2316
+                },
+                {
+                  "class_id": 6,
+                  "n": 1977,
+                  "correct": 1924,
+                  "original_correct": 1924
+                },
+                {
+                  "class_id": 7,
+                  "n": 2019,
+                  "correct": 1975,
+                  "original_correct": 1975
+                },
+                {
+                  "class_id": 8,
+                  "n": 1660,
+                  "correct": 1601,
+                  "original_correct": 1601
+                },
+                {
+                  "class_id": 9,
+                  "n": 1595,
+                  "correct": 1542,
+                  "original_correct": 1542
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/bias_weight_only_20261029/SVHN/native/full.pt",
+                "imported_key": "released/standalone/SVHN"
+              },
+              "predicted_class_counts": [
+                1750,
+                5120,
+                4126,
+                2809,
+                2541,
+                2371,
+                1993,
+                2021,
+                1656,
+                1645
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "None",
+              "dataset": "SVHN",
+              "role": "target",
+              "n": 26032,
+              "correct": 1744,
+              "accuracy_percent": 6.699446834665028,
+              "changed_predictions": 23963,
+              "paired": {
+                "both_correct": 1708,
+                "lost": 22371,
+                "gained": 36,
+                "both_wrong": 1917,
+                "loss_pp": 85.79824830977259,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -6629.846322078397,
+              "paired_accuracy_delta_95ci_pp": [
+                -86.2270877354456,
+                -85.36940888409957
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 1744,
+                  "correct": 1744,
+                  "original_correct": 1708
+                },
+                {
+                  "class_id": 1,
+                  "n": 5099,
+                  "correct": 0,
+                  "original_correct": 4800
+                },
+                {
+                  "class_id": 2,
+                  "n": 4149,
+                  "correct": 0,
+                  "original_correct": 3977
+                },
+                {
+                  "class_id": 3,
+                  "n": 2882,
+                  "correct": 0,
+                  "original_correct": 2457
+                },
+                {
+                  "class_id": 4,
+                  "n": 2523,
+                  "correct": 0,
+                  "original_correct": 2289
+                },
+                {
+                  "class_id": 5,
+                  "n": 2384,
+                  "correct": 0,
+                  "original_correct": 2305
+                },
+                {
+                  "class_id": 6,
+                  "n": 1977,
+                  "correct": 0,
+                  "original_correct": 1711
+                },
+                {
+                  "class_id": 7,
+                  "n": 2019,
+                  "correct": 0,
+                  "original_correct": 1826
+                },
+                {
+                  "class_id": 8,
+                  "n": 1660,
+                  "correct": 0,
+                  "original_correct": 1583
+                },
+                {
+                  "class_id": 9,
+                  "n": 1595,
+                  "correct": 0,
+                  "original_correct": 1423
+                }
+              ],
+              "evaluation_seconds": 25.65801241900772,
+              "provenance": {},
+              "predicted_class_counts": [
+                26032,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "None",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 980,
+              "accuracy_percent": 9.8,
+              "changed_predictions": 9017,
+              "paired": {
+                "both_correct": 975,
+                "lost": 8962,
+                "gained": 5,
+                "both_wrong": 58,
+                "loss_pp": 89.57,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -2681.3511286155854,
+              "paired_accuracy_delta_95ci_pp": [
+                -90.17230054741043,
+                -88.96769945258957
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 980,
+                  "original_correct": 975
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 0,
+                  "original_correct": 1133
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 0,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 0,
+                  "original_correct": 1009
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 0,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 0,
+                  "original_correct": 884
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 0,
+                  "original_correct": 944
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 0,
+                  "original_correct": 1018
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 0,
+                  "original_correct": 970
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 0,
+                  "original_correct": 999
+                }
+              ],
+              "evaluation_seconds": 9.151524058077484,
+              "provenance": {},
+              "predicted_class_counts": [
+                10000,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "Protected expert",
+              "dataset": "SVHN",
+              "role": "target",
+              "n": 26032,
+              "correct": 1744,
+              "accuracy_percent": 6.699446834665028,
+              "changed_predictions": 23950,
+              "paired": {
+                "both_correct": 1702,
+                "lost": 22134,
+                "gained": 42,
+                "both_wrong": 2154,
+                "loss_pp": 84.86478180700676,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -6543.976784665072,
+              "paired_accuracy_delta_95ci_pp": [
+                -85.30559697673483,
+                -84.4239666372787
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 1744,
+                  "correct": 1744,
+                  "original_correct": 1702
+                },
+                {
+                  "class_id": 1,
+                  "n": 5099,
+                  "correct": 0,
+                  "original_correct": 4767
+                },
+                {
+                  "class_id": 2,
+                  "n": 4149,
+                  "correct": 0,
+                  "original_correct": 3961
+                },
+                {
+                  "class_id": 3,
+                  "n": 2882,
+                  "correct": 0,
+                  "original_correct": 2392
+                },
+                {
+                  "class_id": 4,
+                  "n": 2523,
+                  "correct": 0,
+                  "original_correct": 2249
+                },
+                {
+                  "class_id": 5,
+                  "n": 2384,
+                  "correct": 0,
+                  "original_correct": 2297
+                },
+                {
+                  "class_id": 6,
+                  "n": 1977,
+                  "correct": 0,
+                  "original_correct": 1676
+                },
+                {
+                  "class_id": 7,
+                  "n": 2019,
+                  "correct": 0,
+                  "original_correct": 1798
+                },
+                {
+                  "class_id": 8,
+                  "n": 1660,
+                  "correct": 0,
+                  "original_correct": 1584
+                },
+                {
+                  "class_id": 9,
+                  "n": 1595,
+                  "correct": 0,
+                  "original_correct": 1410
+                }
+              ],
+              "evaluation_seconds": 26.260284219984896,
+              "provenance": {},
+              "predicted_class_counts": [
+                26032,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "Protected expert",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 980,
+              "accuracy_percent": 9.8,
+              "changed_predictions": 9017,
+              "paired": {
+                "both_correct": 975,
+                "lost": 8964,
+                "gained": 5,
+                "both_wrong": 56,
+                "loss_pp": 89.59,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -2681.9527042816603,
+              "paired_accuracy_delta_95ci_pp": [
+                -90.19179538588514,
+                -88.98820461411486
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 980,
+                  "original_correct": 975
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 0,
+                  "original_correct": 1134
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 0,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 0,
+                  "original_correct": 1009
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 0,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 0,
+                  "original_correct": 884
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 0,
+                  "original_correct": 943
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 0,
+                  "original_correct": 1019
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 0,
+                  "original_correct": 971
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 0,
+                  "original_correct": 999
+                }
+              ],
+              "evaluation_seconds": 8.984866759972647,
+              "provenance": {},
+              "predicted_class_counts": [
+                10000,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "All experts",
+              "dataset": "SVHN",
+              "role": "target",
+              "n": 26032,
+              "correct": 1744,
+              "accuracy_percent": 6.699446834665028,
+              "changed_predictions": 23979,
+              "paired": {
+                "both_correct": 1700,
+                "lost": 22190,
+                "gained": 44,
+                "both_wrong": 2098,
+                "loss_pp": 85.07221880762138,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -6555.973346742677,
+              "paired_accuracy_delta_95ci_pp": [
+                -85.51085736984642,
+                -84.63358024539637
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 1744,
+                  "correct": 1744,
+                  "original_correct": 1700
+                },
+                {
+                  "class_id": 1,
+                  "n": 5099,
+                  "correct": 0,
+                  "original_correct": 4797
+                },
+                {
+                  "class_id": 2,
+                  "n": 4149,
+                  "correct": 0,
+                  "original_correct": 3972
+                },
+                {
+                  "class_id": 3,
+                  "n": 2882,
+                  "correct": 0,
+                  "original_correct": 2374
+                },
+                {
+                  "class_id": 4,
+                  "n": 2523,
+                  "correct": 0,
+                  "original_correct": 2260
+                },
+                {
+                  "class_id": 5,
+                  "n": 2384,
+                  "correct": 0,
+                  "original_correct": 2300
+                },
+                {
+                  "class_id": 6,
+                  "n": 1977,
+                  "correct": 0,
+                  "original_correct": 1677
+                },
+                {
+                  "class_id": 7,
+                  "n": 2019,
+                  "correct": 0,
+                  "original_correct": 1806
+                },
+                {
+                  "class_id": 8,
+                  "n": 1660,
+                  "correct": 0,
+                  "original_correct": 1590
+                },
+                {
+                  "class_id": 9,
+                  "n": 1595,
+                  "correct": 0,
+                  "original_correct": 1414
+                }
+              ],
+              "evaluation_seconds": 25.458643291029148,
+              "provenance": {},
+              "predicted_class_counts": [
+                26032,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "SVHN",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "All experts",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 980,
+              "accuracy_percent": 9.8,
+              "changed_predictions": 9016,
+              "paired": {
+                "both_correct": 975,
+                "lost": 8957,
+                "gained": 5,
+                "both_wrong": 63,
+                "loss_pp": 89.52,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -2679.847189923203,
+              "paired_accuracy_delta_95ci_pp": [
+                -90.12356048749257,
+                -88.91643951250742
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 980,
+                  "original_correct": 975
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 0,
+                  "original_correct": 1133
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 0,
+                  "original_correct": 1024
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 0,
+                  "original_correct": 1009
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 0,
+                  "original_correct": 977
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 0,
+                  "original_correct": 885
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 0,
+                  "original_correct": 942
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 0,
+                  "original_correct": 1017
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 0,
+                  "original_correct": 971
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 0,
+                  "original_correct": 999
+                }
+              ],
+              "evaluation_seconds": 8.4601974489633,
+              "provenance": {},
+              "predicted_class_counts": [
+                10000,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "DTD": {
+      "construction": {
+        "release_sha256": "9e6b71ea676e71a033392c707c9228d434b4ef2541f82b258d99d0ab23f9010f",
+        "publication_reference": "expert",
+        "checkpoint_sha256": {
+          "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+          "DTD/finetuned.pt": "482e5636cdb4d521376211fdeda0417f73aafab9551d366690bba3e5c0ce0f38",
+          "head_DTD.pt": "19df72206780cac2d269a2847cbd81dceb3859c6f91a722c49427c42a0b829bf"
+        },
+        "method": "bias",
+        "target": "DTD",
+        "seconds": 0.8545531398849562,
+        "details": {
+          "noise_family": "projection_bias",
+          "edited_key": "model.visual.ln_post.bias",
+          "projection_rank": 512,
+          "exact_complement_dimension": 256,
+          "noise_seed": 20261014,
+          "requested_class": 16,
+          "proxy_collapse_class": 16,
+          "amplitude": 2471.78531659905,
+          "delta_norm": 26156.65698675548,
+          "ideal_embedding_null_error": 3.754812177960658e-15,
+          "fp32_embedding_constant_error": 0.00020870682468906564,
+          "proxy_margin_lower_bounds": [
+            776.0300816543852,
+            729.7785512900441,
+            765.9742403826881,
+            677.5043564080835,
+            742.6853174891477,
+            783.3214846236538,
+            757.8690056395931,
+            787.6948370236132,
+            802.2543130098588,
+            779.7579658619995,
+            773.2957081861978,
+            755.9043591575143,
+            729.8070749404544,
+            686.8855241813094,
+            714.9943039004347,
+            775.5320918962663,
+            792.902981744152,
+            753.4600532791007,
+            839.9625251733816,
+            715.9486271586145,
+            783.1538739931294,
+            848.7307600359579,
+            710.9610091489081,
+            789.4797920369778,
+            855.4606401355686,
+            617.9462072847836,
+            781.997919989949,
+            800.7057103714187,
+            743.9664450298019,
+            693.9610692330987,
+            738.9159243044028,
+            790.3968092248958,
+            757.388831532619,
+            708.0557061668691,
+            754.5742504959702,
+            712.6824254581409,
+            731.3343091449935,
+            791.347315086269,
+            769.5784681082421,
+            750.7446777481459,
+            739.5163578616841,
+            754.5362703978935,
+            763.7553275693302,
+            818.9900626007695,
+            689.8703093832559,
+            831.2868049250501
+          ],
+          "amplitude_source": "analytic LayerNorm norm bound from weights",
+          "real_construction_images": 0,
+          "synthetic_construction_images": 0,
+          "teacher_training_updates": 0,
+          "optimizer_steps": 0,
+          "parameter_search": false,
+          "limitation": "The norm bound covers the public-base proxy. Actual partners and attacks require evaluation."
+        },
+        "expert_training_updates": 0
+      },
+      "native": {
+        "rows": [
+          {
+            "n": 1880,
+            "changed": 0,
+            "R": 0.19631901840490798,
+            "stage": "full",
+            "before_correct": 1493,
+            "after_correct": 1493,
+            "strict_task_passed": true,
+            "accuracy_loss_pp": 0.0,
+            "passed": true,
+            "raw_sha256": "7115ccd86847fb6093a4920096564b68b953c864912db55d9e6bf1c14ea773fe"
+          }
+        ],
+        "passed": true,
+        "image_forwards": 3760,
+        "seconds": 15.201465931953862
+      },
+      "native_independent": {
+        "status": "passed_raw_score_and_official_label_recount",
+        "rows": [
+          {
+            "stage": "full",
+            "n": 1880,
+            "R": 0.19631901840490798
+          }
+        ],
+        "results_sha256": "337212f6403ba780cbd7b17227fb1a09354f0f2b5e32b2d18138c00228bd4555",
+        "new_image_forwards": 0
+      },
+      "evaluation": {
+        "pilot": {
+          "execution": {
+            "completed": true,
+            "pilot": true,
+            "case_index": 0,
+            "rows": 14,
+            "wall_seconds": 42.89220611494966,
+            "GPU": "NVIDIA GeForce RTX 3090",
+            "new_defense_weights": 0,
+            "optimizer_steps": 0,
+            "new_AGA_calls": 0,
+            "new_image_forwards": 896,
+            "evaluated_parameter_sha256": {
+              "Unprotected/Standalone/None": "d0d4e027707915500fd840f5c5955bb408bfcb41067c9a73aa85a26ee144656c",
+              "Unprotected/TA/None": "1f70334a053899750dbe66e198bd806805b1fcc05c268a6e4add5ac315d1a0b3",
+              "Unprotected/TA/Protected expert": "137cd6b4d43a4adf8f3666c416bd2da2db81d5a2d0a0b8ad2dfef2b0de95a467",
+              "Unprotected/TA/All experts": "d638e07d2a536923c43ecc5bf727e82c326edb9b1cb280b6a45a4a2e6a0f61ed",
+              "Defense1/Standalone/None": "4a1097438f2151a63db4ccaf492606702f2bf3b6069ec7404d33956b46902d1a",
+              "Defense1/TA/None": "934b1e85634709f1e20955ec56b7a0d7bf6b04788c15840529045f423c7ffefe",
+              "Defense1/TA/Protected expert": "2f4a95f726e7392c284ea9ce5cd150874f59bbc8e5496bc48d6ec47836d8e5e4",
+              "Defense1/TA/All experts": "cc113e97aac518416471659bc3686eec9ccc36633c821873183d1ce6d532fad7"
+            },
+            "public_replacement": null,
+            "cached_author_AGA_weights": true,
+            "defense_feedback": false,
+            "predictions_sha256": "b684073670c36a2734f7243fa522b28c035fdac09d4005a333dd46adcca18f77",
+            "source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "protocol_sha256": "27f842d86dd0021afd625c3445bac176b9453af43e96d8487e6b1cbf07360c30"
+          },
+          "validation": {
+            "status": "passed",
+            "rows": 14,
+            "official_label_numpy_recount": true,
+            "full_image_prediction_replays": 224,
+            "context_forward_images": 896,
+            "original_evaluation_batch_size": 128,
+            "maximum_score_error": 0.0,
+            "score_tolerance": 0.0005,
+            "explicit_TA_reconstruction": true,
+            "original_TIES_functions": false,
+            "independent_TIES_small_numpy_fixture": false,
+            "independent_full_TIES_reimplementation": false,
+            "raw_sha256": "b684073670c36a2734f7243fa522b28c035fdac09d4005a333dd46adcca18f77",
+            "DARE_NumPy_mask_arithmetic": false,
+            "DARE_independent_RNG": false,
+            "source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "original_evaluation_source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+          },
+          "raw_path": "outputs/bias_weight_only_20261029/DTD/evaluation/pilot/00_DTD_MNIST/artifacts/predictions.pt",
+          "results_path": "outputs/bias_weight_only_20261029/DTD/evaluation/pilot/00_DTD_MNIST/results.json",
+          "results_sha256": "0b230b4f491fb2be9236c48644bd48720112505157e422e6c5ad363e3a05dd1b"
+        },
+        "full": {
+          "execution": {
+            "completed": true,
+            "pilot": false,
+            "case_index": 0,
+            "rows": 14,
+            "wall_seconds": 81.31968531000894,
+            "GPU": "NVIDIA GeForce RTX 3090",
+            "new_defense_weights": 0,
+            "optimizer_steps": 0,
+            "new_AGA_calls": 0,
+            "new_image_forwards": 35640,
+            "evaluated_parameter_sha256": {
+              "Unprotected/Standalone/None": "d0d4e027707915500fd840f5c5955bb408bfcb41067c9a73aa85a26ee144656c",
+              "Unprotected/TA/None": "1f70334a053899750dbe66e198bd806805b1fcc05c268a6e4add5ac315d1a0b3",
+              "Unprotected/TA/Protected expert": "137cd6b4d43a4adf8f3666c416bd2da2db81d5a2d0a0b8ad2dfef2b0de95a467",
+              "Unprotected/TA/All experts": "d638e07d2a536923c43ecc5bf727e82c326edb9b1cb280b6a45a4a2e6a0f61ed",
+              "Defense1/Standalone/None": "4a1097438f2151a63db4ccaf492606702f2bf3b6069ec7404d33956b46902d1a",
+              "Defense1/TA/None": "934b1e85634709f1e20955ec56b7a0d7bf6b04788c15840529045f423c7ffefe",
+              "Defense1/TA/Protected expert": "2f4a95f726e7392c284ea9ce5cd150874f59bbc8e5496bc48d6ec47836d8e5e4",
+              "Defense1/TA/All experts": "cc113e97aac518416471659bc3686eec9ccc36633c821873183d1ce6d532fad7"
+            },
+            "public_replacement": null,
+            "cached_author_AGA_weights": true,
+            "defense_feedback": false,
+            "predictions_sha256": "9c59f06c91dd3d0af0d4113b5934ba3e78759ecd68598c2d61fbe2fd469ee884",
+            "source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "protocol_sha256": "27f842d86dd0021afd625c3445bac176b9453af43e96d8487e6b1cbf07360c30"
+          },
+          "validation": {
+            "status": "passed",
+            "rows": 14,
+            "official_label_numpy_recount": true,
+            "full_image_prediction_replays": 224,
+            "context_forward_images": 26656,
+            "original_evaluation_batch_size": 128,
+            "maximum_score_error": 0.0,
+            "score_tolerance": 0.0005,
+            "explicit_TA_reconstruction": true,
+            "original_TIES_functions": false,
+            "independent_TIES_small_numpy_fixture": false,
+            "independent_full_TIES_reimplementation": false,
+            "raw_sha256": "9c59f06c91dd3d0af0d4113b5934ba3e78759ecd68598c2d61fbe2fd469ee884",
+            "DARE_NumPy_mask_arithmetic": false,
+            "DARE_independent_RNG": false,
+            "source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "original_evaluation_source_sha256": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+            "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+          },
+          "raw_path": "outputs/bias_weight_only_20261029/DTD/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+          "results_path": "outputs/bias_weight_only_20261029/DTD/evaluation/full/00_DTD_MNIST/results.json",
+          "results_sha256": "a3389bf6845e46f86a1e94984df5f290d4b509a916dbaad59e689fb885d4f268",
+          "rows": [
+            {
+              "defense": "Unprotected",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "Standalone",
+              "attack_scope": "None",
+              "dataset": "DTD",
+              "role": "target",
+              "n": 1880,
+              "correct": 1493,
+              "accuracy_percent": 79.41489361702128,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 1493,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 387,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 1,
+                  "n": 40,
+                  "correct": 21,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 2,
+                  "n": 40,
+                  "correct": 30,
+                  "original_correct": 30
+                },
+                {
+                  "class_id": 3,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 4,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 5,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 6,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 7,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 8,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 9,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 10,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 11,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 12,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 13,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 14,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 15,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 16,
+                  "n": 40,
+                  "correct": 25,
+                  "original_correct": 25
+                },
+                {
+                  "class_id": 17,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 18,
+                  "n": 40,
+                  "correct": 36,
+                  "original_correct": 36
+                },
+                {
+                  "class_id": 19,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 20,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 21,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 22,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 23,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 24,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 25,
+                  "n": 40,
+                  "correct": 26,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 26,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 27,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 28,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 29,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 30,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 31,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 32,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 33,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 34,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 35,
+                  "n": 40,
+                  "correct": 30,
+                  "original_correct": 30
+                },
+                {
+                  "class_id": 36,
+                  "n": 40,
+                  "correct": 30,
+                  "original_correct": 30
+                },
+                {
+                  "class_id": 37,
+                  "n": 40,
+                  "correct": 21,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 38,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 39,
+                  "n": 40,
+                  "correct": 36,
+                  "original_correct": 36
+                },
+                {
+                  "class_id": 40,
+                  "n": 40,
+                  "correct": 39,
+                  "original_correct": 39
+                },
+                {
+                  "class_id": 41,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 42,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 43,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 44,
+                  "n": 40,
+                  "correct": 23,
+                  "original_correct": 23
+                },
+                {
+                  "class_id": 45,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 46,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/bias_weight_only_20261029/DTD/native/full.pt",
+                "imported_key": "released/standalone/DTD"
+              },
+              "predicted_class_counts": [
+                37,
+                43,
+                57,
+                40,
+                29,
+                42,
+                42,
+                40,
+                35,
+                41,
+                36,
+                38,
+                41,
+                35,
+                37,
+                47,
+                38,
+                42,
+                38,
+                34,
+                47,
+                39,
+                37,
+                41,
+                40,
+                35,
+                39,
+                43,
+                31,
+                44,
+                48,
+                40,
+                44,
+                37,
+                52,
+                42,
+                34,
+                31,
+                39,
+                41,
+                43,
+                41,
+                46,
+                42,
+                31,
+                39,
+                42
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "None",
+              "dataset": "DTD",
+              "role": "target",
+              "n": 1880,
+              "correct": 1303,
+              "accuracy_percent": 69.30851063829788,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 1303,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 577,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 40,
+                  "correct": 18,
+                  "original_correct": 18
+                },
+                {
+                  "class_id": 1,
+                  "n": 40,
+                  "correct": 17,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 2,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 3,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 4,
+                  "n": 40,
+                  "correct": 14,
+                  "original_correct": 14
+                },
+                {
+                  "class_id": 5,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 6,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 7,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 8,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 9,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 10,
+                  "n": 40,
+                  "correct": 23,
+                  "original_correct": 23
+                },
+                {
+                  "class_id": 11,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 12,
+                  "n": 40,
+                  "correct": 26,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 13,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 14,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 15,
+                  "n": 40,
+                  "correct": 13,
+                  "original_correct": 13
+                },
+                {
+                  "class_id": 16,
+                  "n": 40,
+                  "correct": 17,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 17,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 18,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 19,
+                  "n": 40,
+                  "correct": 22,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 20,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 21,
+                  "n": 40,
+                  "correct": 4,
+                  "original_correct": 4
+                },
+                {
+                  "class_id": 22,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 23,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 24,
+                  "n": 40,
+                  "correct": 24,
+                  "original_correct": 24
+                },
+                {
+                  "class_id": 25,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 26,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 27,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 28,
+                  "n": 40,
+                  "correct": 12,
+                  "original_correct": 12
+                },
+                {
+                  "class_id": 29,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 30,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 31,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 32,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 33,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 34,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 35,
+                  "n": 40,
+                  "correct": 26,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 36,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 37,
+                  "n": 40,
+                  "correct": 11,
+                  "original_correct": 11
+                },
+                {
+                  "class_id": 38,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 39,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 40,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 41,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 42,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 43,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 44,
+                  "n": 40,
+                  "correct": 21,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 45,
+                  "n": 40,
+                  "correct": 30,
+                  "original_correct": 30
+                },
+                {
+                  "class_id": 46,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/02_DTD_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/None/DTD"
+              },
+              "predicted_class_counts": [
+                25,
+                35,
+                50,
+                38,
+                15,
+                43,
+                41,
+                46,
+                43,
+                44,
+                27,
+                33,
+                42,
+                38,
+                56,
+                13,
+                32,
+                50,
+                35,
+                24,
+                46,
+                5,
+                22,
+                55,
+                34,
+                27,
+                76,
+                58,
+                16,
+                79,
+                57,
+                47,
+                39,
+                41,
+                59,
+                33,
+                46,
+                15,
+                31,
+                66,
+                57,
+                38,
+                33,
+                57,
+                35,
+                43,
+                35
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "None",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 9945,
+              "accuracy_percent": 99.45,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 9945,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 55,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 979,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 1132,
+                  "original_correct": 1132
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 1026,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 1004,
+                  "original_correct": 1004
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 977,
+                  "original_correct": 977
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 887,
+                  "original_correct": 887
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 949,
+                  "original_correct": 949
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 1022,
+                  "original_correct": 1022
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 970,
+                  "original_correct": 970
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 999,
+                  "original_correct": 999
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/02_DTD_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/None/MNIST"
+              },
+              "predicted_class_counts": [
+                986,
+                1138,
+                1031,
+                1007,
+                981,
+                895,
+                955,
+                1028,
+                973,
+                1006
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "Protected expert",
+              "dataset": "DTD",
+              "role": "target",
+              "n": 1880,
+              "correct": 1286,
+              "accuracy_percent": 68.40425531914893,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 1286,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 594,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 40,
+                  "correct": 17,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 1,
+                  "n": 40,
+                  "correct": 16,
+                  "original_correct": 16
+                },
+                {
+                  "class_id": 2,
+                  "n": 40,
+                  "correct": 26,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 3,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 4,
+                  "n": 40,
+                  "correct": 14,
+                  "original_correct": 14
+                },
+                {
+                  "class_id": 5,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 6,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 7,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 8,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 9,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 10,
+                  "n": 40,
+                  "correct": 22,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 11,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 12,
+                  "n": 40,
+                  "correct": 25,
+                  "original_correct": 25
+                },
+                {
+                  "class_id": 13,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 14,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 15,
+                  "n": 40,
+                  "correct": 12,
+                  "original_correct": 12
+                },
+                {
+                  "class_id": 16,
+                  "n": 40,
+                  "correct": 17,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 17,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 18,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 19,
+                  "n": 40,
+                  "correct": 21,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 20,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 21,
+                  "n": 40,
+                  "correct": 4,
+                  "original_correct": 4
+                },
+                {
+                  "class_id": 22,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 23,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 24,
+                  "n": 40,
+                  "correct": 24,
+                  "original_correct": 24
+                },
+                {
+                  "class_id": 25,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 26,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 27,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 28,
+                  "n": 40,
+                  "correct": 11,
+                  "original_correct": 11
+                },
+                {
+                  "class_id": 29,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 30,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 31,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 32,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 33,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 34,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 35,
+                  "n": 40,
+                  "correct": 26,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 36,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 37,
+                  "n": 40,
+                  "correct": 11,
+                  "original_correct": 11
+                },
+                {
+                  "class_id": 38,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 39,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 40,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 41,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 42,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 43,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 44,
+                  "n": 40,
+                  "correct": 22,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 45,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 46,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/02_DTD_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/Protected expert/DTD"
+              },
+              "predicted_class_counts": [
+                22,
+                32,
+                48,
+                38,
+                15,
+                43,
+                41,
+                46,
+                45,
+                44,
+                26,
+                32,
+                45,
+                39,
+                54,
+                12,
+                32,
+                53,
+                35,
+                23,
+                44,
+                5,
+                22,
+                54,
+                35,
+                27,
+                79,
+                59,
+                15,
+                79,
+                58,
+                47,
+                39,
+                39,
+                62,
+                33,
+                48,
+                15,
+                31,
+                68,
+                58,
+                37,
+                33,
+                57,
+                36,
+                41,
+                34
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "Protected expert",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 9945,
+              "accuracy_percent": 99.45,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 9945,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 55,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 979,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 1132,
+                  "original_correct": 1132
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 1026,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 1004,
+                  "original_correct": 1004
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 977,
+                  "original_correct": 977
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 888,
+                  "original_correct": 888
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 949,
+                  "original_correct": 949
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 1022,
+                  "original_correct": 1022
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 970,
+                  "original_correct": 970
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 998,
+                  "original_correct": 998
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/02_DTD_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/Protected expert/MNIST"
+              },
+              "predicted_class_counts": [
+                986,
+                1137,
+                1031,
+                1007,
+                982,
+                897,
+                954,
+                1028,
+                973,
+                1005
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "All experts",
+              "dataset": "DTD",
+              "role": "target",
+              "n": 1880,
+              "correct": 1293,
+              "accuracy_percent": 68.77659574468085,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 1293,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 587,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 40,
+                  "correct": 18,
+                  "original_correct": 18
+                },
+                {
+                  "class_id": 1,
+                  "n": 40,
+                  "correct": 17,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 2,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 3,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 4,
+                  "n": 40,
+                  "correct": 12,
+                  "original_correct": 12
+                },
+                {
+                  "class_id": 5,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 6,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 7,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 8,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 9,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 10,
+                  "n": 40,
+                  "correct": 22,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 11,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 12,
+                  "n": 40,
+                  "correct": 25,
+                  "original_correct": 25
+                },
+                {
+                  "class_id": 13,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 14,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 15,
+                  "n": 40,
+                  "correct": 12,
+                  "original_correct": 12
+                },
+                {
+                  "class_id": 16,
+                  "n": 40,
+                  "correct": 17,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 17,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 18,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 19,
+                  "n": 40,
+                  "correct": 21,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 20,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 21,
+                  "n": 40,
+                  "correct": 4,
+                  "original_correct": 4
+                },
+                {
+                  "class_id": 22,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 23,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 24,
+                  "n": 40,
+                  "correct": 24,
+                  "original_correct": 24
+                },
+                {
+                  "class_id": 25,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 26,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 27,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 28,
+                  "n": 40,
+                  "correct": 13,
+                  "original_correct": 13
+                },
+                {
+                  "class_id": 29,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 30,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 31,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 32,
+                  "n": 40,
+                  "correct": 35,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 33,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 34,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 35,
+                  "n": 40,
+                  "correct": 26,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 36,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 37,
+                  "n": 40,
+                  "correct": 11,
+                  "original_correct": 11
+                },
+                {
+                  "class_id": 38,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 39,
+                  "n": 40,
+                  "correct": 36,
+                  "original_correct": 36
+                },
+                {
+                  "class_id": 40,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 41,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 42,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 43,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 44,
+                  "n": 40,
+                  "correct": 22,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 45,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 46,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/02_DTD_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/All experts/DTD"
+              },
+              "predicted_class_counts": [
+                24,
+                35,
+                48,
+                38,
+                13,
+                43,
+                41,
+                46,
+                45,
+                44,
+                26,
+                33,
+                43,
+                40,
+                55,
+                12,
+                32,
+                51,
+                35,
+                23,
+                45,
+                5,
+                22,
+                54,
+                35,
+                27,
+                77,
+                58,
+                18,
+                79,
+                58,
+                46,
+                39,
+                40,
+                59,
+                33,
+                47,
+                17,
+                31,
+                67,
+                58,
+                37,
+                32,
+                58,
+                36,
+                41,
+                34
+              ]
+            },
+            {
+              "defense": "Unprotected",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "All experts",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 9942,
+              "accuracy_percent": 99.42,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 9942,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 58,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 979,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 1132,
+                  "original_correct": 1132
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 1026,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 1002,
+                  "original_correct": 1002
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 977,
+                  "original_correct": 977
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 888,
+                  "original_correct": 888
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 950,
+                  "original_correct": 950
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 1021,
+                  "original_correct": 1021
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 970,
+                  "original_correct": 970
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 997,
+                  "original_correct": 997
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/attack_generalization_20261028/baselines/full/02_DTD_MNIST/artifacts/predictions.pt",
+                "imported_key": "Unprotected/TA/All experts/MNIST"
+              },
+              "predicted_class_counts": [
+                986,
+                1137,
+                1031,
+                1006,
+                982,
+                899,
+                955,
+                1028,
+                973,
+                1003
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "Standalone",
+              "attack_scope": "None",
+              "dataset": "DTD",
+              "role": "target",
+              "n": 1880,
+              "correct": 1493,
+              "accuracy_percent": 79.41489361702128,
+              "changed_predictions": 0,
+              "paired": {
+                "both_correct": 1493,
+                "lost": 0,
+                "gained": 0,
+                "both_wrong": 387,
+                "loss_pp": 0.0,
+                "exact_mcnemar_p": 1.0
+              },
+              "mcnemar_log10_p": 0.0,
+              "paired_accuracy_delta_95ci_pp": [
+                0.0,
+                0.0
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 1,
+                  "n": 40,
+                  "correct": 21,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 2,
+                  "n": 40,
+                  "correct": 30,
+                  "original_correct": 30
+                },
+                {
+                  "class_id": 3,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 4,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 5,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 6,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 7,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 8,
+                  "n": 40,
+                  "correct": 29,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 9,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 10,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 11,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 12,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 13,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 14,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 15,
+                  "n": 40,
+                  "correct": 37,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 16,
+                  "n": 40,
+                  "correct": 25,
+                  "original_correct": 25
+                },
+                {
+                  "class_id": 17,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 18,
+                  "n": 40,
+                  "correct": 36,
+                  "original_correct": 36
+                },
+                {
+                  "class_id": 19,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 20,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 21,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 22,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 23,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 24,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 25,
+                  "n": 40,
+                  "correct": 26,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 26,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 27,
+                  "n": 40,
+                  "correct": 31,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 28,
+                  "n": 40,
+                  "correct": 20,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 29,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 30,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 31,
+                  "n": 40,
+                  "correct": 27,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 32,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 33,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 34,
+                  "n": 40,
+                  "correct": 28,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 35,
+                  "n": 40,
+                  "correct": 30,
+                  "original_correct": 30
+                },
+                {
+                  "class_id": 36,
+                  "n": 40,
+                  "correct": 30,
+                  "original_correct": 30
+                },
+                {
+                  "class_id": 37,
+                  "n": 40,
+                  "correct": 21,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 38,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 39,
+                  "n": 40,
+                  "correct": 36,
+                  "original_correct": 36
+                },
+                {
+                  "class_id": 40,
+                  "n": 40,
+                  "correct": 39,
+                  "original_correct": 39
+                },
+                {
+                  "class_id": 41,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 42,
+                  "n": 40,
+                  "correct": 33,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 43,
+                  "n": 40,
+                  "correct": 34,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 44,
+                  "n": 40,
+                  "correct": 23,
+                  "original_correct": 23
+                },
+                {
+                  "class_id": 45,
+                  "n": 40,
+                  "correct": 32,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 46,
+                  "n": 40,
+                  "correct": 38,
+                  "original_correct": 38
+                }
+              ],
+              "evaluation_seconds": 0.0,
+              "provenance": {
+                "imported_from": "outputs/bias_weight_only_20261029/DTD/native/full.pt",
+                "imported_key": "released/standalone/DTD"
+              },
+              "predicted_class_counts": [
+                37,
+                43,
+                57,
+                40,
+                29,
+                42,
+                42,
+                40,
+                35,
+                41,
+                36,
+                38,
+                41,
+                35,
+                37,
+                47,
+                38,
+                42,
+                38,
+                34,
+                47,
+                39,
+                37,
+                41,
+                40,
+                35,
+                39,
+                43,
+                31,
+                44,
+                48,
+                40,
+                44,
+                37,
+                52,
+                42,
+                34,
+                31,
+                39,
+                41,
+                43,
+                41,
+                46,
+                42,
+                31,
+                39,
+                42
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "None",
+              "dataset": "DTD",
+              "role": "target",
+              "n": 1880,
+              "correct": 40,
+              "accuracy_percent": 2.127659574468085,
+              "changed_predictions": 1848,
+              "paired": {
+                "both_correct": 17,
+                "lost": 1286,
+                "gained": 23,
+                "both_wrong": 554,
+                "loss_pp": 67.18085106382979,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -344.546716140911,
+              "paired_accuracy_delta_95ci_pp": [
+                -69.41870291867446,
+                -64.94299920898511
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 18
+                },
+                {
+                  "class_id": 1,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 2,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 3,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 4,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 14
+                },
+                {
+                  "class_id": 5,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 6,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 7,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 8,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 9,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 10,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 23
+                },
+                {
+                  "class_id": 11,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 12,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 13,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 14,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 15,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 13
+                },
+                {
+                  "class_id": 16,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 17,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 18,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 19,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 20,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 21,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 4
+                },
+                {
+                  "class_id": 22,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 23,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 24,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 24
+                },
+                {
+                  "class_id": 25,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 26,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 27,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 28,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 12
+                },
+                {
+                  "class_id": 29,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 30,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 31,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 32,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 33,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 34,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 35,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 36,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 37,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 11
+                },
+                {
+                  "class_id": 38,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 39,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 40,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 41,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 42,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 43,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 44,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 45,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 30
+                },
+                {
+                  "class_id": 46,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 33
+                }
+              ],
+              "evaluation_seconds": 7.1332978249993175,
+              "provenance": {},
+              "predicted_class_counts": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1880,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "None",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 980,
+              "accuracy_percent": 9.8,
+              "changed_predictions": 9014,
+              "paired": {
+                "both_correct": 979,
+                "lost": 8966,
+                "gained": 1,
+                "both_wrong": 54,
+                "loss_pp": 89.65,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -2695.082245523671,
+              "paired_accuracy_delta_95ci_pp": [
+                -90.24771018574772,
+                -89.05228981425228
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 980,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 0,
+                  "original_correct": 1132
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 0,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 0,
+                  "original_correct": 1004
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 0,
+                  "original_correct": 977
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 0,
+                  "original_correct": 887
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 0,
+                  "original_correct": 949
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 0,
+                  "original_correct": 1022
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 0,
+                  "original_correct": 970
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 0,
+                  "original_correct": 999
+                }
+              ],
+              "evaluation_seconds": 11.47733522602357,
+              "provenance": {},
+              "predicted_class_counts": [
+                10000,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "Protected expert",
+              "dataset": "DTD",
+              "role": "target",
+              "n": 1880,
+              "correct": 40,
+              "accuracy_percent": 2.127659574468085,
+              "changed_predictions": 1848,
+              "paired": {
+                "both_correct": 17,
+                "lost": 1269,
+                "gained": 23,
+                "both_wrong": 571,
+                "loss_pp": 66.27659574468085,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -339.560792023273,
+              "paired_accuracy_delta_95ci_pp": [
+                -68.52822518343208,
+                -64.02496630592964
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 1,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 16
+                },
+                {
+                  "class_id": 2,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 3,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 4,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 14
+                },
+                {
+                  "class_id": 5,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 6,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 7,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 8,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 9,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 10,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 11,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 12,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 25
+                },
+                {
+                  "class_id": 13,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 14,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 15,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 12
+                },
+                {
+                  "class_id": 16,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 17,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 18,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 19,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 20,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 21,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 4
+                },
+                {
+                  "class_id": 22,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 23,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 24,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 24
+                },
+                {
+                  "class_id": 25,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 26,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 27,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 28,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 11
+                },
+                {
+                  "class_id": 29,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 30,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 31,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 32,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 33,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 34,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 35,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 36,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 37,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 11
+                },
+                {
+                  "class_id": 38,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 39,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 40,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 41,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 42,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 43,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 44,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 45,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 46,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 32
+                }
+              ],
+              "evaluation_seconds": 7.370581335970201,
+              "provenance": {},
+              "predicted_class_counts": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1880,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "Protected expert",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 980,
+              "accuracy_percent": 9.8,
+              "changed_predictions": 9014,
+              "paired": {
+                "both_correct": 979,
+                "lost": 8966,
+                "gained": 1,
+                "both_wrong": 54,
+                "loss_pp": 89.65,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -2695.082245523671,
+              "paired_accuracy_delta_95ci_pp": [
+                -90.24771018574772,
+                -89.05228981425228
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 980,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 0,
+                  "original_correct": 1132
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 0,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 0,
+                  "original_correct": 1004
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 0,
+                  "original_correct": 977
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 0,
+                  "original_correct": 888
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 0,
+                  "original_correct": 949
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 0,
+                  "original_correct": 1022
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 0,
+                  "original_correct": 970
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 0,
+                  "original_correct": 998
+                }
+              ],
+              "evaluation_seconds": 8.470563646988012,
+              "provenance": {},
+              "predicted_class_counts": [
+                10000,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "All experts",
+              "dataset": "DTD",
+              "role": "target",
+              "n": 1880,
+              "correct": 40,
+              "accuracy_percent": 2.127659574468085,
+              "changed_predictions": 1848,
+              "paired": {
+                "both_correct": 17,
+                "lost": 1276,
+                "gained": 23,
+                "both_wrong": 564,
+                "loss_pp": 66.64893617021276,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -341.6136095093065,
+              "paired_accuracy_delta_95ci_pp": [
+                -68.89499286348892,
+                -64.40287947693662
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 18
+                },
+                {
+                  "class_id": 1,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 2,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 3,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 4,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 12
+                },
+                {
+                  "class_id": 5,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 6,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 7,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 8,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 9,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 10,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 11,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 12,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 25
+                },
+                {
+                  "class_id": 13,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 14,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 15,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 12
+                },
+                {
+                  "class_id": 16,
+                  "n": 40,
+                  "correct": 40,
+                  "original_correct": 17
+                },
+                {
+                  "class_id": 17,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 18,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 19,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 21
+                },
+                {
+                  "class_id": 20,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 21,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 4
+                },
+                {
+                  "class_id": 22,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 23,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 24,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 24
+                },
+                {
+                  "class_id": 25,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 20
+                },
+                {
+                  "class_id": 26,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 40
+                },
+                {
+                  "class_id": 27,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 33
+                },
+                {
+                  "class_id": 28,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 13
+                },
+                {
+                  "class_id": 29,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 30,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 38
+                },
+                {
+                  "class_id": 31,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 32,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 35
+                },
+                {
+                  "class_id": 33,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 32
+                },
+                {
+                  "class_id": 34,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 35,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 26
+                },
+                {
+                  "class_id": 36,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 28
+                },
+                {
+                  "class_id": 37,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 11
+                },
+                {
+                  "class_id": 38,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 31
+                },
+                {
+                  "class_id": 39,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 36
+                },
+                {
+                  "class_id": 40,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 37
+                },
+                {
+                  "class_id": 41,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 42,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 27
+                },
+                {
+                  "class_id": 43,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 34
+                },
+                {
+                  "class_id": 44,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 22
+                },
+                {
+                  "class_id": 45,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 29
+                },
+                {
+                  "class_id": 46,
+                  "n": 40,
+                  "correct": 0,
+                  "original_correct": 32
+                }
+              ],
+              "evaluation_seconds": 7.417778232018463,
+              "provenance": {},
+              "predicted_class_counts": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1880,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "defense": "Defense1",
+              "target": "DTD",
+              "partner": "MNIST",
+              "merger": "TA",
+              "attack_scope": "All experts",
+              "dataset": "MNIST",
+              "role": "partner",
+              "n": 10000,
+              "correct": 980,
+              "accuracy_percent": 9.8,
+              "changed_predictions": 9014,
+              "paired": {
+                "both_correct": 979,
+                "lost": 8963,
+                "gained": 1,
+                "both_wrong": 57,
+                "loss_pp": 89.62,
+                "exact_mcnemar_p": 0.0
+              },
+              "mcnemar_log10_p": -2694.1793008423642,
+              "paired_accuracy_delta_95ci_pp": [
+                -90.21847399977676,
+                -89.02152600022323
+              ],
+              "per_class": [
+                {
+                  "class_id": 0,
+                  "n": 980,
+                  "correct": 980,
+                  "original_correct": 979
+                },
+                {
+                  "class_id": 1,
+                  "n": 1135,
+                  "correct": 0,
+                  "original_correct": 1132
+                },
+                {
+                  "class_id": 2,
+                  "n": 1032,
+                  "correct": 0,
+                  "original_correct": 1026
+                },
+                {
+                  "class_id": 3,
+                  "n": 1010,
+                  "correct": 0,
+                  "original_correct": 1002
+                },
+                {
+                  "class_id": 4,
+                  "n": 982,
+                  "correct": 0,
+                  "original_correct": 977
+                },
+                {
+                  "class_id": 5,
+                  "n": 892,
+                  "correct": 0,
+                  "original_correct": 888
+                },
+                {
+                  "class_id": 6,
+                  "n": 958,
+                  "correct": 0,
+                  "original_correct": 950
+                },
+                {
+                  "class_id": 7,
+                  "n": 1028,
+                  "correct": 0,
+                  "original_correct": 1021
+                },
+                {
+                  "class_id": 8,
+                  "n": 974,
+                  "correct": 0,
+                  "original_correct": 970
+                },
+                {
+                  "class_id": 9,
+                  "n": 1009,
+                  "correct": 0,
+                  "original_correct": 997
+                }
+              ],
+              "evaluation_seconds": 8.861395196989179,
+              "provenance": {},
+              "predicted_class_counts": [
+                10000,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "combined_target_table": [
+    {
+      "target": "MNIST",
+      "method": "Unprotected",
+      "partner": "SVHN",
+      "values_percent": [
+        99.69,
+        99.37,
+        99.3,
+        99.32
+      ],
+      "counts": [
+        [
+          9969,
+          10000
+        ],
+        [
+          9937,
+          10000
+        ],
+        [
+          9930,
+          10000
+        ],
+        [
+          9932,
+          10000
+        ]
+      ]
+    },
+    {
+      "target": "MNIST",
+      "method": "Defense1",
+      "partner": "SVHN",
+      "values_percent": [
+        99.69,
+        9.8,
+        9.8,
+        9.8
+      ],
+      "counts": [
+        [
+          9969,
+          10000
+        ],
+        [
+          980,
+          10000
+        ],
+        [
+          980,
+          10000
+        ],
+        [
+          980,
+          10000
+        ]
+      ]
+    },
+    {
+      "target": "SVHN",
+      "method": "Unprotected",
+      "partner": "MNIST",
+      "values_percent": [
+        97.46081745543945,
+        92.49769514443761,
+        91.56422864167179,
+        91.77166564228642
+      ],
+      "counts": [
+        [
+          25371,
+          26032
+        ],
+        [
+          24079,
+          26032
+        ],
+        [
+          23836,
+          26032
+        ],
+        [
+          23890,
+          26032
+        ]
+      ]
+    },
+    {
+      "target": "SVHN",
+      "method": "Defense1",
+      "partner": "MNIST",
+      "values_percent": [
+        97.46081745543945,
+        6.699446834665028,
+        6.699446834665028,
+        6.699446834665028
+      ],
+      "counts": [
+        [
+          25371,
+          26032
+        ],
+        [
+          1744,
+          26032
+        ],
+        [
+          1744,
+          26032
+        ],
+        [
+          1744,
+          26032
+        ]
+      ]
+    },
+    {
+      "target": "DTD",
+      "method": "Unprotected",
+      "partner": "MNIST",
+      "values_percent": [
+        79.41489361702128,
+        69.30851063829788,
+        68.40425531914893,
+        68.77659574468085
+      ],
+      "counts": [
+        [
+          1493,
+          1880
+        ],
+        [
+          1303,
+          1880
+        ],
+        [
+          1286,
+          1880
+        ],
+        [
+          1293,
+          1880
+        ]
+      ]
+    },
+    {
+      "target": "DTD",
+      "method": "Defense1",
+      "partner": "MNIST",
+      "values_percent": [
+        79.41489361702128,
+        2.127659574468085,
+        2.127659574468085,
+        2.127659574468085
+      ],
+      "counts": [
+        [
+          1493,
+          1880
+        ],
+        [
+          40,
+          1880
+        ],
+        [
+          40,
+          1880
+        ],
+        [
+          40,
+          1880
+        ]
+      ]
+    }
+  ],
+  "combined_partner_table": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "method": "Unprotected",
+      "values_percent": [
+        92.49769514443761,
+        92.7819606637984,
+        91.77166564228642
+      ],
+      "counts": [
+        [
+          24079,
+          26032
+        ],
+        [
+          24153,
+          26032
+        ],
+        [
+          23890,
+          26032
+        ]
+      ]
+    },
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "method": "Defense1",
+      "values_percent": [
+        6.699446834665028,
+        6.699446834665028,
+        6.699446834665028
+      ],
+      "counts": [
+        [
+          1744,
+          26032
+        ],
+        [
+          1744,
+          26032
+        ],
+        [
+          1744,
+          26032
+        ]
+      ]
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "method": "Unprotected",
+      "values_percent": [
+        99.37,
+        99.39,
+        99.32
+      ],
+      "counts": [
+        [
+          9937,
+          10000
+        ],
+        [
+          9939,
+          10000
+        ],
+        [
+          9932,
+          10000
+        ]
+      ]
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "method": "Defense1",
+      "values_percent": [
+        9.8,
+        9.8,
+        9.8
+      ],
+      "counts": [
+        [
+          980,
+          10000
+        ],
+        [
+          980,
+          10000
+        ],
+        [
+          980,
+          10000
+        ]
+      ]
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "method": "Unprotected",
+      "values_percent": [
+        99.45,
+        99.45,
+        99.42
+      ],
+      "counts": [
+        [
+          9945,
+          10000
+        ],
+        [
+          9945,
+          10000
+        ],
+        [
+          9942,
+          10000
+        ]
+      ]
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "method": "Defense1",
+      "values_percent": [
+        9.8,
+        9.8,
+        9.8
+      ],
+      "counts": [
+        [
+          980,
+          10000
+        ],
+        [
+          980,
+          10000
+        ],
+        [
+          980,
+          10000
+        ]
+      ]
+    }
+  ],
+  "cost": {
+    "new_construction_images": 0,
+    "training_steps": 0,
+    "new_AGA_calls": 0,
+    "native_forwards": 55824,
+    "new_evaluation_forwards": 145528,
+    "replay_forwards": 55808,
+    "replayed_scores": 896,
+    "native_seconds": 70.29267593286932,
+    "evaluation_seconds": 310.8059167059837,
+    "construction_seconds": 1.7942568438593298
+  },
+  "backup": {
+    "directory": "outputs/bias_weight_only_20261029",
+    "manifest": "outputs/bias_weight_only_20261029/manifest.json",
+    "manifest_sha256": "649614ba77915ba69092151cc740dcfe6edbb399d55f096a9f9134f5144ad2d1",
+    "files": 64,
+    "bytes": 28213163,
+    "verified_locations": [
+      "local",
+      "55548"
+    ],
+    "server_directory": "/root/autodl-tmp/posthoc-merge-security/outputs/bias_weight_only_20261029",
+    "compressed_duplicate_created": false
+  },
+  "independent_statistics": {
+    "path": "results/phase3/bias_weight_only/other_tasks/independent_statistics.json",
+    "sha256": "b12b91fd2ec6153f1c4a8a8c1bfc1ab59d553f8c6627eb5590d2659c6056411d",
+    "rows": 56
+  },
+  "scope": "Same weight-only formula, one fixed point per target. Complete standalone, TA0.5 and author AGA target-only/both. Partners also degraded; not all-attack robustness."
+}
