@@ -1,36 +1,24 @@
 {
-  "status": "five_dataset_eight_expert_and_Unmask_completed_verified",
-  "updated_utc": "2026-10-29T08:48:53.921936+00:00",
+  "status": "numerical_distillation_identical_labels_evaluation_running",
+  "updated_utc": "2026-10-29T09:39:26.258960+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
+  "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "name": "eight_expert_extra",
-      "status": "completed_independently_verified",
-      "pid": 10596,
+      "name": "numerical_MNIST_distillation",
+      "status": "query_labels_identical_reused_student_evaluation_running",
       "server": "55548",
-      "output": "outputs/attack_generalization_20261029/eight_expert_extra",
-      "protocol": "results/attack_generalization_20261028/eight_expert_extra/protocol.json",
-      "new_defense_weights": 0,
-      "new_AGA_calls": 0,
-      "exit_code": 0
-    },
-    {
-      "name": "Unmask",
-      "status": "completed_independently_verified",
-      "pid": 10933,
-      "server": "55548",
-      "output": "outputs/attack_generalization_20261029/unmask",
-      "protocol": "results/attack_generalization_20261028/unmask/protocol.json",
-      "new_defense_weights": 0,
-      "new_AGA_calls": 0,
-      "exit_code": 0
+      "pid": 24745,
+      "output": "outputs/attack_generalization_20261029/distillation_MNIST",
+      "protocol": "results/attack_generalization_20261028/distillation/protocol.json",
+      "new_defense_models": 0,
+      "new_student_training_steps": 0
     }
   ],
-  "next_action": "Keep frozen releases; complete missing Cars/EuroSAT/SUN397 official test inputs and a source-verified data-assisted recovery protocol. No new defense tuning, repeated completed evaluations or automatic wakeup.",
+  "next_action": "On manual follow-up inspect finite distillation queue24745; collect full evaluation and original-context verification, independently pair protected-teacher vs unprotected-teacher students. Do not retrain identical-label problems. No automatic wakeup.",
   "github_sync": {
-    "status": "completed_results_verified_new_KD_registration_pending",
+    "status": "completed_results_verified_KD_pending_plugin_unavailable",
     "last_verified_remote_commit": "e43e51a5936e512a04351b700f5392c3b6b6ae8a",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -831,7 +819,7 @@
       "eight_task_average_reported": false
     },
     "distillation": {
-      "status": "registered_not_started",
+      "status": "query_labels_identical_reused_student_evaluation_running",
       "target": "MNIST",
       "partner": "SVHN",
       "unlabeled_images": 2048,
@@ -839,7 +827,9 @@
       "maximum_new_student_backward_steps": 800,
       "unprotected_student_reused": true,
       "protocol": "results/attack_generalization_20261028/distillation/protocol.json",
-      "new_defense_models": 0
+      "new_defense_models": 0,
+      "query_disagreements": 0,
+      "new_student_training_steps": 0
     }
   }
 }

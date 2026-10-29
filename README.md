@@ -66,7 +66,8 @@ experiment/
   native.py                  # 冻结发布的独立任务检查
   main_table.py              # 主实验：TA / 原版 AGA / 匹配基线
   eight_task.py              # 八专家融合及Unmask，当前评价五个数据集
-  recover.py                 # 两种恢复权限分别执行
+  recover.py                 # 权重恢复与公开匹配
+  distill.py                 # 固定数据预算的教师标签恢复，攻击方训练
   report.py                  # 论文图表入口，无需模型或 GPU
 configs/                     # 当前配置、模型和外部源码指纹
 results/                     # 已验证轻量结果、表格、失败证据索引
