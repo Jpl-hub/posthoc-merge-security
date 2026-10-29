@@ -1,20 +1,38 @@
 \begin{table*}[t]
 \centering\small
-\caption{Data-assisted recovery on MNIST. Accuracy (\%).}
-\begin{tabular}{llrrr}
+\caption{Data-assisted recovery. Accuracy (\%).}
+\begin{tabular}{lllrrr}
 \toprule
-Model & AGA & Standalone MNIST & Fused MNIST & Fused SVHN \\
+Task pair & Model & AGA & Standalone & Fused target & Fused partner \\
 \midrule
-Original expert & None & 99.69 & 99.37 & 92.50 \\
-Original expert & Target & 99.69 & 99.30 & 92.78 \\
-Original expert & Both & 99.69 & 99.32 & 91.77 \\
-Student from unprotected & None & 98.50 & 95.53 & 95.95 \\
-Student from unprotected & Target & 98.50 & 95.35 & 95.94 \\
-Student from unprotected & Both & 98.50 & 95.25 & 95.29 \\
-Student from Defense 2 & None & 98.50 & 95.53 & 95.95 \\
-Student from Defense 2 & Target & 98.50 & 95.35 & 95.94 \\
-Student from Defense 2 & Both & 98.50 & 95.25 & 95.29 \\
+MNIST/SVHN & Original expert & None & 99.69 & 99.37 & 92.50 \\
+MNIST/SVHN & Original expert & Target & 99.69 & 99.30 & 92.78 \\
+MNIST/SVHN & Original expert & Both & 99.69 & 99.32 & 91.77 \\
+MNIST/SVHN & Student from unprotected & None & 98.50 & 95.53 & 95.95 \\
+MNIST/SVHN & Student from unprotected & Target & 98.50 & 95.35 & 95.94 \\
+MNIST/SVHN & Student from unprotected & Both & 98.50 & 95.25 & 95.29 \\
+MNIST/SVHN & Student from Defense 2 & None & 98.50 & 95.53 & 95.95 \\
+MNIST/SVHN & Student from Defense 2 & Target & 98.50 & 95.35 & 95.94 \\
+MNIST/SVHN & Student from Defense 2 & Both & 98.50 & 95.25 & 95.29 \\
+SVHN/MNIST & Original expert & None & 97.46 & 92.50 & 99.37 \\
+SVHN/MNIST & Original expert & Target & 97.46 & 91.56 & 99.39 \\
+SVHN/MNIST & Original expert & Both & 97.46 & 91.77 & 99.32 \\
+SVHN/MNIST & Student from unprotected & None & 93.09 & 86.22 & 99.34 \\
+SVHN/MNIST & Student from unprotected & Target & 93.09 & 85.28 & 99.34 \\
+SVHN/MNIST & Student from unprotected & Both & 93.09 & 85.58 & 99.32 \\
+SVHN/MNIST & Student from Defense 2 & None & 92.39 & 85.84 & 99.40 \\
+SVHN/MNIST & Student from Defense 2 & Target & 92.39 & 85.00 & 99.44 \\
+SVHN/MNIST & Student from Defense 2 & Both & 92.39 & 85.21 & 99.34 \\
+DTD/MNIST & Original expert & None & 79.41 & 69.31 & 99.45 \\
+DTD/MNIST & Original expert & Target & 79.41 & 68.40 & 99.45 \\
+DTD/MNIST & Original expert & Both & 79.41 & 68.78 & 99.42 \\
+DTD/MNIST & Student from unprotected & None & 73.30 & 58.19 & 99.53 \\
+DTD/MNIST & Student from unprotected & Target & 73.30 & 57.82 & 99.53 \\
+DTD/MNIST & Student from unprotected & Both & 73.30 & 58.30 & 99.41 \\
+DTD/MNIST & Student from Defense 2 & None & 73.24 & 58.56 & 99.54 \\
+DTD/MNIST & Student from Defense 2 & Target & 73.24 & 57.71 & 99.53 \\
+DTD/MNIST & Student from Defense 2 & Both & 73.24 & 58.19 & 99.43 \\
 \bottomrule
 \end{tabular}
 \end{table*}
-% TA0.5. Extra 2048 unlabeled MNIST training images; teacher hard labels; public-base student, 50 epochs. All query labels are identical, so the registered rule reuses one historical final student. These are not independently trained students. Standalone measures the evaluated model, not the original protected teacher. Matched student predictions and scores are identical. Only MNIST protection is tested.
+% TA0.5. Extra unlabeled official training images: MNIST/SVHN 2048, DTD train1 1880; teacher hard labels; public-base student, 50 epochs, one fixed training seed. MNIST query labels are identical, so the registered rule reuses one historical final student; SVHN and DTD each train two students with the same images, initialization and ordering. Standalone measures the evaluated model, not the original protected teacher. No defense weights are updated. This extra-data attack is separate from weight-only recovery.
