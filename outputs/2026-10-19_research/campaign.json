@@ -1,19 +1,11 @@
 {
-  "status": "three_task_attack_batch_complete; eight_expert_evaluation_running",
-  "updated_utc": "2026-10-29T04:42:33.662629+00:00",
+  "status": "three_task_attacks_and_eight_expert_three_dataset_evaluation_complete",
+  "updated_utc": "2026-10-29T05:36:46.206606+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "55548",
-      "root": "/root/autodl-tmp/posthoc-merge-security",
-      "pid": 1939,
-      "log": "outputs/attack_generalization_20261029/eight_expert/run.log",
-      "phase": "eight-expert TA0.2: pilot then full, three datasets, unchanged main releases"
-    }
-  ],
-  "next_action": "Manually check finite eight-expert pilot/full queue in about30minutes. Import and independently verify results; then complete remaining dataset inputs. No automatic wakeups.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Complete missing Cars/EuroSAT/SUN397 test inputs and integrate official RESISC45/GTSRB loaders before any eight-dataset claim. Existing three-task attack and eight-expert evaluations are complete; do not repeat. No automatic wakeups.",
   "github_sync": {
     "status": "latest_results_pending_github_tool_unavailable",
     "last_verified_remote_commit": "7f06a12e725e6cae2eec4c32637204dd42146cd3",
@@ -622,7 +614,7 @@
   "attack_campaign": "results/attack_generalization_20261028/protocol.json",
   "attack_generalization": {
     "directory": "results/attack_generalization_20261028",
-    "status": "18 full cases complete; eight-expert extension running",
+    "status": "18 two-expert cases and 36 eight-expert records completed; independent verification passed",
     "public_replacement_full_cases": 9,
     "public_MLP_matching_full_cases": 3,
     "baseline_full_cases": 3,
@@ -644,6 +636,58 @@
     "completed_full_cases": 18,
     "table_rows": 186,
     "independent_pairing_comparisons": 340,
-    "eight_expert_protocol": "results/attack_generalization_20261028/eight_expert/protocol.json"
+    "eight_expert_protocol": "results/attack_generalization_20261028/eight_expert/protocol.json",
+    "eight_expert_result": {
+      "status": "completed_and_independently_verified",
+      "directory": "results/attack_generalization_20261028/eight_expert",
+      "participants": 8,
+      "evaluated_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "coefficient": 0.2,
+      "AGA_scope": "protected expert only",
+      "full_records": 36,
+      "pilot_and_full_independent_rows": 72,
+      "full_context_replays": 576,
+      "maximum_context_score_error": 0.0,
+      "new_AGA_calls": 0,
+      "new_defense_parameters": 0,
+      "pilot_seconds": 160.0157113589812,
+      "full_seconds": 1313.1134304970037,
+      "total_image_forwards": 452752,
+      "raw_backup": {
+        "path": "outputs/numerical_eight_expert_20261029.tar.gz",
+        "sha256": "018136edede06e3fad35af2df61c705a259298d86509d696d530bc432679a2dd",
+        "bytes": 16424227,
+        "server_path": "/root/autodl-tmp/numerical_eight_expert_20261029.tar.gz",
+        "verified_locations": [
+          "local",
+          "55548"
+        ],
+        "contains": "Original pilot/full scores, output indices, paired/per-class audit, protocol, execution source, log and exit code"
+      },
+      "target_accuracy_percent": {
+        "MNIST": {
+          "unprotected_direct": 94.0,
+          "unprotected_AGA_target": 93.23,
+          "defense2_direct": 9.81,
+          "defense2_AGA_target": 9.8
+        },
+        "SVHN": {
+          "unprotected_direct": 74.4237861094038,
+          "unprotected_AGA_target": 72.52612169637369,
+          "defense2_direct": 6.699446834665028,
+          "defense2_AGA_target": 6.699446834665028
+        },
+        "DTD": {
+          "unprotected_direct": 52.18085106382979,
+          "unprotected_AGA_target": 51.38297872340426,
+          "defense2_direct": 2.393617021276596,
+          "defense2_AGA_target": 2.127659574468085
+        }
+      }
+    }
   }
 }
