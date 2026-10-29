@@ -1,0 +1,135 @@
+{
+  "status": "completed_independently_verified",
+  "target": "DTD",
+  "partner": "MNIST",
+  "unlabeled_images": 1880,
+  "ground_truth_labels_used": false,
+  "teacher_queries": 3760,
+  "teacher_label_disagreements": 50,
+  "student_epochs": 50,
+  "student_training_steps": 750,
+  "new_student_training_steps": 1500,
+  "pilot_steps": 2,
+  "training_seconds": 393.9984049210325,
+  "training_peak_gpu_bytes": 6520704512,
+  "unique_student_models": 2,
+  "training_seeds": 1,
+  "historical_unprotected_training_reused": false,
+  "new_AGA_calls": 2,
+  "AGA_seconds": 22.5191206530435,
+  "new_defense_weights": 0,
+  "real_defense_construction_images": 0,
+  "rows": 21,
+  "full_context_replays": 336,
+  "pilot_context_replays": 336,
+  "maximum_replay_error": 0,
+  "new_image_forwards_including_queries_and_replays": 121472,
+  "complete_target_test_n": 1880,
+  "complete_partner_test_n": 10000,
+  "models": {
+    "Unprotected": {
+      "standalone_DTD": 79.41489361702128,
+      "None": {
+        "DTD": 69.30851063829788,
+        "MNIST": 99.45
+      },
+      "Protected expert": {
+        "DTD": 68.40425531914893,
+        "MNIST": 99.45
+      },
+      "All experts": {
+        "DTD": 68.77659574468085,
+        "MNIST": 99.42
+      }
+    },
+    "KD_Unprotected": {
+      "standalone_DTD": 73.29787234042553,
+      "None": {
+        "DTD": 58.19148936170213,
+        "MNIST": 99.53
+      },
+      "Protected expert": {
+        "DTD": 57.819148936170215,
+        "MNIST": 99.53
+      },
+      "All experts": {
+        "DTD": 58.29787234042553,
+        "MNIST": 99.41
+      }
+    },
+    "KD_Defense2": {
+      "standalone_DTD": 73.24468085106382,
+      "None": {
+        "DTD": 58.56382978723404,
+        "MNIST": 99.53999999999999
+      },
+      "Protected expert": {
+        "DTD": 57.71276595744681,
+        "MNIST": 99.53
+      },
+      "All experts": {
+        "DTD": 58.19148936170213,
+        "MNIST": 99.42999999999999
+      }
+    }
+  },
+  "matched_target_comparisons": [
+    {
+      "key": "KD_Defense2/Standalone/None/DTD",
+      "n": 1880,
+      "correct": 1377,
+      "lost": 46,
+      "gained": 45,
+      "delta_pp": -0.05319148936170213,
+      "ci95_pp": [
+        -1.0479855497322987,
+        0.9416025710088944
+      ],
+      "exact_mcnemar_log10_p": 0.0,
+      "changed_predictions": 146
+    },
+    {
+      "key": "KD_Defense2/TA/None/DTD",
+      "n": 1880,
+      "correct": 1101,
+      "lost": 23,
+      "gained": 30,
+      "delta_pp": 0.37234042553191493,
+      "ci95_pp": [
+        -0.38666499701747725,
+        1.1313458480813072
+      ],
+      "exact_mcnemar_log10_p": -0.38710735409063696,
+      "changed_predictions": 94
+    },
+    {
+      "key": "KD_Defense2/TA/Protected expert/DTD",
+      "n": 1880,
+      "correct": 1085,
+      "lost": 23,
+      "gained": 21,
+      "delta_pp": -0.10638297872340426,
+      "ci95_pp": [
+        -0.7981018024967609,
+        0.5853358450499524
+      ],
+      "exact_mcnemar_log10_p": -0.05532202745337037,
+      "changed_predictions": 92
+    },
+    {
+      "key": "KD_Defense2/TA/All experts/DTD",
+      "n": 1880,
+      "correct": 1094,
+      "lost": 23,
+      "gained": 21,
+      "delta_pp": -0.10638297872340426,
+      "ci95_pp": [
+        -0.7981018024967609,
+        0.5853358450499524
+      ],
+      "exact_mcnemar_log10_p": -0.05532202745337037,
+      "changed_predictions": 90
+    }
+  ],
+  "conclusion": "Under the fixed extra-data and student-training access, recovered fusion is close to the same-budget unprotected student, but below the original unprotected expert. One fixed training seed; no equivalence or universal robustness claim."
+}

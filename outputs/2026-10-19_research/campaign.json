@@ -1,5 +1,5 @@
 {
-  "status": "SVHN_DTD_matched_distillation_running",
+  "status": "three_task_matched_distillation_completed",
   "updated_utc": "2026-10-29T11:26:10.237644+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -933,11 +933,13 @@
     }
   },
   "distillation_other_tasks": {
-    "status": "running",
+    "status": "completed_independently_verified",
     "tasks": [
       "SVHN",
       "DTD"
     ],
+    "finished": true,
+    "exit_code": 0,
     "training_images": [
       2048,
       1880
@@ -947,14 +949,29 @@
       800,
       750
     ],
-    "maximum_students": 4,
-    "maximum_full_training_steps": 3100,
-    "pilot_steps_maximum": 4,
+    "new_students": 4,
+    "new_full_training_steps": 3100,
+    "discarded_pilot_steps": 4,
     "new_defense_models": 0,
-    "scripts": "results/attack_generalization_20261028/distillation/run_other_tasks.sh",
-    "expected_minutes": 40,
+    "new_AGA_calls": 4,
+    "full_rows": 42,
+    "pilot_rows": 42,
+    "full_score_replays": 672,
+    "pilot_score_replays": 672,
+    "maximum_replay_error": 1.1444091796875e-05,
+    "training_seconds": 832.9399516499834,
     "automatic_wakeup": false,
-    "pid": 29351,
-    "remote_registration_commit": "af340a5aef348713f6f9bbe450be9eda9943bfa2"
+    "active_GPU_jobs": 0,
+    "remote_registration_commit": "af340a5aef348713f6f9bbe450be9eda9943bfa2",
+    "records": {
+      "SVHN": "results/attack_generalization_20261028/distillation/SVHN/summary.json",
+      "DTD": "results/attack_generalization_20261028/distillation/DTD/summary.json"
+    },
+    "raw_backup": "results/attack_generalization_20261028/distillation/other_tasks_backup.json",
+    "paired_TA_difference_pp": {
+      "SVHN": -0.38030116779348494,
+      "DTD": 0.37234042553191493
+    },
+    "scope": "One fixed training seed. Extra unlabeled task data and attacker-student training; defense construction remains data-free. Original frozen defense unchanged."
   }
 }

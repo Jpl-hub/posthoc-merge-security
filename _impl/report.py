@@ -192,45 +192,56 @@ def attack_comparison(directory):
         )
     kd = root / "distillation"
     if (kd / "paired_validation.json").exists():
-        audit = json.loads((kd / "paired_validation.json").read_text())
-        assert audit["status"] == "passed_independent_numpy_paired_and_exact_student_equivalence"
-        audited = next(s for s in audit["stages"] if s["stage"] == "full")
-        folder = kd / "evaluation/full/00_MNIST_SVHN"
-        validation = json.loads((folder / "independent_validation.json").read_text())
-        assert audited["raw_sha256"] == validation["raw_sha256"]
-        full = json.loads((folder / "results.json").read_text())
-        expected = {r["key"]: r for r in audited["original_expert_comparisons"]}
-        values = {}
-        for row in full:
-            key = "/".join(row[k] for k in ["defense", "merger", "attack_scope", "dataset"])
-            assert (row["n"], row["correct"]) == (expected[key]["n"], expected[key]["correct"])
-            values[key] = f"{100 * row['correct'] / row['n']:.2f}"
-        cells_kd = []
-        for name, label in [("Unprotected", "Original expert"), ("KD_Unprotected", "Student from unprotected"),
-                            ("KD_Defense2", "Student from Defense 2")]:
-            for scope in ["None", "Protected expert", "All experts"]:
-                cells_kd.append([label, short.get(scope, scope), values[name + "/Standalone/None/MNIST"],
-                                 values[f"{name}/TA/{scope}/MNIST"], values[f"{name}/TA/{scope}/SVHN"]])
-        headers = ["Model", "AGA", "Standalone MNIST", "Fused MNIST", "Fused SVHN"]
-        note = ("TA0.5. Extra 2048 unlabeled MNIST training images; teacher hard labels; "
-                "public-base student, 50 epochs. All query labels are identical, so the registered rule "
-                "reuses one historical final student. These are not independently trained students. "
+        cells_kd, validations, sources = [], {}, {}
+        records = 0
+        for task, partner in [("MNIST", "SVHN"), ("SVHN", "MNIST"), ("DTD", "MNIST")]:
+            path = kd if task == "MNIST" else kd / task
+            if not (path / "paired_validation.json").exists():
+                continue
+            audit = json.loads((path / "paired_validation.json").read_text())
+            assert audit["status"] in {"passed_independent_numpy_paired",
+                "passed_independent_numpy_paired_and_exact_student_equivalence"}
+            audited = next(s for s in audit["stages"] if s["stage"] == "full")
+            folder = path / "evaluation/full" / f"00_{task}_{partner}"
+            validation = json.loads((folder / "independent_validation.json").read_text())
+            assert validation["status"] == "passed"
+            assert audited["raw_sha256"] == validation["raw_sha256"]
+            full = json.loads((folder / "results.json").read_text())
+            expected = {r["key"]: r for r in audited["original_expert_comparisons"]}
+            values = {}
+            for row in full:
+                key = "/".join(row[k] for k in ["defense", "merger", "attack_scope", "dataset"])
+                assert (row["n"], row["correct"]) == (expected[key]["n"], expected[key]["correct"])
+                values[key] = f"{100 * row['correct'] / row['n']:.2f}"
+            for name, label in [("Unprotected", "Original expert"), ("KD_Unprotected", "Student from unprotected"),
+                                ("KD_Defense2", "Student from Defense 2")]:
+                for scope in ["None", "Protected expert", "All experts"]:
+                    cells_kd.append([task + "/" + partner, label, short.get(scope, scope),
+                        values[f"{name}/Standalone/None/{task}"], values[f"{name}/TA/{scope}/{task}"],
+                        values[f"{name}/TA/{scope}/{partner}"]])
+            records += len(full)
+            validations[task] = validation
+            for p in [folder / "results.json", path / "paired_validation.json"]:
+                sources[str(p)] = hashlib.sha256(p.read_bytes()).hexdigest()
+        headers = ["Task pair", "Model", "AGA", "Standalone", "Fused target", "Fused partner"]
+        note = ("TA0.5. Extra unlabeled official training images: MNIST/SVHN 2048, DTD train1 1880; "
+                "teacher hard labels; public-base student, 50 epochs, one fixed training seed. "
+                "MNIST query labels are identical, so the registered rule reuses one historical final student; "
+                "SVHN and DTD each train two students with the same images, initialization and ordering. "
                 "Standalone measures the evaluated model, not the original protected teacher. "
-                "Matched student predictions and scores are identical. Only MNIST protection is tested.")
+                "No defense weights are updated. This extra-data attack is separate from weight-only recovery.")
         md = ["# Data-assisted recovery", "", note, "", "| " + " | ".join(headers) + " |",
               "| " + " | ".join(["---"] * len(headers)) + " |"]
         md += ["| " + " | ".join(row) + " |" for row in cells_kd]
         (kd / "comparison.md").write_text("\n".join(md) + "\n")
         lines = [r"\begin{table*}[t]", r"\centering\small",
-                 r"\caption{Data-assisted recovery on MNIST. Accuracy (\%).}",
-                 r"\begin{tabular}{llrrr}", r"\toprule", " & ".join(headers) + r" \\", r"\midrule"]
+                 r"\caption{Data-assisted recovery. Accuracy (\%).}",
+                 r"\begin{tabular}{lllrrr}", r"\toprule", " & ".join(headers) + r" \\", r"\midrule"]
         lines += [" & ".join(tex(v) for v in row) + r" \\" for row in cells_kd]
         lines += [r"\bottomrule", r"\end{tabular}", r"\end{table*}", "% " + note]
         (kd / "comparison.tex").write_text("\n".join(lines) + "\n")
-        result["distillation_extension"] = dict(full_records=len(full), table_rows=cells_kd,
-            independent_validation=str(kd / "paired_validation.json"), validation=validation,
-            source_sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in
-                           [folder / "results.json", kd / "paired_validation.json"]})
+        result["distillation_extension"] = dict(full_records=records, table_rows=cells_kd,
+            validations=validations, source_sha256=sources)
     (root / "results.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     print("ATTACK_TABLE", len(cells), "verified new cases", len(batches))
 

@@ -1,0 +1,135 @@
+{
+  "status": "completed_independently_verified",
+  "target": "SVHN",
+  "partner": "MNIST",
+  "unlabeled_images": 2048,
+  "ground_truth_labels_used": false,
+  "teacher_queries": 4096,
+  "teacher_label_disagreements": 18,
+  "student_epochs": 50,
+  "student_training_steps": 800,
+  "new_student_training_steps": 1600,
+  "pilot_steps": 2,
+  "training_seconds": 438.9415467289509,
+  "training_peak_gpu_bytes": 6520609792,
+  "unique_student_models": 2,
+  "training_seeds": 1,
+  "historical_unprotected_training_reused": false,
+  "new_AGA_calls": 2,
+  "AGA_seconds": 20.845845379983075,
+  "new_defense_weights": 0,
+  "real_defense_construction_images": 0,
+  "rows": 21,
+  "full_context_replays": 336,
+  "pilot_context_replays": 336,
+  "maximum_replay_error": 1.1444091796875e-05,
+  "new_image_forwards_including_queries_and_replays": 316080,
+  "complete_target_test_n": 26032,
+  "complete_partner_test_n": 10000,
+  "models": {
+    "Unprotected": {
+      "standalone_SVHN": 97.46081745543947,
+      "None": {
+        "SVHN": 92.49769514443761,
+        "MNIST": 99.37
+      },
+      "Protected expert": {
+        "SVHN": 91.56422864167179,
+        "MNIST": 99.39
+      },
+      "All experts": {
+        "SVHN": 91.77166564228642,
+        "MNIST": 99.32
+      }
+    },
+    "KD_Unprotected": {
+      "standalone_SVHN": 93.08927473878303,
+      "None": {
+        "SVHN": 86.22464658881377,
+        "MNIST": 99.33999999999999
+      },
+      "Protected expert": {
+        "SVHN": 85.2758143822987,
+        "MNIST": 99.33999999999999
+      },
+      "All experts": {
+        "SVHN": 85.58312845728334,
+        "MNIST": 99.32
+      }
+    },
+    "KD_Defense2": {
+      "standalone_SVHN": 92.390135218193,
+      "None": {
+        "SVHN": 85.84434542102028,
+        "MNIST": 99.4
+      },
+      "Protected expert": {
+        "SVHN": 84.99539028887523,
+        "MNIST": 99.44
+      },
+      "All experts": {
+        "SVHN": 85.20666871542717,
+        "MNIST": 99.33999999999999
+      }
+    }
+  },
+  "matched_target_comparisons": [
+    {
+      "key": "KD_Defense2/Standalone/None/SVHN",
+      "n": 26032,
+      "correct": 24051,
+      "lost": 773,
+      "gained": 591,
+      "delta_pp": -0.699139520590043,
+      "ci95_pp": [
+        -0.9770861411926939,
+        -0.42119289998739207
+      ],
+      "exact_mcnemar_log10_p": -6.035692055448966,
+      "changed_predictions": 1622
+    },
+    {
+      "key": "KD_Defense2/TA/None/SVHN",
+      "n": 26032,
+      "correct": 22347,
+      "lost": 637,
+      "gained": 538,
+      "delta_pp": -0.38030116779348494,
+      "ci95_pp": [
+        -0.6383525683100246,
+        -0.12224976727694534
+      ],
+      "exact_mcnemar_log10_p": -2.373566180341363,
+      "changed_predictions": 1584
+    },
+    {
+      "key": "KD_Defense2/TA/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 22126,
+      "lost": 655,
+      "gained": 582,
+      "delta_pp": -0.2804240934234788,
+      "ci95_pp": [
+        -0.545216659840225,
+        -0.01563152700673246
+      ],
+      "exact_mcnemar_log10_p": -1.391462449505203,
+      "changed_predictions": 1678
+    },
+    {
+      "key": "KD_Defense2/TA/All experts/SVHN",
+      "n": 26032,
+      "correct": 22181,
+      "lost": 684,
+      "gained": 586,
+      "delta_pp": -0.37645974185617703,
+      "ci95_pp": [
+        -0.6447442826407095,
+        -0.10817520107164456
+      ],
+      "exact_mcnemar_log10_p": -2.189191838046128,
+      "changed_predictions": 1731
+    }
+  ],
+  "conclusion": "Under the fixed extra-data and student-training access, recovered fusion is close to the same-budget unprotected student, but below the original unprotected expert. One fixed training seed; no equivalence or universal robustness claim."
+}

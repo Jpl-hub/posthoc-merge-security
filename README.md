@@ -44,7 +44,7 @@
 
 [Unmask补充](results/attack_generalization_20261028/unmask/comparison.md)也已完成。它对保护和匹配无保护模型产生相同预测，不能据此再算一次防御成功。公开模块替换仍能恢复，攻击泛化问题尚未解决。
 
-[数据辅助恢复](results/attack_generalization_20261028/distillation/comparison.md)已完成MNIST：攻击者增加2048张无标签训练图和50轮学生训练权限后，融合准确率为95.53%，AGA仅目标/双方为95.35%/95.25%。保护与匹配无保护教师的查询标签完全相同，按事前规则复用同一个学生；当前防御在这项权限下没有保护差距。其他任务尚未完成这项攻击。
+[数据辅助恢复](results/attack_generalization_20261028/distillation/comparison.md)已完成MNIST、SVHN、DTD：攻击者增加无标签训练图和50轮学生训练后，TA融合准确率分别为95.53%、85.84%、58.56%；同预算无保护对照为95.53%、86.22%、58.19%。MNIST标签完全相同并复用同一学生；SVHN/DTD各实际训练两个学生。该结果只针对额外数据与训练权限，不与无数据AGA混列，也未完全恢复原专家融合性能。
 
 ## 代码结构
 

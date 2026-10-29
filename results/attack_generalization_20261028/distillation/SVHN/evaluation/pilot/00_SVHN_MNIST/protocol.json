@@ -1,0 +1,138 @@
+{
+  "tasks": {
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    },
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    }
+  },
+  "TA_coefficient": 0.5,
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "output": "outputs/attack_generalization_20261029/distillation_SVHN/evaluation",
+  "source_sha256": {
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "_impl/attacks.py": "c0e8f88cd8e3af770e002a56aa74d85e90c86556a03c65cab33da798950d0d9f",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "fe5877631c27a9422615a079851e69ccbafe64d0020680f4e7a3bb63fe83991b",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/evaluate.py": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/report.py": "dbd3b3abc3c03f3d14e48e594ad19eca1263883624470d5509f1eb260693c30c",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "experiment/distill.py": "fc71a49afd266bfb996fcb869e5aa2b581d2b59fd275458ee4b82fed043b31fc",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "results/attack_generalization_20261028/protocol.json": "f4ee5a09b07be7106d56898193beec0f62f9fe4f8a50d6e4b09f6eb40f00a505",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "results/attack_generalization_20261028/distillation/run_other_tasks.sh": "7f7955faba36d39ef79af51d6f22e9e90235472ab2d8df37cd9e3a80b4aedade"
+  },
+  "cases": [
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "defenses": [
+        "KD_Unprotected",
+        "KD_Defense2"
+      ]
+    }
+  ],
+  "defenses": {
+    "KD_Unprotected": {
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/attack_generalization_20261029/distillation_SVHN/KD_Unprotected.pt",
+        "sha256": "d62cc46232dc07bec5f519c20849054bf0e66055f973a5abc632fde09752094e",
+        "reference": "public_base"
+      },
+      "full_state": false,
+      "AGA_edits": {
+        "path": "outputs/attack_generalization_20261029/distillation_SVHN/KD_Unprotected_AGA.pt",
+        "sha256": "6e2a880beb788116247637ed893c1994d0147aa5ad34e3f3c14a26b87db88148",
+        "reference": "public_base",
+        "seconds": 10.999991699005477
+      }
+    },
+    "KD_Defense2": {
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/attack_generalization_20261029/distillation_SVHN/KD_Defense2.pt",
+        "sha256": "f80f8804b75851c3eb1c9bd444175c003f86923d38f347370ee193bb3f417441",
+        "reference": "public_base"
+      },
+      "full_state": false,
+      "AGA_edits": {
+        "path": "outputs/attack_generalization_20261029/distillation_SVHN/KD_Defense2_AGA.pt",
+        "sha256": "48514b3597503e605871e15f0d73c1867db2b2b0115da69e6a42dff29cac0e94",
+        "reference": "public_base",
+        "seconds": 9.845853680977598
+      }
+    }
+  },
+  "mergers": [
+    "TA"
+  ],
+  "attack_scopes": [
+    "None",
+    "Protected expert",
+    "All experts"
+  ],
+  "attacker_data": true,
+  "attack_permission": "Same-distribution unlabeled training images, hard protected-teacher labels, public-base attacker student with full visual-encoder gradients. Original experts/defenses/head frozen.",
+  "legacy": {
+    "SVHN_MNIST/Unprotected": {
+      "standalone": {
+        "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c",
+        "key_template": "Unprotected/Standalone/None/{task}"
+      },
+      "direct": {
+        "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c",
+        "key_template": "Unprotected/TA/None/{task}"
+      },
+      "AGA_target_only": {
+        "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c",
+        "key_template": "Unprotected/TA/Protected expert/{task}"
+      },
+      "AGA_both": {
+        "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c",
+        "key_template": "Unprotected/TA/All experts/{task}"
+      }
+    }
+  }
+}
