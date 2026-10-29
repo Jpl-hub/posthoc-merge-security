@@ -1,6 +1,6 @@
 {
-  "status": "three_task_matched_distillation_completed",
-  "updated_utc": "2026-10-29T14:11:42.250954+00:00",
+  "status": "defense1_non_AGA_calibration_registered",
+  "updated_utc": "2026-10-29T16:43:55.821000+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
@@ -23,12 +23,20 @@
       "pid": 29351,
       "exit_code": 0,
       "records": "results/attack_generalization_20261028/distillation/other_tasks_deployment.json"
+    },
+    {
+      "name": "Defense1_weight_only_SVHN_DTD",
+      "status": "completed_independently_verified",
+      "server": "55548",
+      "pid": 37176,
+      "records": "results/phase3/bias_weight_only/other_tasks/deployment.json",
+      "exit_code": 0
     }
   ],
-  "next_action": "Keep all frozen results; complete missing evaluation and matched baselines. Core-method priority: explain and address recovery by data-free public module replacement before another registered construction. Extra-data KD is a separate supplement, not a universal defense veto; no tuning on exposed tests.",
+  "next_action": "Run unchanged fixed64-noise calibration on the three frozen weight-only Defense1 points, then fill genuinely missing attack/control cells. Full MLP reset deletes all edits of current numerical Defense2; A-only retuning in the same block cannot resolve that full-reset case.",
   "github_sync": {
-    "status": "latest_scientific_results_verified_remote; interpretation_update_pending",
-    "last_verified_remote_commit": "fc80252930152dcb7fb2e03e7385926e0c11a21d",
+    "status": "new_completed_batch_pending_plugin_fetch_unavailable",
+    "last_verified_remote_commit": "0be969f3fec0f14938b1f2c7d6e9954c42fd6392",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -630,7 +638,7 @@
     "conclusion": "Mean-only bias is correctable on this source; varying changes also cause classification contradictions. Both parts contribute. No new model or real accuracy improvement.",
     "seconds": 5.094126299023628
   },
-  "active_focus": "Freeze numerical Defense2. Complete recovery generalization, matched controls and fixed mergers per meeting.",
+  "active_focus": "Defense1 and numerical Defense2: attack generalization, matched controls and complete evaluation; no new defense search.",
   "attack_campaign": "results/attack_generalization_20261028/protocol.json",
   "attack_generalization": {
     "directory": "results/attack_generalization_20261028",
@@ -981,5 +989,56 @@
       "DTD": 0.37234042553191493
     },
     "scope": "One fixed training seed. Extra unlabeled task data and attacker-student training; defense construction remains data-free. Original frozen defense unchanged."
+  },
+  "parameter_permutation": {
+    "status": "retired_from_active_research_by_user",
+    "records": "results/task_directed_pairing/summary.md",
+    "new_experiments": false,
+    "retention": "Existing evidence and recovery positive controls retained; removed from main README method table and common commands."
+  },
+  "Defense1_other_tasks": {
+    "status": "completed_independently_verified",
+    "protocol": "results/phase3/bias_weight_only/other_tasks/protocol.json",
+    "targets": [
+      "SVHN",
+      "DTD"
+    ],
+    "construction_images": 0,
+    "new_training_steps": 0,
+    "record": "results/phase3/bias_weight_only/other_tasks/deployment.json",
+    "SVHN_native_before": 97.46081745543947,
+    "SVHN_native_after": 97.46081745543947,
+    "SVHN_native_changed": 0,
+    "exit_code": 0,
+    "results": "results/phase3/bias_weight_only/other_tasks/results.json",
+    "native_prediction_changes": {
+      "SVHN": 0,
+      "DTD": 0
+    },
+    "TA_AGAtarget_AGAboth": {
+      "SVHN": [
+        6.699446834665028,
+        6.699446834665028,
+        6.699446834665028
+      ],
+      "DTD": [
+        2.127659574468085,
+        2.127659574468085,
+        2.127659574468085
+      ]
+    },
+    "backup": {
+      "directory": "outputs/bias_weight_only_20261029",
+      "manifest": "outputs/bias_weight_only_20261029/manifest.json",
+      "manifest_sha256": "649614ba77915ba69092151cc740dcfe6edbb399d55f096a9f9134f5144ad2d1",
+      "files": 64,
+      "bytes": 28213163,
+      "verified_locations": [
+        "local",
+        "55548"
+      ],
+      "server_directory": "/root/autodl-tmp/posthoc-merge-security/outputs/bias_weight_only_20261029",
+      "compressed_duplicate_created": false
+    }
   }
 }

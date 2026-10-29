@@ -1,0 +1,27 @@
+% Complete test accuracy (%); requires booktabs. MNIST is reused.
+\begin{tabular}{llrrrr}
+\toprule
+Task & Method & Standalone & TA & AGA (target) & AGA (both) \\
+\midrule
+MNIST & No defense & 99.69 & 99.37 & 99.30 & 99.32 \\
+MNIST & Defense 1 & 99.69 & 9.80 & 9.80 & 9.80 \\
+SVHN & No defense & 97.46 & 92.50 & 91.56 & 91.77 \\
+SVHN & Defense 1 & 97.46 & 6.70 & 6.70 & 6.70 \\
+DTD & No defense & 79.41 & 69.31 & 68.40 & 68.78 \\
+DTD & Defense 1 & 79.41 & 2.13 & 2.13 & 2.13 \\
+\bottomrule
+\end{tabular}
+
+% Matched partner-task accuracies.
+\begin{tabular}{lllrrr}
+\toprule
+Target & Partner & Method & TA & AGA (target) & AGA (both) \\
+\midrule
+MNIST & SVHN & No defense & 92.50 & 92.78 & 91.77 \\
+MNIST & SVHN & Defense 1 & 6.70 & 6.70 & 6.70 \\
+SVHN & MNIST & No defense & 99.37 & 99.39 & 99.32 \\
+SVHN & MNIST & Defense 1 & 9.80 & 9.80 & 9.80 \\
+DTD & MNIST & No defense & 99.45 & 99.45 & 99.42 \\
+DTD & MNIST & Defense 1 & 9.80 & 9.80 & 9.80 \\
+\bottomrule
+\end{tabular}

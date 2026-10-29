@@ -1,0 +1,132 @@
+{
+  "status": "defined_before_execution",
+  "paper": "https://proceedings.mlr.press/v139/zhao21c.html",
+  "official_source": {
+    "repository": "tonyzhaozh/few-shot-learning",
+    "commit": "e04d8643be91c2cce63f33e07760ff75d5aa3ad0",
+    "file": "run_classification.py",
+    "sha256": "60787d59863caebc1688e3333659accf759d6f0c615735d1901f1427724ec8fc",
+    "functions": [
+      "eval_accuracy",
+      "get_p_content_free"
+    ],
+    "raw_review_sha256": "89248b0cdce36b31050a8a5b94010db4f5451368a0c7f33c1603600433975bff"
+  },
+  "rule": "For each own fused model, p_cf=mean softmax(logits(noise)); predict argmax(logits(test)-log(p_cf)). This is the official diagonal probability division computed stably in log space. One fixed rule, no scale/temperature/mapping/source/seed selection.",
+  "adaptation": "Original paper uses content-free language strings; here exactly64 fixed unoptimized uniform-noise images are image-domain probes, not an official CLIP reproduction or a claim that noise represents the natural task.",
+  "input_seed": 2026102509,
+  "input_n": 64,
+  "input_definition": "CPU torch.rand(64,3,32,32), uniform[0,1],bilinear224 align_cornersFalse,originalCLIPnormalization,batches8,no labels/no pixel optimization.",
+  "attacker_information": "Own already-created fused model, fixed public classifier/class IDs and synthetic noise. Fitting does not access original target expert, real training/test data, old clean teacher generated cache, protected-source data or labels. Research assembly uses pinned published/original-AGA weights and own partner exactly as the original fixed merging evaluation. The unprotected matched release is corrected by the same rule on itself.",
+  "scopes": [
+    "TA0.5",
+    "originalAGA target-only + TA0.5",
+    "originalAGA both + TA0.5"
+  ],
+  "freeze_order": "Freeze all36 model/classifier logpriors before reading any benchmark scores or official labels. Use distinct47classDTD and10classMNIST heads;no shared-head assumption.",
+  "checks": "Independent NumPy stable softmax/mean/log-prior and predictions; official full labels/indices; classwise and paired changes; preserve original raw scores and same matched unprotected controls.",
+  "mechanism": "If logits(x)=task_signal(x)+constant_bias and content-free inputs identify that bias, subtracting logprior cancels it up to a class-independent scalar. Probe-dependent residuals and feature-normalization can violate that model; actual results required. Failure of one fixed correction does not prove erased class information.",
+  "public_before_execution": false,
+  "output": "outputs/bias_calibration_20261030",
+  "purpose": "Unchanged fixed64-noise output calibration on the three frozen weight-only Defense1 releases, with identical correction of unprotected controls.",
+  "cost": "18 fused models times64noise inputs=1152imageforwards;36 model/classifier vectors,36 full score rows. 0new realimageforwards,0newAGA,0defenseupdates.",
+  "source_prior_result": "results/data_free_compensation/readout_calibration_result.json",
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "name": "Defense1",
+      "release": {
+        "path": "outputs/bias_weight_only_20261025/point.pt",
+        "sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_weight_only_20261025/point.pt",
+        "sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0",
+        "reference": "original_AGA"
+      },
+      "AGA_references": {
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "SVHN": {
+          "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+          "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "raw_scores": {
+        "path": "outputs/bias_weight_only_20261025/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "36ba1cc41f144841d3d5f4cb987f4d6dedd8ccde208ed02a7bb039e633e96b83"
+      }
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "name": "Defense1",
+      "release": {
+        "path": "outputs/bias_weight_only_20261029/SVHN/construction/release.pt",
+        "sha256": "b69746723d049316865f30b8d9eca86825f9b58852170bb56e991c421afff8ee"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_weight_only_20261029/SVHN/construction/release.pt",
+        "sha256": "b69746723d049316865f30b8d9eca86825f9b58852170bb56e991c421afff8ee",
+        "reference": "original_AGA"
+      },
+      "AGA_references": {
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "SVHN": {
+          "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+          "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "raw_scores": {
+        "path": "outputs/bias_weight_only_20261029/SVHN/evaluation/full/00_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "35a822553141d0f672f7eff3e545272be6358a8ca668208d0834c8f17055e133"
+      }
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "name": "Defense1",
+      "release": {
+        "path": "outputs/bias_weight_only_20261029/DTD/construction/release.pt",
+        "sha256": "9e6b71ea676e71a033392c707c9228d434b4ef2541f82b258d99d0ab23f9010f"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_weight_only_20261029/DTD/construction/release.pt",
+        "sha256": "9e6b71ea676e71a033392c707c9228d434b4ef2541f82b258d99d0ab23f9010f",
+        "reference": "original_AGA"
+      },
+      "AGA_references": {
+        "DTD": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        },
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "raw_scores": {
+        "path": "outputs/bias_weight_only_20261029/DTD/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "9c59f06c91dd3d0af0d4113b5934ba3e78759ecd68598c2d61fbe2fd469ee884"
+      }
+    }
+  ],
+  "runtime": "RTX3090 torch2.3.0+cu121; unchanged archived original scores retained at their original precision/runtime, no model evaluation regenerated.",
+  "source_sha256": "9e6abf6e0f048e0bd9c3508864193e50c7d502697236939f364eb8016ffbdfe3",
+  "registered_utc": "2026-10-29T16:43:55.821000+00:00",
+  "source_archive": "outputs/bias_calibration_20261030_source.py",
+  "source_reuse": "Byte-identical driver extracted from no_SVD_three_task_definition_20261028.source in results/data_free_compensation/readout_calibration_result.json. Its historical docstring is retained; current cases identify Defense1.",
+  "AGA_transport": "Exactly the same final LN-bias edit on the frozen author-AGA reference, whose matching/update excludes this bias; equality checked before images in the preceding Defense1 batch. No new AGA fitting."
+}

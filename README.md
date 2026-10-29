@@ -2,7 +2,7 @@
 
 研究 CLIP ViT-B/32 专家的训练后参数保护：单独使用时保持任务能力，未经授权融合及 AGA 攻击后降低受保护任务准确率。专家不重新训练。
 
-当前重点是无真实构造图片的数值防御二：使用冻结专家、公开基座、任务 SVD 和已声明的固定分类头，研究任务功能保持与跨模块补偿。生成输入用于构造，真实图像只用于冻结后的评价。
+当前主线为防御一和数值防御二。防御一由权重构造偏置噪声；防御二不使用真实构造图片：使用冻结专家、公开基座、任务 SVD 和已声明的固定分类头，研究任务功能保持与跨模块补偿。生成输入用于构造，真实图像只用于冻结后的评价。
 
 ## 从哪里看代码
 
@@ -19,7 +19,7 @@
 
 `experiment/defense2.py` 从产生当前 MNIST 发布的原始源码整理而来，只调整排版、注释和程序入口，计算语句保持相同。它是固定 MNIST 构造，不是三个任务通用命令：运行需要原合成缓存 `outputs/native_ellipse_classification_20261026/source/` 和 `outputs/task_shaped_compensation_20261026/layer_inputs.pt`，输出目录必须尚不存在。当前评价直接加载已冻结权重，无需重新构造。SVHN、DTD 的实际执行源码及哈希仍在 `results/data_free_compensation/population_compensation_result.json` 的对应任务定义中。
 
-防御一和防御二的当前构造要求均为Data-Free。防御一已改为只由权重确定噪声方向和幅度，MNIST独立99.69%，融合及AGA后均为9.80%；构造没有使用真实或合成图片。[结果与方法](results/phase3/bias_weight_only/summary.md)。历史数据辅助结果单列保留。
+防御一和防御二的当前构造均不使用真实图片。防御一的方向和幅度完全由权重确定，也不使用合成图片；三个保护任务的完整独立预测均保持不变，TA及AGA后MNIST/SVHN/DTD准确率分别为9.80%/6.70%/2.13%，伙伴准确率也明显降低。[三任务完整表](results/phase3/bias_weight_only/other_tasks/summary.md)。历史图片辅助幅度单独保留。
 
 当前数值防御二修改最后一个MLP的A、B及输出偏置。A在所选任务方向的补空间改变，B补偿独立模型输出；构造只使用冻结权重、固定分类头和合成输入。固定TA系数为0.5，完整测试准确率如下：
 
@@ -35,12 +35,7 @@
 
 同一数值防御二的[八专家融合评价](results/attack_generalization_20261028/eight_expert/comparison.md)已完成：固定TA0.2，MNIST/SVHN/DTD保护任务准确率为9.81%/6.70%/2.39%，AGA仅处理保护专家后为9.80%/6.70%/2.13%。表中同时保留无保护和伙伴结果。已补齐GTSRB和RESISC45，现有五个完整数据集；Cars、EuroSAT、SUN397仍缺失，不报八任务平均。
 
-| 通道置换对照 | MNIST | DTD | SVHN |
-|---|---:|---:|---:|
-| 单独使用 | 99.69% | 79.41% | 97.46% |
-| AGA 仅处理保护专家后，TA 融合 | 9.80% | 2.39% | 6.45% |
-
-该对照使用任务 SVD 选择共同通道顺序；三份冻结发布保持完整独立预测。知道变换家族后的公开匹配能够恢复，针对性恢复与原版 AGA 分列。[方法](results/task_directed_pairing/method.md) · [完整结果与恢复](results/task_directed_pairing/summary.md) · [论文表格](results/paper_tables/README.md)。防御一及完整 PaRaMS 对照继续保留。
+参数置换退出后续研究，不再追加实验。既有结果只作[历史对照](results/task_directed_pairing/summary.md)，保留恢复实验所需的正对照。
 
 [Unmask补充](results/attack_generalization_20261028/unmask/comparison.md)也已完成。它对保护和匹配无保护模型产生相同预测，不能据此再算一次防御成功。公开模块替换仍能恢复，攻击泛化问题尚未解决。
 
@@ -53,7 +48,7 @@ cfg.py                       # 共同路径和配置检查
 _impl/
   models.py                  # 冻结模型加载、发布参数应用
   data.py                    # 官方数据划分、独立标签读取
-  defenses.py                # 防御一、通道置换对照
+  defenses.py                # 防御一；保留历史置换正对照
   subspace.py                # 74 个任务矩阵 SVD、有限交换目标
   attacks.py                 # 原版 AGA、已知家族的公开匹配
   baselines.py               # 完整官方 PaRaMS
@@ -63,7 +58,7 @@ _impl/
   io.py                      # JSON 与 SHA256
   report.py                  # 已验证结果生成同源 MD / TeX / 图
 experiment/
-  construct.py               # 防御构造及固定距离消融
+  construct.py               # 防御一及已有基线构造
   defense2.py                # 当前数值防御二的固定 MNIST 构造源码
   native.py                  # 冻结发布的独立任务检查
   main_table.py              # 主实验：TA / 原版 AGA / 匹配基线
@@ -117,15 +112,13 @@ python -m experiment.main_table --verify outputs/refactored/main/full/00_MNIST_S
 
 `configs/evaluate.json` 列出六个保护方向；每组同时报告目标与伙伴，原版 AGA 仅保护专家／全部专家分别列出。它们是**新入口的复现命令**，不是声称本次又跑了一遍这些实验。已完成结果无需重复运行。
 
-通道置换对照复用已冻结的任务基，不读图像或伙伴：
+防御一只由权重构造，不读真实图片或合成图片。SVHN和DTD已完成，固定定义见[两任务实验](results/phase3/bias_weight_only/other_tasks/protocol.json)。
 
 ```bash
-python -m experiment.construct --method task-directed --target MNIST --output outputs/refactored/construction/MNIST
+python -m experiment.construct --method bias --target SVHN --protocol results/phase3/bias_weight_only/other_tasks/protocol.json --output outputs/new_bias_SVHN
 ```
 
-`--variant distance_only` 是固定距离目标的消融，不作为另一个按成绩选择的发布。`--method basis` 从原专家减基座生成相同 rank32 任务基；`--method params` 运行完整 PaRaMS 默认配置；`--method bias` 仅由权重计算噪声方向和幅度，不读取训练图或合成图。具体参数见 `--help`。
-
-数值防御二看`experiment/defense2.py`，上述`experiment.construct`命令用于置换对照等方法。原执行源码、固定配置和模型指纹见`results/data_free_compensation/population_compensation_result.json`；整理前后源码对应关系见`results/engineering_refactor/validation.json`。
+数值防御二见`experiment/defense2.py`；原执行源码、固定配置和模型指纹见`results/data_free_compensation/population_compensation_result.json`。`construct`中的置换入口仅用于历史复现和恢复正对照。
 
 独立检查、八专家和恢复分别使用：
 
