@@ -1,0 +1,284 @@
+\begin{table*}[t]
+\centering\small
+\caption{MNIST protection, SVHN partner. Accuracy (\%).}
+\begin{tabular}{lllrrr}
+\toprule
+Defense & Processing & AGA & Standalone & Target & Partner \\
+\midrule
+Unprotected & TA & None & 99.69 & 99.37 & 92.50 \\
+Unprotected & TA & Target & 99.69 & 99.30 & 92.78 \\
+Unprotected & TA & Both & 99.69 & 99.32 & 91.77 \\
+Defense 2 & TA & None & 99.61 & 9.80 & 6.70 \\
+Defense 2 & TA & Target & 99.61 & 9.80 & 6.70 \\
+Defense 2 & TA & Both & 99.61 & 9.80 & 6.70 \\
+Defense 2 w/o SVD & TA & None & 99.69 & 9.80 & 6.70 \\
+Defense 2 w/o SVD & TA & Target & 99.69 & 9.80 & 6.70 \\
+Defense 2 w/o SVD & TA & Both & 99.69 & 9.80 & 6.70 \\
+A only & TA & None & 99.70 & 99.37 & 92.53 \\
+A only & TA & Target & 99.70 & 99.31 & 92.58 \\
+A only & TA & Both & 99.70 & 99.34 & 91.54 \\
+B+b only & TA & None & 9.80 & 9.80 & 6.70 \\
+B+b only & TA & Target & 9.80 & 9.80 & 6.70 \\
+B+b only & TA & Both & 9.80 & 9.80 & 6.70 \\
+Unprotected & Output calibration & None & 99.69 & 99.34 & 92.32 \\
+Unprotected & Output calibration & Target & 99.69 & 99.29 & 92.58 \\
+Unprotected & Output calibration & Both & 99.69 & 99.29 & 91.59 \\
+Defense 2 & Output calibration & None & 99.61 & 89.21 & 85.53 \\
+Defense 2 & Output calibration & Target & 99.61 & 56.34 & 54.05 \\
+Defense 2 & Output calibration & Both & 99.61 & 56.28 & 52.43 \\
+Defense 2 w/o SVD & Output calibration & None & 99.69 & 49.28 & 46.07 \\
+Defense 2 w/o SVD & Output calibration & Target & 99.69 & 49.98 & 46.19 \\
+Defense 2 w/o SVD & Output calibration & Both & 99.69 & 49.95 & 45.19 \\
+Defense 1 & TA [reference] & None & 99.69 & 9.80 & 6.70 \\
+Defense 1 & TA [reference] & Target & 99.69 & 9.80 & 6.70 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{MNIST protection, SVHN partner. Accuracy (\%).}
+\begin{tabular}{lllrrr}
+\toprule
+Defense & Processing & AGA & Standalone & Target & Partner \\
+\midrule
+Defense 1 & TA [reference] & Both & 99.69 & 9.80 & 6.70 \\
+Task-directed permutation & TA [reference] & None & 99.69 & 10.98 & 14.32 \\
+Task-directed permutation & TA [reference] & Target & 99.69 & 9.80 & 9.81 \\
+Task-directed permutation & TA [reference] & Both & 99.69 & 9.80 & 9.83 \\
+Unprotected & Base A & None & 99.68 & 99.37 & 92.51 \\
+Defense 2 & Base A & None & 9.80 & 9.80 & 6.70 \\
+Defense 2 w/o SVD & Base A & None & 9.80 & 9.80 & 6.70 \\
+No target & Base A & None & 48.25 & 84.06 & 95.76 \\
+Unprotected & Base B+b & None & 99.68 & 99.35 & 92.45 \\
+Defense 2 & Base B+b & None & 99.68 & 99.35 & 92.49 \\
+Defense 2 w/o SVD & Base B+b & None & 99.68 & 99.33 & 92.37 \\
+Unprotected & Base MLP & None & 99.67 & 99.35 & 92.44 \\
+Defense 2 & Base MLP & None & 99.67 & 99.35 & 92.44 \\
+Defense 2 w/o SVD & Base MLP & None & 99.67 & 99.35 & 92.44 \\
+Random noise & TA & None & 99.65 & 99.34 & 92.59 \\
+Random noise & TA & Target & 99.65 & 99.30 & 92.87 \\
+Random noise & TA & Both & 99.65 & 99.30 & 91.86 \\
+Unprotected & TIES & None & 99.69 & 99.34 & 94.37 \\
+Unprotected & TIES & Target & 99.69 & 99.32 & 94.81 \\
+Unprotected & TIES & Both & 99.69 & 99.36 & 94.18 \\
+Unprotected & DARE+TA & None & 99.69 & 99.36 & 92.52 \\
+Unprotected & DARE+TA & Target & 99.69 & 99.30 & 92.78 \\
+Unprotected & DARE+TA & Both & 99.69 & 99.31 & 91.77 \\
+Defense 2 & TIES & None & 99.61 & 29.30 & 28.00 \\
+Defense 2 & TIES & Target & 99.61 & 29.51 & 23.73 \\
+Defense 2 & TIES & Both & 99.61 & 28.18 & 20.52 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{MNIST protection, SVHN partner. Accuracy (\%).}
+\begin{tabular}{lllrrr}
+\toprule
+Defense & Processing & AGA & Standalone & Target & Partner \\
+\midrule
+Defense 2 & DARE+TA & None & 99.61 & 11.52 & 7.44 \\
+Defense 2 & DARE+TA & Target & 99.61 & 9.80 & 6.70 \\
+Defense 2 & DARE+TA & Both & 99.61 & 9.80 & 6.70 \\
+Defense 2 w/o SVD & TIES & None & 99.69 & 18.18 & 14.64 \\
+Defense 2 w/o SVD & TIES & Target & 99.69 & 35.58 & 25.44 \\
+Defense 2 w/o SVD & TIES & Both & 99.69 & 35.26 & 27.41 \\
+Defense 2 w/o SVD & DARE+TA & None & 99.69 & 9.80 & 6.70 \\
+Defense 2 w/o SVD & DARE+TA & Target & 99.69 & 9.80 & 6.70 \\
+Defense 2 w/o SVD & DARE+TA & Both & 99.69 & 9.80 & 6.70 \\
+Unprotected & MLP matching & None & 99.69 & 99.37 & 92.50 \\
+Defense 2 & MLP matching & None & 99.61 & 9.80 & 6.70 \\
+Defense 2 w/o SVD & MLP matching & None & 99.69 & 9.80 & 6.70 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{SVHN protection, MNIST partner. Accuracy (\%).}
+\begin{tabular}{lllrrr}
+\toprule
+Defense & Processing & AGA & Standalone & Target & Partner \\
+\midrule
+Unprotected & TA & None & 97.46 & 92.50 & 99.37 \\
+Unprotected & TA & Target & 97.46 & 91.56 & 99.39 \\
+Unprotected & TA & Both & 97.46 & 91.77 & 99.32 \\
+Defense 2 & TA & None & 96.98 & 6.70 & 9.80 \\
+Defense 2 & TA & Target & 96.98 & 6.70 & 9.80 \\
+Defense 2 & TA & Both & 96.98 & 6.70 & 9.80 \\
+Defense 2 w/o SVD & TA & None & 97.45 & 6.70 & 9.80 \\
+Defense 2 w/o SVD & TA & Target & 97.45 & 6.70 & 9.80 \\
+Defense 2 w/o SVD & TA & Both & 97.45 & 6.70 & 9.80 \\
+Unprotected & Output calibration & None & 97.46 & 92.32 & 99.34 \\
+Unprotected & Output calibration & Target & 97.46 & 91.34 & 99.34 \\
+Unprotected & Output calibration & Both & 97.46 & 91.59 & 99.29 \\
+Defense 2 & Output calibration & None & 96.98 & 84.56 & 87.66 \\
+Defense 2 & Output calibration & Target & 96.98 & 53.84 & 69.99 \\
+Defense 2 & Output calibration & Both & 96.98 & 51.46 & 69.80 \\
+Defense 2 w/o SVD & Output calibration & None & 97.45 & 50.46 & 60.21 \\
+Defense 2 w/o SVD & Output calibration & Target & 97.45 & 51.31 & 62.71 \\
+Defense 2 w/o SVD & Output calibration & Both & 97.45 & 50.22 & 59.56 \\
+Task-directed permutation & TA [reference] & None & 97.46 & 7.30 & 9.45 \\
+Task-directed permutation & TA [reference] & Target & 97.46 & 6.45 & 12.19 \\
+Task-directed permutation & TA [reference] & Both & 97.46 & 6.45 & 12.22 \\
+Unprotected & Base A & None & 97.42 & 92.45 & 99.37 \\
+Defense 2 & Base A & None & 6.70 & 6.70 & 9.80 \\
+Defense 2 w/o SVD & Base A & None & 6.70 & 6.70 & 9.80 \\
+No target & Base A & None & 31.61 & 52.92 & 99.46 \\
+Unprotected & Base B+b & None & 97.43 & 92.40 & 99.38 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{SVHN protection, MNIST partner. Accuracy (\%).}
+\begin{tabular}{lllrrr}
+\toprule
+Defense & Processing & AGA & Standalone & Target & Partner \\
+\midrule
+Defense 2 & Base B+b & None & 97.42 & 92.39 & 99.37 \\
+Defense 2 w/o SVD & Base B+b & None & 97.46 & 92.26 & 99.35 \\
+Unprotected & Base MLP & None & 97.38 & 92.35 & 99.37 \\
+Defense 2 & Base MLP & None & 97.38 & 92.35 & 99.37 \\
+Defense 2 w/o SVD & Base MLP & None & 97.38 & 92.35 & 99.37 \\
+Random noise & TA & None & 97.30 & 92.66 & 99.35 \\
+Random noise & TA & Target & 97.30 & 91.71 & 99.37 \\
+Random noise & TA & Both & 97.30 & 91.92 & 99.31 \\
+A only & TA & None & 97.46 & 92.48 & 99.35 \\
+A only & TA & Target & 97.46 & 91.18 & 99.37 \\
+A only & TA & Both & 97.46 & 91.42 & 99.33 \\
+B+b only & TA & None & 6.81 & 6.70 & 9.80 \\
+B+b only & TA & Target & 6.81 & 6.70 & 9.80 \\
+B+b only & TA & Both & 6.81 & 6.70 & 9.80 \\
+Unprotected & TIES & None & 97.46 & 94.37 & 99.34 \\
+Unprotected & TIES & Target & 97.46 & 93.75 & 99.37 \\
+Unprotected & TIES & Both & 97.46 & 94.18 & 99.36 \\
+Unprotected & DARE+TA & None & 97.46 & 92.51 & 99.37 \\
+Unprotected & DARE+TA & Target & 97.46 & 91.59 & 99.37 \\
+Unprotected & DARE+TA & Both & 97.46 & 91.77 & 99.32 \\
+Defense 2 & TIES & None & 96.98 & 28.89 & 36.25 \\
+Defense 2 & TIES & Target & 96.98 & 27.43 & 32.27 \\
+Defense 2 & TIES & Both & 96.98 & 27.64 & 32.06 \\
+Defense 2 & DARE+TA & None & 96.98 & 6.70 & 9.80 \\
+Defense 2 & DARE+TA & Target & 96.98 & 6.70 & 9.80 \\
+Defense 2 & DARE+TA & Both & 96.98 & 6.70 & 9.80 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{SVHN protection, MNIST partner. Accuracy (\%).}
+\begin{tabular}{lllrrr}
+\toprule
+Defense & Processing & AGA & Standalone & Target & Partner \\
+\midrule
+Defense 2 w/o SVD & TIES & None & 97.45 & 8.16 & 10.33 \\
+Defense 2 w/o SVD & TIES & Target & 97.45 & 14.06 & 11.48 \\
+Defense 2 w/o SVD & TIES & Both & 97.45 & 14.83 & 12.15 \\
+Defense 2 w/o SVD & DARE+TA & None & 97.45 & 6.70 & 9.80 \\
+Defense 2 w/o SVD & DARE+TA & Target & 97.45 & 6.70 & 9.80 \\
+Defense 2 w/o SVD & DARE+TA & Both & 97.45 & 6.70 & 9.80 \\
+Unprotected & MLP matching & None & 97.46 & 92.50 & 99.37 \\
+Defense 2 & MLP matching & None & 96.98 & 6.70 & 9.80 \\
+Defense 2 w/o SVD & MLP matching & None & 97.45 & 6.70 & 9.80 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{DTD protection, MNIST partner. Accuracy (\%).}
+\begin{tabular}{lllrrr}
+\toprule
+Defense & Processing & AGA & Standalone & Target & Partner \\
+\midrule
+Unprotected & TA & None & 79.41 & 69.31 & 99.45 \\
+Unprotected & TA & Target & 79.41 & 68.40 & 99.45 \\
+Unprotected & TA & Both & 79.41 & 68.78 & 99.42 \\
+Defense 2 & TA & None & 76.12 & 2.13 & 98.44 \\
+Defense 2 & TA & Target & 76.12 & 2.13 & 75.64 \\
+Defense 2 & TA & Both & 76.12 & 2.13 & 68.61 \\
+Defense 2 w/o SVD & TA & None & 78.09 & 2.13 & 37.09 \\
+Defense 2 w/o SVD & TA & Target & 78.09 & 2.13 & 17.44 \\
+Defense 2 w/o SVD & TA & Both & 78.09 & 2.13 & 16.70 \\
+Unprotected & Output calibration & None & 79.41 & 55.69 & 99.46 \\
+Unprotected & Output calibration & Target & 79.41 & 55.00 & 99.45 \\
+Unprotected & Output calibration & Both & 79.41 & 55.00 & 99.39 \\
+Defense 2 w/o SVD & Output calibration & None & 78.09 & 57.18 & 99.42 \\
+Defense 2 w/o SVD & Output calibration & Target & 78.09 & 52.77 & 99.42 \\
+Defense 2 w/o SVD & Output calibration & Both & 78.09 & 52.77 & 99.38 \\
+Task-directed permutation & TA [reference] & None & 79.41 & 2.39 & 10.29 \\
+Task-directed permutation & TA [reference] & Target & 79.41 & 2.39 & 10.09 \\
+Task-directed permutation & TA [reference] & Both & 79.41 & 2.39 & 10.09 \\
+Unprotected & Base A & None & 79.41 & 68.88 & 99.46 \\
+Defense 2 & Base A & None & 3.56 & 2.13 & 97.21 \\
+Defense 2 w/o SVD & Base A & None & 2.13 & 2.13 & 33.72 \\
+No target & Base A & None & 44.41 & 39.52 & 99.46 \\
+Unprotected & Base B+b & None & 79.15 & 68.19 & 99.47 \\
+Defense 2 & Base B+b & None & 78.94 & 66.81 & 99.45 \\
+Defense 2 w/o SVD & Base B+b & None & 78.03 & 65.32 & 99.47 \\
+Unprotected & Base MLP & None & 78.99 & 67.45 & 99.47 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{DTD protection, MNIST partner. Accuracy (\%).}
+\begin{tabular}{lllrrr}
+\toprule
+Defense & Processing & AGA & Standalone & Target & Partner \\
+\midrule
+Defense 2 & Base MLP & None & 78.99 & 67.45 & 99.47 \\
+Defense 2 w/o SVD & Base MLP & None & 78.99 & 67.45 & 99.47 \\
+Random noise & TA & None & 62.39 & 65.53 & 99.51 \\
+Random noise & TA & Target & 62.39 & 64.41 & 99.50 \\
+Random noise & TA & Both & 62.39 & 64.20 & 99.41 \\
+A only & TA & None & 78.94 & 67.61 & 99.43 \\
+A only & TA & Target & 78.94 & 65.05 & 99.43 \\
+A only & TA & Both & 78.94 & 65.11 & 99.36 \\
+B+b only & TA & None & 5.00 & 2.13 & 97.25 \\
+B+b only & TA & Target & 5.00 & 2.13 & 97.16 \\
+B+b only & TA & Both & 5.00 & 2.13 & 95.64 \\
+Unprotected & TIES & None & 79.41 & 74.26 & 99.60 \\
+Unprotected & TIES & Target & 79.41 & 73.51 & 99.60 \\
+Unprotected & TIES & Both & 79.41 & 73.51 & 99.61 \\
+Unprotected & DARE+TA & None & 79.41 & 69.47 & 99.47 \\
+Unprotected & DARE+TA & Target & 79.41 & 68.40 & 99.46 \\
+Unprotected & DARE+TA & Both & 79.41 & 68.94 & 99.43 \\
+Defense 2 & TIES & None & 76.12 & 3.30 & 90.68 \\
+Defense 2 & TIES & Target & 76.12 & 2.50 & 88.85 \\
+Defense 2 & TIES & Both & 76.12 & 2.50 & 88.27 \\
+Defense 2 & DARE+TA & None & 76.12 & 2.29 & 98.68 \\
+Defense 2 & DARE+TA & Target & 76.12 & 2.13 & 84.31 \\
+Defense 2 & DARE+TA & Both & 76.12 & 2.13 & 81.05 \\
+Defense 2 w/o SVD & TIES & None & 78.09 & 3.40 & 49.55 \\
+Defense 2 w/o SVD & TIES & Target & 78.09 & 2.34 & 53.27 \\
+Defense 2 w/o SVD & TIES & Both & 78.09 & 2.39 & 49.49 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{DTD protection, MNIST partner. Accuracy (\%).}
+\begin{tabular}{lllrrr}
+\toprule
+Defense & Processing & AGA & Standalone & Target & Partner \\
+\midrule
+Defense 2 w/o SVD & DARE+TA & None & 78.09 & 2.13 & 46.73 \\
+Defense 2 w/o SVD & DARE+TA & Target & 78.09 & 2.13 & 16.41 \\
+Defense 2 w/o SVD & DARE+TA & Both & 78.09 & 2.13 & 15.73 \\
+Unprotected & MLP matching & None & 79.41 & 69.31 & 99.45 \\
+Defense 2 & MLP matching & None & 76.12 & 2.13 & 96.78 \\
+Defense 2 w/o SVD & MLP matching & None & 78.09 & 2.13 & 20.66 \\
+Defense 2 & Output calibration & None & 76.12 & 59.31 & 99.45 \\
+Defense 2 & Output calibration & Target & 76.12 & 52.61 & 99.42 \\
+Defense 2 & Output calibration & Both & 76.12 & 52.34 & 99.38 \\
+\bottomrule
+\end{tabular}
+\end{table*}

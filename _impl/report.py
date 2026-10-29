@@ -12,6 +12,188 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def attack_comparison(directory):
+    """Collect verified attack rows; MD and TeX use the same table cells."""
+    root = Path(directory)
+    result = json.loads((root / "results.json").read_text())
+    protocol = json.loads((root / "protocol.json").read_text())
+    rows = list(result["reused_rows"])
+    batches = []
+    campaign = Path(protocol["output"]).parent
+    evaluations = [(protocol, "Public replacement")]
+    optional = [campaign / "baselines/evaluation_protocol.json", root / "mergers_protocol.json"]
+    optional += [
+        campaign / "matching" / (task + "_protocol.json")
+        for task in ["MNIST", "SVHN", "DTD"]
+    ]
+    for path in optional:
+        if path.exists():
+            operation = "TA / AGA"
+            if path.name == "mergers_protocol.json":
+                operation = "Fusion strategies"
+            elif "matching" in path.parts:
+                operation = "MLP matching"
+            evaluations.append((json.loads(path.read_text()), operation))
+    for config, operation in evaluations:
+        for index, case in enumerate(config["cases"]):
+            folder = Path(config["output"]) / "full" / f"{index:02d}_{case['target']}_{case['partner']}"
+            check = folder / "independent_validation.json"
+            if not check.exists():
+                continue
+            validation = json.loads(check.read_text())
+            execution = json.loads((folder / "execution.json").read_text())
+            assert validation["status"] == "passed"
+            assert validation["raw_sha256"] == execution["predictions_sha256"]
+            pipeline = operation
+            if "public_replacement" in case:
+                pipeline += " " + case["public_replacement"]["side"]
+            new = json.loads((folder / "results.json").read_text())
+            for row in new:
+                assert sum(c["correct"] for c in row["per_class"]) == row["correct"]
+                rows.append(dict(row, pipeline=row["merger"] if operation == "Fusion strategies" else pipeline))
+            batches.append(dict(case=index, directory=str(folder), execution=execution, validation=validation))
+    calibration = campaign / "DTD_calibration/results.json"
+    if calibration.exists():
+        calibrated = json.loads(calibration.read_text())
+        assert calibrated["status"] == "completed" and calibrated["maximum_numpy_prior_error"] < 1e-10
+        for row in calibrated["rows"]:
+            target, name, merger, scope, task = row["key"].split("/")
+            rows.append(dict(row, target=target, partner="MNIST", defense=name, merger=merger,
+                             attack_scope=scope, dataset=task, pipeline="64-noise calibration"))
+    grouped, native = {}, {}
+    for row in rows:
+        assert abs(row["accuracy_percent"] - 100 * row["correct"] / row["n"]) < 1e-8
+        name = row["defense"]
+        if name.startswith(("NativeConstraintClass_", "Defense2_")):
+            name = "Defense 2"
+        elif name.startswith("NoSVD_") or name == "Without_both_SVD_components":
+            name = "Defense 2 w/o SVD"
+        elif name.startswith("Random_noise"):
+            name = "Random noise"
+        elif name.startswith("A_only"):
+            name = "A only"
+        elif name.startswith(("B_only", "B+b_only")):
+            name = "B+b only"
+        elif name == "No_target":
+            name = "No target"
+        elif name == "Defense1":
+            name = "Defense 1"
+        elif name.startswith("TaskDirected_"):
+            name = "Task-directed permutation"
+        pipeline = "TA / AGA" if row["pipeline"] == "Component deletion" else row["pipeline"]
+        prefix = (row["target"], row["partner"], name, pipeline)
+        if row["merger"] == "Standalone":
+            native[prefix] = row["accuracy_percent"]
+            continue
+        key = (*prefix, row["attack_scope"])
+        values = grouped.setdefault(key, {})
+        if row["dataset"] in values:
+            assert abs(values[row["dataset"]] - row["accuracy_percent"]) < 1e-8, key
+        values[row["dataset"]] = row["accuracy_percent"]
+    cells = []
+    for (target, partner, defense, pipeline, scope), values in grouped.items():
+        prefix = (target, partner, defense, pipeline)
+        standalone = native.get(prefix)
+        if standalone is None and pipeline in ["TIES", "DARE+TA", "64-noise calibration"]:
+            standalone = native.get((target, partner, defense, "TA / AGA"))
+        cells.append([target, partner, defense, pipeline, scope,
+                      f"{standalone:.2f}" if standalone is not None else "--",
+                      f"{values[target]:.2f}" if target in values else "--",
+                      f"{values[partner]:.2f}" if partner in values else "--"])
+    headers = ["Target", "Partner", "Defense", "Processing", "AGA scope", "Standalone", "Target accuracy", "Partner accuracy"]
+    md = ["# Attack comparison", "", "All accuracies are percentages. Only completed, verified evaluations appear; missing entries are --.", "",
+          "| " + " | ".join(headers) + " |", "| " + " | ".join(["---"] * len(headers)) + " |"]
+    md += ["| " + " | ".join(row) + " |" for row in cells]
+    md += ["", "Standalone in public-replacement rows is measured after replacement. Calibration rows reuse fused scores and do not imply a new standalone evaluation. No_target uses the public base in place of the entire target expert at the unchanged coefficient. A-only/B-only are frozen deletions, not separately optimized methods. Current coverage is three datasets, not eight."]
+    def tex(text):
+        return text.replace("_", r"\_").replace("%", r"\%").replace("&", r"\&")
+    lines = []
+    short = {"TA / AGA": "TA", "TA / AGA (reference)": "TA [reference]", "64-noise calibration": "Output calibration",
+             "Public replacement A": "Base A", "Public replacement B+b": "Base B+b",
+             "Public replacement MLP": "Base MLP", "MLP matching": "MLP matching",
+             "Protected expert": "Target", "All experts": "Both"}
+    for target in ["MNIST", "SVHN", "DTD"]:
+        group = [row for row in cells if row[0] == target]
+        for offset in range(0, len(group), 26):
+            selected = group[offset:offset + 26]
+            partner = selected[0][1]
+            lines += [r"\begin{table*}[t]", r"\centering\small",
+                      r"\caption{" + target + " protection, " + partner + r" partner. Accuracy (\%).}",
+                      r"\begin{tabular}{lllrrr}", r"\toprule",
+                      "Defense & Processing & AGA & Standalone & Target & Partner" + r" \\", r"\midrule"]
+            lines += [" & ".join(tex(short.get(v, v)) for v in row[2:]) + r" \\" for row in selected]
+            lines += [r"\bottomrule", r"\end{tabular}", r"\end{table*}", ""]
+    (root / "attack_comparison.md").write_text("\n".join(md) + "\n")
+    (root / "attack_comparison.tex").write_text("\n".join(lines).rstrip() + "\n")
+    result["new_batches"] = batches
+    result["table_rows"] = cells
+    result["new_full_cases_completed"] = len(batches)
+    for extension, folders, title, processing, note in [
+        ("eight_expert_extension", ["eight_expert", "eight_expert_extra"],
+         "Eight-expert fusion", "AGA",
+         "AGA processes only the protected expert. Additional datasets use identical merged weights."),
+        ("unmask_extension", ["unmask"], "Unmask", "Attack",
+         "Subtract 0.2 times the whole published visual weights from the fused model, including in the unprotected control. "
+         "No AGA. The protected and matched unprotected models make identical predictions on all five datasets; "
+         "low accuracy here does not establish an additional defense success."),
+    ]:
+        paths = [root / f for f in folders if (root / f / "independent_validation.json").exists()]
+        if not paths:
+            continue
+        full, sources, validations, grouped_eight = [], {}, {}, {}
+        parameters = None
+        for folder in paths:
+            audit = json.loads((folder / "independent_validation.json").read_text())
+            assert audit["status"] == "passed_independent_numpy_metrics_and_frozen_artifact_hashes"
+            batch = json.loads((folder / "full/results.json").read_text())
+            validation = json.loads((folder / "full/validation.json").read_text())
+            audited = next(s for s in audit["stages"] if s["stage"] == "full")
+            assert validation["raw_sha256"] == audited["raw_sha256"]
+            expected = {r["key"]: r for r in audited["rows"]}
+            assert len(expected) == len(batch)
+            current = json.loads((folder / "full/pre_evaluation.json").read_text())
+            assert parameters is None or current == parameters
+            parameters = current
+            for row in batch:
+                key = "/".join(row[k] for k in ["target", "defense", "attack_scope", "dataset"])
+                assert (row["n"], row["correct"]) == (expected[key]["n"], expected[key]["correct"])
+                name = "Defense 2" if row["defense"].startswith("Defense2_") else "Unprotected"
+                group = (row["target"], name, short.get(row["attack_scope"], row["attack_scope"]))
+                values = grouped_eight.setdefault(group, {})
+                assert row["dataset"] not in values
+                values[row["dataset"]] = 100 * row["correct"] / row["n"]
+            full.extend(batch)
+            validations[str(folder)] = validation
+            for name in ["full/results.json", "full/pre_evaluation.json", "independent_validation.json"]:
+                p = folder / name
+                sources[str(p)] = hashlib.sha256(p.read_bytes()).hexdigest()
+        datasets = [t for t in ["MNIST", "SVHN", "DTD", "GTSRB", "RESISC45"]
+                    if any(t in v for v in grouped_eight.values())]
+        assert all(set(v) == set(datasets) for v in grouped_eight.values())
+        eight_cells = [list(key) + [f"{values[t]:.2f}" for t in datasets]
+                       for key, values in grouped_eight.items()]
+        headers = ["Protected task", "Defense", processing] + datasets
+        note = (f"Eight experts, TA coefficient 0.2. {len(datasets)} complete datasets evaluated; "
+                "no eight-task average. Same frozen releases; no reconstruction or tuning. " + note)
+        lines = ["# " + title, "", note, "", "| " + " | ".join(headers) + " |",
+                 "| " + " | ".join(["---"] * len(headers)) + " |"]
+        lines += ["| " + " | ".join(row) + " |" for row in eight_cells]
+        (paths[0] / "comparison.md").write_text("\n".join(lines) + "\n")
+        lines = [r"\begin{table*}[t]", r"\centering\small",
+                 r"\caption{" + title + r". Accuracy (\%).}",
+                 r"\begin{tabular}{lll" + "r" * len(datasets) + "}", r"\toprule",
+                 " & ".join(headers) + r" \\", r"\midrule"]
+        lines += [" & ".join(tex(v) for v in row) + r" \\" for row in eight_cells]
+        lines += [r"\bottomrule", r"\end{tabular}", r"\end{table*}", "% " + note]
+        (paths[0] / "comparison.tex").write_text("\n".join(lines) + "\n")
+        result[extension] = dict(
+            full_records=len(full), table_rows=eight_cells, validations=validations,
+            datasets=datasets, source_sha256=sources,
+        )
+    (root / "results.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+    print("ATTACK_TABLE", len(cells), "verified new cases", len(batches))
+
+
 def paper_tables(_source, output):
     """Collect frozen comparisons into matching TeX/Markdown paper tables."""
     out = Path(output)

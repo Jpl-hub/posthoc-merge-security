@@ -5,7 +5,7 @@ import time
 
 import torch
 
-from _impl.attacks import author_recover, load_author, public_mlp_reset, public_patch_recovery
+from _impl.attacks import author_recover, load_author, public_mlp_matching, public_mlp_reset, public_patch_recovery
 from _impl.io import digest, new_output, save_json
 from _impl.models import apply, initialize, load_checkpoint
 from cfg import AUTHOR, load_config, require_root
@@ -14,7 +14,7 @@ from cfg import AUTHOR, load_config, require_root
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--target", choices=["MNIST", "DTD", "SVHN"], required=True)
-    p.add_argument("--method", choices=["aga", "patch", "reset"], default="aga")
+    p.add_argument("--method", choices=["aga", "patch", "reset", "mlp-match"], default="aga")
     p.add_argument("--protocol", default="configs/evaluate.json")
     p.add_argument("--publication", required=True)
     p.add_argument("--sha256", required=True)
@@ -61,6 +61,11 @@ def main():
         # expert above assembles an edits-only publication; it is not passed here.
         result, detail = public_patch_recovery(published.state_dict(), base.state_dict())
         detail["known_family"] = True
+    elif a.method == "mlp-match":
+        result, layers = public_mlp_matching(published.state_dict(), base.state_dict())
+        detail = dict(layers=layers, images=0, original_expert_used_by_attack=False,
+                      source="samuela/git-re-basin@ef40098257ab97243930eba737d6dcb8edd5863e",
+                      scope="joint incoming/bias/outgoing MLP matching; attention and residual coordinates fixed; native adaptation")
     else:
         result = public_mlp_reset(published.state_dict(), base.state_dict())
         detail = dict(

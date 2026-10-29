@@ -4,6 +4,21 @@
 
 当前重点是无真实构造图片的数值防御二：使用冻结专家、公开基座、任务 SVD 和已声明的固定分类头，研究任务功能保持与跨模块补偿。生成输入用于构造，真实图像只用于冻结后的评价。
 
+## 从哪里看代码
+
+当前计算机：3090，SSH 端口 **55548**。在编辑器中打开 **`/root/autodl-tmp/posthoc-merge-security`**，先看下表；`merge_security_20261009` 是历史资产目录。
+
+| 内容 | 文件 | 看什么 |
+|---|---|---|
+| **数值防御二** | [experiment/defense2.py](experiment/defense2.py) | A 的任务 SVD 约束、B 与偏置补偿、融合分类目标 |
+| 防御一 | [_impl/defenses.py](_impl/defenses.py) | `construct_bias`：视觉投影核空间中的偏置扰动 |
+| AGA 与公开恢复 | [_impl/attacks.py](_impl/attacks.py) | 作者 AGA 调用、公开模块替换和权重匹配 |
+| 融合 | [_impl/merge.py](_impl/merge.py) | TA、TIES、DARE |
+| 实验评价 | [experiment/main_table.py](experiment/main_table.py)、[_impl/evaluate.py](_impl/evaluate.py) | 固定发布、目标与伙伴评价 |
+| 最新对比结果 | [results/attack_generalization_20261028](results/attack_generalization_20261028) | `attack_comparison.md` / `.tex`，攻击权限及完整数值 |
+
+`experiment/defense2.py` 从产生当前 MNIST 发布的原始源码整理而来，只调整排版、注释和程序入口，计算语句保持相同。它是固定 MNIST 构造，不是三个任务通用命令：运行需要原合成缓存 `outputs/native_ellipse_classification_20261026/source/` 和 `outputs/task_shaped_compensation_20261026/layer_inputs.pt`，输出目录必须尚不存在。当前评价直接加载已冻结权重，无需重新构造。SVHN、DTD 的实际执行源码及哈希仍在 `results/data_free_compensation/population_compensation_result.json` 的对应任务定义中。
+
 防御一和防御二的当前构造要求均为Data-Free。防御一已改为只由权重确定噪声方向和幅度，MNIST独立99.69%，融合及AGA后均为9.80%；构造没有使用真实或合成图片。[结果与方法](results/phase3/bias_weight_only/summary.md)。历史数据辅助结果单列保留。
 
 当前数值防御二修改最后一个MLP的A、B及输出偏置。A在所选任务方向的补空间改变，B补偿独立模型输出；构造只使用冻结权重、固定分类头和合成输入。固定TA系数为0.5，完整测试准确率如下：
@@ -16,12 +31,18 @@
 
 独立准确率分别下降0.08、0.48、3.30个百分点。DTD曾因项目自设的0.5个百分点条件停止，本次补齐同一固定权重的融合评价；旧失败记录保留。相关论文没有统一的0.5个百分点标准，后续直接比较独立能力损失与保护效果。[尺度依据](notes/parameter_scale_and_threat_model.md)。A/B删项支持联合补偿，两项SVD单删项尚未显示准确率收益；当前A是最小范数行正交解，并未求解参数距离最大化。另列的无数据输出校正能部分恢复分类，与仅运行AGA分开报告。[方法、对照与完整结果](results/data_free_compensation/summary.md) · [核心方法审查](notes/phase2_coupling.md#oct26核心方法审查)。
 
+最新三任务攻击对照已完成：TIES、DARE下仍有融合保护；已知末层MLP位置、用公开基座替换B及偏置后，融合准确率恢复至99.35%、92.39%、66.81%。两种结果的恢复操作和权限不同，详见[完整对照表](results/attack_generalization_20261028/attack_comparison.md)。
+
+同一数值防御二的[八专家融合评价](results/attack_generalization_20261028/eight_expert/comparison.md)已完成：固定TA0.2，MNIST/SVHN/DTD保护任务准确率为9.81%/6.70%/2.39%，AGA仅处理保护专家后为9.80%/6.70%/2.13%。表中同时保留无保护和伙伴结果。已补齐GTSRB和RESISC45，现有五个完整数据集；Cars、EuroSAT、SUN397仍缺失，不报八任务平均。
+
 | 通道置换对照 | MNIST | DTD | SVHN |
 |---|---:|---:|---:|
 | 单独使用 | 99.69% | 79.41% | 97.46% |
 | AGA 仅处理保护专家后，TA 融合 | 9.80% | 2.39% | 6.45% |
 
 该对照使用任务 SVD 选择共同通道顺序；三份冻结发布保持完整独立预测。知道变换家族后的公开匹配能够恢复，针对性恢复与原版 AGA 分列。[方法](results/task_directed_pairing/method.md) · [完整结果与恢复](results/task_directed_pairing/summary.md) · [论文表格](results/paper_tables/README.md)。防御一及完整 PaRaMS 对照继续保留。
+
+[Unmask补充](results/attack_generalization_20261028/unmask/comparison.md)也已完成。它对保护和匹配无保护模型产生相同预测，不能据此再算一次防御成功。公开模块替换仍能恢复，攻击泛化问题尚未解决。
 
 ## 代码结构
 
@@ -41,9 +62,10 @@ _impl/
   report.py                  # 已验证结果生成同源 MD / TeX / 图
 experiment/
   construct.py               # 防御构造及固定距离消融
+  defense2.py                # 当前数值防御二的固定 MNIST 构造源码
   native.py                  # 冻结发布的独立任务检查
   main_table.py              # 主实验：TA / 原版 AGA / 匹配基线
-  eight_task.py              # 八专家融合，当前仅评价三个数据集
+  eight_task.py              # 八专家融合及Unmask，当前评价五个数据集
   recover.py                 # 两种恢复权限分别执行
   report.py                  # 论文图表入口，无需模型或 GPU
 configs/                     # 当前配置、模型和外部源码指纹
@@ -69,7 +91,7 @@ data/dtd/...
 data/{train,test}_32x32.mat
 ```
 
-模型清单及 SHA：`configs/checkpoints.json`。当前数值实验的原始分数、发布权重及源码保存在4090，3090保留历史模型和记录；旧离线4090的唯一记录尚未全部迁回。具体机器和路径以`research_state.json`及各批结果索引为准。已归档的诊断文件采用无损压缩，路径和还原方法见工程说明。
+模型清单及 SHA：`configs/checkpoints.json`。当前计算使用55548的3090；12997为CPU存储，保留上一批原始分数。55548上的八专家及分类头已通过原清单核对，完整八数据集仍未齐全。具体资产与备份以`research_state.json`及各批结果索引为准。
 
 ## 常用入口
 
@@ -100,7 +122,7 @@ python -m experiment.construct --method task-directed --target MNIST --output ou
 
 `--variant distance_only` 是固定距离目标的消融，不作为另一个按成绩选择的发布。`--method basis` 从原专家减基座生成相同 rank32 任务基；`--method params` 运行完整 PaRaMS 默认配置；`--method bias` 仅由权重计算噪声方向和幅度，不读取训练图或合成图。具体参数见 `--help`。
 
-当前数值防御二尚未合入该构造入口。已执行源码、固定配置和模型指纹见`results/data_free_compensation/population_compensation_result.json`，服务器各批输出目录的`source_archive/`保留对应源码；不能把上述置换命令当作数值方法的复现入口。
+数值防御二看`experiment/defense2.py`，上述`experiment.construct`命令用于置换对照等方法。原执行源码、固定配置和模型指纹见`results/data_free_compensation/population_compensation_result.json`；整理前后源码对应关系见`results/engineering_refactor/validation.json`。
 
 独立检查、八专家和恢复分别使用：
 
@@ -110,7 +132,7 @@ python -m experiment.eight_task --help
 python -m experiment.recover --help
 ```
 
-八专家参与不等于八数据集已评价；当前配置仅评价 MNIST、DTD、SVHN。TA/TIES/DARE 是融合算法，AGA 是恢复攻击。已知家族匹配另外报告，不能把它写成原版 AGA。
+八专家参与不等于八数据集已评价；当前数值发布已评价 MNIST、SVHN、DTD、GTSRB、RESISC45，旧配置的三数据集范围保留。TA/TIES/DARE 是融合算法，AGA 是恢复攻击。已知家族匹配另外报告，不能把它写成原版 AGA。
 
 ## 检查
 

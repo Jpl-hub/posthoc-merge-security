@@ -2,6 +2,8 @@
 
 此次整理基于本项目现有实验，不引入 IQA 项目的内容。公共算法放 `_impl/`，实验顺序与命令行放 `experiment/`，科学选择放 `configs/`；不再为每个探索点复制一套加载、融合和核验脚本。
 
+当前代码入口见根目录README。55548的工作目录固定为`/root/autodl-tmp/posthoc-merge-security`；历史资产保留在`merge_security_20261009`并链接使用。当前数值防御二源码为`experiment/defense2.py`：从已执行MNIST源码提取，补排版、注释及main入口，计算语句AST相同；没有改变算法或重跑构造。原源码、SVHN/DTD任务定义和源码SHA继续保留在原结果JSON。原始合成缓存是构造的必要输入，打开源码查看无需这些缓存。
+
 ## 保留什么
 
 - 当前防御一、防御二、原版 AGA、单列公开匹配、完整 PaRaMS、TA/TIES/DARE 核和八专家顺序保留在活动代码中。
@@ -47,8 +49,9 @@ Oct25已结束的SVD删除、共同响应和分类响应构造亦按此方式复
 | 冻结发布的独立任务检查 | `experiment.native` |
 | 两专家 TA／原版 AGA 作用范围评价 | `experiment.main_table` |
 | 八专家固定顺序及三个数据集评价 | `experiment.eight_task` |
-| 原版 AGA / 已知家族公开匹配 | `experiment.recover --method aga / patch` |
+| AGA / 已知家族公开匹配 / MLP联合权重匹配 | `experiment.recover --method aga / patch / mlp-match` |
 | 当前统一论文表 | `experiment.report` |
+| 固定攻击泛化对比表 | `experiment.report --attack-directory results/attack_generalization_20261028` |
 | 已结束探索及其他历史补充表 | 固定历史提交与原协议 |
 
 `experiment.native` 的原始分数独立重计与主实验的原批上下文重放是两个检查，不能混称。主实验 `--verify` 保留128张原批上下文和原5e-4误差上限。单独功能检查继续记录原R0.5和改判，不改写历史失败。

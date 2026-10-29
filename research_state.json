@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
-  "active_focus": "Defense2 data-free core mechanism: meaningful numerical changes and cross-module compensation preserving standalone function after expert freezing.",
-  "status": "三个无数据去SVD固定对照已完成：MNIST独立99.69、SVHN97.45、DTD78.09；TA及AGA分别9.80、6.70、2.13。独立损失均较含SVD方案更小，DTD仍损失1.33个百分点；未证明SVD贡献。原主发布保留。",
+  "active_focus": "Freeze numerical Defense2. Complete recovery generalization, matched controls and fixed mergers per meeting.",
+  "status": "five_dataset_eight_expert_and_Unmask_completed_verified",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -15,27 +15,28 @@
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "compute": {
-    "primary_GPU": "NVIDIA GeForce RTX3090",
+    "primary_GPU": "NVIDIA GeForce RTX 3090",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "ssh_control_socket": "/tmp/posthoc_3090_12997.sock",
-    "python": "/root/autodl-tmp/posthoc-env/bin/python",
+    "ssh_control_socket": "/tmp/posthoc_3090_55548.sock",
+    "python": "/root/miniconda3/bin/python",
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
     "active_GPU_jobs": 0,
-    "secondary_GPU": "RTX3090",
-    "secondary_root": "/root/autodl-tmp/merge_security_20261009",
-    "secondary_ssh_control_socket": "/tmp/posthoc_3090_cpu_20261027.sock",
+    "secondary_root": "/root/autodl-tmp/posthoc-attack-20261028",
+    "secondary_ssh_control_socket": "/tmp/posthoc_3090_12997.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
-    "secondary_role": "All other hosts CPU/storage only per user",
-    "verified_utc": "2026-10-28T11:31:03.874558+00:00",
-    "primary_available_GiB": 50,
+    "secondary_role": "12997 CPU archive only; no GPU work on any other host",
+    "verified_utc": "2026-10-29T08:48:53.921936+00:00",
+    "primary_available_GiB": 5.2,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
-    "primary_endpoint": "connect.nmb2.seetacloud.com:12997",
+    "primary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary_role": "50837 accessible in CPU mode; existing assets preserved",
-    "primary_workspace_status": "Minimal inputs and dependencies migrating"
+    "primary_workspace_status": "Both finite queues completed, exit0; no GPU job running",
+    "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
+    "secondary_endpoint": "connect.nmb2.seetacloud.com:12997"
   },
   "current_effective_numerical_candidates": [
     {
@@ -89,22 +90,33 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-28T11:31:03.874558+00:00",
+  "updated_utc": "2026-10-29T08:48:53.921936+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
-      "host": "12997",
-      "kind": "Fixed64-noise output calibration of three frozen no-SVD controls",
-      "status": "registered_waiting_for_transfer_and_environment",
-      "output": "outputs/no_svd_calibration_20261028",
-      "log": "outputs/no_svd_calibration_20261028_setup/run.log",
-      "new_defense_points": 0,
+      "name": "eight_expert_extra",
+      "status": "completed_independently_verified",
+      "pid": 10596,
+      "server": "55548",
+      "output": "outputs/attack_generalization_20261029/eight_expert_extra",
+      "protocol": "results/attack_generalization_20261028/eight_expert_extra/protocol.json",
+      "new_defense_weights": 0,
       "new_AGA_calls": 0,
-      "new_real_image_forwards": 0,
-      "generated_image_forwards": 1152
+      "exit_code": 0
+    },
+    {
+      "name": "Unmask",
+      "status": "completed_independently_verified",
+      "pid": 10933,
+      "server": "55548",
+      "output": "outputs/attack_generalization_20261029/unmask",
+      "protocol": "results/attack_generalization_20261028/unmask/protocol.json",
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0,
+      "exit_code": 0
     }
   ],
-  "next_action": "Finish new3090 minimal input migration, execute preregistered64-noise calibration once, then independent paired/per-class validation. No model retuning.",
+  "next_action": "Keep frozen releases; complete missing Cars/EuroSAT/SUN397 official test inputs and a source-verified data-assisted recovery protocol. No new defense tuning, repeated completed evaluations or automatic wakeup.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -118,11 +130,13 @@
     "unique_models_scores_failures_deleted": 0,
     "retired_temporary_source_and_config_files": 29,
     "last_cleanup": "33 local verified duplicate/bytecode files,193469bytes;remote incomplete171737088-byte transfer removed after intact-source and prefix hash verification. Unique originals/results preserved.",
-    "last_verified_temporary_files_removed": 33
+    "last_verified_temporary_files_removed": 33,
+    "core_numerical_source": "experiment/defense2.py",
+    "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "Previous scientific result published; new calibration registration pending",
-    "last_verified_remote_commit": "0aa9789eb0abdb883ad0cdfaba8147d6591616b2",
+    "status": "publication_in_progress",
+    "last_verified_remote_commit": "7f06a12e725e6cae2eec4c32637204dd42146cd3",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -144,7 +158,7 @@
       9.8,
       9.8
     ],
-    "scope": "A/B直接删项支持补偿；三个任务同时移除两处SVD均保持目标融合保护，独立损失更小。未证明这两处SVD贡献；额外输出校正未评价，不称所有恢复均失败。",
+    "scope": "三个固定任务删除两处SVD后独立损失更小，原TA/AGA低准确率保留；固定64噪声输出校正能恢复部分能力，DTD接近匹配无保护水平。SVD贡献未证明。",
     "record": "results/data_free_compensation/population_compensation_result.json",
     "uniform_layer_inputs": [
       99.62,
@@ -207,7 +221,67 @@
       53.84142593730793,
       51.45974185617701
     ],
-    "record": "results/data_free_compensation/readout_calibration_result.json:native_ellipse_extension_result"
+    "record": "results/data_free_compensation/readout_calibration_result.json:native_ellipse_extension_result",
+    "latest_no_SVD": {
+      "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_result_20261028",
+      "target_accuracy_percent": {
+        "MNIST": {
+          "Unprotected": [
+            99.33999999999999,
+            99.29,
+            99.29
+          ],
+          "Without_both_SVD_components": [
+            49.28,
+            49.980000000000004,
+            49.95
+          ]
+        },
+        "SVHN": {
+          "Unprotected": [
+            92.31714812538414,
+            91.33758451137062,
+            91.58727719729563
+          ],
+          "Without_both_SVD_components": [
+            50.457129686539645,
+            51.31376767055931,
+            50.215119852489245
+          ]
+        },
+        "DTD": {
+          "Unprotected": [
+            55.69148936170213,
+            55.00000000000001,
+            55.00000000000001
+          ],
+          "Without_both_SVD_components": [
+            57.180851063829785,
+            52.76595744680851,
+            52.76595744680851
+          ]
+        }
+      },
+      "partner_accuracy_percent": {
+        "MNIST": [
+          46.0740626920713,
+          46.18930547019053,
+          45.19437615242778
+        ],
+        "SVHN": [
+          60.209999999999994,
+          62.71,
+          59.56
+        ],
+        "DTD": [
+          99.42,
+          99.42,
+          99.38
+        ]
+      },
+      "independent_checks": 54,
+      "seconds": 38.21115753054619
+    }
   },
   "core_method_review": {
     "record": "results/data_free_compensation/population_compensation_result.json:core_method_review",
@@ -466,7 +540,19 @@
   },
   "setup_job": {
     "host": "12997",
-    "status": "environment_and_minimal_input_transfer_running"
+    "status": "complete_evaluation_completed",
+    "migration": {
+      "files": 42,
+      "bytes": 3388185152,
+      "mismatches": [],
+      "GPU": "NVIDIA GeForce RTX 3090",
+      "torch": "2.3.0+cu121",
+      "torchvision": "0.18.0+cu121",
+      "numpy": "1.26.4",
+      "scipy": "1.13.1",
+      "cuda_available": true,
+      "checked_utc": "2026-10-28T11:44:39.321397+00:00"
+    }
   },
   "latest_readout_population_check": {
     "status": "completed_read_only_no_new_defense",
@@ -591,5 +677,218 @@
       }
     ],
     "context_score_replays": 720
+  },
+  "latest_core_analysis": {
+    "record": "results/data_free_compensation/readout_calibration_result.json:feature_mean_result_20261028",
+    "point_sha256": "a62fecdb2d9c3b5e2ab1939b2745cda2482f7d720aad1bb806d0d4527c315b4e",
+    "source_scope": "Original800synthetic views; publicbase only; counterfactual feature decomposition, not a recovery attack",
+    "native_teacher_correct": 800,
+    "varying_only_teacher_correct": {
+      "direct": 254,
+      "recovered": 348
+    },
+    "mean_only_teacher_correct": {
+      "direct": 80,
+      "recovered": 80
+    },
+    "conclusion": "Mean-only bias is correctable on this source; varying changes also cause classification contradictions. Both parts contribute. No new model or real accuracy improvement.",
+    "seconds": 5.094126299023628
+  },
+  "attack_campaign": "results/attack_generalization_20261028/protocol.json",
+  "attack_generalization": {
+    "directory": "results/attack_generalization_20261028",
+    "status": "18 two-expert cases; 60 eight-expert TA/AGA records on five full datasets; 30 Unmask records completed and independently verified",
+    "public_replacement_full_cases": 9,
+    "public_MLP_matching_full_cases": 3,
+    "baseline_full_cases": 3,
+    "DTD_noise_calibration_complete": true,
+    "known_permutation_exact_tensors": 158,
+    "independent_pairing": "outputs/attack_generalization_20261028/paired_comparisons.json",
+    "datasets": [
+      "MNIST",
+      "SVHN",
+      "DTD"
+    ],
+    "test_sizes": [
+      10000,
+      26032,
+      1880
+    ],
+    "new_defense_parameters": false,
+    "merger_full_cases": 3,
+    "completed_full_cases": 18,
+    "table_rows": 186,
+    "independent_pairing_comparisons": 340,
+    "eight_expert_protocol": "results/attack_generalization_20261028/eight_expert/protocol.json",
+    "inputs_recovered": {
+      "all_eight_experts_and_heads_SHA_passed": true,
+      "datasets_ready": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "additional_files_present_unverified_loader": [],
+      "missing_test_datasets": [
+        "Cars",
+        "EuroSAT",
+        "SUN397"
+      ],
+      "additional_verified_test_datasets": [
+        "GTSRB",
+        "RESISC45"
+      ]
+    },
+    "eight_expert_result": {
+      "status": "completed_and_independently_verified",
+      "directory": "results/attack_generalization_20261028/eight_expert",
+      "participants": 8,
+      "evaluated_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "coefficient": 0.2,
+      "AGA_scope": "protected expert only",
+      "full_records": 36,
+      "pilot_and_full_independent_rows": 72,
+      "full_context_replays": 576,
+      "maximum_context_score_error": 0.0,
+      "new_AGA_calls": 0,
+      "new_defense_parameters": 0,
+      "pilot_seconds": 160.0157113589812,
+      "full_seconds": 1313.1134304970037,
+      "total_image_forwards": 452752,
+      "raw_backup": {
+        "path": "outputs/numerical_eight_expert_20261029.tar.gz",
+        "sha256": "018136edede06e3fad35af2df61c705a259298d86509d696d530bc432679a2dd",
+        "bytes": 16424227,
+        "server_path": "/root/autodl-tmp/numerical_eight_expert_20261029.tar.gz",
+        "verified_locations": [
+          "local",
+          "55548"
+        ],
+        "contains": "Original pilot/full scores, output indices, paired/per-class audit, protocol, execution source, log and exit code"
+      },
+      "target_accuracy_percent": {
+        "MNIST": {
+          "unprotected_direct": 94.0,
+          "unprotected_AGA_target": 93.23,
+          "defense2_direct": 9.81,
+          "defense2_AGA_target": 9.8
+        },
+        "SVHN": {
+          "unprotected_direct": 74.4237861094038,
+          "unprotected_AGA_target": 72.52612169637369,
+          "defense2_direct": 6.699446834665028,
+          "defense2_AGA_target": 6.699446834665028
+        },
+        "DTD": {
+          "unprotected_direct": 52.18085106382979,
+          "unprotected_AGA_target": 51.38297872340426,
+          "defense2_direct": 2.393617021276596,
+          "defense2_AGA_target": 2.127659574468085
+        }
+      }
+    },
+    "eight_expert_extra": {
+      "status": "completed_independently_verified",
+      "evaluated_datasets": [
+        "GTSRB",
+        "RESISC45"
+      ],
+      "test_sizes": {
+        "GTSRB": 12630,
+        "RESISC45": 6300
+      },
+      "author_loader_validation": "results/attack_generalization_20261028/eight_expert_extra/data_validation.json",
+      "source_commit": "b648aa4",
+      "same_frozen_merged_models": true,
+      "directory": "results/attack_generalization_20261028/eight_expert_extra",
+      "full_records": 24,
+      "pilot_and_full_independent_rows": 48,
+      "full_context_replays": 384,
+      "maximum_context_score_error": 0.0,
+      "pilot_seconds": 120.89616902905982,
+      "full_seconds": 813.6517195609631,
+      "total_image_forwards": 239564,
+      "raw_backup": {
+        "path": "outputs/numerical_extra_unmask_20261029.tar.gz",
+        "sha256": "9aa50bd4b62c1a861234151356803a497e920206ff3812c470cba09b50c8f250",
+        "bytes": 55441074,
+        "server_path": "/root/autodl-tmp/numerical_extra_unmask_20261029.tar.gz",
+        "verified_locations": [
+          "local",
+          "55548"
+        ],
+        "contains": "Both pilots/full scores, official indices, independent NumPy comparisons, frozen sources, protocols, logs and original input failure"
+      },
+      "new_AGA_calls": 0,
+      "new_defense_parameters": 0
+    },
+    "Unmask": {
+      "status": "completed_independently_verified",
+      "source_commit": "50ec3d0",
+      "protocol": "results/attack_generalization_20261028/unmask/protocol.json",
+      "coefficient": 0.2,
+      "formula_source": "https://arxiv.org/html/2511.11851v1#S7",
+      "paper_relation_preserved": "subtraction coefficient equals TA coefficient",
+      "official_attack_code": false,
+      "evaluated_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45"
+      ],
+      "directory": "results/attack_generalization_20261028/unmask",
+      "full_records": 30,
+      "pilot_and_full_independent_rows": 60,
+      "full_context_replays": 480,
+      "maximum_context_score_error": 0.0,
+      "pilot_seconds": 129.4644408550812,
+      "full_seconds": 1177.7884079200448,
+      "total_image_forwards": 403320,
+      "raw_backup": {
+        "path": "outputs/numerical_extra_unmask_20261029.tar.gz",
+        "sha256": "9aa50bd4b62c1a861234151356803a497e920206ff3812c470cba09b50c8f250",
+        "bytes": 55441074,
+        "server_path": "/root/autodl-tmp/numerical_extra_unmask_20261029.tar.gz",
+        "verified_locations": [
+          "local",
+          "55548"
+        ],
+        "contains": "Both pilots/full scores, official indices, independent NumPy comparisons, frozen sources, protocols, logs and original input failure"
+      },
+      "new_AGA_calls": 0,
+      "new_defense_parameters": 0,
+      "matched_control_changed_predictions": 0,
+      "maximum_score_difference_from_matched_control": 1.52587890625e-05,
+      "target_accuracy_percent": {
+        "MNIST": 11.35,
+        "SVHN": 12.576828518746158,
+        "DTD": 6.117021276595745
+      },
+      "conclusion": "All fifteen matched comparisons have identical predictions. Unmask lowers unprotected accuracy too; low protected accuracy does not demonstrate an additional defense success."
+    },
+    "eight_expert_combined_result": {
+      "directory": "results/attack_generalization_20261028/eight_expert",
+      "participants": 8,
+      "evaluated_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45"
+      ],
+      "full_records": 60,
+      "table_rows": 12,
+      "same_12_frozen_merged_parameter_hashes": true,
+      "missing_test_datasets": [
+        "Cars",
+        "EuroSAT",
+        "SUN397"
+      ],
+      "eight_task_average_reported": false
+    }
   }
 }

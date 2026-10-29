@@ -1,0 +1,67 @@
+{
+  "coefficient": 0.2,
+  "task_order": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "EuroSAT",
+    "SVHN",
+    "GTSRB",
+    "MNIST",
+    "DTD"
+  ],
+  "evaluate": [
+    "MNIST",
+    "DTD",
+    "SVHN"
+  ],
+  "score_tolerance": 0.0005,
+  "author_TaskVector": {
+    "path": "external/secure-merge-attack/task_vectors.py",
+    "sha256": "9d95bdb8b9fef2a4457e47b28ea3e1ccc188f30ded8c4c1ec1fe1e55cfded4af",
+    "git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea"
+  },
+  "scopes": [
+    "None",
+    "Protected expert"
+  ],
+  "experiment": "Frozen numerical Defense2, eight experts and three full evaluated datasets",
+  "output": "outputs/attack_generalization_20261029/eight_expert",
+  "source_sha256": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+  "inputs": {
+    "evaluation": {
+      "path": "results/attack_generalization_20261028/eight_expert/evaluation.json",
+      "sha256": "7e73dc2a5f612a64b9d2724ed1da19db6d92492cc8504cfe57ea05478e607eb3"
+    },
+    "author_entry": {
+      "path": "external/secure-merge-attack/main_task_arithmetic_attack_B32.py",
+      "sha256": "899a9f88264e3b72a630a5a5b459ce59d65903eeac62c2f64b5273478a0fb908"
+    }
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "defenses": [
+        "Defense2_MNIST"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defenses": [
+        "Defense2_SVHN"
+      ]
+    },
+    {
+      "target": "DTD",
+      "defenses": [
+        "Defense2_DTD"
+      ]
+    }
+  ],
+  "new_AGA_calls": 0,
+  "new_defense_weights": 0,
+  "expert_training_updates": 0,
+  "table_note": "Eight experts participate; only MNIST,SVHN,DTD are evaluated. No eight-task average. Fixed TA0.2 and original AGA on protected expert only; existing releases and AGA outputs reused. No tuning.",
+  "registered_utc": "2026-10-29T04:35:57.199723+00:00"
+}

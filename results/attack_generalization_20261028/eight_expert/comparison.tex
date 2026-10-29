@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering\small
+\caption{Eight-expert fusion. Accuracy (\%).}
+\begin{tabular}{lllrrrrr}
+\toprule
+Protected task & Defense & AGA & MNIST & SVHN & DTD & GTSRB & RESISC45 \\
+\midrule
+MNIST & Unprotected & None & 94.00 & 74.42 & 52.18 & 65.08 & 72.00 \\
+MNIST & Defense 2 & None & 9.81 & 7.05 & 41.22 & 38.18 & 63.51 \\
+MNIST & Unprotected & Target & 93.23 & 73.90 & 52.34 & 65.16 & 72.19 \\
+MNIST & Defense 2 & Target & 9.80 & 6.70 & 33.35 & 22.49 & 60.71 \\
+SVHN & Unprotected & None & 94.00 & 74.42 & 52.18 & 65.08 & 72.00 \\
+SVHN & Defense 2 & None & 9.80 & 6.70 & 32.66 & 34.13 & 60.37 \\
+SVHN & Unprotected & Target & 93.78 & 72.53 & 52.18 & 64.87 & 72.19 \\
+SVHN & Defense 2 & Target & 9.80 & 6.70 & 33.46 & 24.70 & 57.98 \\
+DTD & Unprotected & None & 94.00 & 74.42 & 52.18 & 65.08 & 72.00 \\
+DTD & Defense 2 & None & 90.72 & 65.04 & 2.39 & 56.74 & 63.62 \\
+DTD & Unprotected & Target & 94.06 & 74.46 & 51.38 & 65.04 & 72.05 \\
+DTD & Defense 2 & Target & 76.66 & 54.28 & 2.13 & 45.49 & 55.13 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+% Eight experts, TA coefficient 0.2. 5 complete datasets evaluated; no eight-task average. Same frozen releases; no reconstruction or tuning. AGA processes only the protected expert. Additional datasets use identical merged weights.

@@ -62,3 +62,29 @@ Joint optimization & 46.75 & 99.69 & 99.37 & 99.31 & 99.32 \\
 Joint finite response & 52.08 & 99.69 & 99.36 & 99.29 & 99.30 \\
 \bottomrule
 \end{tabular}
+
+% Same fixed calibration on frozen no-SVD controls; each task uses its own head.
+\begin{tabular}{llrrr}
+\toprule
+Task & Method & TA + calibration & AGA (target) + calibration & AGA (both) + calibration \\
+\midrule
+MNIST & Unprotected & 99.34 & 99.29 & 99.29 \\
+MNIST & Defense 2, without SVD & 49.28 & 49.98 & 49.95 \\
+SVHN & Unprotected & 92.32 & 91.34 & 91.59 \\
+SVHN & Defense 2, without SVD & 50.46 & 51.31 & 50.22 \\
+DTD & Unprotected & 55.69 & 55.00 & 55.00 \\
+DTD & Defense 2, without SVD & 57.18 & 52.77 & 52.77 \\
+\bottomrule
+\end{tabular}
+
+% Frozen MNIST no-SVD source attribution:800 synthetic views, public base0.5.
+% Teacher agreement (%), not natural-task accuracy; counterfactual analysis only.
+\begin{tabular}{lrrrr}
+\toprule
+State & Original & Full change & Mean only & Without mean \\
+\midrule
+Standalone & 100.00 & 100.00 & 100.00 & 100.00 \\
+Public-base merge & 100.00 & 10.00 & 10.00 & 31.75 \\
+AGA + public-base merge & 100.00 & 10.00 & 10.00 & 43.50 \\
+\bottomrule
+\end{tabular}

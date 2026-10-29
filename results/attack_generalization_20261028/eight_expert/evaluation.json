@@ -1,0 +1,165 @@
+{
+  "experiment": "Frozen numerical Defense2 inputs for eight-expert TA0.2; no defense reconstruction",
+  "output": "outputs/attack_generalization_20261028/mergers",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "DTD": {
+      "classes": 47,
+      "test_n": 1880
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TA"
+  ],
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "test_status": "Historically exposed test sets. Frozen defenses, no tuning or model selection from Phase 3.",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": false,
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "Defense2_MNIST": {
+      "label": "A/B with native function constraint and public class objective",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/native_ellipse_classification_20261026/point/point.pt",
+        "sha256": "828daa484b64f27f99df4cbb657366572c951f21585dbde6136bf7a8f4d72dc1"
+      },
+      "AGA_edits": {
+        "path": "outputs/native_ellipse_classification_20261026/AGA/edits.pt",
+        "sha256": "432ed158e0b60aa4912655f79e9c6c6d9ab9414c91ad445a77872cb63419c94f"
+      },
+      "budget_status": "A1.02739,B2.67213,logicalD3.02937;source-nativebound fixedbeforeupdates,notoldD.5compliant.",
+      "function_status": "CompleteMNIST99.61vs99.69,.08pp loss;strictR44.81122failsretained. OriginalandcandidatefullscorescachedbySHA."
+    },
+    "Defense2_SVHN": {
+      "label": "A/B with native function constraint and public class objective,SVHN",
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/native_ellipse_classification_SVHN_20261026/point/point.pt",
+        "sha256": "a203d6c989396243641ee44a7d865cc74cb3bcae9359c201089ffcd15dc6fb9c"
+      },
+      "AGA_edits": {
+        "path": "outputs/native_ellipse_classification_SVHN_20261026/AGA/edits.pt",
+        "sha256": "2c5e043d343dccc2d22b23fa2e7b0b9b4705238cfd8de053ae43ec5f2b50aadc"
+      },
+      "budget_status": "Same source-basednativefunctionalrule;A1.02462,B3.16700,logicalD3.40981;notoldD.5compliant.",
+      "function_status": "CompleteSVHN97.4608to96.9806,.480178pp loss;strictR622.887 failsseparately. Original before scoresreused."
+    },
+    "Defense2_DTD": {
+      "label": "Numerical A/B compensation, DTD",
+      "target": "DTD",
+      "release": {
+        "path": "outputs/native_ellipse_classification_DTD_20261026/point/point.pt",
+        "sha256": "b8c704282a585676c100cda17572557165cf7336de0f79230f97dda33527a9c8"
+      },
+      "AGA_edits": {
+        "path": "outputs/native_ellipse_classification_DTD_20261026/AGA_observation/edits.pt",
+        "sha256": "f79cf5204bc18d8c62a7fda019779fc9c4d238ae93c87ca1ad5414732bfc66fb"
+      },
+      "budget_status": "Observed logical D3.475844; historical D.5 not satisfied",
+      "function_status": "Original79.414894 to76.117021; historical .5pp and strict R checks failed and retained"
+    }
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "defenses": [
+        "Defense2_MNIST",
+        "NoSVD_MNIST"
+      ],
+      "seed": 42
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense2_SVHN",
+        "NoSVD_SVHN"
+      ],
+      "seed": 42
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense2_DTD",
+        "NoSVD_DTD"
+      ],
+      "seed": 42
+    }
+  ],
+  "source_sha256": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "c0e8f88cd8e3af770e002a56aa74d85e90c86556a03c65cab33da798950d0d9f",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/evaluate.py": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/report.py": "f63702735882a4ac77c87038ad46ef068b74f350c529b15af166e05742f37c63",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+    "experiment/eight_task.py": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+    "experiment/recover.py": "a6770bb3f99fc9a05e69ae8e2c3df48480be9370878e04d73096234a9d57641f",
+    "experiment/report.py": "c2c66134a25b08f3bdd70b7034353e866592c3ac5f0ae6d68635c911a2ed4595",
+    "experiment/defense2.py": "fe9e9f7dc59fc372c419f074ff18dba55fd94cbe704efb2c3b7b26374b647a2f"
+  },
+  "original_batch_context_replays": true,
+  "attack_scopes": [
+    "None",
+    "Protected expert",
+    "All experts"
+  ],
+  "attacker_permissions": {
+    "category": [
+      "weight-only"
+    ],
+    "operation": "Unchanged TIES or DARE+TA merge, optionally preceded by cached fixed author AGA. The merger itself is not a new attack."
+  },
+  "deduplication": "Reuse standalone raw scores for all models and cached AGA weights; these TIES/DARE models are new for the frozen numerical releases."
+}

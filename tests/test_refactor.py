@@ -12,7 +12,7 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from _impl.attacks import public_patch_recovery
+from _impl.attacks import public_mlp_matching, public_mlp_replace, public_patch_recovery
 from _impl.defenses import residual_permutation
 from _impl.io import digest, new_output, save_json
 from _impl.metrics import logical_parameter_distance, paired_logp, task_change
@@ -129,6 +129,35 @@ def test_public_patch_matching_has_only_published_and_public_inputs():
     recovered, detail = public_patch_recovery(published, state)
     assert all(torch.equal(v, recovered[k]) for k, v in state.items())
     assert detail["strict_row_margin"] > 0
+
+
+@pytest.mark.parametrize("side,count", [("A", 2), ("B+b", 2), ("MLP", 4)])
+def test_public_mlp_replacement_preserves_every_other_tensor(side, count):
+    public, _ = small_clip()
+    published = {k: v + 0.25 for k, v in public.items()}
+    before = {k: v.clone() for k, v in published.items()}
+    replaced = public_mlp_replace(published, public, 1, side)
+    changed = [k for k in replaced if not torch.equal(replaced[k], published[k])]
+    assert len(changed) == count
+    assert all(k.startswith("model.visual.transformer.resblocks.1.mlp.") for k in changed)
+    assert all(torch.equal(replaced[k], public[k]) for k in changed)
+    assert all(torch.equal(published[k], before[k]) for k in before)
+
+
+def test_joint_mlp_matching_restores_known_permutation_and_transformer_output():
+    state, x = small_clip()
+    published = dict(state)
+    order = torch.randperm(13, generator=torch.Generator().manual_seed(28))
+    for layer in range(2):
+        p = f"model.visual.transformer.resblocks.{layer}.mlp."
+        published[p + "c_fc.weight"] = state[p + "c_fc.weight"][order]
+        published[p + "c_fc.bias"] = state[p + "c_fc.bias"][order]
+        published[p + "c_proj.weight"] = state[p + "c_proj.weight"][:, order]
+    torch.testing.assert_close(forward(state, x), forward(published, x), rtol=0, atol=1e-11)
+    recovered, detail = public_mlp_matching(published, state, range(2))
+    assert all(torch.equal(v, recovered[k]) for k, v in state.items())
+    assert len(detail) == 2
+    assert all(d["objective_after"] >= d["objective_before"] for d in detail)
 
 
 @pytest.mark.parametrize("penalty", [0.0, 2.0])

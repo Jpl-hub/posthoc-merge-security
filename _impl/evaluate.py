@@ -10,9 +10,34 @@ import torch
 
 from .data import dataset, make_loader, official_labels
 from .io import check_files, digest, save_json
-from .merge import fuse, load_ties
+from .merge import fuse, load_ties, parameter_hash
 from .metrics import row_metrics
 from .models import apply, initialize, load_checkpoint
+
+
+def case_models(cfg, case, anchor, originals, aligned, name):
+    """Assemble fixed releases and optional public replacement controls."""
+    import copy
+
+    from .attacks import public_mlp_replace
+
+    target = case["target"]
+    spec = cfg["defenses"].get(name)
+    own = anchor if name == "No_target" else originals[target]
+    if spec is not None:
+        own = apply(own, spec["release"], spec.get("full_state", False))
+    scopes = cfg.get("attack_scopes", ["None", "Protected expert", "All experts"])
+    attacked = None
+    if any(s != "None" for s in scopes):
+        attacked = aligned[target] if spec is None else apply(aligned[target], spec["AGA_edits"])
+    if "public_replacement" in case:
+        assert scopes == ["None"], "Replacement and AGA are separate declared pipelines"
+        own = copy.deepcopy(own)
+        own.load_state_dict(
+            public_mlp_replace(own.state_dict(), anchor.state_dict(), **case["public_replacement"]),
+            strict=True,
+        )
+    return own, attacked
 
 
 @torch.no_grad()
@@ -58,7 +83,8 @@ def setup(cfg):
     originals = {t: load_checkpoint(f"{t}/finetuned.pt") for t in cfg["tasks"]}
     heads = {t: load_checkpoint(f"head_{t}.pt") for t in cfg["tasks"]}
     aligned = {t: apply(originals[t], cfg["AGA_references"][t], full=True) for t in cfg["tasks"]}
-    return anchor, originals, heads, aligned, load_ties(cfg["TIES"])
+    ties = load_ties(cfg["TIES"]) if "TIES" in cfg["mergers"] else None
+    return anchor, originals, heads, aligned, ties
 
 
 @torch.no_grad()
@@ -87,10 +113,14 @@ def run(protocol, case_index, pilot):
         for t, d in data.items()
     }
     rows, raw, baseline = [], {}, {}
+    fingerprints = {}
     loaded_legacy = {}
 
     def record(model, defense, method, scope, task, legacy=None):
         key = "/".join((defense, method, scope, task))
+        model_key = "/".join((defense, method, scope))
+        if model_key not in fingerprints:
+            fingerprints[model_key] = parameter_hash(model.state_dict())
         imported = None
         if not pilot and legacy:
             ref, old_key = legacy
@@ -146,6 +176,9 @@ def run(protocol, case_index, pilot):
             **row_metrics(scores, y, baseline[ref_key], cfg["tasks"][task]["classes"]),
             evaluation_seconds=metric["evaluation_seconds"],
             provenance={k: v for k, v in metric.items() if k.startswith("imported")},
+            predicted_class_counts=torch.bincount(
+                scores.argmax(1), minlength=cfg["tasks"][task]["classes"]
+            ).tolist(),
         )
         raw[key] = dict(logits=scores, target=y, indices=indices[task])
         rows.append(row)
@@ -154,13 +187,7 @@ def run(protocol, case_index, pilot):
         print("PHASE3_ROW", defense, method, scope, task, row["correct"], row["n"], flush=True)
 
     for name in ["Unprotected"] + case["defenses"]:
-        spec = cfg["defenses"].get(name)
-        own = (
-            originals[target]
-            if spec is None
-            else apply(originals[target], spec["release"], spec.get("full_state", False))
-        )
-        attacked = aligned[target] if spec is None else apply(aligned[target], spec["AGA_edits"])
+        own, attacked = case_models(cfg, case, anchor, originals, aligned, name)
         legacy = cfg["legacy"].get(f"{target}_{partner}/{name}", {})
 
         def old(stage, task):
@@ -179,6 +206,8 @@ def run(protocol, case_index, pilot):
                 ("Protected expert", attacked, originals[partner]),
                 ("All experts", attacked, aligned[partner]),
             ]:
+                if scope not in cfg.get("attack_scopes", ["None", "Protected expert", "All experts"]):
+                    continue
                 fused = fuse(anchor, left, right, method, cfg, ties)
                 stage = {
                     "None": "direct",
@@ -201,6 +230,9 @@ def run(protocol, case_index, pilot):
             new_defense_weights=0,
             optimizer_steps=0,
             new_AGA_calls=0,
+            new_image_forwards=sum(r["n"] for r in rows if not r["provenance"]),
+            evaluated_parameter_sha256=fingerprints,
+            public_replacement=case.get("public_replacement"),
             cached_author_AGA_weights=True,
             defense_feedback=False,
             predictions_sha256=digest(out / "artifacts/predictions.pt"),
@@ -227,13 +259,7 @@ def verify(output):
     batch = 128
     maximum, replays, context_images = 0.0, 0, 0
     for name in ["Unprotected"] + case["defenses"]:
-        spec = cfg["defenses"].get(name)
-        own = (
-            experts[target]
-            if spec is None
-            else apply(experts[target], spec["release"], spec.get("full_state", False))
-        )
-        attacked = aligned[target] if spec is None else apply(aligned[target], spec["AGA_edits"])
+        own, attacked = case_models(cfg, case, anchor, experts, aligned, name)
         groups = [("Standalone", "None", own, [target])]
         for method in cfg["mergers"]:
             for scope, left, right in [
@@ -241,6 +267,8 @@ def verify(output):
                 ("Protected expert", attacked, experts[partner]),
                 ("All experts", attacked, aligned[partner]),
             ]:
+                if scope not in cfg.get("attack_scopes", ["None", "Protected expert", "All experts"]):
+                    continue
                 groups.append(
                     (
                         method,
@@ -268,6 +296,8 @@ def verify(output):
                     raw["/".join(("Unprotected", method, scope, task))]["logits"].numpy().argmax(1)
                 )
                 assert int((pred == y).sum()) == row["correct"]
+                if "predicted_class_counts" in row:
+                    assert np.bincount(pred, minlength=logits.shape[1]).tolist() == row["predicted_class_counts"]
                 assert int((pred != control).sum()) == row["changed_predictions"]
                 assert int(((control == y) & (pred != y)).sum()) == row["paired"]["lost"]
                 assert int(((control != y) & (pred == y)).sum()) == row["paired"]["gained"]

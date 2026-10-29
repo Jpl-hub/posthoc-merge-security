@@ -1,0 +1,52 @@
+{
+  "repository": "https://github.com/samuela/git-re-basin",
+  "commit": "ef40098257ab97243930eba737d6dcb8edd5863e",
+  "path": "src/weight_matching.py",
+  "sha256": "1e42e9ad25d330ba4596c1175335d19b5c7980ee6150b1520969f8ff8dab2fb0",
+  "paper": "https://arxiv.org/abs/2209.04836",
+  "adaptation": "MLP hidden coordinates only; joint incident-weight assignment. Exactly one assignment per independent MLP. This is not an official CLIP implementation or full-network Git Re-Basin reproduction.",
+  "objective": "maximize sum_i <[A0_i,a0_i,B0_col_i],[Apub_perm_i,apub_perm_i,Bpub_col_perm_i]>; unnormalized Frobenius inner product, FP64 CPU scipy linear_sum_assignment.",
+  "compatibility": "QuickGELU commutes with hidden permutation. A rows and bias, B columns co-permute; output bias, LN, residual coordinate, packed QKV and visual projection stay unchanged. No attention-head or residual permutation inferred.",
+  "attacker_permissions": [
+    "weight-only",
+    "public base",
+    "complete published state",
+    "known architecture"
+  ],
+  "forbidden": [
+    "clean expert in matching cost",
+    "real or synthetic input in fitting",
+    "test selection",
+    "private permutation"
+  ],
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "seed_known_control": 2026102804,
+  "controls": "Base model with all12 MLP hidden units independently permuted. Check exact full-state recovery and64 fixed real evaluation forwards only after mapping frozen.",
+  "tests": "small complete Transformer exact recovery plus full CLIP known permutation; no claim of arbitrary channel permutation recovery",
+  "cases": [
+    "MNIST/SVHN",
+    "SVHN/MNIST",
+    "DTD/MNIST"
+  ],
+  "defenses": [
+    "Unprotected",
+    "Defense2",
+    "NoSVD"
+  ],
+  "coefficient": 0.5,
+  "new_defense_models": 0,
+  "source_content_sha256": "1e42e9ad25d330ba4596c1175335d19b5c7980ee6150b1520969f8ff8dab2fb0"
+}

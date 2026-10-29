@@ -1,4 +1,4 @@
-"""Author-order eight-expert TA; only the configured three datasets are evaluated."""
+"""Author-order eight-expert TA on explicitly configured evaluation datasets."""
 
 import argparse
 import json
@@ -13,7 +13,7 @@ from _impl.evaluate import evaluate, setup
 from _impl.io import digest, save_json
 from _impl.merge import combine, parameter_hash
 from _impl.metrics import row_metrics
-from _impl.models import apply
+from _impl.models import apply, load_checkpoint
 from cfg import require_root
 
 
@@ -58,6 +58,9 @@ def run(protocol, full):
         assert digest(path) == pins["ViT-B-32/" + task + "/finetuned.pt"]
         originals[task] = load_model_checkpoint(path, map_location="cpu").eval()
         originals[task].requires_grad_(False)
+    for task in cfg["evaluate"]:
+        if task not in heads:
+            heads[task] = load_checkpoint(f"head_{task}.pt")
     source = Path(cfg["author_TaskVector"]["path"])
     assert digest(source) == cfg["author_TaskVector"]["sha256"]
     stage = "full" if full else "pilot"
@@ -67,7 +70,8 @@ def run(protocol, full):
     if full:
         assert json.loads((root / "pilot/validation.json").read_text())["status"] == "passed"
     data = {t: dataset(t, "data", originals[t].val_preprocess) for t in cfg["evaluate"]}
-    assert all(len(d) == parent["tasks"][t]["test_n"] for t, d in data.items())
+    test_sizes = cfg.get("test_sizes", {t: v["test_n"] for t, v in parent["tasks"].items()})
+    assert all(len(d) == test_sizes[t] for t, d in data.items())
     indices = {
         t: list(range(len(d))) if full else np.linspace(0, len(d) - 1, 64, dtype=int).tolist()
         for t, d in data.items()
@@ -77,6 +81,11 @@ def run(protocol, full):
     frozen = {}
     score_cache = {}
     score_sources = {}
+    model_reference = None
+    if "model_reference" in cfg:
+        ref = cfg["model_reference"]
+        assert digest(ref["path"]) == ref["sha256"]
+        model_reference = json.loads(Path(ref["path"]).read_text())
     maximum = 0.0
     replays = 0
     start = time.monotonic()
@@ -131,6 +140,8 @@ def run(protocol, full):
                     model = unmask(model, own, cfg["unmask_coefficient"])
                 sha = parameter_hash(model.state_dict())
                 key = "/".join([target, name, scope])
+                if model_reference is not None:
+                    assert sha == model_reference[key]
                 frozen[key] = sha
                 if full:
                     assert sha == json.loads((root / "pilot/pre_evaluation.json").read_text())[key]
@@ -230,8 +241,8 @@ def run(protocol, full):
             new_AGA_calls=0,
             new_defense_weights=0,
             expert_training_updates=0,
-            scope=cfg["experiment"]
-            + "; only three evaluated datasets, no eight-task average or complete paper reproduction.",
+            scope=cfg["experiment"],
+            evaluated_datasets=cfg["evaluate"],
         ),
     )
 

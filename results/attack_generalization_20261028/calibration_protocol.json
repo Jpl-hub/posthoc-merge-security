@@ -1,0 +1,71 @@
+{
+  "status": "defined_before_execution",
+  "paper": "https://proceedings.mlr.press/v139/zhao21c.html",
+  "official_source": {
+    "repository": "tonyzhaozh/few-shot-learning",
+    "commit": "e04d8643be91c2cce63f33e07760ff75d5aa3ad0",
+    "file": "run_classification.py",
+    "sha256": "60787d59863caebc1688e3333659accf759d6f0c615735d1901f1427724ec8fc",
+    "functions": [
+      "eval_accuracy",
+      "get_p_content_free"
+    ],
+    "raw_review_sha256": "89248b0cdce36b31050a8a5b94010db4f5451368a0c7f33c1603600433975bff"
+  },
+  "rule": "For each own fused model, p_cf=mean softmax(logits(noise)); predict argmax(logits(test)-log(p_cf)). This is the official diagonal probability division computed stably in log space. One fixed rule, no scale/temperature/mapping/source/seed selection.",
+  "adaptation": "Original paper uses content-free language strings; here exactly64 fixed unoptimized uniform-noise images are image-domain probes, not an official CLIP reproduction or a claim that noise represents the natural task.",
+  "input_seed": 2026102509,
+  "input_n": 64,
+  "input_definition": "CPU torch.rand(64,3,32,32), uniform[0,1],bilinear224 align_cornersFalse,originalCLIPnormalization,batches8,no labels/no pixel optimization.",
+  "attacker_information": "Own already-created fused model, fixed public classifier/class IDs and synthetic noise. Fitting does not access original target expert, real training/test data, old clean teacher generated cache, protected-source data or labels. Research assembly uses pinned published/original-AGA weights and own partner exactly as the original fixed merging evaluation. The unprotected matched release is corrected by the same rule on itself.",
+  "scopes": [
+    "TA0.5",
+    "originalAGA target-only + TA0.5",
+    "originalAGA both + TA0.5"
+  ],
+  "freeze_order": "Reuse SHA-checked unprotected DTD calibration; freeze the three protected model/two classifier vectors before reading scores.",
+  "checks": "Independent NumPy stable softmax/mean/log-prior and predictions; official full labels/indices; classwise and paired changes; preserve original raw scores and same matched unprotected controls.",
+  "mechanism": "If logits(x)=task_signal(x)+constant_bias and content-free inputs identify that bias, subtracting logprior cancels it up to a class-independent scalar. Probe-dependent residuals and feature-normalization can violate that model; actual results required. Failure of one fixed correction does not prove erased class information.",
+  "public_before_execution": false,
+  "output": "outputs/attack_generalization_20261028/DTD_calibration",
+  "purpose": "Fill missing frozen main DTD correction; same64-noise rule; reuse existing unprotected vectors.",
+  "cost": "192 new synthetic image forwards; 0 real image forwards; same three unprotected vectors/6 classifier vectors reused.",
+  "source_prior_result": "results/data_free_compensation/readout_calibration_result.json",
+  "cases": [
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "name": "NativeConstraintClass_DTD",
+      "release": {
+        "path": "outputs/native_ellipse_classification_DTD_20261026/point/point.pt",
+        "sha256": "b8c704282a585676c100cda17572557165cf7336de0f79230f97dda33527a9c8"
+      },
+      "AGA_edits": {
+        "path": "outputs/native_ellipse_classification_DTD_20261026/AGA_observation/edits.pt",
+        "sha256": "f79cf5204bc18d8c62a7fda019779fc9c4d238ae93c87ca1ad5414732bfc66fb"
+      },
+      "AGA_references": {
+        "DTD": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        },
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        }
+      },
+      "raw_scores": {
+        "path": "outputs/native_ellipse_classification_DTD_20261026/observation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "6c34143fa1853efaa9422aa1a8e3eca9093242c58fcdbba3ee6ee58bc8ab0bf4"
+      }
+    }
+  ],
+  "runtime": "New3090 uses torch2.3.0+cu121; existing frozen raw scores from torch2.8.0+cu128 retained and SHA-checked, not regenerated.",
+  "source_sha256": "89dfa0edcfe3e3a26e3d78b5717ad0ef2c5b2a44709aadb16969e173193d4601",
+  "reuse_calibration": {
+    "path": "outputs/no_svd_calibration_20261028/calibration.pt",
+    "sha256": "29dc4a18a24676aa7aedf52bd7396e278909d4527834564fcbd01a07f2f17024"
+  }
+}
