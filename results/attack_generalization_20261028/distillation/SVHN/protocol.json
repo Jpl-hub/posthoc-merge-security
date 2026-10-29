@@ -1,0 +1,87 @@
+{
+  "target": "SVHN",
+  "partner": "MNIST",
+  "unlabeled_n": 2048,
+  "epochs": 50,
+  "batch_size": 128,
+  "lr": 1e-05,
+  "weight_decay": 0.1,
+  "warmup_steps": 500,
+  "data_seed": 2026101911,
+  "training_seed": 2026101912,
+  "schedule": {
+    "path": "external/task_vectors_reference/utils.py",
+    "sha256": "be259169aee2017fe2b5c47b340584ed15709c22890135d062b86704a62b1eaa"
+  },
+  "official_training_reference": {
+    "repository": "https://github.com/mlfoundations/task_vectors",
+    "commit": "826a64c67082fab0f40628233287948f0f8d7fa3",
+    "files": {
+      "finetune.py": "22b50ee1dc2dc1f0baeb5bafbc40baa8c71eec0d98e0c06f05c1989f9c208032",
+      "args.py": "1bea0f1456c807c8d123d8de2cba015bd5395702859eac18d39f876078a31b6f",
+      "utils.py": "be259169aee2017fe2b5c47b340584ed15709c22890135d062b86704a62b1eaa"
+    }
+  },
+  "paper_reference": "PaRaMS arxiv2503.07661v1 section6 and AppendixH.2,50epochs/batch128. Native2048-image adaptation; optimizer/schedule fixed from task_vectors, not claimed PaRaMS officialKD implementation.",
+  "permission": "Same-distribution unlabeled training images, hard protected-teacher labels, public-base attacker student with full visual-encoder gradients. Original experts/defenses/head frozen.",
+  "preprocess": "Fixed original expert val_preprocess for teacher and student; no image augmentation, no ground-truth training labels. Differs from official generic finetuning train_preprocess.",
+  "checkpoint_selection": "Only final50epoch student; no early stopping/validation/test selection. Pilot1step discarded, full initialization/seed reset.",
+  "same_labels_rule": "If complete fixed2048 teacher argmax vectors equal, train only once and explicitly reuse identical attack problem. This is not an independent seed result.",
+  "output": "outputs/attack_generalization_20261029/distillation_SVHN",
+  "evaluation_template": "results/attack_generalization_20261028/protocol.json",
+  "release": {
+    "path": "outputs/native_ellipse_classification_SVHN_20261026/point/point.pt",
+    "sha256": "a203d6c989396243641ee44a7d865cc74cb3bcae9359c201089ffcd15dc6fb9c"
+  },
+  "training_rule": "Same train() optimization as registered MNIST; step count uses ceil to include the last88 DTD examples. MNIST and SVHN2048 step schedule unchanged.",
+  "new_defense_models": 0,
+  "maximum_new_student_backward_steps": 1600,
+  "pilot_backward_steps": 2,
+  "real_defense_construction_images": 0,
+  "paired_control": "Fresh same-budget unprotected/protected teacher students with same initialization, images, ordering and training seed. Deduplicate only exactly identical complete labels.",
+  "scope": "SVHN protected, MNIST partner; stronger-permission supplement. No defense selection or update.",
+  "source_sha256": {
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "_impl/attacks.py": "c0e8f88cd8e3af770e002a56aa74d85e90c86556a03c65cab33da798950d0d9f",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "fe5877631c27a9422615a079851e69ccbafe64d0020680f4e7a3bb63fe83991b",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/evaluate.py": "4a1053b7d4f23f802d23295f3ffabcdea9b9a3f7e4a9b50f77fc7c8294aafb5c",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/report.py": "dbd3b3abc3c03f3d14e48e594ad19eca1263883624470d5509f1eb260693c30c",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "experiment/distill.py": "fc71a49afd266bfb996fcb869e5aa2b581d2b59fd275458ee4b82fed043b31fc",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "results/attack_generalization_20261028/protocol.json": "f4ee5a09b07be7106d56898193beec0f62f9fe4f8a50d6e4b09f6eb40f00a505",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "results/attack_generalization_20261028/distillation/run_other_tasks.sh": "7f7955faba36d39ef79af51d6f22e9e90235472ab2d8df37cd9e3a80b4aedade"
+  },
+  "dataset_rule": "SVHN officialtrain fixed2048 subset; DTD officialtrain1 all1880, no validation/test images added to reach2048. Drop dataset labels.",
+  "student_storage": "Only tensors changed from public base, reconstructed bit-identically before saving; no changed model parameters omitted.",
+  "unprotected_legacy": {
+    "standalone": {
+      "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+      "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c",
+      "key_template": "Unprotected/Standalone/None/{task}"
+    },
+    "direct": {
+      "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+      "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c",
+      "key_template": "Unprotected/TA/None/{task}"
+    },
+    "AGA_target_only": {
+      "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+      "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c",
+      "key_template": "Unprotected/TA/Protected expert/{task}"
+    },
+    "AGA_both": {
+      "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+      "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c",
+      "key_template": "Unprotected/TA/All experts/{task}"
+    }
+  }
+}
