@@ -1,11 +1,19 @@
 {
-  "status": "three_task_attack_batch_complete; eight_expert_extension_prepared",
-  "updated_utc": "2026-10-29T04:38:48.238913+00:00",
+  "status": "three_task_attack_batch_complete; eight_expert_evaluation_running",
+  "updated_utc": "2026-10-29T04:42:33.662629+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "On55548 run fixed eight-expert TA0.2 pilot then full for three available datasets; complete missing datasets before any eight-task-average claim.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "55548",
+      "root": "/root/autodl-tmp/posthoc-merge-security",
+      "pid": 1939,
+      "log": "outputs/attack_generalization_20261029/eight_expert/run.log",
+      "phase": "eight-expert TA0.2: pilot then full, three datasets, unchanged main releases"
+    }
+  ],
+  "next_action": "Manually check finite eight-expert pilot/full queue in about30minutes. Import and independently verify results; then complete remaining dataset inputs. No automatic wakeups.",
   "github_sync": {
     "status": "latest_results_pending_github_tool_unavailable",
     "last_verified_remote_commit": "7f06a12e725e6cae2eec4c32637204dd42146cd3",
@@ -614,7 +622,7 @@
   "attack_campaign": "results/attack_generalization_20261028/protocol.json",
   "attack_generalization": {
     "directory": "results/attack_generalization_20261028",
-    "status": "18 registered full cases completed; eight_expert extension prepared",
+    "status": "18 full cases complete; eight-expert extension running",
     "public_replacement_full_cases": 9,
     "public_MLP_matching_full_cases": 3,
     "baseline_full_cases": 3,
