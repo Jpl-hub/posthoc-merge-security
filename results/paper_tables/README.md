@@ -2,7 +2,7 @@
 
 当前结果入口（2026-10-30）：
 
-- [防御一和数值防御二：八专家、六数据集完整评价](../attack_generalization_20261028/cars/six_dataset.md)，同目录有 TeX；尚缺 EuroSAT、SUN397。
+- [防御一和数值防御二：八专家、七数据集完整评价](../attack_generalization_20261028/sun397/seven_dataset.md)，同目录有 TeX；尚缺 EuroSAT，保护对象仍为三个任务。
 - [当前数值防御二攻击与对照清单](../attack_generalization_20261028/attack_inventory.md)、[结果分析](../attack_generalization_20261028/failure_analysis.md)：输出校正、公开模块替换、MLP匹配、删项、随机噪声、TIES/DARE和三任务数据辅助蒸馏。
 - [当前纯权重防御一输出校正](../phase3/bias_weight_only/attacks/calibration.md)、[已知位置投影](../phase3/bias_weight_only/attacks/projection.md)。
 
