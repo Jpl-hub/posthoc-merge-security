@@ -616,3 +616,6 @@ GradErase原文依赖有限训练数据估计扰动方向，但尚无本项目�
 2026-10-30 SUN397输入缺口已补齐：18份parquet共7,220,721,818字节逐份核对公开LFS SHA。追溯到转换前revision969c5d47300dc977fdbebc63dc437faa52bc6e42的test.zip，仅读取中央目录；全部19850张原始图的CRC32与字节长度唯一对应原文件名，名字集合与官方Testing_01完全相同，与Training_01交集0，每类50张，全部图片解码通过。原ZIP全文件没有下载，未宣称全ZIP SHA已验。转换标签与官方类别按ImageFolder排序一致；原始ClassName.txt的jail/indoor与jail_cell顺序不同，已在模型评价前按官方目录排序处理。复用现有eight_task入口登记18行、16份固定融合模型，TA0.2及AGA仅保护专家，新增防御和AGA求解0。来源、索引哈希和固定配置见results/attack_generalization_20261028/sun397/。本批只增加一个伙伴评价列，不新增保护任务。
 
 EuroSAT转换前test.zip（revision6ed8decb96aa33566e35534ce42290949bd0feb3）已完整匹配公开LFS SHA16a5ca861583acb87c8b5b5ceeb5dae0b4f712d865bd0368070870f5a168e873；2700张parquet原图与该ZIP逐图SHA相同，原名可恢复。该事实证明两份公开数据相同，仍不能单独证明是现有专家原始训练划分的留出图。继续追溯原划分，不用新随机划分替代。
+
+
+2026-10-30 SUN397本批完成：完整19850图、18行，原融合参数与Cars/六数据集18份指纹一致，新增AGA、构造、训练均0。完整评价3921.46秒、352340图片前向含原批重放；pilot145.47秒。pilot/full共576个选定分数重放误差0，36行NumPy完整索引、逐类lost/gained、配对95%区间和标量lgamma精确McNemar复核通过。七数据集18行126单元MD/TeX见results/attack_generalization_20261028/sun397/。SUN397是伙伴任务，TA无保护63.76%，防御一0.66/3.31/0.47%，防御二49.02/41.13/45.62%；AGA仅保护专家后防御二37.55/37.00/25.14%。不能解释为仅损伤目标任务。完整原始文件38份513316940字节保留，清单SHA244e3c317ca2f8f49537171cf29a01d7a058a084a7cbe5bea6ad36ff1b9012e3；尚缺EuroSAT，未报八任务平均。
