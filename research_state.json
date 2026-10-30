@@ -89,7 +89,7 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-30T10:51:41.545451+00:00",
+  "updated_utc": "2026-10-30T14:43:32.833254+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
@@ -115,7 +115,7 @@
       "records": "results/attack_generalization_20261028/sun397/summary.json"
     }
   ],
-  "next_action": "Seven-dataset raw results verified locally and on12997; publish completed tables. Remaining EuroSAT needs original heldout provenance. No active GPU jobs or automations. Core D2 needs a distinct data-free mechanism against output calibration and public B replacement; frozen points are not retuned.",
+  "next_action": "Complete registered fixed-output-calibration PaRaMS baseline using frozen publications and raw scores; no new defense search. EuroSAT provenance remains unresolved.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -134,7 +134,7 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "SUN397 completed results pending current publication; last verified remote1a61b3a2 equals localb8861f2",
+    "status": "Completed SUN397 published and read back at a58e1dbf, equivalent local963ce89; PaRaMS calibration preregistration pending current commit.",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -1254,5 +1254,17 @@
     ],
     "limitations": "Partner accuracies also fall. This does not erase output-calibration and known-location recovery weaknesses. Not eight full evaluation tasks.",
     "raw_archive": "outputs/bias_eight_20261030/manifest.json"
+  },
+  "PaRaMS_calibration": {
+    "status": "defined_before_execution",
+    "protocol": "results/params_reference/other_tasks/calibration_protocol.json",
+    "source": "results/attack_generalization_20261028/calibrate.py",
+    "GPU": "12997",
+    "new_synthetic_image_forwards": 576,
+    "new_real_image_forwards": 0,
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "matched_control": "Reuse existing same-noise unprotected calibration by SHA",
+    "original_weights": "All six original release/AGA files verified on55548; transferred to12997"
   }
 }

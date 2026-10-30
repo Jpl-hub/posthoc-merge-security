@@ -1,0 +1,215 @@
+{
+  "status": "defined_before_execution",
+  "paper": "https://proceedings.mlr.press/v139/zhao21c.html",
+  "official_source": {
+    "repository": "tonyzhaozh/few-shot-learning",
+    "commit": "e04d8643be91c2cce63f33e07760ff75d5aa3ad0",
+    "file": "run_classification.py",
+    "sha256": "60787d59863caebc1688e3333659accf759d6f0c615735d1901f1427724ec8fc",
+    "functions": [
+      "eval_accuracy",
+      "get_p_content_free"
+    ],
+    "raw_review_sha256": "89248b0cdce36b31050a8a5b94010db4f5451368a0c7f33c1603600433975bff"
+  },
+  "rule": "For each own fused model, p_cf=mean softmax(logits(noise)); predict argmax(logits(test)-log(p_cf)). This is the official diagonal probability division computed stably in log space. One fixed rule, no scale/temperature/mapping/source/seed selection.",
+  "adaptation": "Original paper uses content-free language strings; here exactly64 fixed unoptimized uniform-noise images are image-domain probes, not an official CLIP reproduction or a claim that noise represents the natural task.",
+  "input_seed": 2026102509,
+  "input_n": 64,
+  "input_definition": "CPU torch.rand(64,3,32,32), uniform[0,1],bilinear224 align_cornersFalse,originalCLIPnormalization,batches8,no labels/no pixel optimization.",
+  "attacker_information": "Own already-created fused model, fixed public classifier/class IDs and synthetic noise. Fitting does not access original target expert, real training/test data, old clean teacher generated cache, protected-source data or labels. Research assembly uses pinned published/original-AGA weights and own partner exactly as the original fixed merging evaluation. The unprotected matched release is corrected by the same rule on itself.",
+  "scopes": [
+    "TA0.5",
+    "originalAGA target-only + TA0.5",
+    "originalAGA both + TA0.5"
+  ],
+  "freeze_order": "Reuse SHA-checked unprotected vectors; compute all 18 PaRaMS classifier vectors and freeze them before reading any original test scores. No label or image use for calibration.",
+  "checks": "Independent NumPy stable softmax/mean/log-prior and predictions; official full labels/indices; classwise and paired changes; preserve original raw scores and same matched unprotected controls.",
+  "mechanism": "If logits(x)=task_signal(x)+constant_bias and content-free inputs identify that bias, subtracting logprior cancels it up to a class-independent scalar. Probe-dependent residuals and feature-normalization can violate that model; actual results required. Failure of one fixed correction does not prove erased class information.",
+  "public_before_execution": true,
+  "output": "outputs/params_calibration_20261030",
+  "purpose": "Complete the missing fixed-output-calibration comparison for official default PaRaMS, reusing frozen three-task publications, AGA weights and original full scores. No new defense construction or attack tuning.",
+  "cost": "9 protected fused models x64 synthetic inputs =576 new synthetic image forwards;0 real image forwards;0 new AGA solves;0 defense updates. 18 matched unprotected classifier vectors reused.",
+  "source_prior_result": "results/data_free_compensation/readout_calibration_result.json",
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "name": "PaRaMS",
+      "release": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/PaRaMS.pt",
+        "sha256": "5a7bca84cc9a40528f16676b617ef06823197b5ce2242e132fd3f5d18413b706"
+      },
+      "AGA_edits": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/AGA_release_edits.pt",
+        "sha256": "a441587682b6ef5794a3ed7018d9b221ca403b54fa33489b525a4362e9ccbf3b"
+      },
+      "AGA_references": {
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "SVHN": {
+          "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+          "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "DTD": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        }
+      },
+      "raw_scores": {
+        "path": "outputs/params_calibration_inputs_20261030/MNIST.pt",
+        "sha256": "a7b713531e703a0ddc37c9a4e57eaa69434047785ae545ed5b280ec78df743e9",
+        "bytes": 10490710
+      },
+      "original_raw_scores": {
+        "path": "outputs/phase3/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "b7afe0067a24273e6da9d759221bc863bf429435c15842b4a03407220af55dc9"
+      },
+      "selected_keys": [
+        "Unprotected/TA/None/MNIST",
+        "Unprotected/TA/None/SVHN",
+        "Unprotected/TA/Protected expert/MNIST",
+        "Unprotected/TA/Protected expert/SVHN",
+        "Unprotected/TA/All experts/MNIST",
+        "Unprotected/TA/All experts/SVHN",
+        "PaRaMS/TA/None/MNIST",
+        "PaRaMS/TA/None/SVHN",
+        "PaRaMS/TA/Protected expert/MNIST",
+        "PaRaMS/TA/Protected expert/SVHN",
+        "PaRaMS/TA/All experts/MNIST",
+        "PaRaMS/TA/All experts/SVHN"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "name": "PaRaMS_SVHN",
+      "release": {
+        "path": "outputs/phase2_params_other_tasks_20261022/native/SVHN/release.pt",
+        "sha256": "e8ef5b1784c8c77cb0efb88d18633203e213982cb1f099bdc03987e2ed44db9a"
+      },
+      "AGA_edits": {
+        "path": "outputs/phase2_params_other_tasks_20261022/native/SVHN/AGA_edits.pt",
+        "sha256": "a5907b9cba77d06c0d63ae2248c1871686b9c5f0a6416409a161d537745b67ff"
+      },
+      "AGA_references": {
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "SVHN": {
+          "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+          "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "DTD": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        }
+      },
+      "raw_scores": {
+        "path": "outputs/params_calibration_inputs_20261030/SVHN.pt",
+        "sha256": "014cce5b004173e198328d1a3b5e7ecfcb1741ec7faad4ea8f02802ea2d2e353",
+        "bytes": 10490682
+      },
+      "original_raw_scores": {
+        "path": "outputs/phase2_params_other_tasks_20261022/evaluation/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "b1788b628fc9ebb45fe957dc4189b16b95670cf4e034fac6532b478c640fb13a"
+      },
+      "selected_keys": [
+        "Unprotected/TA/None/SVHN",
+        "Unprotected/TA/None/MNIST",
+        "Unprotected/TA/Protected expert/SVHN",
+        "Unprotected/TA/Protected expert/MNIST",
+        "Unprotected/TA/All experts/SVHN",
+        "Unprotected/TA/All experts/MNIST",
+        "PaRaMS_SVHN/TA/None/SVHN",
+        "PaRaMS_SVHN/TA/None/MNIST",
+        "PaRaMS_SVHN/TA/Protected expert/SVHN",
+        "PaRaMS_SVHN/TA/Protected expert/MNIST",
+        "PaRaMS_SVHN/TA/All experts/SVHN",
+        "PaRaMS_SVHN/TA/All experts/MNIST"
+      ]
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "name": "PaRaMS_DTD",
+      "release": {
+        "path": "outputs/phase2_params_other_tasks_20261022/native/DTD/release.pt",
+        "sha256": "27da7f2fcb2b010261aa75c9e12b56abdb2f1260acc76e9e163fc27f0ca81270"
+      },
+      "AGA_edits": {
+        "path": "outputs/phase2_params_other_tasks_20261022/native/DTD/AGA_edits.pt",
+        "sha256": "fdba7aa377a6bb52bf86072b0b954f269d4856894b8811d254d929d12294aa87"
+      },
+      "AGA_references": {
+        "MNIST": {
+          "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+          "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "SVHN": {
+          "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+          "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+          "validation": "outputs/feature_noise/independent_validation.json"
+        },
+        "DTD": {
+          "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+          "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+          "validation": "outputs/feature_noise_dtd/independent_validation.json"
+        }
+      },
+      "raw_scores": {
+        "path": "outputs/params_calibration_inputs_20261030/DTD.pt",
+        "sha256": "efdb5d9284356498d4f8272651521c1267d84ff1fa28baf2dfc75deb7cf52eba",
+        "bytes": 5131998
+      },
+      "original_raw_scores": {
+        "path": "outputs/phase2_params_other_tasks_20261022/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "36ac95fdb437e2a171ac63b04325e6de5b4e02e372788e52fb462d0d6ff61dde"
+      },
+      "selected_keys": [
+        "Unprotected/TA/None/DTD",
+        "Unprotected/TA/None/MNIST",
+        "Unprotected/TA/Protected expert/DTD",
+        "Unprotected/TA/Protected expert/MNIST",
+        "Unprotected/TA/All experts/DTD",
+        "Unprotected/TA/All experts/MNIST",
+        "PaRaMS_DTD/TA/None/DTD",
+        "PaRaMS_DTD/TA/None/MNIST",
+        "PaRaMS_DTD/TA/Protected expert/DTD",
+        "PaRaMS_DTD/TA/Protected expert/MNIST",
+        "PaRaMS_DTD/TA/All experts/DTD",
+        "PaRaMS_DTD/TA/All experts/MNIST"
+      ]
+    }
+  ],
+  "runtime": "RTX3090 torch2.3.0+cu121. Original full logits are reused at their recorded precision; no new real-image evaluation.",
+  "source_sha256": "87c083d981c4a636ddcec23e6df75c6aa5045756319b7ca525cb27617cbff39c",
+  "registered_utc": "2026-10-30T14:42:52.932426+00:00",
+  "source": "results/attack_generalization_20261028/calibrate.py",
+  "reuse_calibration": {
+    "path": "outputs/params_calibration_inputs_20261030/unprotected_calibration.pt",
+    "sha256": "125dda1ef4a4af4eebccecbf24d993f7c631ecb30035f1d48fa3d2aa33930058",
+    "origin": "outputs/bias_calibration_20261030/calibration.pt",
+    "reuse": "Only Unprotected entries for the three tasks; same noise seed, preprocessing, classifier and model weights."
+  },
+  "inputs_manifest": {
+    "path": "outputs/params_calibration_inputs_20261030/manifest.json",
+    "sha256": "1b9328c43ac19d433b7924fd52adca1e6d98841aa8277a01a954c98989d8086e",
+    "selection": "Byte-identical tensor subset of TA rows; source scores retain original batch-context verification."
+  },
+  "PaRaMS_reference": {
+    "source": "configs/sources.json:PaRaMS",
+    "defaults": "Full official MLP permutation and attention diagonal scaling; seed0, no clipping/interpolation, original frozen releases from Oct16/22.",
+    "budget": "No defense update. Existing default-reference distance, utility and cost records retained."
+  }
+}
