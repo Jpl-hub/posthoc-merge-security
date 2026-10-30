@@ -1,42 +1,22 @@
 {
-  "status": "defense1_non_AGA_calibration_registered",
-  "updated_utc": "2026-10-29T16:43:55.821000+00:00",
+  "status": "defense1_two_recovery_tests_complete_eight_expert_launched_12997",
+  "updated_utc": "2026-10-30T03:05:27.930111+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
+  "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "name": "numerical_MNIST_distillation",
-      "status": "completed_independently_verified_defense_bypassed_under_fixed_data_assisted_access",
-      "server": "55548",
-      "pid": 24745,
-      "output": "outputs/attack_generalization_20261029/distillation_MNIST",
-      "protocol": "results/attack_generalization_20261028/distillation/protocol.json",
-      "new_defense_models": 0,
-      "new_student_training_steps": 0,
-      "exit_code": 0
-    },
-    {
-      "name": "numerical_SVHN_DTD_distillation",
-      "status": "completed_independently_verified",
-      "server": "55548",
-      "pid": 29351,
-      "exit_code": 0,
-      "records": "results/attack_generalization_20261028/distillation/other_tasks_deployment.json"
-    },
-    {
-      "name": "Defense1_weight_only_SVHN_DTD",
-      "status": "completed_independently_verified",
-      "server": "55548",
-      "pid": 37176,
-      "records": "results/phase3/bias_weight_only/other_tasks/deployment.json",
-      "exit_code": 0
+      "host": "12997",
+      "task": "Frozen weight-only Defense1 eight-expert TA0.2 and AGA-target, five full datasets",
+      "log": "outputs/bias_eight_20261030/batch.log",
+      "output": "outputs/bias_eight_20261030",
+      "wall_limit_seconds": 3600,
+      "protocol": "results/phase3/bias_weight_only/eight_expert/protocol.json"
     }
   ],
-  "next_action": "Run unchanged fixed64-noise calibration on the three frozen weight-only Defense1 points, then fill genuinely missing attack/control cells. Full MLP reset deletes all edits of current numerical Defense2; A-only retuning in the same block cannot resolve that full-reset case.",
+  "next_action": "Check finite batch on12997 after about30minutes; independently summarize completed raw results. No automatic reminder. Missing Cars/EuroSAT/SUN397 test assets remain incomplete; preserve dataset-split compatibility. Do not redo completed calibration/projection or Defense2 batches.",
   "github_sync": {
-    "status": "new_completed_batch_pending_plugin_fetch_unavailable",
-    "last_verified_remote_commit": "0be969f3fec0f14938b1f2c7d6e9954c42fd6392",
+    "status": "remote30ca0b69 exactlocal352c258 verified; latest completed results and eight-expert preregistration pending current sync",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -1040,5 +1020,22 @@
       "server_directory": "/root/autodl-tmp/posthoc-merge-security/outputs/bias_weight_only_20261029",
       "compressed_duplicate_created": false
     }
+  },
+  "Defense1_non_AGA": {
+    "calibration": "completed;36 full rows,18 matched comparisons, independently verified",
+    "source": "results/phase3/bias_weight_only/attacks/calibration.json",
+    "TA_target_accuracy_percent": {
+      "MNIST": 99.35,
+      "SVHN": 92.23647818070067,
+      "DTD": 57.71276595744681
+    },
+    "matched_corrected_unprotected_target_percent": {
+      "MNIST": 99.34,
+      "SVHN": 92.31714812538414,
+      "DTD": 55.69148936170213
+    },
+    "conclusion": "Fixed output correction restores fusion on these three frozen releases. AGA-only failure is not general protection. No real images or original expert enter calibration.",
+    "known_location_projection": "completed;18 full+18 pilot rows,576 original128context replays,max error0;protected/control predictions identical",
+    "known_location_projection_source": "results/phase3/bias_weight_only/attacks/projection.json"
   }
 }

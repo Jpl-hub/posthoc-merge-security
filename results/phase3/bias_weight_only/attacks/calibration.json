@@ -1,0 +1,2918 @@
+{
+  "status": "completed",
+  "torch_version": "2.3.0+cu121",
+  "GPU": "NVIDIA GeForce RTX 3090",
+  "protocol_sha256": "2a5e7ec1d6448d9cc6908c8066d801b1dec33fb05e15daad93a5bc0cf0f43adc",
+  "source_sha256": "9e6abf6e0f048e0bd9c3508864193e50c7d502697236939f364eb8016ffbdfe3",
+  "calibration_sha256": "125dda1ef4a4af4eebccecbf24d993f7c631ecb30035f1d48fa3d2aa33930058",
+  "corrected_scores_sha256": "371a6b885de8c9bd3224105a34a1fa8f8a3c652ef56872395395df9890cbd16e",
+  "noise_sha256": "352733f111cf02eba0aa247ef534ad19a834d73277f144ce8679f3ab885a4972",
+  "checkpoint_sha256": {
+    "MNIST": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "SVHN": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "SVHN/finetuned.pt": "919a9bbf348739aca9c96026eb91ea4034ef460947ebc5131ce842bf9a2a51bc",
+      "head_SVHN.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "DTD": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "DTD/finetuned.pt": "482e5636cdb4d521376211fdeda0417f73aafab9551d366690bba3e5c0ce0f38",
+      "head_DTD.pt": "19df72206780cac2d269a2847cbd81dceb3859c6f91a722c49427c42a0b829bf"
+    }
+  },
+  "maximum_numpy_prior_error": 3.552713678800501e-15,
+  "calibration_frozen_before_benchmark_read": true,
+  "generated_image_forwards": 1152,
+  "new_real_image_forwards": 0,
+  "new_AGA_calls": 0,
+  "new_defense_points": 0,
+  "teacher_training_updates": 0,
+  "seconds": 57.32206568797119,
+  "rows": [
+    {
+      "key": "MNIST/Unprotected/TA/None/MNIST",
+      "n": 10000,
+      "correct": 9934,
+      "accuracy_percent": 99.33999999999999,
+      "changed_predictions": 12,
+      "paired": {
+        "both_correct": 9930,
+        "lost": 7,
+        "gained": 4,
+        "both_wrong": 59,
+        "loss_pp": 0.03,
+        "exact_mcnemar_p": 0.548828125
+      },
+      "mcnemar_log10_p": -0.26056364107075064,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.09500643690962206,
+        0.035006436909622074
+      ]
+    },
+    {
+      "key": "MNIST/Unprotected/TA/None/SVHN",
+      "n": 26032,
+      "correct": 24032,
+      "accuracy_percent": 92.31714812538414,
+      "changed_predictions": 224,
+      "paired": {
+        "both_correct": 23969,
+        "lost": 110,
+        "gained": 63,
+        "both_wrong": 1890,
+        "loss_pp": 0.18054701905347265,
+        "exact_mcnemar_p": 0.00043689152021394935
+      },
+      "mcnemar_log10_p": -3.359626384587754,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.2795557266316587,
+        -0.08153831147528659
+      ]
+    },
+    {
+      "key": "MNIST/Unprotected/TA/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9929,
+      "accuracy_percent": 99.29,
+      "changed_predictions": 10,
+      "paired": {
+        "both_correct": 9925,
+        "lost": 5,
+        "gained": 4,
+        "both_wrong": 66,
+        "loss_pp": 0.01,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.06880261353661811,
+        0.04880261353661811
+      ]
+    },
+    {
+      "key": "MNIST/Unprotected/TA/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 24101,
+      "accuracy_percent": 92.58220651505839,
+      "changed_predictions": 235,
+      "paired": {
+        "both_correct": 24035,
+        "lost": 118,
+        "gained": 66,
+        "both_wrong": 1813,
+        "loss_pp": 0.1997541487400123,
+        "exact_mcnemar_p": 0.00015508545345345207
+      },
+      "mcnemar_log10_p": -3.8094289357851894,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.301858245981646,
+        -0.0976500514983786
+      ]
+    },
+    {
+      "key": "MNIST/Unprotected/TA/All experts/MNIST",
+      "n": 10000,
+      "correct": 9929,
+      "accuracy_percent": 99.29,
+      "changed_predictions": 12,
+      "paired": {
+        "both_correct": 9925,
+        "lost": 7,
+        "gained": 4,
+        "both_wrong": 64,
+        "loss_pp": 0.03,
+        "exact_mcnemar_p": 0.548828125
+      },
+      "mcnemar_log10_p": -0.26056364107075064,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.09500643690962425,
+        0.03500643690962427
+      ]
+    },
+    {
+      "key": "MNIST/Unprotected/TA/All experts/SVHN",
+      "n": 26032,
+      "correct": 23842,
+      "accuracy_percent": 91.58727719729563,
+      "changed_predictions": 276,
+      "paired": {
+        "both_correct": 23761,
+        "lost": 129,
+        "gained": 81,
+        "both_wrong": 2061,
+        "loss_pp": 0.18438844499078058,
+        "exact_mcnemar_p": 0.0011307965119772547
+      },
+      "mcnemar_log10_p": -2.946615539792787,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.29347594445089753,
+        -0.07530094553066366
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/None/MNIST",
+      "n": 10000,
+      "correct": 9935,
+      "accuracy_percent": 99.35000000000001,
+      "changed_predictions": 9017,
+      "paired": {
+        "both_correct": 975,
+        "lost": 5,
+        "gained": 8960,
+        "both_wrong": 60,
+        "loss_pp": -89.55,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2680.7495530575625,
+      "paired_accuracy_delta_95ci_pp": [
+        88.94719496933871,
+        90.15280503066128
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/None/SVHN",
+      "n": 26032,
+      "correct": 24024,
+      "accuracy_percent": 92.28641671788567,
+      "changed_predictions": 23966,
+      "paired": {
+        "both_correct": 1707,
+        "lost": 37,
+        "gained": 22317,
+        "both_wrong": 1971,
+        "loss_pp": -85.58696988322065,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -6611.148311388985,
+      "paired_accuracy_delta_95ci_pp": [
+        85.15541174376563,
+        86.0185280226757
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9930,
+      "accuracy_percent": 99.3,
+      "changed_predictions": 9015,
+      "paired": {
+        "both_correct": 975,
+        "lost": 5,
+        "gained": 8955,
+        "both_wrong": 65,
+        "loss_pp": -89.5,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2679.245614635494,
+      "paired_accuracy_delta_95ci_pp": [
+        88.89593671751632,
+        90.10406328248368
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 24099,
+      "accuracy_percent": 92.57452366318377,
+      "changed_predictions": 24002,
+      "paired": {
+        "both_correct": 1709,
+        "lost": 35,
+        "gained": 22390,
+        "both_wrong": 1898,
+        "loss_pp": -85.87507682851874,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -6638.046069249265,
+      "paired_accuracy_delta_95ci_pp": [
+        85.44731845596462,
+        86.30283520107288
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/All experts/MNIST",
+      "n": 10000,
+      "correct": 9934,
+      "accuracy_percent": 99.33999999999999,
+      "changed_predictions": 9016,
+      "paired": {
+        "both_correct": 975,
+        "lost": 5,
+        "gained": 8959,
+        "both_wrong": 61,
+        "loss_pp": -89.54,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2680.4487653190645,
+      "paired_accuracy_delta_95ci_pp": [
+        88.93694298153426,
+        90.14305701846574
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/All experts/SVHN",
+      "n": 26032,
+      "correct": 23838,
+      "accuracy_percent": 91.57191149354641,
+      "changed_predictions": 23989,
+      "paired": {
+        "both_correct": 1698,
+        "lost": 46,
+        "gained": 22140,
+        "both_wrong": 2148,
+        "loss_pp": -84.87246465888137,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -6536.190760069352,
+      "paired_accuracy_delta_95ci_pp": [
+        84.43122495977815,
+        85.3137043579846
+      ]
+    },
+    {
+      "key": "SVHN/Unprotected/TA/None/SVHN",
+      "n": 26032,
+      "correct": 24032,
+      "accuracy_percent": 92.31714812538414,
+      "changed_predictions": 224,
+      "paired": {
+        "both_correct": 23969,
+        "lost": 110,
+        "gained": 63,
+        "both_wrong": 1890,
+        "loss_pp": 0.18054701905347265,
+        "exact_mcnemar_p": 0.00043689152021394935
+      },
+      "mcnemar_log10_p": -3.359626384587754,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.2795557266316587,
+        -0.08153831147528659
+      ]
+    },
+    {
+      "key": "SVHN/Unprotected/TA/None/MNIST",
+      "n": 10000,
+      "correct": 9934,
+      "accuracy_percent": 99.33999999999999,
+      "changed_predictions": 12,
+      "paired": {
+        "both_correct": 9930,
+        "lost": 7,
+        "gained": 4,
+        "both_wrong": 59,
+        "loss_pp": 0.03,
+        "exact_mcnemar_p": 0.548828125
+      },
+      "mcnemar_log10_p": -0.26056364107075064,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.09500643690962206,
+        0.035006436909622074
+      ]
+    },
+    {
+      "key": "SVHN/Unprotected/TA/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 23777,
+      "accuracy_percent": 91.33758451137062,
+      "changed_predictions": 265,
+      "paired": {
+        "both_correct": 23705,
+        "lost": 131,
+        "gained": 72,
+        "both_wrong": 2124,
+        "loss_pp": 0.22664413030116778,
+        "exact_mcnemar_p": 4.1741384823470154e-05
+      },
+      "mcnemar_log10_p": -4.3794331467603715,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.33388536616174347,
+        -0.1194028944405921
+      ]
+    },
+    {
+      "key": "SVHN/Unprotected/TA/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9934,
+      "accuracy_percent": 99.33999999999999,
+      "changed_predictions": 14,
+      "paired": {
+        "both_correct": 9930,
+        "lost": 9,
+        "gained": 4,
+        "both_wrong": 57,
+        "loss_pp": 0.05,
+        "exact_mcnemar_p": 0.266845703125
+      },
+      "mcnemar_log10_p": -0.573739786018072,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.12066554296044883,
+        0.02066554296044884
+      ]
+    },
+    {
+      "key": "SVHN/Unprotected/TA/All experts/SVHN",
+      "n": 26032,
+      "correct": 23842,
+      "accuracy_percent": 91.58727719729563,
+      "changed_predictions": 276,
+      "paired": {
+        "both_correct": 23761,
+        "lost": 129,
+        "gained": 81,
+        "both_wrong": 2061,
+        "loss_pp": 0.18438844499078058,
+        "exact_mcnemar_p": 0.0011307965119772547
+      },
+      "mcnemar_log10_p": -2.946615539792787,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.29347594445089753,
+        -0.07530094553066366
+      ]
+    },
+    {
+      "key": "SVHN/Unprotected/TA/All experts/MNIST",
+      "n": 10000,
+      "correct": 9929,
+      "accuracy_percent": 99.29,
+      "changed_predictions": 12,
+      "paired": {
+        "both_correct": 9925,
+        "lost": 7,
+        "gained": 4,
+        "both_wrong": 64,
+        "loss_pp": 0.03,
+        "exact_mcnemar_p": 0.548828125
+      },
+      "mcnemar_log10_p": -0.26056364107075064,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.09500643690962425,
+        0.03500643690962427
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/None/SVHN",
+      "n": 26032,
+      "correct": 24011,
+      "accuracy_percent": 92.23647818070067,
+      "changed_predictions": 24060,
+      "paired": {
+        "both_correct": 1684,
+        "lost": 60,
+        "gained": 22327,
+        "both_wrong": 1961,
+        "loss_pp": -85.53703134603565,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -6559.811102676998,
+      "paired_accuracy_delta_95ci_pp": [
+        85.10185967541462,
+        85.97220301665669
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/None/MNIST",
+      "n": 10000,
+      "correct": 9933,
+      "accuracy_percent": 99.33,
+      "changed_predictions": 9021,
+      "paired": {
+        "both_correct": 973,
+        "lost": 7,
+        "gained": 8960,
+        "both_wrong": 60,
+        "loss_pp": -89.53,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2675.0695194509885,
+      "paired_accuracy_delta_95ci_pp": [
+        88.92541886657726,
+        90.13458113342274
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 23754,
+      "accuracy_percent": 91.24923171481254,
+      "changed_predictions": 24056,
+      "paired": {
+        "both_correct": 1668,
+        "lost": 76,
+        "gained": 22086,
+        "both_wrong": 2202,
+        "loss_pp": -84.54978488014751,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -6452.189295245307,
+      "paired_accuracy_delta_95ci_pp": [
+        84.10100893991682,
+        84.99856082037822
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9936,
+      "accuracy_percent": 99.36,
+      "changed_predictions": 9020,
+      "paired": {
+        "both_correct": 974,
+        "lost": 6,
+        "gained": 8962,
+        "both_wrong": 58,
+        "loss_pp": -89.56,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2678.4775657835717,
+      "paired_accuracy_delta_95ci_pp": [
+        88.95680984552105,
+        90.16319015447894
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/All experts/SVHN",
+      "n": 26032,
+      "correct": 23812,
+      "accuracy_percent": 91.4720344191764,
+      "changed_predictions": 24084,
+      "paired": {
+        "both_correct": 1669,
+        "lost": 75,
+        "gained": 22143,
+        "both_wrong": 2145,
+        "loss_pp": -84.77258758451137,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -6471.427983416519,
+      "paired_accuracy_delta_95ci_pp": [
+        84.3264854764118,
+        85.21868969261094
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/All experts/MNIST",
+      "n": 10000,
+      "correct": 9937,
+      "accuracy_percent": 99.37,
+      "changed_predictions": 9020,
+      "paired": {
+        "both_correct": 974,
+        "lost": 6,
+        "gained": 8963,
+        "both_wrong": 57,
+        "loss_pp": -89.57,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2678.7783051840897,
+      "paired_accuracy_delta_95ci_pp": [
+        88.96706190512576,
+        90.17293809487425
+      ]
+    },
+    {
+      "key": "DTD/Unprotected/TA/None/DTD",
+      "n": 1880,
+      "correct": 1047,
+      "accuracy_percent": 55.69148936170213,
+      "changed_predictions": 578,
+      "paired": {
+        "both_correct": 1003,
+        "lost": 300,
+        "gained": 44,
+        "both_wrong": 533,
+        "loss_pp": 13.617021276595745,
+        "exact_mcnemar_p": 5.634983462865158e-48
+      },
+      "mcnemar_log10_p": -47.249107354151285,
+      "paired_accuracy_delta_95ci_pp": [
+        -15.450566630054022,
+        -11.783475923137468
+      ]
+    },
+    {
+      "key": "DTD/Unprotected/TA/None/MNIST",
+      "n": 10000,
+      "correct": 9946,
+      "accuracy_percent": 99.46000000000001,
+      "changed_predictions": 21,
+      "paired": {
+        "both_correct": 9936,
+        "lost": 9,
+        "gained": 10,
+        "both_wrong": 45,
+        "loss_pp": -0.01,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.07543846649582236,
+        0.09543846649582237
+      ]
+    },
+    {
+      "key": "DTD/Unprotected/TA/Protected expert/DTD",
+      "n": 1880,
+      "correct": 1034,
+      "accuracy_percent": 55.00000000000001,
+      "changed_predictions": 590,
+      "paired": {
+        "both_correct": 987,
+        "lost": 299,
+        "gained": 47,
+        "both_wrong": 547,
+        "loss_pp": 13.404255319148936,
+        "exact_mcnemar_p": 5.2494253856874996e-46
+      },
+      "mcnemar_log10_p": -45.27988823287637,
+      "paired_accuracy_delta_95ci_pp": [
+        -15.246914452935172,
+        -11.5615961853627
+      ]
+    },
+    {
+      "key": "DTD/Unprotected/TA/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9945,
+      "accuracy_percent": 99.45,
+      "changed_predictions": 21,
+      "paired": {
+        "both_correct": 9936,
+        "lost": 9,
+        "gained": 9,
+        "both_wrong": 46,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.08315991556727144,
+        0.08315991556727144
+      ]
+    },
+    {
+      "key": "DTD/Unprotected/TA/All experts/DTD",
+      "n": 1880,
+      "correct": 1034,
+      "accuracy_percent": 55.00000000000001,
+      "changed_predictions": 595,
+      "paired": {
+        "both_correct": 987,
+        "lost": 306,
+        "gained": 47,
+        "both_wrong": 540,
+        "loss_pp": 13.77659574468085,
+        "exact_mcnemar_p": 1.1206778105185282e-47
+      },
+      "mcnemar_log10_p": -46.9505192270357,
+      "paired_accuracy_delta_95ci_pp": [
+        -15.63423565510275,
+        -11.918955834258952
+      ]
+    },
+    {
+      "key": "DTD/Unprotected/TA/All experts/MNIST",
+      "n": 10000,
+      "correct": 9939,
+      "accuracy_percent": 99.39,
+      "changed_predictions": 17,
+      "paired": {
+        "both_correct": 9934,
+        "lost": 8,
+        "gained": 5,
+        "both_wrong": 53,
+        "loss_pp": 0.03,
+        "exact_mcnemar_p": 0.5810546875
+      },
+      "mcnemar_log10_p": -0.23578299091126265,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.10066989231185233,
+        0.040669892311852335
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/None/DTD",
+      "n": 1880,
+      "correct": 1085,
+      "accuracy_percent": 57.71276595744681,
+      "changed_predictions": 1875,
+      "paired": {
+        "both_correct": 3,
+        "lost": 37,
+        "gained": 1082,
+        "both_wrong": 758,
+        "loss_pp": -55.58510638297872,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -267.1298152476932,
+      "paired_accuracy_delta_95ci_pp": [
+        53.16597400665856,
+        58.004238759298886
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/None/MNIST",
+      "n": 10000,
+      "correct": 9947,
+      "accuracy_percent": 99.47,
+      "changed_predictions": 9016,
+      "paired": {
+        "both_correct": 978,
+        "lost": 2,
+        "gained": 8969,
+        "both_wrong": 51,
+        "loss_pp": -89.67,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2692.6343609692,
+      "paired_accuracy_delta_95ci_pp": [
+        89.07215690134194,
+        90.26784309865808
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/Protected expert/DTD",
+      "n": 1880,
+      "correct": 1073,
+      "accuracy_percent": 57.074468085106375,
+      "changed_predictions": 1874,
+      "paired": {
+        "both_correct": 4,
+        "lost": 36,
+        "gained": 1069,
+        "both_wrong": 771,
+        "loss_pp": -54.9468085106383,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -264.58206201202347,
+      "paired_accuracy_delta_95ci_pp": [
+        52.52933138863723,
+        57.364285632639366
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9947,
+      "accuracy_percent": 99.47,
+      "changed_predictions": 9015,
+      "paired": {
+        "both_correct": 978,
+        "lost": 2,
+        "gained": 8969,
+        "both_wrong": 51,
+        "loss_pp": -89.67,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2692.6343609692,
+      "paired_accuracy_delta_95ci_pp": [
+        89.07215690134194,
+        90.26784309865808
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/All experts/DTD",
+      "n": 1880,
+      "correct": 1077,
+      "accuracy_percent": 57.287234042553195,
+      "changed_predictions": 1875,
+      "paired": {
+        "both_correct": 3,
+        "lost": 37,
+        "gained": 1074,
+        "both_wrong": 766,
+        "loss_pp": -55.159574468085104,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -264.8386570944143,
+      "paired_accuracy_delta_95ci_pp": [
+        52.738510799202274,
+        57.580638136967934
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/All experts/MNIST",
+      "n": 10000,
+      "correct": 9939,
+      "accuracy_percent": 99.39,
+      "changed_predictions": 9017,
+      "paired": {
+        "both_correct": 976,
+        "lost": 4,
+        "gained": 8963,
+        "both_wrong": 57,
+        "loss_pp": -89.59,
+        "exact_mcnemar_p": 0.0
+      },
+      "mcnemar_log10_p": -2684.604660502357,
+      "paired_accuracy_delta_95ci_pp": [
+        88.98884337345999,
+        90.19115662654002
+      ]
+    }
+  ],
+  "matched_corrected_controls": [
+    {
+      "key": "MNIST/Defense1/TA/None/MNIST",
+      "n": 10000,
+      "correct": 9935,
+      "accuracy_percent": 99.35000000000001,
+      "changed_predictions": 1,
+      "paired": {
+        "both_correct": 9934,
+        "lost": 0,
+        "gained": 1,
+        "both_wrong": 65,
+        "loss_pp": -0.01,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.00960000000000451,
+        0.029600000000004508
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 975,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1132,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1022,
+          "original_correct": 1022
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 943,
+          "original_correct": 943
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1023,
+          "original_correct": 1022
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 998,
+          "original_correct": 998
+        }
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/None/SVHN",
+      "n": 26032,
+      "correct": 24024,
+      "accuracy_percent": 92.28641671788567,
+      "changed_predictions": 88,
+      "paired": {
+        "both_correct": 23991,
+        "lost": 41,
+        "gained": 33,
+        "both_wrong": 1967,
+        "loss_pp": 0.03073140749846343,
+        "exact_mcnemar_p": 0.4159851975073046
+      },
+      "mcnemar_log10_p": -0.3809221231119034,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.09550015860321426,
+        0.03403734360628741
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1707,
+          "original_correct": 1708
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4773,
+          "original_correct": 4764
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3949,
+          "original_correct": 3957
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2436,
+          "original_correct": 2436
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2289,
+          "original_correct": 2293
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2299,
+          "original_correct": 2300
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1698,
+          "original_correct": 1700
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1881,
+          "original_correct": 1869
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1595,
+          "original_correct": 1590
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1397,
+          "original_correct": 1415
+        }
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9930,
+      "accuracy_percent": 99.3,
+      "changed_predictions": 1,
+      "paired": {
+        "both_correct": 9929,
+        "lost": 0,
+        "gained": 1,
+        "both_wrong": 70,
+        "loss_pp": -0.01,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.009600000000000487,
+        0.029600000000000487
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 975,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1132,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1021,
+          "original_correct": 1021
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 978,
+          "original_correct": 978
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 941,
+          "original_correct": 941
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1022,
+          "original_correct": 1021
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 998,
+          "original_correct": 998
+        }
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 24099,
+      "accuracy_percent": 92.57452366318377,
+      "changed_predictions": 107,
+      "paired": {
+        "both_correct": 24057,
+        "lost": 44,
+        "gained": 42,
+        "both_wrong": 1889,
+        "loss_pp": 0.007682851874615857,
+        "exact_mcnemar_p": 0.9142116370824498
+      },
+      "mcnemar_log10_p": -0.03895325483784776,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.07750701113027264,
+        0.06214130738104093
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1709,
+          "original_correct": 1711
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4795,
+          "original_correct": 4791
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3967,
+          "original_correct": 3972
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2432,
+          "original_correct": 2426
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2294,
+          "original_correct": 2298
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2305,
+          "original_correct": 2306
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1702,
+          "original_correct": 1702
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1894,
+          "original_correct": 1881
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1600,
+          "original_correct": 1595
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1401,
+          "original_correct": 1419
+        }
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/All experts/MNIST",
+      "n": 10000,
+      "correct": 9934,
+      "accuracy_percent": 99.33999999999999,
+      "changed_predictions": 5,
+      "paired": {
+        "both_correct": 9929,
+        "lost": 0,
+        "gained": 5,
+        "both_wrong": 66,
+        "loss_pp": -0.05,
+        "exact_mcnemar_p": 0.0625
+      },
+      "mcnemar_log10_p": -1.2041199826559248,
+      "paired_accuracy_delta_95ci_pp": [
+        0.006181834780995634,
+        0.09381816521900437
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 975,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1132,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1021,
+          "original_correct": 1021
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 979,
+          "original_correct": 978
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 942,
+          "original_correct": 942
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1024,
+          "original_correct": 1020
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 998,
+          "original_correct": 998
+        }
+      ]
+    },
+    {
+      "key": "MNIST/Defense1/TA/All experts/SVHN",
+      "n": 26032,
+      "correct": 23838,
+      "accuracy_percent": 91.57191149354641,
+      "changed_predictions": 96,
+      "paired": {
+        "both_correct": 23804,
+        "lost": 38,
+        "gained": 34,
+        "both_wrong": 2156,
+        "loss_pp": 0.015365703749231715,
+        "exact_mcnemar_p": 0.7239481457469141
+      },
+      "mcnemar_log10_p": -0.14029253991123475,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.0792539948983787,
+        0.048522587399915273
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1698,
+          "original_correct": 1700
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4774,
+          "original_correct": 4766
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3943,
+          "original_correct": 3945
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2347,
+          "original_correct": 2350
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2260,
+          "original_correct": 2266
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2294,
+          "original_correct": 2295
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1667,
+          "original_correct": 1664
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1871,
+          "original_correct": 1863
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1600,
+          "original_correct": 1593
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1384,
+          "original_correct": 1400
+        }
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/None/SVHN",
+      "n": 26032,
+      "correct": 24011,
+      "accuracy_percent": 92.23647818070067,
+      "changed_predictions": 204,
+      "paired": {
+        "both_correct": 23940,
+        "lost": 92,
+        "gained": 71,
+        "both_wrong": 1929,
+        "loss_pp": 0.0806699446834665,
+        "exact_mcnemar_p": 0.11695440246353753
+      },
+      "mcnemar_log10_p": -0.9319834255894399,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.176793120327843,
+        0.015453230960910017
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1684,
+          "original_correct": 1708
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4728,
+          "original_correct": 4764
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3952,
+          "original_correct": 3957
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2431,
+          "original_correct": 2436
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2297,
+          "original_correct": 2293
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2300,
+          "original_correct": 2300
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1709,
+          "original_correct": 1700
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1889,
+          "original_correct": 1869
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1604,
+          "original_correct": 1590
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1417,
+          "original_correct": 1415
+        }
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/None/MNIST",
+      "n": 10000,
+      "correct": 9933,
+      "accuracy_percent": 99.33,
+      "changed_predictions": 9,
+      "paired": {
+        "both_correct": 9929,
+        "lost": 5,
+        "gained": 4,
+        "both_wrong": 62,
+        "loss_pp": 0.01,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.06880261353662327,
+        0.04880261353662326
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 973,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1130,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1021,
+          "original_correct": 1022
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 945,
+          "original_correct": 943
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1024,
+          "original_correct": 1022
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 998,
+          "original_correct": 998
+        }
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 23754,
+      "accuracy_percent": 91.24923171481254,
+      "changed_predictions": 235,
+      "paired": {
+        "both_correct": 23672,
+        "lost": 105,
+        "gained": 82,
+        "both_wrong": 2173,
+        "loss_pp": 0.08835279655808236,
+        "exact_mcnemar_p": 0.10741108743413712
+      },
+      "mcnemar_log10_p": -0.9689508865793522,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.19130937050079855,
+        0.014603777384633837
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1668,
+          "original_correct": 1701
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4700,
+          "original_correct": 4737
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3933,
+          "original_correct": 3931
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2354,
+          "original_correct": 2360
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2258,
+          "original_correct": 2255
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2294,
+          "original_correct": 2294
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1677,
+          "original_correct": 1662
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1873,
+          "original_correct": 1850
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1599,
+          "original_correct": 1587
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1398,
+          "original_correct": 1400
+        }
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9936,
+      "accuracy_percent": 99.36,
+      "changed_predictions": 8,
+      "paired": {
+        "both_correct": 9931,
+        "lost": 3,
+        "gained": 5,
+        "both_wrong": 61,
+        "loss_pp": -0.02,
+        "exact_mcnemar_p": 0.7265625
+      },
+      "mcnemar_log10_p": -0.13872702109393262,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.03543855769559148,
+        0.07543855769559148
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 974,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1130,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1021,
+          "original_correct": 1021
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 979,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 945,
+          "original_correct": 943
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1026,
+          "original_correct": 1023
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 998,
+          "original_correct": 998
+        }
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/All experts/SVHN",
+      "n": 26032,
+      "correct": 23812,
+      "accuracy_percent": 91.4720344191764,
+      "changed_predictions": 246,
+      "paired": {
+        "both_correct": 23728,
+        "lost": 114,
+        "gained": 84,
+        "both_wrong": 2106,
+        "loss_pp": 0.11524277811923786,
+        "exact_mcnemar_p": 0.03903905591217148
+      },
+      "mcnemar_log10_p": -1.4085006934923692,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.22118072531062535,
+        -0.009304830927850373
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1669,
+          "original_correct": 1700
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4725,
+          "original_correct": 4766
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3945,
+          "original_correct": 3945
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2339,
+          "original_correct": 2350
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2270,
+          "original_correct": 2266
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2294,
+          "original_correct": 2295
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1682,
+          "original_correct": 1664
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1883,
+          "original_correct": 1863
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1605,
+          "original_correct": 1593
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1400,
+          "original_correct": 1400
+        }
+      ]
+    },
+    {
+      "key": "SVHN/Defense1/TA/All experts/MNIST",
+      "n": 10000,
+      "correct": 9937,
+      "accuracy_percent": 99.37,
+      "changed_predictions": 12,
+      "paired": {
+        "both_correct": 9927,
+        "lost": 2,
+        "gained": 10,
+        "both_wrong": 61,
+        "loss_pp": -0.08,
+        "exact_mcnemar_p": 0.03857421875
+      },
+      "mcnemar_log10_p": -1.413702861013352,
+      "paired_accuracy_delta_95ci_pp": [
+        0.01211832229374625,
+        0.14788167770625377
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 974,
+          "original_correct": 975
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1131,
+          "original_correct": 1132
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1021,
+          "original_correct": 1021
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1009,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 979,
+          "original_correct": 978
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 884,
+          "original_correct": 884
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 945,
+          "original_correct": 942
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1026,
+          "original_correct": 1020
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 998,
+          "original_correct": 998
+        }
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/None/DTD",
+      "n": 1880,
+      "correct": 1085,
+      "accuracy_percent": 57.71276595744681,
+      "changed_predictions": 116,
+      "paired": {
+        "both_correct": 1029,
+        "lost": 18,
+        "gained": 56,
+        "both_wrong": 777,
+        "loss_pp": -2.021276595744681,
+        "exact_mcnemar_p": 1.1091146210557392e-05
+      },
+      "mcnemar_log10_p": -4.9550235695228935,
+      "paired_accuracy_delta_95ci_pp": [
+        1.1288675745014516,
+        2.91368561698791
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 14
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 24
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 17
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 36
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 34
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 22
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "correct": 39,
+          "original_correct": 37
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "correct": 1,
+          "original_correct": 1
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 23
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "correct": 8,
+          "original_correct": 5
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 26
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 37
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "correct": 3,
+          "original_correct": 0
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "correct": 3,
+          "original_correct": 13
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 34
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "correct": 34,
+          "original_correct": 34
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "correct": 2,
+          "original_correct": 2
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "correct": 7,
+          "original_correct": 4
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 15
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 16
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 18
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "correct": 40,
+          "original_correct": 40
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 32
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "correct": 2,
+          "original_correct": 1
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 36
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "correct": 34,
+          "original_correct": 34
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 14
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 21
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 15
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 28
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "correct": 11,
+          "original_correct": 7
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "correct": 8,
+          "original_correct": 8
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 14
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "correct": 31,
+          "original_correct": 29
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 37
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "correct": 23,
+          "original_correct": 22
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "correct": 30,
+          "original_correct": 31
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 34
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "correct": 17,
+          "original_correct": 17
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "correct": 31,
+          "original_correct": 32
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "correct": 23,
+          "original_correct": 20
+        }
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/None/MNIST",
+      "n": 10000,
+      "correct": 9947,
+      "accuracy_percent": 99.47,
+      "changed_predictions": 11,
+      "paired": {
+        "both_correct": 9942,
+        "lost": 4,
+        "gained": 5,
+        "both_wrong": 49,
+        "loss_pp": -0.01,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.04880261353662102,
+        0.06880261353662102
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 978,
+          "original_correct": 978
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1135,
+          "original_correct": 1135
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1025,
+          "original_correct": 1024
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1004,
+          "original_correct": 1004
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 977,
+          "original_correct": 978
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 886,
+          "original_correct": 885
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 950,
+          "original_correct": 950
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1022,
+          "original_correct": 1025
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 972,
+          "original_correct": 971
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 998,
+          "original_correct": 996
+        }
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/Protected expert/DTD",
+      "n": 1880,
+      "correct": 1073,
+      "accuracy_percent": 57.074468085106375,
+      "changed_predictions": 124,
+      "paired": {
+        "both_correct": 1017,
+        "lost": 17,
+        "gained": 56,
+        "both_wrong": 790,
+        "loss_pp": -2.074468085106383,
+        "exact_mcnemar_p": 5.268675318129165e-06
+      },
+      "mcnemar_log10_p": -5.278298563979792,
+      "paired_accuracy_delta_95ci_pp": [
+        1.188424353320289,
+        2.960511816892477
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "correct": 14,
+          "original_correct": 13
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 24
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 15
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 36
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 34
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 22
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "correct": 39,
+          "original_correct": 37
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "correct": 1,
+          "original_correct": 1
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 23
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "correct": 8,
+          "original_correct": 5
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 26
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 37
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "correct": 2,
+          "original_correct": 0
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "correct": 4,
+          "original_correct": 13
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 33
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "correct": 34,
+          "original_correct": 34
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "correct": 2,
+          "original_correct": 2
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "correct": 7,
+          "original_correct": 4
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 13
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 15
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 16
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "correct": 40,
+          "original_correct": 40
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 32
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "correct": 1,
+          "original_correct": 1
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 36
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "correct": 34,
+          "original_correct": 34
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 14
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "correct": 23,
+          "original_correct": 19
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 16
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 28
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "correct": 10,
+          "original_correct": 7
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "correct": 7,
+          "original_correct": 7
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 14
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "correct": 30,
+          "original_correct": 27
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 37
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "correct": 23,
+          "original_correct": 22
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "correct": 30,
+          "original_correct": 31
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 34
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 17
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "correct": 31,
+          "original_correct": 32
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "correct": 21,
+          "original_correct": 20
+        }
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9947,
+      "accuracy_percent": 99.47,
+      "changed_predictions": 9,
+      "paired": {
+        "both_correct": 9942,
+        "lost": 3,
+        "gained": 5,
+        "both_wrong": 50,
+        "loss_pp": -0.02,
+        "exact_mcnemar_p": 0.7265625
+      },
+      "mcnemar_log10_p": -0.13872702109393262,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.03543855769559085,
+        0.07543855769559085
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 978,
+          "original_correct": 978
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1135,
+          "original_correct": 1135
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1025,
+          "original_correct": 1024
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1004,
+          "original_correct": 1004
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 977,
+          "original_correct": 978
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 886,
+          "original_correct": 885
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 950,
+          "original_correct": 950
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1023,
+          "original_correct": 1024
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 972,
+          "original_correct": 971
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 997,
+          "original_correct": 996
+        }
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/All experts/DTD",
+      "n": 1880,
+      "correct": 1077,
+      "accuracy_percent": 57.287234042553195,
+      "changed_predictions": 119,
+      "paired": {
+        "both_correct": 1021,
+        "lost": 13,
+        "gained": 56,
+        "both_wrong": 790,
+        "loss_pp": -2.2872340425531914,
+        "exact_mcnemar_p": 1.6837633430122172e-07
+      },
+      "mcnemar_log10_p": -6.773718949681055,
+      "paired_accuracy_delta_95ci_pp": [
+        1.4271896615010762,
+        3.1472784236053064
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "correct": 13,
+          "original_correct": 13
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 23
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 35
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 15
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 36
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 34
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 23
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "correct": 39,
+          "original_correct": 38
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "correct": 2,
+          "original_correct": 1
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 23
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "correct": 8,
+          "original_correct": 5
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 26
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 37
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "correct": 3,
+          "original_correct": 0
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "correct": 3,
+          "original_correct": 11
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 33
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "correct": 34,
+          "original_correct": 34
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "correct": 2,
+          "original_correct": 1
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "correct": 7,
+          "original_correct": 4
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 14
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 15
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 15
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "correct": 40,
+          "original_correct": 40
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 32
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "correct": 2,
+          "original_correct": 1
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 36
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "correct": 34,
+          "original_correct": 34
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 15
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 20
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 17
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 28
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "correct": 11,
+          "original_correct": 7
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "correct": 7,
+          "original_correct": 7
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 14
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "correct": 31,
+          "original_correct": 28
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 37
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "correct": 23,
+          "original_correct": 21
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "correct": 30,
+          "original_correct": 30
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 34
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "correct": 17,
+          "original_correct": 17
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "correct": 31,
+          "original_correct": 32
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "correct": 21,
+          "original_correct": 20
+        }
+      ]
+    },
+    {
+      "key": "DTD/Defense1/TA/All experts/MNIST",
+      "n": 10000,
+      "correct": 9939,
+      "accuracy_percent": 99.39,
+      "changed_predictions": 12,
+      "paired": {
+        "both_correct": 9934,
+        "lost": 5,
+        "gained": 5,
+        "both_wrong": 56,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.06198374140385397,
+        0.06198374140385397
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 976,
+          "original_correct": 976
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1133,
+          "original_correct": 1133
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1025,
+          "original_correct": 1024
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1004,
+          "original_correct": 1003
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 977,
+          "original_correct": 978
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 886,
+          "original_correct": 886
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 950,
+          "original_correct": 950
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1022,
+          "original_correct": 1023
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 996,
+          "original_correct": 996
+        }
+      ]
+    }
+  ],
+  "raw_results": {
+    "outputs/bias_calibration_20261030/results.json": "ed7ab95b577cc7cf8455813f67b12af52e6b1c3de5d783f484f46619c69ee6f7",
+    "outputs/bias_calibration_20261030/independent_statistics.json": "0c9ea12e4f59ddacd55c78e205d43e431ca7bded5526fc1c3f851bc1000ce83f",
+    "outputs/bias_calibration_20261030/calibration.pt": "125dda1ef4a4af4eebccecbf24d993f7c631ecb30035f1d48fa3d2aa33930058",
+    "outputs/bias_calibration_20261030/corrected_scores.pt": "371a6b885de8c9bd3224105a34a1fa8f8a3c652ef56872395395df9890cbd16e",
+    "outputs/bias_calibration_20261030/noise.pt": "352733f111cf02eba0aa247ef534ad19a834d73277f144ce8679f3ab885a4972",
+    "outputs/bias_calibration_20261030/protocol.json": "2a5e7ec1d6448d9cc6908c8066d801b1dec33fb05e15daad93a5bc0cf0f43adc"
+  },
+  "independent_validation": {
+    "status": "passed",
+    "rows": 36,
+    "matched_comparisons": 18,
+    "full_indices_and_official_labels": true,
+    "independent_numpy_classwise_and_pairs": true,
+    "exact_mcnemar": "two-sided binomial tail via math.lgamma/math.fsum, independent of production scipy implementation",
+    "corrected_scores_sha256": "371a6b885de8c9bd3224105a34a1fa8f8a3c652ef56872395395df9890cbd16e"
+  }
+}
