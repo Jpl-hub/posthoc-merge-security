@@ -1,0 +1,29 @@
+\begin{table*}[t]
+\centering\small
+\caption{Eight-expert fusion, TA coefficient0.2. Accuracy (\%).}
+\begin{tabular}{lllr}
+\toprule
+Protected task & Model & Processing & Cars \\
+\midrule
+MNIST & Unprotected & TA & 62.06 \\
+MNIST & Defense 1 & TA & 2.25 \\
+MNIST & Defense 2 & TA & 55.03 \\
+MNIST & Unprotected & AGA target & 62.02 \\
+MNIST & Defense 1 & AGA target & 2.24 \\
+MNIST & Defense 2 & AGA target & 42.36 \\
+SVHN & Unprotected & TA & 62.06 \\
+SVHN & Defense 1 & TA & 3.84 \\
+SVHN & Defense 2 & TA & 47.16 \\
+SVHN & Unprotected & AGA target & 62.04 \\
+SVHN & Defense 1 & AGA target & 3.84 \\
+SVHN & Defense 2 & AGA target & 36.89 \\
+DTD & Unprotected & TA & 62.06 \\
+DTD & Defense 1 & TA & 2.89 \\
+DTD & Defense 2 & TA & 53.72 \\
+DTD & Unprotected & AGA target & 62.03 \\
+DTD & Defense 1 & AGA target & 2.90 \\
+DTD & Defense 2 & AGA target & 38.59 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+% AGA acts only on the protected expert. Six evaluation datasets, not eight.
