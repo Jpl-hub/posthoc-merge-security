@@ -1,0 +1,1176 @@
+{
+  "status": "completed_independently_verified",
+  "scope": "Eight experts participate with TA coefficient0.2. Five complete datasets are evaluated; no eight-task average. AGA processes only the protected expert. All releases are frozen; controls reuse verified scores from identical merged parameters.",
+  "table_cells": [
+    [
+      "MNIST",
+      "Unprotected",
+      "TA",
+      "94.00",
+      "74.42",
+      "52.18",
+      "65.08",
+      "72.00"
+    ],
+    [
+      "MNIST",
+      "Defense 1",
+      "TA",
+      "9.80",
+      "6.70",
+      "2.13",
+      "2.14",
+      "2.68"
+    ],
+    [
+      "MNIST",
+      "Unprotected",
+      "AGA target",
+      "93.23",
+      "73.90",
+      "52.34",
+      "65.16",
+      "72.19"
+    ],
+    [
+      "MNIST",
+      "Defense 1",
+      "AGA target",
+      "9.80",
+      "6.70",
+      "2.13",
+      "2.14",
+      "2.68"
+    ],
+    [
+      "SVHN",
+      "Unprotected",
+      "TA",
+      "94.00",
+      "74.42",
+      "52.18",
+      "65.08",
+      "72.00"
+    ],
+    [
+      "SVHN",
+      "Defense 1",
+      "TA",
+      "9.80",
+      "6.70",
+      "6.33",
+      "9.37",
+      "5.90"
+    ],
+    [
+      "SVHN",
+      "Unprotected",
+      "AGA target",
+      "93.78",
+      "72.53",
+      "52.18",
+      "64.87",
+      "72.19"
+    ],
+    [
+      "SVHN",
+      "Defense 1",
+      "AGA target",
+      "9.80",
+      "6.70",
+      "6.33",
+      "9.37",
+      "5.92"
+    ],
+    [
+      "DTD",
+      "Unprotected",
+      "TA",
+      "94.00",
+      "74.42",
+      "52.18",
+      "65.08",
+      "72.00"
+    ],
+    [
+      "DTD",
+      "Defense 1",
+      "TA",
+      "24.43",
+      "17.69",
+      "2.13",
+      "8.03",
+      "6.11"
+    ],
+    [
+      "DTD",
+      "Unprotected",
+      "AGA target",
+      "94.06",
+      "74.46",
+      "51.38",
+      "65.04",
+      "72.05"
+    ],
+    [
+      "DTD",
+      "Defense 1",
+      "AGA target",
+      "24.46",
+      "17.67",
+      "2.13",
+      "8.02",
+      "6.11"
+    ]
+  ],
+  "datasets": [
+    "MNIST",
+    "SVHN",
+    "DTD",
+    "GTSRB",
+    "RESISC45"
+  ],
+  "full_records": 60,
+  "pilot_records": 60,
+  "parameters": {
+    "MNIST/Unprotected/None": "aa25eddc98d55fdb1e8c52f34e80616f6d766132bdfc1d25ea62bccf0cc5eb97",
+    "MNIST/Defense1_MNIST/None": "8f4085f4dbcbf3de28c6696f8336c377f8e8343af243c270f8c3c870a93c7150",
+    "MNIST/Unprotected/Protected expert": "d6490e4c5d7e2a22bba9afff976d2c4e10be1a94c50a1d64c2cc6b3e730d534d",
+    "MNIST/Defense1_MNIST/Protected expert": "323d90a1a5a1d6a36647cc41dd6e9ca58d9f986460a3487b83d7706abf0b45ae",
+    "SVHN/Unprotected/None": "aa25eddc98d55fdb1e8c52f34e80616f6d766132bdfc1d25ea62bccf0cc5eb97",
+    "SVHN/Defense1_SVHN/None": "cbe7faa023fb0a53067945c5cc402a788e3c58bed55b2c2fbe0d75d86f99f138",
+    "SVHN/Unprotected/Protected expert": "b45d18adfedbdc743959a5796180f10117e15c64c63fbb86b2d9e7a3b7d9d7bc",
+    "SVHN/Defense1_SVHN/Protected expert": "88ec3b10b3232acb4a98180a86eb8ce16f61170b7c3112088dd4d6f637987b63",
+    "DTD/Unprotected/None": "aa25eddc98d55fdb1e8c52f34e80616f6d766132bdfc1d25ea62bccf0cc5eb97",
+    "DTD/Defense1_DTD/None": "4b7170c76596d2819cd3b117bb83efdf9cb67d6a0ce534c0d33b892aa10a743a",
+    "DTD/Unprotected/Protected expert": "dbe36fd58bfbf6981026e28514495fbaa30109c6d4c90483a2882fa04937aa8d",
+    "DTD/Defense1_DTD/Protected expert": "f6f6ef95366e36d3782c251521f697f893ae80e3d9f127adfd339accf16fdf55"
+  },
+  "validation": {
+    "pilot": {
+      "status": "passed",
+      "rows": 60,
+      "raw_sha256": "d372dc9bc83a4ee8d3080e22f18b52dcebbe35cbe2ae2d4d22b2f7aca58fa65c",
+      "score_replays": 960,
+      "maximum_context_score_error": 0.0,
+      "wall_seconds": 131.99854524433613,
+      "source_sha256": "a00a4c8e362a4114b9922333979833625ef91a319da549308127dd0aa2237cda",
+      "new_image_forwards": 5760,
+      "production_image_forwards": 1920,
+      "replay_context_image_forwards": 3840,
+      "reused_evaluation_records": 30,
+      "new_AGA_calls": 0,
+      "new_defense_weights": 0,
+      "expert_training_updates": 0,
+      "scope": "Frozen weight-only Defense1, eight experts and five full evaluated datasets",
+      "evaluated_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45"
+      ]
+    },
+    "full": {
+      "status": "passed",
+      "rows": 60,
+      "raw_sha256": "532a6018c4a89fcc88c2f9391aeb11acc9100a1f3ad47cce01fba14effe9a86b",
+      "score_replays": 960,
+      "maximum_context_score_error": 0.0,
+      "wall_seconds": 1335.8333329632878,
+      "source_sha256": "a00a4c8e362a4114b9922333979833625ef91a319da549308127dd0aa2237cda",
+      "new_image_forwards": 457908,
+      "production_image_forwards": 341052,
+      "replay_context_image_forwards": 116856,
+      "reused_evaluation_records": 30,
+      "new_AGA_calls": 0,
+      "new_defense_weights": 0,
+      "expert_training_updates": 0,
+      "scope": "Frozen weight-only Defense1, eight experts and five full evaluated datasets",
+      "evaluated_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45"
+      ]
+    }
+  },
+  "raw_sources": {
+    "outputs/bias_eight_20261030/independent_validation.json": {
+      "sha256": "dbfe726c05cabd314fe2066cc6d8756d4f1ed32e030a7255f9dbefdcee0a22c6",
+      "bytes": 801309
+    },
+    "outputs/bias_eight_20261030/pilot/scores.pt": {
+      "sha256": "d372dc9bc83a4ee8d3080e22f18b52dcebbe35cbe2ae2d4d22b2f7aca58fa65c",
+      "bytes": 446978
+    },
+    "outputs/bias_eight_20261030/full/scores.pt": {
+      "sha256": "532a6018c4a89fcc88c2f9391aeb11acc9100a1f3ad47cce01fba14effe9a86b",
+      "bytes": 55752962
+    }
+  },
+  "paired_summary": [
+    {
+      "key": "MNIST/Unprotected/None/MNIST",
+      "n": 10000,
+      "correct": 9400,
+      "accuracy_percent": 94.0,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Unprotected/None/SVHN",
+      "n": 26032,
+      "correct": 19374,
+      "accuracy_percent": 74.4237861094038,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Unprotected/None/DTD",
+      "n": 1880,
+      "correct": 981,
+      "accuracy_percent": 52.18085106382979,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Unprotected/None/GTSRB",
+      "n": 12630,
+      "correct": 8220,
+      "accuracy_percent": 65.08313539192399,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Unprotected/None/RESISC45",
+      "n": 6300,
+      "correct": 4536,
+      "accuracy_percent": 72.0,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/None/MNIST",
+      "n": 10000,
+      "correct": 980,
+      "accuracy_percent": 9.8,
+      "changed": 8961,
+      "lost": 8430,
+      "gained": 10,
+      "accuracy_delta_ci_pp": [
+        -84.92028201297673,
+        -83.47971798702326
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -2507.6902730347224,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/None/SVHN",
+      "n": 26032,
+      "correct": 1744,
+      "accuracy_percent": 6.699446834665028,
+      "changed": 23253,
+      "lost": 17854,
+      "gained": 224,
+      "accuracy_delta_ci_pp": [
+        -68.31423786600675,
+        -67.13444068347081
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -4919.46252685357,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/None/DTD",
+      "n": 1880,
+      "correct": 40,
+      "accuracy_percent": 2.127659574468085,
+      "changed": 1839,
+      "lost": 965,
+      "gained": 24,
+      "accuracy_delta_ci_pp": [
+        -52.426632343192296,
+        -47.67975063553112
+      ],
+      "exact_mcnemar_p": 3.656906577702066e-250,
+      "mcnemar_log10_p": -249.43688613435887,
+      "bonferroni30_p": 1.0970719733106198e-248
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/None/GTSRB",
+      "n": 12630,
+      "correct": 270,
+      "accuracy_percent": 2.137767220902613,
+      "changed": 12371,
+      "lost": 7967,
+      "gained": 17,
+      "accuracy_delta_ci_pp": [
+        -63.79253047473398,
+        -62.09820586730878
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -2351.3422503682486,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/None/RESISC45",
+      "n": 6300,
+      "correct": 169,
+      "accuracy_percent": 2.6825396825396823,
+      "changed": 6227,
+      "lost": 4463,
+      "gained": 96,
+      "accuracy_delta_ci_pp": [
+        -70.53523270681438,
+        -68.09968792810625
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1171.2676257622757,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "MNIST/Unprotected/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9323,
+      "accuracy_percent": 93.23,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Unprotected/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 19238,
+      "accuracy_percent": 73.90135218192994,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Unprotected/Protected expert/DTD",
+      "n": 1880,
+      "correct": 984,
+      "accuracy_percent": 52.34042553191489,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Unprotected/Protected expert/GTSRB",
+      "n": 12630,
+      "correct": 8230,
+      "accuracy_percent": 65.16231195566112,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Unprotected/Protected expert/RESISC45",
+      "n": 6300,
+      "correct": 4548,
+      "accuracy_percent": 72.19047619047619,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 980,
+      "accuracy_percent": 9.8,
+      "changed": 8960,
+      "lost": 8356,
+      "gained": 13,
+      "accuracy_delta_ci_pp": [
+        -84.1656075991111,
+        -82.69439240088892
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -2477.821901313892,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 1744,
+      "accuracy_percent": 6.699446834665028,
+      "changed": 23249,
+      "lost": 17720,
+      "gained": 226,
+      "accuracy_delta_ci_pp": [
+        -67.79427340398199,
+        -66.60953729054782
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -4876.653145187305,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/Protected expert/DTD",
+      "n": 1880,
+      "correct": 40,
+      "accuracy_percent": 2.127659574468085,
+      "changed": 1839,
+      "lost": 968,
+      "gained": 24,
+      "accuracy_delta_ci_pp": [
+        -52.58618853220358,
+        -47.83934338269002
+      ],
+      "exact_mcnemar_p": 4.9196166630038515e-251,
+      "mcnemar_log10_p": -250.3080687361814,
+      "bonferroni30_p": 1.4758849989011555e-249
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/Protected expert/GTSRB",
+      "n": 12630,
+      "correct": 270,
+      "accuracy_percent": 2.137767220902613,
+      "changed": 12371,
+      "lost": 7977,
+      "gained": 17,
+      "accuracy_delta_ci_pp": [
+        -63.871337798797256,
+        -62.17775167071977
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -2354.3433007555814,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "MNIST/Defense1_MNIST/Protected expert/RESISC45",
+      "n": 6300,
+      "correct": 169,
+      "accuracy_percent": 2.6825396825396823,
+      "changed": 6225,
+      "lost": 4473,
+      "gained": 94,
+      "accuracy_delta_ci_pp": [
+        -70.7222623121783,
+        -68.29361070369472
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1176.9433232412846,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "SVHN/Unprotected/None/MNIST",
+      "n": 10000,
+      "correct": 9400,
+      "accuracy_percent": 94.0,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Unprotected/None/SVHN",
+      "n": 26032,
+      "correct": 19374,
+      "accuracy_percent": 74.4237861094038,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Unprotected/None/DTD",
+      "n": 1880,
+      "correct": 981,
+      "accuracy_percent": 52.18085106382979,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Unprotected/None/GTSRB",
+      "n": 12630,
+      "correct": 8220,
+      "accuracy_percent": 65.08313539192399,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Unprotected/None/RESISC45",
+      "n": 6300,
+      "correct": 4536,
+      "accuracy_percent": 72.0,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/None/MNIST",
+      "n": 10000,
+      "correct": 980,
+      "accuracy_percent": 9.8,
+      "changed": 8961,
+      "lost": 8430,
+      "gained": 10,
+      "accuracy_delta_ci_pp": [
+        -84.92028201297673,
+        -83.47971798702326
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -2507.6902730347224,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/None/SVHN",
+      "n": 26032,
+      "correct": 1744,
+      "accuracy_percent": 6.699446834665028,
+      "changed": 23253,
+      "lost": 17854,
+      "gained": 224,
+      "accuracy_delta_ci_pp": [
+        -68.31423786600675,
+        -67.13444068347081
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -4919.46252685357,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/None/DTD",
+      "n": 1880,
+      "correct": 119,
+      "accuracy_percent": 6.329787234042553,
+      "changed": 1757,
+      "lost": 882,
+      "gained": 20,
+      "accuracy_delta_ci_pp": [
+        -48.19862307571486,
+        -43.50350458385961
+      ],
+      "exact_mcnemar_p": 2.5572342880012524e-231,
+      "mcnemar_log10_p": -230.59222948107615,
+      "bonferroni30_p": 7.671702864003757e-230
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/None/GTSRB",
+      "n": 12630,
+      "correct": 1183,
+      "accuracy_percent": 9.36658749010293,
+      "changed": 11496,
+      "lost": 7123,
+      "gained": 86,
+      "accuracy_delta_ci_pp": [
+        -56.60646751530762,
+        -54.82662828833449
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1968.6470492403407,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/None/RESISC45",
+      "n": 6300,
+      "correct": 372,
+      "accuracy_percent": 5.904761904761905,
+      "changed": 6015,
+      "lost": 4271,
+      "gained": 107,
+      "accuracy_delta_ci_pp": [
+        -67.34977311469538,
+        -64.84070307578081
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1100.6366233135648,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "SVHN/Unprotected/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9378,
+      "accuracy_percent": 93.78,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Unprotected/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 18880,
+      "accuracy_percent": 72.52612169637369,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Unprotected/Protected expert/DTD",
+      "n": 1880,
+      "correct": 981,
+      "accuracy_percent": 52.18085106382979,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Unprotected/Protected expert/GTSRB",
+      "n": 12630,
+      "correct": 8193,
+      "accuracy_percent": 64.86935866983373,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Unprotected/Protected expert/RESISC45",
+      "n": 6300,
+      "correct": 4548,
+      "accuracy_percent": 72.19047619047619,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 980,
+      "accuracy_percent": 9.8,
+      "changed": 8963,
+      "lost": 8409,
+      "gained": 11,
+      "accuracy_delta_ci_pp": [
+        -84.70480162643014,
+        -83.25519837356985
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -2498.796525880231,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 1744,
+      "accuracy_percent": 6.699446834665028,
+      "changed": 23198,
+      "lost": 17383,
+      "gained": 247,
+      "accuracy_delta_ci_pp": [
+        -66.42666169842308,
+        -65.22668802499426
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -4744.100166324343,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/Protected expert/DTD",
+      "n": 1880,
+      "correct": 119,
+      "accuracy_percent": 6.329787234042553,
+      "changed": 1758,
+      "lost": 882,
+      "gained": 20,
+      "accuracy_delta_ci_pp": [
+        -48.19862307571486,
+        -43.50350458385961
+      ],
+      "exact_mcnemar_p": 2.5572342880012524e-231,
+      "mcnemar_log10_p": -230.59222948107615,
+      "bonferroni30_p": 7.671702864003757e-230
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/Protected expert/GTSRB",
+      "n": 12630,
+      "correct": 1183,
+      "accuracy_percent": 9.36658749010293,
+      "changed": 11501,
+      "lost": 7100,
+      "gained": 90,
+      "accuracy_delta_ci_pp": [
+        -56.394182007269414,
+        -54.61136035219219
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1955.4083580945162,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "SVHN/Defense1_SVHN/Protected expert/RESISC45",
+      "n": 6300,
+      "correct": 373,
+      "accuracy_percent": 5.920634920634921,
+      "changed": 6008,
+      "lost": 4277,
+      "gained": 102,
+      "accuracy_delta_ci_pp": [
+        -67.51913352428838,
+        -65.02054901539415
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1108.9763763815458,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "DTD/Unprotected/None/MNIST",
+      "n": 10000,
+      "correct": 9400,
+      "accuracy_percent": 94.0,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Unprotected/None/SVHN",
+      "n": 26032,
+      "correct": 19374,
+      "accuracy_percent": 74.4237861094038,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Unprotected/None/DTD",
+      "n": 1880,
+      "correct": 981,
+      "accuracy_percent": 52.18085106382979,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Unprotected/None/GTSRB",
+      "n": 12630,
+      "correct": 8220,
+      "accuracy_percent": 65.08313539192399,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Unprotected/None/RESISC45",
+      "n": 6300,
+      "correct": 4536,
+      "accuracy_percent": 72.0,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Defense1_DTD/None/MNIST",
+      "n": 10000,
+      "correct": 2443,
+      "accuracy_percent": 24.43,
+      "changed": 7480,
+      "lost": 6972,
+      "gained": 15,
+      "accuracy_delta_ci_pp": [
+        -70.47822894073954,
+        -68.66177105926046
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -2057.453284122307,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "DTD/Defense1_DTD/None/SVHN",
+      "n": 26032,
+      "correct": 4606,
+      "accuracy_percent": 17.693607867240317,
+      "changed": 19989,
+      "lost": 15039,
+      "gained": 271,
+      "accuracy_delta_ci_pp": [
+        -57.35706470038576,
+        -56.10329178394121
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -4018.6325751179825,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "DTD/Defense1_DTD/None/DTD",
+      "n": 1880,
+      "correct": 40,
+      "accuracy_percent": 2.127659574468085,
+      "changed": 1849,
+      "lost": 967,
+      "gained": 26,
+      "accuracy_delta_ci_pp": [
+        -52.435778593985575,
+        -47.670604384737835
+      ],
+      "exact_mcnemar_p": 3.645389188749287e-248,
+      "mcnemar_log10_p": -247.43825609875796,
+      "bonferroni30_p": 1.0936167566247861e-246
+    },
+    {
+      "key": "DTD/Defense1_DTD/None/GTSRB",
+      "n": 12630,
+      "correct": 1014,
+      "accuracy_percent": 8.02850356294537,
+      "changed": 11696,
+      "lost": 7446,
+      "gained": 240,
+      "accuracy_delta_ci_pp": [
+        -57.982499976190596,
+        -56.12676368176665
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1851.0802214862654,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "DTD/Defense1_DTD/None/RESISC45",
+      "n": 6300,
+      "correct": 385,
+      "accuracy_percent": 6.111111111111111,
+      "changed": 5960,
+      "lost": 4225,
+      "gained": 74,
+      "accuracy_delta_ci_pp": [
+        -67.119332549859,
+        -64.65844522791878
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1132.7440400885578,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "DTD/Unprotected/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 9406,
+      "accuracy_percent": 94.06,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Unprotected/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 19383,
+      "accuracy_percent": 74.45835894283958,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Unprotected/Protected expert/DTD",
+      "n": 1880,
+      "correct": 966,
+      "accuracy_percent": 51.38297872340426,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Unprotected/Protected expert/GTSRB",
+      "n": 12630,
+      "correct": 8214,
+      "accuracy_percent": 65.03562945368171,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Unprotected/Protected expert/RESISC45",
+      "n": 6300,
+      "correct": 4539,
+      "accuracy_percent": 72.04761904761905,
+      "changed": 0,
+      "lost": 0,
+      "gained": 0,
+      "accuracy_delta_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "exact_mcnemar_p": 1.0,
+      "mcnemar_log10_p": 0.0,
+      "bonferroni30_p": 1.0
+    },
+    {
+      "key": "DTD/Defense1_DTD/Protected expert/MNIST",
+      "n": 10000,
+      "correct": 2446,
+      "accuracy_percent": 24.46,
+      "changed": 7478,
+      "lost": 6975,
+      "gained": 15,
+      "accuracy_delta_ci_pp": [
+        -70.50798036170048,
+        -68.69201963829951
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -2058.353575219475,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "DTD/Defense1_DTD/Protected expert/SVHN",
+      "n": 26032,
+      "correct": 4599,
+      "accuracy_percent": 17.666717885679166,
+      "changed": 20005,
+      "lost": 15051,
+      "gained": 267,
+      "accuracy_delta_ci_pp": [
+        -57.418067791512165,
+        -56.165214322808666
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -4027.9667756342537,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "DTD/Defense1_DTD/Protected expert/DTD",
+      "n": 1880,
+      "correct": 40,
+      "accuracy_percent": 2.127659574468085,
+      "changed": 1847,
+      "lost": 952,
+      "gained": 26,
+      "accuracy_delta_ci_pp": [
+        -51.63766952695571,
+        -46.87296877091663
+      ],
+      "exact_mcnemar_p": 8.003748923511312e-244,
+      "mcnemar_log10_p": -243.0967065435795,
+      "bonferroni30_p": 2.4011246770533936e-242
+    },
+    {
+      "key": "DTD/Defense1_DTD/Protected expert/GTSRB",
+      "n": 12630,
+      "correct": 1013,
+      "accuracy_percent": 8.020585906571656,
+      "changed": 11693,
+      "lost": 7439,
+      "gained": 238,
+      "accuracy_delta_ci_pp": [
+        -57.942483758200524,
+        -56.08760333601958
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1851.4794818625244,
+      "bonferroni30_p": 0.0
+    },
+    {
+      "key": "DTD/Defense1_DTD/Protected expert/RESISC45",
+      "n": 6300,
+      "correct": 385,
+      "accuracy_percent": 6.111111111111111,
+      "changed": 5958,
+      "lost": 4226,
+      "gained": 72,
+      "accuracy_delta_ci_pp": [
+        -67.16500096510462,
+        -64.70801490791125
+      ],
+      "exact_mcnemar_p": 0.0,
+      "mcnemar_log10_p": -1135.9699633242885,
+      "bonferroni30_p": 0.0
+    }
+  ],
+  "independent_per_class_source": "outputs/bias_eight_20261030/independent_validation.json"
+}

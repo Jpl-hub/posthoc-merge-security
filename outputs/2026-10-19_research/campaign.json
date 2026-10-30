@@ -1,22 +1,13 @@
 {
-  "status": "defense1_two_recovery_tests_complete_eight_expert_launched_12997",
-  "updated_utc": "2026-10-30T03:05:27.930111+00:00",
+  "status": "defense1_eight_expert_five_dataset_completed",
+  "updated_utc": "2026-10-30T04:06:26.722154+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "12997",
-      "task": "Frozen weight-only Defense1 eight-expert TA0.2 and AGA-target, five full datasets",
-      "log": "outputs/bias_eight_20261030/batch.log",
-      "output": "outputs/bias_eight_20261030",
-      "wall_limit_seconds": 3600,
-      "protocol": "results/phase3/bias_weight_only/eight_expert/protocol.json"
-    }
-  ],
-  "next_action": "Check finite batch on12997 after about30minutes; independently summarize completed raw results. No automatic reminder. Missing Cars/EuroSAT/SUN397 test assets remain incomplete; preserve dataset-split compatibility. Do not redo completed calibration/projection or Defense2 batches.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Complete missing Cars/EuroSAT/SUN397 test inputs, preserving original label/split correspondence; then extend frozen Defense1/Defense2 eight-expert tables. Cars official test archive and devkit MD5 verified; test class annotations still being located. Do not rerun completed five-dataset, calibration or projection batches.",
   "github_sync": {
-    "status": "remote30ca0b69 exactlocal352c258 verified; latest completed results and eight-expert preregistration pending current sync",
+    "status": "current eight-expert results committed locally pending plugin check; previous verifiedremote104fb7fc",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -1037,5 +1028,35 @@
     "conclusion": "Fixed output correction restores fusion on these three frozen releases. AGA-only failure is not general protection. No real images or original expert enter calibration.",
     "known_location_projection": "completed;18 full+18 pilot rows,576 original128context replays,max error0;protected/control predictions identical",
     "known_location_projection_source": "results/phase3/bias_weight_only/attacks/projection.json"
+  },
+  "Defense1_eight_expert": {
+    "status": "completed_independently_verified",
+    "summary": "results/phase3/bias_weight_only/eight_expert/summary.json",
+    "TA_coefficient": 0.2,
+    "experts": 8,
+    "evaluated_datasets": [
+      "MNIST",
+      "SVHN",
+      "DTD",
+      "GTSRB",
+      "RESISC45"
+    ],
+    "full_records": 60,
+    "full_replay_scores": 960,
+    "full_replay_max_error": 0,
+    "pilot_replay_scores": 960,
+    "pilot_replay_max_error": 0,
+    "TA_target_accuracy_percent": [
+      9.8,
+      6.699446834665028,
+      2.127659574468085
+    ],
+    "AGA_target_accuracy_percent": [
+      9.8,
+      6.699446834665028,
+      2.127659574468085
+    ],
+    "limitations": "Partner accuracies also fall. This does not erase output-calibration and known-location recovery weaknesses. Not eight full evaluation tasks.",
+    "raw_archive": "outputs/bias_eight_20261030/manifest.json"
   }
 }

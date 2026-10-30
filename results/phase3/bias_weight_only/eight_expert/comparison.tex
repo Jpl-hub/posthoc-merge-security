@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering\small
+\caption{Defense 1 in eight-expert fusion. Accuracy (\%).}
+\begin{tabular}{lllrrrrr}
+\toprule
+Protected task & Model & Processing & MNIST & SVHN & DTD & GTSRB & RESISC45 \\
+\midrule
+MNIST & Unprotected & TA & 94.00 & 74.42 & 52.18 & 65.08 & 72.00 \\
+MNIST & Defense 1 & TA & 9.80 & 6.70 & 2.13 & 2.14 & 2.68 \\
+MNIST & Unprotected & AGA target & 93.23 & 73.90 & 52.34 & 65.16 & 72.19 \\
+MNIST & Defense 1 & AGA target & 9.80 & 6.70 & 2.13 & 2.14 & 2.68 \\
+SVHN & Unprotected & TA & 94.00 & 74.42 & 52.18 & 65.08 & 72.00 \\
+SVHN & Defense 1 & TA & 9.80 & 6.70 & 6.33 & 9.37 & 5.90 \\
+SVHN & Unprotected & AGA target & 93.78 & 72.53 & 52.18 & 64.87 & 72.19 \\
+SVHN & Defense 1 & AGA target & 9.80 & 6.70 & 6.33 & 9.37 & 5.92 \\
+DTD & Unprotected & TA & 94.00 & 74.42 & 52.18 & 65.08 & 72.00 \\
+DTD & Defense 1 & TA & 24.43 & 17.69 & 2.13 & 8.03 & 6.11 \\
+DTD & Unprotected & AGA target & 94.06 & 74.46 & 51.38 & 65.04 & 72.05 \\
+DTD & Defense 1 & AGA target & 24.46 & 17.67 & 2.13 & 8.02 & 6.11 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+% Eight experts participate with TA coefficient0.2. Five complete datasets are evaluated; no eight-task average. AGA processes only the protected expert. All releases are frozen; controls reuse verified scores from identical merged parameters.
