@@ -1,13 +1,31 @@
 {
-  "status": "six_dataset_D1_D2_evaluation_completed",
-  "updated_utc": "2026-10-30T05:47:52.505503+00:00",
+  "status": "six_dataset_complete_remaining_input_acquisition",
+  "updated_utc": "2026-10-30T06:18:41.863852+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Complete EuroSAT original heldout index and SUN397 official Testing_01 inputs, then evaluate the same frozen models. No new defense search or rerun of six completed datasets; no GPU job currently running.",
+  "research_jobs": [
+    {
+      "status": "input_acquisition_in_progress_no_evaluation",
+      "host": "12997",
+      "pid": 18761,
+      "log": "outputs/dataset_acquisition/SUN397_download.log",
+      "result": "outputs/dataset_acquisition/SUN397_download.json",
+      "wall_limit_seconds": 2400,
+      "GPU_used": false,
+      "source_manifest": "outputs/dataset_acquisition/SUN397_test_source.json",
+      "source_revision": "9c4afd6174afa3974f209a0ef099dbbe244dfd27",
+      "test_shards": 18,
+      "bytes": 7220721818,
+      "official_partition_n": 19850,
+      "official_partition_sha256": "2bcd9f24811e9a2c53c50dc9d91c744bcc140457460431e84e068170461193b9",
+      "initial_validation": "outputs/dataset_acquisition/SUN397_initial_validation.json",
+      "split_verification": "First shard stores hashed image paths; original filenames not retained. Must trace source split before claiming original Testing_01 evaluation."
+    }
+  ],
+  "next_action": "Finish bounded SUN397 test-data download and verify original split provenance; EuroSAT2700 public test parquet downloaded with SHA, original checkpoint heldout membership not established. Current attack/baseline priority tasks done; next core-method analysis targets output-calibration and public-module-replacement recovery without changing frozen models.",
   "github_sync": {
-    "status": "Six-dataset completion committed locally pending GitHub plugin availability; last verified remote104fb7fc. Current fetch returned Unknown tool; no publication claimed.",
+    "status": "Current assessment and source status saved locally; GitHub plugin fetch Unknown tool this turn; last verified remote104fb7fc.",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -961,7 +979,8 @@
       ],
       "eight_task_average_reported": false,
       "scope": "Cars is a partner column. Prior five datasets reused by identical merged parameter hashes. Other recovery attacks remain separately reported."
-    }
+    },
+    "current_assessment": "TA/AGA protection confirmed; no-data output calibration and known-location public replacement recover capability. D1 retained as simple method/control; numerical D2 needs mechanism improvement. Joint construction has deletion-control support, SVD contribution not demonstrated. Six datasets evaluated,three protected tasks; full eight-dataset and all defense-paper baseline comparisons not complete."
   },
   "distillation_other_tasks": {
     "status": "completed_independently_verified",

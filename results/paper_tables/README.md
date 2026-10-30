@@ -1,5 +1,13 @@
 # 实验表与完成情况
 
+当前结果入口（2026-10-30）：
+
+- [防御一和数值防御二：八专家、六数据集完整评价](../attack_generalization_20261028/cars/six_dataset.md)，同目录有 TeX；尚缺 EuroSAT、SUN397。
+- [当前数值防御二攻击与对照清单](../attack_generalization_20261028/attack_inventory.md)、[结果分析](../attack_generalization_20261028/failure_analysis.md)：输出校正、公开模块替换、MLP匹配、删项、随机噪声、TIES/DARE和三任务数据辅助蒸馏。
+- [当前纯权重防御一输出校正](../phase3/bias_weight_only/attacks/calibration.md)、[已知位置投影](../phase3/bias_weight_only/attacks/projection.md)。
+
+以下为此前汇总和历史表格入口，包含已退出当前主线的参数置换、使用真实训练图的旧数值方法。其结果保留，但不替代上述当前无真实数据构造方法的结果。各表中的参与专家数、实际评价数据集和攻击权限分别标明。
+
 **没有全部做完。** 已完成的真实结果已经生成同一份TeX和Markdown；缺项明确保留。
 
 - [Markdown总表](tables.md)：主实验、三个保护任务、不同恢复权限、融合方法、八专家三数据集、任务内外与补偿消融、缺项清单。
