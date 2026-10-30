@@ -1,31 +1,35 @@
 {
-  "status": "six_dataset_complete_remaining_input_acquisition",
-  "updated_utc": "2026-10-30T06:18:41.863852+00:00",
+  "status": "SUN397_official_split_verified_frozen_evaluation_running",
+  "updated_utc": "2026-10-30T09:39:55.405971+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
+  "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "status": "input_acquisition_in_progress_no_evaluation",
+      "status": "running_pilot_then_full",
       "host": "12997",
-      "pid": 18761,
-      "log": "outputs/dataset_acquisition/SUN397_download.log",
-      "result": "outputs/dataset_acquisition/SUN397_download.json",
-      "wall_limit_seconds": 2400,
-      "GPU_used": false,
-      "source_manifest": "outputs/dataset_acquisition/SUN397_test_source.json",
-      "source_revision": "9c4afd6174afa3974f209a0ef099dbbe244dfd27",
-      "test_shards": 18,
-      "bytes": 7220721818,
-      "official_partition_n": 19850,
-      "official_partition_sha256": "2bcd9f24811e9a2c53c50dc9d91c744bcc140457460431e84e068170461193b9",
-      "initial_validation": "outputs/dataset_acquisition/SUN397_initial_validation.json",
-      "split_verification": "First shard stores hashed image paths; original filenames not retained. Must trace source split before claiming original Testing_01 evaluation."
+      "pid": 24510,
+      "name": "Frozen Defense1 and Defense2 eight-expert SUN397 Testing_01",
+      "protocol": "results/attack_generalization_20261028/sun397/protocol.json",
+      "output": "outputs/sun397_evaluation_20261030",
+      "log": "outputs/sun397_evaluation_20261030/batch.log",
+      "wall_limit_seconds": 4800,
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0,
+      "source_commit": "826082e68105d8af91a56b94555c9a43099f076a",
+      "test_n": 19850,
+      "protected_tasks": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "evaluated_partner": "SUN397",
+      "manual_check_minutes": 50
     }
   ],
-  "next_action": "Finish bounded SUN397 test-data download and verify original split provenance; EuroSAT2700 public test parquet downloaded with SHA, original checkpoint heldout membership not established. Current attack/baseline priority tasks done; next core-method analysis targets output-calibration and public-module-replacement recovery without changing frozen models.",
+  "next_action": "Check finite SUN397 pilot/full after about50minutes; then independent raw-score analysis and add seventh evaluation column by unchanged model hashes. Trace EuroSAT original heldout membership. No repeat attacks or new defense optimizer without distinct mechanism; D2 output calibration and public replacement remain unresolved.",
   "github_sync": {
-    "status": "Current assessment and source status saved locally; GitHub plugin fetch Unknown tool this turn; last verified remote104fb7fc.",
+    "status": "connection_restored_exact_remote104fb7fc_verified; latest completed results and SUN397 preregistration being published",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -980,7 +984,31 @@
       "eight_task_average_reported": false,
       "scope": "Cars is a partner column. Prior five datasets reused by identical merged parameter hashes. Other recovery attacks remain separately reported."
     },
-    "current_assessment": "TA/AGA protection confirmed; no-data output calibration and known-location public replacement recover capability. D1 retained as simple method/control; numerical D2 needs mechanism improvement. Joint construction has deletion-control support, SVD contribution not demonstrated. Six datasets evaluated,three protected tasks; full eight-dataset and all defense-paper baseline comparisons not complete."
+    "current_assessment": "TA/AGA protection confirmed; no-data output calibration and known-location public replacement recover capability. D1 retained as simple method/control; numerical D2 needs mechanism improvement. Joint construction has deletion-control support, SVD contribution not demonstrated. Six datasets evaluated,three protected tasks; full eight-dataset and all defense-paper baseline comparisons not complete.",
+    "SUN397_evaluation": {
+      "status": "running_pilot_then_full",
+      "host": "12997",
+      "pid": 24510,
+      "name": "Frozen Defense1 and Defense2 eight-expert SUN397 Testing_01",
+      "protocol": "results/attack_generalization_20261028/sun397/protocol.json",
+      "output": "outputs/sun397_evaluation_20261030",
+      "log": "outputs/sun397_evaluation_20261030/batch.log",
+      "wall_limit_seconds": 4800,
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0,
+      "source_commit": "826082e68105d8af91a56b94555c9a43099f076a",
+      "test_n": 19850,
+      "protected_tasks": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "evaluated_partner": "SUN397",
+      "manual_check_minutes": 50,
+      "data_validation": "results/attack_generalization_20261028/sun397/data_validation.json",
+      "official_split_verified": true,
+      "training_01_overlap": 0
+    }
   },
   "distillation_other_tasks": {
     "status": "completed_independently_verified",
