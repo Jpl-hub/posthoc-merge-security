@@ -1,22 +1,22 @@
 {
-  "status": "defense1_calibration_completed_bias_projection_running",
-  "updated_utc": "2026-10-29T16:55:02.801191+00:00",
+  "status": "defense1_two_recovery_tests_complete_eight_expert_launched_12997",
+  "updated_utc": "2026-10-30T03:05:27.930111+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "host": "55548",
-      "pid": 44214,
-      "task": "Three-task published-bias projection, matched control, pilot/full/replay",
-      "log": "outputs/bias_projection_20261030.log",
-      "output": "outputs/bias_projection_20261030",
-      "deadline_seconds": 1800
+      "host": "12997",
+      "task": "Frozen weight-only Defense1 eight-expert TA0.2 and AGA-target, five full datasets",
+      "log": "outputs/bias_eight_20261030/batch.log",
+      "output": "outputs/bias_eight_20261030",
+      "wall_limit_seconds": 3600,
+      "protocol": "results/phase3/bias_weight_only/eight_expert/protocol.json"
     }
   ],
-  "next_action": "Finish already-running three-task known-location bias projection. Then prioritize missing attack/generalization and matched baseline cells for both defenses and missing Cars/EuroSAT/SUN397 evaluation assets. No new defense search; no permutation expansion; no automatic reminders.",
+  "next_action": "Check finite batch on12997 after about30minutes; independently summarize completed raw results. No automatic reminder. Missing Cars/EuroSAT/SUN397 test assets remain incomplete; preserve dataset-split compatibility. Do not redo completed calibration/projection or Defense2 batches.",
   "github_sync": {
-    "status": "plugin reconnected; confirmed remote30ca0b6939075d27e581bd1962ad0b0b717afdb0 exacttree local352c258; newer completed calibration pending next scientific batch",
+    "status": "remote30ca0b69 exactlocal352c258 verified; latest completed results and eight-expert preregistration pending current sync",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -1035,6 +1035,7 @@
       "DTD": 55.69148936170213
     },
     "conclusion": "Fixed output correction restores fusion on these three frozen releases. AGA-only failure is not general protection. No real images or original expert enter calibration.",
-    "known_location_projection": "running same projection on protected and unprotected; no new defense/AGA"
+    "known_location_projection": "completed;18 full+18 pilot rows,576 original128context replays,max error0;protected/control predictions identical",
+    "known_location_projection_source": "results/phase3/bias_weight_only/attacks/projection.json"
   }
 }
