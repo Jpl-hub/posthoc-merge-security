@@ -55,3 +55,5 @@
 ### 八任务数据口径核对
 
 2026-10-30重新核对[Task Arithmetic作者回复](https://github.com/mlfoundations/task_vectors/issues/1#issuecomment-1421398672)：EuroSAT使用21600/2700/2700划分，SUN397使用Training_01/Testing_01。因此不能把Google遥感仓库5400张EuroSAT测试划分直接当作原设置。当前在获取官方RGB数据，并继续找对应的已公开测试索引；不拿任意重抽样冒充原测试集。Cars按作者固定代码使用8041测试图及cars_test_annos_withlabels.mat。缺失图片/索引尚未计入完成数。
+
+2026-10-30：当前三份纯权重Defense1已完成已知位置偏置投影。攻击仅用发布P和beta，不接收原专家、基座或图片；匹配无保护同样投影。恢复后的独立、融合目标和伙伴预测全部与匹配控制相同，目标TA为99.37/92.50/69.26%。36条pilot/full记录、576原批上下文重放误差0。详见results/phase3/bias_weight_only/attacks/projection.md。八专家五数据集补测执行前登记于同目录上级eight_expert；不会把它列为八任务完整评价。
