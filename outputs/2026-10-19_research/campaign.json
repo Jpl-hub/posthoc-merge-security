@@ -1,13 +1,22 @@
 {
-  "status": "defense1_eight_expert_five_dataset_completed",
-  "updated_utc": "2026-10-30T04:06:26.722154+00:00",
+  "status": "five_dataset_complete_Cars_D1_D2_evaluation_running",
+  "updated_utc": "2026-10-30T04:42:55.822371+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Complete missing Cars/EuroSAT/SUN397 test inputs, preserving original label/split correspondence; then extend frozen Defense1/Defense2 eight-expert tables. Cars official test archive and devkit MD5 verified; test class annotations still being located. Do not rerun completed five-dataset, calibration or projection batches.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "12997",
+      "task": "Complete8041Cars test, same frozen D1/D2 eight-expert TA.2/AGA-target models",
+      "log": "outputs/cars_evaluation_20261030/batch.log",
+      "output": "outputs/cars_evaluation_20261030",
+      "wall_limit_seconds": 1800,
+      "protocol": "results/attack_generalization_20261028/cars/protocol.json"
+    }
+  ],
+  "next_action": "Check finite Cars pilot/full batch after about20minutes; summarize/review completed raw scores and append sixth dataset to D1/D2 tables. Remaining EuroSAT exact heldout split and SUN397 inputs not complete. No new defense, no repeat of existing five-dataset scores.",
   "github_sync": {
-    "status": "current eight-expert results committed locally pending plugin check; previous verifiedremote104fb7fc",
+    "status": "latest completedfive-dataset results and Cars preregistration committed locally; GitHub plugin currently Unknown tool after intermittent Transport closed, last verified104fb7fc",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
