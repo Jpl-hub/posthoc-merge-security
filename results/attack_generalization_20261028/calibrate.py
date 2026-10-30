@@ -1,4 +1,4 @@
-"""Apply the already fixed output calibration to three frozen SVD-deletion controls."""
+"""Apply fixed output calibration to frozen releases and reuse matched controls."""
 import gc
 import json
 import sys
@@ -28,7 +28,9 @@ noise = torch.rand(cfg['input_n'], 3, 32, 32,
 torch.save(noise, out / 'noise.pt')
 assert digest(cfg['reuse_calibration']['path']) == cfg['reuse_calibration']['sha256']
 prior_calibration = torch.load(cfg['reuse_calibration']['path'], map_location='cpu', weights_only=False)
-calibration = {k: v for k, v in prior_calibration.items() if k.startswith('DTD/Unprotected/')}
+targets = {case['target'] for case in cfg['cases']}
+calibration = {k: v for k, v in prior_calibration.items()
+               if k.split('/')[0] in targets and k.split('/')[1] == 'Unprotected'}
 pins = {}
 image_forwards = 0
 
