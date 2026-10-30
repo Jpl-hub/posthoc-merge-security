@@ -603,3 +603,16 @@ GradErase原文依赖有限训练数据估计扰动方向，但尚无本项目�
 已知位置的最终偏置投影使用发布P、beta本身，复用历史最小范数投影定义；不拿干净专家、基座或图片计算投影。当前三份发布仍缺该完整对照，故单列运行，保留浮点实际功能差异。首次任务在归档绝对__file__时以SameFileError退出、未加载模型或图像；只修归档路径，原日志与源码留存。
 
 2026-10-30投影补测完成：六份模型先做FP64 NumPy最小二乘检查，再固定pilot/full。三任务独立准确率99.69/97.46/79.41%，TA目标99.37/92.50/69.26%；所有独立与融合目标/伙伴预测均与同投影无保护控制一致。18完整+18pilot记录、576原128上下文分数重放误差0；逐类、配对区间、标量lgamma精确McNemar复核通过。首次归档路径失败原样保留，未改变攻击或数据。该已知位置攻击与64随机输入输出校正分别报告。
+
+2026-10-30当前纯权重防御一八专家评价完成：固定作者顺序、TA0.2与AGA仅保护专家，完整MNIST/SVHN/DTD/GTSRB/RESISC45共60行，30行同参数无保护分数复用。完整341052新图片前向、116856上下文重放前向，960选定分数误差0；pilot亦960分数误差0。120行完整索引/官方标签/逐类损失增益/配对区间/标量loggamma精确McNemar复核通过。目标在两范围均9.80/6.70/2.13%，其余伙伴亦明显下降。只证明此固定融合与AGA条件下有效；不覆盖已显示恢复的输出校正与已知位置投影。原始分数和SHA在outputs/bias_eight_20261030，轻量MD/TeX在results/phase3/bias_weight_only/eight_expert，不报八任务平均。
+
+2026-10-30 Cars补充执行前：官方8041测试图包、devkit、带类别标注MD5均匹配固定作者代码。镜像标注SHA790f75be8ea34eeded134cc559332baf23e30e91367e9ddca97d26ed9b895f05。现有torchvision读取与AGA固定commit的Cars类逐项核对8041路径/标签/196类顺序、16预处理张量，均相同；作者标签位置devkit与torchvision根目录放同字节副本，未重划分或裁剪。只给既有三保护任务的防御一/数值防御二补一个Cars伙伴列，TA0.2/AGA目标、18合并参数SHA与已完五数据集匹配；不重构防御、不新增攻击求解。协议results/attack_generalization_20261028/cars/。
+
+2026-10-30 Cars补测完成：8041张官方测试图，18条固定模型完整记录，复用2条相同模型分数；新增AGA及防御更新均为0。pilot/full共36行独立NumPy逐类、完整索引、配对区间及标量精确McNemar核验通过，576个选定原128批上下文分数重放误差0。完整批耗时1200.15秒，165106次图像前向（含重放）。Cars为伙伴任务；三保护任务下无保护TA约62.06%，防御一2.25/3.84/2.89%，防御二55.03/47.16/53.72%。AGA目标处理后防御二Cars为42.36/36.89/38.59%。说明其他任务亦受损，不作为额外保护成功。六数据集108个表格单元按参数SHA合并，MD/TeX见results/attack_generalization_20261028/cars/。38份原始文件105208692字节在本地和12997逐项SHA一致；未删除唯一证据。EuroSAT原划分及SUN397测试输入仍待补全，不报八任务平均。
+
+2026-10-30继续补剩余输入：从官方3dvision.princeton.edu取回Partitions.zip，Testing_01共19850行，SHA2bcd9f24811e9a2c53c50dc9d91c744bcc140457460431e84e068170461193b9。tanganke/SUN397固定revision9c4afd6174afa3974f209a0ef099dbbe244dfd27公开test共18个parquet（7220721818字节），第一份449842051字节已匹配LFS SHA47de9068bd1a58540504ab115292f8033059059548bc36ff6358abcb272fe11e，剩余有限下载进行中。第一份1103行的image.path为哈希值，不保留原始文件名，尚不能宣称与官方Testing_01逐图对应。EuroSAT公开2700test已下载并匹配SHA815d6c3b86d277dbc3164961936ba47ea0f4b4bafd59059fe93f7cd473cd5044，revision43750fc422c7fbd4289e2df3f7473617a5937acc；同样仍需追溯划分。未运行新评价或改防御。来源：https://3dvision.princeton.edu/projects/2010/SUN/download/Partitions.zip；https://huggingface.co/datasets/tanganke/sun397；https://huggingface.co/datasets/tanganke/eurosat。为读取原始parquet，在12997现有Python环境新增pyarrow19.0.1，未修改torch/numpy或冻结生产代码。
+
+
+2026-10-30 SUN397输入缺口已补齐：18份parquet共7,220,721,818字节逐份核对公开LFS SHA。追溯到转换前revision969c5d47300dc977fdbebc63dc437faa52bc6e42的test.zip，仅读取中央目录；全部19850张原始图的CRC32与字节长度唯一对应原文件名，名字集合与官方Testing_01完全相同，与Training_01交集0，每类50张，全部图片解码通过。原ZIP全文件没有下载，未宣称全ZIP SHA已验。转换标签与官方类别按ImageFolder排序一致；原始ClassName.txt的jail/indoor与jail_cell顺序不同，已在模型评价前按官方目录排序处理。复用现有eight_task入口登记18行、16份固定融合模型，TA0.2及AGA仅保护专家，新增防御和AGA求解0。来源、索引哈希和固定配置见results/attack_generalization_20261028/sun397/。本批只增加一个伙伴评价列，不新增保护任务。
+
+EuroSAT转换前test.zip（revision6ed8decb96aa33566e35534ce42290949bd0feb3）已完整匹配公开LFS SHA16a5ca861583acb87c8b5b5ceeb5dae0b4f712d865bd0368070870f5a168e873；2700张parquet原图与该ZIP逐图SHA相同，原名可恢复。该事实证明两份公开数据相同，仍不能单独证明是现有专家原始训练划分的留出图。继续追溯原划分，不用新随机划分替代。

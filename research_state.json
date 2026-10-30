@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense1 and numerical Defense2: attack generalization, matched controls and complete evaluation; no new defense search.",
-  "status": "defense1_two_recovery_tests_complete_eight_expert_launched_12997",
+  "status": "SUN397_official_split_verified_frozen_evaluation_running",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -29,12 +29,12 @@
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
     "secondary_role": "CPU source archive only; no GPU work",
-    "verified_utc": "2026-10-30T03:05:27.930111+00:00",
-    "primary_available_GiB": 42,
+    "verified_utc": "2026-10-30T09:39:55.405971+00:00",
+    "primary_available_GiB": 25,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.nmb2.seetacloud.com:12997",
     "previous_primary_role": "50837 accessible in CPU mode; existing assets preserved",
-    "primary_workspace_status": "Eight-expert Defense1 pilot/full finite batch launched; model/source/reference SHA checks passed",
+    "primary_workspace_status": "SUN397 19850 official Testing_01 prepared; eight-expert frozen evaluation launched PID24510",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -89,19 +89,32 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-30T03:05:27.930111+00:00",
+  "updated_utc": "2026-10-30T09:39:55.405971+00:00",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
+      "status": "running_pilot_then_full",
       "host": "12997",
-      "task": "Frozen weight-only Defense1 eight-expert TA0.2 and AGA-target, five full datasets",
-      "log": "outputs/bias_eight_20261030/batch.log",
-      "output": "outputs/bias_eight_20261030",
-      "wall_limit_seconds": 3600,
-      "protocol": "results/phase3/bias_weight_only/eight_expert/protocol.json"
+      "pid": 24510,
+      "name": "Frozen Defense1 and Defense2 eight-expert SUN397 Testing_01",
+      "protocol": "results/attack_generalization_20261028/sun397/protocol.json",
+      "output": "outputs/sun397_evaluation_20261030",
+      "log": "outputs/sun397_evaluation_20261030/batch.log",
+      "wall_limit_seconds": 4800,
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0,
+      "source_commit": "826082e68105d8af91a56b94555c9a43099f076a",
+      "test_n": 19850,
+      "protected_tasks": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "evaluated_partner": "SUN397",
+      "manual_check_minutes": 50
     }
   ],
-  "next_action": "Check finite batch on12997 after about30minutes; independently summarize completed raw results. No automatic reminder. Missing Cars/EuroSAT/SUN397 test assets remain incomplete; preserve dataset-split compatibility. Do not redo completed calibration/projection or Defense2 batches.",
+  "next_action": "Check finite SUN397 pilot/full after about50minutes; then independent raw-score analysis and add seventh evaluation column by unchanged model hashes. Trace EuroSAT original heldout membership. No repeat attacks or new defense optimizer without distinct mechanism; D2 output calibration and public replacement remain unresolved.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -120,7 +133,7 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "remote30ca0b69 exactlocal352c258 verified; latest completed results and eight-expert preregistration pending current sync",
+    "status": "connection_restored_exact_remote104fb7fc_verified; latest completed results and SUN397 preregistration being published",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -872,7 +885,8 @@
         "EuroSAT",
         "SUN397"
       ],
-      "eight_task_average_reported": false
+      "eight_task_average_reported": false,
+      "scope": "Historical five-dataset D2 table; current combined six-dataset D1/D2 table is cars/six_dataset.md"
     },
     "distillation": {
       "status": "completed_independently_verified_defense_bypassed_under_fixed_data_assisted_access",
@@ -985,6 +999,74 @@
         }
       },
       "record": "results/attack_generalization_20261028/distillation/summary.json"
+    },
+    "six_dataset_D1_D2_result": {
+      "status": "completed_independently_verified",
+      "summary": "results/attack_generalization_20261028/cars/summary.json",
+      "participants": 8,
+      "protected_tasks": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "evaluated_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45",
+        "Cars"
+      ],
+      "combined_table_rows": 18,
+      "combined_dataset_cells": 108,
+      "Cars_test_n": 8041,
+      "Cars_full_rows": 18,
+      "Cars_pilot_rows": 18,
+      "context_score_replays": 576,
+      "maximum_context_score_error": 0,
+      "new_AGA_calls": 0,
+      "new_defense_weights": 0,
+      "raw_manifest": {
+        "path": "outputs/cars_evaluation_20261030/manifest.json",
+        "sha256": "4b47bc578eb60aa3519e569d0b64ebfd866307dfd0f1d889d4942b91d49f5dbc",
+        "files": 38,
+        "bytes": 105208692,
+        "verified_locations": [
+          "local",
+          "12997"
+        ]
+      },
+      "missing_test_datasets": [
+        "EuroSAT",
+        "SUN397"
+      ],
+      "eight_task_average_reported": false,
+      "scope": "Cars is a partner column. Prior five datasets reused by identical merged parameter hashes. Other recovery attacks remain separately reported."
+    },
+    "current_assessment": "TA/AGA protection confirmed; no-data output calibration and known-location public replacement recover capability. D1 retained as simple method/control; numerical D2 needs mechanism improvement. Joint construction has deletion-control support, SVD contribution not demonstrated. Six datasets evaluated,three protected tasks; full eight-dataset and all defense-paper baseline comparisons not complete.",
+    "SUN397_evaluation": {
+      "status": "running_pilot_then_full",
+      "host": "12997",
+      "pid": 24510,
+      "name": "Frozen Defense1 and Defense2 eight-expert SUN397 Testing_01",
+      "protocol": "results/attack_generalization_20261028/sun397/protocol.json",
+      "output": "outputs/sun397_evaluation_20261030",
+      "log": "outputs/sun397_evaluation_20261030/batch.log",
+      "wall_limit_seconds": 4800,
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0,
+      "source_commit": "826082e68105d8af91a56b94555c9a43099f076a",
+      "test_n": 19850,
+      "protected_tasks": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "evaluated_partner": "SUN397",
+      "manual_check_minutes": 50,
+      "data_validation": "results/attack_generalization_20261028/sun397/data_validation.json",
+      "official_split_verified": true,
+      "training_01_overlap": 0
     }
   },
   "distillation_other_tasks": {
@@ -1096,5 +1178,35 @@
     "conclusion": "Fixed output correction restores fusion on these three frozen releases. AGA-only failure is not general protection. No real images or original expert enter calibration.",
     "known_location_projection": "completed;18 full+18 pilot rows,576 original128context replays,max error0;protected/control predictions identical",
     "known_location_projection_source": "results/phase3/bias_weight_only/attacks/projection.json"
+  },
+  "Defense1_eight_expert": {
+    "status": "completed_independently_verified",
+    "summary": "results/phase3/bias_weight_only/eight_expert/summary.json",
+    "TA_coefficient": 0.2,
+    "experts": 8,
+    "evaluated_datasets": [
+      "MNIST",
+      "SVHN",
+      "DTD",
+      "GTSRB",
+      "RESISC45"
+    ],
+    "full_records": 60,
+    "full_replay_scores": 960,
+    "full_replay_max_error": 0,
+    "pilot_replay_scores": 960,
+    "pilot_replay_max_error": 0,
+    "TA_target_accuracy_percent": [
+      9.8,
+      6.699446834665028,
+      2.127659574468085
+    ],
+    "AGA_target_accuracy_percent": [
+      9.8,
+      6.699446834665028,
+      2.127659574468085
+    ],
+    "limitations": "Partner accuracies also fall. This does not erase output-calibration and known-location recovery weaknesses. Not eight full evaluation tasks.",
+    "raw_archive": "outputs/bias_eight_20261030/manifest.json"
   }
 }

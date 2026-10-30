@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader, Subset
 
 
 def dataset(task, root, transform, training=False):
-    from torchvision.datasets import DTD, GTSRB, MNIST, SVHN, ImageFolder
+    from torchvision.datasets import DTD, GTSRB, MNIST, SVHN, ImageFolder, StanfordCars
 
     if task == "MNIST":
         return MNIST(root, train=training, transform=transform)
@@ -20,6 +20,11 @@ def dataset(task, root, transform, training=False):
         return SVHN(root, split="train" if training else "test", transform=transform)
     if task == "GTSRB":
         return GTSRB(root, split="train" if training else "test", transform=transform)
+    if task == "Cars":
+        return StanfordCars(root, split="train" if training else "test", transform=transform)
+    if task == "SUN397":
+        folder = Path(root) / "SUN397" / ("train" if training else "test")
+        return ImageFolder(folder, transform=transform)
     if task == "RESISC45":
         split = "train" if training else "test"
         folder = Path(root) / "RESISC45" / split
@@ -61,6 +66,18 @@ def official_labels(task, training=False):
             return np.array([int(p.parent.name) for p in paths])
         with Path("data/gtsrb/GT-final_test.csv").open() as source:
             return np.array([int(r["ClassId"]) for r in csv.DictReader(source, delimiter=";")])
+    if task == "Cars":
+        name = "devkit/cars_train_annos.mat" if training else "cars_test_annos_withlabels.mat"
+        annotations = loadmat(Path("data/stanford_cars") / name, squeeze_me=True)["annotations"]
+        return np.array([int(row["class"]) - 1 for row in annotations], dtype=np.int64)
+    if task == "SUN397":
+        root = Path("data/SUN397")
+        flatten = lambda p: p.strip("/").replace("/", "_")
+        classes = sorted((root / "ClassName.txt").read_text().splitlines(), key=flatten)
+        split = "Training_01.txt" if training else "Testing_01.txt"
+        names = (root / split).read_text().splitlines()
+        ordered = sorted(names, key=lambda p: (flatten(p.rsplit("/", 1)[0]), Path(p).name))
+        return np.array([classes.index(p.rsplit("/", 1)[0]) for p in ordered], dtype=np.int64)
     if task == "RESISC45":
         split = "train" if training else "test"
         root = Path("data/RESISC45") / split
