@@ -160,7 +160,7 @@
       "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
       "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
       "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
-      "_impl/evaluate.py": "36bc9581a55f293a8461e893083127cfc52f68122870490827945df2b09b6180",
+      "_impl/evaluate.py": "3c00bfe94fa01e4eb188d66cbca1ec6d6bab503418d9cfbda84372ab709b58cb",
       "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
       "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
       "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
@@ -196,7 +196,7 @@
     "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
     "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
     "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
-    "_impl/evaluate.py": "36bc9581a55f293a8461e893083127cfc52f68122870490827945df2b09b6180",
+    "_impl/evaluate.py": "3c00bfe94fa01e4eb188d66cbca1ec6d6bab503418d9cfbda84372ab709b58cb",
     "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
     "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
     "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
@@ -212,7 +212,7 @@
     "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
     "experiment/recover.py": "a6770bb3f99fc9a05e69ae8e2c3df48480be9370878e04d73096234a9d57641f",
     "experiment/report.py": "c2c66134a25b08f3bdd70b7034353e866592c3ac5f0ae6d68635c911a2ed4595",
-    "results/params_reference/other_tasks/matching_run.py": "fcab7de30df260f74d0918b3156ba2ae22bcb017e8c3fac17f53ab924aa8781b"
+    "results/params_reference/other_tasks/matching_run.py": "aa3f796daa230b3e55e4eab7e97e6b0179093bff379662a9370013374ab46114"
   },
   "cost": {
     "MLP_assignments": 72,
@@ -228,5 +228,12 @@
   "prior_positive_control": "All12 MLP known permutation restored all158 state tensors; already passed, not rerun.",
   "selection": "No tuning from calibration or test results. Same raw Frobenius objective,all12MLPs,one matching per layer,TA0.5. Original clean expert only assembles edits; matching receives public base and published state.",
   "publication": "Local commit before execution. GitHub tool unavailable during this batch; no claim of remote preregistration.",
-  "stop": "Any implementation/numerical failure preserved; no score-driven change."
+  "stop": "Any implementation/numerical failure preserved; no score-driven change.",
+  "execution_update": {
+    "reason": "Move parameter-only matching to CPU archive; evaluation with attack_scopes None no longer loads unused AGA checkpoints. Previous transfer stopped before any matching or image evaluation.",
+    "CPU_prepare_host": "12997",
+    "GPU_evaluate_host": "10329",
+    "scientific_settings": "Original PaRaMS releases, matching objective, data indices, TA0.5 and cost unchanged.",
+    "unused_AGA_references": "Retained as historical protocol metadata; not loaded in this matching-only experiment."
+  }
 }

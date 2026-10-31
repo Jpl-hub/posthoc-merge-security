@@ -23,6 +23,34 @@ FROZEN_BODIES = json.loads(Path("results/engineering_refactor/snapshot.json").re
 ]
 
 
+@pytest.mark.parametrize("scopes", [["None"], ["Protected expert"], None])
+def test_evaluator_loads_aga_only_when_requested(monkeypatch, tmp_path, scopes):
+    from _impl import evaluate as evaluator
+
+    monkeypatch.chdir(tmp_path)
+    author = Path("external/secure-merge-attack/utils_attack_B32.py")
+    author.parent.mkdir(parents=True)
+    author.write_text("# fixed author source\n")
+    cfg = dict(AGA=dict(raw_sha256=digest(author), sha256=digest(author)),
+               source_sha256={}, tasks=["MNIST"], mergers=["TA"])
+    if scopes is not None:
+        cfg["attack_scopes"] = scopes
+    needs_aga = scopes != ["None"]
+    if needs_aga:
+        cfg["AGA_references"] = {"MNIST": "fixed reference"}
+    calls = []
+    monkeypatch.setattr(evaluator, "initialize", lambda: None)
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(evaluator, "load_checkpoint", lambda name: name)
+    def apply(model, reference, full):
+        calls.append((model, reference, full))
+        return "aligned"
+    monkeypatch.setattr(evaluator, "apply", apply)
+    _, _, _, aligned, _ = evaluator.setup(cfg)
+    assert aligned == {"MNIST": "aligned" if needs_aga else None}
+    assert calls == ([("MNIST/finetuned.pt", "fixed reference", True)] if needs_aga else [])
+
+
 @pytest.mark.parametrize(
     "old_path,new_module,names",
     [
