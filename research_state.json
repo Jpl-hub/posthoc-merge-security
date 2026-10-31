@@ -89,30 +89,15 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-31T06:53:31.249423+00:00",
+  "updated_utc": "2026-10-31T06:56:29.312896+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
-      "status": "completed_independently_verified",
-      "host": "12997",
-      "pid": 24510,
-      "name": "Frozen Defense1 and Defense2 eight-expert SUN397 Testing_01",
-      "protocol": "results/attack_generalization_20261028/sun397/protocol.json",
-      "output": "outputs/sun397_evaluation_20261030",
-      "log": "outputs/sun397_evaluation_20261030/batch.log",
-      "wall_limit_seconds": 4800,
-      "new_defense_weights": 0,
-      "new_AGA_calls": 0,
-      "source_commit": "826082e68105d8af91a56b94555c9a43099f076a",
-      "test_n": 19850,
-      "protected_tasks": [
-        "MNIST",
-        "SVHN",
-        "DTD"
-      ],
-      "evaluated_partner": "SUN397",
-      "manual_check_minutes": 50,
-      "records": "results/attack_generalization_20261028/sun397/summary.json"
+      "name": "Fixed PaRaMS MLP-matching comparison",
+      "status": "queued_after_migration",
+      "compute": "10329",
+      "source": "results/params_reference/other_tasks/matching_run.py",
+      "new_defense_updates": 0
     }
   ],
   "next_action": "Finish migration to10329 and run the fixed existing MLP-matching attack on PaRaMS. Then independent paired results and current methods comparison. No new defense search.",
@@ -1288,13 +1273,21 @@
     ]
   },
   "PaRaMS_matching": {
-    "status": "defined_before_execution",
+    "status": "queued_after_required_input_migration",
     "protocol": "results/params_reference/other_tasks/matching_protocol.json",
     "driver": "results/params_reference/other_tasks/matching_run.py",
     "GPU": "10329 RTX4090D",
     "new_defense_updates": 0,
     "new_AGA_calls": 0,
     "matched_controls": "Reuse nine full rows only after reconstructed parameter hash matches prior experiment",
-    "input_migration": "in_progress"
+    "input_migration": "in_progress",
+    "migration_host": "12997 CPU",
+    "migration_pid": 1625,
+    "migration_log": "outputs/params_matching_10329_migration.log",
+    "finite_queue_wall_limit_seconds": 7200,
+    "experiment_wall_limit_seconds": 3600,
+    "source_local_commit": "24d9a74e0fadf8b851cf6c0817fc71a50ae7987f",
+    "GPU_job_started": false,
+    "manual_check_minutes": 60
   }
 }
