@@ -1,19 +1,49 @@
 {
   "status": "seven_dataset_complete_EuroSAT_and_method_limitations_remain",
-  "updated_utc": "2026-10-31T06:57:42.228054+00:00",
+  "updated_utc": "2026-10-31T11:48:13.632112+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
-      "name": "Fixed PaRaMS MLP-matching comparison",
-      "status": "queued_after_migration",
-      "compute": "10329",
-      "source": "results/params_reference/other_tasks/matching_run.py",
-      "new_defense_updates": 0
+      "status": "queued_after_three_original_PaRaMS_weight_transfers",
+      "protocol": "results/params_reference/other_tasks/matching_protocol.json",
+      "driver": "results/params_reference/other_tasks/matching_run.py",
+      "GPU": "10329 RTX4090D",
+      "new_defense_updates": 0,
+      "new_AGA_calls": 0,
+      "matched_controls": "Reuse nine full rows only after reconstructed parameter hash matches prior experiment",
+      "input_migration": "in_progress_only_three_PaRaMS_releases",
+      "migration_host": "12997 CPU",
+      "migration_pid": 9024,
+      "migration_log": "outputs/params_matching_10329_resume.log",
+      "finite_queue_wall_limit_seconds": 7200,
+      "experiment_wall_limit_seconds": 3600,
+      "source_local_commit": "593bafa57a98bff905aa5a7c31b6cfa087a6b170",
+      "GPU_job_started": false,
+      "manual_check_minutes": 45,
+      "migration_transport": "Compressed rsync for three original PaRaMS files only; no unused AGA cache. Then same frozen matching and evaluation on10329.",
+      "verified_utc": "2026-10-31T11:48:13.632112+00:00",
+      "CPU_prepare_attempt": {
+        "host": "12997",
+        "exit_code": 137,
+        "memory_limit_bytes": 2147483648,
+        "oom_kill_counter": 0,
+        "diagnosis": "Process killed before matching records; 2GiB limit is insufficient for the multiple-model implementation, but OS OOM cause not independently confirmed. No results produced; preserved.",
+        "local_evidence": "outputs/params_matching_20261031_cpu_attempt"
+      },
+      "10329_inputs_verified": [
+        "base checkpoint",
+        "MNIST/SVHN/DTD expert checkpoints",
+        "three classifier heads",
+        "official test set sizes 10000/26032/1880",
+        "all matched clean score/input hashes",
+        "all source hashes"
+      ],
+      "prepare_host": "10329 CPU,80GiB limit"
     }
   ],
-  "next_action": "Finish migration to10329 and run the fixed existing MLP-matching attack on PaRaMS. Then independent paired results and current methods comparison. No new defense search.",
+  "next_action": "Let the finite PaRaMS transfer/matching/evaluation queue finish; check manually in about45minutes. No duplicate job or new defense search.",
   "github_sync": {
     "status": "Calibration protocol published6324a47f; new result and matching protocol pending local commit. GitHub tools removed from current connection.",
     "last_verified_commit": "6324a47fc1bc40c32dca9ae0be158d0c0126b2a6"
@@ -1214,22 +1244,40 @@
     ]
   },
   "PaRaMS_matching": {
-    "status": "queued_after_required_input_migration",
+    "status": "queued_after_three_original_PaRaMS_weight_transfers",
     "protocol": "results/params_reference/other_tasks/matching_protocol.json",
     "driver": "results/params_reference/other_tasks/matching_run.py",
     "GPU": "10329 RTX4090D",
     "new_defense_updates": 0,
     "new_AGA_calls": 0,
     "matched_controls": "Reuse nine full rows only after reconstructed parameter hash matches prior experiment",
-    "input_migration": "in_progress",
+    "input_migration": "in_progress_only_three_PaRaMS_releases",
     "migration_host": "12997 CPU",
-    "migration_pid": 1716,
-    "migration_log": "outputs/params_matching_10329_migration.log",
-    "finite_queue_wall_limit_seconds": 10800,
+    "migration_pid": 9024,
+    "migration_log": "outputs/params_matching_10329_resume.log",
+    "finite_queue_wall_limit_seconds": 7200,
     "experiment_wall_limit_seconds": 3600,
-    "source_local_commit": "24d9a74e0fadf8b851cf6c0817fc71a50ae7987f",
+    "source_local_commit": "593bafa57a98bff905aa5a7c31b6cfa087a6b170",
     "GPU_job_started": false,
-    "manual_check_minutes": 60,
-    "migration_transport": "Compressed rsync, resumable; transfer only base/three experts/three original PaRaMS releases/required AGA references/three datasets. Prior partial transfer superseded before any scientific job."
+    "manual_check_minutes": 45,
+    "migration_transport": "Compressed rsync for three original PaRaMS files only; no unused AGA cache. Then same frozen matching and evaluation on10329.",
+    "verified_utc": "2026-10-31T11:48:13.632112+00:00",
+    "CPU_prepare_attempt": {
+      "host": "12997",
+      "exit_code": 137,
+      "memory_limit_bytes": 2147483648,
+      "oom_kill_counter": 0,
+      "diagnosis": "Process killed before matching records; 2GiB limit is insufficient for the multiple-model implementation, but OS OOM cause not independently confirmed. No results produced; preserved.",
+      "local_evidence": "outputs/params_matching_20261031_cpu_attempt"
+    },
+    "10329_inputs_verified": [
+      "base checkpoint",
+      "MNIST/SVHN/DTD expert checkpoints",
+      "three classifier heads",
+      "official test set sizes 10000/26032/1880",
+      "all matched clean score/input hashes",
+      "all source hashes"
+    ],
+    "prepare_host": "10329 CPU,80GiB limit"
   }
 }
