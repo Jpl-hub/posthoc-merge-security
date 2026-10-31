@@ -29,12 +29,12 @@
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
     "secondary_role": "12997 and55548 CPU archives; no GPU work",
-    "verified_utc": "2026-10-30T10:50:16.192750+00:00",
-    "primary_available_GiB": 49,
+    "verified_utc": "2026-10-31T11:48:13.632112+00:00",
+    "primary_available_GiB": 48,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:10329",
     "previous_primary_role": "50837 accessible in CPU mode; existing assets preserved",
-    "primary_workspace_status": "Environment/assets migrating; no experiment started yet",
+    "primary_workspace_status": "Ready except three original PaRaMS weights currently transferring; finite queue9024 then runs matching/evaluation",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -89,7 +89,7 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-31T06:57:42.216310+00:00",
+  "updated_utc": "2026-10-31T11:48:13.632112+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
@@ -1273,22 +1273,40 @@
     ]
   },
   "PaRaMS_matching": {
-    "status": "queued_after_required_input_migration",
+    "status": "queued_after_three_original_PaRaMS_weight_transfers",
     "protocol": "results/params_reference/other_tasks/matching_protocol.json",
     "driver": "results/params_reference/other_tasks/matching_run.py",
     "GPU": "10329 RTX4090D",
     "new_defense_updates": 0,
     "new_AGA_calls": 0,
     "matched_controls": "Reuse nine full rows only after reconstructed parameter hash matches prior experiment",
-    "input_migration": "in_progress",
+    "input_migration": "in_progress_only_three_PaRaMS_releases",
     "migration_host": "12997 CPU",
-    "migration_pid": 1716,
-    "migration_log": "outputs/params_matching_10329_migration.log",
-    "finite_queue_wall_limit_seconds": 10800,
+    "migration_pid": 9024,
+    "migration_log": "outputs/params_matching_10329_resume.log",
+    "finite_queue_wall_limit_seconds": 7200,
     "experiment_wall_limit_seconds": 3600,
-    "source_local_commit": "24d9a74e0fadf8b851cf6c0817fc71a50ae7987f",
+    "source_local_commit": "593bafa57a98bff905aa5a7c31b6cfa087a6b170",
     "GPU_job_started": false,
-    "manual_check_minutes": 60,
-    "migration_transport": "Compressed rsync, resumable; transfer only base/three experts/three original PaRaMS releases/required AGA references/three datasets. Prior partial transfer superseded before any scientific job."
+    "manual_check_minutes": 45,
+    "migration_transport": "Compressed rsync for three original PaRaMS files only; no unused AGA cache. Then same frozen matching and evaluation on10329.",
+    "verified_utc": "2026-10-31T11:48:13.632112+00:00",
+    "CPU_prepare_attempt": {
+      "host": "12997",
+      "exit_code": 137,
+      "memory_limit_bytes": 2147483648,
+      "oom_kill_counter": 0,
+      "diagnosis": "Process killed before matching records; 2GiB limit is insufficient for the multiple-model implementation, but OS OOM cause not independently confirmed. No results produced; preserved.",
+      "local_evidence": "outputs/params_matching_20261031_cpu_attempt"
+    },
+    "10329_inputs_verified": [
+      "base checkpoint",
+      "MNIST/SVHN/DTD expert checkpoints",
+      "three classifier heads",
+      "official test set sizes 10000/26032/1880",
+      "all matched clean score/input hashes",
+      "all source hashes"
+    ],
+    "prepare_host": "10329 CPU,80GiB limit"
   }
 }
