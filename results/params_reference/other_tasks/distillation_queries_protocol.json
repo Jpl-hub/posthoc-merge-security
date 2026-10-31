@@ -1,0 +1,97 @@
+{
+  "status": "registered_not_executed",
+  "purpose": "Fill Defense1 and official-default PaRaMS comparison under the same previously fixed hard-label distillation attack; no new defense.",
+  "output": "outputs/baseline_teacher_queries_20261101",
+  "permission": "Attacker queries the released teacher on additional unlabeled official training images; this is data-assisted recovery, not a data-free attack. Defense construction remains data free.",
+  "rule": "Exact existing input tensors, indices, public initialization, optimizer, training seed, minibatch ordering, final50epoch selection. If protected hard labels equal the unprotected vector, the same optimization problem can reuse the previously evaluated unprotected student. Label differences require a separate fixed training run; this query stage alone cannot claim its accuracy.",
+  "maximum_new_image_forwards": 17928,
+  "new_student_backward_steps_this_stage": 0,
+  "new_defense_updates": 0,
+  "new_AGA_calls": 0,
+  "test_images_used": 0,
+  "cases": [
+    {
+      "target": "MNIST",
+      "training_protocol": "results/attack_generalization_20261028/distillation/protocol.json",
+      "previous_queries": "outputs/attack_generalization_20261029/distillation_MNIST/teacher_queries.pt",
+      "image_tensor_sha256": "8bb6f771951138fcba4d30b6a5f16c742ee5068352eba4c2c59387ddc02fe065",
+      "releases": {
+        "Defense1": {
+          "path": "outputs/bias_weight_only_20261025/point.pt",
+          "sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0"
+        },
+        "PaRaMS": {
+          "path": "outputs/phase2_params_default_20261016/artifacts/PaRaMS.pt",
+          "sha256": "5a7bca84cc9a40528f16676b617ef06823197b5ce2242e132fd3f5d18413b706"
+        }
+      },
+      "prior_student_evaluation": "results/attack_generalization_20261028/distillation/comparison.md",
+      "MNIST_reference_note": "Previous raw labels are from Defense2 and were independently confirmed equal to the unprotected teacher; new comparison re-queries unprotected teacher and requires exact equality."
+    },
+    {
+      "target": "SVHN",
+      "training_protocol": "results/attack_generalization_20261028/distillation/SVHN/protocol.json",
+      "previous_queries": "outputs/attack_generalization_20261029/distillation_SVHN/teacher_queries.pt",
+      "image_tensor_sha256": "73804ef619d277074034ae2ce37ed99d09cbb7a77333e56c41ef3a87929d2d2a",
+      "releases": {
+        "Defense1": {
+          "path": "outputs/bias_weight_only_20261029/SVHN/construction/release.pt",
+          "sha256": "b69746723d049316865f30b8d9eca86825f9b58852170bb56e991c421afff8ee"
+        },
+        "PaRaMS": {
+          "path": "outputs/phase2_params_other_tasks_20261022/native/SVHN/release.pt",
+          "sha256": "e8ef5b1784c8c77cb0efb88d18633203e213982cb1f099bdc03987e2ed44db9a"
+        }
+      },
+      "prior_student_evaluation": "results/attack_generalization_20261028/distillation/comparison.md",
+      "MNIST_reference_note": "Previous raw labels include the unprotected teacher."
+    },
+    {
+      "target": "DTD",
+      "training_protocol": "results/attack_generalization_20261028/distillation/DTD/protocol.json",
+      "previous_queries": "outputs/attack_generalization_20261029/distillation_DTD/teacher_queries.pt",
+      "image_tensor_sha256": "f935e1a3e44d9dbc856c92824fa2a1e8ca4f149bf203c287cc8a4f7989a31d0c",
+      "releases": {
+        "Defense1": {
+          "path": "outputs/bias_weight_only_20261029/DTD/construction/release.pt",
+          "sha256": "9e6b71ea676e71a033392c707c9228d434b4ef2541f82b258d99d0ab23f9010f"
+        },
+        "PaRaMS": {
+          "path": "outputs/phase2_params_other_tasks_20261022/native/DTD/release.pt",
+          "sha256": "27da7f2fcb2b010261aa75c9e12b56abdb2f1260acc76e9e163fc27f0ca81270"
+        }
+      },
+      "prior_student_evaluation": "results/attack_generalization_20261028/distillation/comparison.md",
+      "MNIST_reference_note": "Previous raw labels include the unprotected teacher."
+    }
+  ],
+  "source_sha256": {
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "experiment/distill.py": "714e762767c9d019e51d054f2b7f92a2f340db5225cbced5e419a528cae6a348",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/evaluate.py": "3c00bfe94fa01e4eb188d66cbca1ec6d6bab503418d9cfbda84372ab709b58cb",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/report.py": "8ecb253894029e43f065dfe6594213480327bc7b767f652290d08718a70c4366",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "historical_inputs": {
+    "outputs/attack_generalization_20261029/distillation_MNIST/teacher_queries.pt": "33e10dc4f33dc7124909c7a9562a5ea6985b1ca80db82373405ab397b6cbb114",
+    "outputs/attack_generalization_20261029/distillation_MNIST/queries.json": "c2144a4bd5366a2cf22df22577739b859f19bb686554a99d59dcdf4fe8750107",
+    "results/attack_generalization_20261028/distillation/protocol.json": "3ad7be2fc4dc7500980169cf611c139a8d558bad303f78f9c1c48c1dd8adb258",
+    "outputs/attack_generalization_20261029/distillation_SVHN/teacher_queries.pt": "780836795deedb0346a836927e70e20aab744efe47799f49eb3171dc34827197",
+    "outputs/attack_generalization_20261029/distillation_SVHN/queries.json": "7ec9ea7b23249df002355c2e65203bf9d7fcd79c210b980d695d2c8ec5205ea8",
+    "results/attack_generalization_20261028/distillation/SVHN/protocol.json": "110127b5db381a1e168afa0997f96b348bb5783d7c82710cb792113768d91ca3",
+    "outputs/attack_generalization_20261029/distillation_DTD/teacher_queries.pt": "33714c1eaffe6193bb094037407cc02fada417cd76b83bac3bcc877e8c6decc7",
+    "outputs/attack_generalization_20261029/distillation_DTD/queries.json": "f8c97a8efb03f123603abac1236dba0cff6fbf500e2dbe4a03353deda3fc430a",
+    "results/attack_generalization_20261028/distillation/DTD/protocol.json": "fd33ed3d45babe4ecb3a2be5659726fb0749e119e6ef1e542d3b4e8b593e22dd"
+  },
+  "manual_followup_only": true
+}
