@@ -1,0 +1,46 @@
+% Requires booktabs; all cells generated from the same verified records.
+\begin{table*}[t]
+\centering
+\small
+\caption{Fixed output calibration of PaRaMS. Accuracy (\%). Each model is calibrated using 64 identical random inputs. Original models and scores are reused.}
+\begin{tabular}{lllrrrr}
+\toprule
+ & & & \multicolumn{2}{c}{Target} & \multicolumn{2}{c}{Partner} \\
+Task & Processing & Model & Before & Corrected & Before & Corrected \\
+\midrule
+MNIST & TA & Unprotected & 99.37 & 99.34 & 92.50 & 92.32 \\
+MNIST & TA & PaRaMS & 8.92 & 9.86 & 9.15 & 11.89 \\
+MNIST & AGA target + TA & Unprotected & 99.30 & 99.29 & 92.78 & 92.58 \\
+MNIST & AGA target + TA & PaRaMS & 99.30 & 99.29 & 92.79 & 92.58 \\
+MNIST & AGA both + TA & Unprotected & 99.32 & 99.29 & 91.77 & 91.59 \\
+MNIST & AGA both + TA & PaRaMS & 99.32 & 99.29 & 91.77 & 91.59 \\
+SVHN & TA & Unprotected & 92.50 & 92.32 & 99.37 & 99.34 \\
+SVHN & TA & PaRaMS & 9.09 & 8.45 & 8.95 & 8.35 \\
+SVHN & AGA target + TA & Unprotected & 91.56 & 91.34 & 99.39 & 99.34 \\
+SVHN & AGA target + TA & PaRaMS & 91.56 & 91.34 & 99.39 & 99.34 \\
+SVHN & AGA both + TA & Unprotected & 91.77 & 91.59 & 99.32 & 99.29 \\
+SVHN & AGA both + TA & PaRaMS & 91.77 & 91.59 & 99.32 & 99.29 \\
+DTD & TA & Unprotected & 69.31 & 55.69 & 99.45 & 99.46 \\
+DTD & TA & PaRaMS & 2.07 & 2.87 & 8.92 & 8.57 \\
+DTD & AGA target + TA & Unprotected & 68.40 & 55.00 & 99.45 & 99.45 \\
+DTD & AGA target + TA & PaRaMS & 68.35 & 55.00 & 99.45 & 99.45 \\
+DTD & AGA both + TA & Unprotected & 68.78 & 55.00 & 99.42 & 99.39 \\
+DTD & AGA both + TA & PaRaMS & 68.78 & 55.00 & 99.42 & 99.39 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\caption{Target accuracy after TA0.5 and fixed output calibration. Lower accuracy denotes less recovery under this attack only.}
+\begin{tabular}{lrrr}
+\toprule
+Model & MNIST & SVHN & DTD \\
+\midrule
+Unprotected & 99.34 & 92.32 & 55.69 \\
+PaRaMS & 9.86 & 8.45 & 2.87 \\
+Defense 1 & 99.35 & 92.24 & 57.71 \\
+Defense 2 & 89.21 & 84.56 & 59.31 \\
+\bottomrule
+\end{tabular}
+\end{table}

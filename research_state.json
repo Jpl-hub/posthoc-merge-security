@@ -15,9 +15,9 @@
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "compute": {
-    "primary_GPU": "NVIDIA GeForce RTX 3090",
+    "primary_GPU": "NVIDIA GeForce RTX 4090 D",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "ssh_control_socket": "/tmp/posthoc_3090_12997.sock",
+    "ssh_control_socket": "/tmp/posthoc_4090_10329.sock",
     "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
@@ -28,13 +28,13 @@
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
-    "secondary_role": "CPU source archive only; no GPU work",
+    "secondary_role": "12997 and55548 CPU archives; no GPU work",
     "verified_utc": "2026-10-30T10:50:16.192750+00:00",
-    "primary_available_GiB": 25,
+    "primary_available_GiB": 49,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
-    "primary_endpoint": "connect.nmb2.seetacloud.com:12997",
+    "primary_endpoint": "connect.cqa1.seetacloud.com:10329",
     "previous_primary_role": "50837 accessible in CPU mode; existing assets preserved",
-    "primary_workspace_status": "SUN397 finite batch complete; no active GPU process",
+    "primary_workspace_status": "Environment/assets migrating; no experiment started yet",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -89,7 +89,7 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-30T14:43:32.833254+00:00",
+  "updated_utc": "2026-10-31T06:53:31.249423+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [
     {
@@ -115,7 +115,7 @@
       "records": "results/attack_generalization_20261028/sun397/summary.json"
     }
   ],
-  "next_action": "Complete registered fixed-output-calibration PaRaMS baseline using frozen publications and raw scores; no new defense search. EuroSAT provenance remains unresolved.",
+  "next_action": "Finish migration to10329 and run the fixed existing MLP-matching attack on PaRaMS. Then independent paired results and current methods comparison. No new defense search.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -134,8 +134,8 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "Completed SUN397 published and read back at a58e1dbf, equivalent local963ce89; PaRaMS calibration preregistration pending current commit.",
-    "receipt": "outputs/latest_github_sync_receipt.json"
+    "status": "Calibration protocol published6324a47f; new result and matching protocol pending local commit. GitHub tools removed from current connection.",
+    "last_verified_commit": "6324a47fc1bc40c32dca9ae0be158d0c0126b2a6"
   },
   "latest_component_result": {
     "A_only_native_TA_AGAtarget_AGAboth": [
@@ -1256,7 +1256,7 @@
     "raw_archive": "outputs/bias_eight_20261030/manifest.json"
   },
   "PaRaMS_calibration": {
-    "status": "defined_before_execution",
+    "status": "completed_independently_verified",
     "protocol": "results/params_reference/other_tasks/calibration_protocol.json",
     "source": "results/attack_generalization_20261028/calibrate.py",
     "GPU": "12997",
@@ -1265,6 +1265,36 @@
     "new_defense_points": 0,
     "new_AGA_calls": 0,
     "matched_control": "Reuse existing same-noise unprotected calibration by SHA",
-    "original_weights": "All six original release/AGA files verified on55548; transferred to12997"
+    "original_weights": "All six original release/AGA files verified on55548; transferred to12997",
+    "pid": 1179,
+    "remote_registration_commit": "6324a47fc1bc40c32dca9ae0be158d0c0126b2a6",
+    "all_15_input_hashes_verified": true,
+    "output": "outputs/params_calibration_20261030",
+    "log": "outputs/params_calibration_20261030.log",
+    "rows": 36,
+    "paired_comparisons": 18,
+    "maximum_numpy_prior_error": 7.105427357601002e-15,
+    "seconds": 30.569573558866978,
+    "result": "results/params_reference/other_tasks/calibration.json",
+    "TA_corrected_target_percent": [
+      9.86,
+      8.447295636140137,
+      2.872340425531915
+    ],
+    "raw_manifest": "outputs/params_calibration_20261030/manifest.json",
+    "verified_raw_locations": [
+      "local",
+      "12997"
+    ]
+  },
+  "PaRaMS_matching": {
+    "status": "defined_before_execution",
+    "protocol": "results/params_reference/other_tasks/matching_protocol.json",
+    "driver": "results/params_reference/other_tasks/matching_run.py",
+    "GPU": "10329 RTX4090D",
+    "new_defense_updates": 0,
+    "new_AGA_calls": 0,
+    "matched_controls": "Reuse nine full rows only after reconstructed parameter hash matches prior experiment",
+    "input_migration": "in_progress"
   }
 }

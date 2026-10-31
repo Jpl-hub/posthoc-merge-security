@@ -1,6 +1,6 @@
 {
   "status": "seven_dataset_complete_EuroSAT_and_method_limitations_remain",
-  "updated_utc": "2026-10-30T14:43:32.833254+00:00",
+  "updated_utc": "2026-10-31T06:53:31.263561+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
@@ -28,10 +28,10 @@
       "records": "results/attack_generalization_20261028/sun397/summary.json"
     }
   ],
-  "next_action": "Complete registered fixed-output-calibration PaRaMS baseline using frozen publications and raw scores; no new defense search. EuroSAT provenance remains unresolved.",
+  "next_action": "Finish migration to10329 and run the fixed existing MLP-matching attack on PaRaMS. Then independent paired results and current methods comparison. No new defense search.",
   "github_sync": {
-    "status": "Completed SUN397 published and read back at a58e1dbf, equivalent local963ce89; PaRaMS calibration preregistration pending current commit.",
-    "receipt": "outputs/latest_github_sync_receipt.json"
+    "status": "Calibration protocol published6324a47f; new result and matching protocol pending local commit. GitHub tools removed from current connection.",
+    "last_verified_commit": "6324a47fc1bc40c32dca9ae0be158d0c0126b2a6"
   },
   "current_effective_numerical_candidates": [
     {
@@ -1197,7 +1197,7 @@
     "raw_archive": "outputs/bias_eight_20261030/manifest.json"
   },
   "PaRaMS_calibration": {
-    "status": "defined_before_execution",
+    "status": "completed_independently_verified",
     "protocol": "results/params_reference/other_tasks/calibration_protocol.json",
     "source": "results/attack_generalization_20261028/calibrate.py",
     "GPU": "12997",
@@ -1206,6 +1206,36 @@
     "new_defense_points": 0,
     "new_AGA_calls": 0,
     "matched_control": "Reuse existing same-noise unprotected calibration by SHA",
-    "original_weights": "All six original release/AGA files verified on55548; transferred to12997"
+    "original_weights": "All six original release/AGA files verified on55548; transferred to12997",
+    "pid": 1179,
+    "remote_registration_commit": "6324a47fc1bc40c32dca9ae0be158d0c0126b2a6",
+    "all_15_input_hashes_verified": true,
+    "output": "outputs/params_calibration_20261030",
+    "log": "outputs/params_calibration_20261030.log",
+    "rows": 36,
+    "paired_comparisons": 18,
+    "maximum_numpy_prior_error": 7.105427357601002e-15,
+    "seconds": 30.569573558866978,
+    "result": "results/params_reference/other_tasks/calibration.json",
+    "TA_corrected_target_percent": [
+      9.86,
+      8.447295636140137,
+      2.872340425531915
+    ],
+    "raw_manifest": "outputs/params_calibration_20261030/manifest.json",
+    "verified_raw_locations": [
+      "local",
+      "12997"
+    ]
+  },
+  "PaRaMS_matching": {
+    "status": "defined_before_execution",
+    "protocol": "results/params_reference/other_tasks/matching_protocol.json",
+    "driver": "results/params_reference/other_tasks/matching_run.py",
+    "GPU": "10329 RTX4090D",
+    "new_defense_updates": 0,
+    "new_AGA_calls": 0,
+    "matched_controls": "Reuse nine full rows only after reconstructed parameter hash matches prior experiment",
+    "input_migration": "in_progress"
   }
 }
