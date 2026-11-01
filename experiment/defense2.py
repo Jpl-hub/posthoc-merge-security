@@ -3,6 +3,7 @@
 # Preserve the three expressions from the executed source.
 # ruff: noqa: E731
 
+import argparse
 import json
 import math
 import time
@@ -18,12 +19,18 @@ from _impl.models import checked_models, initialize
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--calibration-aware", action="store_true")
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    if args.calibration_aware and args.output is None:
+        parser.error("--calibration-aware requires a separate --output directory")
     initialize()
     torch.set_default_dtype(torch.float64)
     start = time.perf_counter()
     root = Path("outputs/native_ellipse_classification_20261026")
-    out = root / "point"
-    out.mkdir(exist_ok=False)
+    out = args.output or root / "point"
+    out.mkdir(parents=True, exist_ok=False)
     meta = json.loads((root / "source/result.json").read_text())
     assert digest(root / "source/source.pt") == meta["source_arrays_sha256"]
     raw = torch.load(root / "source/source.pt", map_location="cpu", weights_only=False)
@@ -162,15 +169,44 @@ def main():
     )
     assert original_tail_error < 0.0005, original_tail_error
 
+    teacher_class = raw["teacher_class"].long().cuda()
+
+    def calibrated(scores):
+        # Probability division, evaluated on the fixed synthetic source only.
+        log_prior = torch.logsumexp(F.log_softmax(scores, dim=1), dim=0) - math.log(len(scores))
+        return scores - log_prior
+
     def public(R):
         scores = {
             name: classify(fixed[name] + R @ hidden[name], readouts[name])
             for name in ["direct", "recovered"]
         }
+        if args.calibration_aware:
+            # Reduce correct-class probability before and after calibration;
+            # no fixed destination class, new images, or fitted test labels.
+            correct = torch.cat(
+                [
+                    F.log_softmax(v, dim=1).gather(1, teacher_class[:, None]).flatten()
+                    for values in scores.values()
+                    for v in (values, calibrated(values))
+                ]
+            )
+            return torch.logsumexp(correct, 0) - math.log(len(correct)), scores
         gaps = torch.cat([v[:, 1:] - v[:, :1] for v in scores.values()])
         return (torch.logsumexp(gaps.flatten(), 0) - math.log(gaps.numel()), scores)
 
+    def source_accuracy(R):
+        with torch.no_grad():
+            _, scores = public(R)
+            values = {
+                "native": classify(fixed["native"] + R @ hidden["native"], readouts["native"])
+            }
+            values.update(scores)
+            values.update({name + "_calibrated": calibrated(v) for name, v in scores.items()})
+            return {name: int(v.argmax(1).eq(teacher_class).sum()) for name, v in values.items()}
+
     R = RN.clone()
+    initial_accuracy = source_accuracy(R) if args.calibration_aware else None
     trace = []
     stop = "iteration_limit"
     derivative = None
@@ -258,6 +294,25 @@ def main():
                 name: int(v.argmax(1).eq(0).sum()) for (name, v) in public_scores.items()
             },
         )
+    final_accuracy = source_accuracy(Rf) if args.calibration_aware else None
+    source_feasible = None
+    if args.calibration_aware:
+        torch.save(
+            {
+                "native": native_scores.cpu(),
+                **{name: v.cpu() for name, v in public_scores.items()},
+                "teacher_class": teacher_class.cpu(),
+            },
+            out / "source_scores.pt",
+        )
+        source_feasible = (
+            final_accuracy["native"] >= initial_accuracy["native"]
+            and all(
+                final_accuracy[n + "_calibrated"] < initial_accuracy[n + "_calibrated"]
+                for n in ["direct", "recovered"]
+            )
+            and native(Rf) <= tau + 1e-5 * (1 + abs(tau))
+        )
     result = dict(
         status="sole_native_ellipse_classification_frozen_before_images",
         point_sha256=digest(out / "point.pt"),
@@ -265,6 +320,11 @@ def main():
         source=Path(__file__).read_text(),
         source_cache_sha256=meta["source_arrays_sha256"],
         source_counts=source_counts,
+        calibration_aware=args.calibration_aware,
+        initial_source_accuracy=initial_accuracy,
+        final_source_accuracy=final_accuracy,
+        source_feasible=source_feasible,
+        source_scores_sha256=digest(out / "source_scores.pt") if args.calibration_aware else None,
         public_objective=float(objective),
         native_limit=tau,
         native_minimum=minimum,

@@ -1,0 +1,56 @@
+{
+  "status": "registered_before_parameter_optimization",
+  "registered_utc": "2026-11-01T11:17:32.833195+00:00",
+  "output": "outputs/calibrated_objective_20261101",
+  "target": "MNIST",
+  "question": "Does fitting the actual probability-division correction into the public classification objective improve recovery resistance without changing the native functional constraint?",
+  "construction_access": "Frozen target/public base weights, fixed public classifier and original clean synthetic caches only. Zero real images, partners, exposed test scores, prior protected B or candidate selection.",
+  "references": {
+    "paper": "https://proceedings.mlr.press/v139/zhao21c.html",
+    "official_calibration": {
+      "repository": "tonyzhaozh/few-shot-learning",
+      "commit": "e04d8643be91c2cce63f33e07760ff75d5aa3ad0",
+      "file": "run_classification.py",
+      "sha256": "60787d59863caebc1688e3333659accf759d6f0c615735d1901f1427724ec8fc",
+      "functions": [
+        "eval_accuracy",
+        "get_p_content_free"
+      ],
+      "raw_review_sha256": "89248b0cdce36b31050a8a5b94010db4f5451368a0c7f33c1603600433975bff"
+    }
+  },
+  "inputs": {
+    "outputs/native_ellipse_classification_20261026/source/source.pt": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "outputs/task_shaped_compensation_20261026/layer_inputs.pt": "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe"
+  },
+  "fixed_parts": "Original rank32 A row-orthogonality construction; same 800 clean generated views and 16384 layer vectors; same native quadratic, rho=.01*trace(G)/3073, tau=loss(original B at changed A). Recompute A and RN from clean originals; never resume old B.",
+  "objective": "For each direct/AGA public-base context s_i(R), compute log prior c=log(mean_i softmax(s_i)), then collect log p(teacher_class_i) for raw s_i and corrected s_i-c. Minimize log mean of these correct-class probabilities over all 3200 entries. No fixed wrong label, label permutation or empirical target selected. Differentiate through the prior as well as the classifier.",
+  "interpretation": "The prior inside construction is estimated from the balanced original synthetic source, not natural images or the separate attacker noise. This is a differentiable training surrogate for the existing calibration rule; it is NOT invariant to every class offset and NOT a proof of natural or unknown-partner protection.",
+  "finite_check": "One final point only. Source improvement requires fewer teacher-correct predictions after calibration in BOTH public contexts than at RN, with native source teacher agreement no lower than RN and quadratic <= original fixed tau. If it fails, retain the point and stop before natural evaluation; do not tune/retry. Passing only authorizes full evaluation, not success.",
+  "solver": {
+    "existing_conditional_gradient_steps": 500,
+    "line_search_halvings": 24,
+    "Armijo": 0.0001,
+    "gradient_gap_tolerance": 1e-06,
+    "initialization": "clean conditional native minimizer RN",
+    "selection": "last accepted iterate only; no seed/rank/layer/strength sweeps"
+  },
+  "parameter_budget": "Same declared finite native-output ellipsoid; no new norm cap. Report all logical distances and historical .5 markers without asserting .5 compliance.",
+  "checks": "Existing full-tail identity, first actual directional finite difference and native ellipsoid check; independent NumPy probability-division/logmean correct-probability recount of final raw source scores. Keep official formula adaptation and source distribution explicit.",
+  "evaluation_if_source_passes": "Freeze FP32 point before any natural input. Complete MNIST standalone; if predictions are materially preserved, same fixed TA.5 and author AGA target/both with SVHN, plus existing64noise correction and matched original controls. Native losses are reported, not tuned against. Do not call historically exposed tests blind. No extension to other tasks before judgment of this fixed point.",
+  "novelty": "Known calibration, conditional gradient, taskSVD and compensation are tools, not new algorithms. This finite modification tests a specific objective defect; no new effective defense or SVD contribution is claimed.",
+  "source_sha256": "d22b12eed3e1f120207fcce51c6bb5f1b0af4504dff82b38d1deb3fa79c91afe",
+  "fp32_bound_tolerance": "1e-5*(1+abs(tau)); FP64 optimization uses the unchanged 1e-8 allowance.",
+  "evaluation_execution": {
+    "source_passed": true,
+    "point_sha256": "95394048f0d6a75cbd7dd8620e4a791514be8279c6a029f8b196bcdc2d8e12ea",
+    "native_before_after": [
+      9969,
+      9963
+    ],
+    "decision": "Native change .06pp and10changed predictions; proceed with frozen evaluation, not a parameter change or threshold adjustment. Original strictR failure stays.",
+    "driver_sha256": "3a36be6770ce8954bcb3247affba5326170aa9239aa6a3ab01c9a5ec2101cc40",
+    "calibration_source_sha256": "7813f182c32b8401534a8c7847a3ff04458b87e25e0dc389be73a793f56fe4d9",
+    "calibration_source_change": "Prior executed extension source; only expected row counts reduced from two task cases to one."
+  }
+}

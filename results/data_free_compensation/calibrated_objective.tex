@@ -1,0 +1,20 @@
+\begin{table*}[t]
+\centering\small
+\caption{MNIST objective comparison. Accuracy (\%).}
+\label{tab:calibrated-objective}
+\begin{tabular}{lrrr}
+\toprule
+Evaluation & Unprotected & Original objective & Modified objective \\
+\midrule
+Standalone & 99.69 & 99.61 & 99.63 \\
+TA & 99.37 & 9.80 & 74.76 \\
+AGA target + TA & 99.30 & 9.80 & 7.90 \\
+AGA both + TA & 99.32 & 9.80 & 7.48 \\
+TA + calibration & 99.34 & 89.21 & 60.40 \\
+AGA target + TA + calibration & 99.29 & 56.34 & 21.56 \\
+AGA both + TA + calibration & 99.29 & 56.28 & 21.55 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize TA uses coefficient 0.5 with an SVHN partner. Calibration uses 64 fixed random inputs. Higher standalone accuracy and lower merged target accuracy favor protection. The modified objective improves calibrated protection but weakens raw TA protection. This is one frozen MNIST point; the original three-task releases remain unchanged.\end{minipage}
+\end{table*}

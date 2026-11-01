@@ -1,23 +1,16 @@
 {
-  "status": "running_current_ProDistill_comparison; core_method_incomplete",
-  "updated_utc": "2026-11-01T09:55:41.684491+00:00",
+  "status": "calibration_aware_MNIST_completed; improved_calibrated_protection_with_raw_TA_tradeoff",
+  "updated_utc": "2026-11-01T11:32:47.766761+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "41558",
-      "pid": 26624,
-      "output": "outputs/prodistill_current_20261101",
-      "log": "outputs/prodistill_current_20261101.log",
-      "kind": "ProDistill recovery comparison, not defense construction"
-    }
-  ],
-  "next_action": "Let existing ProDistill batch finish; independently compare all target/partner scores and update existing tables. No new defense search or duplicate attacks while it runs. Manual followup in about30minutes.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Review why the public-base source objective transfers to AGA but poorly to direct real-partner TA. Preserve the single point; no retries, no expanded attack suite, and no cross-task claim. No running GPU job.",
   "github_sync": {
-    "status": "Connector restored; science/source comparison read back at143a491e; active-status update follows",
-    "last_verified_commit": "143a491e545912f483cd5bf35089ad499b2254a7",
-    "receipt": "outputs/latest_github_sync_receipt.json"
+    "status": "ProDistill results verified; publication pending because GitHub connector returns Unknown tool for fetch and fetch_file",
+    "last_verified_commit": "c78417503174b2dc459751c2b5fbe462fea7e62a",
+    "receipt": "outputs/latest_github_sync_receipt.json",
+    "last_attempt_utc": "2026-11-01T10:51:34.192094+00:00"
   },
   "current_effective_numerical_candidates": [
     {
@@ -1319,7 +1312,7 @@
     "interpretation": "All72 MLP assignments are identity. Defense1 changes the final LayerNorm bias, outside these MLP coordinates. This completes a matched attack comparison, not evidence of resistance to arbitrary weight alignment."
   },
   "ProDistill_current": {
-    "status": "running_frozen_protocol",
+    "status": "completed_independently_verified",
     "protocol": "results/attack_generalization_20261028/prodistill/protocol.json",
     "output": "outputs/prodistill_current_20261101",
     "expected_full_rows": 24,
@@ -1330,6 +1323,74 @@
     "host": "41558",
     "process_id": 26624,
     "source_commit": "72d4a25b05ec7f830bb6257a2ad1c4827ad517f6",
-    "last_observed": "MNIST PaRaMS and Defense2 coefficient optimization completed; no new test results yet; serial remaining tasks and full evaluation running"
+    "last_observed": "All48 rows passed independent NumPy full-index/per-class/pairedCI/exactMcNemar and model/source checks; no active experiment",
+    "result": "results/attack_generalization_20261028/prodistill/summary.json",
+    "exit_code": 0,
+    "full_rows": 24,
+    "pilot_rows": 24,
+    "context_selected_scores": 768,
+    "maximum_replay_error": 0,
+    "backward_steps": 9600,
+    "training_seconds": 229.51023389026523,
+    "target_accuracy": {
+      "Unprotected": [
+        99.45,
+        96.73094652735095,
+        73.13829787234043
+      ],
+      "Defense1": [
+        9.8,
+        6.699446834665028,
+        2.127659574468085
+      ],
+      "Defense2": [
+        99.45,
+        95.7821143208359,
+        63.829787234042556
+      ],
+      "PaRaMS": [
+        89.27,
+        66.22234173325138,
+        7.287234042553191
+      ]
+    }
+  },
+  "evaluation_scope": "Current attack suite closed after ProDistill. Main concern: public weights/head and fixed random-input output calibration; known-module and real-data training recovery stay separate. No requirement to defeat every attack, no new attack families queued.",
+  "calibrated_objective": {
+    "status": "completed_independently_verified",
+    "protocol": "results/data_free_compensation/calibrated_objective_protocol.json",
+    "output": "outputs/calibrated_objective_20261101",
+    "source_commit": "5d261d1",
+    "host": "41558",
+    "process_id": 34415,
+    "new_candidates": 1,
+    "real_construction_images": 0,
+    "teacher_training_updates": 0,
+    "changes": "Only raw-plus-calibrated true-class objective; same A, native constraint, sources and solver. Prior estimated on clean synthetic source; independent noise used only later for attack evaluation.",
+    "public_preregistration": false,
+    "github_reason": "Connector unavailable; fixed local commit before execution",
+    "result": "results/data_free_compensation/calibrated_objective_result.json",
+    "point_sha256": "95394048f0d6a75cbd7dd8620e4a791514be8279c6a029f8b196bcdc2d8e12ea",
+    "native_original": 99.69,
+    "native_protected": 99.63,
+    "source_teacher_retained": 800,
+    "source_public_raw_and_calibrated_correct": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "target_raw_TA_AGAtarget_AGAboth": [
+      74.76,
+      7.9,
+      7.48
+    ],
+    "target_calibrated": [
+      60.4,
+      21.56,
+      21.55
+    ],
+    "context_score_replays": 224,
+    "maximum_replay_error": 2.288818359375e-05
   }
 }
