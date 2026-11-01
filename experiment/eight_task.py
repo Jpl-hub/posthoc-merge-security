@@ -102,8 +102,9 @@ def run(protocol, full):
         assert refs["scores"]["sha256"] == audit["raw_files_sha256"][refs["scores"]["path"]]
         for key, item in saved.items():
             parts = key.split("/")
-            if parts[1] != "Unprotected":
+            if parts[1] not in cfg.get("reuse_defenses", ["Unprotected"]):
                 continue
+            np.testing.assert_array_equal(item["indices"], indices[parts[3]])
             cache = (parameters["/".join(parts[:3])], parts[3])
             if cache in score_cache:
                 assert all(
