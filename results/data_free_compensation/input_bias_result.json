@@ -1626,7 +1626,7 @@
     "reused_control": "6,742,136-byte B-replacement raw control already has its own original archive; not copied twice into this backup."
   },
   "mechanism_check": {
-    "status": "registered_before_execution",
+    "status": "completed_independently_verified",
     "registered_utc": "2026-11-01T16:57:37.126571+00:00",
     "driver": "outputs/input_bias_joint_20261102/mechanism_check.py",
     "driver_sha256": "2c49f221e172da07c6397b80bccf2b01fa2bd1c7d608ef1ed2fac9dd3334913a",
@@ -1640,6 +1640,310 @@
     "new_defense_candidates": 0,
     "new_optimizer_steps": 0,
     "new_AGA_calls": 0,
-    "decision": "Analyze this one frozen point; never use source/natural counterexamples to repair it. All quantities and failures retained. Main result table unchanged."
+    "decision": "Analyze this one frozen point; never use source/natural counterexamples to repair it. All quantities and failures retained. Main result table unchanged.",
+    "result": {
+      "calibration_cross": [
+        {
+          "defense": "unprotected",
+          "attack": "direct",
+          "inputs": "synthetic",
+          "correction": "none",
+          "n": 800,
+          "correct": 800,
+          "accuracy": 100.0
+        },
+        {
+          "defense": "unprotected",
+          "attack": "direct",
+          "inputs": "synthetic",
+          "correction": "source_diagnostic",
+          "n": 800,
+          "correct": 800,
+          "accuracy": 100.0
+        },
+        {
+          "defense": "unprotected",
+          "attack": "direct",
+          "inputs": "synthetic",
+          "correction": "fixed_noise",
+          "n": 800,
+          "correct": 800,
+          "accuracy": 100.0
+        },
+        {
+          "defense": "unprotected",
+          "attack": "direct",
+          "inputs": "natural",
+          "correction": "none",
+          "n": 10000,
+          "correct": 9937,
+          "accuracy": 99.37
+        },
+        {
+          "defense": "unprotected",
+          "attack": "direct",
+          "inputs": "natural",
+          "correction": "source_diagnostic",
+          "n": 10000,
+          "correct": 9937,
+          "accuracy": 99.37
+        },
+        {
+          "defense": "unprotected",
+          "attack": "direct",
+          "inputs": "natural",
+          "correction": "fixed_noise",
+          "n": 10000,
+          "correct": 9934,
+          "accuracy": 99.33999999999999
+        },
+        {
+          "defense": "unprotected",
+          "attack": "AGA_target",
+          "inputs": "synthetic",
+          "correction": "none",
+          "n": 800,
+          "correct": 800,
+          "accuracy": 100.0
+        },
+        {
+          "defense": "unprotected",
+          "attack": "AGA_target",
+          "inputs": "synthetic",
+          "correction": "source_diagnostic",
+          "n": 800,
+          "correct": 800,
+          "accuracy": 100.0
+        },
+        {
+          "defense": "unprotected",
+          "attack": "AGA_target",
+          "inputs": "synthetic",
+          "correction": "fixed_noise",
+          "n": 800,
+          "correct": 800,
+          "accuracy": 100.0
+        },
+        {
+          "defense": "unprotected",
+          "attack": "AGA_target",
+          "inputs": "natural",
+          "correction": "none",
+          "n": 10000,
+          "correct": 9930,
+          "accuracy": 99.3
+        },
+        {
+          "defense": "unprotected",
+          "attack": "AGA_target",
+          "inputs": "natural",
+          "correction": "source_diagnostic",
+          "n": 10000,
+          "correct": 9930,
+          "accuracy": 99.3
+        },
+        {
+          "defense": "unprotected",
+          "attack": "AGA_target",
+          "inputs": "natural",
+          "correction": "fixed_noise",
+          "n": 10000,
+          "correct": 9929,
+          "accuracy": 99.29
+        },
+        {
+          "defense": "protected",
+          "attack": "direct",
+          "inputs": "synthetic",
+          "correction": "none",
+          "n": 800,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        {
+          "defense": "protected",
+          "attack": "direct",
+          "inputs": "synthetic",
+          "correction": "source_diagnostic",
+          "n": 800,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        {
+          "defense": "protected",
+          "attack": "direct",
+          "inputs": "synthetic",
+          "correction": "fixed_noise",
+          "n": 800,
+          "correct": 29,
+          "accuracy": 3.6249999999999996
+        },
+        {
+          "defense": "protected",
+          "attack": "direct",
+          "inputs": "natural",
+          "correction": "none",
+          "n": 10000,
+          "correct": 804,
+          "accuracy": 8.04
+        },
+        {
+          "defense": "protected",
+          "attack": "direct",
+          "inputs": "natural",
+          "correction": "source_diagnostic",
+          "n": 10000,
+          "correct": 2547,
+          "accuracy": 25.47
+        },
+        {
+          "defense": "protected",
+          "attack": "direct",
+          "inputs": "natural",
+          "correction": "fixed_noise",
+          "n": 10000,
+          "correct": 5344,
+          "accuracy": 53.44
+        },
+        {
+          "defense": "protected",
+          "attack": "AGA_target",
+          "inputs": "synthetic",
+          "correction": "none",
+          "n": 800,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        {
+          "defense": "protected",
+          "attack": "AGA_target",
+          "inputs": "synthetic",
+          "correction": "source_diagnostic",
+          "n": 800,
+          "correct": 0,
+          "accuracy": 0.0
+        },
+        {
+          "defense": "protected",
+          "attack": "AGA_target",
+          "inputs": "synthetic",
+          "correction": "fixed_noise",
+          "n": 800,
+          "correct": 15,
+          "accuracy": 1.875
+        },
+        {
+          "defense": "protected",
+          "attack": "AGA_target",
+          "inputs": "natural",
+          "correction": "none",
+          "n": 10000,
+          "correct": 16,
+          "accuracy": 0.16
+        },
+        {
+          "defense": "protected",
+          "attack": "AGA_target",
+          "inputs": "natural",
+          "correction": "source_diagnostic",
+          "n": 10000,
+          "correct": 12,
+          "accuracy": 0.12
+        },
+        {
+          "defense": "protected",
+          "attack": "AGA_target",
+          "inputs": "natural",
+          "correction": "fixed_noise",
+          "n": 10000,
+          "correct": 3049,
+          "accuracy": 30.490000000000002
+        }
+      ],
+      "native_components": [
+        {
+          "component": "original",
+          "n": 800,
+          "correct": 800,
+          "response_relative_error": 0.0
+        },
+        {
+          "component": "incoming_only",
+          "n": 800,
+          "correct": 800,
+          "response_relative_error": 0.5223582874044488
+        },
+        {
+          "component": "outgoing_only",
+          "n": 800,
+          "correct": 0,
+          "response_relative_error": 5.179394022442189
+        },
+        {
+          "component": "joint",
+          "n": 800,
+          "correct": 800,
+          "response_relative_error": 0.0725391662235254
+        },
+        {
+          "component": "public_B",
+          "n": 800,
+          "correct": 800,
+          "response_relative_error": 0.5699031864778596
+        }
+      ],
+      "seconds": 15.75076288357377,
+      "new_model_updates": 0,
+      "new_AGA_calls": 0,
+      "new_candidates": 0,
+      "real_image_forwards": 0,
+      "synthetic_image_forwards": 3200,
+      "context_replay_images": 2560,
+      "driver_sha256": "2c49f221e172da07c6397b80bccf2b01fa2bd1c7d608ef1ed2fac9dd3334913a",
+      "raw_sha256": "e6aa61b8d05056a2d3c10f09f23a51def47401459af070287a275aa0b2fc2305",
+      "point_sha256": "ed30360059bd5c0699605bdbcf7e849f18f770e85bda271d9c4e2918b7eda2ea",
+      "caveat": "Existing exposed inputs/scores for diagnosis only. Source-derived offset has privileged teacher-generated inputs; not an attacker result or candidate selection. No model changed."
+    },
+    "independent": {
+      "status": "passed_independent_numpy_recount",
+      "calibration_rows": 24,
+      "component_rows": 5,
+      "full_natural_indices": 10000,
+      "raw_sha256": "e6aa61b8d05056a2d3c10f09f23a51def47401459af070287a275aa0b2fc2305",
+      "real_image_forwards": 0,
+      "new_model_updates": 0
+    },
+    "conclusion": "Both calibration-input and task-input differences matter. Same protected natural AGA scores give0.12percent under source-derived diagnostic offsets but30.49under fixed-noise offsets; on synthetic inputs0 versus1.875percent. Incoming-only and publicBsource predictions remain800/800; changingA correspondence alone does not create required classification dependence on protectedB."
+  },
+  "noise_calibration_construction": {
+    "status": "registered_before_execution",
+    "registered_utc": "2026-11-01T17:07:00.111445+00:00",
+    "output": "outputs/noise_calibration_20261102",
+    "source_sha256": "a119ea3f065069501abda6fd79b96523bdc177c917110b655aa972f8fc81110b",
+    "input_bias_protocol": "results/data_free_compensation/input_bias_check.json",
+    "question": "Does explicitly differentiating through content-free noise calibration during construction reduce the observed calibration weakness, while keeping native retention and joint matching protection?",
+    "new_candidates": 1,
+    "initialization": "Recompute unchanged minimum-norm task-complement A/input bias and original conditional native RN from frozen original weights. Never read prior protected B.",
+    "single_change": "Retain raw and source-calibrated source-class losses; add source-class loss corrected by mean softmax on separately generated fixed uniform noise for each of six construction contexts. Gradient includes noise-prior dependence on B.",
+    "noise": {
+      "seed": 2026110201,
+      "images": 64,
+      "definition": "torch.rand float32 on CPU;64x3x32x32;bilinear224;original CLIP normalization",
+      "additional_clean_prefix_forwards": 256,
+      "attack_noise_seed_unchanged": 2026102509,
+      "attack_noise_not_read_during_construction": true
+    },
+    "unchanged": "original160synthetic images/800views,16384layer vectors,lastMLP,rank32,rho6.0394128536670705e-05,tau1.2644836124713486,500stepFW/24backtracks,originalsource and class IDs,exactjointmatching everycall",
+    "feasibility": "Native800 judgments retained and original quadratic bound; all6source contexts have fewer correct predictions than RN under raw,source-derived,andconstruction-noise correction. Sole final iterate; failure closes without restart.",
+    "evaluation": "After parameter freeze, independent source NumPy,fullMNIST native,TA.5/SVHN,originalAGA target/both,fixed64evaluation-noise correction,jointMLPmatching,publicB+breset. All columns use same point; historical strictR retained. Existing controls reused only by hash.",
+    "fixed_limits": {
+      "source_wall_seconds": 7200,
+      "evaluation_wall_seconds": 1200,
+      "real_construction_images": 0,
+      "expert_training_updates": 0,
+      "new_optimizer": false,
+      "new_production_module": false
+    },
+    "limitations": "Not a claimed new optimizer or calibration method. Not designed to solve publicBreset: fixedA/a means replacement result cannot depend on B. No task/SVD/general security conclusion from source feasibility."
   }
 }
