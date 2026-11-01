@@ -118,7 +118,7 @@ def train(cfg, case, out, anchor, experts, own, peer, env):
         return value
 
     xm = prefix(merged, images)
-    (a, b) = (prefix(own), prefix(peer))
+    (a, b) = (prefix(own, images), prefix(peer, images))
     xt = torch.where(source.cpu()[None, :, None] == 0, a, b)
     del images, a, b
     log = []

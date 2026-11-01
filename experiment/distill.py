@@ -22,6 +22,7 @@ from _impl.merge import parameter_hash
 from _impl.models import apply, initialize, load_checkpoint
 from cfg import require_root
 
+
 def train(base, head, images, labels, cfg, pilot=False):
     """Same public initialization and fixed training rule for each label group."""
     torch.manual_seed(cfg['training_seed'])
