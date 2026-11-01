@@ -88,7 +88,7 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-11-01T16:18:10.199845+00:00",
+  "updated_utc": "2026-11-01T16:23:00.842300+00:00",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
@@ -97,13 +97,14 @@
       "output": "outputs/input_bias_joint_20261102",
       "stage": "source optimization;conditional frozen evaluation queued",
       "source_commit": "947bb20",
-      "construction_timeout_seconds": 1800,
+      "construction_timeout_seconds": 7200,
       "evaluation_timeout_seconds": 1200,
       "real_construction_images": 0,
-      "duplicate_start_forbidden": true
+      "duplicate_start_forbidden": true,
+      "wallclock_wrapper": "Original1800second timeout removed;sourcePID45564unchanged;runtime_supervision.json retainswrapperexit137;not an experimentfailure"
     }
   ],
-  "next_action": "Read outputs/input_bias_joint_20261102/source.log,finish.log,exit_code.txt and finish_exit_code.txt;do not repeat. If complete,retrieve and independently summarize all results and backup raw files.",
+  "next_action": "Read outputs/input_bias_joint_20261102/source.log,point/result.json,finish_continued.log,finish_exit_code.txt,runtime_supervision.json. Oldsource_wrapper_exit_code137 is wrappertermination only. Do not duplicate source/evaluation. Retrieve completedresults and rawbackup after independent checks.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -1569,6 +1570,7 @@
     "source_preregistration": "bb80dab",
     "fixed_candidate_limit": 1,
     "source_gate": "Native800 plus unchanged quadratic;all6raw+calibratedcontextcounts lowerthaninitial RN",
-    "next": "Wait for this one job and queued complete evaluation;no retuning or secondcandidate."
+    "next": "Wait for this one job and queued complete evaluation;no retuning or secondcandidate.",
+    "operational_note": "Original500steps and source remain unchanged;exactjoint matching costs~10s/step,allow7200s walltime. Single sourcePID45564;single finish_queue.sh waitsforcompleteartifact."
   }
 }

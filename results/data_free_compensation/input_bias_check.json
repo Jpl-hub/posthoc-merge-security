@@ -111,6 +111,13 @@
       "SVDcontribution",
       "Allattackrobustness",
       "Unknownpartnerguarantee"
-    ]
+    ],
+    "operational_time_allowance": {
+      "original_seconds": 1800,
+      "revised_seconds": 7200,
+      "reason": "Measured exact joint assignment/backtracking takes about10seconds per step. Keep original500step source job alive;change only wall-clock supervisor before expiry,not optimizer,weights,images,stopping criteria or seed.",
+      "same_source_pid": 45564,
+      "source_model_restarted": false
+    }
   }
 }
