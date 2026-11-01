@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-01T03:47:16.723824+00:00",
+  "updated_utc": "2026-11-01T04:31:12.930303+00:00",
   "retained_compute": {
     "endpoint": "connect.cqa1.seetacloud.com:41558",
     "project": "/root/autodl-tmp/posthoc-merge-security",
@@ -22,14 +22,38 @@
     "release_performed": false
   },
   "12997": {
-    "status": "migration_and_full_SHA_verification_running",
-    "pid": 1197,
-    "source_root": "/root/autodl-tmp",
-    "destination": "/root/autodl-tmp/research-archive/12997/autodl-tmp",
-    "wall_limit_seconds": 3600,
-    "log": "/tmp/posthoc_migration_20261101.log on12997",
-    "excluded": "Rebuildable Python environment, bytecode, .git and notebook autosaves; local full Git history separately backed up",
-    "release_ready": false
+    "status": "release_ready",
+    "release_ready": true,
+    "scientific_source_paths": 399643,
+    "distinct_scientific_contents": 103097,
+    "new_unique_files_on_41558": 28167,
+    "new_unique_bytes_on_41558": 10503360470,
+    "source_inventory_sha256": "830b42794b1ee3ce523422c83cabe15be8369b7d28864c4cd08874aaadb157c5",
+    "locations_index_sha256": "a4c4ebbb80fd6b4ec72845a81093ce9aa78b5ed6d568c97ab0fcdec112edf632",
+    "locations": "41558:/root/autodl-tmp/research-archive/12997/locations.jsonl.gz;55548:/root/autodl-tmp/research_archive/12997/locations.jsonl.gz",
+    "scope": "Necessary scientific files from12997 are content-deduplicated across the two retained hosts. Rebuildable environments,caches and extracted public download containers excluded.",
+    "download_caches_removed": {
+      "deleted_files": 19,
+      "deleted_bytes": 8198072286,
+      "models_or_scores_deleted": 0
+    },
+    "SUN397_and_Cars_images_on_41558": [
+      19850,
+      8041
+    ],
+    "release_performed": false
   },
-  "policy": "Only explicitly verified source instances are release-ready. No instance is released by this process. Necessary originals and failure evidence retained. Identical destination files use hard links."
+  "policy": "Only explicitly verified source instances are release-ready. No instance is released by this process. Necessary originals and failure evidence retained. Identical destination files use hard links.",
+  "engineering": {
+    "canonical_project_both_hosts": "/root/autodl-tmp/posthoc-merge-security",
+    "identical_tracked_source": true,
+    "code_validation": "25 existing tests passed on41558; no scientific algorithm changes in consolidation",
+    "raw_outputs_in_git": false,
+    "current_method_files": [
+      "_impl/defenses.py",
+      "experiment/defense2.py"
+    ],
+    "history_and_data_stored_separately": true
+  },
+  "handoff": "Stop after migration at user request.10329 and12997 cleared for permanent release. Retain41558 and55548."
 }

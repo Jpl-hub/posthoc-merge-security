@@ -1,6 +1,6 @@
 # 工程与复现
 
-唯一运行目录为 `/root/autodl-tmp/posthoc-merge-security`。4090用于计算，3090用于备份。旧机器快照放在运行目录外的 `research-archive/`，不作为当前算法入口。迁移清单和可释放状态见 `results/engineering_refactor/server_consolidation_20261101.json`。
+所有命令从仓库根目录执行。当前算法、实验入口、固定配置及结果分开存放；历史资产在工程目录之外归档，不作为当前算法入口。
 
 ## 当前代码
 
