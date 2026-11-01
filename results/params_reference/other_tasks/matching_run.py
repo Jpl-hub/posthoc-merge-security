@@ -1,4 +1,4 @@
-"""Run the existing MLP matcher on fixed PaRaMS releases; reuse clean scores."""
+"""Run the existing MLP matcher on fixed releases; reuse clean scores."""
 import argparse
 import copy
 import sys
@@ -16,10 +16,13 @@ from _impl.models import apply, initialize, load_checkpoint
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--stage", choices=["all", "prepare", "evaluate"], default="all")
-stage = parser.parse_args().stage
+parser.add_argument("--protocol", default="results/params_reference/other_tasks/matching_protocol.json")
+args = parser.parse_args()
+stage = args.stage
 initialize()
-root = Path('results/params_reference/other_tasks')
-definition = json.loads((root / 'matching_protocol.json').read_text())
+protocol_path = Path(args.protocol)
+definition = json.loads(protocol_path.read_text())
+defense_name = definition.get('defense_name', 'PaRaMS')
 check_files(definition['source_sha256'])
 out = Path(definition['output'])
 if stage != "evaluate":
@@ -31,9 +34,9 @@ if stage != "evaluate":
         target, partner = case['target'], case['partner']
         expert, peer = load_checkpoint(target + '/finetuned.pt'), load_checkpoint(partner + '/finetuned.pt')
         cfg = copy.deepcopy(definition['evaluation'])
-        cfg.update(cases=[dict(target=target, partner=partner, defenses=['PaRaMS'])],
+        cfg.update(cases=[dict(target=target, partner=partner, defenses=[defense_name])],
                    output=str(out / target), defenses={}, legacy={})
-        for name, published in [('Unprotected', expert), ('PaRaMS', apply(expert, case['release']))]:
+        for name, published in [('Unprotected', expert), (defense_name, apply(expert, case['release']))]:
             start = time.perf_counter()
             state, detail = public_mlp_matching(published.state_dict(), base.state_dict())
             result = copy.deepcopy(published)
@@ -58,12 +61,12 @@ if stage != "evaluate":
                 }
         save_json(out / (target + '_protocol.json'), cfg)
     save_json(out / 'matching.json', dict(records=records, input_images=0, new_defense_updates=0,
-        source_sha256=digest(__file__), definition_sha256=digest(root / 'matching_protocol.json')))
+        source_sha256=digest(__file__), definition_sha256=digest(protocol_path)))
     print('ALL_MATCHED_WEIGHTS_FROZEN', len(records), flush=True)
 else:
     frozen = json.loads((out / "matching.json").read_text())
     assert frozen["source_sha256"] == digest(__file__)
-    assert frozen["definition_sha256"] == digest(root / "matching_protocol.json")
+    assert frozen["definition_sha256"] == digest(protocol_path)
 if stage == "prepare":
     sys.exit(0)
 # All mappings are fixed before any benchmark images are read.

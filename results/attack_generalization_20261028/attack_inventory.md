@@ -1,75 +1,37 @@
-# Defense 2 攻击与对照清单
+# 恢复实验范围（2026-11-01）
 
-范围：冻结的末层 MLP A/B 数值补偿，含 SVD 为主方法，去 SVD 为消融。不重新构造防御。
+当前对象：防御一的纯权重偏置噪声、数值防御二的三份固定A/B发布，以及官方默认PaRaMS。保护任务为MNIST、SVHN、DTD。下表的“完成”均指当前版本；历史发布不能代替。
 
-| 项目 | MNIST | SVHN | DTD | 本轮动作 |
+| 恢复操作 | 攻击者所需信息或资源 | 防御一 | 防御二 | PaRaMS |
 |---|---|---|---|---|
-| 完整独立、TA0.5、AGA仅目标/双方 | 已核验 | 已核验 | 已核验 | 复用 |
-| 去SVD完整独立、TA、AGA | 已核验 | 已核验 | 已核验 | 复用 |
-| 主方法64噪声输出校正 | 复用 | 复用 | 本批完成 | 三任务齐全 |
-| 去SVD64噪声输出校正 | 已核验 | 已核验 | 已核验 | 复用 |
-| A-only、B+b-only严格删项 | 复用 | 本批完成 | 本批完成 | 三任务齐全 |
-| 最后MLP公开替换A/B+b/完整MLP | 本批完成 | 本批完成 | 本批完成 | 9单元，匹配无保护及无目标贡献 |
-| 非AGA公开MLP匹配 | 本批完成 | 本批完成 | 本批完成 | 完整CLIP置换正例先通过，再评价 |
-| 等张量改动范数随机噪声 | 本批完成 | 本批完成 | 本批完成 | 固定单种子，独立损失同时报告 |
-| TIES/DARE | 本批完成 | 本批完成 | 本批完成 | 各含无保护、主方法、去SVD及三AGA范围 |
-| NUFILT/ProDistill | 当前发布未测 | 当前发布未测 | 当前发布未测 | 历史其他方法结果不能代替 |
-| 当前主发布八专家融合 | 本批完成 | 本批完成 | 本批完成 | 固定TA0.2、AGA仅目标，七数据集；完整表见sun397/seven_dataset.md |
-| MergeGuard Unmask公式适配 | 已完成 | 已完成 | 已完成 | TA0.2与减法系数0.2一致；匹配无保护，五数据集评价 |
-| 无标签图蒸馏恢复 | 已完成 | 已完成 | 已完成 | MNIST/SVHN 2048图、DTD 1880图；同预算无保护对照，额外数据与训练权限单列 |
-| 八个数据集完整评价 | 未完成 | 未完成 | 未完成 | 七个完整评价不称八任务平均 |
+| AGA | 公开基座、发布权重 | 完成 | 完成 | 完成 |
+| MLP权重匹配 | 公开基座、发布权重；只对齐MLP隐藏单元 | 完成 | 完成 | 完成 |
+| 输出校正及AGA后校正 | 分类头、64张随机图；不需原专家或修改位置 | 完成 | 完成 | 完成 |
+| 已知模块恢复 | 知道修改模块；公开参数或基座替换 | 偏置投影完成 | A、B+b、完整MLP替换完成 | 专门结构恢复见历史研究 |
+| 硬标签蒸馏 | 额外无标签训练图、教师查询、学生训练 | 完成 | 完成 | 完成 |
+| ProDistill | 每任务64张无标签训练图、任务归属、中间特征、系数训练 | 已登记本批 | 已登记本批 | 已登记本批 |
+| Unmask减法公式 | 合并权重、发布权重、融合系数 | 当前版本未跑 | 完成 | 未跑 |
 
-## 实现及来源
+主表及伙伴表：[results/comparison](../comparison/README.md)。已知模块恢复见[防御一投影](../phase3/bias_weight_only/attacks/projection.md)和[防御二明细](attack_comparison.md)。硬标签相同的教师明确共用同一学生，不声称重复训练。
 
-- AGA：现有 `_impl.attacks.author_recover`，作者固定源码指纹在 protocol.json；本轮不重复已有结果。
-- 输出校正：[Calibrate Before Use](https://proceedings.mlr.press/v139/zhao21c.html)，固定作者代码 e04d8643be91c2cce63f33e07760ff75d5aa3ad0；64噪声是图像域适配，不是官方CLIP复现。
-- 公开模块替换：本项目现有 `public_mlp_reset` 的明确局部对照；新函数只接收发布模型与基座，不接收干净专家。属于位置已知的白盒替换，不称知识反演。
-- [Git Re-Basin](https://arxiv.org/abs/2209.04836)、[作者weight_matching](https://github.com/samuela/git-re-basin/blob/main/src/weight_matching.py)：已阅读联合入边/出边权重成本；原代码没有CLIP ViT的排列规格。MLP隐藏单元可独立换序，packed QKV不能随意跨头重排，残差通道须跨层一致，LayerNorm及投影须同步。固定作者提交ef400982及源码SHA后，完成12个MLP联合入边/出边匹配；完整CLIP正例精确还原158个张量，继而完成三任务评价。只适配独立MLP隐藏单元，不称官方全网CLIP复现。
-- 已有 `public_patch_recovery` 只匹配公开patch通道，适用于已知全网共同通道置换，不能冒称通用Git Re-Basin。
+## 文献依据和复现范围
 
-## 资源与八任务缺项
+| 相关防御论文 | 论文中的恢复检查 | 本项目采用情况 |
+|---|---|---|
+| [PaRaMS，ICCV 2025](https://openaccess.thecvf.com/content/ICCV2025/html/Junhao_Disrupting_Model_Merging_A_Parameter-Level_Defense_Without_Sacrificing_Accuracy_ICCV_2025_paper.html) §6、附录H.2 | 机制已知的结构恢复；无标签数据蒸馏 | 蒸馏流程作native适配，数据量和优化器明确固定；不是取得了作者完整KD入口。旧结构恢复不算当前防御二已跑。 |
+| [MergeGuard，CVPR 2026](https://openaccess.thecvf.com/content/CVPR2026/html/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.html) §7 | Unmask、GradErase | Unmask公式已适配到防御二；GradErase的估计器及训练配置未取得可复现实现，未跑。 |
+| [MergeBarrier，AAAI 2026](https://ojs.aaai.org/index.php/AAAI/article/view/40433) §4.1、附录D | 公开基座层替换；针对PaRaMS的解码 | 同类公开替换已完成；我们的联合权重匹配不等于其附录解码器。 |
+| [Trap²，ICML 2026](https://proceedings.mlr.press/v306/jang26e.html) §6.4 | SFT、ProDistill恢复 | 当前版本ProDistill本批补齐；SFT未跑。官方README明确恢复工具未随库提供，ProDistill转引原作者实现。 |
+| [MergeLock作者仓库](https://github.com/hetailang/Merge-Lock) | 配套Attention矩阵对齐 | 当前仓库只有README、标注Coming Soon；未取得可执行核，不自行补造为官方实现。 |
 
-当前41558的RTX4090负责计算，55548为CPU归档。迁移后两台工程源码一致；10329和12997的必要资产已经核验迁出，不再作为运行依赖。八专家和分类头按原SHA清单核对。七个完整测试集已有两种防御的结果；EuroSAT原检查点对应测试划分尚未证实，不报八任务平均。
+输出校正来自[Calibrate Before Use，ICML 2021](https://proceedings.mlr.press/v139/zhao21c.html)，MLP匹配来自[Git Re-Basin，ICLR 2023](https://arxiv.org/abs/2209.04836)。二者是通用方法在本项目的适配，不是专门针对融合防御的官方攻击。Sensitivity as a Shield全文仍遇到网页验证，不从搜索摘要编造机制。FeatCal核已读但未运行，本轮不增加另一套数据辅助流程。
 
-三任务蒸馏源码与结果已本地核验，GitHub具体发布提交以outputs/latest_github_sync_receipt.json为准。已暂停原无数据蒸馏诊断，按会议要求完成攻击和对照。
+## 本轮取舍
 
-防御一当前纯权重MNIST记录及任务方向置换三任务记录已作为参考行复用，不混入本轮新攻击完成数。参考方法的已知家族恢复权限见各自原结果。
+只补ProDistill这一项：它直接出现在相关防御论文的恢复评价中，与已完成的硬标签蒸馏不同。复用Oct18作者系数核和64图、100epoch、lr0.01规则；当前三任务、两种防御和PaRaMS全部报告。无新AGA、无防御更新，不扫超参数。MNIST无保护模型按SHA复用；SVHN/DTD旧模型不在保留资产中，按旧规则重建匹配控制。防御一只改最终偏置，逐张量核对后复用相同训练块。定义见[protocol.json](prodistill/protocol.json)。
 
-八专家TA0.2的五数据集MD/TeX见eight_expert/；追加两数据集的12份合并参数指纹与前批一致。Unmask新协议见unmask/，系数依据及历史0.3实验的区别见notes/phase3_attack_review.md最新段。
+主实验保留AGA、MLP匹配和输出校正；已知模块恢复和额外数据恢复单列。TA/TIES/DARE是融合算法，ProDistill也是被用于恢复评价的融合算法，不按名称凑攻击数量。当前证据已表明输出校正是实质弱点；继续补表不能代替改进核心方法。
 
-攻击条件及论文依据见[权限对照](../../notes/parameter_scale_and_threat_model.md#2026-10-29补充攻击后的评价口径)。额外数据训练不与无数据攻击混列；知道公开位置不等于获得干净专家或秘密。
+## 完整任务范围
 
-## 防御一纯权重发布：2026-10-30补充
-
-本节使用当前三份无图像构造发布；历史按图片定幅值的防御一不代替当前版本。
-
-| 项目 | MNIST | SVHN | DTD | 结果位置 |
-|---|---|---|---|---|
-| 完整独立、TA0.5、AGA仅目标/双方 | 完成 | 完成 | 完成 | phase3/bias_weight_only/other_tasks/ |
-| 固定64随机图输出校正 | 完成 | 完成 | 完成 | phase3/bias_weight_only/attacks/calibration.md |
-| 已知最终偏置位置的投影清理 | 完成 | 完成 | 完成 | 匹配无保护；不使用干净专家构造恢复 |
-| 当前发布八专家TA0.2/AGA目标，七数据集评价 | 完成 | 完成 | 完成 | sun397/seven_dataset.md；八数据集尚缺EuroSAT |
-
-校正后的直接TA目标准确率为99.35/92.24/57.71%，同校正无保护为99.34/92.32/55.69%。MNIST/SVHN恢复接近匹配控制；DTD无保护本身也因校正下降，不能把低于未校正控制的差距全算防御效果。输出校正不需要修改位置或原专家；已知位置清理单列。参数置换已退出当前方法主线，历史结果保留。
-
-### 八任务数据口径核对
-
-2026-10-30重新核对[Task Arithmetic作者回复](https://github.com/mlfoundations/task_vectors/issues/1#issuecomment-1421398672)：EuroSAT使用21600/2700/2700划分，SUN397使用Training_01/Testing_01。因此不能把Google遥感仓库5400张EuroSAT测试划分直接当作原设置。当前在获取官方RGB数据，并继续找对应的已公开测试索引；不拿任意重抽样冒充原测试集。Cars按作者固定代码使用8041测试图及cars_test_annos_withlabels.mat。缺失图片/索引尚未计入完成数。
-
-2026-10-30：当前三份纯权重Defense1已完成已知位置偏置投影。攻击仅用发布P和beta，不接收原专家、基座或图片；匹配无保护同样投影。恢复后的独立、融合目标和伙伴预测全部与匹配控制相同，目标TA为99.37/92.50/69.26%。36条pilot/full记录、576原批上下文重放误差0。详见results/phase3/bias_weight_only/attacks/projection.md。八专家五数据集补测执行前登记于同目录上级eight_expert；不会把它列为八任务完整评价。
-
-2026-10-30八专家防御一补测完成：60条完整记录，30条同模型无保护分数复用；完整和pilot各960个原批上下文分数重放误差0，120条记录另以NumPy及标量精确McNemar复核。目标TA/AGA均9.80/6.70/2.13%，各已评价伙伴同步记录。Cars图像与带类别标注现已核对MD5和作者读取规则，8041张完整评价已完成；EuroSAT/SUN397仍未补完。
-
-2026-10-30 Cars补充完成：固定三保护任务、两种防御、TA0.2及AGA仅目标，共18条完整记录。独立逐类/配对检查通过，pilot与full共576个选定原批分数重放误差0。Cars仅作为伙伴列：无保护TA62.06%，防御一2.25–3.84%，防御二47.16–55.03%；不能把其他任务的损害计作目标保护收益。六数据集完整表见[cars/six_dataset.md](cars/six_dataset.md)及同名TeX；原始分数本地与12997保留。
-
-2026-10-30 SUN397补充完成：官方Testing_01全部19850张、397类，每类50张；18条完整记录，pilot/full共576个原批选定分数重放误差0，逐类/配对及精确McNemar独立复核通过。18份融合参数与原六数据集逐项同SHA。七数据集表见[sun397/seven_dataset.md](sun397/seven_dataset.md)及同名TeX。SUN397属于伙伴任务，防御二TA为49.02/41.13/45.62%，AGA目标后37.55/37.00/25.14%；各自无保护约63.76–63.80%，附带损害保留。
-
-### 2026-10-31：同条件论文基线
-
-PaRaMS官方默认三任务的固定64随机输入校正已完成，见[结果及配对控制](../params_reference/other_tasks/calibration.md)。直接TA校正后目标9.86/8.45/2.87%，未恢复；AGA目标处理再校正99.29/91.34/55.00%，与同处理无保护相同到两位小数。36记录、18配对比较独立核验通过；576次新增随机图前向，0真实图前向、0训练、0新AGA。不同攻击作用不同，不能据此作无条件防御排名。下一项只补同一12层MLP匹配下的PaRaMS对照，继续复用已有攻击和评价入口。
-
-### 2026-11-01：基线比较进度
-
-PaRaMS的三任务输出校正、MLP匹配、额外无标签数据蒸馏对照均已完成。固定MLP匹配未恢复PaRaMS；其三份发布的蒸馏硬标签与无保护完全相同，复用同一个学生问题，不算独立重训。防御一的蒸馏比较同时补齐。结果见 `results/params_reference/other_tasks/{calibration,matching,distillation}.md`。
-
-下一批补PaRaMS八专家下的七数据集对比。两种当前防御的对应实验不重跑，已完成的PaRaMS-MNIST三数据集与无保护分数按模型SHA复用。只补36条缺失完整评价，零新构造、零新AGA求解。
+八个专家参与，三个受保护任务，七个完整测试集：MNIST、SVHN、DTD、GTSRB、RESISC45、Cars、SUN397。EuroSAT已取得第三方2700图，但与原专家训练划分的对应关系未核实，因此不报八任务平均。历史输入追溯、失败记录和旧版本实验见[研究记录](../../notes/phase3_attack_review.md)及各原结果目录。
