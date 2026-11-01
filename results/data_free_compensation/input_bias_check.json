@@ -1,0 +1,48 @@
+{
+  "status": "registered_before_execution",
+  "registered_utc": "2026-11-01T16:08:43.347189+00:00",
+  "question": "Can the input bias be included in weight-matching disruption while preserving task-centered preactivations and permitting the same nonlinear output compensation?",
+  "construction_inputs": [
+    "original MNIST expert",
+    "public base",
+    "fixed MNIST head",
+    "original800generated views",
+    "original16384layer vectors"
+  ],
+  "forbidden": [
+    "real images",
+    "partner",
+    "saved protected B",
+    "exposed confirmation or test examples"
+  ],
+  "mathematics": {
+    "task_probes": "Original rank32 U,V from A-A0;not a new rank/layer",
+    "task_center": "mu is frozen last-block LN2 beta,not an estimated real-data mean",
+    "constraints": "U^T deltaA=0;deltaA V=0;deltaa=-deltaA mu. Hence (A+deltaA)(mu+Vz)+(a+deltaa)=A(mu+Vz)+a exactly in real arithmetic. This is a probe subspace,not all natural task inputs.",
+    "anchor_constraint": "For each hiddenunit i, <Ai+deltaAi,A0i>+(ai+deltaai)*a0i=0. B is not omitted from the later actual joint matching check;this incoming constraint alone does not guarantee its failure.",
+    "solution": "Minimize ||deltaA||F^2+||deltaa||2^2. Q=I-VV^T;P=I-UU^T;muq=Qmu;H=Q-muq*muq^T/(1+muq^Tmuq);C=A0-a0*mu^T;t=-rowsum(A*A0)-a*a0;lambda=solve(P*(C H C^T),t);deltaA=P diag(lambda) C H;deltaa=-deltaA mu. Standard constrained leastnorm,not claimed novel.",
+    "B_compensation": "Reuse original nonlinear ridge sufficient-statistic construction with new A,a;original teachers and populations unchanged. No classification optimization in this check."
+  },
+  "fixed": {
+    "layer": 11,
+    "rank": 32,
+    "ridge": 6.0394128536670705e-05,
+    "native_limit": 1.2644836124713486,
+    "source_views": 800,
+    "layer_inputs": 16384,
+    "new_candidates": 0,
+    "new_optimizer_steps": 0,
+    "new_real_images": 0,
+    "frozen_source_sha256": "34425b25152c779a5355e1b28f0b4a1f2ac4bcdb17c846c50df38fa12e5efd5f"
+  },
+  "decision": "Proceed to any defense construction only if FP32 native quadratic meets the unchanged limit and all800source teacher classes retained;otherwise close this finite check without changing center/rank/strength/source. Matching counts are diagnostics,not a safety guarantee. No natural evaluation or saved protected checkpoint.",
+  "references": [
+    {
+      "paper": "https://arxiv.org/abs/2209.04836",
+      "official_code": "https://github.com/samuela/git-re-basin/blob/ef40098257ab97243930eba737d6dcb8edd5863e/src/weight_matching.py",
+      "sha256": "1e42e9ad25d330ba4596c1175335d19b5c7980ee6150b1520969f8ff8dab2fb0",
+      "meaning": "Jointincident matching uses incoming,bias,outgoing terms;our CLIP MLP native adaptation retains these terms."
+    }
+  ],
+  "novelty_boundary": "Finite numerical change in task complement with a coupled bias and nonlinear B compensation. Not a permutation/scaling symmetry or a revival of the exact hidden-affine gauge;not a new optimizer or proven novel defense."
+}
