@@ -18,3 +18,24 @@ AGA both + TA + calibration & 99.29 & 56.28 & 21.55 \\
 \par\smallskip
 \begin{minipage}{\textwidth}\footnotesize TA uses coefficient 0.5 with an SVHN partner. Calibration uses 64 fixed random inputs. Higher standalone accuracy and lower merged target accuracy favor protection. The modified objective improves calibrated protection but weakens raw TA protection. This is one frozen MNIST point; the original three-task releases remain unchanged.\end{minipage}
 \end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{Input and partner comparison for the same frozen MNIST candidate. Accuracy (\%).}
+\label{tab:calibrated-objective-transfer}
+\begin{tabular}{llrrrr}
+\toprule
+ & & \multicolumn{2}{c}{TA} & \multicolumn{2}{c}{AGA + TA} \\
+Input & Partner & Unprotected & Defense 2 & Unprotected & Defense 2 \\
+\midrule
+Synthetic & Public base & 100.00 & 0.00 & 100.00 & 0.00 \\
+Synthetic & SVHN & 100.00 & 16.13 & 100.00 & 0.00 \\
+Natural & Public base & 99.46 & 12.55 & 99.38 & 0.99 \\
+Natural & SVHN & 99.37 & 74.76 & 99.30 & 7.90 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize
+TA coefficient is 0.5; AGA acts on the target expert only. Synthetic results measure agreement with the frozen teacher over 800 views of 160 generated inputs; natural results use all 10,000 MNIST test images. No output calibration is applied here. The natural-input TA increase from changing the partner is 62.21 percentage points for Defense 2 (paired 95\% interval: [61.25, 63.17]) and $-0.09$ points without protection. These observations concern this candidate and this partner; no parameters were fitted or selected using this diagnosis.
+\end{minipage}
+\end{table*}

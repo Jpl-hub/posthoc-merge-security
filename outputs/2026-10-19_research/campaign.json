@@ -1,5 +1,5 @@
 {
-  "status": "calibration_aware_MNIST_completed; improved_calibrated_protection_with_raw_TA_tradeoff",
+  "status": "calibration_aware_diagnosis_complete; partner_context_transfer_limits_direct_TA",
   "updated_utc": "2026-11-01T11:36:05.653362+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -7,7 +7,7 @@
   "research_jobs": [],
   "next_action": "Review why the public-base source objective transfers to AGA but poorly to direct real-partner TA. Preserve the single point; no retries, no expanded attack suite, and no cross-task claim. No running GPU job.",
   "github_sync": {
-    "status": "ProDistill and calibration-aware results published and exact-commit/default-main file readback verified",
+    "status": "Frozen input/partner diagnosis saved locally; plugin not available this turn and git HTTPS connection refused. Last remote readback retained in receipt; new result pending publication.",
     "last_verified_commit": "2e5a94d447d095b49bd812d3c930b45003889695",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -1392,9 +1392,33 @@
     "context_score_replays": 224,
     "maximum_replay_error": 2.288818359375e-05,
     "input_partner_check": {
-      "status": "registered_not_started",
+      "status": "completed_independently_verified",
       "output": "outputs/calibrated_objective_20261101/input_partner",
-      "new_candidates": 0
+      "new_candidates": 0,
+      "new_AGA_calls": 0,
+      "new_rows": 12,
+      "reused_rows": 4,
+      "new_primary_image_forwards": 46400,
+      "context_selected_replay_scores": 192,
+      "maximum_replay_error": 0,
+      "natural_public_base_protected_TA_AGA": [
+        12.55,
+        0.99
+      ],
+      "natural_SVHN_protected_TA_AGA": [
+        74.76,
+        7.9
+      ],
+      "synthetic_public_base_protected_TA_AGA": [
+        0,
+        0
+      ],
+      "synthetic_SVHN_protected_TA_AGA": [
+        16.125,
+        0
+      ],
+      "finding": "Both input and partner changes matter; directTA weakens62.21pp on the same natural images after replacing publicbase by SVHN,while unprotected changes-.09pp. No witness/partner-based parameter fit. Frozen point not promoted to replacement.",
+      "next": "Derive a finite data-free condition for classification change across fusion contexts before any further optimization; no blind extra contexts/layers/steps."
     }
   }
 }
