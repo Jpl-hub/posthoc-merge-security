@@ -1,14 +1,14 @@
 {
-  "status": "calibration_aware_MNIST_completed; improved_calibrated_protection_with_raw_TA_tradeoff",
-  "updated_utc": "2026-11-01T11:36:05.653362+00:00",
+  "status": "input_bias_MNIST_completed_joint_matching_improved_calibration_and_public_reset_unresolved",
+  "updated_utc": "2026-11-01T16:44:24.446879+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Review why the public-base source objective transfers to AGA but poorly to direct real-partner TA. Preserve the single point; no retries, no expanded attack suite, and no cross-task claim. No running GPU job.",
+  "next_action": "Analyze public B replacement and source-to-natural calibration differences before another construction; no extra attack families or blind parameter sweep.",
   "github_sync": {
-    "status": "ProDistill and calibration-aware results published and exact-commit/default-main file readback verified",
-    "last_verified_commit": "2e5a94d447d095b49bd812d3c930b45003889695",
+    "status": "GitHub connector restored; publishing completed results, precise readback in receipt",
+    "last_verified_commit": "89a7e3cc40a5890f65f5a55922f828a514b9d902",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -1354,7 +1354,7 @@
       ]
     }
   },
-  "evaluation_scope": "Current attack suite closed after ProDistill. Main concern: public weights/head and fixed random-input output calibration; known-module and real-data training recovery stay separate. No requirement to defeat every attack, no new attack families queued.",
+  "evaluation_scope": "Retain Nov1 finite attack suite. TA/TIES are mergers;64randominput correction is data-free. Public-module and extra-data attacks reported separately;new versions require own evidence or exact-model reuse.",
   "calibrated_objective": {
     "status": "completed_independently_verified",
     "protocol": "results/data_free_compensation/calibrated_objective_protocol.json",
@@ -1390,6 +1390,154 @@
       21.55
     ],
     "context_score_replays": 224,
-    "maximum_replay_error": 2.288818359375e-05
+    "maximum_replay_error": 2.288818359375e-05,
+    "input_partner_check": {
+      "status": "completed_independently_verified",
+      "output": "outputs/calibrated_objective_20261101/input_partner",
+      "new_candidates": 0,
+      "new_AGA_calls": 0,
+      "new_rows": 12,
+      "reused_rows": 4,
+      "new_primary_image_forwards": 46400,
+      "context_selected_replay_scores": 192,
+      "maximum_replay_error": 0,
+      "natural_public_base_protected_TA_AGA": [
+        12.55,
+        0.99
+      ],
+      "natural_SVHN_protected_TA_AGA": [
+        74.76,
+        7.9
+      ],
+      "synthetic_public_base_protected_TA_AGA": [
+        0,
+        0
+      ],
+      "synthetic_SVHN_protected_TA_AGA": [
+        16.125,
+        0
+      ],
+      "finding": "Both input and partner changes matter; directTA weakens62.21pp on the same natural images after replacing publicbase by SVHN,while unprotected changes-.09pp. No witness/partner-based parameter fit. Frozen point not promoted to replacement.",
+      "next": "Derive a finite data-free condition for classification change across fusion contexts before any further optimization; no blind extra contexts/layers/steps."
+    }
+  },
+  "task_reference": {
+    "status": "completed_independently_verified",
+    "protocol": "results/data_free_compensation/task_reference_protocol.json",
+    "result": "results/data_free_compensation/task_reference_result.json",
+    "output": "outputs/task_reference_20261101",
+    "new_candidates": 1,
+    "point_sha256": "aad4f53d308d8d503192522e438567994e983699ed3d5faf54af27fd6c24d3a1",
+    "source_sha256": "34425b25152c779a5355e1b28f0b4a1f2ac4bcdb17c846c50df38fa12e5efd5f",
+    "local_pre_execution_commit": "302c781",
+    "source_seconds": 126.90937038883567,
+    "real_construction_images": 0,
+    "teacher_training_updates": 0,
+    "native_before_after": [
+      99.69,
+      99.6
+    ],
+    "native_lost_gained": [
+      14,
+      5
+    ],
+    "native_strict_R": 113.5150833500703,
+    "native_strict_passed": false,
+    "target_raw_TA_AGAtarget_AGAboth": [
+      33.31,
+      0.25,
+      0.23
+    ],
+    "target_calibrated": [
+      37.2,
+      2.39,
+      2.27
+    ],
+    "partner_raw": [
+      29.567455439459128,
+      5.754456054087277,
+      5.7275660725261215
+    ],
+    "partner_calibrated": [
+      29.955439459127227,
+      20.332667486170866,
+      20.613091579594347
+    ],
+    "context_score_replays": 224,
+    "maximum_replay_error": 2.288818359375e-05,
+    "conclusion": "Improves all fusion/calibration columns relative to prior calibrated objective;rawTA remains worse than originalclass0point. Only MNIST protected task validated. Do not replace3taskmain or claimSVD contribution.",
+    "next": "Derive joint A/bias/B numerical construction using complete incident-weight matching and native compensation. Fixed-B-only optimization does not address public reset. No new layers or optimizer yet; this candidate remains closed.",
+    "additional_recovery": {
+      "status": "completed_independently_verified",
+      "MLP_matching_native_target_partner": [
+        99.6,
+        77.62,
+        61.40519360786724
+      ],
+      "B_b_replacement_target": 99.35,
+      "MLP_replacement_target": 99.35,
+      "replacement_reuse_proof": "Both158tensorcomplete restoredstates match oldverifiedmodels;archived rawscoreSHA verified",
+      "new_full_image_forwards": 46032,
+      "context_score_replays": 96,
+      "maximum_score_error": 9.5367431640625e-06,
+      "last_MLP_changed_units": 127,
+      "AGA_vs_joint_assignment_different_rows": 3071
+    },
+    "fixed_A_source_condition": {
+      "status": "necessary comparison feasible;not a new defense",
+      "minimum_joint_identity_minus_AGA": -3436.0662482350417,
+      "numpy_error": 2.2737367544323206e-11,
+      "new_candidates": 0
+    }
+  },
+  "input_bias_joint": {
+    "status": "completed_independently_verified",
+    "point_sha256": "ed30360059bd5c0699605bdbcf7e849f18f770e85bda271d9c4e2918b7eda2ea",
+    "native_before_after": [
+      99.69,
+      99.59
+    ],
+    "native_lost_gained": [
+      12,
+      2
+    ],
+    "target_raw_TA_AGAtarget_AGAboth": [
+      8.04,
+      0.16,
+      0.15
+    ],
+    "target_calibrated": [
+      53.44,
+      30.49,
+      30.3
+    ],
+    "partner_raw": [
+      3.979717271051014,
+      0.8028580208973571,
+      0.8720036877688998
+    ],
+    "partner_calibrated": [
+      42.808850645359556,
+      34.373079287031345,
+      33.17839582052858
+    ],
+    "MLP_matching": {
+      "native": 99.59,
+      "target": 0.16,
+      "partner": 1.9706515058389675,
+      "last_layer_changed_units": 640,
+      "permission": "Published parameters and public base; incoming/bias/outgoing MLP weights; no clean target, images, or changed-module information."
+    },
+    "public_B_replacement": {
+      "native": 99.67,
+      "target": 99.36,
+      "partner": 92.4938537185003,
+      "matched_unprotected_target": 99.35,
+      "permission": "Public base plus known last MLP B/output-bias location. No clean target or images."
+    },
+    "conclusion": "Raw TA/AGA and joint matching improve over the preceding point; calibration weakens and known-location B replacement still removes protection. Only MNIST evaluated. No SVD contribution or general recovery guarantee. Never combine best columns from different points.",
+    "next": "Analyze public B replacement and source-to-natural calibration differences before another construction; no extra attack families or blind parameter sweep.",
+    "result": "results/data_free_compensation/input_bias_result.json",
+    "completed_utc": "2026-11-01T16:44:24.446879+00:00"
   }
 }
