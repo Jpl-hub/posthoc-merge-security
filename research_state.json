@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense1/Defense2 matched recovery comparison completed for the registered batch; address output-calibration weakness and Defense2 task retention without blind search.",
-  "status": "calibration_aware_native_complete; fusion_and_calibration_running",
+  "status": "calibration_aware_MNIST_completed; improved_calibrated_protection_with_raw_TA_tradeoff",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -22,7 +22,7 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_55548.sock",
     "secondary_torch": "2.3.0+cu121",
@@ -33,7 +33,7 @@
     "primary_available_GiB": 28,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "Frozen candidate evaluation running; source construction finished.",
+    "primary_workspace_status": "Calibration-aware fixed point complete and verified; no GPU job.",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -88,16 +88,10 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-11-01T11:19:21.680070+00:00",
+  "updated_utc": "2026-11-01T11:32:47.766761+00:00",
   "active_GPU_jobs": 0,
-  "research_jobs": [
-    {
-      "host": "41558",
-      "pid": 34415,
-      "log": "outputs/calibrated_objective_20261101/evaluation.log"
-    }
-  ],
-  "next_action": "Finish same frozen MNIST/SVHN TA.5 + AGA and existing64noise calibration; verify raw scores. No retries or other tasks yet.",
+  "research_jobs": [],
+  "next_action": "Review why the public-base source objective transfers to AGA but poorly to direct real-partner TA. Preserve the single point; no retries, no expanded attack suite, and no cross-task claim. No running GPU job.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -1421,7 +1415,7 @@
   },
   "evaluation_scope": "Current attack suite closed after ProDistill. Main concern: public weights/head and fixed random-input output calibration; known-module and real-data training recovery stay separate. No requirement to defeat every attack, no new attack families queued.",
   "calibrated_objective": {
-    "status": "source_and_native_complete; frozen_evaluation_running",
+    "status": "completed_independently_verified",
     "protocol": "results/data_free_compensation/calibrated_objective_protocol.json",
     "output": "outputs/calibrated_objective_20261101",
     "source_commit": "5d261d1",
@@ -1443,6 +1437,18 @@
       0,
       0,
       0
-    ]
+    ],
+    "target_raw_TA_AGAtarget_AGAboth": [
+      74.76,
+      7.9,
+      7.48
+    ],
+    "target_calibrated": [
+      60.4,
+      21.56,
+      21.55
+    ],
+    "context_score_replays": 224,
+    "maximum_replay_error": 2.288818359375e-05
   }
 }
