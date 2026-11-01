@@ -17,7 +17,7 @@
 | 实验评价 | [experiment/main_table.py](experiment/main_table.py)、[_impl/evaluate.py](_impl/evaluate.py) | 固定发布、目标与伙伴评价 |
 | 最新对比结果 | [results/comparison](results/comparison) | 防御一、二与PaRaMS的攻击、伙伴和八专家结果；MD / TeX |
 
-`experiment/defense2.py` 的默认路径保留当前 MNIST 发布的原始计算。它是固定 MNIST 构造，不是三个任务通用命令：运行需要原合成缓存 `outputs/native_ellipse_classification_20261026/source/` 和 `outputs/task_shaped_compensation_20261026/layer_inputs.pt`，输出目录必须尚不存在。当前评价直接加载已冻结权重，无需重新构造。 `--calibration-aware --output <新目录>` 将输出校正纳入求解；再加 `--task-reference` 则同时约束原专家与保护专家各半时的分类。`--input-bias` 在上述两项基础上增加输入偏置补偿和每次重算的联合MLP匹配，协议见 `results/data_free_compensation/input_bias_check.json`，目前仅完成MNIST评价。`--noise-calibration` 在输入偏置实验上增加独立随机输入的输出校正目标，目前在运行，尚无新效果结论。上述选项均为单独登记的研究实验，不替换三任务主方法；定义分别见 `results/data_free_compensation/calibrated_objective_protocol.json` 和 `task_reference_protocol.json`。SVHN、DTD 的实际执行源码及哈希仍在 `results/data_free_compensation/population_compensation_result.json` 的对应任务定义中。
+`experiment/defense2.py` 的默认路径保留当前 MNIST 发布的原始计算。它是固定 MNIST 构造，不是三个任务通用命令：运行需要原合成缓存 `outputs/native_ellipse_classification_20261026/source/` 和 `outputs/task_shaped_compensation_20261026/layer_inputs.pt`，输出目录必须尚不存在。当前评价直接加载已冻结权重，无需重新构造。 `--calibration-aware --output <新目录>` 将输出校正纳入求解；再加 `--task-reference` 则同时约束原专家与保护专家各半时的分类。`--input-bias` 在上述两项基础上增加输入偏置补偿和每次重算的联合MLP匹配，协议见 `results/data_free_compensation/input_bias_check.json`，目前仅完成MNIST评价。`--noise-calibration` 在输入偏置实验上增加独立随机输入的输出校正目标，MNIST已完成，AGA后再校正为0.48%，完整比较见下表。上述选项均为单独登记的研究实验，不替换三任务主方法；定义分别见 `results/data_free_compensation/calibrated_objective_protocol.json` 和 `task_reference_protocol.json`。SVHN、DTD 的实际执行源码及哈希仍在 `results/data_free_compensation/population_compensation_result.json` 的对应任务定义中。
 
 防御一和防御二的当前构造均不使用真实图片。防御一的方向和幅度完全由权重确定，也不使用合成图片；三个保护任务的完整独立预测均保持不变，TA及AGA后MNIST/SVHN/DTD准确率分别为9.80%/6.70%/2.13%，伙伴准确率也明显降低。[三任务完整表](results/phase3/bias_weight_only/other_tasks/summary.md)。历史图片辅助幅度单独保留。
 
@@ -31,7 +31,7 @@
 
 独立准确率分别下降0.08、0.48、3.30个百分点。DTD曾因项目自设的0.5个百分点条件停止，本次补齐同一固定权重的融合评价；旧失败记录保留。相关论文没有统一的0.5个百分点标准，后续直接比较独立能力损失与保护效果。[尺度依据](notes/parameter_scale_and_threat_model.md)。A/B删项支持联合补偿，两项SVD单删项尚未显示准确率收益；当前A是最小范数行正交解，并未求解参数距离最大化。另列的无数据输出校正能部分恢复分类，与仅运行AGA分开报告。[方法、对照与完整结果](results/data_free_compensation/summary.md) · [核心方法审查](notes/phase2_coupling.md#oct26核心方法审查)。
 
-最新MNIST构造加入输入偏置补偿和联合MLP匹配：独立99.59%，TA8.04%，AGA后0.16%，联合匹配后0.16%。但AGA后再校正为30.49%，弱于上一版2.39%；已知位置公开B替换后仍为99.36%。该点尚未形成稳定的攻击泛化结果，不替换上面的三任务方法。[完整构造对照](results/data_free_compensation/calibrated_objective.md)。
+最新MNIST构造将独立随机输入的输出校正纳入求解：独立99.54%，TA16.61%，AGA仅目标后0.26%，再校正后0.48%；联合MLP匹配后2.78%。相比上一版，校正后的保护明显改善，直接TA则由8.04%升到16.61%；已知位置公开B替换后仍为99.36%。该版本仅验证MNIST，不替换上面的三任务方法。[完整构造对照](results/data_free_compensation/calibrated_objective.md)。
 
 最新三任务攻击对照已完成：TIES、DARE下仍有融合保护；已知末层MLP位置、用公开基座替换B及偏置后，融合准确率恢复至99.35%、92.39%、66.81%。两种结果的恢复操作和权限不同，详见[完整对照表](results/attack_generalization_20261028/attack_comparison.md)。
 

@@ -46,22 +46,22 @@ TA coefficient is 0.5; AGA acts on the target expert only. Synthetic results mea
 \centering\small
 \caption{Input-bias compensation with joint MLP matching. MNIST accuracy (\%).}
 \label{tab:input-bias-matching}
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrr}
 \toprule
-Evaluation & Unprotected & Previous & Input-bias compensation \\
+Evaluation & Unprotected & Reference & Input bias & + Noise calibration \\
 \midrule
-Standalone & 99.69 & 99.60 & 99.59 \\
-TA & 99.37 & 33.31 & 8.04 \\
-AGA target + TA & 99.30 & 0.25 & 0.16 \\
-AGA both + TA & 99.32 & 0.23 & 0.15 \\
-TA + calibration & 99.34 & 37.20 & 53.44 \\
-AGA target + TA + calibration & 99.29 & 2.39 & 30.49 \\
-AGA both + TA + calibration & 99.29 & 2.27 & 30.30 \\
-MLP matching + TA & 99.37 & 77.62 & 0.16 \\
-Known-location B/bias replacement + TA & 99.35 & 99.35 & 99.36 \\
+Standalone & 99.69 & 99.60 & 99.59 & 99.54 \\
+TA & 99.37 & 33.31 & 8.04 & 16.61 \\
+AGA target + TA & 99.30 & 0.25 & 0.16 & 0.26 \\
+AGA both + TA & 99.32 & 0.23 & 0.15 & 0.27 \\
+TA + calibration & 99.34 & 37.20 & 53.44 & 1.38 \\
+AGA target + TA + calibration & 99.29 & 2.39 & 30.49 & 0.48 \\
+AGA both + TA + calibration & 99.29 & 2.27 & 30.30 & 0.51 \\
+MLP matching + TA & 99.37 & 77.62 & 0.16 & 2.78 \\
+Known-location B/bias replacement + TA & 99.35 & 99.35 & 99.36 & 99.36 \\
 \bottomrule
 \end{tabular}
 \par\smallskip
 \begin{minipage}{\textwidth}\footnotesize
-Each column uses one frozen model, TA coefficient 0.5 and the same SVHN partner. Higher standalone and lower merged target accuracy favor protection. Construction uses no real images or partner parameters. Calibration uses 64 fixed random inputs. Joint MLP matching uses published weights and the public base; replacement additionally knows the modified module. The new point improves raw TA/AGA and joint matching but weakens calibrated protection and remains vulnerable to known-location replacement. Only MNIST is evaluated; SVD contribution is not established.\end{minipage}
+Each column uses one frozen model, TA coefficient 0.5 and the same SVHN partner. Higher standalone and lower merged target accuracy favor protection. Construction uses no real images or partner parameters. Calibration uses 64 fixed random inputs. Joint MLP matching uses published weights and the public base; replacement additionally knows the modified module. Input-bias compensation improves joint matching but weakens calibrated protection. Adding independent construction-noise calibration reduces the evaluated calibration accuracy to 1.38/0.48/0.51, while raw TA worsens to 16.61. Known-location replacement remains effective; its result is reused after equality of all 158 restored tensors. Construction and evaluation noise use different fixed seeds. Only MNIST is evaluated; SVD contribution is not established.\end{minipage}
 \end{table*}

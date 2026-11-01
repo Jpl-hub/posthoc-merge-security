@@ -1,25 +1,11 @@
 {
-  "status": "noise_calibration_single_candidate_running",
-  "updated_utc": "2026-11-01T17:09:41.818923+00:00",
+  "status": "noise_calibration_completed_independently_verified",
+  "updated_utc": "2026-11-01T17:46:01.119680+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "41558",
-      "pid": 50829,
-      "queue_pid": 50827,
-      "output": "outputs/noise_calibration_20261102",
-      "stage": "Single fixed construction with independent noise calibration; conditional evaluation follows",
-      "source_commit": "753461ea",
-      "source_sha256": "a119ea3f065069501abda6fd79b96523bdc177c917110b655aa972f8fc81110b",
-      "source_limit_seconds": 7200,
-      "evaluation_limit_seconds": 1200,
-      "automatic_wakeup": false,
-      "duplicate_start_forbidden": true
-    }
-  ],
-  "next_action": "Inspect outputs/noise_calibration_20261102/{source.log,evaluation.log,exit_code.txt}. Existing single job only; no automatic wakeup. Retrieve complete source/evaluation before claims or new construction.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Keep this release frozen. Test the same rule on SVHN/DTD before promoting the method; do not tune using these results. Known-location public replacement remains a separately stated limitation.",
   "github_sync": {
     "status": "Prior completed batch verified remotely; GitHub tools unavailable in current tool set, new commits pending",
     "last_verified_commit": "23d6ffb93954addb02918ef79d03e831e4f0cf92",
@@ -1555,13 +1541,46 @@
     "completed_utc": "2026-11-01T16:44:24.446879+00:00"
   },
   "noise_calibration_construction": {
-    "protocol": "results/data_free_compensation/input_bias_result.json:noise_calibration_construction",
-    "source_commit": "753461ea",
-    "output": "outputs/noise_calibration_20261102",
-    "new_candidates": 1,
-    "construction_noise_seed": 2026110201,
-    "evaluation_noise_seed": 2026102509,
-    "real_construction_images": 0,
-    "first_step_passed": true
+    "status": "completed_independently_verified",
+    "point_sha256": "4854eb28027563ded53e06e418bbcdacfd033f5fe787adb3b346512b329dd007",
+    "native_before_after": [
+      99.69,
+      99.54
+    ],
+    "native_lost_gained": [
+      18,
+      3
+    ],
+    "target_raw_TA_AGAtarget_AGAboth": [
+      16.61,
+      0.26,
+      0.27
+    ],
+    "target_calibrated": [
+      1.38,
+      0.48,
+      0.51
+    ],
+    "partner_raw": [
+      19.199446834665025,
+      4.287031346035648,
+      3.9336201598033185
+    ],
+    "partner_calibrated": [
+      5.412569145666871,
+      2.0397971727105104,
+      2.258758451137062
+    ],
+    "MLP_matching": {
+      "native": 99.54,
+      "target": 2.78,
+      "partner": 17.1519668100799,
+      "last_layer_changed_units": 595
+    },
+    "conclusion": "On MNIST, independent evaluation-noise calibration remains low (1.38/.48/.51%) versus prior53.44/30.49/30.30. RawTA worsens8.04->16.61; jointmatching worsens.16->2.78 but remains low. Native99.54. Known-locationBreset still99.36, exactly reused after all158tensor equality. Not cross-task evidence, SVD contribution, or complete attack robustness.",
+    "next": "Keep this release frozen. Test the same rule on SVHN/DTD before promoting the method; do not tune using these results. Known-location public replacement remains a separately stated limitation.",
+    "record": "results/data_free_compensation/input_bias_result.json:noise_calibration_construction:result",
+    "public_B_replacement_target": 99.36,
+    "context_score_replays": 320
   }
 }

@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense1/Defense2 matched recovery comparison completed for the registered batch; address output-calibration weakness and Defense2 task retention without blind search.",
-  "status": "noise_calibration_single_candidate_running",
+  "status": "noise_calibration_completed_independently_verified",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -22,18 +22,18 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-01T17:09:41.818923+00:00",
+    "verified_utc": "2026-11-01T17:46:01.119680+00:00",
     "primary_available_GiB": 28,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "One noise-calibration construction and conditional serial evaluation",
+    "primary_workspace_status": "Registered construction and all evaluations finished; no active GPU job",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -88,24 +88,10 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-11-01T17:09:41.818923+00:00",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "41558",
-      "pid": 50829,
-      "queue_pid": 50827,
-      "output": "outputs/noise_calibration_20261102",
-      "stage": "Single fixed construction with independent noise calibration; conditional evaluation follows",
-      "source_commit": "753461ea",
-      "source_sha256": "a119ea3f065069501abda6fd79b96523bdc177c917110b655aa972f8fc81110b",
-      "source_limit_seconds": 7200,
-      "evaluation_limit_seconds": 1200,
-      "automatic_wakeup": false,
-      "duplicate_start_forbidden": true
-    }
-  ],
-  "next_action": "Inspect outputs/noise_calibration_20261102/{source.log,evaluation.log,exit_code.txt}. Existing single job only; no automatic wakeup. Retrieve complete source/evaluation before claims or new construction.",
+  "updated_utc": "2026-11-01T17:46:01.119680+00:00",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Keep this release frozen. Test the same rule on SVHN/DTD before promoting the method; do not tune using these results. Known-location public replacement remains a separately stated limitation.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -1613,13 +1599,46 @@
     "completed_utc": "2026-11-01T16:44:24.446879+00:00"
   },
   "noise_calibration_construction": {
-    "protocol": "results/data_free_compensation/input_bias_result.json:noise_calibration_construction",
-    "source_commit": "753461ea",
-    "output": "outputs/noise_calibration_20261102",
-    "new_candidates": 1,
-    "construction_noise_seed": 2026110201,
-    "evaluation_noise_seed": 2026102509,
-    "real_construction_images": 0,
-    "first_step_passed": true
+    "status": "completed_independently_verified",
+    "point_sha256": "4854eb28027563ded53e06e418bbcdacfd033f5fe787adb3b346512b329dd007",
+    "native_before_after": [
+      99.69,
+      99.54
+    ],
+    "native_lost_gained": [
+      18,
+      3
+    ],
+    "target_raw_TA_AGAtarget_AGAboth": [
+      16.61,
+      0.26,
+      0.27
+    ],
+    "target_calibrated": [
+      1.38,
+      0.48,
+      0.51
+    ],
+    "partner_raw": [
+      19.199446834665025,
+      4.287031346035648,
+      3.9336201598033185
+    ],
+    "partner_calibrated": [
+      5.412569145666871,
+      2.0397971727105104,
+      2.258758451137062
+    ],
+    "MLP_matching": {
+      "native": 99.54,
+      "target": 2.78,
+      "partner": 17.1519668100799,
+      "last_layer_changed_units": 595
+    },
+    "conclusion": "On MNIST, independent evaluation-noise calibration remains low (1.38/.48/.51%) versus prior53.44/30.49/30.30. RawTA worsens8.04->16.61; jointmatching worsens.16->2.78 but remains low. Native99.54. Known-locationBreset still99.36, exactly reused after all158tensor equality. Not cross-task evidence, SVD contribution, or complete attack robustness.",
+    "next": "Keep this release frozen. Test the same rule on SVHN/DTD before promoting the method; do not tune using these results. Known-location public replacement remains a separately stated limitation.",
+    "record": "results/data_free_compensation/input_bias_result.json:noise_calibration_construction:result",
+    "public_B_replacement_target": 99.36,
+    "context_score_replays": 320
   }
 }
