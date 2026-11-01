@@ -1913,10 +1913,17 @@
       "real_image_forwards": 0,
       "new_model_updates": 0
     },
-    "conclusion": "Both calibration-input and task-input differences matter. Same protected natural AGA scores give0.12percent under source-derived diagnostic offsets but30.49under fixed-noise offsets; on synthetic inputs0 versus1.875percent. Incoming-only and publicBsource predictions remain800/800; changingA correspondence alone does not create required classification dependence on protectedB."
+    "conclusion": "Both calibration-input and task-input differences matter. Same protected natural AGA scores give0.12percent under source-derived diagnostic offsets but30.49under fixed-noise offsets; on synthetic inputs0 versus1.875percent. Incoming-only and publicBsource predictions remain800/800; changingA correspondence alone does not create required classification dependence on protectedB.",
+    "archive": {
+      "files": 7,
+      "bytes": 1906563,
+      "primary": "41558:outputs/input_bias_joint_20261102/mechanism_check",
+      "secondary": "55548:/root/posthoc_evaluation_cache/input_bias_joint_20261102",
+      "all_sha256_equal": true
+    }
   },
   "noise_calibration_construction": {
-    "status": "registered_before_execution",
+    "status": "running",
     "registered_utc": "2026-11-01T17:07:00.111445+00:00",
     "output": "outputs/noise_calibration_20261102",
     "source_sha256": "a119ea3f065069501abda6fd79b96523bdc177c917110b655aa972f8fc81110b",
@@ -1944,6 +1951,10 @@
       "new_optimizer": false,
       "new_production_module": false
     },
-    "limitations": "Not a claimed new optimizer or calibration method. Not designed to solve publicBreset: fixedA/a means replacement result cannot depend on B. No task/SVD/general security conclusion from source feasibility."
+    "limitations": "Not a claimed new optimizer or calibration method. Not designed to solve publicBreset: fixedA/a means replacement result cannot depend on B. No task/SVD/general security conclusion from source feasibility.",
+    "source_commit": "753461ea",
+    "source_PID": 50829,
+    "queue_PID": 50827,
+    "first_step_and_derivative_check_passed": true
   }
 }

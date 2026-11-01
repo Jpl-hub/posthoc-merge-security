@@ -1,14 +1,28 @@
 {
-  "status": "input_bias_MNIST_completed_joint_matching_improved_calibration_and_public_reset_unresolved",
-  "updated_utc": "2026-11-01T16:44:24.446879+00:00",
+  "status": "noise_calibration_single_candidate_running",
+  "updated_utc": "2026-11-01T17:09:41.818923+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Analyze public B replacement and source-to-natural calibration differences before another construction; no extra attack families or blind parameter sweep.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "41558",
+      "pid": 50829,
+      "queue_pid": 50827,
+      "output": "outputs/noise_calibration_20261102",
+      "stage": "Single fixed construction with independent noise calibration; conditional evaluation follows",
+      "source_commit": "753461ea",
+      "source_sha256": "a119ea3f065069501abda6fd79b96523bdc177c917110b655aa972f8fc81110b",
+      "source_limit_seconds": 7200,
+      "evaluation_limit_seconds": 1200,
+      "automatic_wakeup": false,
+      "duplicate_start_forbidden": true
+    }
+  ],
+  "next_action": "Inspect outputs/noise_calibration_20261102/{source.log,evaluation.log,exit_code.txt}. Existing single job only; no automatic wakeup. Retrieve complete source/evaluation before claims or new construction.",
   "github_sync": {
-    "status": "Completed results and source published; exact-commit result and default-main source readback verified",
-    "last_verified_commit": "6449e244e8307dfa594bf0d8e6a38b8cb9d12e24",
+    "status": "Prior completed batch verified remotely; GitHub tools unavailable in current tool set, new commits pending",
+    "last_verified_commit": "23d6ffb93954addb02918ef79d03e831e4f0cf92",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -1539,5 +1553,15 @@
     "next": "Analyze public B replacement and source-to-natural calibration differences before another construction; no extra attack families or blind parameter sweep.",
     "result": "results/data_free_compensation/input_bias_result.json",
     "completed_utc": "2026-11-01T16:44:24.446879+00:00"
+  },
+  "noise_calibration_construction": {
+    "protocol": "results/data_free_compensation/input_bias_result.json:noise_calibration_construction",
+    "source_commit": "753461ea",
+    "output": "outputs/noise_calibration_20261102",
+    "new_candidates": 1,
+    "construction_noise_seed": 2026110201,
+    "evaluation_noise_seed": 2026102509,
+    "real_construction_images": 0,
+    "first_step_passed": true
   }
 }
