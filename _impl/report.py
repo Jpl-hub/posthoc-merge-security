@@ -151,12 +151,26 @@ def defense_comparison(directory):
     headers = ["Task", "Defense", "Standalone", "TA", "AGA", "Calib.", "AGA+calib.", "MLP match", "Distill."]
     note = ("Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. "
             "Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. "
-            "Distillation additionally uses unlabeled training images and student training. "
+            "Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. "
             "Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide.")
     write("attacks", "Recovery attacks on the protected task", headers, target_rows,
           note + " Higher standalone accuracy and lower merged accuracy favor protection.", "llrrrrrrr")
     write("partners", "Partner-task accuracy under the same attacks", ["Target/partner"] + headers[1:2] + headers[3:],
           [row[:2] + row[3:] for row in partner_rows], note + " These are partner accuracies, not protection scores.", "llrrrrrr")
+    progressive = read("results/attack_generalization_20261028/prodistill/summary.json")
+    assert progressive["status"] == "completed_independently_verified"
+    distilled = []
+    for task in tasks:
+        partner = "SVHN" if task == "MNIST" else "MNIST"
+        for method in methods:
+            name = method.replace(" ", "")
+            rows = [one(progressive["rows"], target=task, defense=name, dataset=t, stage="full")
+                    for t in [task, partner]]
+            distilled.append([task, method, accuracy(rows[0]), partner, accuracy(rows[1])])
+    write("feature_distillation", "ProDistill recovery comparison",
+          ["Target", "Defense", "Target accuracy", "Partner", "Partner accuracy"], distilled,
+          "Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table.",
+          "llrlr")
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 

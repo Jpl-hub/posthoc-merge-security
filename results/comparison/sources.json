@@ -16,7 +16,8 @@
     "results/params_reference/other_tasks/distillation.json": "9ae322443d5465f5e62068ee0a18c7a23e2ec84caf36d7d1386309bd73273e30",
     "results/phase3/results.json": "017a6adee5999d6c42a4cf729dec9002ece10b06430083680a71ff85cd5b36e4",
     "results/params_reference/other_tasks/evaluation/full/00_DTD_MNIST/results.json": "0ef9889e837d4ac2c150ed192bf61746d555b77db1b67b02a22ad01fd1f1b30f",
-    "results/params_reference/other_tasks/evaluation/full/01_SVHN_MNIST/results.json": "df1d6a1bc1e47d3e3dfc825680c8f6b9f3786f606c8dc8a653a79a4cc76093db"
+    "results/params_reference/other_tasks/evaluation/full/01_SVHN_MNIST/results.json": "df1d6a1bc1e47d3e3dfc825680c8f6b9f3786f606c8dc8a653a79a4cc76093db",
+    "results/attack_generalization_20261028/prodistill/summary.json": "0a620b385c7bfd10bd58f306709e12898cac31cc9a1f6c7749bb1e60858f79cd"
   },
   "eight_expert_rows": [
     {
@@ -2320,7 +2321,7 @@
           "58.56"
         ]
       ],
-      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distillation additionally uses unlabeled training images and student training. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection."
+      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection."
     },
     "partners": {
       "headers": [
@@ -2455,9 +2456,105 @@
           "99.54"
         ]
       ],
-      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distillation additionally uses unlabeled training images and student training. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. These are partner accuracies, not protection scores."
+      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. These are partner accuracies, not protection scores."
+    },
+    "feature_distillation": {
+      "headers": [
+        "Target",
+        "Defense",
+        "Target accuracy",
+        "Partner",
+        "Partner accuracy"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Unprotected",
+          "99.45",
+          "SVHN",
+          "96.73"
+        ],
+        [
+          "MNIST",
+          "PaRaMS",
+          "89.27",
+          "SVHN",
+          "64.77"
+        ],
+        [
+          "MNIST",
+          "Defense 1",
+          "9.80",
+          "SVHN",
+          "6.70"
+        ],
+        [
+          "MNIST",
+          "Defense 2",
+          "99.45",
+          "SVHN",
+          "96.49"
+        ],
+        [
+          "SVHN",
+          "Unprotected",
+          "96.73",
+          "MNIST",
+          "99.45"
+        ],
+        [
+          "SVHN",
+          "PaRaMS",
+          "66.22",
+          "MNIST",
+          "89.55"
+        ],
+        [
+          "SVHN",
+          "Defense 1",
+          "6.70",
+          "MNIST",
+          "9.80"
+        ],
+        [
+          "SVHN",
+          "Defense 2",
+          "95.78",
+          "MNIST",
+          "99.28"
+        ],
+        [
+          "DTD",
+          "Unprotected",
+          "73.14",
+          "MNIST",
+          "99.51"
+        ],
+        [
+          "DTD",
+          "PaRaMS",
+          "7.29",
+          "MNIST",
+          "88.39"
+        ],
+        [
+          "DTD",
+          "Defense 1",
+          "2.13",
+          "MNIST",
+          "30.51"
+        ],
+        [
+          "DTD",
+          "Defense 2",
+          "63.83",
+          "MNIST",
+          "99.51"
+        ]
+      ],
+      "note": "Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table."
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "85f9fb57b210f65df389f366eba40756752f2e1c2ec4cefe8649d94698b4593e"
+  "report_source_sha256": "5ec4a340fb3a7f691aa69e109e63031c0806578481d537388e41b590aafab4aa"
 }
