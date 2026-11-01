@@ -86,7 +86,9 @@ def setup(cfg):
     anchor = load_checkpoint("zeroshot.pt")
     originals = {t: load_checkpoint(f"{t}/finetuned.pt") for t in cfg["tasks"]}
     heads = {t: load_checkpoint(f"head_{t}.pt") for t in cfg["tasks"]}
-    aligned = {t: apply(originals[t], cfg["AGA_references"][t], full=True) for t in cfg["tasks"]}
+    use_aga = any(scope != "None" for scope in cfg.get("attack_scopes", ["None", "Protected expert", "All experts"]))
+    aligned = {t: apply(originals[t], cfg["AGA_references"][t], full=True) if use_aga else None
+               for t in cfg["tasks"]}
     ties = load_ties(cfg["TIES"]) if "TIES" in cfg["mergers"] else None
     return anchor, originals, heads, aligned, ties
 
@@ -238,7 +240,7 @@ def run(protocol, case_index, pilot):
             evaluated_parameter_sha256=fingerprints,
             public_replacement=case.get("public_replacement"),
             published_bias_projection=bool(case.get("published_bias_projection")),
-            cached_author_AGA_weights=True,
+            cached_author_AGA_weights=any(value is not None for value in aligned.values()),
             defense_feedback=False,
             predictions_sha256=digest(out / "artifacts/predictions.pt"),
             source_sha256=digest(__file__),

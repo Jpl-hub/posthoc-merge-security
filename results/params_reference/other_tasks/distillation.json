@@ -1,0 +1,149 @@
+{
+  "status": "completed_independently_verified_query_equivalence_and_explicit_prior_student_reuse",
+  "rows": [
+    {
+      "task": "MNIST",
+      "teacher": "Unprotected / Defense 1 / PaRaMS",
+      "standalone": 98.5,
+      "TA": 95.53,
+      "AGA_target": 95.35,
+      "AGA_both": 95.25,
+      "partner": {
+        "None": 95.95497848801475,
+        "Protected expert": 95.93577135832821,
+        "All experts": 95.29425322679779
+      },
+      "reused_source": "results/attack_generalization_20261028/distillation/summary.json",
+      "reused_student_key": "KD_Unprotected"
+    },
+    {
+      "task": "MNIST",
+      "teacher": "Defense 2",
+      "standalone": 98.5,
+      "TA": 95.53,
+      "AGA_target": 95.35,
+      "AGA_both": 95.25,
+      "partner": {
+        "None": 95.95497848801475,
+        "Protected expert": 95.93577135832821,
+        "All experts": 95.29425322679779
+      },
+      "reused_source": "results/attack_generalization_20261028/distillation/summary.json",
+      "reused_student_key": "KD_Defense2"
+    },
+    {
+      "task": "SVHN",
+      "teacher": "Unprotected / Defense 1 / PaRaMS",
+      "standalone": 93.08927473878303,
+      "TA": 86.22464658881377,
+      "AGA_target": 85.2758143822987,
+      "AGA_both": 85.58312845728334,
+      "partner": {
+        "None": 99.33999999999999,
+        "Protected expert": 99.33999999999999,
+        "All experts": 99.32
+      },
+      "reused_source": "results/attack_generalization_20261028/distillation/SVHN/summary.json",
+      "reused_student_key": "KD_Unprotected"
+    },
+    {
+      "task": "SVHN",
+      "teacher": "Defense 2",
+      "standalone": 92.390135218193,
+      "TA": 85.84434542102028,
+      "AGA_target": 84.99539028887523,
+      "AGA_both": 85.20666871542717,
+      "partner": {
+        "None": 99.4,
+        "Protected expert": 99.44,
+        "All experts": 99.33999999999999
+      },
+      "reused_source": "results/attack_generalization_20261028/distillation/SVHN/summary.json",
+      "reused_student_key": "KD_Defense2"
+    },
+    {
+      "task": "DTD",
+      "teacher": "Unprotected / Defense 1 / PaRaMS",
+      "standalone": 73.29787234042553,
+      "TA": 58.19148936170213,
+      "AGA_target": 57.819148936170215,
+      "AGA_both": 58.29787234042553,
+      "partner": {
+        "None": 99.53,
+        "Protected expert": 99.53,
+        "All experts": 99.41
+      },
+      "reused_source": "results/attack_generalization_20261028/distillation/DTD/summary.json",
+      "reused_student_key": "KD_Unprotected"
+    },
+    {
+      "task": "DTD",
+      "teacher": "Defense 2",
+      "standalone": 73.24468085106382,
+      "TA": 58.56382978723404,
+      "AGA_target": 57.71276595744681,
+      "AGA_both": 58.19148936170213,
+      "partner": {
+        "None": 99.53999999999999,
+        "Protected expert": 99.53,
+        "All experts": 99.42999999999999
+      },
+      "reused_source": "results/attack_generalization_20261028/distillation/DTD/summary.json",
+      "reused_student_key": "KD_Defense2"
+    }
+  ],
+  "query_validation": {
+    "status": "passed",
+    "checks": [
+      {
+        "target": "MNIST",
+        "n": 2048,
+        "independent_numpy_disagreements": {
+          "Unprotected": 0,
+          "Defense1": 0,
+          "PaRaMS": 0
+        },
+        "original_indices_equal": true,
+        "previous_queries_sha256": "33e10dc4f33dc7124909c7a9562a5ea6985b1ca80db82373405ab397b6cbb114",
+        "raw_sha256": "88bf07353a983b8b1dc831db9e9018990e117ea6e7947bdf9a28fdc0b7eed5be"
+      },
+      {
+        "target": "SVHN",
+        "n": 2048,
+        "independent_numpy_disagreements": {
+          "Unprotected": 0,
+          "Defense1": 0,
+          "PaRaMS": 0
+        },
+        "original_indices_equal": true,
+        "previous_queries_sha256": "780836795deedb0346a836927e70e20aab744efe47799f49eb3171dc34827197",
+        "raw_sha256": "ea303dffa890d676325951dcb20e0fafd030d6b694e3622576c08bb38760ca8e"
+      },
+      {
+        "target": "DTD",
+        "n": 1880,
+        "independent_numpy_disagreements": {
+          "Unprotected": 0,
+          "Defense1": 0,
+          "PaRaMS": 0
+        },
+        "original_indices_equal": true,
+        "previous_queries_sha256": "33714c1eaffe6193bb094037407cc02fada417cd76b83bac3bcc877e8c6decc7",
+        "raw_sha256": "6503615e8de74ccce73624e37f5694d15cd197e850021e79cf5c3744ce1dd502"
+      }
+    ],
+    "new_queries": 17928,
+    "new_training_steps": 0,
+    "rule": "Identical fixed input tensors and hard labels define the same previously executed deterministic training problem. Three unprotected students are reused; these are not additional independent training repetitions.",
+    "source_sha256": "f95492c049bf9937e39a3e1a1d09c4cc1b2df88f9d4e3821b3d22e9a2a57dc8c"
+  },
+  "source_results_sha256": {
+    "results/attack_generalization_20261028/distillation/summary.json": "c9ae295d5e782568880be578ef6ab3d3b2ee5cdd458b1abfeb7064232577d428",
+    "results/attack_generalization_20261028/distillation/SVHN/summary.json": "09a17dc763a05a2668d16f8967fa9c8a2f9b195a9121e27718534d087065232c",
+    "results/attack_generalization_20261028/distillation/DTD/summary.json": "30063df582ede60132b4f8574c6f998328bad2925827aa4c06522908474e06a3"
+  },
+  "protocol": "results/params_reference/other_tasks/distillation_queries_protocol.json",
+  "new_student_training_runs": 0,
+  "new_defense_points": 0,
+  "student_selection": "Previously fixed final50epoch models; identical label cases share the same optimization problem, not independent repetitions."
+}

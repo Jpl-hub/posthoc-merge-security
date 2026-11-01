@@ -1,37 +1,14 @@
 {
-  "status": "seven_dataset_complete_EuroSAT_and_method_limitations_remain",
-  "updated_utc": "2026-10-30T14:43:32.833254+00:00",
+  "status": "migration_complete_stopped_at_user_request",
+  "updated_utc": "2026-11-01T04:31:12.930303+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
-  "research_jobs": [
-    {
-      "status": "completed_independently_verified",
-      "host": "12997",
-      "pid": 24510,
-      "name": "Frozen Defense1 and Defense2 eight-expert SUN397 Testing_01",
-      "protocol": "results/attack_generalization_20261028/sun397/protocol.json",
-      "output": "outputs/sun397_evaluation_20261030",
-      "log": "outputs/sun397_evaluation_20261030/batch.log",
-      "wall_limit_seconds": 4800,
-      "new_defense_weights": 0,
-      "new_AGA_calls": 0,
-      "source_commit": "826082e68105d8af91a56b94555c9a43099f076a",
-      "test_n": 19850,
-      "protected_tasks": [
-        "MNIST",
-        "SVHN",
-        "DTD"
-      ],
-      "evaluated_partner": "SUN397",
-      "manual_check_minutes": 50,
-      "records": "results/attack_generalization_20261028/sun397/summary.json"
-    }
-  ],
-  "next_action": "Complete registered fixed-output-calibration PaRaMS baseline using frozen publications and raw scores; no new defense search. EuroSAT provenance remains unresolved.",
+  "research_jobs": [],
+  "next_action": "Stopped at user request after verified migration.10329 and12997 may be permanently released;retain41558 and55548. Wait for user to resume research.",
   "github_sync": {
-    "status": "Completed SUN397 published and read back at a58e1dbf, equivalent local963ce89; PaRaMS calibration preregistration pending current commit.",
-    "receipt": "outputs/latest_github_sync_receipt.json"
+    "status": "Local completed results pending; GitHub tools unavailable in current session",
+    "last_verified_commit": "6324a47fc1bc40c32dca9ae0be158d0c0126b2a6"
   },
   "current_effective_numerical_candidates": [
     {
@@ -322,17 +299,7 @@
     "new_defense_points": 0,
     "new_production_modules": 0
   },
-  "server_consolidation": {
-    "record": "results/engineering_refactor/server_consolidation_20261027.json",
-    "retained_compute": "4090D:50837",
-    "retained_archive": "3090 CPU mode",
-    "source_23800": "Permanently released before complete migration; latest failed-point raw artifacts lost, detailed index retained",
-    "source_34125": "All8220 file contents backed up and verified; permanent release cleared",
-    "source_17811": "All551 original-file contents covered;353 new contents SHA-verified in40815 archive;permanent release cleared",
-    "new4090_restore": "Required originals,authorAGA references and34125 outputs restored;17811 records retained in separate archive",
-    "active_research_jobs": 0,
-    "next": "Use50837 GPU;40815 and3090 are CPU archives."
-  },
+  "server_consolidation": "results/engineering_refactor/server_consolidation_20261101.json",
   "joint_function_progress": {
     "status": "completed_independently_verified_no_effective_fusion_protection",
     "record": "results/data_free_compensation/population_compensation_result.json:joint_function_result_20261027",
@@ -1197,7 +1164,7 @@
     "raw_archive": "outputs/bias_eight_20261030/manifest.json"
   },
   "PaRaMS_calibration": {
-    "status": "defined_before_execution",
+    "status": "completed_independently_verified",
     "protocol": "results/params_reference/other_tasks/calibration_protocol.json",
     "source": "results/attack_generalization_20261028/calibrate.py",
     "GPU": "12997",
@@ -1206,6 +1173,76 @@
     "new_defense_points": 0,
     "new_AGA_calls": 0,
     "matched_control": "Reuse existing same-noise unprotected calibration by SHA",
-    "original_weights": "All six original release/AGA files verified on55548; transferred to12997"
+    "original_weights": "All six original release/AGA files verified on55548; transferred to12997",
+    "pid": 1179,
+    "remote_registration_commit": "6324a47fc1bc40c32dca9ae0be158d0c0126b2a6",
+    "all_15_input_hashes_verified": true,
+    "output": "outputs/params_calibration_20261030",
+    "log": "outputs/params_calibration_20261030.log",
+    "rows": 36,
+    "paired_comparisons": 18,
+    "maximum_numpy_prior_error": 7.105427357601002e-15,
+    "seconds": 30.569573558866978,
+    "result": "results/params_reference/other_tasks/calibration.json",
+    "TA_corrected_target_percent": [
+      9.86,
+      8.447295636140137,
+      2.872340425531915
+    ],
+    "raw_manifest": "outputs/params_calibration_20261030/manifest.json",
+    "verified_raw_locations": [
+      "local",
+      "12997"
+    ]
+  },
+  "PaRaMS_matching": {
+    "status": "completed_independently_verified",
+    "result": "results/params_reference/other_tasks/matching.json",
+    "table": "results/params_reference/other_tasks/matching.md",
+    "protocol": "results/params_reference/other_tasks/matching_protocol.json",
+    "driver": "results/params_reference/other_tasks/matching_run.py",
+    "execution_host": "10329 RTX4090D",
+    "source_local_commit": "593bafa57a98bff905aa5a7c31b6cfa087a6b170",
+    "full_rows": 18,
+    "pilot_rows": 18,
+    "CPU_assignments": 72,
+    "new_full_image_forwards": 121856,
+    "new_pilot_image_forwards": 1152,
+    "new_defense_updates": 0,
+    "new_AGA_calls": 0,
+    "context_selected_scores": 576,
+    "maximum_replay_error": 1.33514404296875e-05,
+    "evaluation_seconds": 176.7145117484033,
+    "TA_protected_target_percent": [
+      10.72,
+      9.545943454210203,
+      2.925531914893617
+    ],
+    "raw_manifest": "outputs/params_matching_20261031/manifest.json",
+    "raw_verified_locations": [
+      "local",
+      "10329 at completion"
+    ],
+    "conclusion": "Fixed MLP-only public weight matching did not recover PaRaMS; all standalone predictions unchanged. No full-architecture recovery claim.",
+    "completed_UTC_recorded": "2026-10-31T16:52:53.797791+00:00",
+    "CPU_prepare_attempt": {
+      "host": "12997",
+      "exit_code": 137,
+      "memory_limit_bytes": 2147483648,
+      "oom_kill_counter": 0,
+      "diagnosis": "Process killed before matching records; 2GiB limit is insufficient for the multiple-model implementation, but OS OOM cause not independently confirmed. No results produced; preserved.",
+      "local_evidence": "outputs/params_matching_20261031_cpu_attempt"
+    }
+  },
+  "baseline_distillation_comparison": {
+    "status": "completed_independently_verified",
+    "result": "results/params_reference/other_tasks/distillation.json",
+    "new_teacher_queries": 17928,
+    "new_training_steps": 0,
+    "new_AGA_calls": 0,
+    "new_defense_updates": 0,
+    "exact_protected_label_vectors_equal_to_unprotected": 6,
+    "student_result_reuse": "Three existing final unprotected students reused for Defense1 and PaRaMS; no independent new training repetition",
+    "raw_manifest": "outputs/baseline_teacher_queries_20261101/manifest.json"
   }
 }

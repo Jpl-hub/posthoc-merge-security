@@ -1,10 +1,14 @@
-# Large assets live exclusively on the rented server.
-checkpoints/
-checkpoint_candidates/
-task_vectors_checkpoints/
-data/
-external/
-.cache/
+# Data, checkpoints and author repositories stay on the experiment hosts.
+# Match directories and symbolic links alike.
+/checkpoints
+/checkpoint_candidates
+/task_vectors_checkpoints
+/data
+/external
+
+# Curated results belong in results/; raw runs and local reports stay off Git.
+/outputs/
+/output/
 *.pt
 *.pth
 *.safetensors
@@ -12,11 +16,9 @@ external/
 *.zip
 *.tar
 *.tar.gz
-
-# Derived paper previews; version vector figures and plotting source.
 results/phase3/*.png
 
-# Machine credentials, authentication and local tooling.
+# Credentials and machine-local tools.
 .env
 .env.*
 *.pem
@@ -25,40 +27,14 @@ id_ed25519*
 id_rsa*
 scripts/remote_bridge.py
 experiments/resource_probe.py
-tmp/
-.playwright/
-.playwright-cli/
-output/playwright/
+
+# Rebuildable caches and local environments.
+.cache/
+.venv/
 __pycache__/
 *.pyc
-.ruff_cache/
-.venv/
-
-# Retain curated lightweight scientific evidence, exclude raw downloads/logs.
-outputs/**/artifacts/
-outputs/**/*.response
-outputs/**/*.log
-outputs/**/environment.json
-outputs/**/resource_probe.json
-outputs/**/pip_freeze.txt
-
-# This gate uses only the curated calibration indices; full parent indices stay on server.
-outputs/2026-10-11/partner_nullspace_gate/training_indices.json
-
-# Phase 3 raw predictions, model artifacts and downloaded papers remain local/server.
-/outputs/phase3/
-
-# Full host inventories and raw migration backups remain in retained storage.
-/outputs/server_migration_20261027/
-
 .pytest_cache/
-/outputs/joint_function_20261027/
-
-/outputs/joint_conditional_20261027/
-
-/outputs/joint_task_response_20261027/
-
-# Exact matching permutations and pilot intermediates are retained in the campaign backup.
-/outputs/attack_generalization_20261028/matching/construction.json
-/outputs/attack_generalization_20261028/matching/known_permutation.json
-/outputs/attack_generalization_20261028/**/pilot/
+.ruff_cache/
+.playwright/
+.playwright-cli/
+tmp/

@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering\small
+\caption{PaRaMS under MLP weight matching. Accuracy (\%). TA coefficient 0.5.}
+\label{tab:params-mlp-matching}
+\begin{tabular}{llrrr}
+\toprule
+Task & Model & Standalone & Target & Partner \\
+\midrule
+MNIST & Unprotected & 99.69 & 99.37 & 92.50 \\
+MNIST & PaRaMS & 99.69 & 10.72 & 9.10 \\
+SVHN & Unprotected & 97.46 & 92.50 & 99.37 \\
+SVHN & PaRaMS & 97.46 & 9.55 & 9.82 \\
+DTD & Unprotected & 79.41 & 69.31 & 99.45 \\
+DTD & PaRaMS & 79.41 & 2.93 & 10.35 \\
+\bottomrule
+\end{tabular}
+\end{table}
+% Public-base and published weights only; no images in matching. Attention is unchanged.
+% MNIST partner: SVHN; SVHN/DTD partner: MNIST. No all-task mean.

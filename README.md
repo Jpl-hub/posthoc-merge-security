@@ -6,7 +6,7 @@
 
 ## 从哪里看代码
 
-当前计算机：3090，SSH 端口 **55548**。在编辑器中打开 **`/root/autodl-tmp/posthoc-merge-security`**，先看下表；`merge_security_20261009` 是历史资产目录。
+在仓库根目录查看以下入口。算法实现、实验入口和结果来源分开存放。
 
 | 内容 | 文件 | 看什么 |
 |---|---|---|
@@ -33,7 +33,7 @@
 
 最新三任务攻击对照已完成：TIES、DARE下仍有融合保护；已知末层MLP位置、用公开基座替换B及偏置后，融合准确率恢复至99.35%、92.39%、66.81%。两种结果的恢复操作和权限不同，详见[完整对照表](results/attack_generalization_20261028/attack_comparison.md)。
 
-同一数值防御二的[八专家融合评价](results/attack_generalization_20261028/eight_expert/comparison.md)已完成：固定TA0.2，MNIST/SVHN/DTD保护任务准确率为9.81%/6.70%/2.39%，AGA仅处理保护专家后为9.80%/6.70%/2.13%。表中同时保留无保护和伙伴结果。已补齐GTSRB和RESISC45，现有五个完整数据集；Cars、EuroSAT、SUN397仍缺失，不报八任务平均。
+同一数值防御二的[八专家融合评价](results/attack_generalization_20261028/eight_expert/comparison.md)已完成：固定TA0.2，MNIST/SVHN/DTD保护任务准确率为9.81%/6.70%/2.39%，AGA仅处理保护专家后为9.80%/6.70%/2.13%。表中同时保留无保护和伙伴结果。已补齐GTSRB、RESISC45、Cars和SUN397，现有七个完整评价数据集；EuroSAT的原始划分尚未核实，不报八任务平均。[七数据集表](results/attack_generalization_20261028/sun397/seven_dataset.md)。
 
 参数置换退出后续研究，不再追加实验。既有结果只作[历史对照](results/task_directed_pairing/summary.md)，保留恢复实验所需的正对照。
 
@@ -62,7 +62,7 @@ experiment/
   defense2.py                # 当前数值防御二的固定 MNIST 构造源码
   native.py                  # 冻结发布的独立任务检查
   main_table.py              # 主实验：TA / 原版 AGA / 匹配基线
-  eight_task.py              # 八专家融合及Unmask，当前评价五个数据集
+  eight_task.py              # 八专家融合及Unmask；当前主表已有七个数据集
   recover.py                 # 权重恢复与公开匹配
   distill.py                 # 固定数据预算的教师标签恢复，攻击方训练
   report.py                  # 论文图表入口，无需模型或 GPU
@@ -89,7 +89,7 @@ data/dtd/...
 data/{train,test}_32x32.mat
 ```
 
-模型清单及 SHA：`configs/checkpoints.json`。当前计算使用55548的3090；12997为CPU存储，保留上一批原始分数。55548上的八专家及分类头已通过原清单核对，完整八数据集仍未齐全。具体资产与备份以`research_state.json`及各批结果索引为准。
+模型清单及SHA见`configs/checkpoints.json`。模型、数据和原始分数保存在实验机器，运行时按固定协议加载；各批结果记录输入版本和来源。
 
 ## 常用入口
 
@@ -128,7 +128,7 @@ python -m experiment.eight_task --help
 python -m experiment.recover --help
 ```
 
-八专家参与不等于八数据集已评价；当前数值发布已评价 MNIST、SVHN、DTD、GTSRB、RESISC45，旧配置的三数据集范围保留。TA/TIES/DARE 是融合算法，AGA 是恢复攻击。已知家族匹配另外报告，不能把它写成原版 AGA。
+八专家参与不等于八数据集已评价；当前数值发布已评价 MNIST、SVHN、DTD、GTSRB、RESISC45、Cars、SUN397，旧配置的三数据集范围保留。TA/TIES/DARE 是融合算法，AGA 是恢复攻击。已知家族匹配另外报告，不能把它写成原版 AGA。
 
 ## 检查
 
@@ -141,3 +141,7 @@ pytest -q
 测试包含完整小型 Transformer 的配套换序、有限交换的穷举对照、原算法函数体记录、恢复输入边界、逻辑 Q/K/V 距离、输出防覆盖，以及论文 MD／TeX 与原结果一致性。测试不新增模型训练或改变科研结论。
 
 其他补充实验的历史复现及当前验证范围见[工程说明](docs/engineering.md)。
+
+[PaRaMS同条件MLP匹配](results/params_reference/other_tasks/matching.md)已完成：独立预测保持，融合目标准确率为10.72%、9.55%、2.93%，该固定匹配没有恢复PaRaMS。只匹配MLP，与另处理注意力的AGA分开报告。
+
+[同条件蒸馏对比](results/params_reference/other_tasks/distillation.md)已完成标签核对：防御一、PaRaMS与无保护模型在固定三组训练图片上的硬标签完全相同，因此明确复用同一批既有学生。此攻击额外需要无标签图片和训练，不能与无数据AGA混列。

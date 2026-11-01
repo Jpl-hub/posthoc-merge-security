@@ -85,6 +85,62 @@ def save_student(model, base, path):
     return dict(path=str(path), sha256=digest(path), reference="public_base")
 
 
+def query(model, head, images, batch_size):
+    """Query fixed teacher labels; neither teacher nor head is trained."""
+    with torch.no_grad():
+        model.cuda().eval()
+        head.cuda().eval()
+        scores = torch.cat([head(model(x.cuda())).cpu() for x in images.split(batch_size)])
+        model.cpu()
+        head.cpu()
+    assert torch.isfinite(scores).all()
+    return scores
+
+
+def compare_queries(protocol):
+    """Check whether fixed defenses give the same existing distillation problem."""
+    cfg = json.loads(Path(protocol).read_text())
+    check_files(cfg["source_sha256"])
+    check_files(cfg["historical_inputs"])
+    out = new_output(cfg["output"], cfg)
+    initialize()
+    torch.use_deterministic_algorithms(True)
+    reports = []
+    for case in cfg["cases"]:
+        rule = json.loads(Path(case["training_protocol"]).read_text())
+        original = load_checkpoint(f"{rule['target']}/finetuned.pt")
+        head = load_checkpoint(f"head_{rule['target']}.pt")
+        data = dataset(rule["target"], "data", original.val_preprocess, training=True)
+        indices = torch.randperm(len(data), generator=torch.Generator().manual_seed(
+            rule["data_seed"]))[:rule["unlabeled_n"]].tolist()
+        images = torch.stack([data[i][0] for i in indices])
+        assert hashlib.sha256(images.numpy().tobytes()).hexdigest() == case["image_tensor_sha256"]
+        previous = torch.load(case["previous_queries"], map_location="cpu", weights_only=False)
+        assert indices == previous["indices"]
+        reference = previous["labels"]
+        if isinstance(reference, dict):
+            reference = reference["Unprotected"]
+        scores = {"Unprotected": query(original, head, images, rule["batch_size"])}
+        assert torch.equal(scores["Unprotected"].argmax(1), reference)
+        hashes = {"Unprotected": parameter_hash(original.state_dict())}
+        for name, release in case["releases"].items():
+            teacher = apply(original, release)
+            hashes[name] = parameter_hash(teacher.state_dict())
+            scores[name] = query(teacher, head, images, rule["batch_size"])
+            assert hashes[name] == parameter_hash(teacher.state_dict())
+            del teacher
+        path = out / (rule["target"] + "_queries.pt")
+        torch.save(dict(scores=scores, indices=indices), path)
+        reports.append(dict(target=rule["target"], image_tensor_sha256=case["image_tensor_sha256"],
+            queries_per_teacher=len(indices), teacher_parameter_sha256=hashes,
+            raw_sha256=digest(path), ground_truth_labels_used=False,
+            disagreements={name: int((s.argmax(1) != reference).sum()) for name, s in scores.items()},
+            new_student_backward_steps=0, new_defense_updates=0))
+        save_json(out / "comparison.json", reports)
+        print("QUERY_COMPARISON", reports[-1], flush=True)
+        del original, head, data, images, previous, scores
+
+
 def run(protocol):
     cfg = json.loads(Path(protocol).read_text())
     check_files(cfg["source_sha256"])
@@ -124,13 +180,7 @@ def run(protocol):
     for name, model in [("Unprotected", original), ("Defense2", teacher)]:
         if name in labels:
             continue
-        with torch.no_grad():
-            model.cuda().eval()
-            head.cuda().eval()
-            scores[name] = torch.cat([head(model(x.cuda())).cpu() for x in images.split(cfg["batch_size"])])
-            model.cpu()
-            head.cpu()
-        assert torch.isfinite(scores[name]).all()
+        scores[name] = query(model, head, images, cfg["batch_size"])
         labels[name] = scores[name].argmax(1)
     torch.save(dict(scores=scores, labels=labels, indices=indices), out / "teacher_queries.pt")
     save_json(out / "training_indices.json", indices)
@@ -206,6 +256,7 @@ def run(protocol):
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--protocol", required=True)
+    p.add_argument("--compare-queries", action="store_true", help="Compare fixed teacher labels only; no training or test evaluation")
     args = p.parse_args()
     require_root()
-    run(args.protocol)
+    (compare_queries if args.compare_queries else run)(args.protocol)
