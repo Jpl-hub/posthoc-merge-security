@@ -24,7 +24,7 @@
     "GPU_memory_MiB": 24576,
     "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "secondary_ssh_control_socket": "/tmp/posthoc_3090_55548.sock",
+    "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
@@ -33,7 +33,7 @@
     "primary_available_GiB": 28,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "One target-reference MNIST point fully evaluated and independently verified;no GPU job.",
+    "primary_workspace_status": "MNIST target-reference evaluation, jointMLP/reset checks and source-only bound completed;no GPU job.",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -88,10 +88,10 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-11-01T15:10:38.138616+00:00",
+  "updated_utc": "2026-11-01T15:52:57.834362+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Cross-task expansion of this point deferred. Derive a construction condition that also addresses bias/B jointmatching while retaining standalone compensation;no new layers,rank/seed/step sweep or optimizer yet.",
+  "next_action": "Derive joint A/bias/B numerical construction using complete incident-weight matching and native compensation. Fixed-B-only optimization does not address public reset. No new layers or optimizer yet; this candidate remains closed.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -110,8 +110,8 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "Current task-reference result pending publication;GitHub tool unavailable in this turn. Last verified remote commit retained in receipt.",
-    "last_verified_commit": "2e5a94d447d095b49bd812d3c930b45003889695",
+    "status": "Pending: GitHub read succeeded,write tool unavailable;HTTPSfallback connection refused. No new remote commit.",
+    "last_verified_commit": "89a7e3cc40a5890f65f5a55922f828a514b9d902",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -1524,7 +1524,7 @@
     "context_score_replays": 224,
     "maximum_replay_error": 2.288818359375e-05,
     "conclusion": "Improves all fusion/calibration columns relative to prior calibrated objective;rawTA remains worse than originalclass0point. Only MNIST protected task validated. Do not replace3taskmain or claimSVD contribution.",
-    "next": "Cross-task expansion of this point deferred. Derive a construction condition that also addresses bias/B jointmatching while retaining standalone compensation;no new layers,rank/seed/step sweep or optimizer yet.",
+    "next": "Derive joint A/bias/B numerical construction using complete incident-weight matching and native compensation. Fixed-B-only optimization does not address public reset. No new layers or optimizer yet; this candidate remains closed.",
     "additional_recovery": {
       "status": "completed_independently_verified",
       "MLP_matching_native_target_partner": [
@@ -1540,6 +1540,12 @@
       "maximum_score_error": 9.5367431640625e-06,
       "last_MLP_changed_units": 127,
       "AGA_vs_joint_assignment_different_rows": 3071
+    },
+    "fixed_A_source_condition": {
+      "status": "necessary comparison feasible;not a new defense",
+      "minimum_joint_identity_minus_AGA": -3436.0662482350417,
+      "numpy_error": 2.2737367544323206e-11,
+      "new_candidates": 0
     }
   }
 }

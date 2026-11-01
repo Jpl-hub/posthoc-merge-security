@@ -1,14 +1,14 @@
 {
   "status": "task_reference_recovery_checks_complete; joint_MLP_matching_weakness_identified",
-  "updated_utc": "2026-11-01T15:10:38.153905+00:00",
+  "updated_utc": "2026-11-01T15:52:57.846735+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Cross-task expansion of this point deferred. Derive a construction condition that also addresses bias/B jointmatching while retaining standalone compensation;no new layers,rank/seed/step sweep or optimizer yet.",
+  "next_action": "Derive joint A/bias/B numerical construction using complete incident-weight matching and native compensation. Fixed-B-only optimization does not address public reset. No new layers or optimizer yet; this candidate remains closed.",
   "github_sync": {
-    "status": "Current task-reference result pending publication;GitHub tool unavailable in this turn. Last verified remote commit retained in receipt.",
-    "last_verified_commit": "2e5a94d447d095b49bd812d3c930b45003889695",
+    "status": "Pending: GitHub read succeeded,write tool unavailable;HTTPSfallback connection refused. No new remote commit.",
+    "last_verified_commit": "89a7e3cc40a5890f65f5a55922f828a514b9d902",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -1466,7 +1466,7 @@
     "context_score_replays": 224,
     "maximum_replay_error": 2.288818359375e-05,
     "conclusion": "Improves all fusion/calibration columns relative to prior calibrated objective;rawTA remains worse than originalclass0point. Only MNIST protected task validated. Do not replace3taskmain or claimSVD contribution.",
-    "next": "Cross-task expansion of this point deferred. Derive a construction condition that also addresses bias/B jointmatching while retaining standalone compensation;no new layers,rank/seed/step sweep or optimizer yet.",
+    "next": "Derive joint A/bias/B numerical construction using complete incident-weight matching and native compensation. Fixed-B-only optimization does not address public reset. No new layers or optimizer yet; this candidate remains closed.",
     "additional_recovery": {
       "status": "completed_independently_verified",
       "MLP_matching_native_target_partner": [
@@ -1482,6 +1482,12 @@
       "maximum_score_error": 9.5367431640625e-06,
       "last_MLP_changed_units": 127,
       "AGA_vs_joint_assignment_different_rows": 3071
+    },
+    "fixed_A_source_condition": {
+      "status": "necessary comparison feasible;not a new defense",
+      "minimum_joint_identity_minus_AGA": -3436.0662482350417,
+      "numpy_error": 2.2737367544323206e-11,
+      "new_candidates": 0
     }
   }
 }
