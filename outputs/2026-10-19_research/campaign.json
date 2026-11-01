@@ -1,14 +1,22 @@
 {
-  "status": "completed_attack_comparison; core_method_remains_incomplete",
-  "updated_utc": "2026-11-01T09:51:50.282924+00:00",
+  "status": "running_current_ProDistill_comparison; core_method_incomplete",
+  "updated_utc": "2026-11-01T09:55:41.684491+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Launch registered current ProDistill comparison on41558; no further attack proliferation. Core output-calibration weakness and DTD retention unresolved.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "41558",
+      "pid": 26624,
+      "output": "outputs/prodistill_current_20261101",
+      "log": "outputs/prodistill_current_20261101.log",
+      "kind": "ProDistill recovery comparison, not defense construction"
+    }
+  ],
+  "next_action": "Let existing ProDistill batch finish; independently compare all target/partner scores and update existing tables. No new defense search or duplicate attacks while it runs. Manual followup in about30minutes.",
   "github_sync": {
-    "status": "Pending publication: connector tools disappeared during current turn; direct GitHub HTTPS connection refused. Local and retained-server synchronization continue.",
-    "last_verified_commit": "f65a7f7bdbecf4284d9481f22426ddd37cebb4e3",
+    "status": "Connector restored; science/source comparison read back at143a491e; active-status update follows",
+    "last_verified_commit": "143a491e545912f483cd5bf35089ad499b2254a7",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -1311,13 +1319,17 @@
     "interpretation": "All72 MLP assignments are identity. Defense1 changes the final LayerNorm bias, outside these MLP coordinates. This completes a matched attack comparison, not evidence of resistance to arbitrary weight alignment."
   },
   "ProDistill_current": {
-    "status": "registered_not_started",
+    "status": "running_frozen_protocol",
     "protocol": "results/attack_generalization_20261028/prodistill/protocol.json",
     "output": "outputs/prodistill_current_20261101",
     "expected_full_rows": 24,
     "maximum_new_backward_steps": 9600,
     "defense_updates": 0,
     "new_AGA_calls": 0,
-    "purpose": "Fill current-release feature-distillation recovery comparison from Trap2; old results are not substituted."
+    "purpose": "Fill current-release feature-distillation recovery comparison from Trap2; old results are not substituted.",
+    "host": "41558",
+    "process_id": 26624,
+    "source_commit": "72d4a25b05ec7f830bb6257a2ad1c4827ad517f6",
+    "last_observed": "MNIST PaRaMS and Defense2 coefficient optimization completed; no new test results yet; serial remaining tasks and full evaluation running"
   }
 }
