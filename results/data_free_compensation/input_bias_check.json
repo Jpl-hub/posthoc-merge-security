@@ -1,5 +1,5 @@
 {
-  "status": "registered_before_execution",
+  "status": "source_condition_passed;one_classification_candidate_registered",
   "registered_utc": "2026-11-01T16:08:43.347189+00:00",
   "question": "Can the input bias be included in weight-matching disruption while preserving task-centered preactivations and permitting the same nonlinear output compensation?",
   "construction_inputs": [
@@ -44,5 +44,73 @@
       "meaning": "Jointincident matching uses incoming,bias,outgoing terms;our CLIP MLP native adaptation retains these terms."
     }
   ],
-  "novelty_boundary": "Finite numerical change in task complement with a coupled bias and nonlinear B compensation. Not a permutation/scaling symmetry or a revival of the exact hidden-affine gauge;not a new optimizer or proven novel defense."
+  "novelty_boundary": "Finite numerical change in task complement with a coupled bias and nonlinear B compensation. Not a permutation/scaling symmetry or a revival of the exact hidden-affine gauge;not a new optimizer or proven novel defense.",
+  "source_result": {
+    "status": "completed_source_only",
+    "source_sha256": "34425b25152c779a5355e1b28f0b4a1f2ac4bcdb17c846c50df38fa12e5efd5f",
+    "driver_sha256": "4074bad4d29022b5eb1795e2cf076f38c30ea4b4ac07c2f9b81e69afbdff1eec",
+    "synthetic_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "constraint_FP64": {
+      "left_task_max": 1.6979039701991994e-14,
+      "right_task_max": 1.7176032619254976e-13,
+      "center_max": 0.0,
+      "incoming_anchor_max": 5.315192730392937e-15
+    },
+    "small_independent_KKT_error": 1.1518563880486e-15,
+    "metrics": {
+      "A_relative": 1.0957239261497829,
+      "input_bias_relative": 1.0126089870747361,
+      "B_relative": 0.6072931203031633,
+      "logical_D": 1.6129850178166147
+    },
+    "native_minimum": 0.04218535415168745,
+    "native_FP32": 0.042185354151691,
+    "native_limit": 1.2644836124713486,
+    "source_teacher_retained": 800,
+    "source_n": 800,
+    "numpy_score_max_error": 2.6645352591003757e-14,
+    "matching_changed_units": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      462
+    ],
+    "source_feasible": true,
+    "new_real_images": 0,
+    "new_optimizer_steps": 0,
+    "saved_models": 0,
+    "seconds": 13.963679300621152,
+    "scope": "One incoming-affine condition and unchanged nonlinear output-compensation bound. Matching count is not classification safety; no natural-task/fusion evaluation."
+  },
+  "source_preregistration_commit": "bb80dab",
+  "construction": {
+    "registered_utc": "2026-11-01T16:12:55.832342+00:00",
+    "output": "outputs/input_bias_joint_20261102",
+    "source_sha256": "2b66da02ea8e94aaa97010b99f15757ab7f42d477b0b269cc550cd8f95a5c495",
+    "changes": "Same source-feasible mean-compensated A/a. Same existing500step ellipsoid solver and true-class/calibration objective with two new contexts for exact jointMLP matching against publicbase/cleantarget. Assignment recomputed in every objective including line search. OriginalA-onlyAGA and directcontexts retained.",
+    "fixed": "same rank32,lastlayer,generatedviews,16384layerinputs,head,500steps,Armijo,no source/partner/natural replacement",
+    "matching_gradient": "Differentiate classifier through R for the current exact assignment;discrete assignment treated as locally constant. Finitedifference checked. Actual objective and assignment recomputed on every proposed point;stalled line search ends the fixed run. No guarantee of global minmax.",
+    "native_tau": 1.2644836124713486,
+    "ridge": 6.0394128536670705e-05,
+    "source_gate": "FP32nativeconstraint plus all800native teacher classes retained;all six raw and source-calibrated correct counts lower than initial RN. One final iterate only. If failure,no natural eval or restart.",
+    "new_candidates": 1,
+    "real_construction_images": 0,
+    "teacher_training_updates": 0,
+    "maximum_seconds": 1800,
+    "after_source": "If source passes,freeze exactpoint then fullnativeMNIST,TA.5/SVHN,authorAGA target/both,independentjointMLPmatching,and existing64randominputoutputcalibration. Testdata never enter construction. PublicB+breset evaluated separately on same point,without retuning.",
+    "not_claimed": [
+      "Noveloptimizer",
+      "SVDcontribution",
+      "Allattackrobustness",
+      "Unknownpartnerguarantee"
+    ]
+  }
 }
