@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense1 and numerical Defense2: attack generalization, matched controls and complete evaluation; no new defense search.",
-  "status": "migration_complete_stopped_at_user_request",
+  "status": "research_resumed_preparing_matched_eight_expert_baseline",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -23,18 +23,17 @@
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
     "active_GPU_jobs": 0,
-    "secondary_root": "/root/autodl-tmp/posthoc-attack-20261028",
+    "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_55548.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
-    "secondary_role": "Retained CPU archive and engineering backup; other hosts to be released after content verification",
-    "verified_utc": "2026-11-01T04:31:12.930303+00:00",
-    "primary_available_GiB": 48,
+    "secondary_role": "CPU archive and current-source backup; no GPU workloads",
+    "verified_utc": "2026-11-01T04:54:24.490572+00:00",
+    "primary_available_GiB": 31,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "previous_primary_role": "50837 accessible in CPU mode; existing assets preserved",
-    "primary_workspace_status": "Current source synchronized. Core releases, raw scores and required migrated assets verified;research stopped at user request.",
+    "primary_workspace_status": "Current research resumed; existing PaRaMS weights/data being activated from retained archive. No dependency on released10329/12997.",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -89,10 +88,22 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-11-01T04:31:12.930303+00:00",
+  "updated_utc": "2026-11-01T04:54:24.490572+00:00",
   "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Stopped at user request after verified migration.10329 and12997 may be permanently released;retain41558 and55548. Wait for user to resume research.",
+  "research_jobs": [
+    {
+      "status": "preparing_verified_existing_inputs",
+      "protocol": "results/params_reference/eight_expert/protocol.json",
+      "output": "outputs/params_eight_20261101",
+      "host": "41558",
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0,
+      "new_full_production_rows": 36,
+      "existing_score_rows": 48,
+      "evaluation_scope": "eight participating experts; MNIST/SVHN/DTD protected; seven evaluated datasets, EuroSAT excluded"
+    }
+  ],
+  "next_action": "Finish copying only required frozen assets from55548, verify SHA and existing score references, then pilot/full PaRaMS eight-expert seven-dataset comparison and independent recount. No new defense search, no repeat completed evaluations.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -111,8 +122,9 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "Local completed results pending; GitHub tools unavailable in current session",
-    "last_verified_commit": "6324a47fc1bc40c32dca9ae0be158d0c0126b2a6"
+    "status": "Completed matching/calibration/distillation and engineering changes published and read back",
+    "last_verified_commit": "9bfc3128b5754a25ae6870b00f8ffd8f20d43207",
+    "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
     "A_only_native_TA_AGAtarget_AGAboth": [
@@ -1303,5 +1315,16 @@
     "exact_protected_label_vectors_equal_to_unprotected": 6,
     "student_result_reuse": "Three existing final unprotected students reused for Defense1 and PaRaMS; no independent new training repetition",
     "raw_manifest": "outputs/baseline_teacher_queries_20261101/manifest.json"
+  },
+  "PaRaMS_eight_expert": {
+    "status": "preparing_verified_existing_inputs",
+    "protocol": "results/params_reference/eight_expert/protocol.json",
+    "output": "outputs/params_eight_20261101",
+    "host": "41558",
+    "new_defense_weights": 0,
+    "new_AGA_calls": 0,
+    "new_full_production_rows": 36,
+    "existing_score_rows": 48,
+    "evaluation_scope": "eight participating experts; MNIST/SVHN/DTD protected; seven evaluated datasets, EuroSAT excluded"
   }
 }
