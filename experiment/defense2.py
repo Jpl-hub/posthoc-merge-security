@@ -15,16 +15,20 @@ import torch.nn.functional as F
 from _impl.attacks import load_author
 from _impl.io import digest
 from _impl.metrics import logical_parameter_distance
-from _impl.models import checked_models, initialize
+from _impl.merge import merge
+from _impl.models import apply, checked_models, initialize
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--calibration-aware", action="store_true")
+    parser.add_argument("--task-reference", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.calibration_aware and args.output is None:
         parser.error("--calibration-aware requires a separate --output directory")
+    if args.task_reference and not args.calibration_aware:
+        parser.error("--task-reference requires --calibration-aware")
     initialize()
     torch.set_default_dtype(torch.float64)
     start = time.perf_counter()
@@ -72,6 +76,41 @@ def main():
     assert sorted(pi.tolist()) == list(range(len(A)))
     Rorig = torch.cat([B, b[:, None]], 1)
     cache = {name: {key: to(v) for (key, v) in row.items()} for (name, row) in raw["cache"].items()}
+    public_names = ["direct", "recovered"]
+    if args.task_reference:
+        # The second reference is the clean target itself, never another task.
+        # Its direct half-publication prefix is exactly the native prefix.
+        cache["task_direct"] = cache["native"]
+        aligned = apply(expert, dict(
+            path="outputs/feature_noise/artifacts/original_AGA.pt",
+            sha256="07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+        ), full=True)
+        clean = merge(base, aligned, expert, .5).cuda().eval()
+        v = clean.model.visual
+        block = v.transformer.resblocks[11]
+        rows = dict(x=[], prefix=[], final=[], scores=[])
+        hooks = [
+            block.mlp.c_fc.register_forward_pre_hook(lambda m, a: rows["x"].append(a[0][0].cpu())),
+            block.ln_2.register_forward_pre_hook(lambda m, a: rows["prefix"].append(a[0][0].cpu())),
+            v.ln_post.register_forward_pre_hook(lambda m, a: rows["final"].append(a[0].cpu())),
+        ]
+        norm = expert.val_preprocess.transforms[-1]
+        mean = torch.tensor(norm.mean, device="cuda", dtype=torch.float32)[None, :, None, None]
+        std = torch.tensor(norm.std, device="cuda", dtype=torch.float32)[None, :, None, None]
+        with torch.no_grad():
+            for pixels in raw["final"].split(8):
+                x = F.interpolate(pixels.cuda(), (224, 224), mode="bilinear", align_corners=False)
+                images = (torch.cat([torch.roll(x, s, (2, 3)) for s in
+                                    [(0, 0), (7, 0), (-7, 0), (0, 7), (0, -7)]]) - mean) / std
+                rows["scores"].append((F.normalize(clean(images), dim=-1) @ head.weight.cuda().T).cpu())
+        for hook in hooks:
+            hook.remove()
+        rows = {key: torch.cat(value) for key, value in rows.items()}
+        torch.save(rows, out / "task_reference_cache.pt")
+        cache["task_recovered"] = {key: to(value) for key, value in rows.items()}
+        public_names += ["task_direct", "task_recovered"]
+        del clean, aligned, block, v, rows
+        torch.cuda.empty_cache()
     activate = lambda z: z * torch.sigmoid(1.702 * z)
 
     def augmented(x):
@@ -132,24 +171,27 @@ def main():
     W = to(head.weight)
     assert float(head.bias.abs().max()) == 0
     eps = expert.model.visual.ln_post.eps
-    for name in ["native", "direct", "recovered"]:
+    for name in ["native"] + public_names:
         x = cache[name]["x"]
         if name == "native":
             H = activate(x @ Ap.T + a).T
             fixed[name] = cache[name]["prefix"].T
             hidden[name] = torch.cat([H, torch.ones(1, H.shape[1], device="cuda")], 0)
         else:
-            (AA, aa) = (Ap, a) if name == "direct" else (Ap[pi], a[pi])
-            H = activate(x @ ((AA + A0) / 2).T + (aa + a0) / 2).T
-            fixed[name] = cache[name]["prefix"].T + (B0 @ H + b0[:, None]) / 2
-            if name == "recovered":
+            recovered_context = name.endswith("recovered")
+            (AA, aa) = (Ap[pi], a[pi]) if recovered_context else (Ap, a)
+            Ar, ar, Br, br = (A, a, B, b) if name.startswith("task_") else (A0, a0, B0, b0)
+            H = activate(x @ ((AA + Ar) / 2).T + (aa + ar) / 2).T
+            fixed[name] = cache[name]["prefix"].T + (Br @ H + br[:, None]) / 2
+            if recovered_context:
                 back = torch.empty_like(H)
                 back[pi] = H
                 H = back
             hidden[name] = torch.cat([H, torch.ones(1, H.shape[1], device="cuda")], 0) / 2
         names = ["model.visual.ln_post.weight", "model.visual.ln_post.bias", "model.visual.proj"]
         readouts[name] = [
-            to(s[key] if name == "native" else (s[key] + bs[key]) / 2) for key in names
+            to(s[key] if name == "native" or name.startswith("task_") else (s[key] + bs[key]) / 2)
+            for key in names
         ]
 
     def classify(r, params):
@@ -179,7 +221,7 @@ def main():
     def public(R):
         scores = {
             name: classify(fixed[name] + R @ hidden[name], readouts[name])
-            for name in ["direct", "recovered"]
+            for name in public_names
         }
         if args.calibration_aware:
             # Reduce correct-class probability before and after calibration;
@@ -309,8 +351,9 @@ def main():
             final_accuracy["native"] >= initial_accuracy["native"]
             and all(
                 final_accuracy[n + "_calibrated"] < initial_accuracy[n + "_calibrated"]
-                for n in ["direct", "recovered"]
+                for n in public_names
             )
+            and (not args.task_reference or all(final_accuracy[n] < initial_accuracy[n] for n in public_names))
             and native(Rf) <= tau + 1e-5 * (1 + abs(tau))
         )
     result = dict(
@@ -321,6 +364,9 @@ def main():
         source_cache_sha256=meta["source_arrays_sha256"],
         source_counts=source_counts,
         calibration_aware=args.calibration_aware,
+        task_reference=args.task_reference,
+        public_contexts=public_names,
+        additional_clean_synthetic_forwards=800 if args.task_reference else 0,
         initial_source_accuracy=initial_accuracy,
         final_source_accuracy=final_accuracy,
         source_feasible=source_feasible,
