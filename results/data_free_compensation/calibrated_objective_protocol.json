@@ -52,5 +52,18 @@
     "driver_sha256": "3a36be6770ce8954bcb3247affba5326170aa9239aa6a3ab01c9a5ec2101cc40",
     "calibration_source_sha256": "7813f182c32b8401534a8c7847a3ff04458b87e25e0dc389be73a793f56fe4d9",
     "calibration_source_change": "Prior executed extension source; only expected row counts reduced from two task cases to one."
+  },
+  "input_partner_check": {
+    "status": "fixed_before_diagnostic_evaluation",
+    "registered_utc": "2026-11-01T11:59:50.640842+00:00",
+    "question": "Separate input-distribution transfer from partner-context transfer for the unchanged calibration-aware candidate.",
+    "point_sha256": "95394048f0d6a75cbd7dd8620e4a791514be8279c6a029f8b196bcdc2d8e12ea",
+    "source_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "driver_sha256": "607a5b332004c4a54c8b46d2fda20c2141c1561b2d3fb7b92410206859111457",
+    "output": "outputs/calibrated_objective_20261101/input_partner",
+    "design": "Cross original 800 clean synthetic views / full10000MNIST with public-base / actualSVHN partner. Matched unprotected/protected, direct/AGA-target atTA.5. Reuse all4 existing naturalSVHN rows;12 new rows,46400 first-pass image forwards plus original-batch selected replay.",
+    "scope": "Read-only diagnosis;zero new parameters/AGA/optimization. No natural or partner-dependent directions, examples or fitted quantities may enter construction. Synthetic labels are frozen teacher classes; not natural accuracy or independent800samples.",
+    "interpretation": "If natural public-base protection is weak, source-to-natural transfer already fails without a new partner. If synthetic SVHN protection is weak, partner-context transfer independently fails. Report all cells and interactions; neither test is a universal impossibility or method requirement.",
+    "calibration": "No new calibrated attack in this diagnosis; formal64noise results from the completed experiment remain unchanged."
   }
 }
