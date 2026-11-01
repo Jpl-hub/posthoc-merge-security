@@ -13,10 +13,12 @@ AGA both + TA & 99.32 & 9.80 & 7.48 & 0.23 \\
 TA + calibration & 99.34 & 89.21 & 60.40 & 37.20 \\
 AGA target + TA + calibration & 99.29 & 56.34 & 21.56 & 2.39 \\
 AGA both + TA + calibration & 99.29 & 56.28 & 21.55 & 2.27 \\
+MLP matching + TA & 99.37 & 9.80 & -- & 77.62 \\
+Public B/bias replacement + TA & 99.35 & 99.35 & -- & 99.35 \\
 \bottomrule
 \end{tabular}
 \par\smallskip
-\begin{minipage}{\textwidth}\footnotesize TA uses coefficient 0.5 with an SVHN partner. Calibration uses 64 fixed random inputs. Higher standalone accuracy and lower merged target accuracy favor protection. The last column adds the clean target as a construction reference at the same half-merge coefficient. All variants use frozen experts and no real construction images. The last variant improves over the calibration-only objective but remains worse than the original on raw TA. Other protected tasks have not been tested for this variant; the original three-task releases remain unchanged.\end{minipage}
+\begin{minipage}{\textwidth}\footnotesize TA uses coefficient 0.5 with an SVHN partner. Calibration uses 64 fixed random inputs. Higher standalone accuracy and lower merged target accuracy favor protection. The last column adds the clean target as a construction reference at the same half-merge coefficient. All variants use frozen experts and no real construction images. The last variant improves over the calibration-only objective but remains worse than the original on raw TA. Joint MLP matching and public B/bias replacement still recover substantial accuracy. The latter is reused only after all 158 restored tensors and archived score hashes match. Dashes denote untested versions. Other protected tasks have not been tested for this variant; the original three-task releases remain unchanged.\end{minipage}
 \end{table*}
 
 \begin{table*}[t]

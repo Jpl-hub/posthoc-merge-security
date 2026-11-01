@@ -31,6 +31,8 @@
 
 独立准确率分别下降0.08、0.48、3.30个百分点。DTD曾因项目自设的0.5个百分点条件停止，本次补齐同一固定权重的融合评价；旧失败记录保留。相关论文没有统一的0.5个百分点标准，后续直接比较独立能力损失与保护效果。[尺度依据](notes/parameter_scale_and_threat_model.md)。A/B删项支持联合补偿，两项SVD单删项尚未显示准确率收益；当前A是最小范数行正交解，并未求解参数距离最大化。另列的无数据输出校正能部分恢复分类，与仅运行AGA分开报告。[方法、对照与完整结果](results/data_free_compensation/summary.md) · [核心方法审查](notes/phase2_coupling.md#oct26核心方法审查)。
 
+另一个MNIST构造对照加入输出校正目标和原专家参照，独立准确率99.60%，TA33.31%，AGA后再校正2.39%；但联合MLP匹配后为77.62%，公开B替换后为99.35%。这项改进尚未解决攻击泛化，不替换上面的三任务结果。[完整构造对照](results/data_free_compensation/calibrated_objective.md)。
+
 最新三任务攻击对照已完成：TIES、DARE下仍有融合保护；已知末层MLP位置、用公开基座替换B及偏置后，融合准确率恢复至99.35%、92.39%、66.81%。两种结果的恢复操作和权限不同，详见[完整对照表](results/attack_generalization_20261028/attack_comparison.md)。
 
 同一数值防御二的[八专家融合评价](results/attack_generalization_20261028/eight_expert/comparison.md)已完成：固定TA0.2，MNIST/SVHN/DTD保护任务准确率为9.81%/6.70%/2.39%，AGA仅处理保护专家后为9.80%/6.70%/2.13%。表中同时保留无保护和伙伴结果。已补齐GTSRB、RESISC45、Cars和SUN397，现有七个完整评价数据集；EuroSAT的原始划分尚未核实，不报八任务平均。[七数据集表](results/attack_generalization_20261028/sun397/seven_dataset.md)。
