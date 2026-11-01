@@ -1,0 +1,357 @@
+{
+  "status": "source_and_complete_native_passed; fusion_and_calibration_running",
+  "construction": {
+    "status": "sole_native_ellipse_classification_frozen_before_images",
+    "point_sha256": "95394048f0d6a75cbd7dd8620e4a791514be8279c6a029f8b196bcdc2d8e12ea",
+    "source_sha256": "d22b12eed3e1f120207fcce51c6bb5f1b0af4504dff82b38d1deb3fa79c91afe",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "source_counts": {
+      "native_teacher_retained": 800,
+      "native_n": 800,
+      "public_class0": {
+        "direct": 160,
+        "recovered": 0
+      }
+    },
+    "calibration_aware": true,
+    "initial_source_accuracy": {
+      "native": 800,
+      "direct": 800,
+      "recovered": 800,
+      "direct_calibrated": 800,
+      "recovered_calibrated": 800
+    },
+    "final_source_accuracy": {
+      "native": 800,
+      "direct": 0,
+      "recovered": 0,
+      "direct_calibrated": 0,
+      "recovered_calibrated": 0
+    },
+    "source_feasible": true,
+    "source_scores_sha256": "906c199f4cfae52e221c1a3f5f8a47f90a1a650d3618cd7c63c0a8c90223a5ad",
+    "public_objective": -16.474893439080056,
+    "native_limit": 1.2644836124713486,
+    "native_minimum": 0.06556075573925746,
+    "native_final": 0.34886917298400455,
+    "native_final_FP32": 0.34886917302816833,
+    "native_groups": [
+      {
+        "population": "task_layer",
+        "n": 16384,
+        "variance": 79.14436889714108
+      },
+      {
+        "population": "generated_native",
+        "n": 800,
+        "variance": 6.812061375916116
+      }
+    ],
+    "ridge": 6.0394128536670705e-05,
+    "original_tail_maximum_error": 1.942210661454169e-05,
+    "derivative_check": {
+      "finite_difference": -0.14183404406509226,
+      "autograd": -0.14183404389574783,
+      "relative_error": 1.4830914198961135e-10
+    },
+    "iterations": 500,
+    "stop_reason": "iteration_limit",
+    "metrics": {
+      "A_relative": 1.0273893035120727,
+      "B_relative": 2.850591181025706,
+      "logical_D": 3.0529269900271423
+    },
+    "seconds": 80.85637403465807,
+    "real_images": 0,
+    "new_full_AGA_calls": 0,
+    "matching_calls": 1,
+    "original_expert_updates": 0,
+    "synthetic_images_reused": 160,
+    "generated_views": 800,
+    "synthetic_native_layer_inputs": 16384,
+    "scope": "SharedB conditionalnativequadratic/completepublicclassifier construction. OrdinaryFW/ellipsoid/Choleskyarenotnewalgorithm. Finitegapnotglobalguarantee. NativeboundequalA-onlysourcevalue,notnaturalaccuracy. Head/classesexplicitallowed;no partner/test/closedB read."
+  },
+  "independent_source": {
+    "status": "independent_numpy_source_scores_passed",
+    "correct_counts": {
+      "native": 800,
+      "direct": 0,
+      "direct_calibrated": 0,
+      "recovered": 0,
+      "recovered_calibrated": 0
+    },
+    "objective": -16.474893439080056,
+    "objective_difference": 0.0,
+    "diagnostic_only_not_attack": {
+      "direct": {
+        "calibrated_confusion": [
+          [
+            0,
+            0,
+            0,
+            30,
+            42,
+            8,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            5,
+            75
+          ],
+          [
+            80,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            80,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            19,
+            61,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            80,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            68,
+            0,
+            0,
+            0,
+            0,
+            12,
+            0,
+            0
+          ]
+        ],
+        "best_label_permutation_correct_on_construction_source": 566,
+        "negated_scores_teacher_correct": 373
+      },
+      "recovered": {
+        "calibrated_confusion": [
+          [
+            0,
+            0,
+            0,
+            0,
+            18,
+            62,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            80,
+            0
+          ],
+          [
+            80,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            44,
+            0,
+            36,
+            0
+          ],
+          [
+            0,
+            44,
+            0,
+            0,
+            0,
+            0,
+            0,
+            36,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            38,
+            42,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "best_label_permutation_correct_on_construction_source": 468,
+        "negated_scores_teacher_correct": 319
+      }
+    },
+    "scope": "Source labels are used for mechanism analysis only; not supplied to an attacker, not a natural-task result or a new selection rule."
+  },
+  "native": {
+    "before_correct": 9969,
+    "after_correct": 9963,
+    "n": 10000,
+    "changed": 10,
+    "accuracy_loss_pp": 0.06,
+    "R": 21.137784414991806,
+    "historical_strict_passed": false,
+    "raw_sha256": "984e5c1bd72e53152d93fbf6a4fc89b035b23bc41dda9839523e669602afe381"
+  },
+  "evaluation_issue": {
+    "failure": "Old configs/evaluate.json refers to stale unrelated source hashes; AGA stopped before recovery.",
+    "resolution": "Retained failed log and directory; used same pinned author AGA and references with current source manifest in the run-specific protocol.",
+    "publication_changed": false
+  },
+  "limitations": "Synthetic source success and native retention do not establish merging protection. One fixed candidate; no hyperparameter selection. Source confusion shows class reassignment can be partly decoded when given teacher labels; no class-information erasure claimed."
+}

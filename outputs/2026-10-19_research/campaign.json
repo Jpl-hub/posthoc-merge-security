@@ -1,11 +1,17 @@
 {
-  "status": "completed_current_ProDistill_comparison; Defense2_recovered_on_digit_tasks",
-  "updated_utc": "2026-11-01T10:51:34.192094+00:00",
+  "status": "calibration_aware_native_complete; fusion_and_calibration_running",
+  "updated_utc": "2026-11-01T11:19:21.680070+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Core Defense2: replace the constant-class public objective with a finite input-dependent objective that survives class-offset calibration, while retaining independent function. First review known closed objectives and establish a source-only construction; no new model yet. DTD standalone and SVD contribution remain unresolved. No active GPU job.",
+  "research_jobs": [
+    {
+      "host": "41558",
+      "pid": 34415,
+      "log": "outputs/calibrated_objective_20261101/evaluation.log"
+    }
+  ],
+  "next_action": "Finish same frozen MNIST/SVHN TA.5 + AGA and existing64noise calibration; verify raw scores. No retries or other tasks yet.",
   "github_sync": {
     "status": "ProDistill results verified; publication pending because GitHub connector returns Unknown tool for fetch and fetch_file",
     "last_verified_commit": "c78417503174b2dc459751c2b5fbe462fea7e62a",
@@ -1355,5 +1361,30 @@
       ]
     }
   },
-  "evaluation_scope": "Current attack suite closed after ProDistill. Main concern: public weights/head and fixed random-input output calibration; known-module and real-data training recovery stay separate. No requirement to defeat every attack, no new attack families queued."
+  "evaluation_scope": "Current attack suite closed after ProDistill. Main concern: public weights/head and fixed random-input output calibration; known-module and real-data training recovery stay separate. No requirement to defeat every attack, no new attack families queued.",
+  "calibrated_objective": {
+    "status": "source_and_native_complete; frozen_evaluation_running",
+    "protocol": "results/data_free_compensation/calibrated_objective_protocol.json",
+    "output": "outputs/calibrated_objective_20261101",
+    "source_commit": "5d261d1",
+    "host": "41558",
+    "process_id": 34415,
+    "new_candidates": 1,
+    "real_construction_images": 0,
+    "teacher_training_updates": 0,
+    "changes": "Only raw-plus-calibrated true-class objective; same A, native constraint, sources and solver. Prior estimated on clean synthetic source; independent noise used only later for attack evaluation.",
+    "public_preregistration": false,
+    "github_reason": "Connector unavailable; fixed local commit before execution",
+    "result": "results/data_free_compensation/calibrated_objective_result.json",
+    "point_sha256": "95394048f0d6a75cbd7dd8620e4a791514be8279c6a029f8b196bcdc2d8e12ea",
+    "native_original": 99.69,
+    "native_protected": 99.63,
+    "source_teacher_retained": 800,
+    "source_public_raw_and_calibrated_correct": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
 }

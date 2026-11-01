@@ -40,5 +40,17 @@
   "evaluation_if_source_passes": "Freeze FP32 point before any natural input. Complete MNIST standalone; if predictions are materially preserved, same fixed TA.5 and author AGA target/both with SVHN, plus existing64noise correction and matched original controls. Native losses are reported, not tuned against. Do not call historically exposed tests blind. No extension to other tasks before judgment of this fixed point.",
   "novelty": "Known calibration, conditional gradient, taskSVD and compensation are tools, not new algorithms. This finite modification tests a specific objective defect; no new effective defense or SVD contribution is claimed.",
   "source_sha256": "d22b12eed3e1f120207fcce51c6bb5f1b0af4504dff82b38d1deb3fa79c91afe",
-  "fp32_bound_tolerance": "1e-5*(1+abs(tau)); FP64 optimization uses the unchanged 1e-8 allowance."
+  "fp32_bound_tolerance": "1e-5*(1+abs(tau)); FP64 optimization uses the unchanged 1e-8 allowance.",
+  "evaluation_execution": {
+    "source_passed": true,
+    "point_sha256": "95394048f0d6a75cbd7dd8620e4a791514be8279c6a029f8b196bcdc2d8e12ea",
+    "native_before_after": [
+      9969,
+      9963
+    ],
+    "decision": "Native change .06pp and10changed predictions; proceed with frozen evaluation, not a parameter change or threshold adjustment. Original strictR failure stays.",
+    "driver_sha256": "3a36be6770ce8954bcb3247affba5326170aa9239aa6a3ab01c9a5ec2101cc40",
+    "calibration_source_sha256": "7813f182c32b8401534a8c7847a3ff04458b87e25e0dc389be73a793f56fe4d9",
+    "calibration_source_change": "Prior executed extension source; only expected row counts reduced from two task cases to one."
+  }
 }
