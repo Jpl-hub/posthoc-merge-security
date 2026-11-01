@@ -31,11 +31,23 @@ def defense_comparison(directory):
         md = ["# " + title, "", note, "", "| " + " | ".join(headers) + " |",
               "| " + " | ".join(["---"] * len(headers)) + " |"]
         md += ["| " + " | ".join(row) + " |" for row in rows]
-        tex = [r"\begin{table*}[t]", r"\centering\small", r"\caption{" + title + r". Accuracy (\%).}",
-               r"\begin{tabular}{" + colspec + "}", r"\toprule",
-               " & ".join(headers) + r" \\", r"\midrule"]
-        tex += [" & ".join(row) + r" \\" for row in rows]
-        tex += [r"\bottomrule", r"\end{tabular}", r"\end{table*}", "% " + note]
+        tex = [r"\begin{table*}[t]", r"\centering\small", r"\setlength{\tabcolsep}{4pt}",
+               r"\caption{" + title + r". Accuracy (\%).}", r"\label{tab:" + name + "}",
+               r"\begin{tabular}{@{}" + colspec + "@{}}", r"\toprule"]
+        if name in ["attacks", "partners"]:
+            first = 4 if name == "attacks" else 3
+            tex += [" & " * (first - 1) + r"\multicolumn{5}{c}{Merged, no real attack data} & Extra data \\",
+                    rf"\cmidrule(lr){{{first}-{first + 4}}}\cmidrule(lr){{{first + 5}-{first + 5}}}"]
+        tex += [" & ".join(headers) + r" \\", r"\midrule"]
+        for index, row in enumerate(rows):
+            if index and row[0] != rows[index - 1][0]:
+                tex.append(r"\midrule")
+            elif name == "eight_expert" and index % 4 == 0 and index:
+                tex.append(r"\addlinespace")
+            tex.append(" & ".join(row) + r" \\")
+        tex += [r"\bottomrule", r"\end{tabular}", r"\par\smallskip",
+                r"\begin{minipage}{\textwidth}\footnotesize " + note + r"\end{minipage}",
+                r"\end{table*}"]
         (out / (name + ".md")).write_text("\n".join(md) + "\n")
         (out / (name + ".tex")).write_text("\n".join(tex) + "\n")
 
@@ -93,7 +105,9 @@ def defense_comparison(directory):
     calibrations = {m: read(p)["rows"] for m, p in [
         ("Defense 1", "results/phase3/bias_weight_only/attacks/calibration.json"),
         ("PaRaMS", "results/params_reference/other_tasks/calibration.json")]}
-    matching = read("results/params_reference/other_tasks/matching.json")["rows"]
+    matching = {m: read(p)["rows"] for m, p in [
+        ("PaRaMS", "results/params_reference/other_tasks/matching.json"),
+        ("Defense 1", "results/phase3/bias_weight_only/attacks/matching.json")]}
     students = read("results/params_reference/other_tasks/distillation.json")["rows"]
     original = read("results/phase3/results.json")
     baselines = {"MNIST": original}
@@ -128,16 +142,21 @@ def defense_comparison(directory):
                         columns[role] += [accuracy(one(records, defense=name, merger="TA", attack_scope=s, dataset=dataset)) for s in ["None", "Protected expert"]]
                     name = "Defense1" if method == "Defense 1" else ("PaRaMS" if task == "MNIST" else "PaRaMS_" + task)
                     columns[role] += [accuracy(one(calibrations[method], key="/".join([task, name, "TA", s, dataset]))) for s in ["None", "Protected expert"]]
-                    columns[role].append("--" if method == "Defense 1" else accuracy(one(matching, target=task, defense="PaRaMS", merger="TA", dataset=dataset)))
+                    columns[role].append(accuracy(one(matching[method], target=task, defense="Defense1" if method == "Defense 1" else "PaRaMS", merger="TA", dataset=dataset)))
                 teacher = "Defense 2" if method == "Defense 2" else "Unprotected / Defense 1 / PaRaMS"
                 student = one(students, task=task, teacher=teacher)
                 columns[role].append(f"{student['TA'] if role == 0 else student['partner']['None']:.2f}")
             target_rows.append([task, method] + columns[0])
             partner_rows.append([task + "/" + partner, method] + columns[1])
-    headers = ["Task", "Defense", "Native", "TA", "AGA", "Calibration", "AGA+calib.", "MLP match", "Distill."]
-    note = ("Two experts, TA coefficient 0.5. AGA processes only the protected expert. Calibration uses 64 fixed random images and no original expert or module location; MLP matching uses public weights. Distillation separately grants unlabeled training images and student training. -- means not evaluated. Defense 1 and PaRaMS reuse the same unprotected student after exact teacher-label equality checks; these are not independent training repetitions. Published native accuracy is shown before any attack; partner native accuracy is not tabulated. Known-module replacement is reported separately in attack_generalization_20261028/attack_comparison.md and phase3/bias_weight_only/attacks/projection.md.")
-    write("attacks", "Recovery attacks: protected task", headers, target_rows, note, "llrrrrrrr")
-    write("partners", "Recovery attacks: partner task", headers, partner_rows, note, "llrrrrrrr")
+    headers = ["Task", "Defense", "Standalone", "TA", "AGA", "Calib.", "AGA+calib.", "MLP match", "Distill."]
+    note = ("Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. "
+            "Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. "
+            "Distillation additionally uses unlabeled training images and student training. "
+            "Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide.")
+    write("attacks", "Recovery attacks on the protected task", headers, target_rows,
+          note + " Higher standalone accuracy and lower merged accuracy favor protection.", "llrrrrrrr")
+    write("partners", "Partner-task accuracy under the same attacks", ["Target/partner"] + headers[1:2] + headers[3:],
+          [row[:2] + row[3:] for row in partner_rows], note + " These are partner accuracies, not protection scores.", "llrrrrrr")
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 

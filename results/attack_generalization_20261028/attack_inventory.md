@@ -73,3 +73,5 @@ PaRaMS官方默认三任务的固定64随机输入校正已完成，见[结果�
 PaRaMS的三任务输出校正、MLP匹配、额外无标签数据蒸馏对照均已完成。固定MLP匹配未恢复PaRaMS；其三份发布的蒸馏硬标签与无保护完全相同，复用同一个学生问题，不算独立重训。防御一的蒸馏比较同时补齐。结果见 `results/params_reference/other_tasks/{calibration,matching,distillation}.md`。
 
 PaRaMS八专家下的七数据集对比现已完成：84条完整记录，48条同模型结果复用，36条新增。两种当前防御的对应实验未重跑；统一攻击与伙伴表及八专家表见[当前对比](../comparison/README.md)。仍有EuroSAT原划分缺口，不报完整八任务平均。
+
+2026-11-01：防御一补齐与防御二、PaRaMS相同的12层MLP匹配。三任务独立预测保持，TA目标9.80/6.70/2.13%，伙伴均按完整测试报告。72次匹配均为恒等排列，最终LayerNorm偏置不在该匹配范围内，因此只说明这一固定MLP攻击没有恢复，不能推广为全网对齐抗性。18完整及18pilot记录、576个原128批选定分数重放通过，逐类／配对／精确McNemar由NumPy和标量二项和复核。结果及源码引用见 `results/phase3/bias_weight_only/attacks/matching.json`，统一MD/TeX表见 `results/comparison`。

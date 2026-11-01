@@ -1,18 +1,18 @@
-# Recovery attacks: partner task
+# Partner-task accuracy under the same attacks
 
-Two experts, TA coefficient 0.5. AGA processes only the protected expert. Calibration uses 64 fixed random images and no original expert or module location; MLP matching uses public weights. Distillation separately grants unlabeled training images and student training. -- means not evaluated. Defense 1 and PaRaMS reuse the same unprotected student after exact teacher-label equality checks; these are not independent training repetitions. Published native accuracy is shown before any attack; partner native accuracy is not tabulated. Known-module replacement is reported separately in attack_generalization_20261028/attack_comparison.md and phase3/bias_weight_only/attacks/projection.md.
+Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distillation additionally uses unlabeled training images and student training. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. These are partner accuracies, not protection scores.
 
-| Task | Defense | Native | TA | AGA | Calibration | AGA+calib. | MLP match | Distill. |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| MNIST/SVHN | Unprotected | -- | 92.50 | 92.78 | 92.32 | 92.58 | 92.50 | 95.95 |
-| MNIST/SVHN | PaRaMS | -- | 9.15 | 92.79 | 11.89 | 92.58 | 9.10 | 95.95 |
-| MNIST/SVHN | Defense 1 | -- | 6.70 | 6.70 | 92.29 | 92.57 | -- | 95.95 |
-| MNIST/SVHN | Defense 2 | -- | 6.70 | 6.70 | 85.53 | 54.05 | 6.70 | 95.95 |
-| SVHN/MNIST | Unprotected | -- | 99.37 | 99.39 | 99.34 | 99.34 | 99.37 | 99.34 |
-| SVHN/MNIST | PaRaMS | -- | 8.95 | 99.39 | 8.35 | 99.34 | 9.82 | 99.34 |
-| SVHN/MNIST | Defense 1 | -- | 9.80 | 9.80 | 99.33 | 99.36 | -- | 99.34 |
-| SVHN/MNIST | Defense 2 | -- | 9.80 | 9.80 | 87.66 | 69.99 | 9.80 | 99.40 |
-| DTD/MNIST | Unprotected | -- | 99.45 | 99.45 | 99.46 | 99.45 | 99.45 | 99.53 |
-| DTD/MNIST | PaRaMS | -- | 8.92 | 99.45 | 8.57 | 99.45 | 10.35 | 99.53 |
-| DTD/MNIST | Defense 1 | -- | 9.80 | 9.80 | 99.47 | 99.47 | -- | 99.53 |
-| DTD/MNIST | Defense 2 | -- | 98.44 | 75.64 | 99.45 | 99.42 | 96.78 | 99.54 |
+| Target/partner | Defense | TA | AGA | Calib. | AGA+calib. | MLP match | Distill. |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| MNIST/SVHN | Unprotected | 92.50 | 92.78 | 92.32 | 92.58 | 92.50 | 95.95 |
+| MNIST/SVHN | PaRaMS | 9.15 | 92.79 | 11.89 | 92.58 | 9.10 | 95.95 |
+| MNIST/SVHN | Defense 1 | 6.70 | 6.70 | 92.29 | 92.57 | 6.70 | 95.95 |
+| MNIST/SVHN | Defense 2 | 6.70 | 6.70 | 85.53 | 54.05 | 6.70 | 95.95 |
+| SVHN/MNIST | Unprotected | 99.37 | 99.39 | 99.34 | 99.34 | 99.37 | 99.34 |
+| SVHN/MNIST | PaRaMS | 8.95 | 99.39 | 8.35 | 99.34 | 9.82 | 99.34 |
+| SVHN/MNIST | Defense 1 | 9.80 | 9.80 | 99.33 | 99.36 | 9.80 | 99.34 |
+| SVHN/MNIST | Defense 2 | 9.80 | 9.80 | 87.66 | 69.99 | 9.80 | 99.40 |
+| DTD/MNIST | Unprotected | 99.45 | 99.45 | 99.46 | 99.45 | 99.45 | 99.53 |
+| DTD/MNIST | PaRaMS | 8.92 | 99.45 | 8.57 | 99.45 | 10.35 | 99.53 |
+| DTD/MNIST | Defense 1 | 9.80 | 9.80 | 99.47 | 99.47 | 9.80 | 99.53 |
+| DTD/MNIST | Defense 2 | 98.44 | 75.64 | 99.45 | 99.42 | 96.78 | 99.54 |

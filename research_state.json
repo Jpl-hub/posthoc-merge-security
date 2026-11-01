@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
-  "active_focus": "Defense1 and numerical Defense2: attack generalization, matched controls and complete evaluation; no new defense search.",
-  "status": "Defense1_matching_running; PaRaMS_comparison_completed",
+  "active_focus": "Defense1/Defense2 matched recovery comparison completed for the registered batch; address output-calibration weakness and Defense2 task retention without blind search.",
+  "status": "completed_attack_comparison; core_method_remains_incomplete",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -22,18 +22,18 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_55548.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-01T06:09:15.435405+00:00",
+    "verified_utc": "2026-11-01T06:42:59.327113+00:00",
     "primary_available_GiB": 31,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "Fixed Defense1 MLP matching preparation/evaluation running; no new method construction.",
+    "primary_workspace_status": "Registered Defense1 matching finished exit0; no GPU process.",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -88,38 +88,10 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-11-01T06:09:15.435405+00:00",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "status": "running_parameter_matching_then_pilot_full",
-      "host": "41558",
-      "protocol": "results/phase3/bias_weight_only/attacks/matching_protocol.json",
-      "driver": "results/params_reference/other_tasks/matching_run.py",
-      "output": "outputs/bias_matching_20261101",
-      "log": "outputs/bias_matching_20261101.log",
-      "exit_code": "outputs/bias_matching_20261101.exit",
-      "queue_pid": 19256,
-      "python_pid": 19258,
-      "source_commit": "dc4f7315bc4446a7d676358dfbf9d27bf3aaddec",
-      "started_utc": "2026-11-01T06:08:42+00:00",
-      "tasks": [
-        "MNIST",
-        "SVHN",
-        "DTD"
-      ],
-      "existing_inputs_SHA_verified": 9,
-      "CPU_assignments": 72,
-      "full_rows": 18,
-      "pilot_rows": 18,
-      "new_defense_updates": 0,
-      "new_AGA_calls": 0,
-      "attacker_fitting_images": 0,
-      "scientific_scope": "Same fixed public MLP matching used for PaRaMS and Defense2; matched clean scores reused by parameter hash; source frozen before images",
-      "publication": "Local preregistration; GitHub tool unavailable"
-    }
-  ],
-  "next_action": "User manual follow-up in about20minutes; check41558 timeout19256/python19258 and outputs/bias_matching_20261101.{log,exit}. Do not duplicate. After success collect matching/full pilot independent validation, fill Defense1 MLP matching in existing results/comparison using integer counts and both task columns, archive unique outputs, sync when plugin available. No automatic wakeups. Core weaknesses: output calibration and public B+b replacement. EuroSAT original split still unresolved.",
+  "updated_utc": "2026-11-01T06:42:59.327113+00:00",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Completed fixed comparison; no GPU job. Focus core method on independent task retention plus resistance to output calibration, not extra B iterations or repeat matching. Review a distinct finite mechanism before construction; no test-driven tuning. Seven complete datasets remain seven; EuroSAT original split unresolved. Current MD/TeX comparison in results/comparison. Manual continuation only.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -138,7 +110,7 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "Latest completed PaRaMS batch and combined tables pending: plugin returned Unknown tool; no repeated attempt",
+    "status": "Pending publication: connector tools disappeared during current turn; direct GitHub HTTPS connection refused. Local and retained-server synchronization continue.",
     "last_verified_commit": "f65a7f7bdbecf4284d9481f22426ddd37cebb4e3",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -1361,30 +1333,39 @@
     ]
   },
   "Defense1_MLP_matching": {
-    "status": "running_parameter_matching_then_pilot_full",
-    "host": "41558",
-    "protocol": "results/phase3/bias_weight_only/attacks/matching_protocol.json",
-    "driver": "results/params_reference/other_tasks/matching_run.py",
+    "status": "completed_independently_verified",
+    "completed_utc_recorded": "2026-11-01T06:42:59.327113+00:00",
+    "result": "results/phase3/bias_weight_only/attacks/matching.json",
     "output": "outputs/bias_matching_20261101",
-    "log": "outputs/bias_matching_20261101.log",
-    "exit_code": "outputs/bias_matching_20261101.exit",
-    "queue_pid": 19256,
-    "python_pid": 19258,
+    "host": "41558",
     "source_commit": "dc4f7315bc4446a7d676358dfbf9d27bf3aaddec",
-    "started_utc": "2026-11-01T06:08:42+00:00",
-    "tasks": [
-      "MNIST",
-      "SVHN",
-      "DTD"
-    ],
-    "existing_inputs_SHA_verified": 9,
-    "CPU_assignments": 72,
     "full_rows": 18,
     "pilot_rows": 18,
-    "new_defense_updates": 0,
-    "new_AGA_calls": 0,
-    "attacker_fitting_images": 0,
-    "scientific_scope": "Same fixed public MLP matching used for PaRaMS and Defense2; matched clean scores reused by parameter hash; source frozen before images",
-    "publication": "Local preregistration; GitHub tool unavailable"
+    "context_score_replays": 576,
+    "maximum_replay_error": 1.33514404296875e-05,
+    "all_72_assignments_identity": true,
+    "independent_predictions_unchanged": true,
+    "target_TA": [
+      9.8,
+      6.699446834665028,
+      2.127659574468085
+    ],
+    "cost": {
+      "MLP_assignments": 72,
+      "matching_seconds": 48.08214775659144,
+      "evaluation_seconds": 149.6055972278118,
+      "new_full_image_forwards": 121856,
+      "new_pilot_image_forwards": 1152,
+      "original_batch_selected_score_replays": 576
+    },
+    "archive": {
+      "primary": "41558:outputs/bias_matching_20261101",
+      "secondary": "/root/posthoc_evaluation_cache/bias_matching_20261101",
+      "files": 43,
+      "bytes": 17454847,
+      "manifest_sha256": "36f5fd988f87921c448f0481b1cb12e44067f9067e5e20228dad2c875d357c22",
+      "all_file_SHA_equal": true
+    },
+    "interpretation": "All72 MLP assignments are identity. Defense1 changes the final LayerNorm bias, outside these MLP coordinates. This completes a matched attack comparison, not evidence of resistance to arbitrary weight alignment."
   }
 }

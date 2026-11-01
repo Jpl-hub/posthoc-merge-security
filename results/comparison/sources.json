@@ -12,6 +12,7 @@
     "results/phase3/bias_weight_only/attacks/calibration.json": "9d13fd7830455cb549ba82f2836689f6ffe08d1ddf3c3df6b88e6e773b1e707a",
     "results/params_reference/other_tasks/calibration.json": "6a56a1b503998e72eb33de480cae2d484a7535c700f7c800ff13ff8f5f420822",
     "results/params_reference/other_tasks/matching.json": "18a797f557382967d6ba9b70da98e31a4e77bbee676d7b2f0d79dbc8ba8b03ce",
+    "results/phase3/bias_weight_only/attacks/matching.json": "de2f0ae219766d5eeb907e06302b51dabe06a0df8171fab2f670d878515e5f54",
     "results/params_reference/other_tasks/distillation.json": "9ae322443d5465f5e62068ee0a18c7a23e2ec84caf36d7d1386309bd73273e30",
     "results/phase3/results.json": "017a6adee5999d6c42a4cf729dec9002ece10b06430083680a71ff85cd5b36e4",
     "results/params_reference/other_tasks/evaluation/full/00_DTD_MNIST/results.json": "0ef9889e837d4ac2c150ed192bf61746d555b77db1b67b02a22ad01fd1f1b30f",
@@ -2177,10 +2178,10 @@
       "headers": [
         "Task",
         "Defense",
-        "Native",
+        "Standalone",
         "TA",
         "AGA",
-        "Calibration",
+        "Calib.",
         "AGA+calib.",
         "MLP match",
         "Distill."
@@ -2216,7 +2217,7 @@
           "9.80",
           "99.35",
           "99.30",
-          "--",
+          "9.80",
           "95.53"
         ],
         [
@@ -2260,7 +2261,7 @@
           "6.70",
           "92.24",
           "91.25",
-          "--",
+          "6.70",
           "86.22"
         ],
         [
@@ -2304,7 +2305,7 @@
           "2.13",
           "57.71",
           "57.07",
-          "--",
+          "2.13",
           "58.19"
         ],
         [
@@ -2319,16 +2320,15 @@
           "58.56"
         ]
       ],
-      "note": "Two experts, TA coefficient 0.5. AGA processes only the protected expert. Calibration uses 64 fixed random images and no original expert or module location; MLP matching uses public weights. Distillation separately grants unlabeled training images and student training. -- means not evaluated. Defense 1 and PaRaMS reuse the same unprotected student after exact teacher-label equality checks; these are not independent training repetitions. Published native accuracy is shown before any attack; partner native accuracy is not tabulated. Known-module replacement is reported separately in attack_generalization_20261028/attack_comparison.md and phase3/bias_weight_only/attacks/projection.md."
+      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distillation additionally uses unlabeled training images and student training. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection."
     },
     "partners": {
       "headers": [
-        "Task",
+        "Target/partner",
         "Defense",
-        "Native",
         "TA",
         "AGA",
-        "Calibration",
+        "Calib.",
         "AGA+calib.",
         "MLP match",
         "Distill."
@@ -2337,7 +2337,6 @@
         [
           "MNIST/SVHN",
           "Unprotected",
-          "--",
           "92.50",
           "92.78",
           "92.32",
@@ -2348,7 +2347,6 @@
         [
           "MNIST/SVHN",
           "PaRaMS",
-          "--",
           "9.15",
           "92.79",
           "11.89",
@@ -2359,18 +2357,16 @@
         [
           "MNIST/SVHN",
           "Defense 1",
-          "--",
           "6.70",
           "6.70",
           "92.29",
           "92.57",
-          "--",
+          "6.70",
           "95.95"
         ],
         [
           "MNIST/SVHN",
           "Defense 2",
-          "--",
           "6.70",
           "6.70",
           "85.53",
@@ -2381,7 +2377,6 @@
         [
           "SVHN/MNIST",
           "Unprotected",
-          "--",
           "99.37",
           "99.39",
           "99.34",
@@ -2392,7 +2387,6 @@
         [
           "SVHN/MNIST",
           "PaRaMS",
-          "--",
           "8.95",
           "99.39",
           "8.35",
@@ -2403,18 +2397,16 @@
         [
           "SVHN/MNIST",
           "Defense 1",
-          "--",
           "9.80",
           "9.80",
           "99.33",
           "99.36",
-          "--",
+          "9.80",
           "99.34"
         ],
         [
           "SVHN/MNIST",
           "Defense 2",
-          "--",
           "9.80",
           "9.80",
           "87.66",
@@ -2425,7 +2417,6 @@
         [
           "DTD/MNIST",
           "Unprotected",
-          "--",
           "99.45",
           "99.45",
           "99.46",
@@ -2436,7 +2427,6 @@
         [
           "DTD/MNIST",
           "PaRaMS",
-          "--",
           "8.92",
           "99.45",
           "8.57",
@@ -2447,18 +2437,16 @@
         [
           "DTD/MNIST",
           "Defense 1",
-          "--",
           "9.80",
           "9.80",
           "99.47",
           "99.47",
-          "--",
+          "9.80",
           "99.53"
         ],
         [
           "DTD/MNIST",
           "Defense 2",
-          "--",
           "98.44",
           "75.64",
           "99.45",
@@ -2467,9 +2455,9 @@
           "99.54"
         ]
       ],
-      "note": "Two experts, TA coefficient 0.5. AGA processes only the protected expert. Calibration uses 64 fixed random images and no original expert or module location; MLP matching uses public weights. Distillation separately grants unlabeled training images and student training. -- means not evaluated. Defense 1 and PaRaMS reuse the same unprotected student after exact teacher-label equality checks; these are not independent training repetitions. Published native accuracy is shown before any attack; partner native accuracy is not tabulated. Known-module replacement is reported separately in attack_generalization_20261028/attack_comparison.md and phase3/bias_weight_only/attacks/projection.md."
+      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distillation additionally uses unlabeled training images and student training. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. These are partner accuracies, not protection scores."
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "83e1592818affffbc0b3e2219c2824028de7ce4a4112e551f7b70ca21b35055b"
+  "report_source_sha256": "85f9fb57b210f65df389f366eba40756752f2e1c2ec4cefe8649d94698b4593e"
 }
