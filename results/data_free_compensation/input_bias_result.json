@@ -1624,5 +1624,22 @@
     "bytes": 107991845,
     "all_sha256_verified": true,
     "reused_control": "6,742,136-byte B-replacement raw control already has its own original archive; not copied twice into this backup."
+  },
+  "mechanism_check": {
+    "status": "registered_before_execution",
+    "registered_utc": "2026-11-01T16:57:37.126571+00:00",
+    "driver": "outputs/input_bias_joint_20261102/mechanism_check.py",
+    "driver_sha256": "2c49f221e172da07c6397b80bccf2b01fa2bd1c7d608ef1ed2fac9dd3334913a",
+    "source_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "question": "Separate calibration-input distribution from image-input behavior for frozen TA/AGA. Check whether native function needs both incoming and outgoing changed MLP weights.",
+    "models": "Frozen ed303600 and matched clean models, same SVHN partner, TA.5 and AGA-target only. No additional scopes.",
+    "inputs": "Original800synthetic views and frozen10000MNIST scores; no new real image forwards",
+    "calibration": "No correction / empirical source correction (privileged diagnosis only) / existing64noise correction. No offset fitted from natural images.",
+    "components": "original / incomingA+a only / outgoingB+b only / joint / publicB+b, cached800native inputs only. No saved new model.",
+    "maximum_new_synthetic_forwards": 5760,
+    "new_defense_candidates": 0,
+    "new_optimizer_steps": 0,
+    "new_AGA_calls": 0,
+    "decision": "Analyze this one frozen point; never use source/natural counterexamples to repair it. All quantities and failures retained. Main result table unchanged."
   }
 }
