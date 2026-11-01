@@ -88,11 +88,11 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-11-01T04:59:17.938376+00:00",
+  "updated_utc": "2026-11-01T05:20:35.717721+00:00",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "status": "pilot_running",
+      "status": "full_running_after_pilot_pass",
       "protocol": "results/params_reference/eight_expert/protocol.json",
       "output": "outputs/params_eight_20261101",
       "host": "41558",
@@ -104,10 +104,14 @@
       "queue_pid": 4907,
       "log": "outputs/params_eight_20261101/batch.log",
       "source_commit": "32c3da5ba887498721533d7d605e0f316c5b4fb3",
-      "remote_preregistration": "cabaf39602319885510113c5c39a8675a8e8e00a"
+      "remote_preregistration": "cabaf39602319885510113c5c39a8675a8e8e00a",
+      "full_python_pid": 6098,
+      "pilot_rows": 84,
+      "pilot_context_replays": 1344,
+      "pilot_maximum_replay_error": 4.291534423828125e-05
     }
   ],
-  "next_action": "Check current PaRaMS pilot/full queue on41558; do not restart valid jobs. Existing queue independently checks each stage. After completion collect raw scores, generate seven-dataset MD/TeX comparison, synchronize both retained hosts and GitHub. User follow-up only; no automation.",
+  "next_action": "On manual follow-up check41558 pid6098/timeout4907 and outputs/params_eight_20261101/{batch.log,exit_code}. Pilot84rows and1344context scores independently passed. Full84rows running, queue performs independent full recount. Do not restart. Then archive scores and produce combined D1/D2/PaRaMS seven-dataset MD/TeX; no EuroSAT average.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -1321,7 +1325,7 @@
     "raw_manifest": "outputs/baseline_teacher_queries_20261101/manifest.json"
   },
   "PaRaMS_eight_expert": {
-    "status": "pilot_running",
+    "status": "full_running_after_pilot_pass",
     "protocol": "results/params_reference/eight_expert/protocol.json",
     "output": "outputs/params_eight_20261101",
     "host": "41558",
@@ -1333,6 +1337,10 @@
     "queue_pid": 4907,
     "log": "outputs/params_eight_20261101/batch.log",
     "source_commit": "32c3da5ba887498721533d7d605e0f316c5b4fb3",
-    "remote_preregistration": "cabaf39602319885510113c5c39a8675a8e8e00a"
+    "remote_preregistration": "cabaf39602319885510113c5c39a8675a8e8e00a",
+    "full_python_pid": 6098,
+    "pilot_rows": 84,
+    "pilot_context_replays": 1344,
+    "pilot_maximum_replay_error": 4.291534423828125e-05
   }
 }

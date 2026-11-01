@@ -1,5 +1,5 @@
 {
-  "verified_utc": "2026-11-01T04:59:17.938376+00:00",
+  "verified_utc": "2026-11-01T05:20:35.717721+00:00",
   "host": "41558",
   "GPU": "NVIDIA GeForce RTX4090",
   "source_commit": "32c3da5ba887498721533d7d605e0f316c5b4fb3",
@@ -155,5 +155,37 @@
   },
   "raw_log": "outputs/params_eight_20261101/batch.log",
   "queue_pid": 4907,
-  "status": "pilot_running"
+  "status": "full_running_after_independently_verified_pilot",
+  "pilot_validation": {
+    "status": "passed",
+    "rows": 84,
+    "raw_sha256": "2fe6944d61b037e11d23d47715794bc7e09084f9072ff3752cf351803ab39a50",
+    "score_replays": 1344,
+    "maximum_context_score_error": 4.291534423828125e-05,
+    "wall_seconds": 191.97343787923455,
+    "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+    "new_image_forwards": 7680,
+    "production_image_forwards": 2304,
+    "replay_context_image_forwards": 5376,
+    "reused_evaluation_records": 48,
+    "new_AGA_calls": 0,
+    "new_defense_weights": 0,
+    "expert_training_updates": 0,
+    "scope": "Fixed official-default PaRaMS baseline: eight-expert TA0.2 and AGA target-only, seven full datasets",
+    "evaluated_datasets": [
+      "MNIST",
+      "SVHN",
+      "DTD",
+      "GTSRB",
+      "RESISC45",
+      "Cars",
+      "SUN397"
+    ]
+  },
+  "pilot_independent_validation": {
+    "status": "passed_independent_numpy_counts_indices_per_class_paired_CI_exact_McNemar",
+    "rows": 84,
+    "raw_sha256": "2fe6944d61b037e11d23d47715794bc7e09084f9072ff3752cf351803ab39a50",
+    "report_sha256": "5f771ceda2242fe5432324ab57f8c85d36685e28b993cbe1331343003eca00d0"
+  }
 }
