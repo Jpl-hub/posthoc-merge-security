@@ -1,12 +1,12 @@
 {
-  "status": "research_resumed_preparing_matched_eight_expert_baseline",
-  "updated_utc": "2026-11-01T04:54:24.490572+00:00",
+  "status": "running_matched_PaRaMS_eight_expert_comparison",
+  "updated_utc": "2026-11-01T04:59:17.938376+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
+  "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "status": "preparing_verified_existing_inputs",
+      "status": "pilot_running",
       "protocol": "results/params_reference/eight_expert/protocol.json",
       "output": "outputs/params_eight_20261101",
       "host": "41558",
@@ -14,13 +14,17 @@
       "new_AGA_calls": 0,
       "new_full_production_rows": 36,
       "existing_score_rows": 48,
-      "evaluation_scope": "eight participating experts; MNIST/SVHN/DTD protected; seven evaluated datasets, EuroSAT excluded"
+      "evaluation_scope": "eight participating experts; MNIST/SVHN/DTD protected; seven evaluated datasets, EuroSAT excluded",
+      "queue_pid": 4907,
+      "log": "outputs/params_eight_20261101/batch.log",
+      "source_commit": "32c3da5ba887498721533d7d605e0f316c5b4fb3",
+      "remote_preregistration": "cabaf39602319885510113c5c39a8675a8e8e00a"
     }
   ],
-  "next_action": "Finish copying only required frozen assets from55548, verify SHA and existing score references, then pilot/full PaRaMS eight-expert seven-dataset comparison and independent recount. No new defense search, no repeat completed evaluations.",
+  "next_action": "Check current PaRaMS pilot/full queue on41558; do not restart valid jobs. Existing queue independently checks each stage. After completion collect raw scores, generate seven-dataset MD/TeX comparison, synchronize both retained hosts and GitHub. User follow-up only; no automation.",
   "github_sync": {
     "status": "Completed matching/calibration/distillation and engineering changes published and read back",
-    "last_verified_commit": "9bfc3128b5754a25ae6870b00f8ffd8f20d43207",
+    "last_verified_commit": "cabaf39602319885510113c5c39a8675a8e8e00a",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -1259,7 +1263,7 @@
     "raw_manifest": "outputs/baseline_teacher_queries_20261101/manifest.json"
   },
   "PaRaMS_eight_expert": {
-    "status": "preparing_verified_existing_inputs",
+    "status": "pilot_running",
     "protocol": "results/params_reference/eight_expert/protocol.json",
     "output": "outputs/params_eight_20261101",
     "host": "41558",
@@ -1267,6 +1271,10 @@
     "new_AGA_calls": 0,
     "new_full_production_rows": 36,
     "existing_score_rows": 48,
-    "evaluation_scope": "eight participating experts; MNIST/SVHN/DTD protected; seven evaluated datasets, EuroSAT excluded"
+    "evaluation_scope": "eight participating experts; MNIST/SVHN/DTD protected; seven evaluated datasets, EuroSAT excluded",
+    "queue_pid": 4907,
+    "log": "outputs/params_eight_20261101/batch.log",
+    "source_commit": "32c3da5ba887498721533d7d605e0f316c5b4fb3",
+    "remote_preregistration": "cabaf39602319885510113c5c39a8675a8e8e00a"
   }
 }
