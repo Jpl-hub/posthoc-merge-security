@@ -1,11 +1,39 @@
 {
-  "status": "PaRaMS_comparison_completed; core_robustness_gaps_remain",
-  "updated_utc": "2026-11-01T06:02:11.299973+00:00",
+  "status": "Defense1_matching_running; PaRaMS_comparison_completed",
+  "updated_utc": "2026-11-01T06:09:15.435405+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Manual continuation only. Read results/comparison: matched current-defense/PaRaMS attack and seven-dataset tables completed. Prioritize input-dependent numerical compensation against data-free output calibration and public B+b replacement; no repeat of closed points or test-based tuning. EuroSAT original split remains unresolved. No background GPU work.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "status": "running_parameter_matching_then_pilot_full",
+      "host": "41558",
+      "protocol": "results/phase3/bias_weight_only/attacks/matching_protocol.json",
+      "driver": "results/params_reference/other_tasks/matching_run.py",
+      "output": "outputs/bias_matching_20261101",
+      "log": "outputs/bias_matching_20261101.log",
+      "exit_code": "outputs/bias_matching_20261101.exit",
+      "queue_pid": 19256,
+      "python_pid": 19258,
+      "source_commit": "dc4f7315bc4446a7d676358dfbf9d27bf3aaddec",
+      "started_utc": "2026-11-01T06:08:42+00:00",
+      "tasks": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "existing_inputs_SHA_verified": 9,
+      "CPU_assignments": 72,
+      "full_rows": 18,
+      "pilot_rows": 18,
+      "new_defense_updates": 0,
+      "new_AGA_calls": 0,
+      "attacker_fitting_images": 0,
+      "scientific_scope": "Same fixed public MLP matching used for PaRaMS and Defense2; matched clean scores reused by parameter hash; source frozen before images",
+      "publication": "Local preregistration; GitHub tool unavailable"
+    }
+  ],
+  "next_action": "User manual follow-up in about20minutes; check41558 timeout19256/python19258 and outputs/bias_matching_20261101.{log,exit}. Do not duplicate. After success collect matching/full pilot independent validation, fill Defense1 MLP matching in existing results/comparison using integer counts and both task columns, archive unique outputs, sync when plugin available. No automatic wakeups. Core weaknesses: output calibration and public B+b replacement. EuroSAT original split still unresolved.",
   "github_sync": {
     "status": "Latest completed PaRaMS batch and combined tables pending: plugin returned Unknown tool; no repeated attempt",
     "last_verified_commit": "f65a7f7bdbecf4284d9481f22426ddd37cebb4e3",
@@ -1273,5 +1301,32 @@
       72.52612169637369,
       51.38297872340426
     ]
+  },
+  "Defense1_MLP_matching": {
+    "status": "running_parameter_matching_then_pilot_full",
+    "host": "41558",
+    "protocol": "results/phase3/bias_weight_only/attacks/matching_protocol.json",
+    "driver": "results/params_reference/other_tasks/matching_run.py",
+    "output": "outputs/bias_matching_20261101",
+    "log": "outputs/bias_matching_20261101.log",
+    "exit_code": "outputs/bias_matching_20261101.exit",
+    "queue_pid": 19256,
+    "python_pid": 19258,
+    "source_commit": "dc4f7315bc4446a7d676358dfbf9d27bf3aaddec",
+    "started_utc": "2026-11-01T06:08:42+00:00",
+    "tasks": [
+      "MNIST",
+      "SVHN",
+      "DTD"
+    ],
+    "existing_inputs_SHA_verified": 9,
+    "CPU_assignments": 72,
+    "full_rows": 18,
+    "pilot_rows": 18,
+    "new_defense_updates": 0,
+    "new_AGA_calls": 0,
+    "attacker_fitting_images": 0,
+    "scientific_scope": "Same fixed public MLP matching used for PaRaMS and Defense2; matched clean scores reused by parameter hash; source frozen before images",
+    "publication": "Local preregistration; GitHub tool unavailable"
   }
 }
