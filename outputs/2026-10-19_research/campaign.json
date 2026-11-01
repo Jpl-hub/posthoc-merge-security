@@ -1,5 +1,5 @@
 {
-  "status": "calibration_aware_diagnosis_complete; partner_context_transfer_limits_direct_TA",
+  "status": "task_reference_MNIST_completed; cross_task_validation_pending",
   "updated_utc": "2026-11-01T11:36:05.653362+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -7,7 +7,7 @@
   "research_jobs": [],
   "next_action": "Review why the public-base source objective transfers to AGA but poorly to direct real-partner TA. Preserve the single point; no retries, no expanded attack suite, and no cross-task claim. No running GPU job.",
   "github_sync": {
-    "status": "Frozen input/partner diagnosis saved locally; plugin not available this turn and git HTTPS connection refused. Last remote readback retained in receipt; new result pending publication.",
+    "status": "Current task-reference result pending publication;GitHub tool unavailable in this turn. Last verified remote commit retained in receipt.",
     "last_verified_commit": "2e5a94d447d095b49bd812d3c930b45003889695",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -1422,24 +1422,50 @@
     }
   },
   "task_reference": {
-    "status": "source_passed_native_evaluation_running",
+    "status": "completed_independently_verified",
     "protocol": "results/data_free_compensation/task_reference_protocol.json",
+    "result": "results/data_free_compensation/task_reference_result.json",
     "output": "outputs/task_reference_20261101",
     "new_candidates": 1,
-    "source_sha256": "34425b25152c779a5355e1b28f0b4a1f2ac4bcdb17c846c50df38fa12e5efd5f",
     "point_sha256": "aad4f53d308d8d503192522e438567994e983699ed3d5faf54af27fd6c24d3a1",
+    "source_sha256": "34425b25152c779a5355e1b28f0b4a1f2ac4bcdb17c846c50df38fa12e5efd5f",
+    "local_pre_execution_commit": "302c781",
     "source_seconds": 126.90937038883567,
-    "source_agreement": {
-      "native": 800,
-      "direct": 0,
-      "recovered": 0,
-      "task_direct": 0,
-      "task_recovered": 0,
-      "direct_calibrated": 0,
-      "recovered_calibrated": 0,
-      "task_direct_calibrated": 0,
-      "task_recovered_calibrated": 0
-    },
-    "result": "results/data_free_compensation/task_reference_result.json"
+    "real_construction_images": 0,
+    "teacher_training_updates": 0,
+    "native_before_after": [
+      99.69,
+      99.6
+    ],
+    "native_lost_gained": [
+      14,
+      5
+    ],
+    "native_strict_R": 113.5150833500703,
+    "native_strict_passed": false,
+    "target_raw_TA_AGAtarget_AGAboth": [
+      33.31,
+      0.25,
+      0.23
+    ],
+    "target_calibrated": [
+      37.2,
+      2.39,
+      2.27
+    ],
+    "partner_raw": [
+      29.567455439459128,
+      5.754456054087277,
+      5.7275660725261215
+    ],
+    "partner_calibrated": [
+      29.955439459127227,
+      20.332667486170866,
+      20.613091579594347
+    ],
+    "context_score_replays": 224,
+    "maximum_replay_error": 2.288818359375e-05,
+    "conclusion": "Improves all fusion/calibration columns relative to prior calibrated objective;rawTA remains worse than originalclass0point. Only MNIST protected task validated. Do not replace3taskmain or claimSVD contribution.",
+    "next": "Apply identical rule to SVHN/DTD after restoring their original clean caches;no source regeneration,hyperparameter selection or partner construction."
   }
 }
