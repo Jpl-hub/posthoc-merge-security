@@ -1,11 +1,11 @@
 {
   "status": "seven_dataset_complete_EuroSAT_and_method_limitations_remain",
-  "updated_utc": "2026-10-31T16:52:53.797791+00:00",
+  "updated_utc": "2026-11-01T03:48:41.542552+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Restore required archived weights/data to new41558; run fixed teacher-label comparison for PaRaMS and Defense1 against existing distillation inputs. No defense changes or matching rerun.",
+  "next_action": "Finish12997 migration, verify every preserved file, synchronize the two retained projects and stop to notify user. Do not start more research before handoff.",
   "github_sync": {
     "status": "Local completed results pending; GitHub tools unavailable in current session",
     "last_verified_commit": "6324a47fc1bc40c32dca9ae0be158d0c0126b2a6"
@@ -299,17 +299,7 @@
     "new_defense_points": 0,
     "new_production_modules": 0
   },
-  "server_consolidation": {
-    "record": "results/engineering_refactor/server_consolidation_20261027.json",
-    "retained_compute": "4090D:50837",
-    "retained_archive": "3090 CPU mode",
-    "source_23800": "Permanently released before complete migration; latest failed-point raw artifacts lost, detailed index retained",
-    "source_34125": "All8220 file contents backed up and verified; permanent release cleared",
-    "source_17811": "All551 original-file contents covered;353 new contents SHA-verified in40815 archive;permanent release cleared",
-    "new4090_restore": "Required originals,authorAGA references and34125 outputs restored;17811 records retained in separate archive",
-    "active_research_jobs": 0,
-    "next": "Use50837 GPU;40815 and3090 are CPU archives."
-  },
+  "server_consolidation": "results/engineering_refactor/server_consolidation_20261101.json",
   "joint_function_progress": {
     "status": "completed_independently_verified_no_effective_fusion_protection",
     "record": "results/data_free_compensation/population_compensation_result.json:joint_function_result_20261027",
@@ -1243,5 +1233,16 @@
       "diagnosis": "Process killed before matching records; 2GiB limit is insufficient for the multiple-model implementation, but OS OOM cause not independently confirmed. No results produced; preserved.",
       "local_evidence": "outputs/params_matching_20261031_cpu_attempt"
     }
+  },
+  "baseline_distillation_comparison": {
+    "status": "completed_independently_verified",
+    "result": "results/params_reference/other_tasks/distillation.json",
+    "new_teacher_queries": 17928,
+    "new_training_steps": 0,
+    "new_AGA_calls": 0,
+    "new_defense_updates": 0,
+    "exact_protected_label_vectors_equal_to_unprotected": 6,
+    "student_result_reuse": "Three existing final unprotected students reused for Defense1 and PaRaMS; no independent new training repetition",
+    "raw_manifest": "outputs/baseline_teacher_queries_20261101/manifest.json"
   }
 }

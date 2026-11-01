@@ -28,13 +28,13 @@
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
-    "secondary_role": "12997 and55548 CPU archives; no GPU work",
-    "verified_utc": "2026-10-31T16:52:53.797791+00:00",
+    "secondary_role": "Retained CPU archive and engineering backup; other hosts to be released after content verification",
+    "verified_utc": "2026-11-01T03:48:41.542552+00:00",
     "primary_available_GiB": 48,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
     "previous_primary_role": "50837 accessible in CPU mode; existing assets preserved",
-    "primary_workspace_status": "Empty data directory on connection; dependencies installed, code restore in progress; archived model/data hosts10329/12997/55548 currently close SSH before authentication",
+    "primary_workspace_status": "Ready:four checkpoints,three heads,frozen baseline releases and exact training query inputs verified;25tests and teacher-query batch completed",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -89,10 +89,10 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-10-31T16:52:53.797791+00:00",
+  "updated_utc": "2026-11-01T03:48:41.542552+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Restore required archived weights/data to new41558; run fixed teacher-label comparison for PaRaMS and Defense1 against existing distillation inputs. No defense changes or matching rerun.",
+  "next_action": "Finish12997 migration, verify every preserved file, synchronize the two retained projects and stop to notify user. Do not start more research before handoff.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -359,17 +359,7 @@
     "new_defense_points": 0,
     "new_production_modules": 0
   },
-  "server_consolidation": {
-    "record": "results/engineering_refactor/server_consolidation_20261027.json",
-    "retained_compute": "4090D:50837",
-    "retained_archive": "3090 CPU mode",
-    "source_23800": "Permanently released before complete migration; latest failed-point raw artifacts lost, detailed index retained",
-    "source_34125": "All8220 file contents backed up and verified; permanent release cleared",
-    "source_17811": "All551 original-file contents covered;353 new contents SHA-verified in40815 archive;permanent release cleared",
-    "new4090_restore": "Required originals,authorAGA references and34125 outputs restored;17811 records retained in separate archive",
-    "active_research_jobs": 0,
-    "next": "Use50837 GPU;40815 and3090 are CPU archives."
-  },
+  "server_consolidation": "results/engineering_refactor/server_consolidation_20261101.json",
   "joint_function_progress": {
     "status": "completed_independently_verified_no_effective_fusion_protection",
     "record": "results/data_free_compensation/population_compensation_result.json:joint_function_result_20261027",
@@ -1302,5 +1292,16 @@
       "diagnosis": "Process killed before matching records; 2GiB limit is insufficient for the multiple-model implementation, but OS OOM cause not independently confirmed. No results produced; preserved.",
       "local_evidence": "outputs/params_matching_20261031_cpu_attempt"
     }
+  },
+  "baseline_distillation_comparison": {
+    "status": "completed_independently_verified",
+    "result": "results/params_reference/other_tasks/distillation.json",
+    "new_teacher_queries": 17928,
+    "new_training_steps": 0,
+    "new_AGA_calls": 0,
+    "new_defense_updates": 0,
+    "exact_protected_label_vectors_equal_to_unprotected": 6,
+    "student_result_reuse": "Three existing final unprotected students reused for Defense1 and PaRaMS; no independent new training repetition",
+    "raw_manifest": "outputs/baseline_teacher_queries_20261101/manifest.json"
   }
 }

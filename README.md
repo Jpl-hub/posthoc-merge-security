@@ -89,7 +89,7 @@ data/dtd/...
 data/{train,test}_32x32.mat
 ```
 
-模型清单及 SHA：`configs/checkpoints.json`。当前计算使用55548的3090；12997为CPU存储，保留上一批原始分数。55548上的八专家及分类头已通过原清单核对，完整八数据集仍未齐全。具体资产与备份以`research_state.json`及各批结果索引为准。
+模型清单及 SHA：`configs/checkpoints.json`。当前计算使用41558的4090；10329、12997和55548保留历史资产。新机已迁入本批需要的公开基座、三个专家和分类头；既有七数据集结果直接复用。具体资产与备份以`research_state.json`及各批结果索引为准。
 
 ## 常用入口
 
@@ -143,3 +143,5 @@ pytest -q
 其他补充实验的历史复现及当前验证范围见[工程说明](docs/engineering.md)。
 
 [PaRaMS同条件MLP匹配](results/params_reference/other_tasks/matching.md)已完成：独立预测保持，融合目标准确率为10.72%、9.55%、2.93%，该固定匹配没有恢复PaRaMS。只匹配MLP，与另处理注意力的AGA分开报告。
+
+[同条件蒸馏对比](results/params_reference/other_tasks/distillation.md)已完成标签核对：防御一、PaRaMS与无保护模型在固定三组训练图片上的硬标签完全相同，因此明确复用同一批既有学生。此攻击额外需要无标签图片和训练，不能与无数据AGA混列。
