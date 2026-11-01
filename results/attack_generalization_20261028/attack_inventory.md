@@ -72,4 +72,4 @@ PaRaMS官方默认三任务的固定64随机输入校正已完成，见[结果�
 
 PaRaMS的三任务输出校正、MLP匹配、额外无标签数据蒸馏对照均已完成。固定MLP匹配未恢复PaRaMS；其三份发布的蒸馏硬标签与无保护完全相同，复用同一个学生问题，不算独立重训。防御一的蒸馏比较同时补齐。结果见 `results/params_reference/other_tasks/{calibration,matching,distillation}.md`。
 
-下一批补PaRaMS八专家下的七数据集对比。两种当前防御的对应实验不重跑，已完成的PaRaMS-MNIST三数据集与无保护分数按模型SHA复用。只补36条缺失完整评价，零新构造、零新AGA求解。
+PaRaMS八专家下的七数据集对比现已完成：84条完整记录，48条同模型结果复用，36条新增。两种当前防御的对应实验未重跑；统一攻击与伙伴表及八专家表见[当前对比](../comparison/README.md)。仍有EuroSAT原划分缺口，不报完整八任务平均。

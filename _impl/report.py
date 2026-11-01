@@ -5,11 +5,141 @@ import json
 import math
 from pathlib import Path
 
-import matplotlib
+def defense_comparison(directory):
+    """Join current, already evaluated defenses; no model loading or new experiments."""
+    out = Path(directory)
+    out.mkdir(parents=True, exist_ok=True)
+    sources, tables = {}, {}
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import numpy as np
+    def read(path):
+        data = Path(path).read_bytes()
+        sources[str(path)] = hashlib.sha256(data).hexdigest()
+        return json.loads(data)
+
+    def one(rows, **where):
+        matches = [r for r in rows if all(r.get(k) == v for k, v in where.items())]
+        assert len(matches) == 1, (where, len(matches))
+        return matches[0]
+
+    def accuracy(row):
+        value = 100 * row["correct"] / row["n"]
+        assert abs(value - row["accuracy_percent"]) < 1e-8
+        return f"{value:.2f}"
+
+    def write(name, title, headers, rows, note, colspec):
+        tables[name] = dict(headers=headers, rows=rows, note=note)
+        md = ["# " + title, "", note, "", "| " + " | ".join(headers) + " |",
+              "| " + " | ".join(["---"] * len(headers)) + " |"]
+        md += ["| " + " | ".join(row) + " |" for row in rows]
+        tex = [r"\begin{table*}[t]", r"\centering\small", r"\caption{" + title + r". Accuracy (\%).}",
+               r"\begin{tabular}{" + colspec + "}", r"\toprule",
+               " & ".join(headers) + r" \\", r"\midrule"]
+        tex += [" & ".join(row) + r" \\" for row in rows]
+        tex += [r"\bottomrule", r"\end{tabular}", r"\end{table*}", "% " + note]
+        (out / (name + ".md")).write_text("\n".join(md) + "\n")
+        (out / (name + ".tex")).write_text("\n".join(tex) + "\n")
+
+    tasks = ["MNIST", "SVHN", "DTD"]
+    methods = ["Unprotected", "PaRaMS", "Defense 1", "Defense 2"]
+    root = Path("results/params_reference/eight_expert")
+    cfg = read(root / "protocol.json")
+    inputs = [(str(root / "summary.json"), "independent_statistics"),
+              ("results/phase3/bias_weight_only/eight_expert/summary.json", "paired_summary"),
+              ("results/attack_generalization_20261028/eight_expert/full/results.json", None),
+              ("results/attack_generalization_20261028/eight_expert_extra/full/results.json", None),
+              ("results/attack_generalization_20261028/cars/summary.json", "independent_statistics"),
+              ("results/attack_generalization_20261028/sun397/summary.json", "independent_statistics")]
+    indexed, parameters = {}, {}
+    for path, field in inputs:
+        data = read(path)
+        if field:
+            assert data["status"] == "completed_independently_verified"
+        records = data[field] if field else data
+        for i, row in enumerate(records):
+            if field:
+                target, defense, scope, dataset = row["key"].split("/")
+                row = dict(row, target=target, defense=defense, attack_scope=scope, dataset=dataset,
+                           model_parameter_sha256=data["parameters"]["/".join([target, defense, scope])])
+            else:
+                assert row["participants"] == 8 and row["coefficient"] == .2
+                assert sum(c["correct"] for c in row["per_class"]) == row["correct"]
+            method = next((m for prefix, m in [("Defense1", "Defense 1"), ("Defense2", "Defense 2"),
+                                               ("PaRaMS", "PaRaMS")] if row["defense"].startswith(prefix)), row["defense"])
+            key = (row["target"], method, row["attack_scope"], row["dataset"])
+            assert row["n"] == cfg["test_sizes"][row["dataset"]]
+            value = (row["correct"], row["n"], row["model_parameter_sha256"])
+            if key in indexed:
+                assert indexed[key][0] == value, key
+            else:
+                indexed[key] = (value, path, i)
+            assert parameters.setdefault(key[:3], value[2]) == value[2], key
+    eight = []
+    selected = []
+    for target in tasks:
+        for scope, label in [("None", "TA"), ("Protected expert", "AGA")]:
+            for method in methods:
+                row = [target, method, label]
+                for dataset in cfg["evaluate"]:
+                    value, path, i = indexed[(target, method, scope, dataset)]
+                    row.append(f"{100 * value[0] / value[1]:.2f}")
+                    selected.append(dict(target=target, method=method, scope=scope, dataset=dataset,
+                                         correct=value[0], n=value[1], parameter_sha256=value[2], source=path, row=i))
+                eight.append(row)
+    write("eight_expert", "Eight-expert comparison", ["Target", "Defense", "Processing"] + cfg["evaluate"], eight,
+          "Eight experts, three protected tasks, seven complete test datasets; TA coefficient 0.2. AGA processes only the protected expert. EuroSAT is excluded; no eight-task mean. Partner losses remain in the table.", "lllrrrrrrr")
+
+    campaign = read("results/attack_generalization_20261028/results.json")["table_rows"]
+    bias = read("results/phase3/bias_weight_only/other_tasks/results.json")
+    calibrations = {m: read(p)["rows"] for m, p in [
+        ("Defense 1", "results/phase3/bias_weight_only/attacks/calibration.json"),
+        ("PaRaMS", "results/params_reference/other_tasks/calibration.json")]}
+    matching = read("results/params_reference/other_tasks/matching.json")["rows"]
+    students = read("results/params_reference/other_tasks/distillation.json")["rows"]
+    original = read("results/phase3/results.json")
+    baselines = {"MNIST": original}
+    for index, task in enumerate(["DTD", "SVHN"]):
+        baselines[task] = read(f"results/params_reference/other_tasks/evaluation/full/{index:02d}_{task}_MNIST/results.json")
+    target_rows, partner_rows = [], []
+    for task in tasks:
+        partner = "SVHN" if task == "MNIST" else "MNIST"
+        for method in methods:
+            columns = [[], []]
+            for role, dataset in enumerate([task, partner]):
+                if method in ["Unprotected", "Defense 2"]:
+                    def cell(pipeline, scope):
+                        hits = [r for r in campaign if r[:3] == [task, partner, method] and r[3:5] == [pipeline, scope]]
+                        assert len(hits) == 1, (task, method, pipeline, scope)
+                        return hits[0]
+                    ta = cell("TA / AGA", "None")
+                    columns[role] = [ta[5] if role == 0 else "--", ta[6 + role],
+                                     cell("TA / AGA", "Protected expert")[6 + role],
+                                     cell("64-noise calibration", "None")[6 + role],
+                                     cell("64-noise calibration", "Protected expert")[6 + role],
+                                     cell("MLP matching", "None")[6 + role]]
+                else:
+                    if method == "Defense 1":
+                        b = one(bias["combined_target_table" if role == 0 else "combined_partner_table"], target=task, method="Defense1")
+                        values = [f"{100 * c / n:.2f}" for c, n in b["counts"]]
+                        columns[role] = values[:3] if role == 0 else ["--"] + values[:2]
+                    else:
+                        records = [r for r in baselines[task] if r["target"] == task and r["partner"] == partner]
+                        name = "PaRaMS" if task == "MNIST" else "PaRaMS_" + task
+                        columns[role] = [accuracy(one(records, defense=name, merger="Standalone", attack_scope="None", dataset=task)) if role == 0 else "--"]
+                        columns[role] += [accuracy(one(records, defense=name, merger="TA", attack_scope=s, dataset=dataset)) for s in ["None", "Protected expert"]]
+                    name = "Defense1" if method == "Defense 1" else ("PaRaMS" if task == "MNIST" else "PaRaMS_" + task)
+                    columns[role] += [accuracy(one(calibrations[method], key="/".join([task, name, "TA", s, dataset]))) for s in ["None", "Protected expert"]]
+                    columns[role].append("--" if method == "Defense 1" else accuracy(one(matching, target=task, defense="PaRaMS", merger="TA", dataset=dataset)))
+                teacher = "Defense 2" if method == "Defense 2" else "Unprotected / Defense 1 / PaRaMS"
+                student = one(students, task=task, teacher=teacher)
+                columns[role].append(f"{student['TA'] if role == 0 else student['partner']['None']:.2f}")
+            target_rows.append([task, method] + columns[0])
+            partner_rows.append([task + "/" + partner, method] + columns[1])
+    headers = ["Task", "Defense", "Native", "TA", "AGA", "Calibration", "AGA+calib.", "MLP match", "Distill."]
+    note = ("Two experts, TA coefficient 0.5. AGA processes only the protected expert. Calibration uses 64 fixed random images and no original expert or module location; MLP matching uses public weights. Distillation separately grants unlabeled training images and student training. -- means not evaluated. Defense 1 and PaRaMS reuse the same unprotected student after exact teacher-label equality checks; these are not independent training repetitions. Published native accuracy is shown before any attack; partner native accuracy is not tabulated. Known-module replacement is reported separately in attack_generalization_20261028/attack_comparison.md and phase3/bias_weight_only/attacks/projection.md.")
+    write("attacks", "Recovery attacks: protected task", headers, target_rows, note, "llrrrrrrr")
+    write("partners", "Recovery attacks: partner task", headers, partner_rows, note, "llrrrrrrr")
+    (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
+        tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 
 
 def attack_comparison(directory):
@@ -248,6 +378,12 @@ def attack_comparison(directory):
 
 def paper_tables(_source, output):
     """Collect frozen comparisons into matching TeX/Markdown paper tables."""
+    import matplotlib
+    import numpy as np
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
     out = Path(output)
     out.mkdir(parents=True, exist_ok=True)
     sources = {}

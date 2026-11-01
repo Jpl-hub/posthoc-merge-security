@@ -4,7 +4,28 @@ import hashlib
 import json
 from pathlib import Path
 
-from _impl.report import paper_tables
+from _impl.report import defense_comparison, paper_tables
+
+
+def test_current_comparison_is_reproducible_and_keeps_partner_results(tmp_path):
+    root = Path("results/comparison")
+    saved = json.loads((root / "sources.json").read_text())
+    before = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in saved["input_sha256"]}
+    defense_comparison(tmp_path)
+    for name in ["eight_expert", "attacks", "partners"]:
+        for suffix in ["md", "tex"]:
+            assert (tmp_path / f"{name}.{suffix}").read_bytes() == (root / f"{name}.{suffix}").read_bytes()
+    rebuilt = json.loads((tmp_path / "sources.json").read_text())
+    assert rebuilt == saved
+    assert before == {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in before}
+    assert len(saved["eight_expert_rows"]) == 3 * 4 * 2 * 7
+    assert len(saved["tables"]["attacks"]["rows"]) == len(saved["tables"]["partners"]["rows"]) == 12
+    for name, table in saved["tables"].items():
+        markdown = (root / f"{name}.md").read_text()
+        latex = (root / f"{name}.tex").read_text()
+        for row in table["rows"]:
+            assert "| " + " | ".join(row) + " |" in markdown
+            assert " & ".join(row) + r" \\" in latex
 
 
 def test_report_matches_published_tables_without_modifying_inputs(tmp_path):

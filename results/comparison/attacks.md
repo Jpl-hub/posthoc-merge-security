@@ -1,0 +1,18 @@
+# Recovery attacks: protected task
+
+Two experts, TA coefficient 0.5. AGA processes only the protected expert. Calibration uses 64 fixed random images and no original expert or module location; MLP matching uses public weights. Distillation separately grants unlabeled training images and student training. -- means not evaluated. Defense 1 and PaRaMS reuse the same unprotected student after exact teacher-label equality checks; these are not independent training repetitions. Published native accuracy is shown before any attack; partner native accuracy is not tabulated. Known-module replacement is reported separately in attack_generalization_20261028/attack_comparison.md and phase3/bias_weight_only/attacks/projection.md.
+
+| Task | Defense | Native | TA | AGA | Calibration | AGA+calib. | MLP match | Distill. |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| MNIST | Unprotected | 99.69 | 99.37 | 99.30 | 99.34 | 99.29 | 99.37 | 95.53 |
+| MNIST | PaRaMS | 99.69 | 8.92 | 99.30 | 9.86 | 99.29 | 10.72 | 95.53 |
+| MNIST | Defense 1 | 99.69 | 9.80 | 9.80 | 99.35 | 99.30 | -- | 95.53 |
+| MNIST | Defense 2 | 99.61 | 9.80 | 9.80 | 89.21 | 56.34 | 9.80 | 95.53 |
+| SVHN | Unprotected | 97.46 | 92.50 | 91.56 | 92.32 | 91.34 | 92.50 | 86.22 |
+| SVHN | PaRaMS | 97.46 | 9.09 | 91.56 | 8.45 | 91.34 | 9.55 | 86.22 |
+| SVHN | Defense 1 | 97.46 | 6.70 | 6.70 | 92.24 | 91.25 | -- | 86.22 |
+| SVHN | Defense 2 | 96.98 | 6.70 | 6.70 | 84.56 | 53.84 | 6.70 | 85.84 |
+| DTD | Unprotected | 79.41 | 69.31 | 68.40 | 55.69 | 55.00 | 69.31 | 58.19 |
+| DTD | PaRaMS | 79.41 | 2.07 | 68.35 | 2.87 | 55.00 | 2.93 | 58.19 |
+| DTD | Defense 1 | 79.41 | 2.13 | 2.13 | 57.71 | 57.07 | -- | 58.19 |
+| DTD | Defense 2 | 76.12 | 2.13 | 2.13 | 59.31 | 52.61 | 2.13 | 58.56 |

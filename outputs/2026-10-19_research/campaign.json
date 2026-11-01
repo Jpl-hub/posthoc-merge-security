@@ -1,34 +1,14 @@
 {
-  "status": "running_matched_PaRaMS_eight_expert_comparison",
-  "updated_utc": "2026-11-01T05:20:35.717721+00:00",
+  "status": "PaRaMS_comparison_completed; core_robustness_gaps_remain",
+  "updated_utc": "2026-11-01T06:02:11.299973+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "status": "full_running_after_pilot_pass",
-      "protocol": "results/params_reference/eight_expert/protocol.json",
-      "output": "outputs/params_eight_20261101",
-      "host": "41558",
-      "new_defense_weights": 0,
-      "new_AGA_calls": 0,
-      "new_full_production_rows": 36,
-      "existing_score_rows": 48,
-      "evaluation_scope": "eight participating experts; MNIST/SVHN/DTD protected; seven evaluated datasets, EuroSAT excluded",
-      "queue_pid": 4907,
-      "log": "outputs/params_eight_20261101/batch.log",
-      "source_commit": "32c3da5ba887498721533d7d605e0f316c5b4fb3",
-      "remote_preregistration": "cabaf39602319885510113c5c39a8675a8e8e00a",
-      "full_python_pid": 6098,
-      "pilot_rows": 84,
-      "pilot_context_replays": 1344,
-      "pilot_maximum_replay_error": 4.291534423828125e-05
-    }
-  ],
-  "next_action": "On manual follow-up check41558 pid6098/timeout4907 and outputs/params_eight_20261101/{batch.log,exit_code}. Pilot84rows and1344context scores independently passed. Full84rows running, queue performs independent full recount. Do not restart. Then archive scores and produce combined D1/D2/PaRaMS seven-dataset MD/TeX; no EuroSAT average.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Manual continuation only. Read results/comparison: matched current-defense/PaRaMS attack and seven-dataset tables completed. Prioritize input-dependent numerical compensation against data-free output calibration and public B+b replacement; no repeat of closed points or test-based tuning. EuroSAT original split remains unresolved. No background GPU work.",
   "github_sync": {
-    "status": "Completed matching/calibration/distillation and engineering changes published and read back",
-    "last_verified_commit": "cabaf39602319885510113c5c39a8675a8e8e00a",
+    "status": "Latest completed PaRaMS batch and combined tables pending: plugin returned Unknown tool; no repeated attempt",
+    "last_verified_commit": "f65a7f7bdbecf4284d9481f22426ddd37cebb4e3",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -1267,22 +1247,31 @@
     "raw_manifest": "outputs/baseline_teacher_queries_20261101/manifest.json"
   },
   "PaRaMS_eight_expert": {
-    "status": "full_running_after_pilot_pass",
+    "status": "completed_independently_verified",
     "protocol": "results/params_reference/eight_expert/protocol.json",
+    "result": "results/params_reference/eight_expert/summary.json",
+    "tables": "results/comparison",
     "output": "outputs/params_eight_20261101",
     "host": "41558",
-    "new_defense_weights": 0,
-    "new_AGA_calls": 0,
+    "completed_utc_recorded": "2026-11-01T06:02:11.299973+00:00",
+    "full_rows": 84,
+    "full_context_replays": 1344,
+    "full_maximum_replay_error": 3.910064697265625e-05,
+    "full_seconds": 3395.4715097602457,
     "new_full_production_rows": 36,
-    "existing_score_rows": 48,
-    "evaluation_scope": "eight participating experts; MNIST/SVHN/DTD protected; seven evaluated datasets, EuroSAT excluded",
-    "queue_pid": 4907,
-    "log": "outputs/params_eight_20261101/batch.log",
-    "source_commit": "32c3da5ba887498721533d7d605e0f316c5b4fb3",
-    "remote_preregistration": "cabaf39602319885510113c5c39a8675a8e8e00a",
-    "full_python_pid": 6098,
-    "pilot_rows": 84,
-    "pilot_context_replays": 1344,
-    "pilot_maximum_replay_error": 4.291534423828125e-05
+    "reused_full_rows": 48,
+    "new_AGA_calls": 0,
+    "new_defense_weights": 0,
+    "evaluation_scope": "Eight experts; three protected targets; seven full test datasets; no EuroSAT or eight-task mean",
+    "PaRaMS_target_TA": [
+      9.82,
+      9.714966195451751,
+      2.127659574468085
+    ],
+    "PaRaMS_target_AGA": [
+      93.23,
+      72.52612169637369,
+      51.38297872340426
+    ]
   }
 }
