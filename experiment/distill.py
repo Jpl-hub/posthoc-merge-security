@@ -253,10 +253,205 @@ def run(protocol):
     print("KD_FROZEN", cfg["target"], list(publications), flush=True)
 
 
+def progressive(protocol):
+    """Evaluate the pinned ProDistill adapter on current, frozen defenses."""
+    from _impl import prodistill
+    from _impl.data import make_loader, official_labels
+    from _impl.evaluate import evaluate
+    from _impl.metrics import row_metrics
+
+    cfg = json.loads(Path(protocol).read_text())
+    check_files(cfg["source_sha256"])
+    out = new_output(cfg["output"], cfg)
+    initialize()
+    for path in cfg["source_sha256"]:
+        dest = out / "source_archive" / path
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(Path(path).read_bytes())
+    prodistill.check(cfg)
+    env = prodistill.author(cfg)
+    base = load_checkpoint("zeroshot.pt")
+    frozen = {}
+    for case in cfg["cases"]:
+        target, partner = case["target"], case["partner"]
+        original = load_checkpoint(target + "/finetuned.pt")
+        peer = load_checkpoint(partner + "/finetuned.pt")
+        teachers = {target: original, partner: peer}
+        folder = out / target
+        folder.mkdir()
+        releases = {"Unprotected": None, **case["releases"]}
+        models = {}
+        for name, ref in releases.items():
+            dest = folder / name
+            dest.mkdir()
+            own = original if ref is None else apply(original, ref)
+            before = parameter_hash(own.state_dict())
+            historical = case.get("unprotected_model") if ref is None else None
+            if historical:
+                model = apply(base, historical, full=True)
+                info = dict(reused=historical, new_backward_steps=0)
+            elif name == "Defense1":
+                # This defense changes only the final bias, beyond all trained blocks.
+                key = "model.visual.ln_post.bias"
+                assert all(
+                    torch.equal(v, original.state_dict()[k])
+                    for k, v in own.state_dict().items()
+                    if k != key
+                )
+                model = copy.deepcopy(models["Unprotected"])
+                tail = prodistill.initial(base, [own, peer]).state_dict()[key]
+                model.state_dict()[key].copy_(tail)
+                info = dict(
+                    reused_blocks="Unprotected",
+                    new_backward_steps=0,
+                    reason="All prefix and residual-block teacher tensors identical; final bias is outside ProDistill training.",
+                )
+            else:
+                model = prodistill.train(cfg, case, dest, base, teachers, own, peer, env)
+                info = json.loads((dest / "training.json").read_text())
+            assert parameter_hash(own.state_dict()) == before
+            if historical:
+                publication = dict(historical, full_state=True)
+            elif name == "Defense1":
+                path = dest / "edits.pt"
+                torch.save({key: model.state_dict()[key]}, path)
+                publication = dict(path=str(path), sha256=digest(path), reference="Unprotected")
+            else:
+                publication = dict(
+                    path=str(dest / "model.pt"), sha256=digest(dest / "model.pt"), full_state=True
+                )
+            models[name] = model
+            frozen[target + "/" + name] = dict(
+                publication=publication,
+                parameter_sha256=parameter_hash(model.state_dict()),
+                training=info,
+                teacher_parameter_sha256=before,
+            )
+            save_json(out / "freeze.json", frozen)
+            print("PRODISTILL_FROZEN", target, name, flush=True)
+        del models, teachers, original, peer, own, model
+    # Freeze every model before reading any benchmark images.
+    for case in cfg["cases"]:
+        target, partner = case["target"], case["partner"]
+        heads = {t: load_checkpoint("head_" + t + ".pt") for t in (target, partner)}
+        raw, rows = {}, []
+        reference_model = None
+        replays, maximum = 0, 0.0
+        for name in ["Unprotected", *case["releases"]]:
+            item = frozen[target + "/" + name]
+            ref = item["publication"]
+            model = apply(
+                reference_model if ref.get("reference") == "Unprotected" else base,
+                ref,
+                full=ref.get("full_state", False),
+            )
+            assert parameter_hash(model.state_dict()) == item["parameter_sha256"]
+            if name == "Unprotected":
+                reference_model = model
+            for stage in ["pilot", "full"]:
+                for task in (target, partner):
+                    data = dataset(task, "data", model.val_preprocess)
+                    ids = (
+                        list(range(len(data)))
+                        if stage == "full"
+                        else np.linspace(0, len(data) - 1, 64, dtype=int).tolist()
+                    )
+                    scores, labels = [], []
+                    cost = evaluate(
+                        model,
+                        heads[task],
+                        make_loader(data, ids),
+                        "cuda",
+                        logit_sink=scores.append,
+                        prediction_sink=lambda p, y: labels.append(y),
+                    )
+                    scores, labels = torch.cat(scores), torch.cat(labels)
+                    np.testing.assert_array_equal(labels.numpy(), official_labels(task)[ids])
+                    assert torch.isfinite(scores).all()
+                    key = "/".join([name, stage, task])
+                    before = (
+                        scores
+                        if name == "Unprotected"
+                        else raw["/".join(["Unprotected", stage, task])]["logits"]
+                    )
+                    row = dict(
+                        defense=name,
+                        target=target,
+                        partner=partner,
+                        dataset=task,
+                        stage=stage,
+                        merger="ProDistill",
+                        attack_scope="None",
+                        role="target" if task == target else "partner",
+                        **row_metrics(scores, labels, before, scores.shape[1]),
+                        evaluation_seconds=cost["evaluation_seconds"],
+                    )
+                    for block in sorted(set(np.linspace(0, len(ids) - 1, 16, dtype=int) // 128)):
+                        start, end = block * 128, min((block + 1) * 128, len(ids))
+                        chosen = np.linspace(0, len(ids) - 1, 16, dtype=int)
+                        chosen = chosen[(chosen >= start) & (chosen < end)]
+                        replay = []
+                        evaluate(
+                            model,
+                            heads[task],
+                            make_loader(data, ids[start:end]),
+                            "cuda",
+                            logit_sink=replay.append,
+                        )
+                        error = float(
+                            (torch.cat(replay)[chosen - start] - scores[chosen]).abs().max()
+                        )
+                        assert error <= cfg["score_tolerance"]
+                        maximum = max(maximum, error)
+                        replays += len(chosen)
+                    raw[key] = dict(logits=scores, target=labels, indices=ids)
+                    rows.append(row)
+                    print(
+                        "PRODISTILL_ROW",
+                        target,
+                        name,
+                        stage,
+                        task,
+                        row["accuracy_percent"],
+                        flush=True,
+                    )
+            torch.save(raw, out / target / "scores.pt")
+            save_json(out / target / "results.json", rows)
+        save_json(
+            out / target / "validation.json",
+            dict(
+                status="passed",
+                score_replays=replays,
+                maximum_context_score_error=maximum,
+                raw_sha256=digest(out / target / "scores.pt"),
+                full_rows=sum(r["stage"] == "full" for r in rows),
+            ),
+        )
+    save_json(
+        out / "completed.json",
+        dict(
+            status="completed",
+            new_defense_updates=0,
+            new_AGA_calls=0,
+            source_sha256=digest(__file__),
+        ),
+    )
+
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--protocol", required=True)
-    p.add_argument("--compare-queries", action="store_true", help="Compare fixed teacher labels only; no training or test evaluation")
+    p.add_argument(
+        "--compare-queries",
+        action="store_true",
+        help="Compare fixed teacher labels only; no training or test evaluation",
+    )
+    p.add_argument(
+        "--prodistill", action="store_true", help="Pinned blockwise ProDistill recovery comparison"
+    )
     args = p.parse_args()
     require_root()
-    (compare_queries if args.compare_queries else run)(args.protocol)
+    assert not (args.compare_queries and args.prodistill)
+    (progressive if args.prodistill else compare_queries if args.compare_queries else run)(
+        args.protocol
+    )
