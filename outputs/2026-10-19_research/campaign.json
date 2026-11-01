@@ -1,26 +1,13 @@
 {
-  "status": "input_bias_joint_candidate_running",
-  "updated_utc": "2026-11-01T16:23:00.855749+00:00",
+  "status": "input_bias_MNIST_completed_joint_matching_improved_calibration_and_public_reset_unresolved",
+  "updated_utc": "2026-11-01T16:44:24.446879+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "41558",
-      "pid": 45564,
-      "output": "outputs/input_bias_joint_20261102",
-      "stage": "source optimization;conditional frozen evaluation queued",
-      "source_commit": "947bb20",
-      "construction_timeout_seconds": 7200,
-      "evaluation_timeout_seconds": 1200,
-      "real_construction_images": 0,
-      "duplicate_start_forbidden": true,
-      "wallclock_wrapper": "Original1800second timeout removed;sourcePID45564unchanged;runtime_supervision.json retainswrapperexit137;not an experimentfailure"
-    }
-  ],
-  "next_action": "Read outputs/input_bias_joint_20261102/source.log,point/result.json,finish_continued.log,finish_exit_code.txt,runtime_supervision.json. Oldsource_wrapper_exit_code137 is wrappertermination only. Do not duplicate source/evaluation. Retrieve completedresults and rawbackup after independent checks.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Analyze public B replacement and source-to-natural calibration differences before another construction; no extra attack families or blind parameter sweep.",
   "github_sync": {
-    "status": "Pending;GitHub fetch currently returns Unknown tool. No new remote write.",
+    "status": "GitHub connector restored; publishing completed results, precise readback in receipt",
     "last_verified_commit": "89a7e3cc40a5890f65f5a55922f828a514b9d902",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -1504,30 +1491,53 @@
     }
   },
   "input_bias_joint": {
-    "status": "source_and_native_verified_recovery_evaluation_pending",
-    "protocol": "results/data_free_compensation/input_bias_check.json",
-    "source_feasibility": "800/800 retained;native0.042185<unchanged1.264484;no real inputs",
-    "changes": "A and input bias co-vary preservingtaskcenter/32directions;B compensates fullnonlinearresponse;exactjointMLPmatching re-evaluated with every objective",
-    "source_commit": "947bb20",
-    "source_preregistration": "bb80dab",
-    "fixed_candidate_limit": 1,
-    "source_gate": "Native800 plus unchanged quadratic;all6raw+calibratedcontextcounts lowerthaninitial RN",
-    "next": "Read finish_resumed.log and finish_exit_code.txt; finish independent matching/reset counts, tables, backup. No new candidate/retuning.",
-    "operational_note": "Original500steps and source remain unchanged;exactjoint matching costs~10s/step,allow7200s walltime. Single sourcePID45564;single finish_queue.sh waitsforcompleteartifact.",
-    "record": "results/data_free_compensation/input_bias_check.json",
-    "source_retained": 800,
-    "source_n": 800,
+    "status": "completed_independently_verified",
+    "point_sha256": "ed30360059bd5c0699605bdbcf7e849f18f770e85bda271d9c4e2918b7eda2ea",
     "native_before_after": [
       99.69,
       99.59
     ],
-    "source_iterations": 44,
-    "stop": "fixed_line_search_stalled",
-    "source_seconds": 499.53655669279397,
-    "real_construction_images": 0,
-    "native_strict_R": 181.52940349467764,
-    "native_strict_passed": false,
-    "conclusion": "Native accuracy retained closely; no claim about fusion or recovery yet.",
-    "point_sha256": "ed30360059bd5c0699605bdbcf7e849f18f770e85bda271d9c4e2918b7eda2ea"
+    "native_lost_gained": [
+      12,
+      2
+    ],
+    "target_raw_TA_AGAtarget_AGAboth": [
+      8.04,
+      0.16,
+      0.15
+    ],
+    "target_calibrated": [
+      53.44,
+      30.49,
+      30.3
+    ],
+    "partner_raw": [
+      3.979717271051014,
+      0.8028580208973571,
+      0.8720036877688998
+    ],
+    "partner_calibrated": [
+      42.808850645359556,
+      34.373079287031345,
+      33.17839582052858
+    ],
+    "MLP_matching": {
+      "native": 99.59,
+      "target": 0.16,
+      "partner": 1.9706515058389675,
+      "last_layer_changed_units": 640,
+      "permission": "Published parameters and public base; incoming/bias/outgoing MLP weights; no clean target, images, or changed-module information."
+    },
+    "public_B_replacement": {
+      "native": 99.67,
+      "target": 99.36,
+      "partner": 92.4938537185003,
+      "matched_unprotected_target": 99.35,
+      "permission": "Public base plus known last MLP B/output-bias location. No clean target or images."
+    },
+    "conclusion": "Raw TA/AGA and joint matching improve over the preceding point; calibration weakens and known-location B replacement still removes protection. Only MNIST evaluated. No SVD contribution or general recovery guarantee. Never combine best columns from different points.",
+    "next": "Analyze public B replacement and source-to-natural calibration differences before another construction; no extra attack families or blind parameter sweep.",
+    "result": "results/data_free_compensation/input_bias_result.json",
+    "completed_utc": "2026-11-01T16:44:24.446879+00:00"
   }
 }
