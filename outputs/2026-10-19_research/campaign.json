@@ -1504,7 +1504,7 @@
     }
   },
   "input_bias_joint": {
-    "status": "source_running",
+    "status": "source_and_native_verified_recovery_evaluation_pending",
     "protocol": "results/data_free_compensation/input_bias_check.json",
     "source_feasibility": "800/800 retained;native0.042185<unchanged1.264484;no real inputs",
     "changes": "A and input bias co-vary preservingtaskcenter/32directions;B compensates fullnonlinearresponse;exactjointMLPmatching re-evaluated with every objective",
@@ -1512,7 +1512,22 @@
     "source_preregistration": "bb80dab",
     "fixed_candidate_limit": 1,
     "source_gate": "Native800 plus unchanged quadratic;all6raw+calibratedcontextcounts lowerthaninitial RN",
-    "next": "Wait for this one job and queued complete evaluation;no retuning or secondcandidate.",
-    "operational_note": "Original500steps and source remain unchanged;exactjoint matching costs~10s/step,allow7200s walltime. Single sourcePID45564;single finish_queue.sh waitsforcompleteartifact."
+    "next": "Read finish_resumed.log and finish_exit_code.txt; finish independent matching/reset counts, tables, backup. No new candidate/retuning.",
+    "operational_note": "Original500steps and source remain unchanged;exactjoint matching costs~10s/step,allow7200s walltime. Single sourcePID45564;single finish_queue.sh waitsforcompleteartifact.",
+    "record": "results/data_free_compensation/input_bias_check.json",
+    "source_retained": 800,
+    "source_n": 800,
+    "native_before_after": [
+      99.69,
+      99.59
+    ],
+    "source_iterations": 44,
+    "stop": "fixed_line_search_stalled",
+    "source_seconds": 499.53655669279397,
+    "real_construction_images": 0,
+    "native_strict_R": 181.52940349467764,
+    "native_strict_passed": false,
+    "conclusion": "Native accuracy retained closely; no claim about fusion or recovery yet.",
+    "point_sha256": "ed30360059bd5c0699605bdbcf7e849f18f770e85bda271d9c4e2918b7eda2ea"
   }
 }

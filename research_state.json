@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense1/Defense2 matched recovery comparison completed for the registered batch; address output-calibration weakness and Defense2 task retention without blind search.",
-  "status": "input_bias_joint_candidate_running",
+  "status": "input_bias_joint_frozen_evaluation_running",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -88,23 +88,20 @@
     "current_transfer_partial_removed_bytes": 171737088,
     "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
   },
-  "updated_utc": "2026-11-01T16:23:00.842300+00:00",
+  "updated_utc": "2026-11-01T16:34:34.069045+00:00",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
       "host": "41558",
-      "pid": 45564,
       "output": "outputs/input_bias_joint_20261102",
-      "stage": "source optimization;conditional frozen evaluation queued",
+      "stage": "AGA then TA/calibration/joint matching/publicBreset; source+native completed",
       "source_commit": "947bb20",
-      "construction_timeout_seconds": 7200,
+      "point_sha256": "ed30360059bd5c0699605bdbcf7e849f18f770e85bda271d9c4e2918b7eda2ea",
       "evaluation_timeout_seconds": 1200,
-      "real_construction_images": 0,
-      "duplicate_start_forbidden": true,
-      "wallclock_wrapper": "Original1800second timeout removed;sourcePID45564unchanged;runtime_supervision.json retainswrapperexit137;not an experimentfailure"
+      "duplicate_start_forbidden": true
     }
   ],
-  "next_action": "Read outputs/input_bias_joint_20261102/source.log,point/result.json,finish_continued.log,finish_exit_code.txt,runtime_supervision.json. Oldsource_wrapper_exit_code137 is wrappertermination only. Do not duplicate source/evaluation. Retrieve completedresults and rawbackup after independent checks.",
+  "next_action": "Read finish_resumed.log and finish_exit_code.txt; finish independent matching/reset counts, tables, backup. No new candidate/retuning.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -1562,15 +1559,20 @@
     }
   },
   "input_bias_joint": {
-    "status": "source_running",
-    "protocol": "results/data_free_compensation/input_bias_check.json",
-    "source_feasibility": "800/800 retained;native0.042185<unchanged1.264484;no real inputs",
-    "changes": "A and input bias co-vary preservingtaskcenter/32directions;B compensates fullnonlinearresponse;exactjointMLPmatching re-evaluated with every objective",
-    "source_commit": "947bb20",
-    "source_preregistration": "bb80dab",
-    "fixed_candidate_limit": 1,
-    "source_gate": "Native800 plus unchanged quadratic;all6raw+calibratedcontextcounts lowerthaninitial RN",
-    "next": "Wait for this one job and queued complete evaluation;no retuning or secondcandidate.",
-    "operational_note": "Original500steps and source remain unchanged;exactjoint matching costs~10s/step,allow7200s walltime. Single sourcePID45564;single finish_queue.sh waitsforcompleteartifact."
+    "record": "results/data_free_compensation/input_bias_check.json",
+    "status": "source_and_native_verified_recovery_evaluation_pending",
+    "source_retained": 800,
+    "source_n": 800,
+    "native_before_after": [
+      99.69,
+      99.59
+    ],
+    "source_iterations": 44,
+    "stop": "fixed_line_search_stalled",
+    "source_seconds": 499.53655669279397,
+    "real_construction_images": 0,
+    "native_strict_R": 181.52940349467764,
+    "native_strict_passed": false,
+    "conclusion": "Native accuracy retained closely; no claim about fusion or recovery yet."
   }
 }

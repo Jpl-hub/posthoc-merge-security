@@ -1,5 +1,5 @@
 {
-  "status": "source_condition_passed;one_classification_candidate_registered",
+  "status": "candidate_frozen_native_verified_recovery_resumed_after_config_fix",
   "registered_utc": "2026-11-01T16:08:43.347189+00:00",
   "question": "Can the input bias be included in weight-matching disruption while preserving task-centered preactivations and permitting the same nonlinear output compensation?",
   "construction_inputs": [
@@ -119,5 +119,901 @@
       "same_source_pid": 45564,
       "source_model_restarted": false
     }
+  },
+  "evaluation_configuration_fix": {
+    "reason": "Legacy evaluate.json pinned pre-joint-matching sources. Recovery stopped at configuration validation before author attack. Keep old config/failure log; use current committed source pins with identical scientific fields. Resume after independently recounted native scores; no repeated construction/native images.",
+    "changes": {
+      "_impl/attacks.py": {
+        "old": "8cbb800c0ff798e292f2c4ff12479d40816a0fa2c0250ce7140751c0a2ec59bc",
+        "new": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c"
+      },
+      "_impl/data.py": {
+        "old": "ad65a06fb19c87aa7957396b68cae7a2b9e399b9323397a45a4a676691165cbf",
+        "new": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f"
+      },
+      "_impl/evaluate.py": {
+        "old": "239e5151925a096b70c2a377ea8880512bb5b82a34c685cb8ad3063d87eb296b",
+        "new": "3c00bfe94fa01e4eb188d66cbca1ec6d6bab503418d9cfbda84372ab709b58cb"
+      },
+      "_impl/report.py": {
+        "old": "d8f6b0ce103352ae1bcb566bdbff3def49fd2293dac07aac03232a9a37ba4e01",
+        "new": "5ec4a340fb3a7f691aa69e109e63031c0806578481d537388e41b590aafab4aa"
+      },
+      "experiment/eight_task.py": {
+        "old": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
+        "new": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1"
+      },
+      "experiment/recover.py": {
+        "old": "151b0c1eab3323d0f6333feffa15122eba9584906f9fe6611763d480467c696c",
+        "new": "a6770bb3f99fc9a05e69ae8e2c3df48480be9370878e04d73096234a9d57641f"
+      },
+      "experiment/report.py": {
+        "old": "72aeb94a49084524096914f3ee41b8e870f8e756e7eddbcfa264935b5ec12fc9",
+        "new": "e0938e02c32fba7be8e5a46ba6dfba7f00452962f28b77f8c8eab6b60c5fbba2"
+      }
+    },
+    "protocol": "outputs/input_bias_joint_20261102/recovery.json",
+    "protocol_sha256": "83f32f8ce225bd7d20f65b2e71073690b280def0849690b1716a309e64477d48"
+  },
+  "construction_result": {
+    "status": "sole_native_ellipse_classification_frozen_before_images",
+    "point_sha256": "ed30360059bd5c0699605bdbcf7e849f18f770e85bda271d9c4e2918b7eda2ea",
+    "source_sha256": "2b66da02ea8e94aaa97010b99f15757ab7f42d477b0b269cc550cd8f95a5c495",
+    "source": "\"\"\"Defense 2: frozen MNIST A/B construction. See README for source caches and provenance.\"\"\"\n\n# Preserve the three expressions from the executed source.\n# ruff: noqa: E731\n\nimport argparse\nimport json\nimport math\nimport time\nfrom pathlib import Path\n\nimport torch\nimport torch.nn.functional as F\n\nfrom _impl.attacks import load_author\nfrom _impl.io import digest\nfrom _impl.metrics import logical_parameter_distance\nfrom _impl.merge import merge\nfrom _impl.models import apply, checked_models, initialize\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--calibration-aware\", action=\"store_true\")\n    parser.add_argument(\"--task-reference\", action=\"store_true\")\n    parser.add_argument(\"--input-bias\", action=\"store_true\")\n    parser.add_argument(\"--output\", type=Path)\n    args = parser.parse_args()\n    if args.calibration_aware and args.output is None:\n        parser.error(\"--calibration-aware requires a separate --output directory\")\n    if args.task_reference and not args.calibration_aware:\n        parser.error(\"--task-reference requires --calibration-aware\")\n    if args.input_bias and not args.task_reference:\n        parser.error(\"--input-bias requires --task-reference and --calibration-aware\")\n    initialize()\n    torch.set_default_dtype(torch.float64)\n    start = time.perf_counter()\n    root = Path(\"outputs/native_ellipse_classification_20261026\")\n    out = args.output or root / \"point\"\n    out.mkdir(parents=True, exist_ok=False)\n    meta = json.loads((root / \"source/result.json\").read_text())\n    assert digest(root / \"source/source.pt\") == meta[\"source_arrays_sha256\"]\n    raw = torch.load(root / \"source/source.pt\", map_location=\"cpu\", weights_only=False)\n    (base, expert, head, pins) = checked_models(\"MNIST\")\n    (s, bs) = (expert.state_dict(), base.state_dict())\n    k = \"model.visual.transformer.resblocks.11.mlp.\"\n    to = lambda v: v.double().cuda()\n    (A, A0, a, a0, B, B0, b, b0, gamma, beta) = [\n        to(v)\n        for v in [\n            s[k + \"c_fc.weight\"],\n            bs[k + \"c_fc.weight\"],\n            s[k + \"c_fc.bias\"],\n            bs[k + \"c_fc.bias\"],\n            s[k + \"c_proj.weight\"],\n            bs[k + \"c_proj.weight\"],\n            s[k + \"c_proj.bias\"],\n            bs[k + \"c_proj.bias\"],\n            s[\"model.visual.transformer.resblocks.11.ln_2.weight\"],\n            s[\"model.visual.transformer.resblocks.11.ln_2.bias\"],\n        ]\n    ]\n    # Change A outside the selected task-SVD directions.\n    D = A - A0\n    (U, _, Vh) = torch.linalg.svd(D, full_matrices=False)\n    (U, V) = (U[:, :32], Vh[:32].T)\n    if args.input_bias:\n        # Preserve affine preactivations at beta + span(V), while including\n        # the input bias in the public incoming-weight correspondence.\n        Q = torch.eye(A.shape[1], device=A.device) - V @ V.T\n        muq = Q @ beta\n        H = Q - muq[:, None] * muq[None, :] / (1 + muq @ muq)\n        C = A0 - a0[:, None] * beta[None, :]\n        A0r = C @ H\n        K = A0r @ C.T\n        rhs = -(A * A0).sum(1) - a * a0\n    else:\n        A0r = A0 - A0 @ V @ V.T\n        K = A0r @ A0r.T\n        rhs = -(A * A0).sum(1)\n    G = -(U @ U.T) * K\n    G.diagonal().add_(K.diagonal())\n    lam = torch.cholesky_solve(rhs[:, None], torch.linalg.cholesky(G))\n    dA = lam * A0r\n    dA -= U @ (U.T @ dA)\n    Ap = (A + dA).float().double()\n    ap = (a - dA @ beta).float().double() if args.input_bias else a\n    del K, G\n    (author, sha) = load_author(Path(\"external/secure-merge-attack/utils_attack_B32.py\"))\n    assert sha == \"4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778\"\n    pi = author[\"solve_permutation\"](Ap.float().cpu(), A0.float().cpu()).cuda()\n    assert sorted(pi.tolist()) == list(range(len(A)))\n    Rorig = torch.cat([B, b[:, None]], 1)\n    cache = {name: {key: to(v) for (key, v) in row.items()} for (name, row) in raw[\"cache\"].items()}\n    public_names = [\"direct\", \"recovered\"]\n    if args.task_reference:\n        # The second reference is the clean target itself, never another task.\n        # Its direct half-publication prefix is exactly the native prefix.\n        cache[\"task_direct\"] = cache[\"native\"]\n        aligned = apply(expert, dict(\n            path=\"outputs/feature_noise/artifacts/original_AGA.pt\",\n            sha256=\"07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607\",\n        ), full=True)\n        clean = merge(base, aligned, expert, .5).cuda().eval()\n        v = clean.model.visual\n        block = v.transformer.resblocks[11]\n        rows = dict(x=[], prefix=[], final=[], scores=[])\n        hooks = [\n            block.mlp.c_fc.register_forward_pre_hook(lambda m, a: rows[\"x\"].append(a[0][0].cpu())),\n            block.ln_2.register_forward_pre_hook(lambda m, a: rows[\"prefix\"].append(a[0][0].cpu())),\n            v.ln_post.register_forward_pre_hook(lambda m, a: rows[\"final\"].append(a[0].cpu())),\n        ]\n        norm = expert.val_preprocess.transforms[-1]\n        mean = torch.tensor(norm.mean, device=\"cuda\", dtype=torch.float32)[None, :, None, None]\n        std = torch.tensor(norm.std, device=\"cuda\", dtype=torch.float32)[None, :, None, None]\n        with torch.no_grad():\n            for pixels in raw[\"final\"].split(8):\n                x = F.interpolate(pixels.cuda(), (224, 224), mode=\"bilinear\", align_corners=False)\n                images = (torch.cat([torch.roll(x, s, (2, 3)) for s in\n                                    [(0, 0), (7, 0), (-7, 0), (0, 7), (0, -7)]]) - mean) / std\n                rows[\"scores\"].append((F.normalize(clean(images), dim=-1) @ head.weight.cuda().T).cpu())\n        for hook in hooks:\n            hook.remove()\n        rows = {key: torch.cat(value) for key, value in rows.items()}\n        torch.save(rows, out / \"task_reference_cache.pt\")\n        cache[\"task_recovered\"] = {key: to(value) for key, value in rows.items()}\n        public_names += [\"task_direct\", \"task_recovered\"]\n        del clean, aligned, block, v, rows\n        torch.cuda.empty_cache()\n    activate = lambda z: z * torch.sigmoid(1.702 * z)\n\n    def augmented(x):\n        return torch.cat([activate(x @ Ap.T + ap).T, torch.ones(1, len(x), device=\"cuda\")], 0)\n\n    # Fit B and its bias to frozen-teacher outputs on the two synthetic populations.\n    G = torch.zeros(3073, 3073, device=\"cuda\")\n    T = torch.zeros_like(Rorig)\n    constant = G.new_zeros(())\n    groups = []\n    source = Path(\"outputs/task_shaped_compensation_20261026/layer_inputs.pt\")\n    assert digest(source) == \"10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe\"\n    u = torch.load(source, map_location=\"cpu\", weights_only=False)\n    for name, count in [(\"task_layer\", len(u)), (\"generated_native\", len(cache[\"native\"][\"x\"]))]:\n        gi = torch.zeros_like(G)\n        ti = torch.zeros_like(T)\n        yy = G.new_zeros(())\n        ys = torch.zeros(768, device=\"cuda\")\n        for lo in range(0, count, 256):\n            x = (\n                beta + gamma * u[lo : lo + 256].cuda()\n                if name == \"task_layer\"\n                else cache[\"native\"][\"x\"][lo : lo + 256]\n            )\n            H = augmented(x)\n            Y = (\n                activate(x @ A.T + a) @ B.T + b\n                if name == \"task_layer\"\n                else cache[\"native\"][\"final\"][lo : lo + 256]\n                - cache[\"native\"][\"prefix\"][lo : lo + 256]\n            )\n            gi += H @ H.T\n            ti += Y.T @ H.T\n            yy += Y.square().sum()\n            ys += Y.sum(0)\n        variance = yy / count - ys.square().sum() / count**2\n        assert variance > 0\n        scale = 1 / (count * variance)\n        G += gi * scale\n        T += ti * scale\n        constant += yy * scale\n        groups.append(dict(population=name, n=count, variance=float(variance)))\n    rho = 0.01 * G.trace() / len(G)\n    if args.input_bias:\n        rho = 6.0394128536670705e-05  # Same previously registered source regularizer.\n    G += rho * torch.eye(len(G), device=\"cuda\")\n    T += rho * Rorig\n    constant += rho * Rorig.square().sum()\n    L = torch.linalg.cholesky(G)\n    RN = torch.cholesky_solve(T.T, L).T\n    native = lambda R: float((R @ G * R).sum() - 2 * (R * T).sum() + constant)\n    tau = native(Rorig)\n    if args.input_bias:\n        tau = 1.2644836124713486  # Do not enlarge the previous functional bound.\n    minimum = native(RN)\n    radius2 = tau - minimum\n    assert radius2 > 1e-12, (tau, minimum)\n    # Build the public-base fusion and AGA contexts, including the full classifier.\n    hidden = {}\n    fixed = {}\n    readouts = {}\n    W = to(head.weight)\n    assert float(head.bias.abs().max()) == 0\n    eps = expert.model.visual.ln_post.eps\n    for name in [\"native\"] + public_names:\n        x = cache[name][\"x\"]\n        if name == \"native\":\n            H = activate(x @ Ap.T + ap).T\n            fixed[name] = cache[name][\"prefix\"].T\n            hidden[name] = torch.cat([H, torch.ones(1, H.shape[1], device=\"cuda\")], 0)\n        else:\n            recovered_context = name.endswith(\"recovered\")\n            (AA, aa) = (Ap[pi], ap[pi]) if recovered_context else (Ap, ap)\n            Ar, ar, Br, br = (A, a, B, b) if name.startswith(\"task_\") else (A0, a0, B0, b0)\n            H = activate(x @ ((AA + Ar) / 2).T + (aa + ar) / 2).T\n            fixed[name] = cache[name][\"prefix\"].T + (Br @ H + br[:, None]) / 2\n            if recovered_context:\n                back = torch.empty_like(H)\n                back[pi] = H\n                H = back\n            hidden[name] = torch.cat([H, torch.ones(1, H.shape[1], device=\"cuda\")], 0) / 2\n        names = [\"model.visual.ln_post.weight\", \"model.visual.ln_post.bias\", \"model.visual.proj\"]\n        readouts[name] = [\n            to(s[key] if name == \"native\" or name.startswith(\"task_\") else (s[key] + bs[key]) / 2)\n            for key in names\n        ]\n\n    def classify(r, params):\n        (g, beta, P) = params\n        z = F.layer_norm(r.T, (768,), g, beta, eps) @ P\n        return F.normalize(z, dim=-1) @ W.T\n\n    original_tail_error = max(\n        (\n            float(\n                (classify(cache[name][\"final\"].T, readouts[name]) - cache[name][\"scores\"])\n                .abs()\n                .max()\n            )\n            for name in cache\n        )\n    )\n    assert original_tail_error < 0.0005, original_tail_error\n\n    teacher_class = raw[\"teacher_class\"].long().cuda()\n    joint_incoming_cost = A0 @ Ap.T + a0[:, None] * ap[None, :] if args.input_bias else None\n    matching_calls = 1\n\n    def calibrated(scores):\n        # Probability division, evaluated on the fixed synthetic source only.\n        log_prior = torch.logsumexp(F.log_softmax(scores, dim=1), dim=0) - math.log(len(scores))\n        return scores - log_prior\n\n    def public(R):\n        nonlocal matching_calls\n        scores = {\n            name: classify(fixed[name] + R @ hidden[name], readouts[name])\n            for name in public_names\n        }\n        if args.input_bias:\n            # The exact joint MLP assignment is recomputed at every objective\n            # evaluation, including backtracking. No stale order is optimized.\n            from scipy.optimize import linear_sum_assignment\n\n            with torch.no_grad():\n                cost = joint_incoming_cost + B0.T @ R[:, :-1]\n                order = torch.as_tensor(\n                    linear_sum_assignment(cost.detach().cpu().numpy(), maximize=True)[1],\n                    device=R.device,\n                )\n                matching_calls += 1\n            for name, cached, Ar, ar, Br, br, readout in [\n                (\"joint_direct\", cache[\"direct\"], A0, a0, B0, b0, readouts[\"direct\"]),\n                (\"joint_task\", cache[\"native\"], A, a, B, b, readouts[\"native\"]),\n            ]:\n                h = activate(cached[\"x\"] @ ((Ap[order] + Ar) / 2).T + (ap[order] + ar) / 2).T\n                residual = cached[\"prefix\"].T + (Br @ h + br[:, None]) / 2\n                residual = residual + (R[:, :-1][:, order] @ h + R[:, -1, None]) / 2\n                scores[name] = classify(residual, readout)\n        if args.calibration_aware:\n            # Reduce correct-class probability before and after calibration;\n            # no fixed destination class, new images, or fitted test labels.\n            correct = torch.cat(\n                [\n                    F.log_softmax(v, dim=1).gather(1, teacher_class[:, None]).flatten()\n                    for values in scores.values()\n                    for v in (values, calibrated(values))\n                ]\n            )\n            return torch.logsumexp(correct, 0) - math.log(len(correct)), scores\n        gaps = torch.cat([v[:, 1:] - v[:, :1] for v in scores.values()])\n        return (torch.logsumexp(gaps.flatten(), 0) - math.log(gaps.numel()), scores)\n\n    def source_accuracy(R):\n        with torch.no_grad():\n            _, scores = public(R)\n            values = {\n                \"native\": classify(fixed[\"native\"] + R @ hidden[\"native\"], readouts[\"native\"])\n            }\n            values.update(scores)\n            values.update({name + \"_calibrated\": calibrated(v) for name, v in scores.items()})\n            return {name: int(v.argmax(1).eq(teacher_class).sum()) for name, v in values.items()}\n\n    R = RN.clone()\n    initial_accuracy = source_accuracy(R) if args.calibration_aware else None\n    trace = []\n    stop = \"iteration_limit\"\n    derivative = None\n    # Optimize B inside the native-output error constraint; A remains fixed.\n    for iteration in range(500):\n        R = R.detach().requires_grad_(True)\n        (loss, scores) = public(R)\n        assert torch.isfinite(loss)\n        grad = torch.autograd.grad(loss, R)[0]\n        dual = torch.cholesky_solve(grad.T, L).T\n        dn = float((dual * grad).sum())\n        assert dn >= 0\n        if dn < 1e-24:\n            stop = \"zero_public_gradient\"\n            R = R.detach()\n            break\n        oracle = RN - (radius2 / dn) ** 0.5 * dual\n        assert native(oracle) <= tau + 1e-08\n        direction = oracle - R.detach()\n        gap = float((grad * (R.detach() - oracle)).sum())\n        assert gap >= -1e-08\n        if iteration == 0:\n            v = direction * (Rorig.norm() / direction.norm())\n            step = 1e-06\n            fd = float(\n                (public(R.detach() + step * v)[0] - public(R.detach() - step * v)[0]) / (2 * step)\n            )\n            ad = float((grad * v).sum())\n            error = abs(fd - ad) / (1 + abs(fd))\n            assert error < 1e-05, (fd, ad, error)\n            derivative = dict(finite_difference=fd, autograd=ad, relative_error=error)\n        if gap <= 1e-06 * (1 + abs(float(loss))):\n            stop = \"small_conditional_gradient_gap\"\n            R = R.detach()\n            break\n        step = 1.0\n        accepted = False\n        with torch.no_grad():\n            for backtrack in range(24):\n                proposal = R.detach() + step * direction\n                (value, _) = public(proposal)\n                if float(value) <= float(loss) - 0.0001 * step * gap:\n                    accepted = True\n                    R = proposal\n                    break\n                step *= 0.5\n            if not accepted:\n                stop = \"fixed_line_search_stalled\"\n                R = R.detach()\n                break\n            nv = native(R)\n            assert nv <= tau + 1e-08\n            row = dict(\n                iteration=iteration + 1,\n                public_objective=float(value),\n                conditional_gradient_gap=gap,\n                native_quadratic=nv,\n                native_limit=tau,\n                step=step,\n                public_class0_before_step={\n                    name: int(v.argmax(1).eq(0).sum()) for (name, v) in scores.items()\n                },\n            )\n            trace.append(row)\n            if iteration % 25 == 0:\n                print(json.dumps(row), flush=True)\n    R = R.detach()\n    edits = {\n        k + \"c_fc.weight\": Ap.float().cpu(),\n        k + \"c_proj.weight\": R[:, :-1].float().cpu(),\n        k + \"c_proj.bias\": R[:, -1].float().cpu(),\n    }\n    if args.input_bias:\n        edits[k + \"c_fc.bias\"] = ap.float().cpu()\n    assert all((torch.isfinite(v).all() for v in edits.values()))\n    torch.save(edits, out / \"point.pt\")\n    Rf = torch.cat([to(edits[k + \"c_proj.weight\"]), to(edits[k + \"c_proj.bias\"])[:, None]], 1)\n    with torch.no_grad():\n        (objective, public_scores) = public(Rf)\n        native_scores = classify(fixed[\"native\"] + Rf @ hidden[\"native\"], readouts[\"native\"])\n        source_counts = dict(\n            native_teacher_retained=int(\n                (native_scores.argmax(1).cpu() == raw[\"teacher_class\"]).sum()\n            ),\n            native_n=len(native_scores),\n            public_class0={\n                name: int(v.argmax(1).eq(0).sum()) for (name, v) in public_scores.items()\n            },\n        )\n    final_accuracy = source_accuracy(Rf) if args.calibration_aware else None\n    source_feasible = None\n    if args.calibration_aware:\n        torch.save(\n            {\n                \"native\": native_scores.cpu(),\n                **{name: v.cpu() for name, v in public_scores.items()},\n                \"teacher_class\": teacher_class.cpu(),\n            },\n            out / \"source_scores.pt\",\n        )\n        checked_contexts = public_names + ([\"joint_direct\", \"joint_task\"] if args.input_bias else [])\n        source_feasible = (\n            final_accuracy[\"native\"] >= initial_accuracy[\"native\"]\n            and all(\n                final_accuracy[n + \"_calibrated\"] < initial_accuracy[n + \"_calibrated\"]\n                for n in checked_contexts\n            )\n            and (not args.task_reference or all(final_accuracy[n] < initial_accuracy[n] for n in checked_contexts))\n            and native(Rf) <= tau + 1e-5 * (1 + abs(tau))\n        )\n    result = dict(\n        status=\"sole_native_ellipse_classification_frozen_before_images\",\n        point_sha256=digest(out / \"point.pt\"),\n        source_sha256=digest(__file__),\n        source=Path(__file__).read_text(),\n        source_cache_sha256=meta[\"source_arrays_sha256\"],\n        source_counts=source_counts,\n        calibration_aware=args.calibration_aware,\n        task_reference=args.task_reference,\n        input_bias=args.input_bias,\n        public_contexts=public_names + ([\"joint_direct\", \"joint_task\"] if args.input_bias else []),\n        additional_clean_synthetic_forwards=800 if args.task_reference else 0,\n        initial_source_accuracy=initial_accuracy,\n        final_source_accuracy=final_accuracy,\n        source_feasible=source_feasible,\n        source_scores_sha256=digest(out / \"source_scores.pt\") if args.calibration_aware else None,\n        public_objective=float(objective),\n        native_limit=tau,\n        native_minimum=minimum,\n        native_final=native(R),\n        native_final_FP32=native(Rf),\n        native_groups=groups,\n        ridge=float(rho),\n        original_tail_maximum_error=original_tail_error,\n        derivative_check=derivative,\n        iterations=len(trace),\n        stop_reason=stop,\n        trace=trace,\n        metrics=dict(\n            A_relative=float((Ap - A).norm() / A.norm()),\n            B_relative=float((Rf[:, :-1] - B).norm() / B.norm()),\n            logical_D=logical_parameter_distance(edits, s),\n            input_bias_relative=float((ap - a).norm() / a.norm()),\n        ),\n        seconds=time.perf_counter() - start,\n        real_images=0,\n        new_full_AGA_calls=0,\n        matching_calls=matching_calls,\n        original_expert_updates=0,\n        synthetic_images_reused=160,\n        generated_views=800,\n        synthetic_native_layer_inputs=16384,\n        scope=\"SharedB conditionalnativequadratic/completepublicclassifier construction. OrdinaryFW/ellipsoid/Choleskyarenotnewalgorithm. Finitegapnotglobalguarantee. NativeboundequalA-onlysourcevalue,notnaturalaccuracy. Head/classesexplicitallowed;no partner/test/closedB read.\",\n    )\n    (out / \"result.json\").write_text(json.dumps(result, indent=2) + \"\\n\")\n    print(\n        json.dumps({k: v for (k, v) in result.items() if k not in [\"source\", \"trace\"]}), flush=True\n    )\n\n\nif __name__ == \"__main__\":\n    main()\n",
+    "source_cache_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "source_counts": {
+      "native_teacher_retained": 800,
+      "native_n": 800,
+      "public_class0": {
+        "direct": 0,
+        "recovered": 0,
+        "task_direct": 0,
+        "task_recovered": 0,
+        "joint_direct": 0,
+        "joint_task": 0
+      }
+    },
+    "calibration_aware": true,
+    "task_reference": true,
+    "input_bias": true,
+    "public_contexts": [
+      "direct",
+      "recovered",
+      "task_direct",
+      "task_recovered",
+      "joint_direct",
+      "joint_task"
+    ],
+    "additional_clean_synthetic_forwards": 800,
+    "initial_source_accuracy": {
+      "native": 800,
+      "direct": 800,
+      "recovered": 800,
+      "task_direct": 800,
+      "task_recovered": 800,
+      "joint_direct": 800,
+      "joint_task": 800,
+      "direct_calibrated": 800,
+      "recovered_calibrated": 800,
+      "task_direct_calibrated": 800,
+      "task_recovered_calibrated": 800,
+      "joint_direct_calibrated": 800,
+      "joint_task_calibrated": 800
+    },
+    "final_source_accuracy": {
+      "native": 800,
+      "direct": 0,
+      "recovered": 0,
+      "task_direct": 0,
+      "task_recovered": 0,
+      "joint_direct": 0,
+      "joint_task": 0,
+      "direct_calibrated": 0,
+      "recovered_calibrated": 0,
+      "task_direct_calibrated": 0,
+      "task_recovered_calibrated": 0,
+      "joint_direct_calibrated": 0,
+      "joint_task_calibrated": 0
+    },
+    "source_feasible": true,
+    "source_scores_sha256": "d20c8daf0c5f56abae6e3952ea922ec4d97bc197475f3081d93644159b370a96",
+    "public_objective": -11.357913064740481,
+    "native_limit": 1.2644836124713486,
+    "native_minimum": 0.04218535415168745,
+    "native_final": 0.34281862099411775,
+    "native_final_FP32": 0.34281862098224636,
+    "native_groups": [
+      {
+        "population": "task_layer",
+        "n": 16384,
+        "variance": 79.14436889714108
+      },
+      {
+        "population": "generated_native",
+        "n": 800,
+        "variance": 6.812061375916116
+      }
+    ],
+    "ridge": 6.0394128536670705e-05,
+    "original_tail_maximum_error": 1.942210661454169e-05,
+    "derivative_check": {
+      "finite_difference": -0.09382463606044666,
+      "autograd": -0.09382463631637905,
+      "relative_error": 2.3397935826043286e-10
+    },
+    "iterations": 44,
+    "stop_reason": "fixed_line_search_stalled",
+    "trace": [
+      {
+        "iteration": 1,
+        "public_objective": -2.024217427876697,
+        "conditional_gradient_gap": 0.4999308443677791,
+        "native_quadratic": 1.2644836124712917,
+        "native_limit": 1.2644836124713486,
+        "step": 1.0,
+        "public_class0_before_step": {
+          "direct": 80,
+          "recovered": 80,
+          "task_direct": 80,
+          "task_recovered": 80,
+          "joint_direct": 80,
+          "joint_task": 80
+        }
+      },
+      {
+        "iteration": 2,
+        "public_objective": -2.7185565507895664,
+        "conditional_gradient_gap": 2.702167305371769,
+        "native_quadratic": 1.2644836124711958,
+        "native_limit": 1.2644836124713486,
+        "step": 1.0,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 3,
+        "public_objective": -3.7015741239864663,
+        "conditional_gradient_gap": 8.011403623805347,
+        "native_quadratic": 0.7099520477402343,
+        "native_limit": 1.2644836124713486,
+        "step": 0.5,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 19,
+          "joint_direct": 26,
+          "joint_task": 164
+        }
+      },
+      {
+        "iteration": 4,
+        "public_objective": -4.487083694661191,
+        "conditional_gradient_gap": 22.323994957430706,
+        "native_quadratic": 0.6473028653362771,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 5,
+        "public_objective": -4.8813835687654965,
+        "conditional_gradient_gap": 30.411717654215227,
+        "native_quadratic": 0.5882332410475399,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 6,
+        "public_objective": -6.019750580036853,
+        "conditional_gradient_gap": 38.35495331281268,
+        "native_quadratic": 0.5410134708970915,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 7,
+        "public_objective": -7.002941942356653,
+        "conditional_gradient_gap": 61.465068270943476,
+        "native_quadratic": 0.5159871827630607,
+        "native_limit": 1.2644836124713486,
+        "step": 0.03125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 8,
+        "public_objective": -7.3354725069066635,
+        "conditional_gradient_gap": 41.12422803441327,
+        "native_quadratic": 0.4789808046602353,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 9,
+        "public_objective": -8.177214808066527,
+        "conditional_gradient_gap": 113.84378947073196,
+        "native_quadratic": 0.45742827436165,
+        "native_limit": 1.2644836124713486,
+        "step": 0.03125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 10,
+        "public_objective": -8.931160424058724,
+        "conditional_gradient_gap": 41.8571703581749,
+        "native_quadratic": 0.4420442911934117,
+        "native_limit": 1.2644836124713486,
+        "step": 0.03125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 11,
+        "public_objective": -8.999841260852177,
+        "conditional_gradient_gap": 35.669946859611116,
+        "native_quadratic": 0.4281628368111292,
+        "native_limit": 1.2644836124713486,
+        "step": 0.03125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 12,
+        "public_objective": -9.273635470456602,
+        "conditional_gradient_gap": 48.38123931216886,
+        "native_quadratic": 0.4156607738166187,
+        "native_limit": 1.2644836124713486,
+        "step": 0.03125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 13,
+        "public_objective": -9.292309442727763,
+        "conditional_gradient_gap": 51.47480612942336,
+        "native_quadratic": 0.4010928981879136,
+        "native_limit": 1.2644836124713486,
+        "step": 0.03125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 14,
+        "public_objective": -9.667947870716288,
+        "conditional_gradient_gap": 51.66442468037567,
+        "native_quadratic": 0.39124404321668216,
+        "native_limit": 1.2644836124713486,
+        "step": 0.03125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 15,
+        "public_objective": -9.934312257495893,
+        "conditional_gradient_gap": 38.09032585613277,
+        "native_quadratic": 0.38467426323031617,
+        "native_limit": 1.2644836124713486,
+        "step": 0.015625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 16,
+        "public_objective": -10.08542054526325,
+        "conditional_gradient_gap": 20.88453955153836,
+        "native_quadratic": 0.3814673231139558,
+        "native_limit": 1.2644836124713486,
+        "step": 0.015625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 17,
+        "public_objective": -10.191571002596294,
+        "conditional_gradient_gap": 25.063634349632213,
+        "native_quadratic": 0.37946091971396,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0078125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 18,
+        "public_objective": -10.251852989858715,
+        "conditional_gradient_gap": 19.280868217112335,
+        "native_quadratic": 0.37606377454678785,
+        "native_limit": 1.2644836124713486,
+        "step": 0.03125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 19,
+        "public_objective": -10.475674063319513,
+        "conditional_gradient_gap": 39.96320613865174,
+        "native_quadratic": 0.369632990919774,
+        "native_limit": 1.2644836124713486,
+        "step": 0.015625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 20,
+        "public_objective": -10.485665426814425,
+        "conditional_gradient_gap": 25.28728633691804,
+        "native_quadratic": 0.36635058205432713,
+        "native_limit": 1.2644836124713486,
+        "step": 0.015625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 21,
+        "public_objective": -10.66465195046974,
+        "conditional_gradient_gap": 34.291724140934434,
+        "native_quadratic": 0.3636141103403592,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0078125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 22,
+        "public_objective": -10.673983961860102,
+        "conditional_gradient_gap": 14.2317745250885,
+        "native_quadratic": 0.36356468450927437,
+        "native_limit": 1.2644836124713486,
+        "step": 0.015625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 23,
+        "public_objective": -10.790824413615553,
+        "conditional_gradient_gap": 36.45179968208966,
+        "native_quadratic": 0.3543907286852441,
+        "native_limit": 1.2644836124713486,
+        "step": 0.03125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 24,
+        "public_objective": -10.886977572724849,
+        "conditional_gradient_gap": 25.96035737592423,
+        "native_quadratic": 0.3514076915427715,
+        "native_limit": 1.2644836124713486,
+        "step": 0.015625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 25,
+        "public_objective": -10.927480223343615,
+        "conditional_gradient_gap": 19.14478833815651,
+        "native_quadratic": 0.3507296939848956,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0078125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 26,
+        "public_objective": -10.933886957441304,
+        "conditional_gradient_gap": 18.01317363951457,
+        "native_quadratic": 0.349560670505328,
+        "native_limit": 1.2644836124713486,
+        "step": 0.015625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 27,
+        "public_objective": -11.019557474186545,
+        "conditional_gradient_gap": 35.30730407039364,
+        "native_quadratic": 0.34720863527665813,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0078125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 28,
+        "public_objective": -11.135978949949475,
+        "conditional_gradient_gap": 17.085407648978507,
+        "native_quadratic": 0.34706433305769124,
+        "native_limit": 1.2644836124713486,
+        "step": 0.015625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 29,
+        "public_objective": -11.179526810026246,
+        "conditional_gradient_gap": 26.093234443265317,
+        "native_quadratic": 0.34612762203377656,
+        "native_limit": 1.2644836124713486,
+        "step": 0.00390625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 30,
+        "public_objective": -11.201652968181488,
+        "conditional_gradient_gap": 15.436771203147497,
+        "native_quadratic": 0.34559411255416705,
+        "native_limit": 1.2644836124713486,
+        "step": 0.015625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 31,
+        "public_objective": -11.303848925994352,
+        "conditional_gradient_gap": 31.324276996985805,
+        "native_quadratic": 0.3436369429955146,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0078125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 32,
+        "public_objective": -11.308552120563395,
+        "conditional_gradient_gap": 15.81309697999096,
+        "native_quadratic": 0.3431455256417788,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0078125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 33,
+        "public_objective": -11.3423526902342,
+        "conditional_gradient_gap": 21.13648956246994,
+        "native_quadratic": 0.34259313609129194,
+        "native_limit": 1.2644836124713486,
+        "step": 0.00390625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 34,
+        "public_objective": -11.34632586257219,
+        "conditional_gradient_gap": 12.58640835122586,
+        "native_quadratic": 0.3427368730813729,
+        "native_limit": 1.2644836124713486,
+        "step": 0.001953125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 35,
+        "public_objective": -11.352736423121215,
+        "conditional_gradient_gap": 13.981528846222208,
+        "native_quadratic": 0.3427828589252151,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0009765625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 36,
+        "public_objective": -11.355776611590075,
+        "conditional_gradient_gap": 12.53268712172916,
+        "native_quadratic": 0.34280325620911256,
+        "native_limit": 1.2644836124713486,
+        "step": 0.000244140625,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 37,
+        "public_objective": -11.357282181402482,
+        "conditional_gradient_gap": 12.371565436260973,
+        "native_quadratic": 0.34281398668397856,
+        "native_limit": 1.2644836124713486,
+        "step": 0.0001220703125,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 38,
+        "public_objective": -11.357657102933683,
+        "conditional_gradient_gap": 12.294669056532396,
+        "native_quadratic": 0.34281673208636043,
+        "native_limit": 1.2644836124713486,
+        "step": 3.0517578125e-05,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 39,
+        "public_objective": -11.35784434739197,
+        "conditional_gradient_gap": 12.275842782434742,
+        "native_quadratic": 0.3428181125677945,
+        "native_limit": 1.2644836124713486,
+        "step": 1.52587890625e-05,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 40,
+        "public_objective": -11.35789113594738,
+        "conditional_gradient_gap": 12.26648287297894,
+        "native_quadratic": 0.3428184586431833,
+        "native_limit": 1.2644836124713486,
+        "step": 3.814697265625e-06,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 41,
+        "public_objective": -11.357902831678745,
+        "conditional_gradient_gap": 12.264148930540879,
+        "native_quadratic": 0.34281854522155975,
+        "native_limit": 1.2644836124713486,
+        "step": 9.5367431640625e-07,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 42,
+        "public_objective": -11.357908679334512,
+        "conditional_gradient_gap": 12.263565821038888,
+        "native_quadratic": 0.3428185885182842,
+        "native_limit": 1.2644836124713486,
+        "step": 4.76837158203125e-07,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 43,
+        "public_objective": -11.357911603109926,
+        "conditional_gradient_gap": 12.263274317765756,
+        "native_quadratic": 0.3428186101685249,
+        "native_limit": 1.2644836124713486,
+        "step": 2.384185791015625e-07,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      },
+      {
+        "iteration": 44,
+        "public_objective": -11.357913064984515,
+        "conditional_gradient_gap": 12.263128578996122,
+        "native_quadratic": 0.34281862099411775,
+        "native_limit": 1.2644836124713486,
+        "step": 1.1920928955078125e-07,
+        "public_class0_before_step": {
+          "direct": 0,
+          "recovered": 0,
+          "task_direct": 0,
+          "task_recovered": 0,
+          "joint_direct": 0,
+          "joint_task": 0
+        }
+      }
+    ],
+    "metrics": {
+      "A_relative": 1.0957239261497829,
+      "B_relative": 2.8506211162025417,
+      "logical_D": 3.2403097302637374,
+      "input_bias_relative": 1.0126089870747361
+    },
+    "seconds": 499.53655669279397,
+    "real_images": 0,
+    "new_full_AGA_calls": 0,
+    "matching_calls": 472,
+    "original_expert_updates": 0,
+    "synthetic_images_reused": 160,
+    "generated_views": 800,
+    "synthetic_native_layer_inputs": 16384,
+    "scope": "SharedB conditionalnativequadratic/completepublicclassifier construction. OrdinaryFW/ellipsoid/Choleskyarenotnewalgorithm. Finitegapnotglobalguarantee. NativeboundequalA-onlysourcevalue,notnaturalaccuracy. Head/classesexplicitallowed;no partner/test/closedB read."
+  },
+  "independent_source_check": {
+    "status": "passed",
+    "source_counts": {
+      "native": 800,
+      "direct": 0,
+      "direct_calibrated": 0,
+      "recovered": 0,
+      "recovered_calibrated": 0,
+      "task_direct": 0,
+      "task_direct_calibrated": 0,
+      "task_recovered": 0,
+      "task_recovered_calibrated": 0,
+      "joint_direct": 0,
+      "joint_direct_calibrated": 0,
+      "joint_task": 0,
+      "joint_task_calibrated": 0
+    },
+    "source_feasible": true,
+    "numpy_objective": -11.357913064740481,
+    "numpy_objective_error": 0.0,
+    "finite_compensation_identity_max_error": 3.3306690738754696e-15,
+    "source_sha256": "09f540d62ea86b59fcaff51c84fdbfcc58630d392e94f4ac72ff42c912dcfcd3",
+    "point_sha256": "ed30360059bd5c0699605bdbcf7e849f18f770e85bda271d9c4e2918b7eda2ea",
+    "raw_sha256": "d20c8daf0c5f56abae6e3952ea922ec4d97bc197475f3081d93644159b370a96",
+    "new_candidate_updates": 0,
+    "seconds": 3.7165931556373835
+  },
+  "native_result": {
+    "n": 10000,
+    "changed": 15,
+    "R": 181.52940349467764,
+    "stage": "full",
+    "before_correct": 9969,
+    "after_correct": 9959,
+    "strict_task_passed": false,
+    "accuracy_loss_pp": 0.1,
+    "passed": false,
+    "raw_sha256": "1989e4b4eb5fe24db2576f689e3c0da0322b249ed77fdc39d8fd8d10db7e5742"
+  },
+  "native_validation": {
+    "status": "passed_raw_score_and_official_label_recount",
+    "rows": [
+      {
+        "stage": "full",
+        "n": 10000,
+        "R": 181.52940349467764
+      }
+    ],
+    "results_sha256": "5b3df62382354f98bdfba3edcca61bfa86146e513a5f146b8374744bad532974",
+    "new_image_forwards": 0
   }
 }
