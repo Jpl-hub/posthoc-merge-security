@@ -1,4 +1,4 @@
-"""Defense 2: frozen MNIST A/B construction. See README for source caches and provenance."""
+"""Defense 2: frozen-expert A/B construction on pinned synthetic inputs."""
 
 # Preserve the three expressions from the executed source.
 # ruff: noqa: E731
@@ -22,6 +22,8 @@ from _impl.models import apply, checked_models, initialize
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--target", choices=["MNIST", "SVHN", "DTD"], default="MNIST")
+    parser.add_argument("--inputs", type=Path, default=Path("configs/defense2_inputs.json"))
     parser.add_argument("--calibration-aware", action="store_true")
     parser.add_argument("--task-reference", action="store_true")
     parser.add_argument("--input-bias", action="store_true")
@@ -39,13 +41,15 @@ def main():
     initialize()
     torch.set_default_dtype(torch.float64)
     start = time.perf_counter()
-    root = Path("outputs/native_ellipse_classification_20261026")
+    inputs = json.loads(args.inputs.read_text())[args.target]
+    root = Path(inputs["root"])
     out = args.output or root / "point"
     out.mkdir(parents=True, exist_ok=False)
     meta = json.loads((root / "source/result.json").read_text())
+    assert meta["source_arrays_sha256"] == inputs["source_sha256"]
     assert digest(root / "source/source.pt") == meta["source_arrays_sha256"]
     raw = torch.load(root / "source/source.pt", map_location="cpu", weights_only=False)
-    (base, expert, head, pins) = checked_models("MNIST")
+    (base, expert, head, pins) = checked_models(args.target)
     (s, bs) = (expert.state_dict(), base.state_dict())
     k = "model.visual.transformer.resblocks.11.mlp."
     to = lambda v: v.double().cuda()
@@ -101,10 +105,7 @@ def main():
         # The second reference is the clean target itself, never another task.
         # Its direct half-publication prefix is exactly the native prefix.
         cache["task_direct"] = cache["native"]
-        aligned = apply(expert, dict(
-            path="outputs/feature_noise/artifacts/original_AGA.pt",
-            sha256="07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
-        ), full=True)
+        aligned = apply(expert, inputs["clean_AGA"], full=True)
         clean = merge(base, aligned, expert, .5).cuda().eval()
         v = clean.model.visual
         block = v.transformer.resblocks[11]
@@ -141,10 +142,7 @@ def main():
         mean = torch.tensor(norm.mean, dtype=torch.float32)[None, :, None, None]
         std = torch.tensor(norm.std, dtype=torch.float32)[None, :, None, None]
         images = (F.interpolate(noise, (224, 224), mode="bilinear", align_corners=False) - mean) / std
-        aligned = apply(expert, dict(
-            path="outputs/feature_noise/artifacts/original_AGA.pt",
-            sha256="07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
-        ), full=True)
+        aligned = apply(expert, inputs["clean_AGA"], full=True)
         for name, left, right in [("direct", expert, base), ("recovered", aligned, base),
                                   ("native", expert, expert), ("task_recovered", aligned, expert)]:
             clean = merge(base, left, right, .5) if name != "native" else copy.deepcopy(expert)
@@ -179,8 +177,8 @@ def main():
     T = torch.zeros_like(Rorig)
     constant = G.new_zeros(())
     groups = []
-    source = Path("outputs/task_shaped_compensation_20261026/layer_inputs.pt")
-    assert digest(source) == "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe"
+    source = Path(inputs["layer_inputs"]["path"])
+    assert digest(source) == inputs["layer_inputs"]["sha256"]
     u = torch.load(source, map_location="cpu", weights_only=False)
     for name, count in [("task_layer", len(u)), ("generated_native", len(cache["native"]["x"]))]:
         gi = torch.zeros_like(G)
@@ -213,7 +211,7 @@ def main():
         groups.append(dict(population=name, n=count, variance=float(variance)))
     rho = 0.01 * G.trace() / len(G)
     if args.input_bias:
-        rho = 6.0394128536670705e-05  # Same previously registered source regularizer.
+        rho = inputs["original_ridge"]  # Preserve this task's original source regularizer.
     G += rho * torch.eye(len(G), device="cuda")
     T += rho * Rorig
     constant += rho * Rorig.square().sum()
@@ -222,7 +220,7 @@ def main():
     native = lambda R: float((R @ G * R).sum() - 2 * (R * T).sum() + constant)
     tau = native(Rorig)
     if args.input_bias:
-        tau = 1.2644836124713486  # Do not enlarge the previous functional bound.
+        tau = inputs["original_native_limit"]  # Preserve this task's original bound.
     minimum = native(RN)
     radius2 = tau - minimum
     assert radius2 > 1e-12, (tau, minimum)
@@ -479,6 +477,9 @@ def main():
         )
     result = dict(
         status="sole_native_ellipse_classification_frozen_before_images",
+        target=args.target,
+        input_config_sha256=digest(args.inputs),
+        input_definition=inputs,
         point_sha256=digest(out / "point.pt"),
         source_sha256=digest(__file__),
         source=Path(__file__).read_text(),
@@ -492,7 +493,7 @@ def main():
         construction_noise_forwards=256 if args.noise_calibration else 0,
         construction_noise_tail_maximum_error=noise_tail_error,
         public_contexts=public_names + (["joint_direct", "joint_task"] if args.input_bias else []),
-        additional_clean_synthetic_forwards=800 if args.task_reference else 0,
+        additional_clean_synthetic_forwards=len(teacher_class) if args.task_reference else 0,
         initial_source_accuracy=initial_accuracy,
         final_source_accuracy=final_accuracy,
         source_feasible=source_feasible,
@@ -520,9 +521,9 @@ def main():
         new_full_AGA_calls=0,
         matching_calls=matching_calls,
         original_expert_updates=0,
-        synthetic_images_reused=160,
-        generated_views=800,
-        synthetic_native_layer_inputs=16384,
+        synthetic_images_reused=len(raw["final"]),
+        generated_views=len(teacher_class),
+        synthetic_native_layer_inputs=len(u),
         scope="SharedB conditionalnativequadratic/completepublicclassifier construction. OrdinaryFW/ellipsoid/Choleskyarenotnewalgorithm. Finitegapnotglobalguarantee. NativeboundequalA-onlysourcevalue,notnaturalaccuracy. Head/classesexplicitallowed;no partner/test/closedB read.",
     )
     (out / "result.json").write_text(json.dumps(result, indent=2) + "\n")

@@ -17,7 +17,7 @@
 | 实验评价 | [experiment/main_table.py](experiment/main_table.py)、[_impl/evaluate.py](_impl/evaluate.py) | 固定发布、目标与伙伴评价 |
 | 最新对比结果 | [results/comparison](results/comparison) | 防御一、二与PaRaMS的攻击、伙伴和八专家结果；MD / TeX |
 
-`experiment/defense2.py` 的默认路径保留当前 MNIST 发布的原始计算。它是固定 MNIST 构造，不是三个任务通用命令：运行需要原合成缓存 `outputs/native_ellipse_classification_20261026/source/` 和 `outputs/task_shaped_compensation_20261026/layer_inputs.pt`，输出目录必须尚不存在。当前评价直接加载已冻结权重，无需重新构造。 `--calibration-aware --output <新目录>` 将输出校正纳入求解；再加 `--task-reference` 则同时约束原专家与保护专家各半时的分类。`--input-bias` 在上述两项基础上增加输入偏置补偿和每次重算的联合MLP匹配，协议见 `results/data_free_compensation/input_bias_check.json`，目前仅完成MNIST评价。`--noise-calibration` 在输入偏置实验上增加独立随机输入的输出校正目标，MNIST已完成，AGA后再校正为0.48%，完整比较见下表。上述选项均为单独登记的研究实验，不替换三任务主方法；定义分别见 `results/data_free_compensation/calibrated_objective_protocol.json` 和 `task_reference_protocol.json`。SVHN、DTD 的实际执行源码及哈希仍在 `results/data_free_compensation/population_compensation_result.json` 的对应任务定义中。
+`experiment/defense2.py` 的默认路径保留当前 MNIST 发布的原始计算。默认保留 MNIST 构造，`--target SVHN` 或 `--target DTD` 使用 `configs/defense2_inputs.json` 固定的对应任务源和原功能约束：运行需要原合成缓存 `outputs/native_ellipse_classification_20261026/source/` 和 `outputs/task_shaped_compensation_20261026/layer_inputs.pt`，输出目录必须尚不存在。当前评价直接加载已冻结权重，无需重新构造。 `--calibration-aware --output <新目录>` 将输出校正纳入求解；再加 `--task-reference` 则同时约束原专家与保护专家各半时的分类。`--input-bias` 在上述两项基础上增加输入偏置补偿和每次重算的联合MLP匹配，协议见 `results/data_free_compensation/input_bias_check.json`，目前仅完成MNIST评价。`--noise-calibration` 在输入偏置实验上增加独立随机输入的输出校正目标，MNIST已完成，AGA后再校正为0.48%，完整比较见下表。上述选项均为单独登记的研究实验，不替换三任务主方法；定义分别见 `results/data_free_compensation/calibrated_objective_protocol.json` 和 `task_reference_protocol.json`。此前SVHN、DTD 的执行源码及哈希仍在 `results/data_free_compensation/population_compensation_result.json` 的对应任务定义中。
 
 防御一和防御二的当前构造均不使用真实图片。防御一的方向和幅度完全由权重确定，也不使用合成图片；三个保护任务的完整独立预测均保持不变，TA及AGA后MNIST/SVHN/DTD准确率分别为9.80%/6.70%/2.13%，伙伴准确率也明显降低。[三任务完整表](results/phase3/bias_weight_only/other_tasks/summary.md)。历史图片辅助幅度单独保留。
 
@@ -147,3 +147,5 @@ pytest -q
 [PaRaMS同条件MLP匹配](results/params_reference/other_tasks/matching.md)已完成：独立预测保持，融合目标准确率为10.72%、9.55%、2.93%，该固定匹配没有恢复PaRaMS。只匹配MLP，与另处理注意力的AGA分开报告。
 
 [同条件蒸馏对比](results/params_reference/other_tasks/distillation.md)已完成标签核对：防御一、PaRaMS与无保护模型在固定三组训练图片上的硬标签完全相同，因此明确复用同一批既有学生。此攻击额外需要无标签图片和训练，不能与无数据AGA混列。
+
+本次SVHN/DTD迁移只替换任务权重、分类头和该任务原有合成输入；同一数值补偿与随机输入校正目标保持不变。原任务各自的源正则和功能误差界由历史规则确定，见 `configs/defense2_inputs.json`。新批协议为 `results/data_free_compensation/noise_calibration_transfer.json`，结果未完成前不作跨任务有效声明。
