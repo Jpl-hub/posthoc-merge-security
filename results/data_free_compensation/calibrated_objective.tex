@@ -65,3 +65,62 @@ Known-location B/bias replacement + TA & 99.35 & 99.35 & 99.36 & 99.36 \\
 \begin{minipage}{\textwidth}\footnotesize
 Each column uses one frozen model, TA coefficient 0.5 and the same SVHN partner. Higher standalone and lower merged target accuracy favor protection. Construction uses no real images or partner parameters. Calibration uses 64 fixed random inputs. Joint MLP matching uses published weights and the public base; replacement additionally knows the modified module. Input-bias compensation improves joint matching but weakens calibrated protection. Adding independent construction-noise calibration reduces the evaluated calibration accuracy to 1.38/0.48/0.51, while raw TA worsens to 16.61. Known-location replacement remains effective; its result is reused after equality of all 158 restored tensors. Construction and evaluation noise use different fixed seeds. Only MNIST is evaluated; SVD contribution is not established.\end{minipage}
 \end{table*}
+
+
+\begin{table*}[t]
+\centering\small
+\caption{Fixed-rule transfer of Defense 2. Complete test accuracy (\%).}
+\label{tab:noise-calibration-transfer}
+\begin{tabular}{lrrrrr}
+\toprule
+Task & Original & Standalone & TA & AGA target + TA & AGA both + TA \\
+\midrule
+MNIST & 99.69 & 99.54 & 16.61 & 0.26 & 0.27 \\
+SVHN & 97.46 & 95.67 & 4.48 & 2.85 & 2.85 \\
+DTD & 79.41 & 65.96 & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize
+The construction rule is fixed across tasks and uses no real construction images or partner parameters. MNIST is the previously completed point. TA uses coefficient 0.5; the partner is SVHN for MNIST and MNIST for SVHN. Higher standalone and lower merged target accuracy favor protection. SVHN loses 1.79 points (paired 95\% interval: [1.59, 1.98]). DTD fails the original synthetic-source condition; a separately registered observation of the same frozen model shows a standalone loss of 13.46 points [11.67, 15.24]. DTD fusion is not evaluated. These results do not establish consistent task retention.
+\end{minipage}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{Recovery of the same fixed Defense 2 models. Merged target accuracy (\%).}
+\label{tab:noise-calibration-transfer-recovery}
+\begin{tabular}{lrrrrr}
+\toprule
+& \multicolumn{3}{c}{After output calibration} & MLP & Known-location \\
+Task & TA & AGA target + TA & AGA both + TA & matching + TA & replacement + TA \\
+\midrule
+MNIST & 1.38 & 0.48 & 0.51 & 2.78 & 99.36 \\
+SVHN & 3.16 & 2.36 & 2.12 & 2.80 & 92.32 \\
+DTD & --- & --- & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize
+Calibration uses 64 fixed random inputs, with a seed different from construction. MLP matching uses published weights and the public base. Replacement additionally knows the changed module. Matched unprotected SVHN results are 92.32/91.34/91.59 after calibration and 92.40 after replacement. The MNIST partner of protected SVHN also falls to 0.91/0.09/0.07 before calibration and 0.08/0.08/0.06 after calibration; preservation of the partner task is not claimed. Dashes denote unevaluated cases. Source and complete paired statistics are in noise\_calibration\_transfer\_result.json.
+\end{minipage}
+\end{table*}
+
+
+\begin{table*}[t]
+\centering\small
+\caption{Standalone accuracy at fixed components of the construction (\%).}
+\label{tab:noise-native-components}
+\begin{tabular}{lrrrr}
+\toprule
+Task & Original & Input matrix and bias only & Initial native fit & Final model \\
+\midrule
+SVHN & 97.46 & 97.41 & 97.45 & 95.67 \\
+DTD & 79.41 & 78.62 & 79.20 & 65.96 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize
+All component weights are frozen before real-image evaluation. The initial native fit is the original conditional ridge solution before optimizing the public classification objective; inputs and coefficients are unchanged. Original and final scores are reused. The additional loss from the native fit to the final model is 1.78 points on SVHN (paired 95\% interval: [1.59, 1.97]) and 13.24 points on DTD [11.47, 15.02]. These are diagnostic controls, not newly selected defenses; their fusion protection is not evaluated.
+\end{minipage}
+\end{table*}

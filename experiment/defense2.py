@@ -20,6 +20,13 @@ from _impl.merge import merge
 from _impl.models import apply, checked_models, initialize
 
 
+def classification_violation(scores, labels):
+    """Zero once another class matches or exceeds the teacher class."""
+    own = scores.gather(1, labels[:, None]).flatten()
+    other = scores.scatter(1, labels[:, None], -torch.inf).amax(1)
+    return (own - other).clamp_min(0).mean()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", choices=["MNIST", "SVHN", "DTD"], default="MNIST")
@@ -28,6 +35,7 @@ def main():
     parser.add_argument("--task-reference", action="store_true")
     parser.add_argument("--input-bias", action="store_true")
     parser.add_argument("--noise-calibration", action="store_true")
+    parser.add_argument("--finite-classification", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.calibration_aware and args.output is None:
@@ -38,6 +46,8 @@ def main():
         parser.error("--input-bias requires --task-reference and --calibration-aware")
     if args.noise_calibration and not args.input_bias:
         parser.error("--noise-calibration requires --input-bias")
+    if args.finite_classification and not args.noise_calibration:
+        parser.error("--finite-classification requires --noise-calibration")
     initialize()
     torch.set_default_dtype(torch.float64)
     start = time.perf_counter()
@@ -332,6 +342,13 @@ def main():
                     residual = residual + (R[:, :-1][:, order] @ h + R[:, -1, None]) / 2
                     noise_scores[name] = classify(residual, readout)
         if args.calibration_aware:
+            if args.finite_classification:
+                violations = [
+                    classification_violation(v, teacher_class)
+                    for name, values in scores.items()
+                    for v in [values, calibrated(values), calibrated(values, noise_scores[name])]
+                ]
+                return torch.stack(violations).mean(), scores, noise_scores
             # Reduce correct-class probability before and after calibration;
             # no fixed destination class, new images, or fitted test labels.
             correct = torch.cat(
@@ -364,11 +381,47 @@ def main():
     trace = []
     stop = "iteration_limit"
     derivative = None
+    first_feasible = None
+
+    def native_preserved(value):
+        predicted = classify(fixed["native"] + value @ hidden["native"], readouts["native"])
+        return int(predicted.argmax(1).eq(teacher_class).sum()) >= initial_accuracy["native"]
+
     # Optimize B inside the native-output error constraint; A remains fixed.
     for iteration in range(500):
         R = R.detach().requires_grad_(True)
         (loss, scores, _) = public(R)
         assert torch.isfinite(loss)
+        if args.finite_classification and float(loss) == 0:
+            # Once the finite public requirement holds, decrease native error.
+            # This feasible ray search is not a constrained-stationarity claim.
+            R = R.detach()
+            nv = native(R)
+            if first_feasible is None:
+                first_feasible = dict(iteration=iteration, native_quadratic=nv)
+            if nv - minimum <= 1e-6 * (1 + abs(nv)):
+                stop = "native_minimum_with_finite_classification"
+                break
+            step = 1.0
+            accepted = False
+            with torch.no_grad():
+                for backtrack in range(24):
+                    proposal = R + step * (RN - R)
+                    value, _, _ = public(proposal)
+                    if float(value) == 0 and native_preserved(proposal):
+                        R = proposal
+                        accepted = True
+                        break
+                    step *= 0.5
+            if not accepted:
+                stop = "finite_classification_native_ray_boundary"
+                break
+            row = dict(iteration=iteration + 1, phase="native_retention",
+                       public_objective=float(value), native_quadratic=native(R),
+                       native_limit=tau, step=step)
+            trace.append(row)
+            print(json.dumps(row), flush=True)
+            continue
         grad = torch.autograd.grad(loss, R)[0]
         dual = torch.cholesky_solve(grad.T, L).T
         dn = float((dual * grad).sum())
@@ -402,7 +455,8 @@ def main():
             for backtrack in range(24):
                 proposal = R.detach() + step * direction
                 (value, _, _) = public(proposal)
-                if float(value) <= float(loss) - 0.0001 * step * gap:
+                if (float(value) <= float(loss) - 0.0001 * step * gap
+                        and (not args.finite_classification or native_preserved(proposal))):
                     accepted = True
                     R = proposal
                     break
@@ -475,6 +529,14 @@ def main():
                                                    initial_accuracy[n + "_noise_calibrated"] for n in checked_contexts))
             and native(Rf) <= tau + 1e-5 * (1 + abs(tau))
         )
+        if args.finite_classification:
+            source_feasible = (
+                final_accuracy["native"] >= initial_accuracy["native"]
+                and all(final_accuracy[n + suffix] == 0 for n in checked_contexts
+                        for suffix in ["", "_calibrated", "_noise_calibrated"])
+                and float(objective) == 0
+                and native(Rf) <= tau + 1e-5 * (1 + abs(tau))
+            )
     result = dict(
         status="sole_native_ellipse_classification_frozen_before_images",
         target=args.target,
@@ -489,6 +551,8 @@ def main():
         task_reference=args.task_reference,
         input_bias=args.input_bias,
         noise_calibration=args.noise_calibration,
+        finite_classification=args.finite_classification,
+        first_finite_classification=first_feasible,
         construction_noise_seed=2026110201 if args.noise_calibration else None,
         construction_noise_forwards=256 if args.noise_calibration else 0,
         construction_noise_tail_maximum_error=noise_tail_error,

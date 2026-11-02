@@ -1,28 +1,14 @@
 {
-  "status": "noise_calibration_cross_task_running",
-  "updated_utc": "2026-11-02T02:32:24.270181+00:00",
+  "status": "finite_classification_preregistered",
+  "updated_utc": "2026-11-02T03:34:52.635881+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "41558",
-      "queue_pid": 1914,
-      "output": "outputs/noise_calibration_other_20261102",
-      "source_commit": "976083c3",
-      "targets": [
-        "SVHN",
-        "DTD"
-      ],
-      "stage": "serial source and registered full evaluation",
-      "automatic_wakeup": false
-    }
-  ],
-  "next_action": "Inspect existing SVHN/DTD queue; no duplicate starts or tuning. Report every task source/native failure and finish fixed evaluations if source passes.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Evaluate a finite source-classification requirement with native function preservation as the objective; no new optimizer or point implemented. Do not tune closed SVHN/DTD points.",
   "github_sync": {
-    "status": "Connector restored; publishing completed MNIST result and pre-execution cross-task definition",
-    "last_verified_commit": "23d6ffb93954addb02918ef79d03e831e4f0cf92",
-    "receipt": "outputs/latest_github_sync_receipt.json"
+    "status": "pending: connector Unknown tool",
+    "last_verified_commit": "4be53a56ee0fa7a3ac50bddbb11dd7186d748f0d"
   },
   "current_effective_numerical_candidates": [
     {
@@ -1597,13 +1583,53 @@
     "context_score_replays": 320
   },
   "noise_calibration_transfer": {
-    "status": "running",
+    "status": "completed_independently_verified_SVHN;DTD_source_failed_with_separate_frozen_standalone_observation",
     "protocol": "results/data_free_compensation/noise_calibration_transfer.json",
+    "result": "results/data_free_compensation/noise_calibration_transfer_result.json",
     "output": "outputs/noise_calibration_other_20261102",
-    "source_commit": "976083c3",
-    "targets": [
-      "SVHN",
-      "DTD"
-    ]
+    "SVHN_native_before_after": [
+      97.46081745543945,
+      95.67455439459127
+    ],
+    "SVHN_target_raw": [
+      4.475261216963737,
+      2.854179471419791,
+      2.8503380454824834
+    ],
+    "SVHN_target_calibrated": [
+      3.1576521204671173,
+      2.358635525507068,
+      2.116625691456669
+    ],
+    "SVHN_matching_target": 2.80039950829748,
+    "SVHN_known_B_replacement_target": 92.31714812538414,
+    "DTD_native_before_after": [
+      79.41489361702128,
+      65.95744680851064
+    ],
+    "DTD_fusion_evaluated": false,
+    "new_parameter_updates_after_freeze": 0
+  },
+  "latest_component_diagnosis": {
+    "record": "results/data_free_compensation/noise_calibration_transfer_result.json:fixed_component_result",
+    "SVHN_original_Aonly_nativefit_final": [
+      97.46081745543947,
+      97.41087891825445,
+      97.45313460356485,
+      95.67455439459127
+    ],
+    "DTD_original_Aonly_nativefit_final": [
+      79.41489361702128,
+      78.61702127659575,
+      79.20212765957447,
+      65.95744680851064
+    ],
+    "new_defense_candidates": 0,
+    "finding": "Initial native compensation largely retains task ability; the subsequent public objective causes most additional loss in these fixed cases."
+  },
+  "finite_classification": {
+    "protocol": "results/data_free_compensation/finite_classification.json",
+    "status": "preregistered_not_started",
+    "output": "outputs/finite_classification_20261102"
   }
 }
