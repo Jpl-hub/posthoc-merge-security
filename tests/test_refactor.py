@@ -23,6 +23,20 @@ FROZEN_BODIES = json.loads(Path("results/engineering_refactor/snapshot.json").re
 ]
 
 
+def test_finite_classification_stops_rewarding_already_wrong_classes():
+    from experiment.defense2 import classification_violation
+
+    scores = torch.tensor([[3., 1., 0.], [0., 2., 1.]], requires_grad=True)
+    labels = torch.tensor([0, 0])
+    loss = classification_violation(scores, labels)
+    assert float(loss) == 1.
+    loss.backward()
+    torch.testing.assert_close(scores.grad, torch.tensor([[.5, -.5, 0.], [0., 0., 0.]]))
+    shifted = scores.detach() + torch.tensor([[100.], [-100.]])
+    assert float(classification_violation(shifted, labels)) == float(loss)
+    assert float(classification_violation(torch.tensor([[1., 1.]]), torch.tensor([0]))) == 0.
+
+
 @pytest.mark.parametrize("scopes", [["None"], ["Protected expert"], None])
 def test_evaluator_loads_aga_only_when_requested(monkeypatch, tmp_path, scopes):
     from _impl import evaluate as evaluator

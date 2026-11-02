@@ -1,0 +1,38 @@
+{
+  "registered_utc": "2026-11-02T03:50:19.612812+00:00",
+  "purpose": "Test whether a finite public-classification requirement reduces the standalone loss caused by continuing to suppress already-wrong teacher probabilities.",
+  "output": "outputs/finite_classification_20261102",
+  "tasks": [
+    "MNIST",
+    "SVHN",
+    "DTD"
+  ],
+  "input_config": {
+    "path": "configs/defense2_inputs.json",
+    "sha256": "894209da2c9cdca0dc6bbd674a407e2970865d847f2346a78e8f09a93b68a722"
+  },
+  "construction": "Fresh original weights and identical pinned synthetic sources; same A/input-bias solve, SVD32, rho, tau, six contexts, three readouts per context, frozen experts; no old optimized B or natural/partner/exposed evaluation inputs.",
+  "condition": "For every fixed synthetic input/context/readout, g=s_teacher-max_other<=0. Require zero teacher argmax agreements after FP32 save (ties cannot pass by loss alone). Native teacher count must retain its initial value at every accepted step.",
+  "objective": "Phase1 mean(max(g,0)) in original native ellipse; phase2 reduce N along R(t)=R+t*(RN-R), accepting only zero-violation and native-retaining steps. N(R(t))=Nmin+(1-t)^2*(N(R)-Nmin). No tradeoff weight or positive confidence margin.",
+  "solver": "Existing Frank-Wolfe/Cholesky and halving line search. Total500 iterations,24 backtracks,unchanged Armijo/gap tolerances. Phase2 is a feasible-ray refinement, not proof of constrained stationarity. Fresh matching at every trial, including noise calibration.",
+  "falsifiable": "Compare each frozen release standalone accuracy with its original and prior fixed rule; then actual fusion if source passes. Failure to solve finite source condition closes that task without modifying thresholds or retries. Natural results never choose a point.",
+  "scope": "Ordinary class-margin condition and existing optimizer, not a new attack, official C&W reproduction or proof of general defense/SVD contribution. Known B replacement remains separate.",
+  "reference": "https://github.com/carlini/nn_robust_attacks/blob/c6b8f6a254e82a79a52cfbc673b632cad5ea1ab1/l2_attack.py#L86-L104",
+  "evaluation": "All three source points frozen before natural images. Independent NumPy full source recount, complete standalone for source-passing tasks via existing native entry. Inspect results before scheduling existing TA/AGA/calibration comparisons; no new families.",
+  "cost": {
+    "maximum_new_candidates": 3,
+    "real_construction_images": 0,
+    "max_constructed_noise_forwards": 768,
+    "max_task_reference_synthetic_forwards": 5360,
+    "max_standalone_real_forwards": 75824,
+    "new_source_generations": 0,
+    "expert_training_updates": 0
+  },
+  "source_sha256": "99e64b148bc4c0e48ae8a618271a97408208ab976c132250baf3b5d29ec11aee",
+  "drivers_sha256": {
+    "outputs/finite_classification_20261102/run.sh": "c5654726e14173a1807668e83e7b63283772c536e24e240e96ed845a5c0dd51a",
+    "outputs/finite_classification_20261102/source_check.py": "5be88c7cc5de376d0a01ba373254123d95e44de81fcd08bf89d1221347fed0ba",
+    "outputs/finite_classification_20261102/native.py": "ab16b16c7c7fe8e1aae5de9ae479a641c00b6f9b58edc8f6d6163bc01fef81b9"
+  },
+  "status": "preregistered_not_started"
+}
