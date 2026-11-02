@@ -171,6 +171,51 @@ def defense_comparison(directory):
           ["Target", "Defense", "Target accuracy", "Partner", "Partner accuracy"], distilled,
           "Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table.",
           "llrlr")
+    updated = read("results/data_free_compensation/finite_classification_result.json")
+    assert updated["prodistill"]["status"] == "completed_independently_verified"
+    versions = [[], []]
+    for task in tasks:
+        partner = "SVHN" if task == "MNIST" else "MNIST"
+        record = updated["tasks"][task]
+        evaluation = record["evaluation"]
+        defense = "FiniteClassification_" + task
+        for role, dataset in enumerate([task, partner]):
+            old = next(
+                row for row in (target_rows if role == 0 else partner_rows)
+                if row[0] == (task if role == 0 else task + "/" + partner)
+                and row[1] == "Defense 2")
+            distilled_old = one(progressive["rows"], target=task, defense="Defense2",
+                                dataset=dataset, stage="full")
+            versions[role].append([task, "Earlier"] +
+                                  ([old[2]] if role == 0 else []) +
+                                  [old[i] for i in [3, 4, 6, 7]] +
+                                  [accuracy(distilled_old)])
+            rows = evaluation["raw_rows"]
+            values = [accuracy(one(rows, defense=defense, merger="TA", dataset=dataset,
+                                   attack_scope=scope)) for scope in ["None", "Protected expert"]]
+            calibrated = one(evaluation["calibrated_rows"],
+                             key="/".join([task, defense, "TA", "Protected expert", dataset]))
+            match = one(record["recovery"]["matching"]["rows"], defense=defense + "_matched",
+                        merger="TA", attack_scope="None", dataset=dataset)
+            distilled_new = one(updated["prodistill"]["rows"], target=task, defense="Defense2",
+                                dataset=dataset, stage="full")
+            native = [accuracy(one(rows, defense=defense, merger="Standalone",
+                                   attack_scope="None", dataset=task))] if role == 0 else []
+            versions[role].append([task, "Updated"] + native + values +
+                                  [accuracy(calibrated), f"{100 * match['correct'] / match['n']:.2f}",
+                                   accuracy(distilled_new)])
+    note = ("The earlier and updated Defense 2 releases use distinct frozen construction rules; "
+            "each row uses one release throughout. TA coefficient 0.5; AGA processes the protected expert. "
+            "Calibration uses 64 random images. ProDistill uses 64 unlabeled training images per task "
+            "and coefficient initialization 0.3, with no AGA preprocessing. "
+            "MNIST is paired with SVHN; SVHN and DTD are paired with MNIST. "
+            "Known-module replacement is reported separately; neither version resists it.")
+    write("defense2_versions", "Defense 2 versions on the protected task",
+          ["Task", "Version", "Standalone", "TA", "AGA", "AGA+calib.", "MLP match", "ProDistill"],
+          versions[0], note, "llrrrrrr")
+    write("defense2_version_partners", "Partner accuracy for the same Defense 2 versions",
+          ["Target", "Version", "TA", "AGA", "AGA+calib.", "MLP match", "ProDistill"],
+          versions[1], note, "llrrrrr")
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 

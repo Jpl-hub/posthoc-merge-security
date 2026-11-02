@@ -17,7 +17,8 @@
     "results/phase3/results.json": "017a6adee5999d6c42a4cf729dec9002ece10b06430083680a71ff85cd5b36e4",
     "results/params_reference/other_tasks/evaluation/full/00_DTD_MNIST/results.json": "0ef9889e837d4ac2c150ed192bf61746d555b77db1b67b02a22ad01fd1f1b30f",
     "results/params_reference/other_tasks/evaluation/full/01_SVHN_MNIST/results.json": "df1d6a1bc1e47d3e3dfc825680c8f6b9f3786f606c8dc8a653a79a4cc76093db",
-    "results/attack_generalization_20261028/prodistill/summary.json": "0a620b385c7bfd10bd58f306709e12898cac31cc9a1f6c7749bb1e60858f79cd"
+    "results/attack_generalization_20261028/prodistill/summary.json": "0a620b385c7bfd10bd58f306709e12898cac31cc9a1f6c7749bb1e60858f79cd",
+    "results/data_free_compensation/finite_classification_result.json": "bc0b47f3770bf90184e6e5e9937864acd9191d8ea3dc949c53aeb3f174c9d7ad"
   },
   "eight_expert_rows": [
     {
@@ -2553,8 +2554,151 @@
         ]
       ],
       "note": "Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table."
+    },
+    "defense2_versions": {
+      "headers": [
+        "Task",
+        "Version",
+        "Standalone",
+        "TA",
+        "AGA",
+        "AGA+calib.",
+        "MLP match",
+        "ProDistill"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Earlier",
+          "99.61",
+          "9.80",
+          "9.80",
+          "56.34",
+          "9.80",
+          "99.45"
+        ],
+        [
+          "MNIST",
+          "Updated",
+          "99.57",
+          "25.15",
+          "2.99",
+          "10.76",
+          "9.39",
+          "99.43"
+        ],
+        [
+          "SVHN",
+          "Earlier",
+          "96.98",
+          "6.70",
+          "6.70",
+          "53.84",
+          "6.70",
+          "95.78"
+        ],
+        [
+          "SVHN",
+          "Updated",
+          "96.66",
+          "2.26",
+          "1.86",
+          "6.99",
+          "7.96",
+          "96.18"
+        ],
+        [
+          "DTD",
+          "Earlier",
+          "76.12",
+          "2.13",
+          "2.13",
+          "52.61",
+          "2.13",
+          "63.83"
+        ],
+        [
+          "DTD",
+          "Updated",
+          "76.33",
+          "2.13",
+          "2.07",
+          "5.00",
+          "2.29",
+          "66.70"
+        ]
+      ],
+      "note": "The earlier and updated Defense 2 releases use distinct frozen construction rules; each row uses one release throughout. TA coefficient 0.5; AGA processes the protected expert. Calibration uses 64 random images. ProDistill uses 64 unlabeled training images per task and coefficient initialization 0.3, with no AGA preprocessing. MNIST is paired with SVHN; SVHN and DTD are paired with MNIST. Known-module replacement is reported separately; neither version resists it."
+    },
+    "defense2_version_partners": {
+      "headers": [
+        "Target",
+        "Version",
+        "TA",
+        "AGA",
+        "AGA+calib.",
+        "MLP match",
+        "ProDistill"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Earlier",
+          "6.70",
+          "6.70",
+          "54.05",
+          "6.70",
+          "96.49"
+        ],
+        [
+          "MNIST",
+          "Updated",
+          "13.26",
+          "2.02",
+          "8.75",
+          "4.33",
+          "96.22"
+        ],
+        [
+          "SVHN",
+          "Earlier",
+          "9.80",
+          "9.80",
+          "69.99",
+          "9.80",
+          "99.28"
+        ],
+        [
+          "SVHN",
+          "Updated",
+          "0.22",
+          "0.24",
+          "11.53",
+          "10.29",
+          "99.27"
+        ],
+        [
+          "DTD",
+          "Earlier",
+          "98.44",
+          "75.64",
+          "99.42",
+          "96.78",
+          "99.51"
+        ],
+        [
+          "DTD",
+          "Updated",
+          "99.22",
+          "99.02",
+          "99.47",
+          "99.13",
+          "99.51"
+        ]
+      ],
+      "note": "The earlier and updated Defense 2 releases use distinct frozen construction rules; each row uses one release throughout. TA coefficient 0.5; AGA processes the protected expert. Calibration uses 64 random images. ProDistill uses 64 unlabeled training images per task and coefficient initialization 0.3, with no AGA preprocessing. MNIST is paired with SVHN; SVHN and DTD are paired with MNIST. Known-module replacement is reported separately; neither version resists it."
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "5ec4a340fb3a7f691aa69e109e63031c0806578481d537388e41b590aafab4aa"
+  "report_source_sha256": "143206a73a1852a0182e75cadda1720834533e37d9d3e33a071499a9aeb7bf0c"
 }

@@ -1,22 +1,13 @@
 {
-  "status": "finite_classification_prodistill_running",
-  "updated_utc": "2026-11-02T06:19:58.569447+00:00",
+  "status": "finite_classification_prodistill_completed",
+  "updated_utc": "2026-11-02T06:44:13.300483+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 25166,
-      "started_utc": "2026-11-02T06:14:56.169788+00:00",
-      "source_commit": "b3e929523237107b09482bba55a9e6ac1b7f1862",
-      "log": "outputs/finite_classification_prodistill_20261102.log",
-      "output": "outputs/finite_classification_prodistill_20261102",
-      "timeout_seconds": 7200
-    }
-  ],
-  "next_action": "取回当前ProDistill目标及伙伴结果，独立核对并合并同版本比较表；后续改进需先解释可替换侧之外的有效分类作用。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "固定当前完整比较结果；下一构造先给出A侧改变后仍可由B补偿的有限机制，并检查公开B替换后的分类作用。不能只改固定A下的B目标，也不重启旧联合函数失败点。",
   "github_sync": {
-    "status": "pending: branch update tool unavailable; commit object created but main not verified updated",
+    "status": "pending: github.fetch_commit returned Unknown tool on current check",
     "last_verified_commit": "b36b3d11197dfa38b8f03a5a03fb0dbf7e96373c",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -609,7 +600,7 @@
     "conclusion": "Mean-only bias is correctable on this source; varying changes also cause classification contradictions. Both parts contribute. No new model or real accuracy improvement.",
     "seconds": 5.094126299023628
   },
-  "active_focus": "两种防御均保留。补完冻结新版三任务ProDistill对照后，集中研究防御一可投影消除、防御二B侧可公开替换的结构原因；不增加无关攻击或重启闭点。",
+  "active_focus": "防御一TA/AGA效果保留；新版防御二校正抵抗改善但ProDistill仍恢复99.43/96.18/66.70。现在集中研究A/B保护作用与可公开替换侧的关系，不扩攻击列表。",
   "attack_campaign": "results/attack_generalization_20261028/protocol.json",
   "attack_generalization": {
     "directory": "results/attack_generalization_20261028",
@@ -1701,57 +1692,25 @@
     "source_pin_error": "Preserved oldfailure; updated evaluation source fingerprint only; no reconstruction"
   },
   "finite_classification_prodistill": {
-    "status": "running",
+    "status": "completed_independently_verified",
     "protocol": "results/data_free_compensation/finite_classification_prodistill.json",
+    "result": "results/data_free_compensation/finite_classification_result.json:prodistill",
     "output": "outputs/finite_classification_prodistill_20261102",
+    "target_accuracy": [
+      99.43,
+      96.17778119237862,
+      66.70212765957447
+    ],
+    "partner_accuracy": [
+      96.22387830362631,
+      99.27,
+      99.51
+    ],
+    "coefficient_backward_steps": 3600,
+    "training_seconds": 86.47392169944942,
+    "context_score_replays": 384,
+    "maximum_score_error": 0,
     "new_defense_updates": 0,
-    "new_coefficient_backward_steps": 3600,
-    "source_changes": 0,
-    "pid": 25166,
-    "started_utc": "2026-11-02T06:14:56.169788+00:00",
-    "source_commit": "b3e929523237107b09482bba55a9e6ac1b7f1862",
-    "log": "outputs/finite_classification_prodistill_20261102.log",
-    "timeout_seconds": 7200,
-    "MNIST_completed_counts": {
-      "rows": [
-        {
-          "defense": "Unprotected",
-          "dataset": "MNIST",
-          "correct": 9945,
-          "n": 10000,
-          "accuracy_percent": 99.45
-        },
-        {
-          "defense": "Unprotected",
-          "dataset": "SVHN",
-          "correct": 25181,
-          "n": 26032,
-          "accuracy_percent": 96.73094652735095
-        },
-        {
-          "defense": "Defense2",
-          "dataset": "MNIST",
-          "correct": 9943,
-          "n": 10000,
-          "accuracy_percent": 99.43
-        },
-        {
-          "defense": "Defense2",
-          "dataset": "SVHN",
-          "correct": 25049,
-          "n": 26032,
-          "accuracy_percent": 96.22387830362631
-        }
-      ],
-      "validation": {
-        "status": "passed",
-        "score_replays": 128,
-        "maximum_context_score_error": 0.0,
-        "raw_sha256": "369d988825386d3197eb6c190cf41e1328be5483f4f4dbd4e88d508db6b9f32d",
-        "full_rows": 4
-      },
-      "raw_sha256": "369d988825386d3197eb6c190cf41e1328be5483f4f4dbd4e88d508db6b9f32d",
-      "complete_indices_and_official_labels": true
-    }
+    "completed_utc": "2026-11-02T06:44:13.300483+00:00"
   }
 }
