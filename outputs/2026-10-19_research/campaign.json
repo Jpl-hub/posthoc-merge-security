@@ -1,11 +1,21 @@
 {
-  "updated_utc": "2026-11-02T18:48:22.819844+00:00",
-  "status": "projection_recovery_verified_eight_registered",
+  "updated_utc": "2026-11-02T18:49:35.014525+00:00",
+  "status": "projection_eight_running",
   "active_focus": "完成去任务投影对照的恢复比较；用同三份冻结发布补八专家与固定随机输入校正，不更新防御。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 84628,
+      "started_utc": "2026-11-02T18:53:00Z",
+      "source_commit": "2c544184dcf147912be432e440f2c6d7dd358d3a",
+      "output": "outputs/projection_eight_20261103",
+      "timeout_seconds": 10800,
+      "status": "running_pilot_then_full_then_calibration",
+      "log": "outputs/projection_eight_20261103/run.log"
+    }
+  ],
   "next_action": "启动登记的八专家七数据集固定评价，随后原始分数独立复核；等待约60–90分钟后人工查看。",
   "latest_completed_batch": {
     "protocol": "results/data_free_compensation/projection_recovery_protocol.json",
@@ -148,13 +158,15 @@
     }
   },
   "projection_eight": {
-    "status": "registered_not_started",
+    "status": "running",
     "protocol": "results/data_free_compensation/projection_eight/protocol.json",
     "output": "outputs/projection_eight_20261103",
     "new_defense_points": 0,
     "new_AGA_calls": 0,
     "full_rows": 84,
     "evaluated_tasks": 7,
-    "participating_experts": 8
+    "participating_experts": 8,
+    "pid": 84628,
+    "source_commit": "2c544184dcf147912be432e440f2c6d7dd358d3a"
   }
 }
