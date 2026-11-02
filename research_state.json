@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2：本批无数据三任务评价完成；任务保持改善，但校正抵抗存在取舍，已知模块替换仍可恢复。先分析功能保持与分类保护的关系。",
-  "status": "finite_classification_three_task_batch_completed",
+  "status": "native_constraint_component_control_running",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -22,7 +22,7 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_torch": "2.3.0+cu121",
@@ -33,7 +33,7 @@
     "primary_available_GiB": 28,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "All finite-classification evaluations complete; no GPU job",
+    "primary_workspace_status": "PID20337 native-retention component control; serial three-task source then evaluation",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -94,10 +94,23 @@
       "record": "outputs/noise_calibration_other_20261102/cleanup.json"
     }
   },
-  "updated_utc": "2026-11-02T05:06:03.808495+00:00",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "分析有限合成分类条件与自然图任务保持/校正效果的关系；不重跑闭点或按测试分数调参；下一构造须有明确机制和预登记。",
+  "updated_utc": "2026-11-02T05:27:07.680590+00:00",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 20337,
+      "started_utc": "2026-11-02T05:26:06.614124+00:00",
+      "source_commit": "f4042cabb0501b5bd5fe14b6b6db708aa91f89d0",
+      "timeout_seconds": 14400,
+      "output": "outputs/native_constraint_20261102",
+      "tasks": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ]
+    }
+  ],
+  "next_action": "等待原概率目标+每步原生判断条件的三任务组件对照；先源固定，再完整独立/TA/AGA/校正。失败不改门槛重试。",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -116,7 +129,7 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "pending: GitHub connector tools unavailable in this turn",
+    "status": "connected; publishing completed results and registered component control",
     "last_verified_commit": "a502baf12bcbc18358ec23e37ba06652ff05957d",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -1729,5 +1742,20 @@
       66.22340425531915
     ],
     "note": "独立能力改善，MNIST/SVHN校正后保护弱于上一轮；DTD伙伴保持，其余两组伙伴受损。不是统一胜出的最终方法。"
+  },
+  "native_constraint_control": {
+    "pid": 20337,
+    "started_utc": "2026-11-02T05:26:06.614124+00:00",
+    "source_commit": "f4042cabb0501b5bd5fe14b6b6db708aa91f89d0",
+    "timeout_seconds": 14400,
+    "output": "outputs/native_constraint_20261102",
+    "tasks": [
+      "MNIST",
+      "SVHN",
+      "DTD"
+    ],
+    "status": "source_running",
+    "protocol": "results/data_free_compensation/finite_classification.json:native_constraint_control",
+    "new_frameworks": 0
   }
 }

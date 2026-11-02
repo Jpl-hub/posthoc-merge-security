@@ -30,3 +30,8 @@ python -m experiment.report --defense-comparison --output results/comparison
 所有输入均为仓库内的轻量结果；[sources.json](sources.json)记录来源及八专家表的逐项正确数、样本数和模型指纹。原始分数与独立逐类检查保存在实验服务器。
 
 排版参考[AGA表1与表4](https://arxiv.org/pdf/2606.30360)的防御／攻击分组和逐任务列，以及[PaRaMS论文](https://arxiv.org/pdf/2503.07661)的独立与融合性能对照。使用三线表、任务间分隔和统一两位小数。额外真实数据蒸馏单独分组，伙伴表保留，不作不公平的统一排名；没有照搬八任务平均或他人的实验范围。TeX仅需 `booktabs`，表注随表显示，JSON、Markdown和TeX由现有入口生成。
+
+
+后续方法对照见[最新三任务结果](../data_free_compensation/calibrated_objective.md#有限分类条件对照2026-11-02)：同一发布列出独立、TA、AGA、校正和参数匹配，已知位置替换另表。它们属于新的固定对照，不能替换本目录旧模型中的个别最佳列。新点的额外数据蒸馏和八专家评价尚未补跑。
+
+正式排版进一步参考[PaRaMS ICCV2025表4](https://openaccess.thecvf.com/content/ICCV2025/html/Junhao_Disrupting_Model_Merging_A_Parameter-Level_Defense_Without_Sacrificing_Accuracy_ICCV_2025_paper.html)的防御/恢复处理分行与表注。主表报告同一攻击条件下的结果，额外数据和已知位置的恢复单列；不以恢复是否完全成功代替具体准确率。
