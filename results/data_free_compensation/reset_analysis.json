@@ -1,5 +1,5 @@
 {
-  "status": "defined_before_execution",
+  "status": "completed_independently_verified",
   "question": "Does the fixed A change affect the complete native classifier under the original B and public B? Does replacing all four edited MLP tensors erase every last-block-only defense identically?",
   "inputs": "Same frozen three finite-classification releases and original synthetic native cache; no new samples or optimization.",
   "tasks": [
@@ -29,5 +29,199 @@
   "inputs_sha256": {
     "configs/defense2_inputs.json": "894209da2c9cdca0dc6bbd674a407e2970865d847f2346a78e8f09a93b68a722",
     "results/data_free_compensation/finite_eight/evaluation.json": "e958283b9aeac4c7bdf238044228a3f1d75ee974a820306bea288edb6f5a18f5"
+  },
+  "preregistration_commit": "0bae8a9",
+  "result": {
+    "status": "completed",
+    "rows": [
+      {
+        "task": "MNIST",
+        "n": 800,
+        "release_sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1",
+        "source_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+        "full_reset_equal_tensors": 158,
+        "original_A_relative": 1.0957239261497829,
+        "affine_offset_norm": 2.032134891052418e-07,
+        "preactivation_change_relative": 0.4809350532072087,
+        "hidden_change_relative": 0.7640199288322036,
+        "public_B_output_change_relative": 0.6165662744613886,
+        "original_B_output_change_relative": 0.5823913532078078,
+        "teacher_agreement": {
+          "original": 800,
+          "A_only": 800,
+          "published": 800,
+          "public_B": 800,
+          "clean_public_B": 800
+        },
+        "teacher_margin_min_median_max": {
+          "original": [
+            3.7824500630192155,
+            7.563587592606268,
+            10.206690532222078
+          ],
+          "A_only": [
+            2.995255132919585,
+            7.096967379824818,
+            9.575668566046067
+          ],
+          "published": [
+            3.426405256043873,
+            7.409867913966616,
+            10.42823098830402
+          ],
+          "public_B": [
+            2.716381947676819,
+            7.031766334708984,
+            9.34261214265853
+          ],
+          "clean_public_B": [
+            3.6117078690027427,
+            7.580821018597686,
+            9.926038404589741
+          ]
+        },
+        "identity_max_error": 1.071365218763276e-14,
+        "reset_max_error": 2.55351295663786e-15,
+        "original_tail_error": 1.3781567322013188e-05,
+        "numpy_first16_error": 3.197442310920451e-14
+      },
+      {
+        "task": "SVHN",
+        "n": 800,
+        "release_sha256": "5819a9bff4c25311633a07e18600721d2f18366dc0ebe056fe33544d3d809386",
+        "source_sha256": "b6c0aedbfbf45a3421d63deee926de0bccca5bec61b2ebbc94c4f53613aa8a4c",
+        "full_reset_equal_tensors": 158,
+        "original_A_relative": 1.0758161833798952,
+        "affine_offset_norm": 1.8916875075272267e-07,
+        "preactivation_change_relative": 0.5259555066305325,
+        "hidden_change_relative": 0.8908197069691993,
+        "public_B_output_change_relative": 0.7055559014682946,
+        "original_B_output_change_relative": 0.6809502714321012,
+        "teacher_agreement": {
+          "original": 800,
+          "A_only": 800,
+          "published": 800,
+          "public_B": 800,
+          "clean_public_B": 800
+        },
+        "teacher_margin_min_median_max": {
+          "original": [
+            3.0835071045565137,
+            6.2508363522719765,
+            8.334169984990268
+          ],
+          "A_only": [
+            2.917392697388113,
+            5.848960616593972,
+            8.10536492638219
+          ],
+          "published": [
+            3.17992361923811,
+            6.1757151654869915,
+            8.78553657005936
+          ],
+          "public_B": [
+            2.8211201353069377,
+            5.873970215632545,
+            8.075679344814198
+          ],
+          "clean_public_B": [
+            2.9559800863764423,
+            6.283985645217776,
+            8.146559659281344
+          ]
+        },
+        "identity_max_error": 1.304512053934559e-14,
+        "reset_max_error": 2.6645352591003757e-15,
+        "original_tail_error": 1.7446928794129235e-05,
+        "numpy_first16_error": 2.4868995751603507e-14
+      },
+      {
+        "task": "DTD",
+        "n": 3760,
+        "release_sha256": "fd8d553e1c3b491ca2753accc1f846d2b650084c4bd489fefc4e2f7ab67ec170",
+        "source_sha256": "f503e4503bed1d65cb3c155662f3eb9552077b1de07aaf37e442439cbfc5d48c",
+        "full_reset_equal_tensors": 158,
+        "original_A_relative": 1.0857476732449032,
+        "affine_offset_norm": 1.9901756761493404e-07,
+        "preactivation_change_relative": 0.477622062391194,
+        "hidden_change_relative": 0.9071979640515644,
+        "public_B_output_change_relative": 0.6930936303140891,
+        "original_B_output_change_relative": 0.664195256323997,
+        "teacher_agreement": {
+          "original": 3760,
+          "A_only": 3760,
+          "published": 3760,
+          "public_B": 3760,
+          "clean_public_B": 3760
+        },
+        "teacher_margin_min_median_max": {
+          "original": [
+            4.055507085595558,
+            7.920054544546321,
+            16.10042369395908
+          ],
+          "A_only": [
+            1.9329312014303923,
+            6.397693868339535,
+            14.663397333831039
+          ],
+          "published": [
+            2.6523044241808442,
+            7.552213329906197,
+            16.43741030611824
+          ],
+          "public_B": [
+            1.5518388059338903,
+            6.663822425234146,
+            14.89694180537284
+          ],
+          "clean_public_B": [
+            3.35930931372555,
+            7.9845968181732605,
+            15.72301352135807
+          ]
+        },
+        "identity_max_error": 1.7763568394002505e-14,
+        "reset_max_error": 5.329070518200751e-15,
+        "original_tail_error": 1.6585195563578736e-05,
+        "numpy_first16_error": 5.3290705182007514e-14
+      }
+    ],
+    "seconds": 9.363932006061077,
+    "source_sha256": "c7ceaa11cd85c8e615bf4cd2f0c38cbf82a74146cb590650fd10e43a0375660e",
+    "protocol_sha256": "8f44b0f3666c118fed21b7a6ed0a97fb0ee769fdb117457635f3dfe8d386f3f4",
+    "scores_sha256": "9a0815cd2c1c6572c8bb27ca4175daf22bdc61f49b9e9120fc867f9321a34762",
+    "new_defense_points": 0,
+    "new_real_images": 0,
+    "new_optimizer_steps": 0,
+    "new_AGA_calls": 0,
+    "scope": "Fixed native synthetic inputs; not new real accuracy, full attack evaluation, or a new defense. Whole-block replacement identity alone does not establish restored accuracy on every task.",
+    "permissions": "Attacker replacement uses only published and public-base weights and knows the edited block; clean target is used solely as the experimental comparator."
+  },
+  "independent": {
+    "status": "passed_independent_saved_score_counts_and_margins",
+    "rows": [
+      {
+        "task": "MNIST",
+        "all_score_counts_and_margins_match": true
+      },
+      {
+        "task": "SVHN",
+        "all_score_counts_and_margins_match": true
+      },
+      {
+        "task": "DTD",
+        "all_score_counts_and_margins_match": true
+      }
+    ],
+    "raw_sha256": "9a0815cd2c1c6572c8bb27ca4175daf22bdc61f49b9e9120fc867f9321a34762",
+    "maximum_first16_numpy_full_head_error": 5.3290705182007514e-14
+  },
+  "decision": {
+    "fixed_A": "A changes hidden responses substantially, while all fixed source classifications survive with original or public B. Increasing parameter distance alone is not supported as a remedy.",
+    "fixed_support": "For full replacement of the known edited block, the recovered model is independent of all A/B choices in that block. This family cannot change that attack outcome through better within-block optimization. This is a permission-specific restriction, not a claim that all data-free defenses fail.",
+    "no_new_candidate": "No amplitude/rank/seed/layer sweep or optimizer added. Multi-block changes require a distinct finite-function mechanism before implementation.",
+    "evaluation_criterion": "Standalone retention is required. Both target and partner degradation in an unauthorized merge are reported as merge disruption, not as standalone utility loss. No invented combined score or requirement to retain every merged partner. Extra-data and known-location recovery remain separate."
   }
 }

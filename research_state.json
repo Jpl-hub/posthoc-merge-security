@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
-  "active_focus": "防御一既有TA/AGA结果保留。新版防御二八专家AGA后23.35/11.03/3.24%，仍保护但弱于早期版；ProDistill仍恢复99.43/96.18/66.70。实验覆盖已有结论，核心方法仍需改进。",
-  "status": "finite_eight_completed_independently_verified",
+  "active_focus": "保留防御一、二已验证TA/AGA和部分恢复抵抗。原生功能保持与未经授权融合破坏分开；伙伴融合下降不是独立保持失败。已有固定A/B诊断和整块替换恒等式，未构造新候选。",
+  "status": "fixed_A_and_replacement_structure_review_completed",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -10,7 +10,8 @@
     "real_construction_images": 0,
     "no_partner_test_witness_for_construction_selection_or_repair": true,
     "no_closed_point_parameter_seed_rank_layer_retries": true,
-    "original_AGA_and_other_processing": "OriginalAGA raw,outputcalibration,knownmodule recovery separate;mergers notcountedasattacks."
+    "original_AGA_and_other_processing": "OriginalAGA raw,outputcalibration,knownmodule recovery separate;mergers notcountedasattacks.",
+    "merge_success_criterion": "Standalone protected-expert utility preserved; unauthorized merge target/partner accuracy both reported. No merged-partner-preservation constraint. Extra-data and known-location attacks separate."
   },
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -94,10 +95,10 @@
       "record": "outputs/noise_calibration_other_20261102/cleanup.json"
     }
   },
-  "updated_utc": "2026-11-02T12:01:41.157202+00:00",
+  "updated_utc": "2026-11-02T12:39:26.880786+00:00",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "八专家同版本评价与MD/TeX表已完成。下一步聚焦A侧实际分类作用与B独立功能补偿的有限构造条件；先排除已有失败机制，不新增无依据的优化器、幅度扫描或攻击列表。现无GPU作业，不自动续跑。",
+  "next_action": "核心构造仍待突破。单独B替换与整块替换分开：后者使任何同一末块A/B调整归于同一模型；不能只换优化器或加幅度。下一机制需解释跨模块任务功能与有限补偿，同时保留独立保持、目标/伙伴融合下降及权限分组，不按暴露测试修补。",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -116,8 +117,8 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "Latest completed eight-expert results prepared for publication; precise readback is in receipt.",
-    "last_verified_science_commit": "de74ac30c622a6c67abe1f73959f2f9c4d4bfc89",
+    "status": "New A-response analysis pending: GitHub MCP returned Unknown tool; last completed eight-expert publication remains verified.",
+    "last_verified_science_commit": "75baa07aa936cc839ed31d3020b31ede9efc1420",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -1881,5 +1882,19 @@
     },
     "raw_backup_manifest_sha256": "17beec1943f47fa49f9b090b06a920e729d73912fadab0edb6e06224987f6f09",
     "raw_backup_verified": true
+  },
+  "replacement_structure_analysis": {
+    "status": "completed_independently_verified",
+    "result": "results/data_free_compensation/reset_analysis.json",
+    "output": "outputs/finite_classification_20261102/reset_analysis",
+    "new_defense_points": 0,
+    "new_real_images": 0,
+    "new_optimizer_steps": 0,
+    "full_reset_equal_tensors_each_task": 158,
+    "source_teacher_agreement_all_states": [
+      800,
+      800,
+      3760
+    ]
   }
 }
