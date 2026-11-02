@@ -216,6 +216,35 @@ def defense_comparison(directory):
     write("defense2_version_partners", "Partner accuracy for the same Defense 2 versions",
           ["Target", "Version", "TA", "AGA", "AGA+calib.", "MLP match", "ProDistill"],
           versions[1], note, "llrrrrr")
+    finite_eight = read("results/data_free_compensation/finite_eight/summary.json")
+    assert finite_eight["status"] == "completed_independently_verified"
+    assert finite_eight["evaluated_datasets"] == cfg["evaluate"]
+    eight_versions = []
+    for task in tasks:
+        for scope, label in [("None", "TA"), ("Protected expert", "AGA")]:
+            for method, version in [("Unprotected", "Unprotected"), ("Defense 2", "Earlier")]:
+                old = next(r for r in eight if r[:3] == [task, method, label])
+                eight_versions.append([task, version, label] + old[3:])
+            row = [task, "Updated", label]
+            for dataset in cfg["evaluate"]:
+                clean = one(finite_eight["independent_statistics"],
+                            key="/".join([task, "Unprotected", scope, dataset]))
+                previous = indexed[(task, "Unprotected", scope, dataset)][0]
+                assert (clean["correct"], clean["n"], clean["model_parameter_sha256"]) == previous
+                value = one(finite_eight["independent_statistics"],
+                            key="/".join([task, "Defense2_" + task, scope, dataset]))
+                assert value["model_parameter_sha256"] == finite_eight["parameters"][
+                    "/".join([task, "Defense2_" + task, scope])]
+                row.append(accuracy(value))
+            eight_versions.append(row)
+    write("defense2_eight_versions", "Defense 2 versions in eight-expert merging",
+          ["Target", "Version", "Processing"] + cfg["evaluate"], eight_versions,
+          "The same earlier and updated releases as the two-expert version tables. "
+          "Eight experts, TA coefficient 0.2; AGA processes only the protected expert. "
+          "Seven complete test datasets, including all evaluated partner tasks. "
+          "Unprotected weights and scores match between versions. EuroSAT is excluded; no eight-task mean. "
+          "Lower protected-task accuracy favors protection; losses on other tasks are reported without averaging.",
+          "lllrrrrrrr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"

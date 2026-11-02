@@ -13,7 +13,8 @@ def test_current_comparison_is_reproducible_and_keeps_partner_results(tmp_path):
     before = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in saved["input_sha256"]}
     defense_comparison(tmp_path)
     for name in ["eight_expert", "attacks", "partners", "feature_distillation",
-                 "defense2_versions", "defense2_version_partners", "prodistill_components"]:
+                 "defense2_versions", "defense2_version_partners", "defense2_eight_versions",
+                 "prodistill_components"]:
         for suffix in ["md", "tex"]:
             assert (tmp_path / f"{name}.{suffix}").read_bytes() == (root / f"{name}.{suffix}").read_bytes()
     rebuilt = json.loads((tmp_path / "sources.json").read_text())
@@ -24,6 +25,7 @@ def test_current_comparison_is_reproducible_and_keeps_partner_results(tmp_path):
     assert len(saved["tables"]["feature_distillation"]["rows"]) == 12
     assert len(saved["tables"]["defense2_versions"]["rows"]) == 6
     assert len(saved["tables"]["defense2_version_partners"]["rows"]) == 6
+    assert len(saved["tables"]["defense2_eight_versions"]["rows"]) == 18
     assert len(saved["tables"]["prodistill_components"]["rows"]) == 6
     for name, table in saved["tables"].items():
         markdown = (root / f"{name}.md").read_text()
