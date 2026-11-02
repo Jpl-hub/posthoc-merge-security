@@ -1,10 +1,19 @@
 {
-  "status": "finite_classification_prodistill_registered",
-  "updated_utc": "2026-11-02T06:14:08.067583+00:00",
+  "status": "finite_classification_prodistill_running",
+  "updated_utc": "2026-11-02T06:15:13.772622+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 25166,
+      "started_utc": "2026-11-02T06:14:56.169788+00:00",
+      "source_commit": "b3e929523237107b09482bba55a9e6ac1b7f1862",
+      "log": "outputs/finite_classification_prodistill_20261102.log",
+      "output": "outputs/finite_classification_prodistill_20261102",
+      "timeout_seconds": 7200
+    }
+  ],
   "next_action": "同一冻结三任务补ProDistill固定额外无标签数据对比，复用三份无保护模型；不重构防御、不择优拼表。",
   "github_sync": {
     "status": "pending: branch update tool unavailable; commit object created but main not verified updated",
@@ -1692,11 +1701,16 @@
     "source_pin_error": "Preserved oldfailure; updated evaluation source fingerprint only; no reconstruction"
   },
   "finite_classification_prodistill": {
-    "status": "registered_not_started",
+    "status": "running",
     "protocol": "results/data_free_compensation/finite_classification_prodistill.json",
     "output": "outputs/finite_classification_prodistill_20261102",
     "new_defense_updates": 0,
     "new_coefficient_backward_steps": 3600,
-    "source_changes": 0
+    "source_changes": 0,
+    "pid": 25166,
+    "started_utc": "2026-11-02T06:14:56.169788+00:00",
+    "source_commit": "b3e929523237107b09482bba55a9e6ac1b7f1862",
+    "log": "outputs/finite_classification_prodistill_20261102.log",
+    "timeout_seconds": 7200
   }
 }

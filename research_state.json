@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense2：本批无数据三任务评价完成；任务保持改善，但校正抵抗存在取舍，已知模块替换仍可恢复。先分析功能保持与分类保护的关系。",
-  "status": "finite_classification_prodistill_registered",
+  "status": "finite_classification_prodistill_running",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -22,18 +22,18 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-02T05:59:36.700076+00:00",
+    "verified_utc": "2026-11-02T06:15:13.772622+00:00",
     "primary_available_GiB": 28,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "Native-retention component experiment completed; no active GPU job",
+    "primary_workspace_status": "Fixed ProDistill comparison running on three frozen releases",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -94,9 +94,18 @@
       "record": "outputs/noise_calibration_other_20261102/cleanup.json"
     }
   },
-  "updated_utc": "2026-11-02T06:14:08.067583+00:00",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
+  "updated_utc": "2026-11-02T06:15:13.772622+00:00",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 25166,
+      "started_utc": "2026-11-02T06:14:56.169788+00:00",
+      "source_commit": "b3e929523237107b09482bba55a9e6ac1b7f1862",
+      "log": "outputs/finite_classification_prodistill_20261102.log",
+      "output": "outputs/finite_classification_prodistill_20261102",
+      "timeout_seconds": 7200
+    }
+  ],
   "next_action": "同一冻结三任务补ProDistill固定额外无标签数据对比，复用三份无保护模型；不重构防御、不择优拼表。",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
@@ -1756,11 +1765,16 @@
     "source_pin_error": "Preserved oldfailure; updated evaluation source fingerprint only; no reconstruction"
   },
   "finite_classification_prodistill": {
-    "status": "registered_not_started",
+    "status": "running",
     "protocol": "results/data_free_compensation/finite_classification_prodistill.json",
     "output": "outputs/finite_classification_prodistill_20261102",
     "new_defense_updates": 0,
     "new_coefficient_backward_steps": 3600,
-    "source_changes": 0
+    "source_changes": 0,
+    "pid": 25166,
+    "started_utc": "2026-11-02T06:14:56.169788+00:00",
+    "source_commit": "b3e929523237107b09482bba55a9e6ac1b7f1862",
+    "log": "outputs/finite_classification_prodistill_20261102.log",
+    "timeout_seconds": 7200
   }
 }
