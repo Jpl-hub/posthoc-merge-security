@@ -12,7 +12,7 @@
       "source_commit": "2c544184dcf147912be432e440f2c6d7dd358d3a",
       "output": "outputs/projection_eight_20261103",
       "timeout_seconds": 10800,
-      "status": "running_pilot_then_full_then_calibration",
+      "status": "pilot_verified_full_running",
       "log": "outputs/projection_eight_20261103/run.log"
     }
   ],
@@ -51,8 +51,8 @@
     }
   },
   "github_sync": {
-    "status": "Connector restored; combined publication pending this turn",
-    "last_verified_remote_commit": "fc2c7e2e75fdb59768e6d9e9666f8bde004afd3f",
+    "status": "Scientific result and protocols published; tree equality and eight critical file blobs verified",
+    "last_verified_remote_commit": "c6312e3af3c5144e6cd7cbd53966a3be2d579e22",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_state": "research_state.json",
@@ -155,10 +155,14 @@
       "maximum_score_error": 1.52587890625e-05,
       "real_defense_construction_images": 0,
       "prodistill_unlabeled_images_per_task": 64
+    },
+    "archive": {
+      "primary": "41558:outputs/projection_recovery_20261103",
+      "backup_status": "Local ext4 copy in progress;3090 full backup stopped for insufficient space; source evidence unchanged"
     }
   },
   "projection_eight": {
-    "status": "running",
+    "status": "pilot_verified_full_running",
     "protocol": "results/data_free_compensation/projection_eight/protocol.json",
     "output": "outputs/projection_eight_20261103",
     "new_defense_points": 0,
@@ -167,6 +171,11 @@
     "evaluated_tasks": 7,
     "participating_experts": 8,
     "pid": 84628,
-    "source_commit": "2c544184dcf147912be432e440f2c6d7dd358d3a"
+    "source_commit": "2c544184dcf147912be432e440f2c6d7dd358d3a",
+    "pilot": {
+      "rows": 84,
+      "score_replays": 1344,
+      "independent_pass": true
+    }
   }
 }
