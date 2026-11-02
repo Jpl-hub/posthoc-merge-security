@@ -1,0 +1,33 @@
+{
+  "status": "defined_before_execution",
+  "question": "Does the fixed A change affect the complete native classifier under the original B and public B? Does replacing all four edited MLP tensors erase every last-block-only defense identically?",
+  "inputs": "Same frozen three finite-classification releases and original synthetic native cache; no new samples or optimization.",
+  "tasks": [
+    "MNIST",
+    "SVHN",
+    "DTD"
+  ],
+  "contexts": [
+    "original",
+    "A_only",
+    "published",
+    "public_B",
+    "clean_public_B"
+  ],
+  "formula": "x=beta+gamma*u; delta_z=delta_A*(x-beta)+(delta_A*beta+delta_a). public_B_output_difference=B0*(phi(z1)-phi(z0)). Full last-MLP replacement gives R_S(theta+delta)=R_S(theta) whenever delta is supported on S.",
+  "scope": "Fixed native synthetic inputs; not new real accuracy, full attack evaluation, or a new defense. Whole-block replacement identity alone does not establish restored accuracy on every task.",
+  "permissions": "Attacker replacement uses only published and public-base weights and knows the edited block; clean target is used solely as the experimental comparator.",
+  "cost": {
+    "new_defense_points": 0,
+    "new_optimizer_steps": 0,
+    "new_real_images": 0,
+    "new_AGA_calls": 0
+  },
+  "predetermined_check": "All source contexts and score counts; NumPy first16 exact activation/output/full-head check for every task, tolerance1e-8; exact tensor equality for all complete restored states.",
+  "source": "outputs/finite_classification_20261102/reset_analysis/source.py",
+  "source_sha256": "c7ceaa11cd85c8e615bf4cd2f0c38cbf82a74146cb590650fd10e43a0375660e",
+  "inputs_sha256": {
+    "configs/defense2_inputs.json": "894209da2c9cdca0dc6bbd674a407e2970865d847f2346a78e8f09a93b68a722",
+    "results/data_free_compensation/finite_eight/evaluation.json": "e958283b9aeac4c7bdf238044228a3f1d75ee974a820306bea288edb6f5a18f5"
+  }
+}
