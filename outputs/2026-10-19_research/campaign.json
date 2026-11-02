@@ -1,11 +1,20 @@
 {
-  "status": "finite_classification_prodistill_completed",
-  "updated_utc": "2026-11-02T06:44:13.300483+00:00",
+  "status": "prodistill_fixed_AB_attribution_running",
+  "updated_utc": "2026-11-02T08:59:57.372131+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "固定当前完整比较结果；下一构造先给出A侧改变后仍可由B补偿的有限机制，并检查公开B替换后的分类作用。不能只改固定A下的B目标，也不重启旧联合函数失败点。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 32083,
+      "output": "outputs/finite_classification_prodistill_20261102/components_full",
+      "started_utc": "2026-11-02T08:59:29.391830+00:00",
+      "source_commit": "0834aa6fd8dcf1906c2425f21b0257eb6e77d95d",
+      "new_optimizer_steps": 0,
+      "new_defense_candidates": 0
+    }
+  ],
+  "next_action": "取回同一恢复模型固定A/B四组合的完整目标/伙伴结果；校准图显示A侧变化作用更大，待全测试确认。该分析不重新训练、不是新防御、不据测试改点。",
   "github_sync": {
     "status": "pending: github.fetch_commit returned Unknown tool on current check",
     "last_verified_commit": "b36b3d11197dfa38b8f03a5a03fb0dbf7e96373c",
@@ -1712,5 +1721,17 @@
     "maximum_score_error": 0,
     "new_defense_updates": 0,
     "completed_utc": "2026-11-02T06:44:13.300483+00:00"
+  },
+  "prodistill_AB_attribution": {
+    "pid": 32083,
+    "output": "outputs/finite_classification_prodistill_20261102/components_full",
+    "started_utc": "2026-11-02T08:59:29.391830+00:00",
+    "source_commit": "0834aa6fd8dcf1906c2425f21b0257eb6e77d95d",
+    "new_optimizer_steps": 0,
+    "new_defense_candidates": 0,
+    "status": "running",
+    "calibration_result": "results/data_free_compensation/finite_classification_result.json:prodistill.components",
+    "new_full_rows": 18,
+    "reused_full_rows": 6
   }
 }
