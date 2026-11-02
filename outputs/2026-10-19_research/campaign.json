@@ -1,24 +1,11 @@
 {
-  "status": "native_constraint_component_control_running",
-  "updated_utc": "2026-11-02T05:27:07.699011+00:00",
+  "status": "native_constraint_component_completed",
+  "updated_utc": "2026-11-02T05:59:36.700076+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 20337,
-      "started_utc": "2026-11-02T05:26:06.614124+00:00",
-      "source_commit": "f4042cabb0501b5bd5fe14b6b6db708aa91f89d0",
-      "timeout_seconds": 14400,
-      "output": "outputs/native_constraint_20261102",
-      "tasks": [
-        "MNIST",
-        "SVHN",
-        "DTD"
-      ]
-    }
-  ],
-  "next_action": "等待原概率目标+每步原生判断条件的三任务组件对照；先源固定，再完整独立/TA/AGA/校正。失败不改门槛重试。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "组件对照关闭：MNIST/SVHN保持条件未改变原概率点；DTD仍有保持-保护取舍。完整攻击比较需统一冻结三任务规则，勿重启闭点或拼列。",
   "github_sync": {
     "status": "connected; publishing completed results and registered component control",
     "last_verified_commit": "a502baf12bcbc18358ec23e37ba06652ff05957d",
@@ -1680,7 +1667,7 @@
     "note": "独立能力改善，MNIST/SVHN校正后保护弱于上一轮；DTD伙伴保持，其余两组伙伴受损。不是统一胜出的最终方法。"
   },
   "native_constraint_control": {
-    "pid": 20337,
+    "pid": null,
     "started_utc": "2026-11-02T05:26:06.614124+00:00",
     "source_commit": "f4042cabb0501b5bd5fe14b6b6db708aa91f89d0",
     "timeout_seconds": 14400,
@@ -1690,8 +1677,18 @@
       "SVHN",
       "DTD"
     ],
-    "status": "source_running",
+    "status": "completed_verified",
     "protocol": "results/data_free_compensation/finite_classification.json:native_constraint_control",
-    "new_frameworks": 0
+    "new_frameworks": 0,
+    "completed_utc": "2026-11-02T05:59:36.700076+00:00",
+    "result": "results/data_free_compensation/finite_classification_result.json:native_constraint_control",
+    "DTD_native_TA_AGAtarget_calibrated": [
+      72.2872340425532,
+      12.074468085106382,
+      7.925531914893617,
+      3.0851063829787235
+    ],
+    "MNIST_SVHN_byte_identical_prior": true,
+    "source_pin_error": "Preserved oldfailure; updated evaluation source fingerprint only; no reconstruction"
   }
 }

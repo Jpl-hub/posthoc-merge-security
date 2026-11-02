@@ -189,3 +189,28 @@ DTD & 69.31 & 2.29 & 99.13 & 68.19 & 66.22 & 99.44 \\
 All rows use TA with coefficient 0.5 and the same frozen publications as the main table. Matching uses the published MLP weights and public base. Replacement additionally knows the modified module and resets its output matrix and bias to the public base. Both include identically processed unprotected controls; neither uses a clean target expert or real images for recovery. Partner columns refer to protected models. The partner is SVHN for MNIST and MNIST otherwise. Two replacement evaluations are reused after equality of all 158 model tensors and score hashes; the DTD evaluation is new. The additional 24 rows and 384 original-batch score replays passed verification. Known-location replacement remains effective.
 \end{minipage}
 \end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{Effect of the per-step native prediction condition (\%).}
+\label{tab:native-acceptance-control}
+\begin{tabular}{llrrrr}
+\toprule
+Task & Construction & Standalone & TA & AGA target & Calibrated AGA target \\
+\midrule
+MNIST & Probability objective & 99.54 & 16.61 & 0.26 & 0.48 \\
+MNIST & With native acceptance & 99.54 & 16.61 & 0.26 & 0.48 \\
+MNIST & Finite classification & 99.57 & 25.15 & 2.99 & 10.76 \\
+SVHN & Probability objective & 95.67 & 4.48 & 2.85 & 2.36 \\
+SVHN & With native acceptance & 95.67 & 4.48 & 2.85 & 2.36 \\
+SVHN & Finite classification & 96.66 & 2.26 & 1.86 & 6.99 \\
+DTD & Probability objective & 65.96 & --- & --- & --- \\
+DTD & With native acceptance & 72.29 & 12.07 & 7.93 & 3.09 \\
+DTD & Finite classification & 76.33 & 2.13 & 2.07 & 5.00 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize
+TA uses coefficient 0.5. Only the native prediction acceptance condition is added to the original probability objective. Sources, parameters and solver limits are fixed. MNIST and SVHN publications are byte-identical to the prior rule, with all 158 model tensors verified equal; their scores are reused. DTD is new. Dashes denote the previous source-failing DTD point, whose merging was not evaluated. The DTD native loss is 7.13 points relative to the original expert. Better calibrated protection accompanies worse native retention and worse uncalibrated protection than the finite-classification rule. No rule uniformly improves all columns. Fourteen new DTD rows and 224 original-batch score replays were verified; all models were frozen before real-image evaluation.
+\end{minipage}
+\end{table*}
