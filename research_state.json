@@ -1,6 +1,6 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
-  "active_focus": "Defense2：本批无数据三任务评价完成；任务保持改善，但校正抵抗存在取舍，已知模块替换仍可恢复。先分析功能保持与分类保护的关系。",
+  "active_focus": "两种防御均保留。补完冻结新版三任务ProDistill对照后，集中研究防御一可投影消除、防御二B侧可公开替换的结构原因；不增加无关攻击或重启闭点。",
   "status": "finite_classification_prodistill_running",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
@@ -94,7 +94,7 @@
       "record": "outputs/noise_calibration_other_20261102/cleanup.json"
     }
   },
-  "updated_utc": "2026-11-02T06:15:13.772622+00:00",
+  "updated_utc": "2026-11-02T06:18:52.945316+00:00",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
@@ -106,7 +106,7 @@
       "timeout_seconds": 7200
     }
   ],
-  "next_action": "同一冻结三任务补ProDistill固定额外无标签数据对比，复用三份无保护模型；不重构防御、不择优拼表。",
+  "next_action": "取回当前ProDistill目标及伙伴结果，独立核对并合并同版本比较表；后续改进需先解释可替换侧之外的有效分类作用。",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",

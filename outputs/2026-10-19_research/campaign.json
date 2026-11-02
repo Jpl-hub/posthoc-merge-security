@@ -1,6 +1,6 @@
 {
   "status": "finite_classification_prodistill_running",
-  "updated_utc": "2026-11-02T06:15:13.772622+00:00",
+  "updated_utc": "2026-11-02T06:18:52.945316+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 1,
@@ -14,7 +14,7 @@
       "timeout_seconds": 7200
     }
   ],
-  "next_action": "同一冻结三任务补ProDistill固定额外无标签数据对比，复用三份无保护模型；不重构防御、不择优拼表。",
+  "next_action": "取回当前ProDistill目标及伙伴结果，独立核对并合并同版本比较表；后续改进需先解释可替换侧之外的有效分类作用。",
   "github_sync": {
     "status": "pending: branch update tool unavailable; commit object created but main not verified updated",
     "last_verified_commit": "b36b3d11197dfa38b8f03a5a03fb0dbf7e96373c",
@@ -609,7 +609,7 @@
     "conclusion": "Mean-only bias is correctable on this source; varying changes also cause classification contradictions. Both parts contribute. No new model or real accuracy improvement.",
     "seconds": 5.094126299023628
   },
-  "active_focus": "Defense2：本批无数据三任务评价完成；任务保持改善，但校正抵抗存在取舍，已知模块替换仍可恢复。先分析功能保持与分类保护的关系。",
+  "active_focus": "两种防御均保留。补完冻结新版三任务ProDistill对照后，集中研究防御一可投影消除、防御二B侧可公开替换的结构原因；不增加无关攻击或重启闭点。",
   "attack_campaign": "results/attack_generalization_20261028/protocol.json",
   "attack_generalization": {
     "directory": "results/attack_generalization_20261028",
