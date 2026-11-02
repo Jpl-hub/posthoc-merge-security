@@ -1,0 +1,34 @@
+{
+  "status": "defined_before_execution",
+  "registered_utc": "2026-11-02T18:47:34.593991+00:00",
+  "output": "outputs/projection_eight_20261103/calibration",
+  "source_sha256": "e5dadfebd258ea521bc00f33fe02661611be004c17cae1115e357fa93b1d6489",
+  "input_seed": 2026102509,
+  "input_n": 64,
+  "input_definition": "Same existing rule: CPU uniform[0,1] noise32px, bilinear224, original normalization, batches8. Seven public classifiers. No seed/temperature or model selection.",
+  "purpose": "Same fixed64-noise calibration on all three projection controls, after both stages complete.",
+  "inputs": {
+    "current_report": {
+      "path": "_impl/report.py",
+      "sha256": "5bc9073a836af2430a5b56ff6ddc9d624cdcd5dc8a043cd914e5ed14857cbccd"
+    },
+    "prior_reuse": {
+      "path": "outputs/finite_eight_20261102/calibration/calibration.pt",
+      "sha256": "7fddef6bc76c1cf8744f0c0eab17a1f127d84ef98945935297587bbadce94292"
+    }
+  },
+  "permissions": "Own fused model and public classifiers,64 random inputs,no labels/clean target expert/changed-location knowledge for calibration. Reconstruction verifies prior model hashes. Matched clean model calibrated independently.",
+  "scope": "3 protected tasks;8 experts;7 full datasets;84 rows and42 matched pairs;no EuroSAT or8-task mean.",
+  "budget": {
+    "maximum_unique_models": 12,
+    "maximum_generated_image_forwards": 768,
+    "new_real_image_forwards": 0,
+    "new_AGA_calls": 0,
+    "new_defense_points": 0,
+    "wall_limit_seconds": 1800
+  },
+  "reuse": "Exact prior full scores/indices/labels and original-batch replay record;all priors frozen before reading benchmark scores. No complete-test rerun.",
+  "reference": "results/data_free_compensation/readout_calibration_protocol.json",
+  "independent_check": "NumPy prior/prediction equality;local separate NumPy counts,classwise paired CI/exact McNemar and42-comparison correction from saved predictions. Original full score replay inherited,not newly performed.",
+  "runtime_inputs": "Full scores, parameters, validation and frozen protocol fingerprints added mechanically after successful full evaluation; no selection or configuration changes."
+}

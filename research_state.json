@@ -23,36 +23,26 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-02T18:21:11.703514+00:00",
+    "verified_utc": "2026-11-02T18:48:22.819844+00:00",
     "primary_available_GiB": 23.96,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "Frozen projection-control recovery queue started",
+    "primary_workspace_status": "Completed recovery; next eight-expert protocol registered",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "teacher_screenshots_last_reread_utc": "2026-10-26T11:47:44.037987+00:00",
-  "updated_utc": "2026-11-02T18:21:11.703514+00:00",
-  "status": "projection_recovery_running",
-  "active_focus": "补齐三个固定去投影对照的MLP参数匹配、已知B/偏置替换和同条件ProDistill；与主方法比较，防御不更新。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 75620,
-      "started_utc": "2026-11-02T18:20:45.612650+00:00",
-      "source_commit": "d896c3117ffe9432fd4910e1466a425c4c4242f3",
-      "output": "outputs/projection_recovery_20261103",
-      "timeout_seconds": 7200,
-      "status": "running_ProDistill_then_matching_replacement",
-      "log": "outputs/projection_recovery_20261103/queue.log"
-    }
-  ],
-  "next_action": "冻结协议后串行运行现有恢复入口，核验目标/伙伴和同条件控制；本批结束按权限分别解释，不把额外数据恢复与无数据攻击混为一谈。",
+  "updated_utc": "2026-11-02T18:48:22.819844+00:00",
+  "status": "projection_recovery_verified_eight_registered",
+  "active_focus": "完成去任务投影对照的恢复比较；用同三份冻结发布补八专家与固定随机输入校正，不更新防御。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "启动登记的八专家七数据集固定评价，随后原始分数独立复核；等待约60–90分钟后人工查看。",
   "closed_history": {
     "full_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -121,40 +111,36 @@
     "tables": "results/comparison/README.md"
   },
   "latest_completed_batch": {
-    "output": "outputs/eight_calibration_baselines_20261102",
-    "record": "results/comparison/eight_calibration/{Defense1,PaRaMS}.json",
-    "table": "results/comparison/eight_calibration_target.md",
+    "protocol": "results/data_free_compensation/projection_recovery_protocol.json",
+    "prodistill_protocol": "results/data_free_compensation/projection_prodistill_protocol.json",
+    "output": "outputs/projection_recovery_20261103",
     "status": "completed_independently_verified",
-    "full_rows": 168,
-    "matched_pairs": 84,
-    "independent_comparisons": 252,
-    "new_random_image_forwards": 768,
-    "new_real_image_forwards": 0,
+    "new_defense_updates": 0,
     "new_AGA_calls": 0,
-    "new_defense_points": 0,
-    "seconds": 238.51820837706327,
-    "source_replay": "Prior complete-score128-context replays reused,not rerun",
-    "AGA_calibrated_percent": {
-      "Unprotected": [
-        93.19,
-        72.82191149354641,
-        38.351063829787236
-      ],
-      "PaRaMS": [
-        93.19,
-        72.8180700676091,
-        38.351063829787236
-      ],
-      "Defense1": [
-        93.13,
-        72.57606023355869,
-        39.361702127659576
-      ],
-      "Defense2_updated": [
-        22.99,
-        17.159649661954518,
-        28.45744680851064
-      ]
+    "pid": 75620,
+    "source_commit": "d896c3117ffe9432fd4910e1466a425c4c4242f3",
+    "estimated_minutes": 20,
+    "result": "results/data_free_compensation/projection_recovery_result.json",
+    "table": "results/comparison/defense2_projection_recovery.md",
+    "target_prodistill_percent": [
+      99.07,
+      95.81668715427166,
+      20.53191489361702
+    ],
+    "cost": {
+      "new_defense_updates": 0,
+      "new_AGA_calls": 0,
+      "recovery_full_forwards": 243712,
+      "recovery_pilot_forwards": 2304,
+      "recovery_context_score_replays": 1152,
+      "recovery_context_forwards": 71936,
+      "prodistill_training_seconds": 86.4458126295358,
+      "prodistill_backward_steps": 3600,
+      "prodistill_new_evaluation_forwards": 84328,
+      "prodistill_context_score_replays": 384,
+      "maximum_score_error": 1.52587890625e-05,
+      "real_defense_construction_images": 0,
+      "prodistill_unlabeled_images_per_task": 64
     }
   },
   "engineering": {
@@ -170,8 +156,8 @@
     "state_compaction": "Completed history removed from active state only; exact prior state in full_state_commit."
   },
   "github_sync": {
-    "status": "New projection protocol/results committed locally and retained servers; GitHub connector unknown-tool error, pending publication",
-    "last_verified_remote_commit": "f2d5b08b30e5617382073bae38d1953d4b0d8ad1",
+    "status": "Connector restored; combined publication pending this turn",
+    "last_verified_remote_commit": "fc2c7e2e75fdb59768e6d9e9666f8bde004afd3f",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_merger_batch": {
@@ -243,11 +229,43 @@
     "protocol": "results/data_free_compensation/projection_recovery_protocol.json",
     "prodistill_protocol": "results/data_free_compensation/projection_prodistill_protocol.json",
     "output": "outputs/projection_recovery_20261103",
-    "status": "running",
+    "status": "completed_independently_verified",
     "new_defense_updates": 0,
     "new_AGA_calls": 0,
     "pid": 75620,
     "source_commit": "d896c3117ffe9432fd4910e1466a425c4c4242f3",
-    "estimated_minutes": 20
+    "estimated_minutes": 20,
+    "result": "results/data_free_compensation/projection_recovery_result.json",
+    "table": "results/comparison/defense2_projection_recovery.md",
+    "target_prodistill_percent": [
+      99.07,
+      95.81668715427166,
+      20.53191489361702
+    ],
+    "cost": {
+      "new_defense_updates": 0,
+      "new_AGA_calls": 0,
+      "recovery_full_forwards": 243712,
+      "recovery_pilot_forwards": 2304,
+      "recovery_context_score_replays": 1152,
+      "recovery_context_forwards": 71936,
+      "prodistill_training_seconds": 86.4458126295358,
+      "prodistill_backward_steps": 3600,
+      "prodistill_new_evaluation_forwards": 84328,
+      "prodistill_context_score_replays": 384,
+      "maximum_score_error": 1.52587890625e-05,
+      "real_defense_construction_images": 0,
+      "prodistill_unlabeled_images_per_task": 64
+    }
+  },
+  "projection_eight": {
+    "status": "registered_not_started",
+    "protocol": "results/data_free_compensation/projection_eight/protocol.json",
+    "output": "outputs/projection_eight_20261103",
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "full_rows": 84,
+    "evaluated_tasks": 7,
+    "participating_experts": 8
   }
 }

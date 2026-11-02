@@ -375,6 +375,45 @@ def defense_comparison(directory):
     write("defense2_projection_partners", "Partner accuracy in the task-projection comparison",
           headers[:2] + headers[3:], projection_rows[1],
           note + " MNIST is paired with SVHN; SVHN and DTD with MNIST.", "llrrrrrr")
+    recovery = read("results/data_free_compensation/projection_recovery_result.json")
+    assert recovery["status"] == "completed_independently_verified"
+    recovery_tables = [[], []]
+    for task in tasks:
+        partner = "SVHN" if task == "MNIST" else "MNIST"
+        native = one(projection["main_comparisons"], target=task, merger="Standalone")
+        for role, dataset in enumerate([task, partner]):
+            for label, field in [("Unprotected", None), ("Retained", "before"), ("Removed", "after")]:
+                row = [task, label]
+                if role == 0:
+                    clean = projection["tasks"][task]["native"]["rows"][0]
+                    value = 100 * clean["before_correct"] / clean["n"] if field is None else native[
+                        "main_accuracy_percent" if field == "before" else "without_accuracy_percent"]
+                    row.append(f"{value:.2f}")
+                for method in ["matching", "replacement", "prodistill"]:
+                    if field is None:
+                        group = one(recovery["records"], target=task, method=method, stage="full")
+                        value = one(group["rows"], defense="Unprotected", dataset=dataset,
+                                    merger="ProDistill" if method == "prodistill" else "TA")
+                        row.append(accuracy(value))
+                    else:
+                        value = one(recovery["main_comparisons"], target=task, dataset=dataset,
+                                    method=method, variant="merged" if method == "prodistill" else "TA")
+                        row.append(f"{value['before_accuracy_percent' if field == 'before' else 'accuracy_percent']:.2f}")
+                recovery_tables[role].append(row)
+    recovery_note = ("The same fixed projection controls as the preceding ablation. MLP matching uses public "
+                     "weights without images. B reset replaces the last MLP output matrix and bias with the "
+                     "public base, requiring knowledge of the modified location; its unprotected control receives "
+                     "the same replacement. Both use TA coefficient 0.5. ProDistill uses 64 additional unlabeled "
+                     "training images per task, 100 epochs per block and coefficient initialization 0.3; no AGA "
+                     "preprocessing. Data, indices and training steps match the retained-projection comparison. "
+                     "These recovery conditions are separate, not one common attacker. Standalone columns precede recovery. "
+                     "MNIST and SVHN synthetic source-condition failures remain reported; no new defense updates.")
+    write("defense2_projection_recovery", "Recovery of the fixed task-projection controls",
+          ["Task", "Projection", "Standalone", "MLP match", "B reset", "ProDistill"],
+          recovery_tables[0], recovery_note, "llrrrr")
+    write("defense2_projection_recovery_partners", "Partner accuracy after recovery of projection controls",
+          ["Target", "Projection", "MLP match", "B reset", "ProDistill"],
+          recovery_tables[1], recovery_note + " MNIST is paired with SVHN; SVHN and DTD with MNIST.", "llrrr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"

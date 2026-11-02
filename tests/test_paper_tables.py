@@ -16,7 +16,8 @@ def test_current_comparison_is_reproducible_and_keeps_partner_results(tmp_path):
                  "defense2_versions", "defense2_version_partners", "defense2_eight_versions",
                  "defense2_eight_calibration", "defense2_eight_calibration_target",
                  "eight_calibration", "eight_calibration_target", "defense2_mergers", "prodistill_components",
-                 "defense2_projection", "defense2_projection_partners"]:
+                 "defense2_projection", "defense2_projection_partners",
+                 "defense2_projection_recovery", "defense2_projection_recovery_partners"]:
         for suffix in ["md", "tex"]:
             assert (tmp_path / f"{name}.{suffix}").read_bytes() == (root / f"{name}.{suffix}").read_bytes()
     rebuilt = json.loads((tmp_path / "sources.json").read_text())
@@ -35,6 +36,8 @@ def test_current_comparison_is_reproducible_and_keeps_partner_results(tmp_path):
     assert len(saved["tables"]["defense2_mergers"]["rows"]) == 6
     assert len(saved["tables"]["defense2_projection"]["rows"]) == 6
     assert len(saved["tables"]["defense2_projection_partners"]["rows"]) == 6
+    assert len(saved["tables"]["defense2_projection_recovery"]["rows"]) == 9
+    assert len(saved["tables"]["defense2_projection_recovery_partners"]["rows"]) == 9
     assert len(saved["tables"]["prodistill_components"]["rows"]) == 6
     for name, table in saved["tables"].items():
         markdown = (root / f"{name}.md").read_text()

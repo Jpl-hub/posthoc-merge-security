@@ -1,0 +1,156 @@
+{
+  "experiment": "Fixed task-projection controls; eight expert evaluation without new defense construction",
+  "output": "outputs/projection_eight_20261103",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "DTD": {
+      "classes": 47,
+      "test_n": 1880
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TA"
+  ],
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "test_status": "Historically exposed test sets. Frozen defenses, no tuning or model selection from Phase 3.",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": false,
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "Defense2_MNIST": {
+      "label": "Fixed control without task-projection constraint",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/finite_projection_ablation_20261103/MNIST/point/point.pt",
+        "sha256": "288cabb5edb25c7e736116d13892f75d5fb6b5021b7fe72dfbee9598d7d1008c"
+      },
+      "AGA_edits": {
+        "path": "outputs/finite_projection_ablation_20261103/MNIST/AGA/edits.pt",
+        "sha256": "d53796717b5e7de694281171a26ccc0d9e4cdd476d071ff697a205e7e156dead"
+      }
+    },
+    "Defense2_SVHN": {
+      "label": "Fixed control without task-projection constraint",
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/finite_projection_ablation_20261103/SVHN/point/point.pt",
+        "sha256": "403fac19d0cd2e2cff88e382344eadacac9a4df688aff768dcea0856d72523ab"
+      },
+      "AGA_edits": {
+        "path": "outputs/finite_projection_ablation_20261103/SVHN/AGA/edits.pt",
+        "sha256": "782f222345a5727e814181c6c11a03eafb18353c82786cfa454b119c15f815c9"
+      }
+    },
+    "Defense2_DTD": {
+      "label": "Fixed control without task-projection constraint",
+      "target": "DTD",
+      "release": {
+        "path": "outputs/finite_projection_ablation_20261103/DTD/point/point.pt",
+        "sha256": "f54a7c73c34582346e872aa3d16ebefaea34b003608dce888b731565a2b239e8"
+      },
+      "AGA_edits": {
+        "path": "outputs/finite_projection_ablation_20261103/DTD/AGA/edits.pt",
+        "sha256": "38b13f45b79dfb8818324116e0a56735f2dc93a6e1c77bdf50a8d229f02afcb5"
+      }
+    }
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "defenses": [
+        "Defense2_MNIST"
+      ],
+      "seed": 42
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense2_SVHN"
+      ],
+      "seed": 42
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense2_DTD"
+      ],
+      "seed": 42
+    }
+  ],
+  "source_sha256": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/evaluate.py": "1f1462135a09a881f2ae5c23756b2e1c81272a3b5916864827c23e1a57cd9767",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+    "_impl/report.py": "5bc9073a836af2430a5b56ff6ddc9d624cdcd5dc8a043cd914e5ed14857cbccd",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+    "experiment/eight_task.py": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+    "experiment/recover.py": "a6770bb3f99fc9a05e69ae8e2c3df48480be9370878e04d73096234a9d57641f",
+    "experiment/report.py": "e0938e02c32fba7be8e5a46ba6dfba7f00452962f28b77f8c8eab6b60c5fbba2",
+    "experiment/defense2.py": "1a99c93236b5abde2097d4b8b8c389816dc8c3f1fcd7f9351006566308b8ec33"
+  },
+  "original_batch_context_replays": true,
+  "attack_scopes": [
+    "None",
+    "Protected expert",
+    "All experts"
+  ],
+  "attacker_permissions": {
+    "category": [
+      "weight-only"
+    ],
+    "operation": "Unchanged TIES or DARE+TA merge, optionally preceded by cached fixed author AGA. The merger itself is not a new attack."
+  },
+  "deduplication": "Reuse standalone raw scores for all models and cached AGA weights; these TIES/DARE models are new for the frozen numerical releases."
+}

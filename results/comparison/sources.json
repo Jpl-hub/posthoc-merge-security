@@ -24,7 +24,8 @@
     "results/comparison/eight_calibration/Defense1.json": "37624a4a2f0c24956c53889a2bbd0f9fcbe7cd01538ca5618b351af9698facaf",
     "results/comparison/eight_calibration/PaRaMS.json": "d850ec43ba4caee62db2177306b303965b4b956fffb1051b1bb7ee0b24fed4c2",
     "results/data_free_compensation/finite_mergers_result.json": "d30df8845a1a0ff23e89a40e8aba9ed8fd8c3f6864731ce4fbfed41e96399bf4",
-    "results/data_free_compensation/finite_projection_ablation_result.json": "4f36b8317146dc7569d583dd83cdc3fd16bed39f2a46849bac8feacd91335f2c"
+    "results/data_free_compensation/finite_projection_ablation_result.json": "4f36b8317146dc7569d583dd83cdc3fd16bed39f2a46849bac8feacd91335f2c",
+    "results/data_free_compensation/projection_recovery_result.json": "54b8d87bf8bdb8f81093331199407fbc5ec47a9b0cdc1a4b668a8a1c320d440e"
   },
   "eight_expert_rows": [
     {
@@ -3811,6 +3812,166 @@
       ],
       "note": "Fixed component comparison of the current Defense 2. Only the two task-SVD constraints on A are removed; synthetic inputs, bias compensation, functional bound, optimizer and stopping rules are unchanged. Task-shaped synthetic probes are retained. Two experts, TA coefficient 0.5; AGA-t processes the protected expert, AGA-b both experts. Calibration uses the same 64 random inputs. All three controls are frozen before real-image evaluation. MNIST and SVHN controls stop with nonzero synthetic classification violations; DTD reaches zero. All controls are reported, including these failures. No task-wise replacement of the main method or proof of improved performance on other datasets. MNIST is paired with SVHN; SVHN and DTD with MNIST."
     },
+    "defense2_projection_recovery": {
+      "headers": [
+        "Task",
+        "Projection",
+        "Standalone",
+        "MLP match",
+        "B reset",
+        "ProDistill"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Unprotected",
+          "99.69",
+          "99.37",
+          "99.35",
+          "99.45"
+        ],
+        [
+          "MNIST",
+          "Retained",
+          "99.57",
+          "9.39",
+          "99.36",
+          "99.43"
+        ],
+        [
+          "MNIST",
+          "Removed",
+          "99.68",
+          "11.14",
+          "99.34",
+          "99.07"
+        ],
+        [
+          "SVHN",
+          "Unprotected",
+          "97.46",
+          "92.50",
+          "92.40",
+          "96.73"
+        ],
+        [
+          "SVHN",
+          "Retained",
+          "96.66",
+          "7.96",
+          "92.32",
+          "96.18"
+        ],
+        [
+          "SVHN",
+          "Removed",
+          "97.41",
+          "3.24",
+          "92.26",
+          "95.82"
+        ],
+        [
+          "DTD",
+          "Unprotected",
+          "79.41",
+          "69.31",
+          "68.19",
+          "73.14"
+        ],
+        [
+          "DTD",
+          "Retained",
+          "76.33",
+          "2.29",
+          "66.22",
+          "66.70"
+        ],
+        [
+          "DTD",
+          "Removed",
+          "77.87",
+          "2.50",
+          "65.96",
+          "20.53"
+        ]
+      ],
+      "note": "The same fixed projection controls as the preceding ablation. MLP matching uses public weights without images. B reset replaces the last MLP output matrix and bias with the public base, requiring knowledge of the modified location; its unprotected control receives the same replacement. Both use TA coefficient 0.5. ProDistill uses 64 additional unlabeled training images per task, 100 epochs per block and coefficient initialization 0.3; no AGA preprocessing. Data, indices and training steps match the retained-projection comparison. These recovery conditions are separate, not one common attacker. Standalone columns precede recovery. MNIST and SVHN synthetic source-condition failures remain reported; no new defense updates."
+    },
+    "defense2_projection_recovery_partners": {
+      "headers": [
+        "Target",
+        "Projection",
+        "MLP match",
+        "B reset",
+        "ProDistill"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Unprotected",
+          "92.50",
+          "92.45",
+          "96.73"
+        ],
+        [
+          "MNIST",
+          "Retained",
+          "4.33",
+          "92.49",
+          "96.22"
+        ],
+        [
+          "MNIST",
+          "Removed",
+          "9.50",
+          "92.36",
+          "95.97"
+        ],
+        [
+          "SVHN",
+          "Unprotected",
+          "99.37",
+          "99.38",
+          "99.45"
+        ],
+        [
+          "SVHN",
+          "Retained",
+          "10.29",
+          "99.37",
+          "99.27"
+        ],
+        [
+          "SVHN",
+          "Removed",
+          "0.68",
+          "99.35",
+          "99.22"
+        ],
+        [
+          "DTD",
+          "Unprotected",
+          "99.45",
+          "99.47",
+          "99.51"
+        ],
+        [
+          "DTD",
+          "Retained",
+          "99.13",
+          "99.44",
+          "99.51"
+        ],
+        [
+          "DTD",
+          "Removed",
+          "69.03",
+          "99.46",
+          "99.47"
+        ]
+      ],
+      "note": "The same fixed projection controls as the preceding ablation. MLP matching uses public weights without images. B reset replaces the last MLP output matrix and bias with the public base, requiring knowledge of the modified location; its unprotected control receives the same replacement. Both use TA coefficient 0.5. ProDistill uses 64 additional unlabeled training images per task, 100 epochs per block and coefficient initialization 0.3; no AGA preprocessing. Data, indices and training steps match the retained-projection comparison. These recovery conditions are separate, not one common attacker. Standalone columns precede recovery. MNIST and SVHN synthetic source-condition failures remain reported; no new defense updates. MNIST is paired with SVHN; SVHN and DTD with MNIST."
+    },
     "prodistill_components": {
       "headers": [
         "Target",
@@ -3874,5 +4035,5 @@
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "3a294027038295547db444c5990b096f0658320d1d3aacd30d8a571229453dca"
+  "report_source_sha256": "5bc9073a836af2430a5b56ff6ddc9d624cdcd5dc8a043cd914e5ed14857cbccd"
 }
