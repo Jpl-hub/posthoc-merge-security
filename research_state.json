@@ -23,25 +23,35 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-02T16:15:18.289661+00:00",
+    "verified_utc": "2026-11-02T17:38:13.544467+00:00",
     "primary_available_GiB": 23.96,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "FixedTIES/DARE pilot/full plusverification completed exit0;GPUidle",
+    "primary_workspace_status": "Fixed projection ablation running; MNIST source iteration1 retains800/800 synthetic judgments",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "teacher_screenshots_last_reread_utc": "2026-10-26T11:47:44.037987+00:00",
-  "updated_utc": "2026-11-02T17:35:47.621451+00:00",
-  "status": "finite_projection_ablation_registered",
+  "updated_utc": "2026-11-02T17:38:13.544467+00:00",
+  "status": "finite_projection_ablation_running",
   "active_focus": "检验新版防御二中A的两侧任务SVD约束的实际贡献；其余算法、合成输入与参数固定，三个组件对照不替换主发布。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 67425,
+      "started_utc": "2026-11-02T17:37:34.367749+00:00",
+      "source_commit": "fe4512a4da3db1ddf8620c3c93aaf96ef35f94a8",
+      "timeout_seconds": 14400,
+      "output": "outputs/finite_projection_ablation_20261103",
+      "status": "running_MNIST_source",
+      "log": "outputs/finite_projection_ablation_20261103/queue.log"
+    }
+  ],
   "next_action": "先冻结三任务无投影对照，再完整独立能力与TA/AGA/输出校正评价；不根据测试选点或改参数。",
   "closed_history": {
     "full_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
@@ -160,7 +170,7 @@
     "state_compaction": "Completed history removed from active state only; exact prior state in full_state_commit."
   },
   "github_sync": {
-    "status": "Completedcomparisonandmergerresults published; three readback blobs and full tree verified",
+    "status": "Latest completed results previously verified; new ablation source/state committed locally and deployed to both retained servers; connector transport/unknown-tool errors, pending remote publication",
     "last_verified_remote_commit": "f2d5b08b30e5617382073bae38d1953d4b0d8ad1",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -190,8 +200,11 @@
   "projection_ablation": {
     "protocol": "results/data_free_compensation/finite_projection_ablation.json",
     "output": "outputs/finite_projection_ablation_20261103",
-    "status": "registered_not_started",
+    "status": "running",
     "new_component_controls": 3,
-    "new_method_candidates": 0
+    "new_method_candidates": 0,
+    "source_commit": "fe4512a4da3db1ddf8620c3c93aaf96ef35f94a8",
+    "pid": 67425,
+    "estimated_minutes": 40
   }
 }
