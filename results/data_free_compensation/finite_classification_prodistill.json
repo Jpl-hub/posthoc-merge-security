@@ -551,5 +551,31 @@
     "output": "outputs/finite_classification_prodistill_20261102/components_full",
     "interpretation": "Conditional component test of an already trained recovery model; not an A-only/B-only optimization attack. Previously exposed benchmark; analysis only, never defense construction input.",
     "driver_sha256": "9cebec8f9a98e59a109956e917640128f0d49e08c06a6383de0783eca6725405"
+  },
+  "coefficient_geometry": {
+    "status": "registered_before_weight_analysis",
+    "question": "Does increasing publication distance constrain the official elementwise coefficient model, or enlarge its parameter update scale?",
+    "scope": "Read-only interpretation of the three existing recovery experiments. No candidate construction, no image reads, no re-training of any attack model.",
+    "source": "Pinned official MergedModel and Adam(lr=.01, eps=1e-8); local _impl/prodistill.py unchanged.",
+    "derivation": "theta=theta0+sum_j alpha_j*delta_j; gradient_alpha_j=delta_j*gradient_theta. SGD induces -eta*sum(delta_j^2)*g. First bias-corrected Adam step induces -eta*sum(delta_j^2*g/(abs(delta_j*g)+epsilon)), coordinatewise.",
+    "checks": "Independent NumPy versus actual official wrapper with scalar linear loss, including zero, signed and small deltas. Real frozen last-MLP A/a/B/b: all coordinates, publication and matched unprotected deltas, support and sum-absolute-delta step upper bound; no selected coordinates.",
+    "limitations": "First-step identity and parameter support do not predict finite-step recovery accuracy or prove greater distance always hurts. The matched two-expert weights are used only for attack analysis, never for defense construction.",
+    "output": "outputs/finite_classification_prodistill_20261102/coefficient_geometry",
+    "new_defense_candidates": 0,
+    "new_image_forwards": 0,
+    "new_trained_attack_models": 0,
+    "registered_utc": "2026-11-02T10:18:01.551927+00:00"
+  },
+  "finite_coupling": {
+    "question": "On the unchanged construction inputs, does midpoint classification failure come from the bilinear cross term, the activation interpolation remainder, or their combination?",
+    "formula": "For h0=phi(A0*x+a0),h1=phi(A1*x+a1),k=phi((z0+z1)/2)-(h0+h1)/2: fmid=(f0+f1)/2-(B1-B0)*(h1-h0)/4+(B0+B1)*k/2.",
+    "scope": "Same frozen three releases. All existing synthetic inputs in native and direct-public-base contexts. Reference is clean target for native and public base for direct. Complete fixed LN/projection/classifier; all four combinations of cross/nonlinear terms, no selection. Direct fusion only, not an AGA result.",
+    "access": "Only target, public base, fixed head and original legal construction caches; zero real images or partner weights. No construction or parameter fitting.",
+    "checks": "FP64 all-input identity and complete-readout counts; NumPy independently checks first16 inputs of each context and recomputes saved statistics. Source predictions are diagnostic only, not natural accuracy or candidate selection.",
+    "output": "outputs/finite_classification_prodistill_20261102/finite_coupling",
+    "new_defense_candidates": 0,
+    "new_image_forwards": 0,
+    "new_optimizer_steps": 0,
+    "registered_utc": "2026-11-02T10:22:52.782513+00:00"
   }
 }
