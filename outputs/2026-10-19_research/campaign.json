@@ -1,27 +1,14 @@
 {
-  "status": "native_constraint_component_control_running",
-  "updated_utc": "2026-11-02T05:27:07.699011+00:00",
+  "status": "fixed_AB_attribution_completed",
+  "updated_utc": "2026-11-02T09:22:56.646330+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 20337,
-      "started_utc": "2026-11-02T05:26:06.614124+00:00",
-      "source_commit": "f4042cabb0501b5bd5fe14b6b6db708aa91f89d0",
-      "timeout_seconds": 14400,
-      "output": "outputs/native_constraint_20261102",
-      "tasks": [
-        "MNIST",
-        "SVHN",
-        "DTD"
-      ]
-    }
-  ],
-  "next_action": "等待原概率目标+每步原生判断条件的三任务组件对照；先源固定，再完整独立/TA/AGA/校正。失败不改门槛重试。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "本批完成且无GPU作业。核心改进应使A变化在公开B读出下有实际分类作用，并让B补偿独立功能；先论证有限可行性，与已有关闭联合求解区别。仅优化固定A下B不能解决公开替换，继续增大B也不能阻止逐元素蒸馏。",
   "github_sync": {
-    "status": "connected; publishing completed results and registered component control",
-    "last_verified_commit": "a502baf12bcbc18358ec23e37ba06652ff05957d",
+    "status": "Plugin reconnected; preparing completed results for publication",
+    "last_verified_commit": "b36b3d11197dfa38b8f03a5a03fb0dbf7e96373c",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -613,7 +600,7 @@
     "conclusion": "Mean-only bias is correctable on this source; varying changes also cause classification contradictions. Both parts contribute. No new model or real accuracy improvement.",
     "seconds": 5.094126299023628
   },
-  "active_focus": "Defense2：本批无数据三任务评价完成；任务保持改善，但校正抵抗存在取舍，已知模块替换仍可恢复。先分析功能保持与分类保护的关系。",
+  "active_focus": "防御一TA/AGA效果保留；新版防御二校正抵抗改善但ProDistill仍恢复99.43/96.18/66.70。现在集中研究A/B保护作用与可公开替换侧的关系，不扩攻击列表。",
   "attack_campaign": "results/attack_generalization_20261028/protocol.json",
   "attack_generalization": {
     "directory": "results/attack_generalization_20261028",
@@ -1680,7 +1667,7 @@
     "note": "独立能力改善，MNIST/SVHN校正后保护弱于上一轮；DTD伙伴保持，其余两组伙伴受损。不是统一胜出的最终方法。"
   },
   "native_constraint_control": {
-    "pid": 20337,
+    "pid": null,
     "started_utc": "2026-11-02T05:26:06.614124+00:00",
     "source_commit": "f4042cabb0501b5bd5fe14b6b6db708aa91f89d0",
     "timeout_seconds": 14400,
@@ -1690,8 +1677,82 @@
       "SVHN",
       "DTD"
     ],
-    "status": "source_running",
+    "status": "completed_verified",
     "protocol": "results/data_free_compensation/finite_classification.json:native_constraint_control",
-    "new_frameworks": 0
+    "new_frameworks": 0,
+    "completed_utc": "2026-11-02T05:59:36.700076+00:00",
+    "result": "results/data_free_compensation/finite_classification_result.json:native_constraint_control",
+    "DTD_native_TA_AGAtarget_calibrated": [
+      72.2872340425532,
+      12.074468085106382,
+      7.925531914893617,
+      3.0851063829787235
+    ],
+    "MNIST_SVHN_byte_identical_prior": true,
+    "source_pin_error": "Preserved oldfailure; updated evaluation source fingerprint only; no reconstruction"
+  },
+  "finite_classification_prodistill": {
+    "status": "completed_independently_verified",
+    "protocol": "results/data_free_compensation/finite_classification_prodistill.json",
+    "result": "results/data_free_compensation/finite_classification_result.json:prodistill",
+    "output": "outputs/finite_classification_prodistill_20261102",
+    "target_accuracy": [
+      99.43,
+      96.17778119237862,
+      66.70212765957447
+    ],
+    "partner_accuracy": [
+      96.22387830362631,
+      99.27,
+      99.51
+    ],
+    "coefficient_backward_steps": 3600,
+    "training_seconds": 86.47392169944942,
+    "context_score_replays": 384,
+    "maximum_score_error": 0,
+    "new_defense_updates": 0,
+    "completed_utc": "2026-11-02T06:44:13.300483+00:00"
+  },
+  "prodistill_AB_attribution": {
+    "pid": null,
+    "output": "outputs/finite_classification_prodistill_20261102/components_full",
+    "started_utc": "2026-11-02T08:59:29.391830+00:00",
+    "source_commit": "0834aa6fd8dcf1906c2425f21b0257eb6e77d95d",
+    "new_optimizer_steps": 0,
+    "new_defense_candidates": 0,
+    "status": "completed_independently_verified",
+    "calibration_result": "results/data_free_compensation/finite_classification_result.json:prodistill.components",
+    "new_full_rows": 18,
+    "reused_full_rows": 6,
+    "completed_utc": "2026-11-02T09:22:56.646330+00:00",
+    "target_accuracy": {
+      "MNIST": [
+        28.06,
+        98.79,
+        46.07,
+        99.43
+      ],
+      "SVHN": [
+        8.14382298709281,
+        86.6702519975415,
+        20.190534726490473,
+        96.1777811923786
+      ],
+      "DTD": [
+        8.670212765957446,
+        41.170212765957444,
+        31.382978723404253,
+        66.70212765957447
+      ]
+    },
+    "column_order": [
+      "initial_A_B",
+      "trained_A_only_substitution",
+      "trained_B_only_substitution",
+      "both_trained"
+    ],
+    "new_independent_context_replays": 288,
+    "maximum_replay_error": 0,
+    "metadata_serialization_failure": "Original completed metadata failed on NumPyint64; rows and scores complete. Only metadata repaired and selected batch contexts verified; no full rerun."
   }
 }
