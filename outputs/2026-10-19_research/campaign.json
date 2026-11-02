@@ -1,22 +1,12 @@
 {
-  "updated_utc": "2026-11-02T17:38:13.544467+00:00",
-  "status": "finite_projection_ablation_running",
-  "active_focus": "检验新版防御二中A的两侧任务SVD约束的实际贡献；其余算法、合成输入与参数固定，三个组件对照不替换主发布。",
+  "updated_utc": "2026-11-02T18:11:01.124164+00:00",
+  "status": "finite_projection_ablation_completed",
+  "active_focus": "A的SVD约束移除对照完成：独立准确率均提高，SVHN校正恢复后的保护减弱。主发布不替换；继续围绕实际功能补偿，不把任务补空间自动当作有效贡献。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 67425,
-      "started_utc": "2026-11-02T17:37:34.367749+00:00",
-      "source_commit": "fe4512a4da3db1ddf8620c3c93aaf96ef35f94a8",
-      "timeout_seconds": 14400,
-      "output": "outputs/finite_projection_ablation_20261103",
-      "status": "running_MNIST_source",
-      "log": "outputs/finite_projection_ablation_20261103/queue.log"
-    }
-  ],
-  "next_action": "先冻结三任务无投影对照，再完整独立能力与TA/AGA/输出校正评价；不根据测试选点或改参数。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "主方法与组件对照完整报告，已有攻击和融合结果不重跑。下一构造需解释功能保持与恢复后的实际分类作用，不能只改SVD秩或扩大距离。",
   "latest_completed_batch": {
     "output": "outputs/eight_calibration_baselines_20261102",
     "record": "results/comparison/eight_calibration/{Defense1,PaRaMS}.json",
@@ -55,7 +45,7 @@
     }
   },
   "github_sync": {
-    "status": "Latest completed results previously verified; new ablation source/state committed locally and deployed to both retained servers; connector transport/unknown-tool errors, pending remote publication",
+    "status": "New projection protocol/results committed locally and retained servers; GitHub connector unknown-tool error, pending publication",
     "last_verified_remote_commit": "f2d5b08b30e5617382073bae38d1953d4b0d8ad1",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -87,13 +77,45 @@
     ]
   },
   "projection_ablation": {
+    "status": "completed_independently_verified",
     "protocol": "results/data_free_compensation/finite_projection_ablation.json",
+    "result": "results/data_free_compensation/finite_projection_ablation_result.json",
+    "table": "results/comparison/defense2_projection.md",
     "output": "outputs/finite_projection_ablation_20261103",
-    "status": "running",
-    "new_component_controls": 3,
-    "new_method_candidates": 0,
     "source_commit": "fe4512a4da3db1ddf8620c3c93aaf96ef35f94a8",
-    "pid": 67425,
-    "estimated_minutes": 40
+    "new_component_controls": 3,
+    "main_publication_replacements": 0,
+    "source_feasible": {
+      "MNIST": false,
+      "SVHN": false,
+      "DTD": true
+    },
+    "standalone_accuracy_percent": [
+      99.68,
+      97.40703749231714,
+      77.87234042553192
+    ],
+    "AGA_then_calibration_percent": [
+      10.23,
+      12.323294406883836,
+      0.9042553191489361
+    ],
+    "limitation": "Task-projection contribution not established; three native accuracies improve, but SVHN recovery protection weakens. Fixed task-shaped probes remain. No main-point replacement, rank search or result extrapolation to other attacks.",
+    "cost": {
+      "construction_seconds": 591.4662779700011,
+      "construction_noise_forwards": 768,
+      "synthetic_reference_forwards": 5360,
+      "native_forwards": 75824,
+      "pilot_forwards": 2688,
+      "full_fusion_forwards": 251832,
+      "full_score_replays": 672,
+      "pilot_score_replays": 672,
+      "replay_context_forwards": 84000,
+      "maximum_score_error": 2.288818359375e-05,
+      "calibration_noise_forwards": 1152,
+      "new_AGA_calls": 3,
+      "real_construction_images": 0,
+      "expert_updates": 0
+    }
   }
 }

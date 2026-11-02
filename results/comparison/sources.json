@@ -23,7 +23,8 @@
     "results/data_free_compensation/finite_eight/calibration.json": "6697c88785f3fbd42f08a67fae746e3de6044de1ca34fb6a9a74739e5ce9f120",
     "results/comparison/eight_calibration/Defense1.json": "37624a4a2f0c24956c53889a2bbd0f9fcbe7cd01538ca5618b351af9698facaf",
     "results/comparison/eight_calibration/PaRaMS.json": "d850ec43ba4caee62db2177306b303965b4b956fffb1051b1bb7ee0b24fed4c2",
-    "results/data_free_compensation/finite_mergers_result.json": "d30df8845a1a0ff23e89a40e8aba9ed8fd8c3f6864731ce4fbfed41e96399bf4"
+    "results/data_free_compensation/finite_mergers_result.json": "d30df8845a1a0ff23e89a40e8aba9ed8fd8c3f6864731ce4fbfed41e96399bf4",
+    "results/data_free_compensation/finite_projection_ablation_result.json": "4f36b8317146dc7569d583dd83cdc3fd16bed39f2a46849bac8feacd91335f2c"
   },
   "eight_expert_rows": [
     {
@@ -3653,6 +3654,163 @@
       ],
       "note": "Same updated releases as the TA and recovery tables. Two experts; MNIST is paired with SVHN, SVHN and DTD with MNIST. Fixed author TIES kernel: top 20 percent, coefficient 1.0. DARE+TA: drop rate 0.2, seed 42, coefficient 0.5. No AGA preprocessing or parameter search. Complete test sets; matching unprotected scores and standalone scores reused after parameter-hash checks. TIES and DARE are merging algorithms, not additional recovery attacks."
     },
+    "defense2_projection": {
+      "headers": [
+        "Task",
+        "Projection",
+        "Standalone",
+        "TA",
+        "AGA-t",
+        "AGA-b",
+        "Calib.",
+        "AGA-t+calib.",
+        "AGA-b+calib."
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Retained",
+          "99.57",
+          "25.15",
+          "2.99",
+          "1.33",
+          "29.78",
+          "10.76",
+          "9.18"
+        ],
+        [
+          "MNIST",
+          "Removed",
+          "99.68",
+          "8.91",
+          "8.90",
+          "8.90",
+          "9.80",
+          "10.23",
+          "10.21"
+        ],
+        [
+          "SVHN",
+          "Retained",
+          "96.66",
+          "2.26",
+          "1.86",
+          "1.87",
+          "7.41",
+          "6.99",
+          "6.95"
+        ],
+        [
+          "SVHN",
+          "Removed",
+          "97.41",
+          "2.54",
+          "4.16",
+          "3.80",
+          "9.15",
+          "12.32",
+          "11.26"
+        ],
+        [
+          "DTD",
+          "Retained",
+          "76.33",
+          "2.13",
+          "2.07",
+          "2.07",
+          "6.60",
+          "5.00",
+          "5.00"
+        ],
+        [
+          "DTD",
+          "Removed",
+          "77.87",
+          "1.60",
+          "2.13",
+          "2.18",
+          "2.18",
+          "0.90",
+          "0.90"
+        ]
+      ],
+      "note": "Fixed component comparison of the current Defense 2. Only the two task-SVD constraints on A are removed; synthetic inputs, bias compensation, functional bound, optimizer and stopping rules are unchanged. Task-shaped synthetic probes are retained. Two experts, TA coefficient 0.5; AGA-t processes the protected expert, AGA-b both experts. Calibration uses the same 64 random inputs. All three controls are frozen before real-image evaluation. MNIST and SVHN controls stop with nonzero synthetic classification violations; DTD reaches zero. All controls are reported, including these failures. No task-wise replacement of the main method or proof of improved performance on other datasets."
+    },
+    "defense2_projection_partners": {
+      "headers": [
+        "Task",
+        "Projection",
+        "TA",
+        "AGA-t",
+        "AGA-b",
+        "Calib.",
+        "AGA-t+calib.",
+        "AGA-b+calib."
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Retained",
+          "13.26",
+          "2.02",
+          "1.50",
+          "22.81",
+          "8.75",
+          "8.24"
+        ],
+        [
+          "MNIST",
+          "Removed",
+          "9.15",
+          "9.15",
+          "9.15",
+          "7.74",
+          "8.42",
+          "8.45"
+        ],
+        [
+          "SVHN",
+          "Retained",
+          "0.22",
+          "0.24",
+          "0.25",
+          "9.92",
+          "11.53",
+          "11.95"
+        ],
+        [
+          "SVHN",
+          "Removed",
+          "0.28",
+          "0.38",
+          "0.50",
+          "8.90",
+          "17.55",
+          "13.49"
+        ],
+        [
+          "DTD",
+          "Retained",
+          "99.22",
+          "99.02",
+          "98.81",
+          "99.48",
+          "99.47",
+          "99.40"
+        ],
+        [
+          "DTD",
+          "Removed",
+          "67.33",
+          "66.12",
+          "64.59",
+          "99.21",
+          "99.01",
+          "98.64"
+        ]
+      ],
+      "note": "Fixed component comparison of the current Defense 2. Only the two task-SVD constraints on A are removed; synthetic inputs, bias compensation, functional bound, optimizer and stopping rules are unchanged. Task-shaped synthetic probes are retained. Two experts, TA coefficient 0.5; AGA-t processes the protected expert, AGA-b both experts. Calibration uses the same 64 random inputs. All three controls are frozen before real-image evaluation. MNIST and SVHN controls stop with nonzero synthetic classification violations; DTD reaches zero. All controls are reported, including these failures. No task-wise replacement of the main method or proof of improved performance on other datasets. MNIST is paired with SVHN; SVHN and DTD with MNIST."
+    },
     "prodistill_components": {
       "headers": [
         "Target",
@@ -3716,5 +3874,5 @@
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "ee7bb24553e8c8bdd56761dd7a0bf2d83d2cc9e40a16658e3ebbcbdd2f67c909"
+  "report_source_sha256": "3a294027038295547db444c5990b096f0658320d1d3aacd30d8a571229453dca"
 }

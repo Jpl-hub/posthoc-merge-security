@@ -343,6 +343,38 @@ def defense_comparison(directory):
           "DARE+TA: drop rate 0.2, seed 42, coefficient 0.5. No AGA preprocessing or parameter search. "
           "Complete test sets; matching unprotected scores and standalone scores reused after parameter-hash checks. "
           "TIES and DARE are merging algorithms, not additional recovery attacks.", "llrrrrr")
+    projection = read("results/data_free_compensation/finite_projection_ablation_result.json")
+    assert projection["status"] == "completed_independently_verified"
+    projection_rows = [[], []]
+    for task in tasks:
+        partner = "SVHN" if task == "MNIST" else "MNIST"
+        for role, dataset in enumerate([task, partner]):
+            for label, field in [("Retained", "main"), ("Removed", "without")]:
+                row = [task, label]
+                settings = ([("raw", "Standalone", "None")] if role == 0 else [])
+                settings += [("raw", "TA", scope) for scope in ["None", "Protected expert", "All experts"]]
+                settings += [("calibrated", "TA", scope) for scope in ["None", "Protected expert", "All experts"]]
+                for stage, merger, scope in settings:
+                    value = one(projection["main_comparisons"], target=task, dataset=dataset,
+                                stage=stage, merger=merger, attack_scope=scope)
+                    correct, n = value[field + "_correct"], value["n"]
+                    assert abs(100 * correct / n - value[field + "_accuracy_percent"]) < 1e-8
+                    row.append(f"{100 * correct / n:.2f}")
+                projection_rows[role].append(row)
+    note = ("Fixed component comparison of the current Defense 2. Only the two task-SVD constraints on A "
+            "are removed; synthetic inputs, bias compensation, functional bound, optimizer and stopping rules "
+            "are unchanged. Task-shaped synthetic probes are retained. Two experts, TA coefficient 0.5; "
+            "AGA-t processes the protected expert, AGA-b both experts. Calibration uses the same 64 random inputs. "
+            "All three controls are frozen before real-image evaluation. MNIST and SVHN controls stop with "
+            "nonzero synthetic classification violations; DTD reaches zero. All controls are reported, "
+            "including these failures. No task-wise replacement of the main method or proof of improved performance on other datasets.")
+    headers = ["Task", "Projection", "Standalone", "TA", "AGA-t", "AGA-b",
+               "Calib.", "AGA-t+calib.", "AGA-b+calib."]
+    write("defense2_projection", "Effect of task-projection constraints", headers,
+          projection_rows[0], note, "llrrrrrrr")
+    write("defense2_projection_partners", "Partner accuracy in the task-projection comparison",
+          headers[:2] + headers[3:], projection_rows[1],
+          note + " MNIST is paired with SVHN; SVHN and DTD with MNIST.", "llrrrrrr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"
