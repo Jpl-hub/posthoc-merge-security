@@ -321,6 +321,28 @@ def defense_comparison(directory):
           comparison, note, "llrrrrr")
     write("eight_calibration", "All evaluated tasks after output calibration",
           ["Target", "Defense", "Processing"] + cfg["evaluate"], all_tasks, note, "lllrrrrrrr")
+    mergers = read("results/data_free_compensation/finite_mergers_result.json")
+    assert mergers["status"] == "completed_independently_verified"
+    merger_rows = []
+    for task in tasks:
+        records = next(r["rows"] for r in mergers["records"]
+                       if r["stage"] == "full" and r["rows"][0]["target"] == task)
+        partner = "SVHN" if task == "MNIST" else "MNIST"
+        for method, name in [("Unprotected", "Unprotected"), ("Defense 2", "Defense2_" + task)]:
+            native = one(records, defense=name, merger="Standalone", dataset=task)
+            row = [task, method, accuracy(native)]
+            for merger in ["TIES", "DARE+TA"]:
+                row += [accuracy(one(records, defense=name, merger=merger, dataset=t))
+                        for t in [task, partner]]
+            merger_rows.append(row)
+    write("defense2_mergers", "Updated Defense 2 with TIES and DARE",
+          ["Task", "Defense", "Standalone", "TIES target", "TIES partner", "DARE target", "DARE partner"],
+          merger_rows,
+          "Same updated releases as the TA and recovery tables. Two experts; MNIST is paired with SVHN, "
+          "SVHN and DTD with MNIST. Fixed author TIES kernel: top 20 percent, coefficient 1.0. "
+          "DARE+TA: drop rate 0.2, seed 42, coefficient 0.5. No AGA preprocessing or parameter search. "
+          "Complete test sets; matching unprotected scores and standalone scores reused after parameter-hash checks. "
+          "TIES and DARE are merging algorithms, not additional recovery attacks.", "llrrrrr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"

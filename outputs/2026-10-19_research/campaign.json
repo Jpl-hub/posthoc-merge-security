@@ -1,28 +1,12 @@
 {
-  "updated_utc": "2026-11-02T15:40:44.265852+00:00",
-  "status": "finite_mergers_evaluation_running",
-  "active_focus": "同条件八专家恢复对比已完成。防御二数字任务仍有明显保护；防御一输出校正弱点、防御二DTD独立能力与公开替换恢复未解决。没有新的方法突破。",
+  "updated_utc": "2026-11-02T16:15:18.289661+00:00",
+  "status": "finite_mergers_completed_independently_verified",
+  "active_focus": "同一新版防御二TIES/DARE完整评价通过，数字任务与DTD均有融合保护；DTD独立损失和两种防御的恢复弱点仍在。不是新方法突破。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "kind": "frozen_release_supplementary_merger_evaluation",
-      "output": "outputs/finite_mergers_20261102",
-      "log": "outputs/finite_mergers_20261102/run.log",
-      "pid": 61327,
-      "source_commit": "2ffd0eff5d07eb6e936b72d809d21d1e744268f6",
-      "protocol": "results/data_free_compensation/finite_mergers_protocol.json",
-      "new_merged_models": 6,
-      "new_full_rows": 12,
-      "reused_full_rows": 18,
-      "new_defense_points": 0,
-      "new_AGA_calls": 0,
-      "sequence": "Eachcase pilot,original128contextverification,full,verification;stoponfirstfailure",
-      "manual_check_estimate_minutes": 20
-    }
-  ],
-  "next_action": "取回新版冻结防御二的TIES/DARE同版本补充，原始分数复用已有控制并做逐类及配对检查；合入已有表。该批不构造新防御，不择优替换版本。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "现有三任务同版本主实验、主要恢复对比与TIES/DARE可用于初稿。优先核心功能保持与恢复弱点；新构造须有明确机制，不从既有测试成绩选参数，不重复完整批次。",
   "latest_completed_batch": {
     "output": "outputs/eight_calibration_baselines_20261102",
     "record": "results/comparison/eight_calibration/{Defense1,PaRaMS}.json",
@@ -61,12 +45,35 @@
     }
   },
   "github_sync": {
-    "status": "Current-turn GitHub connector unavailable;new local results pending publication",
+    "status": "Connector available again;completed results prepared for publication, see exact receipt",
     "last_verified_remote_commit": "ce9dbbaec3a1561488a093d024e25c22b51c2fe8",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_state": "research_state.json",
   "historical_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
   "source_preregistration_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
-  "raw_output": "outputs/eight_calibration_baselines_20261102"
+  "raw_output": "outputs/eight_calibration_baselines_20261102",
+  "latest_merger_batch": {
+    "status": "completed_independently_verified",
+    "record": "results/data_free_compensation/finite_mergers_result.json",
+    "table": "results/comparison/defense2_mergers.md",
+    "full_rows": 30,
+    "new_full_rows": 12,
+    "reused_full_rows": 18,
+    "new_real_evaluation_forwards": 167888,
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "full_context_score_replays": 480,
+    "maximum_score_error": 1.33514404296875e-05,
+    "target_TIES_percent": [
+      29.78,
+      13.921327596803934,
+      2.2872340425531914
+    ],
+    "target_DARE_percent": [
+      26.57,
+      2.2818070067609098,
+      2.8191489361702127
+    ]
+  }
 }

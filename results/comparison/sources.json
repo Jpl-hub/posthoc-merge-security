@@ -22,7 +22,8 @@
     "results/data_free_compensation/finite_eight/summary.json": "1cfd446139d18969b2fd91f7e8384ee3990494015ea1889a567ec7b0fd800df8",
     "results/data_free_compensation/finite_eight/calibration.json": "6697c88785f3fbd42f08a67fae746e3de6044de1ca34fb6a9a74739e5ce9f120",
     "results/comparison/eight_calibration/Defense1.json": "37624a4a2f0c24956c53889a2bbd0f9fcbe7cd01538ca5618b351af9698facaf",
-    "results/comparison/eight_calibration/PaRaMS.json": "d850ec43ba4caee62db2177306b303965b4b956fffb1051b1bb7ee0b24fed4c2"
+    "results/comparison/eight_calibration/PaRaMS.json": "d850ec43ba4caee62db2177306b303965b4b956fffb1051b1bb7ee0b24fed4c2",
+    "results/data_free_compensation/finite_mergers_result.json": "d30df8845a1a0ff23e89a40e8aba9ed8fd8c3f6864731ce4fbfed41e96399bf4"
   },
   "eight_expert_rows": [
     {
@@ -3584,6 +3585,74 @@
       ],
       "note": "Eight experts, TA coefficient 0.2; AGA processes the protected expert. Each merged model uses the same 64 fixed random inputs for output calibration. No real attack images, clean target expert, or changed-module knowledge is used. Defense 2 denotes the updated release throughout; standalone accuracy is measured before merging. Seven complete test datasets; EuroSAT is excluded, and no eight-task mean is reported."
     },
+    "defense2_mergers": {
+      "headers": [
+        "Task",
+        "Defense",
+        "Standalone",
+        "TIES target",
+        "TIES partner",
+        "DARE target",
+        "DARE partner"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Unprotected",
+          "99.69",
+          "99.34",
+          "94.37",
+          "99.36",
+          "92.52"
+        ],
+        [
+          "MNIST",
+          "Defense 2",
+          "99.57",
+          "29.78",
+          "36.88",
+          "26.57",
+          "14.03"
+        ],
+        [
+          "SVHN",
+          "Unprotected",
+          "97.46",
+          "94.37",
+          "99.34",
+          "92.51",
+          "99.37"
+        ],
+        [
+          "SVHN",
+          "Defense 2",
+          "96.66",
+          "13.92",
+          "19.38",
+          "2.28",
+          "0.29"
+        ],
+        [
+          "DTD",
+          "Unprotected",
+          "79.41",
+          "74.26",
+          "99.60",
+          "69.47",
+          "99.47"
+        ],
+        [
+          "DTD",
+          "Defense 2",
+          "76.33",
+          "2.29",
+          "89.39",
+          "2.82",
+          "99.23"
+        ]
+      ],
+      "note": "Same updated releases as the TA and recovery tables. Two experts; MNIST is paired with SVHN, SVHN and DTD with MNIST. Fixed author TIES kernel: top 20 percent, coefficient 1.0. DARE+TA: drop rate 0.2, seed 42, coefficient 0.5. No AGA preprocessing or parameter search. Complete test sets; matching unprotected scores and standalone scores reused after parameter-hash checks. TIES and DARE are merging algorithms, not additional recovery attacks."
+    },
     "prodistill_components": {
       "headers": [
         "Target",
@@ -3647,5 +3716,5 @@
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "656d9bc8fcad6fb134aa6f3ccf7f92ab912f0324a0bd3b721f7a23c0e064721f"
+  "report_source_sha256": "ee7bb24553e8c8bdd56761dd7a0bf2d83d2cc9e40a16658e3ebbcbdd2f67c909"
 }

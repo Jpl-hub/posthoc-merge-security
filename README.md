@@ -155,3 +155,5 @@ pytest -q
 同一新版八专家模型经固定64随机输入输出校正后，AGA目标MNIST/SVHN/DTD为22.99%／17.16%／28.46%，对应无保护93.19%／72.82%／38.35%。[校正前后表](results/comparison/defense2_eight_calibration_target.md)与[七任务全表](results/comparison/defense2_eight_calibration.md)均有TeX版本。DTD恢复较多，不能把两专家下的校正抵抗直接外推到八专家；无需新增攻击类型即可检验这一范围。
 
 [同条件八专家恢复对比](results/comparison/eight_calibration_target.md)（[TeX](results/comparison/eight_calibration_target.tex)）已补齐防御一和PaRaMS，更新版防御二使用同一冻结发布。AGA后再校正的MNIST/SVHN/DTD准确率：无保护93.19/72.82/38.35%，PaRaMS93.19/72.82/38.35%，防御一93.13/72.58/39.36%，防御二22.99/17.16/28.46%。[七任务明细](results/comparison/eight_calibration.md)保留全部伙伴结果。这是已有模型的公平比较，不是新的防御方法；防御一的校正弱点和防御二的DTD独立能力损失仍需解决。
+
+同一新版防御二的[TIES/DARE补充](results/comparison/defense2_mergers.md)（[TeX](results/comparison/defense2_mergers.tex)）已完成：TIES下MNIST/SVHN/DTD为29.78/13.92/2.29%，DARE下26.57/2.28/2.82%，均低于匹配无保护。所有模型沿用同一冻结发布，无参数搜索；两种融合算法不算新增攻击。已有恢复弱点不因这项结果改变。

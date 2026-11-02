@@ -41,4 +41,4 @@
 
 同一冻结发布已完成三任务独立、双专家TA/AGA两作用范围、固定64随机输入校正、MLP匹配、已知B及偏置替换、ProDistill，以及八专家TA/AGA仅目标与七数据集输出校正。八专家同条件防御一、PaRaMS及无保护校正对比已补齐，见[目标表](../comparison/eight_calibration_target.md)与[全部评价任务](../comparison/eight_calibration.md)。
 
-该版TIES/DARE同版本补充已登记并启动，沿用原固定系数、稀疏率及seed42；旧完整无保护分数按参数SHA复用，只新增六个保护合并模型。运行中不计作完成。硬标签蒸馏或Unmask仍仅有早期版记录，不冒充本版完成。该版独立DTD损失及公开替换、额外数据恢复弱点仍在。
+该版TIES/DARE同版本补充已完成并独立核验，沿用原固定系数、稀疏率及seed42；旧完整无保护分数按参数SHA复用，只新增六个保护合并模型，见[结果表](../comparison/defense2_mergers.md)。硬标签蒸馏或Unmask仍仅有早期版记录，不冒充本版完成。该版独立DTD损失及公开替换、额外数据恢复弱点仍在。
