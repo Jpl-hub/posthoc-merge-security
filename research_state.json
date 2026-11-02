@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "Defense1/Defense2 matched recovery comparison completed for the registered batch; address output-calibration weakness and Defense2 task retention without blind search.",
-  "status": "noise_calibration_cross_task_running",
+  "status": "cross_task_completed;task_retention_unresolved",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -22,18 +22,18 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-02T02:32:24.270181+00:00",
+    "verified_utc": "2026-11-02T03:13:22.281712+00:00",
     "primary_available_GiB": 28,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "One serial SVHN/DTD queue, no other GPU experiment",
+    "primary_workspace_status": "Registered queue and separate DTD observation completed; no active GPU experiment",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -86,25 +86,18 @@
     "byte_identical_duplicates_hardlinked": 2,
     "original_or_unique_release_weights_deleted": 0,
     "current_transfer_partial_removed_bytes": 171737088,
-    "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup"
-  },
-  "updated_utc": "2026-11-02T02:32:24.270181+00:00",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "41558",
-      "queue_pid": 1914,
-      "output": "outputs/noise_calibration_other_20261102",
-      "source_commit": "976083c3",
-      "targets": [
-        "SVHN",
-        "DTD"
-      ],
-      "stage": "serial source and registered full evaluation",
-      "automatic_wakeup": false
+    "current_transfer_record": "results/data_free_compensation/population_compensation_result.json:joint_classification_evaluation_result_20261027:cleanup",
+    "latest_restore_cleanup": {
+      "files": 9,
+      "bytes": 581262152,
+      "unique_files_deleted": 0,
+      "record": "outputs/noise_calibration_other_20261102/cleanup.json"
     }
-  ],
-  "next_action": "Inspect existing SVHN/DTD queue; no duplicate starts or tuning. Report every task source/native failure and finish fixed evaluations if source passes.",
+  },
+  "updated_utc": "2026-11-02T03:13:22.281712+00:00",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Review the existing task-preservation condition; no new defense point queued. SVHN loses1.79pp and DTD13.46pp standalone; do not tune closed points.",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -123,8 +116,8 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "Connector restored; publishing completed MNIST result and pre-execution cross-task definition",
-    "last_verified_commit": "23d6ffb93954addb02918ef79d03e831e4f0cf92",
+    "status": "pending: connector returned Unknown tool on current fetch_commit/fetch_file calls",
+    "last_verified_commit": "4be53a56ee0fa7a3ac50bddbb11dd7186d748f0d",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_component_result": {
@@ -1655,13 +1648,31 @@
     "context_score_replays": 320
   },
   "noise_calibration_transfer": {
-    "status": "running",
+    "status": "completed_independently_verified_SVHN;DTD_source_failed_with_separate_frozen_standalone_observation",
     "protocol": "results/data_free_compensation/noise_calibration_transfer.json",
+    "result": "results/data_free_compensation/noise_calibration_transfer_result.json",
     "output": "outputs/noise_calibration_other_20261102",
-    "source_commit": "976083c3",
-    "targets": [
-      "SVHN",
-      "DTD"
-    ]
+    "SVHN_native_before_after": [
+      97.46081745543945,
+      95.67455439459127
+    ],
+    "SVHN_target_raw": [
+      4.475261216963737,
+      2.854179471419791,
+      2.8503380454824834
+    ],
+    "SVHN_target_calibrated": [
+      3.1576521204671173,
+      2.358635525507068,
+      2.116625691456669
+    ],
+    "SVHN_matching_target": 2.80039950829748,
+    "SVHN_known_B_replacement_target": 92.31714812538414,
+    "DTD_native_before_after": [
+      79.41489361702128,
+      65.95744680851064
+    ],
+    "DTD_fusion_evaluated": false,
+    "new_parameter_updates_after_freeze": 0
   }
 }

@@ -1,0 +1,2198 @@
+{
+  "status": "completed_independently_verified_SVHN;DTD_source_failed_with_separate_frozen_standalone_observation",
+  "completed_utc": "2026-11-02T03:13:22.281712+00:00",
+  "protocol": "results/data_free_compensation/noise_calibration_transfer.json",
+  "source_commit_before_execution": "976083c3144fabb271c626e3685205a2e7d2a564",
+  "source_sha256": "a76fdd564506ba504f113c4ec7fc1ca1352c37a26f893d5063bb6fbacfc81fbc",
+  "input_config_sha256": "894209da2c9cdca0dc6bbd674a407e2970865d847f2346a78e8f09a93b68a722",
+  "real_construction_images": 0,
+  "expert_training_updates": 0,
+  "selection": "Two fixed task transfers. Neither point changed after source freeze. Original MNIST point retained; no best-column selection.",
+  "SVHN": {
+    "point_sha256": "20fb464b5d7d4c0c441e6c7c35910e08410ca2bd2e18e36048c841ec43c03ced",
+    "source_feasible": true,
+    "source_counts": {
+      "native": 800,
+      "direct": 0,
+      "recovered": 0,
+      "task_direct": 0,
+      "task_recovered": 0,
+      "joint_direct": 0,
+      "joint_task": 0,
+      "direct_calibrated": 0,
+      "recovered_calibrated": 0,
+      "task_direct_calibrated": 0,
+      "task_recovered_calibrated": 0,
+      "joint_direct_calibrated": 0,
+      "joint_task_calibrated": 0,
+      "direct_noise_calibrated": 0,
+      "recovered_noise_calibrated": 0,
+      "task_direct_noise_calibrated": 0,
+      "task_recovered_noise_calibrated": 0,
+      "joint_direct_noise_calibrated": 0,
+      "joint_task_noise_calibrated": 0
+    },
+    "source_seconds": 264.55076059885323,
+    "source_steps": 22,
+    "source_stop": "fixed_line_search_stalled",
+    "distance": {
+      "A_relative": 1.0758161833798952,
+      "B_relative": 4.41916435630185,
+      "logical_D": 4.6706510765611755,
+      "input_bias_relative": 1.0118731718608485
+    },
+    "native_before_after": [
+      97.46081745543945,
+      95.67455439459127
+    ],
+    "native": {
+      "n": 26032,
+      "changed": 785,
+      "R": 634.974645957058,
+      "stage": "full",
+      "before_correct": 25371,
+      "after_correct": 24906,
+      "strict_task_passed": false,
+      "accuracy_loss_pp": 1.7862630608481869,
+      "passed": false,
+      "raw_sha256": "bb6957f5b1642e1a4c267b8290adb1b2ecde43560c0c4e8251df8ea060744242"
+    },
+    "target_raw_TA_AGAtarget_AGAboth": [
+      4.475261216963737,
+      2.854179471419791,
+      2.8503380454824834
+    ],
+    "target_calibrated": [
+      3.1576521204671173,
+      2.358635525507068,
+      2.116625691456669
+    ],
+    "matched_unprotected_raw": [
+      92.49769514443761,
+      91.56422864167179,
+      91.77166564228642
+    ],
+    "matched_unprotected_calibrated": [
+      92.31714812538414,
+      91.33758451137062,
+      91.58727719729563
+    ],
+    "partner_MNIST_raw": [
+      0.91,
+      0.09,
+      0.06999999999999999
+    ],
+    "partner_MNIST_calibrated": [
+      0.08,
+      0.08,
+      0.06
+    ],
+    "recovery_rows": [
+      {
+        "stage": "matching",
+        "key": "NoiseCalibration_SVHN_matching/Standalone/None/SVHN",
+        "n": 26032,
+        "correct": 24906,
+        "accuracy": 95.67455439459127,
+        "lost": 563,
+        "gained": 98,
+        "net_loss_pp": 1.7862630608481869,
+        "paired_delta_95ci_pp": [
+          -1.9786216781592436,
+          -1.5939044435371303
+        ],
+        "mcnemar_log10p": -79.48058424992213,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 15,
+            "gained": 4
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 78,
+            "gained": 10
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 170,
+            "gained": 3
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 94,
+            "gained": 22
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 13,
+            "gained": 6
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 75,
+            "gained": 1
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 12,
+            "gained": 5
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 7,
+            "gained": 21
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 32,
+            "gained": 21
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 67,
+            "gained": 5
+          }
+        ]
+      },
+      {
+        "stage": "matching",
+        "key": "NoiseCalibration_SVHN_matching/TA/None/SVHN",
+        "n": 26032,
+        "correct": 729,
+        "accuracy": 2.80039950829748,
+        "lost": 23546,
+        "gained": 196,
+        "net_loss_pp": 89.69729563614014,
+        "paired_delta_95ci_pp": [
+          -90.09554584348272,
+          -89.29904542879756
+        ],
+        "mcnemar_log10p": -6655.204508592969,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 1708,
+            "gained": 2
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 4800,
+            "gained": 1
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 3914,
+            "gained": 46
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 2457,
+            "gained": 23
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 2166,
+            "gained": 40
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 2303,
+            "gained": 4
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 1708,
+            "gained": 4
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 1486,
+            "gained": 70
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 1583,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 1421,
+            "gained": 6
+          }
+        ]
+      },
+      {
+        "stage": "matching",
+        "key": "NoiseCalibration_SVHN_matching/TA/None/MNIST",
+        "n": 10000,
+        "correct": 481,
+        "accuracy": 4.81,
+        "lost": 9461,
+        "gained": 5,
+        "net_loss_pp": 94.56,
+        "paired_delta_95ci_pp": [
+          -95.00886090299225,
+          -94.11113909700775
+        ],
+        "mcnemar_log10p": -2831.4474870413846,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 980,
+            "lost": 975,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 1135,
+            "lost": 1133,
+            "gained": 0
+          },
+          {
+            "class": 2,
+            "n": 1032,
+            "lost": 1024,
+            "gained": 3
+          },
+          {
+            "class": 3,
+            "n": 1010,
+            "lost": 1009,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 982,
+            "lost": 978,
+            "gained": 0
+          },
+          {
+            "class": 5,
+            "n": 892,
+            "lost": 884,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 958,
+            "lost": 944,
+            "gained": 1
+          },
+          {
+            "class": 7,
+            "n": 1028,
+            "lost": 545,
+            "gained": 1
+          },
+          {
+            "class": 8,
+            "n": 974,
+            "lost": 970,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1009,
+            "lost": 999,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "replacement",
+        "key": "NoiseCalibration_SVHN_replacement/Standalone/None/SVHN",
+        "n": 26032,
+        "correct": 25351,
+        "accuracy": 97.3839889366933,
+        "lost": 30,
+        "gained": 17,
+        "net_loss_pp": 0.049938537185003073,
+        "paired_delta_95ci_pp": [
+          -0.10155352275785126,
+          0.0016764483878451038
+        ],
+        "mcnemar_log10p": -1.1026990616152144,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 0,
+            "gained": 1
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 5,
+            "gained": 2
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 9,
+            "gained": 2
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 10,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 1,
+            "gained": 1
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 1,
+            "gained": 1
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 0,
+            "gained": 8
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 1,
+            "gained": 2
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 3,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "replacement",
+        "key": "NoiseCalibration_SVHN_replacement/TA/None/SVHN",
+        "n": 26032,
+        "correct": 24032,
+        "accuracy": 92.31714812538414,
+        "lost": 32,
+        "gained": 10,
+        "net_loss_pp": 0.08451137062077443,
+        "paired_delta_95ci_pp": [
+          -0.1332962656611628,
+          -0.03572647558038605
+        ],
+        "mcnemar_log10p": -3.026560846563438,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 10,
+            "gained": 1
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 2,
+            "gained": 2
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 11,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 2,
+            "gained": 0
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 1,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 3,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 2,
+            "gained": 4
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 1,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 0,
+            "gained": 3
+          }
+        ]
+      },
+      {
+        "stage": "replacement",
+        "key": "NoiseCalibration_SVHN_replacement/TA/None/MNIST",
+        "n": 10000,
+        "correct": 9937,
+        "accuracy": 99.37,
+        "lost": 1,
+        "gained": 0,
+        "net_loss_pp": 0.01,
+        "paired_delta_95ci_pp": [
+          -0.029600000000000005,
+          0.009600000000000001
+        ],
+        "mcnemar_log10p": 0.0,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 980,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 1135,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 2,
+            "n": 1032,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 3,
+            "n": 1010,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 982,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 5,
+            "n": 892,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 958,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 1028,
+            "lost": 1,
+            "gained": 0
+          },
+          {
+            "class": 8,
+            "n": 974,
+            "lost": 0,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1009,
+            "lost": 0,
+            "gained": 0
+          }
+        ]
+      }
+    ],
+    "joint_matching_changed_units": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      710
+    ],
+    "paired_rows": [
+      {
+        "stage": "raw",
+        "key": "NoiseCalibration_SVHN/Standalone/None/SVHN",
+        "n": 26032,
+        "correct": 24906,
+        "accuracy": 95.67455439459127,
+        "lost": 563,
+        "gained": 98,
+        "net_loss_pp": 1.7862630608481869,
+        "paired_delta_95ci_pp": [
+          -1.9786216781592436,
+          -1.5939044435371303
+        ],
+        "mcnemar_log10p": -79.48058424992213,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 15,
+            "gained": 4
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 78,
+            "gained": 10
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 170,
+            "gained": 3
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 94,
+            "gained": 22
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 13,
+            "gained": 6
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 75,
+            "gained": 1
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 12,
+            "gained": 5
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 7,
+            "gained": 21
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 32,
+            "gained": 21
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 67,
+            "gained": 5
+          }
+        ]
+      },
+      {
+        "stage": "raw",
+        "key": "NoiseCalibration_SVHN/TA/None/SVHN",
+        "n": 26032,
+        "correct": 1165,
+        "accuracy": 4.475261216963737,
+        "lost": 23137,
+        "gained": 223,
+        "net_loss_pp": 88.02243392747388,
+        "paired_delta_95ci_pp": [
+          -88.44772761788546,
+          -87.59714023706229
+        ],
+        "mcnemar_log10p": -6486.445399974539,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 1708,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 4725,
+            "gained": 34
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 3968,
+            "gained": 5
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 2457,
+            "gained": 2
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 2272,
+            "gained": 25
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 2305,
+            "gained": 1
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 1711,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 989,
+            "gained": 150
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 1583,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 1419,
+            "gained": 6
+          }
+        ]
+      },
+      {
+        "stage": "raw",
+        "key": "NoiseCalibration_SVHN/TA/None/MNIST",
+        "n": 10000,
+        "correct": 91,
+        "accuracy": 0.91,
+        "lost": 9851,
+        "gained": 5,
+        "net_loss_pp": 98.46,
+        "paired_delta_95ci_pp": [
+          -98.7091934507197,
+          -98.2108065492803
+        ],
+        "mcnemar_log10p": -2948.7615053044096,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 980,
+            "lost": 975,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 1135,
+            "lost": 1133,
+            "gained": 0
+          },
+          {
+            "class": 2,
+            "n": 1032,
+            "lost": 1026,
+            "gained": 1
+          },
+          {
+            "class": 3,
+            "n": 1010,
+            "lost": 1009,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 982,
+            "lost": 973,
+            "gained": 2
+          },
+          {
+            "class": 5,
+            "n": 892,
+            "lost": 884,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 958,
+            "lost": 944,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 1028,
+            "lost": 938,
+            "gained": 2
+          },
+          {
+            "class": 8,
+            "n": 974,
+            "lost": 970,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1009,
+            "lost": 999,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "raw",
+        "key": "NoiseCalibration_SVHN/TA/Protected expert/SVHN",
+        "n": 26032,
+        "correct": 743,
+        "accuracy": 2.854179471419791,
+        "lost": 23363,
+        "gained": 270,
+        "net_loss_pp": 88.71004917025199,
+        "paired_delta_95ci_pp": [
+          -89.13244366052197,
+          -88.28765467998201
+        ],
+        "mcnemar_log10p": -6474.579228893077,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 1702,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 4738,
+            "gained": 19
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 3954,
+            "gained": 33
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 2387,
+            "gained": 17
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 1914,
+            "gained": 151
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 2295,
+            "gained": 7
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 1676,
+            "gained": 2
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 1703,
+            "gained": 39
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 1584,
+            "gained": 1
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 1410,
+            "gained": 1
+          }
+        ]
+      },
+      {
+        "stage": "raw",
+        "key": "NoiseCalibration_SVHN/TA/Protected expert/MNIST",
+        "n": 10000,
+        "correct": 9,
+        "accuracy": 0.09,
+        "lost": 9932,
+        "gained": 2,
+        "net_loss_pp": 99.3,
+        "paired_delta_95ci_pp": [
+          -99.46805482986984,
+          -99.13194517013015
+        ],
+        "mcnemar_log10p": -2982.4376848900847,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 980,
+            "lost": 975,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 1135,
+            "lost": 1134,
+            "gained": 0
+          },
+          {
+            "class": 2,
+            "n": 1032,
+            "lost": 1025,
+            "gained": 2
+          },
+          {
+            "class": 3,
+            "n": 1010,
+            "lost": 1009,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 982,
+            "lost": 979,
+            "gained": 0
+          },
+          {
+            "class": 5,
+            "n": 892,
+            "lost": 884,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 958,
+            "lost": 943,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 1028,
+            "lost": 1013,
+            "gained": 0
+          },
+          {
+            "class": 8,
+            "n": 974,
+            "lost": 971,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1009,
+            "lost": 999,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "raw",
+        "key": "NoiseCalibration_SVHN/TA/All experts/SVHN",
+        "n": 26032,
+        "correct": 742,
+        "accuracy": 2.8503380454824834,
+        "lost": 23424,
+        "gained": 276,
+        "net_loss_pp": 88.92132759680393,
+        "paired_delta_95ci_pp": [
+          -89.34165704932327,
+          -88.5009981442846
+        ],
+        "mcnemar_log10p": -6482.817613167525,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 1700,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 4788,
+            "gained": 17
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 3965,
+            "gained": 32
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 2368,
+            "gained": 27
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 1900,
+            "gained": 152
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 2297,
+            "gained": 9
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 1677,
+            "gained": 1
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 1725,
+            "gained": 37
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 1590,
+            "gained": 1
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 1414,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "raw",
+        "key": "NoiseCalibration_SVHN/TA/All experts/MNIST",
+        "n": 10000,
+        "correct": 7,
+        "accuracy": 0.06999999999999999,
+        "lost": 9928,
+        "gained": 3,
+        "net_loss_pp": 99.25,
+        "paired_delta_95ci_pp": [
+          -99.4257952229045,
+          -99.0742047770955
+        ],
+        "mcnemar_log10p": -2978.0150292260287,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 980,
+            "lost": 975,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 1135,
+            "lost": 1133,
+            "gained": 0
+          },
+          {
+            "class": 2,
+            "n": 1032,
+            "lost": 1023,
+            "gained": 2
+          },
+          {
+            "class": 3,
+            "n": 1010,
+            "lost": 1009,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 982,
+            "lost": 977,
+            "gained": 0
+          },
+          {
+            "class": 5,
+            "n": 892,
+            "lost": 885,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 958,
+            "lost": 942,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 1028,
+            "lost": 1014,
+            "gained": 1
+          },
+          {
+            "class": 8,
+            "n": 974,
+            "lost": 971,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1009,
+            "lost": 999,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "calibrated",
+        "key": "SVHN/NoiseCalibration_SVHN/TA/None/SVHN",
+        "n": 26032,
+        "correct": 822,
+        "accuracy": 3.1576521204671173,
+        "lost": 23469,
+        "gained": 259,
+        "net_loss_pp": 89.15949600491703,
+        "paired_delta_95ci_pp": [
+          -89.574230788817,
+          -88.74476122101706
+        ],
+        "mcnemar_log10p": -6524.123257780873,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 1708,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 4359,
+            "gained": 174
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 3954,
+            "gained": 10
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 2436,
+            "gained": 32
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 2286,
+            "gained": 10
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 2300,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 1700,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 1722,
+            "gained": 30
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 1589,
+            "gained": 3
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 1415,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "calibrated",
+        "key": "SVHN/NoiseCalibration_SVHN/TA/None/MNIST",
+        "n": 10000,
+        "correct": 8,
+        "accuracy": 0.08,
+        "lost": 9928,
+        "gained": 2,
+        "net_loss_pp": 99.26,
+        "paired_delta_95ci_pp": [
+          -99.4325024338755,
+          -99.08749756612451
+        ],
+        "mcnemar_log10p": -2981.233914704138,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 980,
+            "lost": 975,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 1135,
+            "lost": 1127,
+            "gained": 2
+          },
+          {
+            "class": 2,
+            "n": 1032,
+            "lost": 1022,
+            "gained": 0
+          },
+          {
+            "class": 3,
+            "n": 1010,
+            "lost": 1009,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 982,
+            "lost": 978,
+            "gained": 0
+          },
+          {
+            "class": 5,
+            "n": 892,
+            "lost": 884,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 958,
+            "lost": 943,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 1028,
+            "lost": 1022,
+            "gained": 0
+          },
+          {
+            "class": 8,
+            "n": 974,
+            "lost": 970,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1009,
+            "lost": 998,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "calibrated",
+        "key": "SVHN/NoiseCalibration_SVHN/TA/Protected expert/SVHN",
+        "n": 26032,
+        "correct": 614,
+        "accuracy": 2.358635525507068,
+        "lost": 23457,
+        "gained": 294,
+        "net_loss_pp": 88.97894898586355,
+        "paired_delta_95ci_pp": [
+          -89.40091496413265,
+          -88.55698300759445
+        ],
+        "mcnemar_log10p": -6463.442196514388,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 1701,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 4448,
+            "gained": 188
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 3929,
+            "gained": 31
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 2355,
+            "gained": 27
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 2247,
+            "gained": 5
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 2294,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 1662,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 1836,
+            "gained": 7
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 1585,
+            "gained": 36
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 1400,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "calibrated",
+        "key": "SVHN/NoiseCalibration_SVHN/TA/Protected expert/MNIST",
+        "n": 10000,
+        "correct": 8,
+        "accuracy": 0.08,
+        "lost": 9930,
+        "gained": 4,
+        "net_loss_pp": 99.26,
+        "paired_delta_95ci_pp": [
+          -99.4369007726731,
+          -99.08309922732691
+        ],
+        "mcnemar_log10p": -2975.5227489457507,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 980,
+            "lost": 975,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 1135,
+            "lost": 1129,
+            "gained": 3
+          },
+          {
+            "class": 2,
+            "n": 1032,
+            "lost": 1020,
+            "gained": 1
+          },
+          {
+            "class": 3,
+            "n": 1010,
+            "lost": 1009,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 982,
+            "lost": 979,
+            "gained": 0
+          },
+          {
+            "class": 5,
+            "n": 892,
+            "lost": 884,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 958,
+            "lost": 943,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 1028,
+            "lost": 1023,
+            "gained": 0
+          },
+          {
+            "class": 8,
+            "n": 974,
+            "lost": 970,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1009,
+            "lost": 998,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "calibrated",
+        "key": "SVHN/NoiseCalibration_SVHN/TA/All experts/SVHN",
+        "n": 26032,
+        "correct": 551,
+        "accuracy": 2.116625691456669,
+        "lost": 23558,
+        "gained": 267,
+        "net_loss_pp": 89.47065150583897,
+        "paired_delta_95ci_pp": [
+          -89.88211392898889,
+          -89.05918908268906
+        ],
+        "mcnemar_log10p": -6537.2499813956765,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 1744,
+            "lost": 1700,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 5099,
+            "lost": 4530,
+            "gained": 160
+          },
+          {
+            "class": 2,
+            "n": 4149,
+            "lost": 3937,
+            "gained": 35
+          },
+          {
+            "class": 3,
+            "n": 2882,
+            "lost": 2343,
+            "gained": 35
+          },
+          {
+            "class": 4,
+            "n": 2523,
+            "lost": 2254,
+            "gained": 5
+          },
+          {
+            "class": 5,
+            "n": 2384,
+            "lost": 2295,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 1977,
+            "lost": 1664,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 2019,
+            "lost": 1844,
+            "gained": 5
+          },
+          {
+            "class": 8,
+            "n": 1660,
+            "lost": 1591,
+            "gained": 27
+          },
+          {
+            "class": 9,
+            "n": 1595,
+            "lost": 1400,
+            "gained": 0
+          }
+        ]
+      },
+      {
+        "stage": "calibrated",
+        "key": "SVHN/NoiseCalibration_SVHN/TA/All experts/MNIST",
+        "n": 10000,
+        "correct": 6,
+        "accuracy": 0.06,
+        "lost": 9927,
+        "gained": 4,
+        "net_loss_pp": 99.23,
+        "paired_delta_95ci_pp": [
+          -99.41008074423281,
+          -99.04991925576718
+        ],
+        "mcnemar_log10p": -2974.6201836802256,
+        "per_class": [
+          {
+            "class": 0,
+            "n": 980,
+            "lost": 975,
+            "gained": 0
+          },
+          {
+            "class": 1,
+            "n": 1135,
+            "lost": 1131,
+            "gained": 3
+          },
+          {
+            "class": 2,
+            "n": 1032,
+            "lost": 1020,
+            "gained": 1
+          },
+          {
+            "class": 3,
+            "n": 1010,
+            "lost": 1009,
+            "gained": 0
+          },
+          {
+            "class": 4,
+            "n": 982,
+            "lost": 978,
+            "gained": 0
+          },
+          {
+            "class": 5,
+            "n": 892,
+            "lost": 884,
+            "gained": 0
+          },
+          {
+            "class": 6,
+            "n": 958,
+            "lost": 942,
+            "gained": 0
+          },
+          {
+            "class": 7,
+            "n": 1028,
+            "lost": 1020,
+            "gained": 0
+          },
+          {
+            "class": 8,
+            "n": 974,
+            "lost": 970,
+            "gained": 0
+          },
+          {
+            "class": 9,
+            "n": 1009,
+            "lost": 998,
+            "gained": 0
+          }
+        ]
+      }
+    ]
+  },
+  "DTD": {
+    "point_sha256": "4c0c8540d3ee097a547972c2a0d6cf38ee28c748a200e404fc13ecdfb764340f",
+    "source_feasible": false,
+    "source_counts": {
+      "native": 3757,
+      "direct": 0,
+      "recovered": 0,
+      "task_direct": 0,
+      "task_recovered": 0,
+      "joint_direct": 0,
+      "joint_task": 0,
+      "direct_calibrated": 0,
+      "recovered_calibrated": 0,
+      "task_direct_calibrated": 0,
+      "task_recovered_calibrated": 0,
+      "joint_direct_calibrated": 0,
+      "joint_task_calibrated": 0,
+      "direct_noise_calibrated": 0,
+      "recovered_noise_calibrated": 0,
+      "task_direct_noise_calibrated": 0,
+      "task_recovered_noise_calibrated": 0,
+      "joint_direct_noise_calibrated": 0,
+      "joint_task_noise_calibrated": 0
+    },
+    "source_seconds": 654.7000310868025,
+    "source_steps": 50,
+    "source_stop": "fixed_line_search_stalled",
+    "distance": {
+      "A_relative": 1.0857476732449032,
+      "B_relative": 3.138444279105259,
+      "logical_D": 3.513203150183741,
+      "input_bias_relative": 1.0169437130728045
+    },
+    "closed": {
+      "status": "source_condition_failed",
+      "point_sha256": "4c0c8540d3ee097a547972c2a0d6cf38ee28c748a200e404fc13ecdfb764340f",
+      "counts": {
+        "native": 3757,
+        "direct": 0,
+        "recovered": 0,
+        "task_direct": 0,
+        "task_recovered": 0,
+        "joint_direct": 0,
+        "joint_task": 0,
+        "direct_calibrated": 0,
+        "recovered_calibrated": 0,
+        "task_direct_calibrated": 0,
+        "task_recovered_calibrated": 0,
+        "joint_direct_calibrated": 0,
+        "joint_task_calibrated": 0,
+        "direct_noise_calibrated": 0,
+        "recovered_noise_calibrated": 0,
+        "task_direct_noise_calibrated": 0,
+        "task_recovered_noise_calibrated": 0,
+        "joint_direct_noise_calibrated": 0,
+        "joint_task_noise_calibrated": 0
+      },
+      "real_images": 0
+    },
+    "observation_preregistered_commit": "20ce814",
+    "native_before_after": [
+      79.41489361702128,
+      65.95744680851064
+    ],
+    "native": {
+      "n": 1880,
+      "changed": 457,
+      "R": 1099.562193627451,
+      "stage": "full",
+      "before_correct": 1493,
+      "after_correct": 1240,
+      "strict_task_passed": false,
+      "accuracy_loss_pp": 13.457446808510639,
+      "passed": false,
+      "raw_sha256": "f22bd9bfbab650dc6feafc65ffb5ab3310a9daa4642d124907e03fdf9a5bcadf"
+    },
+    "native_pairs": {
+      "status": "passed_independent_numpy_full_indices_and_pairs",
+      "n": 1880,
+      "before_correct": 1493,
+      "after_correct": 1240,
+      "lost": 290,
+      "gained": 37,
+      "paired_delta_95ci_pp": [
+        -15.242341012290877,
+        -11.672552604730402
+      ],
+      "mcnemar_log10p": -49.09687217208647,
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "before_correct": 33,
+          "after_correct": 33,
+          "lost": 1,
+          "gained": 1
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "before_correct": 21,
+          "after_correct": 10,
+          "lost": 12,
+          "gained": 1
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "before_correct": 30,
+          "after_correct": 19,
+          "lost": 13,
+          "gained": 2
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "before_correct": 37,
+          "after_correct": 34,
+          "lost": 3,
+          "gained": 0
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "before_correct": 20,
+          "after_correct": 17,
+          "lost": 4,
+          "gained": 1
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "before_correct": 38,
+          "after_correct": 39,
+          "lost": 1,
+          "gained": 2
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "before_correct": 38,
+          "after_correct": 25,
+          "lost": 13,
+          "gained": 0
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "before_correct": 33,
+          "after_correct": 35,
+          "lost": 1,
+          "gained": 3
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "before_correct": 29,
+          "after_correct": 24,
+          "lost": 5,
+          "gained": 0
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "before_correct": 40,
+          "after_correct": 38,
+          "lost": 2,
+          "gained": 0
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "before_correct": 31,
+          "after_correct": 25,
+          "lost": 6,
+          "gained": 0
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "before_correct": 32,
+          "after_correct": 23,
+          "lost": 9,
+          "gained": 0
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "before_correct": 31,
+          "after_correct": 22,
+          "lost": 9,
+          "gained": 0
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "before_correct": 34,
+          "after_correct": 28,
+          "lost": 6,
+          "gained": 0
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "before_correct": 33,
+          "after_correct": 30,
+          "lost": 5,
+          "gained": 2
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "before_correct": 37,
+          "after_correct": 16,
+          "lost": 21,
+          "gained": 0
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "before_correct": 25,
+          "after_correct": 16,
+          "lost": 10,
+          "gained": 1
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "before_correct": 32,
+          "after_correct": 31,
+          "lost": 2,
+          "gained": 1
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "before_correct": 36,
+          "after_correct": 34,
+          "lost": 2,
+          "gained": 0
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "before_correct": 31,
+          "after_correct": 25,
+          "lost": 7,
+          "gained": 1
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "before_correct": 34,
+          "after_correct": 12,
+          "lost": 22,
+          "gained": 0
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "before_correct": 34,
+          "after_correct": 30,
+          "lost": 4,
+          "gained": 0
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "before_correct": 33,
+          "after_correct": 26,
+          "lost": 7,
+          "gained": 0
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "before_correct": 28,
+          "after_correct": 26,
+          "lost": 4,
+          "gained": 2
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "before_correct": 31,
+          "after_correct": 29,
+          "lost": 2,
+          "gained": 0
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "before_correct": 26,
+          "after_correct": 18,
+          "lost": 8,
+          "gained": 0
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "before_correct": 38,
+          "after_correct": 33,
+          "lost": 6,
+          "gained": 1
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "before_correct": 31,
+          "after_correct": 26,
+          "lost": 6,
+          "gained": 1
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "before_correct": 20,
+          "after_correct": 19,
+          "lost": 1,
+          "gained": 0
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "before_correct": 33,
+          "after_correct": 27,
+          "lost": 8,
+          "gained": 2
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "before_correct": 34,
+          "after_correct": 28,
+          "lost": 6,
+          "gained": 0
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "before_correct": 27,
+          "after_correct": 23,
+          "lost": 4,
+          "gained": 0
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "before_correct": 38,
+          "after_correct": 33,
+          "lost": 5,
+          "gained": 0
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "before_correct": 34,
+          "after_correct": 23,
+          "lost": 11,
+          "gained": 0
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "before_correct": 28,
+          "after_correct": 31,
+          "lost": 1,
+          "gained": 4
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "before_correct": 30,
+          "after_correct": 28,
+          "lost": 3,
+          "gained": 1
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "before_correct": 30,
+          "after_correct": 25,
+          "lost": 5,
+          "gained": 0
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "before_correct": 21,
+          "after_correct": 22,
+          "lost": 6,
+          "gained": 7
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "before_correct": 34,
+          "after_correct": 29,
+          "lost": 5,
+          "gained": 0
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "before_correct": 36,
+          "after_correct": 36,
+          "lost": 1,
+          "gained": 1
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "before_correct": 39,
+          "after_correct": 31,
+          "lost": 8,
+          "gained": 0
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "before_correct": 33,
+          "after_correct": 23,
+          "lost": 10,
+          "gained": 0
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "before_correct": 33,
+          "after_correct": 28,
+          "lost": 6,
+          "gained": 1
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "before_correct": 34,
+          "after_correct": 35,
+          "lost": 0,
+          "gained": 1
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "before_correct": 23,
+          "after_correct": 12,
+          "lost": 11,
+          "gained": 0
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "before_correct": 32,
+          "after_correct": 27,
+          "lost": 6,
+          "gained": 1
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "before_correct": 38,
+          "after_correct": 36,
+          "lost": 2,
+          "gained": 0
+        }
+      ],
+      "raw_sha256": "f22bd9bfbab650dc6feafc65ffb5ab3310a9daa4642d124907e03fdf9a5bcadf",
+      "new_image_forwards": 0
+    },
+    "fusion_evaluated": false,
+    "explanation": "Source gate remains failed. Separate frozen standalone observation tests actual task retention without new optimization. DTD is not a successful defense; no unmeasured attack values filled."
+  },
+  "verification": {
+    "source_checks": {
+      "SVHN": {
+        "status": "passed",
+        "source_counts": {
+          "native": 800,
+          "direct": 0,
+          "direct_calibrated": 0,
+          "direct_noise_calibrated": 0,
+          "recovered": 0,
+          "recovered_calibrated": 0,
+          "recovered_noise_calibrated": 0,
+          "task_direct": 0,
+          "task_direct_calibrated": 0,
+          "task_direct_noise_calibrated": 0,
+          "task_recovered": 0,
+          "task_recovered_calibrated": 0,
+          "task_recovered_noise_calibrated": 0,
+          "joint_direct": 0,
+          "joint_direct_calibrated": 0,
+          "joint_direct_noise_calibrated": 0,
+          "joint_task": 0,
+          "joint_task_calibrated": 0,
+          "joint_task_noise_calibrated": 0
+        },
+        "source_feasible": true,
+        "numpy_objective": -14.555311551325413,
+        "numpy_objective_error": 1.7763568394002505e-15,
+        "finite_compensation_identity_max_error": 1.4876988529977098e-14,
+        "source_sha256": "15d388870ce90df2931a601c23c2756efd9b64ef4f555c842732ab551a6094d0",
+        "point_sha256": "20fb464b5d7d4c0c441e6c7c35910e08410ca2bd2e18e36048c841ec43c03ced",
+        "raw_sha256": "88d0e2c6361057fe4cbfd248fd72ac03aea1a2891eb27a2539ca9a5b9b3781f2",
+        "new_candidate_updates": 0,
+        "seconds": 3.690025707706809
+      },
+      "DTD": {
+        "status": "passed",
+        "source_counts": {
+          "native": 3757,
+          "direct": 0,
+          "direct_calibrated": 0,
+          "direct_noise_calibrated": 0,
+          "recovered": 0,
+          "recovered_calibrated": 0,
+          "recovered_noise_calibrated": 0,
+          "task_direct": 0,
+          "task_direct_calibrated": 0,
+          "task_direct_noise_calibrated": 0,
+          "task_recovered": 0,
+          "task_recovered_calibrated": 0,
+          "task_recovered_noise_calibrated": 0,
+          "joint_direct": 0,
+          "joint_direct_calibrated": 0,
+          "joint_direct_noise_calibrated": 0,
+          "joint_task": 0,
+          "joint_task_calibrated": 0,
+          "joint_task_noise_calibrated": 0
+        },
+        "source_feasible": false,
+        "numpy_objective": -25.488827476663417,
+        "numpy_objective_error": 0.0,
+        "finite_compensation_identity_max_error": 3.1086244689504383e-15,
+        "source_sha256": "15d388870ce90df2931a601c23c2756efd9b64ef4f555c842732ab551a6094d0",
+        "point_sha256": "4c0c8540d3ee097a547972c2a0d6cf38ee28c748a200e404fc13ecdfb764340f",
+        "raw_sha256": "e84f80263adfdf026e2a97f3fff1926283a7e038f385fb403a09b8676b68ab0f",
+        "new_candidate_updates": 0,
+        "seconds": 6.298845829442143
+      }
+    },
+    "context_score_replays": 416,
+    "context_forward_images": 50848,
+    "maximum_score_error": 2.288818359375e-05,
+    "maximum_numpy_calibration_prior_error": 8.881784197001252e-16,
+    "complete_official_indices_per_class_paired_CI_exact_mcnemar": true,
+    "native_verifications": {
+      "SVHN": {
+        "status": "passed_raw_score_and_official_label_recount",
+        "rows": [
+          {
+            "stage": "full",
+            "n": 26032,
+            "R": 634.974645957058
+          }
+        ],
+        "results_sha256": "c0b6cb9fd1d2c0c46c10e00df78cd2cfe86cce3c9a3d37943e245601adef0630",
+        "new_image_forwards": 0
+      },
+      "DTD": {
+        "status": "passed_raw_score_and_official_label_recount",
+        "rows": [
+          {
+            "stage": "full",
+            "n": 1880,
+            "R": 1099.562193627451
+          }
+        ],
+        "results_sha256": "7c5e9cf86843e4c338702f1f5a2dc0f53f23bbf8e8a06b6ed9d9889348841e5c",
+        "new_image_forwards": 0
+      }
+    },
+    "raw_sha256": {
+      "SVHN_original": "6e3ef2f441d37e259d4b4d2ebebacc4984906f02e60600062eff3afa97d32dd3",
+      "SVHN_calibrated": "515d72cf6a05c4e7d9f8c6db3464c5b6dbdf0e9aa580b5ff7ed23f437f089cbd",
+      "SVHN_matching": "a66db556932f3891837a0c34de2db4cd6c38ff270e41042ba8b3d941768b2384",
+      "SVHN_replacement": "0c5fddb28915a97971455e8cbb6f7911a23bc6eda8e8e85286a5d357ed70e061",
+      "DTD_native": "f22bd9bfbab650dc6feafc65ffb5ab3310a9daa4642d124907e03fdf9a5bcadf"
+    }
+  },
+  "cost": {
+    "new_defense_points": 2,
+    "new_real_construction_images": 0,
+    "teacher_training_updates": 0,
+    "source_seconds": 919.2507916856557,
+    "source_joint_matching_calls": 744,
+    "new_full_AGA_calls": 1,
+    "recovery_joint_MLP_assignments": 12,
+    "new_primary_real_image_forwards": 288048,
+    "new_evaluation_noise_forwards": 384,
+    "new_construction_noise_forwards": 512,
+    "new_original_synthetic_image_forwards": 4560,
+    "new_generated_source_images": 0
+  },
+  "interpretation": "Same fixed rule gives low fusion/AGA/calibrated/matching accuracy on SVHN but loses1.79pp standalone; known-location B+b replacement recovers92.32%. DTD loses13.46pp standalone. MNIST success does not establish stable three-task performance. Neither SVD contribution nor partner retention is established.",
+  "next": "Close these fixed points. Review the task-preservation constraint before another construction; no rank/layer/noise/strength sweep or new attack family.",
+  "source_review": {
+    "file": "experiment/defense2.py",
+    "finding": "The native bound is a sum of normalized mean squared MLP-output errors on two synthetic populations plus a ridge term. It is not a per-input classification constraint, and source classification is checked only after optimization.",
+    "SVHN_native_minimum_final_limit": [
+      0.054464282552931564,
+      0.7967072883549076,
+      2.1425365311148905
+    ],
+    "DTD_native_minimum_final_limit": [
+      0.18076746966959867,
+      0.7075662259131033,
+      2.8732043059180246
+    ],
+    "scope": "This explains what is not constrained; it is not proof that one isolated component causes the natural accuracy loss. No test-data fitting or new candidate."
+  },
+  "archive": {
+    "primary": "41558:outputs/noise_calibration_other_20261102",
+    "secondary": "55548:/root/posthoc_evaluation_cache/noise_calibration_other_20261102",
+    "files": 96,
+    "bytes": 197733895,
+    "all_sha256_equal": true,
+    "manifest_sha256": "c0c4182409d1d8e1c718b4898b6642a3ea9f64cdd47524c8c6c27342d32c71b2"
+  },
+  "cleanup": {
+    "archive": "outputs/server_migration_20261027/34125_unique.tar",
+    "removed_files": 9,
+    "bytes": 581262152,
+    "all_byte_identical_to_retained_archive": true,
+    "unique_files_deleted": 0
+  }
+}
