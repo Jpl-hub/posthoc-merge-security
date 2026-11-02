@@ -5,7 +5,9 @@
 | [攻击结果](attacks.md) / [TeX](attacks.tex) | 无保护、PaRaMS、防御一、防御二；三个保护任务，同条件攻击 |
 | [伙伴结果](partners.md) / [TeX](partners.tex) | 相同模型在伙伴任务上的表现 |
 | [ProDistill恢复](feature_distillation.md) / [TeX](feature_distillation.tex) | 额外64图/任务的中间特征蒸馏；目标和伙伴同时报告 |
-| [八专家融合](eight_expert.md) / [TeX](eight_expert.tex) | 三个保护任务、七个完整测试集；TA及AGA |
+| [八专家融合](eight_expert.md) / [TeX](eight_expert.tex) | 早期版、三个保护任务、七个完整测试集；TA及AGA |
+| [八专家恢复对比](eight_calibration_target.md) / [TeX](eight_calibration_target.tex) | 无保护、PaRaMS、防御一、更新版防御二；同一64随机输入校正 |
+| [校正后的七任务结果](eight_calibration.md) / [TeX](eight_calibration.tex) | 相同模型在七个完整测试集上的表现 |
 
 PaRaMS是已有防御方法；TA是融合算法。AGA、输出校正、MLP匹配和蒸馏是不同的恢复处理。输出校正采用固定64张随机图，不需要干净目标专家或修改位置；蒸馏额外使用无标签训练图和学生训练，单独说明权限。已知位置的公开模块替换仍见[防御二结果](../attack_generalization_20261028/attack_comparison.md)和[防御一结果](../phase3/bias_weight_only/attacks/projection.md)。这些实现的论文来源和适配范围见[攻击清单](../attack_generalization_20261028/attack_inventory.md)，不都称作官方CLIP攻击复现。
 
@@ -21,7 +23,7 @@ PaRaMS是已有防御方法；TA是融合算法。AGA、输出校正、MLP匹配
 
 接下来优先处理无需知道修改位置的输出校正，以及公开替换B和偏置后的恢复。只延长B的优化无法改变被替换后的模型，不能把这种重跑当成改进。保留当前固定结果，方法修改只依据合法构造输入及明确机制；不按已曝光测试集挑参数。补齐数据划分和必要比较与方法研究并行，已完成的实验不重复。
 
-从仓库根目录重建四张表，无需模型、数据集或GPU：
+从仓库根目录重建以上表格，无需模型、数据集或GPU：
 
 ```bash
 python -m experiment.report --defense-comparison --output results/comparison
@@ -35,3 +37,10 @@ python -m experiment.report --defense-comparison --output results/comparison
 后续方法对照见[最新三任务结果](../data_free_compensation/calibrated_objective.md#有限分类条件对照2026-11-02)：同一发布列出独立、TA、AGA、校正和参数匹配，已知位置替换另表。它们属于新的固定对照，不能替换本目录旧模型中的个别最佳列。新点的固定ProDistill比较已完成，见[新旧版本目标表](defense2_versions.md)与[伙伴表](defense2_version_partners.md)；[A/B组件表](prodistill_components.md)解释固定恢复模型中两侧的作用。同一新点八专家评价已完成，见[八专家版本对照](defense2_eight_versions.md)。固定64张随机输入校正也已完成，见[目标前后对照](defense2_eight_calibration_target.md)和[七任务完整结果](defense2_eight_calibration.md)，均使用同一冻结发布。
 
 正式排版进一步参考[PaRaMS ICCV2025表4](https://openaccess.thecvf.com/content/ICCV2025/html/Junhao_Disrupting_Model_Merging_A_Parameter-Level_Defense_Without_Sacrificing_Accuracy_ICCV_2025_paper.html)的防御/恢复处理分行与表注。主表报告同一攻击条件下的结果，额外数据和已知位置的恢复单列；不以恢复是否完全成功代替具体准确率。
+
+
+2026-11-02完成同条件八专家校正比较。AGA后再校正，无保护MNIST/SVHN/DTD为93.19/72.82/38.35%，PaRaMS为93.19/72.82/38.35%，防御一为93.13/72.58/39.36%，更新版防御二为22.99/17.16/28.46%。前两种防御在这套连续恢复处理下接近无保护；防御二的数字任务仍有明显保护，DTD下降9.89个百分点，但独立准确率也由79.41%降至76.33%。这些结果不能合并成“两种防御均抵抗所有恢复”。
+
+这批只补相同条件下的必要基线：12个新校正模型、768次随机输入前向，所有完整真实测试分数复用。每种防御84条完整评价、42个匹配比较，独立逐类和配对检查通过；未新增防御点、训练或AGA求解。
+
+现有实验足以写清已验证的结果，还不足以写“完整八任务有效”或“SVD贡献已证”。当前只保护三个任务；EuroSAT原划分、第二种骨干、SVD的独立贡献仍缺证据。较早期版的TIES/DARE、硬标签蒸馏和Unmask结果不冒充更新版结果；新旧版本的TA、AGA、校正、MLP匹配、ProDistill已另表对齐。已知位置和额外数据恢复单列，不要求任何防御在所有权限下绝对不可恢复。

@@ -272,6 +272,55 @@ def defense_comparison(directory):
     write("defense2_eight_calibration_target", "Protected-task accuracy before and after output calibration",
           ["Task", "Processing", "Unprotected", "+calib.", "Defense 2", "+calib."],
           target_rows, note, "llrrrr")
+    baseline_calibration = {
+        method: read(f"results/comparison/eight_calibration/{name}.json")
+        for method, name in [("Defense 1", "Defense1"), ("PaRaMS", "PaRaMS")]
+    }
+    for result in baseline_calibration.values():
+        assert result["status"] == "completed_independently_verified"
+        for row in result["rows"]:
+            if row["key"].split("/")[1] == "Unprotected":
+                clean = one(calibration["rows"], key=row["key"])
+                assert (row["correct"], row["n"]) == (clean["correct"], clean["n"])
+    comparison, all_tasks = [], []
+    for task in tasks:
+        for method in methods:
+            if method == "Defense 2":
+                native = one(updated["tasks"][task]["evaluation"]["raw_rows"],
+                             defense="FiniteClassification_" + task, merger="Standalone",
+                             attack_scope="None", dataset=task)
+                standalone = accuracy(native)
+            else:
+                standalone = next(r[2] for r in tables["attacks"]["rows"]
+                                  if r[:2] == [task, method])
+            row = [task, method, standalone]
+            for scope, label in [("None", "TA"), ("Protected expert", "AGA")]:
+                result = baseline_calibration.get(method, calibration)
+                name = {"Unprotected": "Unprotected", "Defense 2": "Defense2_" + task,
+                        "Defense 1": "Defense1_" + task,
+                        "PaRaMS": "PaRaMS" if task == "MNIST" else "PaRaMS_" + task}[method]
+                corrected = [one(result["rows"], key="/".join([task, name, scope, dataset]))
+                             for dataset in cfg["evaluate"]]
+                if method == "Defense 2":
+                    raw = one(finite_eight["independent_statistics"],
+                              key="/".join([task, name, scope, task]))
+                    raw_accuracy = accuracy(raw)
+                else:
+                    counts = indexed[(task, method, scope, task)][0]
+                    raw_accuracy = f"{100 * counts[0] / counts[1]:.2f}"
+                row += [raw_accuracy, accuracy(corrected[cfg["evaluate"].index(task)])]
+                all_tasks.append([task, method, label] + [accuracy(r) for r in corrected])
+            comparison.append(row)
+    note = ("Eight experts, TA coefficient 0.2; AGA processes the protected expert. "
+            "Each merged model uses the same 64 fixed random inputs for output calibration. "
+            "No real attack images, clean target expert, or changed-module knowledge is used. "
+            "Defense 2 denotes the updated release throughout; standalone accuracy is measured before merging. "
+            "Seven complete test datasets; EuroSAT is excluded, and no eight-task mean is reported.")
+    write("eight_calibration_target", "Matched recovery comparison in eight-expert merging",
+          ["Task", "Defense", "Standalone", "TA", "+calib.", "AGA", "+calib."],
+          comparison, note, "llrrrrr")
+    write("eight_calibration", "All evaluated tasks after output calibration",
+          ["Target", "Defense", "Processing"] + cfg["evaluate"], all_tasks, note, "lllrrrrrrr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"

@@ -1,0 +1,18 @@
+# Matched recovery comparison in eight-expert merging
+
+Eight experts, TA coefficient 0.2; AGA processes the protected expert. Each merged model uses the same 64 fixed random inputs for output calibration. No real attack images, clean target expert, or changed-module knowledge is used. Defense 2 denotes the updated release throughout; standalone accuracy is measured before merging. Seven complete test datasets; EuroSAT is excluded, and no eight-task mean is reported.
+
+| Task | Defense | Standalone | TA | +calib. | AGA | +calib. |
+| --- | --- | --- | --- | --- | --- | --- |
+| MNIST | Unprotected | 99.69 | 94.00 | 94.04 | 93.23 | 93.19 |
+| MNIST | PaRaMS | 99.69 | 9.82 | 11.35 | 93.23 | 93.19 |
+| MNIST | Defense 1 | 99.69 | 9.80 | 94.00 | 9.80 | 93.13 |
+| MNIST | Defense 2 | 99.57 | 24.71 | 24.03 | 23.35 | 22.99 |
+| SVHN | Unprotected | 97.46 | 74.42 | 74.61 | 72.53 | 72.82 |
+| SVHN | PaRaMS | 97.46 | 9.71 | 13.31 | 72.53 | 72.82 |
+| SVHN | Defense 1 | 97.46 | 6.70 | 74.38 | 6.70 | 72.58 |
+| SVHN | Defense 2 | 96.66 | 15.25 | 23.74 | 11.03 | 17.16 |
+| DTD | Unprotected | 79.41 | 52.18 | 38.67 | 51.38 | 38.35 |
+| DTD | PaRaMS | 79.41 | 2.13 | 1.91 | 51.38 | 38.35 |
+| DTD | Defense 1 | 79.41 | 2.13 | 39.84 | 2.13 | 39.36 |
+| DTD | Defense 2 | 76.33 | 4.84 | 26.17 | 3.24 | 28.46 |
