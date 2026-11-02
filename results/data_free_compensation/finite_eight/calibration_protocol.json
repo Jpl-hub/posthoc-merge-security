@@ -1,0 +1,51 @@
+{
+  "status": "defined_before_execution",
+  "registered_utc": "2026-11-02T14:24:42.248375+00:00",
+  "output": "outputs/finite_eight_20261102/calibration",
+  "source_sha256": "e5dadfebd258ea521bc00f33fe02661611be004c17cae1115e357fa93b1d6489",
+  "input_seed": 2026102509,
+  "input_n": 64,
+  "input_definition": "Same existing rule: CPU uniform[0,1] noise32px, bilinear224, original normalization, batches8. Seven public classifiers. No seed/temperature or model selection.",
+  "purpose": "Test whether the existing two-expert output-calibration resistance extends to the same frozen eight-expert TA0.2 models, raw and original AGA-target.",
+  "inputs": {
+    "eight_protocol": {
+      "path": "results/data_free_compensation/finite_eight/protocol.json",
+      "sha256": "8387e2d6b880c170f31182df1aa35170d34ccd3036e6c99a0564b29f4d11565b"
+    },
+    "evaluation": {
+      "path": "results/data_free_compensation/finite_eight/evaluation.json",
+      "sha256": "e958283b9aeac4c7bdf238044228a3f1d75ee974a820306bea288edb6f5a18f5"
+    },
+    "parameters": {
+      "path": "outputs/finite_eight_20261102/full/pre_evaluation.json",
+      "sha256": "2d8f326365305c4ad4ae93f6679cd5651eeaac6d5fc4f1c68d7814b06af33e12"
+    },
+    "validation": {
+      "path": "outputs/finite_eight_20261102/full/validation.json",
+      "sha256": "a89f7257098d34a955c0bc0b226f3892b13a06db6008c1091066e3784721bfbc"
+    },
+    "scores": {
+      "path": "outputs/finite_eight_20261102/full/scores.pt",
+      "sha256": "6ce3b7cb222dab7cb8d38854de9a561fc60e230a29ad6f88fd42a0a3b9c567b5"
+    },
+    "current_report": {
+      "path": "_impl/report.py",
+      "sha256": "0557d878e254553bb7caa06db0b54378d3dfefbe6f3a3227b20873860fee1924"
+    }
+  },
+  "permissions": "Own fused model and public classifiers,64 random inputs,no labels/clean target expert/changed-location knowledge for calibration. Reconstruction verifies prior model hashes. Matched clean model calibrated independently.",
+  "scope": "3 protected tasks;8 experts;7 full datasets;84 rows and42 matched pairs;no EuroSAT or8-task mean.",
+  "budget": {
+    "maximum_unique_models": 12,
+    "maximum_generated_image_forwards": 768,
+    "new_real_image_forwards": 0,
+    "new_AGA_calls": 0,
+    "new_defense_points": 0,
+    "wall_limit_seconds": 1800
+  },
+  "reuse": "Exact prior full scores/indices/labels and original-batch replay record;all priors frozen before reading benchmark scores. No complete-test rerun.",
+  "reference": "results/data_free_compensation/readout_calibration_protocol.json",
+  "independent_check": "NumPy prior/prediction equality;local separate NumPy counts,classwise paired CI/exact McNemar and42-comparison correction from saved predictions. Original full score replay inherited,not newly performed.",
+  "implementation_correction": "Initial setup stopped before image forwards because the historical configuration pinned an older, unused report writer. Pin its current SHA explicitly; all model/evaluation sources, inputs and scientific settings remain unchanged. Initial source,log and exit code preserved.",
+  "initial_source_sha256": "0a511ec358fc3b07febd00768ed11b144c93c6d8444c01081ad453aa3ae1266e"
+}

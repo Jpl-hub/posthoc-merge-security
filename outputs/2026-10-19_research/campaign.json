@@ -1,14 +1,14 @@
 {
-  "status": "finite_eight_completed_independently_verified",
-  "updated_utc": "2026-11-02T12:01:41.157202+00:00",
+  "status": "finite_eight_calibration_completed_independently_verified",
+  "updated_utc": "2026-11-02T14:31:46.392156+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "八专家同版本评价与MD/TeX表已完成。下一步聚焦A侧实际分类作用与B独立功能补偿的有限构造条件；先排除已有失败机制，不新增无依据的优化器、幅度扫描或攻击列表。现无GPU作业，不自动续跑。",
+  "next_action": "本批必要比较已完成，不继续增加同类攻击或复跑。下一步集中研究无数据下独立功能保持和不能仅靠替换补偿侧消除的实际分类作用；旧末层联合失败点不换名重启，不按测试结果选参。",
   "github_sync": {
-    "status": "Latest completed eight-expert results prepared for publication; precise readback is in receipt.",
-    "last_verified_science_commit": "de74ac30c622a6c67abe1f73959f2f9c4d4bfc89",
+    "status": "Connector recovered; completed results being synchronized; exact readback in receipt.",
+    "last_verified_science_commit": "75baa07aa936cc839ed31d3020b31ede9efc1420",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_effective_numerical_candidates": [
@@ -600,7 +600,7 @@
     "conclusion": "Mean-only bias is correctable on this source; varying changes also cause classification contradictions. Both parts contribute. No new model or real accuracy improvement.",
     "seconds": 5.094126299023628
   },
-  "active_focus": "防御一既有TA/AGA结果保留。新版防御二八专家AGA后23.35/11.03/3.24%，仍保护但弱于早期版；ProDistill仍恢复99.43/96.18/66.70。实验覆盖已有结论，核心方法仍需改进。",
+  "active_focus": "同一新版防御二八专家AGA加校正后22.99/17.16/28.46%，对应无保护93.19/72.82/38.35%。数字任务仍有效，DTD校正抵抗不能直接由两专家外推；核心构造仍待改进。",
   "attack_campaign": "results/attack_generalization_20261028/protocol.json",
   "attack_generalization": {
     "directory": "results/attack_generalization_20261028",
@@ -1817,5 +1817,41 @@
     },
     "raw_backup_manifest_sha256": "17beec1943f47fa49f9b090b06a920e729d73912fadab0edb6e06224987f6f09",
     "raw_backup_verified": true
+  },
+  "replacement_structure_analysis": {
+    "status": "completed_independently_verified",
+    "result": "results/data_free_compensation/reset_analysis.json",
+    "output": "outputs/finite_classification_20261102/reset_analysis",
+    "new_defense_points": 0,
+    "new_real_images": 0,
+    "new_optimizer_steps": 0,
+    "full_reset_equal_tensors_each_task": 158,
+    "source_teacher_agreement_all_states": [
+      800,
+      800,
+      3760
+    ]
+  },
+  "finite_eight_calibration": {
+    "status": "completed_independently_verified",
+    "output": "outputs/finite_eight_20261102/calibration",
+    "record": "results/data_free_compensation/finite_eight/calibration.json",
+    "full_rows": 84,
+    "matched_pairs": 42,
+    "new_defense_points": 0,
+    "new_real_image_forwards": 0,
+    "random_image_forwards": 640,
+    "seconds": 115.59981675073504,
+    "AGA_target_percent": [
+      22.99,
+      17.159649661954518,
+      28.45744680851064
+    ],
+    "matched_clean_percent": [
+      93.19,
+      72.82191149354641,
+      38.351063829787236
+    ],
+    "completed_utc": "2026-11-02T14:31:46.392156+00:00"
   }
 }

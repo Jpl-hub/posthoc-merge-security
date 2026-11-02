@@ -19,7 +19,8 @@
     "results/params_reference/other_tasks/evaluation/full/01_SVHN_MNIST/results.json": "df1d6a1bc1e47d3e3dfc825680c8f6b9f3786f606c8dc8a653a79a4cc76093db",
     "results/attack_generalization_20261028/prodistill/summary.json": "0a620b385c7bfd10bd58f306709e12898cac31cc9a1f6c7749bb1e60858f79cd",
     "results/data_free_compensation/finite_classification_result.json": "bbe7bf91a0e360d6bafec645891698901d22d71c49d87192c3884ee99f0ed172",
-    "results/data_free_compensation/finite_eight/summary.json": "1cfd446139d18969b2fd91f7e8384ee3990494015ea1889a567ec7b0fd800df8"
+    "results/data_free_compensation/finite_eight/summary.json": "1cfd446139d18969b2fd91f7e8384ee3990494015ea1889a567ec7b0fd800df8",
+    "results/data_free_compensation/finite_eight/calibration.json": "6697c88785f3fbd42f08a67fae746e3de6044de1ca34fb6a9a74739e5ce9f120"
   },
   "eight_expert_rows": [
     {
@@ -2932,6 +2933,228 @@
       ],
       "note": "The same earlier and updated releases as the two-expert version tables. Eight experts, TA coefficient 0.2; AGA processes only the protected expert. Seven complete test datasets, including all evaluated partner tasks. Unprotected weights and scores match between versions. EuroSAT is excluded; no eight-task mean. Lower protected-task accuracy favors protection; losses on other tasks are reported without averaging."
     },
+    "defense2_eight_calibration": {
+      "headers": [
+        "Target",
+        "Defense",
+        "Processing",
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45",
+        "Cars",
+        "SUN397"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Unprotected",
+          "TA",
+          "94.04",
+          "74.61",
+          "38.67",
+          "60.45",
+          "69.10",
+          "51.39",
+          "53.75"
+        ],
+        [
+          "MNIST",
+          "Defense 2",
+          "TA",
+          "24.03",
+          "26.74",
+          "44.52",
+          "31.80",
+          "57.97",
+          "50.70",
+          "41.78"
+        ],
+        [
+          "MNIST",
+          "Unprotected",
+          "AGA",
+          "93.19",
+          "74.12",
+          "38.67",
+          "60.54",
+          "69.17",
+          "51.46",
+          "53.79"
+        ],
+        [
+          "MNIST",
+          "Defense 2",
+          "AGA",
+          "22.99",
+          "25.76",
+          "45.96",
+          "31.97",
+          "58.02",
+          "51.19",
+          "44.89"
+        ],
+        [
+          "SVHN",
+          "Unprotected",
+          "TA",
+          "94.04",
+          "74.61",
+          "38.67",
+          "60.45",
+          "69.10",
+          "51.39",
+          "53.75"
+        ],
+        [
+          "SVHN",
+          "Defense 2",
+          "TA",
+          "28.70",
+          "23.74",
+          "39.47",
+          "33.30",
+          "48.19",
+          "33.60",
+          "36.97"
+        ],
+        [
+          "SVHN",
+          "Unprotected",
+          "AGA",
+          "93.82",
+          "72.82",
+          "38.67",
+          "60.13",
+          "69.17",
+          "51.56",
+          "53.76"
+        ],
+        [
+          "SVHN",
+          "Defense 2",
+          "AGA",
+          "25.50",
+          "17.16",
+          "43.46",
+          "39.71",
+          "58.43",
+          "40.92",
+          "43.74"
+        ],
+        [
+          "DTD",
+          "Unprotected",
+          "TA",
+          "94.04",
+          "74.61",
+          "38.67",
+          "60.45",
+          "69.10",
+          "51.39",
+          "53.75"
+        ],
+        [
+          "DTD",
+          "Defense 2",
+          "TA",
+          "94.19",
+          "74.41",
+          "26.17",
+          "54.80",
+          "66.24",
+          "53.35",
+          "51.87"
+        ],
+        [
+          "DTD",
+          "Unprotected",
+          "AGA",
+          "94.07",
+          "74.67",
+          "38.35",
+          "60.40",
+          "69.19",
+          "51.52",
+          "53.79"
+        ],
+        [
+          "DTD",
+          "Defense 2",
+          "AGA",
+          "94.23",
+          "74.54",
+          "28.46",
+          "56.54",
+          "66.62",
+          "52.32",
+          "52.93"
+        ]
+      ],
+      "note": "Same frozen updated Defense 2 releases; eight experts, TA coefficient 0.2. AGA processes the protected expert. Each merged model is calibrated independently using 64 fixed random images and its public classifier, without real images, labels or changed-module knowledge. Full archived scores are reused. Seven complete datasets; EuroSAT is excluded, and no eight-task mean is reported."
+    },
+    "defense2_eight_calibration_target": {
+      "headers": [
+        "Task",
+        "Processing",
+        "Unprotected",
+        "+calib.",
+        "Defense 2",
+        "+calib."
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "TA",
+          "94.00",
+          "94.04",
+          "24.71",
+          "24.03"
+        ],
+        [
+          "MNIST",
+          "AGA",
+          "93.23",
+          "93.19",
+          "23.35",
+          "22.99"
+        ],
+        [
+          "SVHN",
+          "TA",
+          "74.42",
+          "74.61",
+          "15.25",
+          "23.74"
+        ],
+        [
+          "SVHN",
+          "AGA",
+          "72.53",
+          "72.82",
+          "11.03",
+          "17.16"
+        ],
+        [
+          "DTD",
+          "TA",
+          "52.18",
+          "38.67",
+          "4.84",
+          "26.17"
+        ],
+        [
+          "DTD",
+          "AGA",
+          "51.38",
+          "38.35",
+          "3.24",
+          "28.46"
+        ]
+      ],
+      "note": "Same frozen updated Defense 2 releases; eight experts, TA coefficient 0.2. AGA processes the protected expert. Each merged model is calibrated independently using 64 fixed random images and its public classifier, without real images, labels or changed-module knowledge. Full archived scores are reused. Seven complete datasets; EuroSAT is excluded, and no eight-task mean is reported."
+    },
     "prodistill_components": {
       "headers": [
         "Target",
@@ -2995,5 +3218,5 @@
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "0557d878e254553bb7caa06db0b54378d3dfefbe6f3a3227b20873860fee1924"
+  "report_source_sha256": "aea8a09cf2dee80ace723aa30eabbb2ccc6601c24af98e78609545da9aa1bb3a"
 }
