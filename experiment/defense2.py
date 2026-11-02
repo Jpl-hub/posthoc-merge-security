@@ -36,6 +36,8 @@ def main():
     parser.add_argument("--input-bias", action="store_true")
     parser.add_argument("--noise-calibration", action="store_true")
     parser.add_argument("--finite-classification", action="store_true")
+    parser.add_argument("--preserve-native", action="store_true",
+                        help="Retain initial native source predictions at every accepted step")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.calibration_aware and args.output is None:
@@ -48,6 +50,9 @@ def main():
         parser.error("--noise-calibration requires --input-bias")
     if args.finite_classification and not args.noise_calibration:
         parser.error("--finite-classification requires --noise-calibration")
+    if args.preserve_native and not args.noise_calibration:
+        parser.error("--preserve-native requires --noise-calibration")
+    preserve_native = args.finite_classification or args.preserve_native
     initialize()
     torch.set_default_dtype(torch.float64)
     start = time.perf_counter()
@@ -457,7 +462,7 @@ def main():
                 proposal = R.detach() + step * direction
                 (value, _, _) = public(proposal)
                 if (float(value) <= float(loss) - 0.0001 * step * gap
-                        and (not args.finite_classification or native_preserved(proposal))):
+                        and (not preserve_native or native_preserved(proposal))):
                     accepted = True
                     R = proposal
                     break
@@ -480,6 +485,10 @@ def main():
                 },
             )
             trace.append(row)
+            if preserve_native:
+                row["native_teacher_retained"] = int(classify(
+                    fixed["native"] + R @ hidden["native"], readouts["native"]
+                ).argmax(1).eq(teacher_class).sum())
             if iteration % 25 == 0:
                 print(json.dumps(row), flush=True)
     R = R.detach()
@@ -553,6 +562,7 @@ def main():
         input_bias=args.input_bias,
         noise_calibration=args.noise_calibration,
         finite_classification=args.finite_classification,
+        preserve_native=preserve_native,
         first_finite_classification=first_feasible,
         construction_noise_seed=2026110201 if args.noise_calibration else None,
         construction_noise_forwards=256 if args.noise_calibration else 0,
