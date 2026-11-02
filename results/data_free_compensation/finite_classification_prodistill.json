@@ -565,5 +565,17 @@
     "new_image_forwards": 0,
     "new_trained_attack_models": 0,
     "registered_utc": "2026-11-02T10:18:01.551927+00:00"
+  },
+  "finite_coupling": {
+    "question": "On the unchanged construction inputs, does midpoint classification failure come from the bilinear cross term, the activation interpolation remainder, or their combination?",
+    "formula": "For h0=phi(A0*x+a0),h1=phi(A1*x+a1),k=phi((z0+z1)/2)-(h0+h1)/2: fmid=(f0+f1)/2-(B1-B0)*(h1-h0)/4+(B0+B1)*k/2.",
+    "scope": "Same frozen three releases. All existing synthetic inputs in native and direct-public-base contexts. Reference is clean target for native and public base for direct. Complete fixed LN/projection/classifier; all four combinations of cross/nonlinear terms, no selection. Direct fusion only, not an AGA result.",
+    "access": "Only target, public base, fixed head and original legal construction caches; zero real images or partner weights. No construction or parameter fitting.",
+    "checks": "FP64 all-input identity and complete-readout counts; NumPy independently checks first16 inputs of each context and recomputes saved statistics. Source predictions are diagnostic only, not natural accuracy or candidate selection.",
+    "output": "outputs/finite_classification_prodistill_20261102/finite_coupling",
+    "new_defense_candidates": 0,
+    "new_image_forwards": 0,
+    "new_optimizer_steps": 0,
+    "registered_utc": "2026-11-02T10:22:52.782513+00:00"
   }
 }
