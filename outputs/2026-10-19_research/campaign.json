@@ -1,11 +1,21 @@
 {
-  "updated_utc": "2026-11-02T18:19:20.676026+00:00",
-  "status": "projection_recovery_registered",
+  "updated_utc": "2026-11-02T18:21:11.703514+00:00",
+  "status": "projection_recovery_running",
   "active_focus": "补齐三个固定去投影对照的MLP参数匹配、已知B/偏置替换和同条件ProDistill；与主方法比较，防御不更新。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 75620,
+      "started_utc": "2026-11-02T18:20:45.612650+00:00",
+      "source_commit": "d896c3117ffe9432fd4910e1466a425c4c4242f3",
+      "output": "outputs/projection_recovery_20261103",
+      "timeout_seconds": 7200,
+      "status": "running_ProDistill_then_matching_replacement",
+      "log": "outputs/projection_recovery_20261103/queue.log"
+    }
+  ],
   "next_action": "冻结协议后串行运行现有恢复入口，核验目标/伙伴和同条件控制；本批结束按权限分别解释，不把额外数据恢复与无数据攻击混为一谈。",
   "latest_completed_batch": {
     "output": "outputs/eight_calibration_baselines_20261102",
@@ -122,8 +132,11 @@
     "protocol": "results/data_free_compensation/projection_recovery_protocol.json",
     "prodistill_protocol": "results/data_free_compensation/projection_prodistill_protocol.json",
     "output": "outputs/projection_recovery_20261103",
-    "status": "registered_not_started",
+    "status": "running",
     "new_defense_updates": 0,
-    "new_AGA_calls": 0
+    "new_AGA_calls": 0,
+    "pid": 75620,
+    "source_commit": "d896c3117ffe9432fd4910e1466a425c4c4242f3",
+    "estimated_minutes": 20
   }
 }
