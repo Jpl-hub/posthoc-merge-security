@@ -37,12 +37,12 @@
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "teacher_screenshots_last_reread_utc": "2026-10-26T11:47:44.037987+00:00",
-  "updated_utc": "2026-11-02T18:11:01.124164+00:00",
-  "status": "finite_projection_ablation_completed",
-  "active_focus": "A的SVD约束移除对照完成：独立准确率均提高，SVHN校正恢复后的保护减弱。主发布不替换；继续围绕实际功能补偿，不把任务补空间自动当作有效贡献。",
+  "updated_utc": "2026-11-02T18:19:20.676026+00:00",
+  "status": "projection_recovery_registered",
+  "active_focus": "补齐三个固定去投影对照的MLP参数匹配、已知B/偏置替换和同条件ProDistill；与主方法比较，防御不更新。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "主方法与组件对照完整报告，已有攻击和融合结果不重跑。下一构造需解释功能保持与恢复后的实际分类作用，不能只改SVD秩或扩大距离。",
+  "next_action": "冻结协议后串行运行现有恢复入口，核验目标/伙伴和同条件控制；本批结束按权限分别解释，不把额外数据恢复与无数据攻击混为一谈。",
   "closed_history": {
     "full_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -228,5 +228,13 @@
       "real_construction_images": 0,
       "expert_updates": 0
     }
+  },
+  "projection_recovery": {
+    "protocol": "results/data_free_compensation/projection_recovery_protocol.json",
+    "prodistill_protocol": "results/data_free_compensation/projection_prodistill_protocol.json",
+    "output": "outputs/projection_recovery_20261103",
+    "status": "registered_not_started",
+    "new_defense_updates": 0,
+    "new_AGA_calls": 0
   }
 }
