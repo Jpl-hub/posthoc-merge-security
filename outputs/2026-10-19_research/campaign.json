@@ -1,52 +1,58 @@
 {
-  "updated_utc": "2026-11-02T16:18:59.602255+00:00",
-  "status": "finite_mergers_completed_independently_verified",
-  "active_focus": "同一新版防御二TIES/DARE完整评价通过，数字任务与DTD均有融合保护；DTD独立损失和两种防御的恢复弱点仍在。不是新方法突破。",
+  "updated_utc": "2026-11-02T18:49:35.014525+00:00",
+  "status": "projection_eight_running",
+  "active_focus": "完成去任务投影对照的恢复比较；用同三份冻结发布补八专家与固定随机输入校正，不更新防御。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "现有三任务同版本主实验、主要恢复对比与TIES/DARE可用于初稿。优先核心功能保持与恢复弱点；新构造须有明确机制，不从既有测试成绩选参数，不重复完整批次。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 84628,
+      "started_utc": "2026-11-02T18:49:00.931085+00:00",
+      "source_commit": "2c544184dcf147912be432e440f2c6d7dd358d3a",
+      "output": "outputs/projection_eight_20261103",
+      "timeout_seconds": 10800,
+      "status": "running_pilot_then_full_then_calibration",
+      "log": "outputs/projection_eight_20261103/run.log"
+    }
+  ],
+  "next_action": "启动登记的八专家七数据集固定评价，随后原始分数独立复核；等待约60–90分钟后人工查看。",
   "latest_completed_batch": {
-    "output": "outputs/eight_calibration_baselines_20261102",
-    "record": "results/comparison/eight_calibration/{Defense1,PaRaMS}.json",
-    "table": "results/comparison/eight_calibration_target.md",
+    "protocol": "results/data_free_compensation/projection_recovery_protocol.json",
+    "prodistill_protocol": "results/data_free_compensation/projection_prodistill_protocol.json",
+    "output": "outputs/projection_recovery_20261103",
     "status": "completed_independently_verified",
-    "full_rows": 168,
-    "matched_pairs": 84,
-    "independent_comparisons": 252,
-    "new_random_image_forwards": 768,
-    "new_real_image_forwards": 0,
+    "new_defense_updates": 0,
     "new_AGA_calls": 0,
-    "new_defense_points": 0,
-    "seconds": 238.51820837706327,
-    "source_replay": "Prior complete-score128-context replays reused,not rerun",
-    "AGA_calibrated_percent": {
-      "Unprotected": [
-        93.19,
-        72.82191149354641,
-        38.351063829787236
-      ],
-      "PaRaMS": [
-        93.19,
-        72.8180700676091,
-        38.351063829787236
-      ],
-      "Defense1": [
-        93.13,
-        72.57606023355869,
-        39.361702127659576
-      ],
-      "Defense2_updated": [
-        22.99,
-        17.159649661954518,
-        28.45744680851064
-      ]
+    "pid": 75620,
+    "source_commit": "d896c3117ffe9432fd4910e1466a425c4c4242f3",
+    "estimated_minutes": 20,
+    "result": "results/data_free_compensation/projection_recovery_result.json",
+    "table": "results/comparison/defense2_projection_recovery.md",
+    "target_prodistill_percent": [
+      99.07,
+      95.81668715427166,
+      20.53191489361702
+    ],
+    "cost": {
+      "new_defense_updates": 0,
+      "new_AGA_calls": 0,
+      "recovery_full_forwards": 243712,
+      "recovery_pilot_forwards": 2304,
+      "recovery_context_score_replays": 1152,
+      "recovery_context_forwards": 71936,
+      "prodistill_training_seconds": 86.4458126295358,
+      "prodistill_backward_steps": 3600,
+      "prodistill_new_evaluation_forwards": 84328,
+      "prodistill_context_score_replays": 384,
+      "maximum_score_error": 1.52587890625e-05,
+      "real_defense_construction_images": 0,
+      "prodistill_unlabeled_images_per_task": 64
     }
   },
   "github_sync": {
-    "status": "Completedcomparisonandmergerresults published; three readback blobs and full tree verified",
-    "last_verified_remote_commit": "f2d5b08b30e5617382073bae38d1953d4b0d8ad1",
+    "status": "Connector restored; combined publication pending this turn",
+    "last_verified_remote_commit": "fc2c7e2e75fdb59768e6d9e9666f8bde004afd3f",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_state": "research_state.json",
@@ -75,5 +81,92 @@
       2.2818070067609098,
       2.8191489361702127
     ]
+  },
+  "projection_ablation": {
+    "status": "completed_independently_verified",
+    "protocol": "results/data_free_compensation/finite_projection_ablation.json",
+    "result": "results/data_free_compensation/finite_projection_ablation_result.json",
+    "table": "results/comparison/defense2_projection.md",
+    "output": "outputs/finite_projection_ablation_20261103",
+    "source_commit": "fe4512a4da3db1ddf8620c3c93aaf96ef35f94a8",
+    "new_component_controls": 3,
+    "main_publication_replacements": 0,
+    "source_feasible": {
+      "MNIST": false,
+      "SVHN": false,
+      "DTD": true
+    },
+    "standalone_accuracy_percent": [
+      99.68,
+      97.40703749231714,
+      77.87234042553192
+    ],
+    "AGA_then_calibration_percent": [
+      10.23,
+      12.323294406883836,
+      0.9042553191489361
+    ],
+    "limitation": "Task-projection contribution not established; three native accuracies improve, but SVHN recovery protection weakens. Fixed task-shaped probes remain. No main-point replacement, rank search or result extrapolation to other attacks.",
+    "cost": {
+      "construction_seconds": 591.4662779700011,
+      "construction_noise_forwards": 768,
+      "synthetic_reference_forwards": 5360,
+      "native_forwards": 75824,
+      "pilot_forwards": 2688,
+      "full_fusion_forwards": 251832,
+      "full_score_replays": 672,
+      "pilot_score_replays": 672,
+      "replay_context_forwards": 84000,
+      "maximum_score_error": 2.288818359375e-05,
+      "calibration_noise_forwards": 1152,
+      "new_AGA_calls": 3,
+      "real_construction_images": 0,
+      "expert_updates": 0
+    }
+  },
+  "projection_recovery": {
+    "protocol": "results/data_free_compensation/projection_recovery_protocol.json",
+    "prodistill_protocol": "results/data_free_compensation/projection_prodistill_protocol.json",
+    "output": "outputs/projection_recovery_20261103",
+    "status": "completed_independently_verified",
+    "new_defense_updates": 0,
+    "new_AGA_calls": 0,
+    "pid": 75620,
+    "source_commit": "d896c3117ffe9432fd4910e1466a425c4c4242f3",
+    "estimated_minutes": 20,
+    "result": "results/data_free_compensation/projection_recovery_result.json",
+    "table": "results/comparison/defense2_projection_recovery.md",
+    "target_prodistill_percent": [
+      99.07,
+      95.81668715427166,
+      20.53191489361702
+    ],
+    "cost": {
+      "new_defense_updates": 0,
+      "new_AGA_calls": 0,
+      "recovery_full_forwards": 243712,
+      "recovery_pilot_forwards": 2304,
+      "recovery_context_score_replays": 1152,
+      "recovery_context_forwards": 71936,
+      "prodistill_training_seconds": 86.4458126295358,
+      "prodistill_backward_steps": 3600,
+      "prodistill_new_evaluation_forwards": 84328,
+      "prodistill_context_score_replays": 384,
+      "maximum_score_error": 1.52587890625e-05,
+      "real_defense_construction_images": 0,
+      "prodistill_unlabeled_images_per_task": 64
+    }
+  },
+  "projection_eight": {
+    "status": "running",
+    "protocol": "results/data_free_compensation/projection_eight/protocol.json",
+    "output": "outputs/projection_eight_20261103",
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "full_rows": 84,
+    "evaluated_tasks": 7,
+    "participating_experts": 8,
+    "pid": 84628,
+    "source_commit": "2c544184dcf147912be432e440f2c6d7dd358d3a"
   }
 }

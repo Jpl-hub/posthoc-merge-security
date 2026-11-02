@@ -349,6 +349,12 @@ def progressive(protocol):
             assert parameter_hash(model.state_dict()) == item["parameter_sha256"]
             if name == "Unprotected":
                 reference_model = model
+            reused_scores = None
+            if name == "Unprotected" and "unprotected_scores" in case:
+                saved = case["unprotected_scores"]
+                assert item["parameter_sha256"] == saved["parameter_sha256"]
+                assert digest(saved["path"]) == saved["sha256"]
+                reused_scores = torch.load(saved["path"], map_location="cpu", weights_only=False)
             for stage in ["pilot", "full"]:
                 for task in (target, partner):
                     data = dataset(task, "data", model.val_preprocess)
@@ -357,16 +363,22 @@ def progressive(protocol):
                         if stage == "full"
                         else np.linspace(0, len(data) - 1, 64, dtype=int).tolist()
                     )
-                    scores, labels = [], []
-                    cost = evaluate(
-                        model,
-                        heads[task],
-                        make_loader(data, ids),
-                        "cuda",
-                        logit_sink=scores.append,
-                        prediction_sink=lambda p, y: labels.append(y),
-                    )
-                    scores, labels = torch.cat(scores), torch.cat(labels)
+                    if reused_scores is not None:
+                        saved_row = reused_scores["/".join([name, stage, task])]
+                        assert saved_row["indices"] == ids
+                        scores, labels = saved_row["logits"], saved_row["target"]
+                        cost = dict(evaluation_seconds=0.0)
+                    else:
+                        scores, labels = [], []
+                        cost = evaluate(
+                            model,
+                            heads[task],
+                            make_loader(data, ids),
+                            "cuda",
+                            logit_sink=scores.append,
+                            prediction_sink=lambda p, y: labels.append(y),
+                        )
+                        scores, labels = torch.cat(scores), torch.cat(labels)
                     np.testing.assert_array_equal(labels.numpy(), official_labels(task)[ids])
                     assert torch.isfinite(scores).all()
                     key = "/".join([name, stage, task])
@@ -386,6 +398,7 @@ def progressive(protocol):
                         role="target" if task == target else "partner",
                         **row_metrics(scores, labels, before, scores.shape[1]),
                         evaluation_seconds=cost["evaluation_seconds"],
+                        reused_from=case["unprotected_scores"] if reused_scores is not None else None,
                     )
                     for block in sorted(set(np.linspace(0, len(ids) - 1, 16, dtype=int) // 128)):
                         start, end = block * 128, min((block + 1) * 128, len(ids))
