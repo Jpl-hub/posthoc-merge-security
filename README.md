@@ -21,7 +21,7 @@
 
 防御一和防御二的当前构造均不使用真实图片。防御一的方向和幅度完全由权重确定，也不使用合成图片；三个保护任务的完整独立预测均保持不变，TA及AGA后MNIST/SVHN/DTD准确率分别为9.80%/6.70%/2.13%，伙伴准确率也明显降低。[三任务完整表](results/phase3/bias_weight_only/other_tasks/summary.md)。历史图片辅助幅度单独保留。
 
-当前数值防御二修改最后一个MLP的A、B及输出偏置。A在所选任务方向的补空间改变，B补偿独立模型输出；构造只使用冻结权重、固定分类头和合成输入。固定TA系数为0.5，完整测试准确率如下：
+早期数值防御二修改最后一个MLP的A、B及输出偏置。A在所选任务方向的补空间改变，B补偿独立模型输出；构造只使用冻结权重、固定分类头和合成输入。固定TA系数为0.5，完整测试准确率如下：
 
 | 保护任务 | 原模型独立 | 防御二独立 | TA融合 | AGA仅目标 | AGA双方 |
 |---|---:|---:|---:|---:|---:|
@@ -153,3 +153,7 @@ pytest -q
 同一新版防御二的八专家TA0.2评价已完成：MNIST/SVHN/DTD目标为24.71%／15.25%／4.84%，AGA仅目标后23.35%／11.03%／3.24%，相同AGA无保护为93.23%／72.53%／51.38%。新版目标保护弱于早期版，完整伙伴损失另列；独立专家保持与融合破坏分别评价。七个完整数据集及早期版、无保护均列在[同版本八专家表](results/comparison/defense2_eight_versions.md)（[TeX](results/comparison/defense2_eight_versions.tex)）。84行中42行复用相同无保护模型，未重训或改参数。EuroSAT原划分仍未核实，不报八任务平均。ProDistill仍可恢复较高准确率，见[同版本攻击表](results/comparison/defense2_versions.md)。
 
 同一新版八专家模型经固定64随机输入输出校正后，AGA目标MNIST/SVHN/DTD为22.99%／17.16%／28.46%，对应无保护93.19%／72.82%／38.35%。[校正前后表](results/comparison/defense2_eight_calibration_target.md)与[七任务全表](results/comparison/defense2_eight_calibration.md)均有TeX版本。DTD恢复较多，不能把两专家下的校正抵抗直接外推到八专家；无需新增攻击类型即可检验这一范围。
+
+[同条件八专家恢复对比](results/comparison/eight_calibration_target.md)（[TeX](results/comparison/eight_calibration_target.tex)）已补齐防御一和PaRaMS，更新版防御二使用同一冻结发布。AGA后再校正的MNIST/SVHN/DTD准确率：无保护93.19/72.82/38.35%，PaRaMS93.19/72.82/38.35%，防御一93.13/72.58/39.36%，防御二22.99/17.16/28.46%。[七任务明细](results/comparison/eight_calibration.md)保留全部伙伴结果。这是已有模型的公平比较，不是新的防御方法；防御一的校正弱点和防御二的DTD独立能力损失仍需解决。
+
+同一新版防御二的[TIES/DARE补充](results/comparison/defense2_mergers.md)（[TeX](results/comparison/defense2_mergers.tex)）已完成：TIES下MNIST/SVHN/DTD为29.78/13.92/2.29%，DARE下26.57/2.28/2.82%，均低于匹配无保护。所有模型沿用同一冻结发布，无参数搜索；两种融合算法不算新增攻击。已有恢复弱点不因这项结果改变。

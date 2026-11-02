@@ -130,6 +130,8 @@ def run(protocol, case_index, pilot):
         imported = None
         if not pilot and legacy:
             ref, old_key = legacy
+            if "model_parameter_sha256" in ref:
+                assert fingerprints[model_key] == ref["model_parameter_sha256"]
             if ref["path"] not in loaded_legacy:
                 assert digest(ref["path"]) == ref["sha256"]
                 loaded_legacy[ref["path"]] = torch.load(
@@ -221,7 +223,10 @@ def run(protocol, case_index, pilot):
                     "All experts": "AGA_both",
                 }[scope]
                 for t in (target, partner):
-                    record(fused, name, method, scope, t, old(stage, t) if method == "TA" else None)
+                    cached = old(method + "/" + stage, t)
+                    if cached is None and method == "TA":
+                        cached = old(stage, t)
+                    record(fused, name, method, scope, t, cached)
                 del fused
         del own, attacked
     save_json(

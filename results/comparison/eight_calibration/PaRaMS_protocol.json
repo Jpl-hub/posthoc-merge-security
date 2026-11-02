@@ -1,0 +1,334 @@
+{
+  "input_seed": 2026102509,
+  "input_n": 64,
+  "input_definition": "Same existing rule: CPU uniform[0,1] noise32px, bilinear224, original normalization, batches8. Seven public classifiers. No seed/temperature or model selection.",
+  "permissions": "Own fused model and public classifiers,64 random inputs,no labels/clean target expert/changed-location knowledge for calibration. Reconstruction verifies prior model hashes. Matched clean model calibrated independently.",
+  "scope": "3 protected tasks;8 experts;7 full datasets;84 rows and42 matched pairs;no EuroSAT or8-task mean.",
+  "reuse": "Exact prior full scores/indices/labels and original-batch replay record;all priors frozen before reading benchmark scores. No complete-test rerun.",
+  "status": "defined_before_execution",
+  "registered_utc": "2026-11-02T15:18:10.579009+00:00",
+  "output": "outputs/eight_calibration_baselines_20261102/PaRaMS",
+  "source_sha256": "8b4935dbe11ab4e163d1a4208db7b9bd5a6468375e3bc0291fcd5056fbcc994d",
+  "purpose": "Complete same fixed64-noise eight-expert calibration for existing Defense1 and PaRaMS. Same frozen model hashes and full scores. Compare to already completed Defense2,not construct new models.",
+  "eight": {
+    "coefficient": 0.2,
+    "task_order": [
+      "SUN397",
+      "Cars",
+      "RESISC45",
+      "EuroSAT",
+      "SVHN",
+      "GTSRB",
+      "MNIST",
+      "DTD"
+    ],
+    "evaluate": [
+      "MNIST",
+      "SVHN",
+      "DTD",
+      "GTSRB",
+      "RESISC45",
+      "Cars",
+      "SUN397"
+    ],
+    "score_tolerance": 0.0005,
+    "author_TaskVector": {
+      "path": "external/secure-merge-attack/task_vectors.py",
+      "sha256": "9d95bdb8b9fef2a4457e47b28ea3e1ccc188f30ded8c4c1ec1fe1e55cfded4af",
+      "git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
+      "commit": "fb61429f5e6f3517102d506697a150ac26abbdea"
+    },
+    "scopes": [
+      "None",
+      "Protected expert"
+    ],
+    "experiment": "Fixed official-default PaRaMS baseline: eight-expert TA0.2 and AGA target-only, seven full datasets",
+    "output": "outputs/params_eight_20261101",
+    "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+    "inputs": {
+      "evaluation": {
+        "path": "results/params_reference/eight_expert/evaluation.json",
+        "sha256": "5c897abf67d1eceeeb47f40d276a5731dddf8e2f190d3c97de30886e2c6ca2ba"
+      },
+      "author_entry": {
+        "path": "external/secure-merge-attack/main_task_arithmetic_attack_B32.py",
+        "sha256": "899a9f88264e3b72a630a5a5b459ce59d65903eeac62c2f64b5273478a0fb908"
+      },
+      "data_validation": {
+        "path": "results/attack_generalization_20261028/sun397/data_validation.json",
+        "sha256": "803a1edcd5f2c8d9f595d15c1808e69f7b78ea7ce2a54b55e01fb9605010e88c"
+      },
+      "SUN397_head": {
+        "path": "checkpoints/ViT-B-32/head_SUN397.pt",
+        "sha256": "d159407303ed439d63828e0a99cb8d4ee38e500af35cb2e3b6265470ceff2ceb"
+      },
+      "SUN397_Testing_01": {
+        "path": "data/SUN397/Testing_01.txt",
+        "sha256": "2bcd9f24811e9a2c53c50dc9d91c744bcc140457460431e84e068170461193b9"
+      },
+      "SUN397_ClassName": {
+        "path": "data/SUN397/ClassName.txt",
+        "sha256": "5e24094d43e7ccec1cdb540f574a3a82de9f458a1bf681e3557d3c167123b594"
+      },
+      "extra_data_validation": {
+        "path": "results/attack_generalization_20261028/eight_expert_extra/data_validation.json",
+        "sha256": "5ab1bb79c43cfd21d08cd7be11a03251bf56c270f9ac064cb2660e1b2f1318c5"
+      },
+      "Cars_data_validation": {
+        "path": "results/attack_generalization_20261028/cars/data_validation.json",
+        "sha256": "b97a83e8f9e27bc5d292a0556b1f64737eb7497655156c28290dbd26876af7a7"
+      }
+    },
+    "cases": [
+      {
+        "target": "MNIST",
+        "defenses": [
+          "PaRaMS"
+        ]
+      },
+      {
+        "target": "SVHN",
+        "defenses": [
+          "PaRaMS_SVHN"
+        ]
+      },
+      {
+        "target": "DTD",
+        "defenses": [
+          "PaRaMS_DTD"
+        ]
+      }
+    ],
+    "new_AGA_calls": 0,
+    "new_defense_weights": 0,
+    "expert_training_updates": 0,
+    "table_note": "Three protected tasks; eight experts participate, seven full test datasets. EuroSAT excluded until original split provenance is established; no eight-task mean. Official-default PaRaMS fixed releases and existing AGA transformations reused. No images used for construction, alignment or parameter selection. Historical MNIST PaRaMS three-dataset scores and all matched clean scores reused only at identical merged-model hash, dataset indices and labels; original128-batch replay on the4090.",
+    "registered_utc": "2026-11-01T04:44:27.674274+00:00",
+    "test_sizes": {
+      "MNIST": 10000,
+      "SVHN": 26032,
+      "DTD": 1880,
+      "GTSRB": 12630,
+      "RESISC45": 6300,
+      "Cars": 8041,
+      "SUN397": 19850
+    },
+    "finite_budget": {
+      "wall_limit_seconds": 7200,
+      "full_rows": 84,
+      "protected_rows": 42,
+      "existing_clean_rows": 42,
+      "existing_MNIST_PaRaMS_rows": 6,
+      "new_full_production_rows": 36,
+      "maximum_new_full_production_image_forwards": 432574,
+      "original_batch_selected_replays_per_stage": 1344,
+      "new_AGA_calls": 0,
+      "new_defense_points": 0
+    },
+    "reuse_defenses": [
+      "Unprotected",
+      "PaRaMS"
+    ],
+    "PaRaMS_source": "configs/sources.json; official defaults, original Oct16/22 releases; no clipping/interpolation or reconstruction",
+    "score_reference": {
+      "pilot": {
+        "scores": {
+          "path": "outputs/params_eight_20261101/reference/pilot/scores.pt",
+          "sha256": "22b0b5068bf4007ffa951661fcbd35cd665933470f3c5f835fe42bf7c82c5bc5"
+        },
+        "parameters": {
+          "path": "outputs/params_eight_20261101/reference/pilot/parameters.json",
+          "sha256": "29efed47eccbe25dadf46060a3b3b3f9f6808dc1f7090a28e17e1f022a96277b"
+        },
+        "validation": {
+          "path": "outputs/params_eight_20261101/reference/pilot/validation.json",
+          "sha256": "7e774d2e3fe9a96da466fb1e4ffe7b6a9d55000b73d3251612b0410834a9edba"
+        }
+      },
+      "full": {
+        "scores": {
+          "path": "outputs/params_eight_20261101/reference/full/scores.pt",
+          "sha256": "fb9858a02779bb8f4f71da71209fa04ba12e08d80eb8072d8e6661befb2cb54b"
+        },
+        "parameters": {
+          "path": "outputs/params_eight_20261101/reference/full/parameters.json",
+          "sha256": "29efed47eccbe25dadf46060a3b3b3f9f6808dc1f7090a28e17e1f022a96277b"
+        },
+        "validation": {
+          "path": "outputs/params_eight_20261101/reference/full/validation.json",
+          "sha256": "6c965b58f13073d5b1dccf48539e9d1d107a197d8c7d64d3aa1e9c9ce4fef3c9"
+        }
+      }
+    },
+    "independent_check": {
+      "path": "outputs/params_eight_20261101/independent_check.py",
+      "sha256": "6da7b527d546f7e856b021ea077d097d867f6d72f9092f7e97cbbb83ecd5ff11"
+    },
+    "queue_source": {
+      "path": "outputs/params_eight_20261101/run.sh",
+      "sha256": "f0f99a17b941aaf43e726b8ff9048c6095196665915ad13e287f0de14c231225"
+    }
+  },
+  "parent": {
+    "tasks": {
+      "MNIST": {
+        "classes": 10,
+        "test_n": 10000
+      },
+      "DTD": {
+        "classes": 47,
+        "test_n": 1880
+      },
+      "SVHN": {
+        "classes": 10,
+        "test_n": 26032
+      }
+    },
+    "TA_coefficient": 0.5,
+    "mergers": [
+      "TA"
+    ],
+    "AGA_references": {
+      "MNIST": {
+        "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+        "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+        "validation": "outputs/feature_noise/independent_validation.json"
+      },
+      "SVHN": {
+        "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+        "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+        "validation": "outputs/feature_noise/independent_validation.json"
+      },
+      "DTD": {
+        "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+        "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+        "validation": "outputs/feature_noise_dtd/independent_validation.json"
+      }
+    },
+    "AGA": {
+      "repository": "https://github.com/krumpguo/secure-merge-attack",
+      "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+      "file": "utils_attack_B32.py",
+      "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+      "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+      "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+    },
+    "pilot_n": 64,
+    "replay_n": 16,
+    "score_tolerance": 0.0005,
+    "output": "outputs/params_eight_20261101",
+    "attack_scopes": [
+      "None",
+      "Protected expert"
+    ],
+    "legacy": {},
+    "defenses": {
+      "PaRaMS": {
+        "target": "MNIST",
+        "release": {
+          "path": "outputs/phase2_params_default_20261016/artifacts/PaRaMS.pt",
+          "sha256": "5a7bca84cc9a40528f16676b617ef06823197b5ce2242e132fd3f5d18413b706"
+        },
+        "AGA_edits": {
+          "path": "outputs/phase2_params_default_20261016/artifacts/AGA_release_edits.pt",
+          "sha256": "a441587682b6ef5794a3ed7018d9b221ca403b54fa33489b525a4362e9ccbf3b"
+        }
+      },
+      "PaRaMS_SVHN": {
+        "target": "SVHN",
+        "release": {
+          "path": "outputs/phase2_params_other_tasks_20261022/native/SVHN/release.pt",
+          "sha256": "e8ef5b1784c8c77cb0efb88d18633203e213982cb1f099bdc03987e2ed44db9a"
+        },
+        "AGA_edits": {
+          "path": "outputs/phase2_params_other_tasks_20261022/native/SVHN/AGA_edits.pt",
+          "sha256": "a5907b9cba77d06c0d63ae2248c1871686b9c5f0a6416409a161d537745b67ff"
+        }
+      },
+      "PaRaMS_DTD": {
+        "target": "DTD",
+        "release": {
+          "path": "outputs/phase2_params_other_tasks_20261022/native/DTD/release.pt",
+          "sha256": "27da7f2fcb2b010261aa75c9e12b56abdb2f1260acc76e9e163fc27f0ca81270"
+        },
+        "AGA_edits": {
+          "path": "outputs/phase2_params_other_tasks_20261022/native/DTD/AGA_edits.pt",
+          "sha256": "fdba7aa377a6bb52bf86072b0b954f269d4856894b8811d254d929d12294aa87"
+        }
+      }
+    },
+    "cases": [
+      {
+        "target": "MNIST",
+        "partner": "SVHN",
+        "defenses": [
+          "PaRaMS"
+        ]
+      },
+      {
+        "target": "SVHN",
+        "partner": "MNIST",
+        "defenses": [
+          "PaRaMS_SVHN"
+        ]
+      },
+      {
+        "target": "DTD",
+        "partner": "MNIST",
+        "defenses": [
+          "PaRaMS_DTD"
+        ]
+      }
+    ],
+    "source_sha256": {
+      "cfg.py": "3176a1806f22ca956ccbb56f8fe382c556199290a2e0138acb5a2f5bdcec7109",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "experiment/eight_task.py": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+      "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+      "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+      "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+      "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+      "_impl/evaluate.py": "3c00bfe94fa01e4eb188d66cbca1ec6d6bab503418d9cfbda84372ab709b58cb",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+      "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+      "_impl/models.py": "c42a8ebac101640214f969aa9c43ad8cec27128b68cec3bfa6464738f83fb655",
+      "_impl/report.py": "aea8a09cf2dee80ace723aa30eabbb2ccc6601c24af98e78609545da9aa1bb3a",
+      "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+      "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77"
+    }
+  },
+  "budget": {
+    "new_real_image_forwards": 0,
+    "new_AGA_calls": 0,
+    "new_defense_points": 0,
+    "maximum_generated_image_forwards": 384,
+    "wall_limit_seconds": 1800
+  },
+  "inputs": {
+    "eight_protocol": {
+      "path": "results/params_reference/eight_expert/protocol.json",
+      "sha256": "00620a1a192a5e1ff1c47b523b176100e0e6825232146f57741f686cd2a758a5"
+    },
+    "evaluation": {
+      "path": "results/params_reference/eight_expert/evaluation.json",
+      "sha256": "5c897abf67d1eceeeb47f40d276a5731dddf8e2f190d3c97de30886e2c6ca2ba"
+    },
+    "parameters": {
+      "path": "results/comparison/eight_calibration/PaRaMS_parameters.json",
+      "sha256": "c69c5948d794d19ba34244b0db4c39a2abbf5bc3f2a33b5e5f4e2ede77eaa16c"
+    },
+    "current_report": {
+      "path": "_impl/report.py",
+      "sha256": "aea8a09cf2dee80ace723aa30eabbb2ccc6601c24af98e78609545da9aa1bb3a"
+    },
+    "scores": {
+      "path": "outputs/params_eight_20261101/full/scores.pt",
+      "sha256": "d3750cf7af6625765609694c28e6a3ebb904803df8ec069550dd5363f3024032"
+    },
+    "prior_reuse": {
+      "path": "outputs/finite_eight_20261102/calibration/calibration.pt",
+      "sha256": "7fddef6bc76c1cf8744f0c0eab17a1f127d84ef98945935297587bbadce94292"
+    }
+  }
+}

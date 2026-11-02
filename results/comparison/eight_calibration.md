@@ -1,0 +1,30 @@
+# All evaluated tasks after output calibration
+
+Eight experts, TA coefficient 0.2; AGA processes the protected expert. Each merged model uses the same 64 fixed random inputs for output calibration. No real attack images, clean target expert, or changed-module knowledge is used. Defense 2 denotes the updated release throughout; standalone accuracy is measured before merging. Seven complete test datasets; EuroSAT is excluded, and no eight-task mean is reported.
+
+| Target | Defense | Processing | MNIST | SVHN | DTD | GTSRB | RESISC45 | Cars | SUN397 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| MNIST | Unprotected | TA | 94.04 | 74.61 | 38.67 | 60.45 | 69.10 | 51.39 | 53.75 |
+| MNIST | Unprotected | AGA | 93.19 | 74.12 | 38.67 | 60.54 | 69.17 | 51.46 | 53.79 |
+| MNIST | PaRaMS | TA | 11.35 | 16.47 | 2.02 | 2.11 | 4.51 | 0.60 | 0.20 |
+| MNIST | PaRaMS | AGA | 93.19 | 74.12 | 38.72 | 60.54 | 69.17 | 51.46 | 53.80 |
+| MNIST | Defense 1 | TA | 94.00 | 74.62 | 40.05 | 59.48 | 69.13 | 51.22 | 54.99 |
+| MNIST | Defense 1 | AGA | 93.13 | 74.09 | 39.89 | 59.56 | 69.29 | 51.32 | 55.06 |
+| MNIST | Defense 2 | TA | 24.03 | 26.74 | 44.52 | 31.80 | 57.97 | 50.70 | 41.78 |
+| MNIST | Defense 2 | AGA | 22.99 | 25.76 | 45.96 | 31.97 | 58.02 | 51.19 | 44.89 |
+| SVHN | Unprotected | TA | 94.04 | 74.61 | 38.67 | 60.45 | 69.10 | 51.39 | 53.75 |
+| SVHN | Unprotected | AGA | 93.82 | 72.82 | 38.67 | 60.13 | 69.17 | 51.56 | 53.76 |
+| SVHN | PaRaMS | TA | 11.35 | 13.31 | 1.91 | 2.22 | 4.86 | 0.55 | 0.20 |
+| SVHN | PaRaMS | AGA | 93.82 | 72.82 | 38.67 | 60.13 | 69.17 | 51.56 | 53.76 |
+| SVHN | Defense 1 | TA | 93.92 | 74.38 | 39.68 | 59.31 | 68.90 | 50.72 | 54.22 |
+| SVHN | Defense 1 | AGA | 93.65 | 72.58 | 39.73 | 59.04 | 69.06 | 50.89 | 54.24 |
+| SVHN | Defense 2 | TA | 28.70 | 23.74 | 39.47 | 33.30 | 48.19 | 33.60 | 36.97 |
+| SVHN | Defense 2 | AGA | 25.50 | 17.16 | 43.46 | 39.71 | 58.43 | 40.92 | 43.74 |
+| DTD | Unprotected | TA | 94.04 | 74.61 | 38.67 | 60.45 | 69.10 | 51.39 | 53.75 |
+| DTD | Unprotected | AGA | 94.07 | 74.67 | 38.35 | 60.40 | 69.19 | 51.52 | 53.79 |
+| DTD | PaRaMS | TA | 11.35 | 14.20 | 1.91 | 2.09 | 4.46 | 0.60 | 0.24 |
+| DTD | PaRaMS | AGA | 94.08 | 74.67 | 38.35 | 60.40 | 69.19 | 51.52 | 53.79 |
+| DTD | Defense 1 | TA | 94.03 | 74.70 | 39.84 | 60.55 | 69.54 | 51.16 | 54.74 |
+| DTD | Defense 1 | AGA | 94.06 | 74.75 | 39.36 | 60.54 | 69.60 | 51.39 | 54.76 |
+| DTD | Defense 2 | TA | 94.19 | 74.41 | 26.17 | 54.80 | 66.24 | 53.35 | 51.87 |
+| DTD | Defense 2 | AGA | 94.23 | 74.54 | 28.46 | 56.54 | 66.62 | 52.32 | 52.93 |
