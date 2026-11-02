@@ -1,9 +1,10 @@
-"""Defense 2: frozen MNIST A/B construction. See README for source caches and provenance."""
+"""Defense 2: frozen-expert A/B construction on pinned synthetic inputs."""
 
 # Preserve the three expressions from the executed source.
 # ruff: noqa: E731
 
 import argparse
+import copy
 import json
 import math
 import time
@@ -21,9 +22,12 @@ from _impl.models import apply, checked_models, initialize
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--target", choices=["MNIST", "SVHN", "DTD"], default="MNIST")
+    parser.add_argument("--inputs", type=Path, default=Path("configs/defense2_inputs.json"))
     parser.add_argument("--calibration-aware", action="store_true")
     parser.add_argument("--task-reference", action="store_true")
     parser.add_argument("--input-bias", action="store_true")
+    parser.add_argument("--noise-calibration", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.calibration_aware and args.output is None:
@@ -32,16 +36,20 @@ def main():
         parser.error("--task-reference requires --calibration-aware")
     if args.input_bias and not args.task_reference:
         parser.error("--input-bias requires --task-reference and --calibration-aware")
+    if args.noise_calibration and not args.input_bias:
+        parser.error("--noise-calibration requires --input-bias")
     initialize()
     torch.set_default_dtype(torch.float64)
     start = time.perf_counter()
-    root = Path("outputs/native_ellipse_classification_20261026")
+    inputs = json.loads(args.inputs.read_text())[args.target]
+    root = Path(inputs["root"])
     out = args.output or root / "point"
     out.mkdir(parents=True, exist_ok=False)
     meta = json.loads((root / "source/result.json").read_text())
+    assert meta["source_arrays_sha256"] == inputs["source_sha256"]
     assert digest(root / "source/source.pt") == meta["source_arrays_sha256"]
     raw = torch.load(root / "source/source.pt", map_location="cpu", weights_only=False)
-    (base, expert, head, pins) = checked_models("MNIST")
+    (base, expert, head, pins) = checked_models(args.target)
     (s, bs) = (expert.state_dict(), base.state_dict())
     k = "model.visual.transformer.resblocks.11.mlp."
     to = lambda v: v.double().cuda()
@@ -97,10 +105,7 @@ def main():
         # The second reference is the clean target itself, never another task.
         # Its direct half-publication prefix is exactly the native prefix.
         cache["task_direct"] = cache["native"]
-        aligned = apply(expert, dict(
-            path="outputs/feature_noise/artifacts/original_AGA.pt",
-            sha256="07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
-        ), full=True)
+        aligned = apply(expert, inputs["clean_AGA"], full=True)
         clean = merge(base, aligned, expert, .5).cuda().eval()
         v = clean.model.visual
         block = v.transformer.resblocks[11]
@@ -127,6 +132,41 @@ def main():
         public_names += ["task_direct", "task_recovered"]
         del clean, aligned, block, v, rows
         torch.cuda.empty_cache()
+    noise_cache = {}
+    if args.noise_calibration:
+        # Independent construction noise; the attack's noise remains evaluation-only.
+        noise = torch.rand(64, 3, 32, 32, dtype=torch.float32,
+                           generator=torch.Generator().manual_seed(2026110201))
+        torch.save(noise, out / "construction_noise.pt")
+        norm = expert.val_preprocess.transforms[-1]
+        mean = torch.tensor(norm.mean, dtype=torch.float32)[None, :, None, None]
+        std = torch.tensor(norm.std, dtype=torch.float32)[None, :, None, None]
+        images = (F.interpolate(noise, (224, 224), mode="bilinear", align_corners=False) - mean) / std
+        aligned = apply(expert, inputs["clean_AGA"], full=True)
+        for name, left, right in [("direct", expert, base), ("recovered", aligned, base),
+                                  ("native", expert, expert), ("task_recovered", aligned, expert)]:
+            clean = merge(base, left, right, .5) if name != "native" else copy.deepcopy(expert)
+            clean = clean.cuda().eval()
+            v = clean.model.visual
+            rows = dict(x=[], prefix=[], final=[], scores=[])
+            block = v.transformer.resblocks[11]
+            hooks = [
+                block.mlp.c_fc.register_forward_pre_hook(lambda m, a: rows["x"].append(a[0][0].cpu())),
+                block.ln_2.register_forward_pre_hook(lambda m, a: rows["prefix"].append(a[0][0].cpu())),
+                v.ln_post.register_forward_pre_hook(lambda m, a: rows["final"].append(a[0].cpu())),
+            ]
+            with torch.no_grad():
+                for batch in images.split(8):
+                    rows["scores"].append((F.normalize(clean(batch.cuda()), dim=-1) @ head.weight.cuda().T).cpu())
+            for hook in hooks:
+                hook.remove()
+            noise_cache[name] = {key: to(torch.cat(value)) for key, value in rows.items()}
+            del clean, block, v, rows
+        noise_cache["task_direct"] = noise_cache["native"]
+        torch.save({n: {k: v.cpu() for k, v in row.items()} for n, row in noise_cache.items()},
+                   out / "construction_noise_cache.pt")
+        del aligned
+        torch.cuda.empty_cache()
     activate = lambda z: z * torch.sigmoid(1.702 * z)
 
     def augmented(x):
@@ -137,8 +177,8 @@ def main():
     T = torch.zeros_like(Rorig)
     constant = G.new_zeros(())
     groups = []
-    source = Path("outputs/task_shaped_compensation_20261026/layer_inputs.pt")
-    assert digest(source) == "10938b057263f17afd6551b8c066b3216633c6e038e7ec4360c8e770e8c83dfe"
+    source = Path(inputs["layer_inputs"]["path"])
+    assert digest(source) == inputs["layer_inputs"]["sha256"]
     u = torch.load(source, map_location="cpu", weights_only=False)
     for name, count in [("task_layer", len(u)), ("generated_native", len(cache["native"]["x"]))]:
         gi = torch.zeros_like(G)
@@ -171,7 +211,7 @@ def main():
         groups.append(dict(population=name, n=count, variance=float(variance)))
     rho = 0.01 * G.trace() / len(G)
     if args.input_bias:
-        rho = 6.0394128536670705e-05  # Same previously registered source regularizer.
+        rho = inputs["original_ridge"]  # Preserve this task's original source regularizer.
     G += rho * torch.eye(len(G), device="cuda")
     T += rho * Rorig
     constant += rho * Rorig.square().sum()
@@ -180,13 +220,15 @@ def main():
     native = lambda R: float((R @ G * R).sum() - 2 * (R * T).sum() + constant)
     tau = native(Rorig)
     if args.input_bias:
-        tau = 1.2644836124713486  # Do not enlarge the previous functional bound.
+        tau = inputs["original_native_limit"]  # Preserve this task's original bound.
     minimum = native(RN)
     radius2 = tau - minimum
     assert radius2 > 1e-12, (tau, minimum)
     # Build the public-base fusion and AGA contexts, including the full classifier.
     hidden = {}
     fixed = {}
+    noise_hidden = {}
+    noise_fixed = {}
     readouts = {}
     W = to(head.weight)
     assert float(head.bias.abs().max()) == 0
@@ -213,6 +255,15 @@ def main():
             to(s[key] if name == "native" or name.startswith("task_") else (s[key] + bs[key]) / 2)
             for key in names
         ]
+        if args.noise_calibration and name != "native":
+            x = noise_cache[name]["x"]
+            H = activate(x @ ((AA + Ar) / 2).T + (aa + ar) / 2).T
+            noise_fixed[name] = noise_cache[name]["prefix"].T + (Br @ H + br[:, None]) / 2
+            if recovered_context:
+                back = torch.empty_like(H)
+                back[pi] = H
+                H = back
+            noise_hidden[name] = torch.cat([H, torch.ones(1, H.shape[1], device="cuda")], 0) / 2
 
     def classify(r, params):
         (g, beta, P) = params
@@ -230,14 +281,20 @@ def main():
         )
     )
     assert original_tail_error < 0.0005, original_tail_error
+    noise_tail_error = None
+    if args.noise_calibration:
+        noise_tail_error = max(float((classify(row["final"].T, readouts[name]) -
+                                      row["scores"]).abs().max()) for name, row in noise_cache.items())
+        assert noise_tail_error < 0.0005, noise_tail_error
 
     teacher_class = raw["teacher_class"].long().cuda()
     joint_incoming_cost = A0 @ Ap.T + a0[:, None] * ap[None, :] if args.input_bias else None
     matching_calls = 1
 
-    def calibrated(scores):
+    def calibrated(scores, reference=None):
         # Probability division, evaluated on the fixed synthetic source only.
-        log_prior = torch.logsumexp(F.log_softmax(scores, dim=1), dim=0) - math.log(len(scores))
+        reference = scores if reference is None else reference
+        log_prior = torch.logsumexp(F.log_softmax(reference, dim=1), dim=0) - math.log(len(reference))
         return scores - log_prior
 
     def public(R):
@@ -246,6 +303,8 @@ def main():
             name: classify(fixed[name] + R @ hidden[name], readouts[name])
             for name in public_names
         }
+        noise_scores = {name: classify(noise_fixed[name] + R @ noise_hidden[name], readouts[name])
+                        for name in public_names} if args.noise_calibration else {}
         if args.input_bias:
             # The exact joint MLP assignment is recomputed at every objective
             # evaluation, including backtracking. No stale order is optimized.
@@ -266,28 +325,38 @@ def main():
                 residual = cached["prefix"].T + (Br @ h + br[:, None]) / 2
                 residual = residual + (R[:, :-1][:, order] @ h + R[:, -1, None]) / 2
                 scores[name] = classify(residual, readout)
+                if args.noise_calibration:
+                    nc = noise_cache["direct" if name == "joint_direct" else "native"]
+                    h = activate(nc["x"] @ ((Ap[order] + Ar) / 2).T + (ap[order] + ar) / 2).T
+                    residual = nc["prefix"].T + (Br @ h + br[:, None]) / 2
+                    residual = residual + (R[:, :-1][:, order] @ h + R[:, -1, None]) / 2
+                    noise_scores[name] = classify(residual, readout)
         if args.calibration_aware:
             # Reduce correct-class probability before and after calibration;
             # no fixed destination class, new images, or fitted test labels.
             correct = torch.cat(
                 [
                     F.log_softmax(v, dim=1).gather(1, teacher_class[:, None]).flatten()
-                    for values in scores.values()
-                    for v in (values, calibrated(values))
+                    for name, values in scores.items()
+                    for v in ([values, calibrated(values)] +
+                              ([calibrated(values, noise_scores[name])] if args.noise_calibration else []))
                 ]
             )
-            return torch.logsumexp(correct, 0) - math.log(len(correct)), scores
+            return torch.logsumexp(correct, 0) - math.log(len(correct)), scores, noise_scores
         gaps = torch.cat([v[:, 1:] - v[:, :1] for v in scores.values()])
-        return (torch.logsumexp(gaps.flatten(), 0) - math.log(gaps.numel()), scores)
+        return (torch.logsumexp(gaps.flatten(), 0) - math.log(gaps.numel()), scores, noise_scores)
 
     def source_accuracy(R):
         with torch.no_grad():
-            _, scores = public(R)
+            _, scores, noise_scores = public(R)
             values = {
                 "native": classify(fixed["native"] + R @ hidden["native"], readouts["native"])
             }
             values.update(scores)
             values.update({name + "_calibrated": calibrated(v) for name, v in scores.items()})
+            if args.noise_calibration:
+                values.update({name + "_noise_calibrated": calibrated(v, noise_scores[name])
+                               for name, v in scores.items()})
             return {name: int(v.argmax(1).eq(teacher_class).sum()) for name, v in values.items()}
 
     R = RN.clone()
@@ -298,7 +367,7 @@ def main():
     # Optimize B inside the native-output error constraint; A remains fixed.
     for iteration in range(500):
         R = R.detach().requires_grad_(True)
-        (loss, scores) = public(R)
+        (loss, scores, _) = public(R)
         assert torch.isfinite(loss)
         grad = torch.autograd.grad(loss, R)[0]
         dual = torch.cholesky_solve(grad.T, L).T
@@ -332,7 +401,7 @@ def main():
         with torch.no_grad():
             for backtrack in range(24):
                 proposal = R.detach() + step * direction
-                (value, _) = public(proposal)
+                (value, _, _) = public(proposal)
                 if float(value) <= float(loss) - 0.0001 * step * gap:
                     accepted = True
                     R = proposal
@@ -370,7 +439,7 @@ def main():
     torch.save(edits, out / "point.pt")
     Rf = torch.cat([to(edits[k + "c_proj.weight"]), to(edits[k + "c_proj.bias"])[:, None]], 1)
     with torch.no_grad():
-        (objective, public_scores) = public(Rf)
+        (objective, public_scores, noise_scores) = public(Rf)
         native_scores = classify(fixed["native"] + Rf @ hidden["native"], readouts["native"])
         source_counts = dict(
             native_teacher_retained=int(
@@ -389,6 +458,8 @@ def main():
                 "native": native_scores.cpu(),
                 **{name: v.cpu() for name, v in public_scores.items()},
                 "teacher_class": teacher_class.cpu(),
+                **({"construction_noise": {n: v.cpu() for n, v in noise_scores.items()}}
+                   if args.noise_calibration else {}),
             },
             out / "source_scores.pt",
         )
@@ -400,10 +471,15 @@ def main():
                 for n in checked_contexts
             )
             and (not args.task_reference or all(final_accuracy[n] < initial_accuracy[n] for n in checked_contexts))
+            and (not args.noise_calibration or all(final_accuracy[n + "_noise_calibrated"] <
+                                                   initial_accuracy[n + "_noise_calibrated"] for n in checked_contexts))
             and native(Rf) <= tau + 1e-5 * (1 + abs(tau))
         )
     result = dict(
         status="sole_native_ellipse_classification_frozen_before_images",
+        target=args.target,
+        input_config_sha256=digest(args.inputs),
+        input_definition=inputs,
         point_sha256=digest(out / "point.pt"),
         source_sha256=digest(__file__),
         source=Path(__file__).read_text(),
@@ -412,8 +488,12 @@ def main():
         calibration_aware=args.calibration_aware,
         task_reference=args.task_reference,
         input_bias=args.input_bias,
+        noise_calibration=args.noise_calibration,
+        construction_noise_seed=2026110201 if args.noise_calibration else None,
+        construction_noise_forwards=256 if args.noise_calibration else 0,
+        construction_noise_tail_maximum_error=noise_tail_error,
         public_contexts=public_names + (["joint_direct", "joint_task"] if args.input_bias else []),
-        additional_clean_synthetic_forwards=800 if args.task_reference else 0,
+        additional_clean_synthetic_forwards=len(teacher_class) if args.task_reference else 0,
         initial_source_accuracy=initial_accuracy,
         final_source_accuracy=final_accuracy,
         source_feasible=source_feasible,
@@ -441,9 +521,9 @@ def main():
         new_full_AGA_calls=0,
         matching_calls=matching_calls,
         original_expert_updates=0,
-        synthetic_images_reused=160,
-        generated_views=800,
-        synthetic_native_layer_inputs=16384,
+        synthetic_images_reused=len(raw["final"]),
+        generated_views=len(teacher_class),
+        synthetic_native_layer_inputs=len(u),
         scope="SharedB conditionalnativequadratic/completepublicclassifier construction. OrdinaryFW/ellipsoid/Choleskyarenotnewalgorithm. Finitegapnotglobalguarantee. NativeboundequalA-onlysourcevalue,notnaturalaccuracy. Head/classesexplicitallowed;no partner/test/closedB read.",
     )
     (out / "result.json").write_text(json.dumps(result, indent=2) + "\n")
