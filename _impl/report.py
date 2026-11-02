@@ -245,6 +245,33 @@ def defense_comparison(directory):
           "Unprotected weights and scores match between versions. EuroSAT is excluded; no eight-task mean. "
           "Lower protected-task accuracy favors protection; losses on other tasks are reported without averaging.",
           "lllrrrrrrr")
+    calibration = read("results/data_free_compensation/finite_eight/calibration.json")
+    assert calibration["status"] == "completed_independently_verified"
+    calibrated_rows, target_rows = [], []
+    for task in tasks:
+        for scope, label in [("None", "TA"), ("Protected expert", "AGA")]:
+            target_row = [task, label]
+            for name, method in [("Unprotected", "Unprotected"), ("Defense2_" + task, "Defense 2")]:
+                row = [task, method, label]
+                for dataset in cfg["evaluate"]:
+                    key = "/".join([task, name, scope, dataset])
+                    value = one(calibration["rows"], key=key)
+                    row.append(accuracy(value))
+                    if task == dataset:
+                        before = one(finite_eight["independent_statistics"], key=key)
+                        target_row.extend([accuracy(before), accuracy(value)])
+                calibrated_rows.append(row)
+            target_rows.append(target_row)
+    note = ("Same frozen updated Defense 2 releases; eight experts, TA coefficient 0.2. "
+            "AGA processes the protected expert. Each merged model is calibrated independently "
+            "using 64 fixed random images and its public classifier, without real images, labels "
+            "or changed-module knowledge. Full archived scores are reused. "
+            "Seven complete datasets; EuroSAT is excluded, and no eight-task mean is reported.")
+    write("defense2_eight_calibration", "Output calibration in eight-expert merging",
+          ["Target", "Defense", "Processing"] + cfg["evaluate"], calibrated_rows, note, "lllrrrrrrr")
+    write("defense2_eight_calibration_target", "Protected-task accuracy before and after output calibration",
+          ["Task", "Processing", "Unprotected", "+calib.", "Defense 2", "+calib."],
+          target_rows, note, "llrrrr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"
