@@ -1,13 +1,26 @@
 {
-  "status": "noise_calibration_completed_independently_verified",
-  "updated_utc": "2026-11-01T17:46:01.119680+00:00",
+  "status": "noise_calibration_cross_task_running",
+  "updated_utc": "2026-11-02T02:32:24.270181+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Keep this release frozen. Test the same rule on SVHN/DTD before promoting the method; do not tune using these results. Known-location public replacement remains a separately stated limitation.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "41558",
+      "queue_pid": 1914,
+      "output": "outputs/noise_calibration_other_20261102",
+      "source_commit": "976083c3",
+      "targets": [
+        "SVHN",
+        "DTD"
+      ],
+      "stage": "serial source and registered full evaluation",
+      "automatic_wakeup": false
+    }
+  ],
+  "next_action": "Inspect existing SVHN/DTD queue; no duplicate starts or tuning. Report every task source/native failure and finish fixed evaluations if source passes.",
   "github_sync": {
-    "status": "Prior completed batch verified remotely; GitHub tools unavailable in current tool set, new commits pending",
+    "status": "Connector restored; publishing completed MNIST result and pre-execution cross-task definition",
     "last_verified_commit": "23d6ffb93954addb02918ef79d03e831e4f0cf92",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -1582,5 +1595,15 @@
     "record": "results/data_free_compensation/input_bias_result.json:noise_calibration_construction:result",
     "public_B_replacement_target": 99.36,
     "context_score_replays": 320
+  },
+  "noise_calibration_transfer": {
+    "status": "running",
+    "protocol": "results/data_free_compensation/noise_calibration_transfer.json",
+    "output": "outputs/noise_calibration_other_20261102",
+    "source_commit": "976083c3",
+    "targets": [
+      "SVHN",
+      "DTD"
+    ]
   }
 }
