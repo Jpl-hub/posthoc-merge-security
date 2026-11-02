@@ -533,5 +533,23 @@
     "new_defense_candidates": 0,
     "no_result_based_selection": true,
     "output": "outputs/finite_classification_prodistill_20261102/components"
+  },
+  "component_full_test": {
+    "registered_utc": "2026-11-02T08:57:37.101847+00:00",
+    "question": "Does the fixed four-way A/B attribution observed on attack calibration inputs persist on complete target and partner test sets?",
+    "variants": [
+      "initial_A_initial_B",
+      "trained_A_initial_B",
+      "initial_A_trained_B",
+      "trained_A_trained_B"
+    ],
+    "rules": "Same trained non-MLP state and same original0.3 A/B initialization. Freeze all nine changed-tensor hybrids before benchmark reads. Reuse trained_A_trained_B six full score rows by hash. No fitting, hyperparameters, replacement of defense release or variant selection.",
+    "new_full_rows": 18,
+    "reused_full_rows": 6,
+    "new_optimizer_steps": 0,
+    "new_defense_candidates": 0,
+    "output": "outputs/finite_classification_prodistill_20261102/components_full",
+    "interpretation": "Conditional component test of an already trained recovery model; not an A-only/B-only optimization attack. Previously exposed benchmark; analysis only, never defense construction input.",
+    "driver_sha256": "9cebec8f9a98e59a109956e917640128f0d49e08c06a6383de0783eca6725405"
   }
 }
