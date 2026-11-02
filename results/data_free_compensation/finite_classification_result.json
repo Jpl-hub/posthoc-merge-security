@@ -11510,6 +11510,372 @@
         "all_sha256_equal": true,
         "manifest_sha256": "b7f9727c4ac6f173b78a910f5932e761d8a337d55e0e9712fff96c1bd2d9b51d"
       }
+    },
+    "mechanism_analysis": {
+      "completed_utc": "2026-11-02T10:26:30.661437+00:00",
+      "status": "fixed_weight_and_synthetic_analysis_completed",
+      "coefficient_geometry": {
+        "status": "completed",
+        "arithmetic_checks": [
+          {
+            "optimizer": "SGD",
+            "weight_error": 1.1102230246251565e-16,
+            "coefficient_gradient_error": 0.0
+          },
+          {
+            "optimizer": "Adam",
+            "weight_error": 2.220446049250313e-16,
+            "coefficient_gradient_error": 0.0
+          }
+        ],
+        "tensors": [
+          {
+            "target": "MNIST",
+            "partner": "SVHN",
+            "tensor": "c_fc.weight",
+            "coordinates": 2359296,
+            "nonzero_target_clean": 2359291,
+            "nonzero_target_defended": 2359296,
+            "nonzero_union_clean": 2359296,
+            "nonzero_union_defended": 2359296,
+            "rms_delta_clean": 0.0003957961295760122,
+            "rms_delta_defended": 0.015720776306243796,
+            "first_adam_step_bound_rms_clean": 7.224173944282545e-06,
+            "first_adam_step_bound_rms_defended": 0.00015951856809553254,
+            "first_adam_step_bound_norm_ratio": 22.081219157490107
+          },
+          {
+            "target": "MNIST",
+            "partner": "SVHN",
+            "tensor": "c_fc.bias",
+            "coordinates": 3072,
+            "nonzero_target_clean": 3072,
+            "nonzero_target_defended": 3072,
+            "nonzero_union_clean": 3072,
+            "nonzero_union_defended": 3072,
+            "rms_delta_clean": 0.0005842435585835702,
+            "rms_delta_defended": 0.4501436336760818,
+            "first_adam_step_bound_rms_clean": 1.1143117108269242e-05,
+            "first_adam_step_bound_rms_defended": 0.004506342032406013,
+            "first_adam_step_bound_norm_ratio": 404.4058757187325
+          },
+          {
+            "target": "MNIST",
+            "partner": "SVHN",
+            "tensor": "c_proj.weight",
+            "coordinates": 2359296,
+            "nonzero_target_clean": 2359290,
+            "nonzero_target_defended": 2359296,
+            "nonzero_union_clean": 2359296,
+            "nonzero_union_defended": 2359296,
+            "rms_delta_clean": 0.00022294738705599718,
+            "rms_delta_defended": 0.04395851492088655,
+            "first_adam_step_bound_rms_clean": 3.7101898512600025e-06,
+            "first_adam_step_bound_rms_defended": 0.0004404756916927772,
+            "first_adam_step_bound_norm_ratio": 118.72052626719056
+          },
+          {
+            "target": "MNIST",
+            "partner": "SVHN",
+            "tensor": "c_proj.bias",
+            "coordinates": 768,
+            "nonzero_target_clean": 768,
+            "nonzero_target_defended": 768,
+            "nonzero_union_clean": 768,
+            "nonzero_union_defended": 768,
+            "rms_delta_clean": 0.00023097044369631227,
+            "rms_delta_defended": 0.205970669365346,
+            "first_adam_step_bound_rms_clean": 4.272899130219862e-06,
+            "first_adam_step_bound_rms_defended": 0.002060768316355478,
+            "first_adam_step_bound_norm_ratio": 482.2880797210492
+          },
+          {
+            "target": "SVHN",
+            "partner": "MNIST",
+            "tensor": "c_fc.weight",
+            "coordinates": 2359296,
+            "nonzero_target_clean": 2359294,
+            "nonzero_target_defended": 2359296,
+            "nonzero_union_clean": 2359296,
+            "nonzero_union_defended": 2359296,
+            "rms_delta_clean": 0.0003913138262488815,
+            "rms_delta_defended": 0.015435534876325464,
+            "first_adam_step_bound_rms_clean": 7.224173944282545e-06,
+            "first_adam_step_bound_rms_defended": 0.00015673544287329223,
+            "first_adam_step_bound_norm_ratio": 21.695967467303024
+          },
+          {
+            "target": "SVHN",
+            "partner": "MNIST",
+            "tensor": "c_fc.bias",
+            "coordinates": 3072,
+            "nonzero_target_clean": 3072,
+            "nonzero_target_defended": 3072,
+            "nonzero_union_clean": 3072,
+            "nonzero_union_defended": 3072,
+            "rms_delta_clean": 0.000567867412648724,
+            "rms_delta_defended": 0.4498120195737174,
+            "first_adam_step_bound_rms_clean": 1.1143117108269242e-05,
+            "first_adam_step_bound_rms_defended": 0.004503048353254663,
+            "first_adam_step_bound_norm_ratio": 404.11029602416875
+          },
+          {
+            "target": "SVHN",
+            "partner": "MNIST",
+            "tensor": "c_proj.weight",
+            "coordinates": 2359296,
+            "nonzero_target_clean": 2359288,
+            "nonzero_target_defended": 2359296,
+            "nonzero_union_clean": 2359296,
+            "nonzero_union_defended": 2359296,
+            "rms_delta_clean": 0.00017907799221190385,
+            "rms_delta_defended": 0.06367298798851381,
+            "first_adam_step_bound_rms_clean": 3.7101898512600025e-06,
+            "first_adam_step_bound_rms_defended": 0.0006378806891598592,
+            "first_adam_step_bound_norm_ratio": 171.92669775193073
+          },
+          {
+            "target": "SVHN",
+            "partner": "MNIST",
+            "tensor": "c_proj.bias",
+            "coordinates": 768,
+            "nonzero_target_clean": 768,
+            "nonzero_target_defended": 768,
+            "nonzero_union_clean": 768,
+            "nonzero_union_defended": 768,
+            "rms_delta_clean": 0.00020917631601175338,
+            "rms_delta_defended": 0.3826121405760793,
+            "first_adam_step_bound_rms_clean": 4.272899130219862e-06,
+            "first_adam_step_bound_rms_defended": 0.0038275647979986132,
+            "first_adam_step_bound_norm_ratio": 895.7770079167926
+          },
+          {
+            "target": "DTD",
+            "partner": "MNIST",
+            "tensor": "c_fc.weight",
+            "coordinates": 2359296,
+            "nonzero_target_clean": 2359293,
+            "nonzero_target_defended": 2359296,
+            "nonzero_union_clean": 2359296,
+            "nonzero_union_defended": 2359296,
+            "rms_delta_clean": 0.00032483621531023514,
+            "rms_delta_defended": 0.015574051746794893,
+            "first_adam_step_bound_rms_clean": 6.48926247968162e-06,
+            "first_adam_step_bound_rms_defended": 0.000158108484717206,
+            "first_adam_step_bound_norm_ratio": 24.364630836286214
+          },
+          {
+            "target": "DTD",
+            "partner": "MNIST",
+            "tensor": "c_fc.bias",
+            "coordinates": 3072,
+            "nonzero_target_clean": 3072,
+            "nonzero_target_defended": 3072,
+            "nonzero_union_clean": 3072,
+            "nonzero_union_defended": 3072,
+            "rms_delta_clean": 0.0005338852839089456,
+            "rms_delta_defended": 0.45208205919129313,
+            "first_adam_step_bound_rms_clean": 1.061670107653144e-05,
+            "first_adam_step_bound_rms_defended": 0.004525819590672675,
+            "first_adam_step_bound_norm_ratio": 426.2924573318867
+          },
+          {
+            "target": "DTD",
+            "partner": "MNIST",
+            "tensor": "c_proj.weight",
+            "coordinates": 2359296,
+            "nonzero_target_clean": 2359293,
+            "nonzero_target_defended": 2359296,
+            "nonzero_union_clean": 2359296,
+            "nonzero_union_defended": 2359296,
+            "rms_delta_clean": 0.0002245679850689941,
+            "rms_delta_defended": 0.03155546366172555,
+            "first_adam_step_bound_rms_clean": 4.029587240511001e-06,
+            "first_adam_step_bound_rms_defended": 0.00031678668340915614,
+            "first_adam_step_bound_norm_ratio": 78.61516937128864
+          },
+          {
+            "target": "DTD",
+            "partner": "MNIST",
+            "tensor": "c_proj.bias",
+            "coordinates": 768,
+            "nonzero_target_clean": 768,
+            "nonzero_target_defended": 768,
+            "nonzero_union_clean": 768,
+            "nonzero_union_defended": 768,
+            "rms_delta_clean": 0.00024733898499993377,
+            "rms_delta_defended": 0.14808140340241624,
+            "first_adam_step_bound_rms_clean": 4.599469430356595e-06,
+            "first_adam_step_bound_rms_defended": 0.0014821616820914285,
+            "first_adam_step_bound_norm_ratio": 322.2462295996861
+          }
+        ],
+        "source_sha256": "d523fd76cad4a41e0fa0336d72c9c221fb0bcbc728e6d6b099860baa9b29c635",
+        "protocol_sha256": "3904148d8468dd8725b2f6841381a1d7698b3767eedd37bf35868a2212dd80de",
+        "official_files": {
+          "merge_models": {
+            "path": "external/ProDistill/Vision/merge_models.py",
+            "sha256": "c51c896ab8be332c0b885db0edccfc624dc695558942be23015a7f2fd86a4afd",
+            "git_blob": "a853be7c28e2f49b30f8c40865a6cd3d5640e294"
+          },
+          "utils": {
+            "path": "external/ProDistill/Vision/utils.py",
+            "sha256": "50b12eafb9dc54ab0577520b6bd423a01c9f7e97823c98cba0b6cd158edd1569",
+            "git_blob": "abacb3602da00817495796f2ae3e22d58a541f8f"
+          }
+        },
+        "release_hashes": {
+          "MNIST": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1",
+          "SVHN": "5819a9bff4c25311633a07e18600721d2f18366dc0ebe056fe33544d3d809386",
+          "DTD": "fd8d553e1c3b491ca2753accc1f846d2b650084c4bd489fefc4e2f7ab67ec170"
+        },
+        "scope": "No images, no defense changes, no real attack optimization; two tiny kernel arithmetic steps only.",
+        "interpretation": "The bound is gradient-independent first-step capacity, not an observed update or accuracy prediction.",
+        "seconds": 4.325351083651185
+      },
+      "finite_coupling": {
+        "status": "completed",
+        "rows": [
+          {
+            "task": "MNIST",
+            "context": "native",
+            "n": 800,
+            "teacher_agreement": {
+              "endpoint_reference": 800,
+              "endpoint_publication": 800,
+              "average": 800,
+              "cross_only": 149,
+              "nonlinear_only": 569,
+              "midpoint": 0
+            },
+            "identity_max_error": 5.10702591327572e-15,
+            "numpy_first16_max_error": 2.6645352591003757e-15,
+            "cross_rms": 0.6870810564592149,
+            "nonlinear_rms": 0.28136286518151515,
+            "sum_rms": 0.9636496138623878,
+            "cosine": 0.9760420689891812
+          },
+          {
+            "task": "MNIST",
+            "context": "direct",
+            "n": 800,
+            "teacher_agreement": {
+              "endpoint_reference": 800,
+              "endpoint_publication": 778,
+              "average": 800,
+              "cross_only": 160,
+              "nonlinear_only": 226,
+              "midpoint": 0
+            },
+            "identity_max_error": 5.329070518200751e-15,
+            "numpy_first16_max_error": 2.6645352591003757e-15,
+            "cross_rms": 0.7499624823632148,
+            "nonlinear_rms": 0.43106119934623177,
+            "sum_rms": 1.1771409289214545,
+            "cosine": 0.9858386260433607
+          },
+          {
+            "task": "SVHN",
+            "context": "native",
+            "n": 800,
+            "teacher_agreement": {
+              "endpoint_reference": 800,
+              "endpoint_publication": 800,
+              "average": 800,
+              "cross_only": 69,
+              "nonlinear_only": 428,
+              "midpoint": 0
+            },
+            "identity_max_error": 1.3322676295501878e-14,
+            "numpy_first16_max_error": 7.105427357601002e-15,
+            "cross_rms": 1.6614479746788657,
+            "nonlinear_rms": 0.6843545905322528,
+            "sum_rms": 2.3401322349208877,
+            "cosine": 0.9883155931344452
+          },
+          {
+            "task": "SVHN",
+            "context": "direct",
+            "n": 800,
+            "teacher_agreement": {
+              "endpoint_reference": 800,
+              "endpoint_publication": 744,
+              "average": 800,
+              "cross_only": 0,
+              "nonlinear_only": 21,
+              "midpoint": 0
+            },
+            "identity_max_error": 1.4210854715202004e-14,
+            "numpy_first16_max_error": 7.105427357601002e-15,
+            "cross_rms": 1.7667874437439337,
+            "nonlinear_rms": 1.0198672922669134,
+            "sum_rms": 2.781518653859089,
+            "cosine": 0.9920642724634474
+          },
+          {
+            "task": "DTD",
+            "context": "native",
+            "n": 3760,
+            "teacher_agreement": {
+              "endpoint_reference": 3760,
+              "endpoint_publication": 3760,
+              "average": 3760,
+              "cross_only": 0,
+              "nonlinear_only": 857,
+              "midpoint": 0
+            },
+            "identity_max_error": 7.105427357601002e-15,
+            "numpy_first16_max_error": 3.552713678800501e-15,
+            "cross_rms": 0.36237639721206494,
+            "nonlinear_rms": 0.1631088743491016,
+            "sum_rms": 0.5142789887552579,
+            "cosine": 0.9014335819018738
+          },
+          {
+            "task": "DTD",
+            "context": "direct",
+            "n": 3760,
+            "teacher_agreement": {
+              "endpoint_reference": 3760,
+              "endpoint_publication": 3359,
+              "average": 3747,
+              "cross_only": 0,
+              "nonlinear_only": 17,
+              "midpoint": 0
+            },
+            "identity_max_error": 8.659739592076221e-15,
+            "numpy_first16_max_error": 4.6629367034256575e-15,
+            "cross_rms": 0.3888298680799086,
+            "nonlinear_rms": 0.263033754085383,
+            "sum_rms": 0.6449082959997062,
+            "cosine": 0.9559059489102434
+          }
+        ],
+        "source_sha256": "d78419b70592b0ca300832b853b5d06f420918e8aed137bf387a1d90cf4c0baf",
+        "protocol_sha256": "2441c219c3c791363edd91a2bbe490ac0cf70b9169d55d9a76462a6146cb72cb",
+        "arrays_sha256": "01c87946ef2a648ccfa8f12688d0752187e202bad93f5c3d191a7a7e64883cc4",
+        "seconds": 9.816511986777186,
+        "new_defense_candidates": 0,
+        "new_optimizer_steps": 0,
+        "real_images": 0,
+        "interpretation": "Fixed synthetic context attribution only. No AGA, natural-data or unknown-partner guarantee."
+      },
+      "interpretation": "Midpoint failure has a genuine bilinear cross term plus QuickGELU interpolation remainder on the frozen synthetic inputs. This is an elementary identity and diagnosis, not a new algorithm or improved protection. Parameter distance does not restrict the elementwise attacker; first-step bounds do not prove faster recovery.",
+      "raw_archive": {
+        "files": 7,
+        "bytes": 17616417,
+        "manifest_sha256": "10f3086d33dbdb46d9f7d946b902f16c9d52761f140306de6ba220e850b843c6",
+        "primary": "outputs/finite_classification_prodistill_20261102",
+        "secondary": "/root/posthoc_evaluation_cache/finite_classification_prodistill_20261102"
+      },
+      "preregistration_commits": {
+        "coefficient_geometry": "0128d71",
+        "finite_coupling": "0085c9d"
+      },
+      "new_defense_candidates": 0,
+      "real_images": 0,
+      "new_attack_training": 0,
+      "arithmetic_test_optimizer_steps": 2
     }
   }
 }
