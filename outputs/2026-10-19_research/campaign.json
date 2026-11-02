@@ -1,5 +1,5 @@
 {
-  "status": "finite_classification_running",
+  "status": "finite_classification_standalone_completed;fusion_prepared",
   "updated_utc": "2026-11-02T03:34:52.635881+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -1629,11 +1629,16 @@
   },
   "finite_classification": {
     "protocol": "results/data_free_compensation/finite_classification.json",
-    "status": "running_source_then_standalone",
+    "status": "standalone_complete_fusion_prepared",
     "output": "outputs/finite_classification_20261102",
-    "pid": 9287,
+    "pid": null,
     "started_utc": "2026-11-02T03:54:30.280695+00:00",
     "source_commit": "54117a10ced8a4d983580e34134a9a4c6c7f1962",
-    "first_attempt": "Stopped before optimizer updates by derivative check; fixed only verification step after convergence diagnosis."
+    "first_attempt": "Stopped before optimizer updates by derivative check; fixed only verification step after convergence diagnosis.",
+    "standalone": {
+      "MNIST": 99.57,
+      "SVHN": 96.66180086047942,
+      "DTD": 76.32978723404256
+    }
   }
 }
