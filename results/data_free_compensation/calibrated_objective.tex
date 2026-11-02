@@ -124,3 +124,68 @@ DTD & 79.41 & 78.62 & 79.20 & 65.96 \\
 All component weights are frozen before real-image evaluation. The initial native fit is the original conditional ridge solution before optimizing the public classification objective; inputs and coefficients are unchanged. Original and final scores are reused. The additional loss from the native fit to the final model is 1.78 points on SVHN (paired 95\% interval: [1.59, 1.97]) and 13.24 points on DTD [11.47, 15.02]. These are diagnostic controls, not newly selected defenses; their fusion protection is not evaluated.
 \end{minipage}
 \end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{Target accuracy under the fixed finite-classification construction (\%).}
+\label{tab:finite-classification-targets}
+\begin{tabular}{lllrrrrrr}
+\toprule
+Task & Model & Standalone & TA & AGA target & AGA both & Cal. TA & Cal. target & Cal. both \\
+\midrule
+MNIST & Unprotected & 99.69 & 99.37 & 99.30 & 99.32 & 99.34 & 99.29 & 99.29 \\
+MNIST & Defense 2 & 99.57 & 25.15 & 2.99 & 1.33 & 29.78 & 10.76 & 9.18 \\
+SVHN & Unprotected & 97.46 & 92.50 & 91.56 & 91.77 & 92.32 & 91.34 & 91.59 \\
+SVHN & Defense 2 & 96.66 & 2.26 & 1.86 & 1.87 & 7.41 & 6.99 & 6.95 \\
+DTD & Unprotected & 79.41 & 69.31 & 68.40 & 68.78 & 55.69 & 55.00 & 55.00 \\
+DTD & Defense 2 & 76.33 & 2.13 & 2.07 & 2.07 & 6.60 & 5.00 & 5.00 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize
+TA uses coefficient 0.5. AGA target/both indicates which experts undergo recovery. Calibration uses 64 fixed random inputs independent of construction. Each task uses one frozen publication. Standalone retention improves relative to the previous noise-calibration rule, while calibrated protection weakens on MNIST and SVHN. The native loss remains 0.80 points for SVHN and 3.09 for DTD. All 42 raw rows and 672 original-batch score replays were checked. Known-location replacement has additional information and is reported separately.
+\end{minipage}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{Partner accuracy under the fixed finite-classification construction (\%).}
+\label{tab:finite-classification-partners}
+\begin{tabular}{lllrrrrrr}
+\toprule
+Protected task & Partner & Model & TA & AGA target & AGA both & Cal. TA & Cal. target & Cal. both \\
+\midrule
+MNIST & SVHN & Unprotected & 92.50 & 92.78 & 91.77 & 92.32 & 92.58 & 91.59 \\
+MNIST & SVHN & Defense 2 & 13.26 & 2.02 & 1.50 & 22.81 & 8.75 & 8.24 \\
+SVHN & MNIST & Unprotected & 99.37 & 99.39 & 99.32 & 99.34 & 99.34 & 99.29 \\
+SVHN & MNIST & Defense 2 & 0.22 & 0.24 & 0.25 & 9.92 & 11.53 & 11.95 \\
+DTD & MNIST & Unprotected & 99.45 & 99.45 & 99.42 & 99.46 & 99.45 & 99.39 \\
+DTD & MNIST & Defense 2 & 99.22 & 99.02 & 98.81 & 99.48 & 99.47 & 99.40 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize
+TA uses coefficient 0.5. AGA target/both indicates which experts undergo recovery. Calibration uses 64 fixed random inputs independent of construction. Each task uses one frozen publication. The MNIST partner remains accurate with protected DTD; partner preservation does not hold for the other two pairs. All 42 raw rows and 672 original-batch score replays were checked. Known-location replacement has additional information and is reported separately.
+\end{minipage}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\caption{Target and partner accuracy after parameter recovery (\%).}
+\label{tab:finite-classification-recovery}
+\begin{tabular}{lrrrrrr}
+\toprule
+& \multicolumn{3}{c}{MLP matching} & \multicolumn{3}{c}{Known-location replacement} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Task & Unprotected & Defense 2 & Partner & Unprotected & Defense 2 & Partner \\
+\midrule
+MNIST & 99.37 & 9.39 & 4.33 & 99.35 & 99.36 & 92.49 \\
+SVHN & 92.50 & 7.96 & 10.29 & 92.40 & 92.32 & 99.37 \\
+DTD & 69.31 & 2.29 & 99.13 & 68.19 & 66.22 & 99.44 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize
+All rows use TA with coefficient 0.5 and the same frozen publications as the main table. Matching uses the published MLP weights and public base. Replacement additionally knows the modified module and resets its output matrix and bias to the public base. Both include identically processed unprotected controls; neither uses a clean target expert or real images for recovery. Partner columns refer to protected models. The partner is SVHN for MNIST and MNIST otherwise. Two replacement evaluations are reused after equality of all 158 model tensors and score hashes; the DTD evaluation is new. The additional 24 rows and 384 original-batch score replays passed verification. Known-location replacement remains effective.
+\end{minipage}
+\end{table*}

@@ -31,7 +31,7 @@
 
 独立准确率分别下降0.08、0.48、3.30个百分点。DTD曾因项目自设的0.5个百分点条件停止，本次补齐同一固定权重的融合评价；旧失败记录保留。相关论文没有统一的0.5个百分点标准，后续直接比较独立能力损失与保护效果。[尺度依据](notes/parameter_scale_and_threat_model.md)。A/B删项支持联合补偿，两项SVD单删项尚未显示准确率收益；当前A是最小范数行正交解，并未求解参数距离最大化。另列的无数据输出校正能部分恢复分类，与仅运行AGA分开报告。[方法、对照与完整结果](results/data_free_compensation/summary.md) · [核心方法审查](notes/phase2_coupling.md#oct26核心方法审查)。
 
-最新MNIST构造将独立随机输入的输出校正纳入求解：独立99.54%，TA16.61%，AGA仅目标后0.26%，再校正后0.48%；联合MLP匹配后2.78%。相比上一版，校正后的保护明显改善，直接TA则由8.04%升到16.61%；已知位置公开B替换后仍为99.36%。同规则SVHN独立97.46%→95.67%，AGA后2.85%、再校正后2.36%；DTD独立79.41%→65.96%，源条件失败，未运行其融合评价。该版本尚未实现跨任务稳定保持，不替换上面的三任务方法。[完整构造对照](results/data_free_compensation/calibrated_objective.md)。
+随机输入校正版（4854eb28）将独立随机输入的输出校正纳入求解：独立99.54%，TA16.61%，AGA仅目标后0.26%，再校正后0.48%；联合MLP匹配后2.78%。相比上一版，校正后的保护明显改善，直接TA则由8.04%升到16.61%；已知位置公开B替换后仍为99.36%。同规则SVHN独立97.46%→95.67%，AGA后2.85%、再校正后2.36%；DTD独立79.41%→65.96%，源条件失败，未运行其融合评价。该版本尚未实现跨任务稳定保持，不替换上面的三任务方法。[完整构造对照](results/data_free_compensation/calibrated_objective.md)。
 
 最新三任务攻击对照已完成：TIES、DARE下仍有融合保护；已知末层MLP位置、用公开基座替换B及偏置后，融合准确率恢复至99.35%、92.39%、66.81%。两种结果的恢复操作和权限不同，详见[完整对照表](results/attack_generalization_20261028/attack_comparison.md)。
 
@@ -148,4 +148,4 @@ pytest -q
 
 [同条件蒸馏对比](results/params_reference/other_tasks/distillation.md)已完成标签核对：防御一、PaRaMS与无保护模型在固定三组训练图片上的硬标签完全相同，因此明确复用同一批既有学生。此攻击额外需要无标签图片和训练，不能与无数据AGA混列。
 
-本次SVHN/DTD迁移只替换任务权重、分类头和该任务原有合成输入；同一数值补偿与随机输入校正目标保持不变。原任务各自的源正则和功能误差界由历史规则确定，见 `configs/defense2_inputs.json`。该批已完成。固定组件对照显示，初始补偿后的独立准确率为SVHN97.45%、DTD79.20%，主要损失出现在后续公开分类优化。`--finite-classification` 正在检验“达到分类失效条件后减少原生误差”的固定对照，定义见 `results/data_free_compensation/finite_classification.json`；尚无新有效结论。
+本次SVHN/DTD迁移只替换任务权重、分类头和该任务原有合成输入；同一数值补偿与随机输入校正目标保持不变。原任务各自的源正则和功能误差界由历史规则确定，见 `configs/defense2_inputs.json`。该批已完成。固定组件对照显示，初始补偿后的独立准确率为SVHN97.45%、DTD79.20%，主要损失出现在后续公开分类优化。`--finite-classification` 的三任务固定对照已完成独立、TA、AGA和输出校正评价：独立99.57%／96.66%／76.33%，AGA仅目标后2.99%／1.86%／2.07%，再校正10.76%／6.99%／5.00%。SVHN、DTD独立保持改善，但前两任务的校正保护弱于上一轮。每行使用同一冻结模型；完整伙伴与配对结果见 [目标调整对照](results/data_free_compensation/calibrated_objective.md#有限分类条件对照2026-11-02)，定义见 `results/data_free_compensation/finite_classification.json`。
