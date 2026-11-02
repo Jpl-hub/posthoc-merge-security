@@ -437,7 +437,8 @@ def main():
         assert gap >= -1e-08
         if iteration == 0:
             v = direction * (Rorig.norm() / direction.norm())
-            step = 1e-06
+            # The finite loss has max/hinge boundaries; use a local difference.
+            step = 1e-08 if args.finite_classification else 1e-06
             fd = float(
                 (public(R.detach() + step * v)[0] - public(R.detach() - step * v)[0]) / (2 * step)
             )
