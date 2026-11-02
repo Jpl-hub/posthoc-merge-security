@@ -216,6 +216,24 @@ def defense_comparison(directory):
     write("defense2_version_partners", "Partner accuracy for the same Defense 2 versions",
           ["Target", "Version", "TA", "AGA", "AGA+calib.", "MLP match", "ProDistill"],
           versions[1], note, "llrrrrr")
+    components = updated["prodistill"].get("components_full")
+    if components:
+        assert components["status"] == "completed_independently_verified"
+        component_rows = []
+        for task in tasks:
+            partner = "SVHN" if task == "MNIST" else "MNIST"
+            for dataset in [task, partner]:
+                component_rows.append([task, dataset] + [
+                    accuracy(one(components["rows"], target=task, dataset=dataset, variant=variant))
+                    for variant in ["00", "10", "01", "11"]])
+        write("prodistill_components", "Final MLP components after ProDistill",
+              ["Target", "Dataset", "Initial A/B", "Trained A", "Trained B", "Both trained"],
+              component_rows,
+              "Complete test accuracy. Other parameters remain fixed at the trained ProDistill model. "
+              "A and B include their respective biases. Initial values use the same 0.3 initialization; "
+              "trained values come from one completed joint coefficient fit. "
+              "These are fixed component substitutions, not separately trained A-only or B-only attacks. "
+              "Both-trained scores are reused from the same frozen model. No new optimization.", "llrrrr")
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 

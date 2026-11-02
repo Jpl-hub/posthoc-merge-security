@@ -1,22 +1,13 @@
 {
-  "status": "prodistill_fixed_AB_attribution_running",
-  "updated_utc": "2026-11-02T08:59:57.372131+00:00",
+  "status": "fixed_AB_attribution_completed",
+  "updated_utc": "2026-11-02T09:22:56.646330+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 32083,
-      "output": "outputs/finite_classification_prodistill_20261102/components_full",
-      "started_utc": "2026-11-02T08:59:29.391830+00:00",
-      "source_commit": "0834aa6fd8dcf1906c2425f21b0257eb6e77d95d",
-      "new_optimizer_steps": 0,
-      "new_defense_candidates": 0
-    }
-  ],
-  "next_action": "取回同一恢复模型固定A/B四组合的完整目标/伙伴结果；校准图显示A侧变化作用更大，待全测试确认。该分析不重新训练、不是新防御、不据测试改点。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "本批完成且无GPU作业。核心改进应使A变化在公开B读出下有实际分类作用，并让B补偿独立功能；先论证有限可行性，与已有关闭联合求解区别。仅优化固定A下B不能解决公开替换，继续增大B也不能阻止逐元素蒸馏。",
   "github_sync": {
-    "status": "pending: github.fetch_commit returned Unknown tool on current check",
+    "status": "Plugin reconnected; preparing completed results for publication",
     "last_verified_commit": "b36b3d11197dfa38b8f03a5a03fb0dbf7e96373c",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -1723,15 +1714,45 @@
     "completed_utc": "2026-11-02T06:44:13.300483+00:00"
   },
   "prodistill_AB_attribution": {
-    "pid": 32083,
+    "pid": null,
     "output": "outputs/finite_classification_prodistill_20261102/components_full",
     "started_utc": "2026-11-02T08:59:29.391830+00:00",
     "source_commit": "0834aa6fd8dcf1906c2425f21b0257eb6e77d95d",
     "new_optimizer_steps": 0,
     "new_defense_candidates": 0,
-    "status": "running",
+    "status": "completed_independently_verified",
     "calibration_result": "results/data_free_compensation/finite_classification_result.json:prodistill.components",
     "new_full_rows": 18,
-    "reused_full_rows": 6
+    "reused_full_rows": 6,
+    "completed_utc": "2026-11-02T09:22:56.646330+00:00",
+    "target_accuracy": {
+      "MNIST": [
+        28.06,
+        98.79,
+        46.07,
+        99.43
+      ],
+      "SVHN": [
+        8.14382298709281,
+        86.6702519975415,
+        20.190534726490473,
+        96.1777811923786
+      ],
+      "DTD": [
+        8.670212765957446,
+        41.170212765957444,
+        31.382978723404253,
+        66.70212765957447
+      ]
+    },
+    "column_order": [
+      "initial_A_B",
+      "trained_A_only_substitution",
+      "trained_B_only_substitution",
+      "both_trained"
+    ],
+    "new_independent_context_replays": 288,
+    "maximum_replay_error": 0,
+    "metadata_serialization_failure": "Original completed metadata failed on NumPyint64; rows and scores complete. Only metadata repaired and selected batch contexts verified; no full rerun."
   }
 }

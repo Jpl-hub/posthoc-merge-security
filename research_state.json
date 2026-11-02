@@ -1,7 +1,7 @@
 {
   "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
   "active_focus": "防御一TA/AGA效果保留；新版防御二校正抵抗改善但ProDistill仍恢复99.43/96.18/66.70。现在集中研究A/B保护作用与可公开替换侧的关系，不扩攻击列表。",
-  "status": "prodistill_fixed_AB_attribution_running",
+  "status": "fixed_AB_attribution_completed",
   "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
   "protocol": {
     "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
@@ -22,18 +22,18 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_torch": "2.3.0+cu121",
     "old_4090": "17811 and34125 fully preserved; permanent release cleared. No old4090 dependence.",
     "record": "results/data_free_compensation/readout_calibration_result.json:no_SVD_three_task_definition_20261028",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-02T08:59:57.372131+00:00",
+    "verified_utc": "2026-11-02T09:22:56.646330+00:00",
     "primary_available_GiB": 28,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:41558",
-    "primary_workspace_status": "Fixed A/B component attribution running; no training",
+    "primary_workspace_status": "Fixed A/B diagnostic and independent verification complete; no GPU job",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548"
   },
@@ -94,19 +94,10 @@
       "record": "outputs/noise_calibration_other_20261102/cleanup.json"
     }
   },
-  "updated_utc": "2026-11-02T08:59:57.372131+00:00",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 32083,
-      "output": "outputs/finite_classification_prodistill_20261102/components_full",
-      "started_utc": "2026-11-02T08:59:29.391830+00:00",
-      "source_commit": "0834aa6fd8dcf1906c2425f21b0257eb6e77d95d",
-      "new_optimizer_steps": 0,
-      "new_defense_candidates": 0
-    }
-  ],
-  "next_action": "取回同一恢复模型固定A/B四组合的完整目标/伙伴结果；校准图显示A侧变化作用更大，待全测试确认。该分析不重新训练、不是新防御、不据测试改点。",
+  "updated_utc": "2026-11-02T09:22:56.646330+00:00",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "本批完成且无GPU作业。核心改进应使A变化在公开B读出下有实际分类作用，并让B补偿独立功能；先论证有限可行性，与已有关闭联合求解区别。仅优化固定A下B不能解决公开替换，继续增大B也不能阻止逐元素蒸馏。",
   "closed_history": {
     "previous_full_state_commit": "8ca189d96fe1fbf7fc9ae9b4b2ee09624c86fb65",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -125,7 +116,7 @@
     "source_placement_record": "results/engineering_refactor/validation.json:numerical_source_placement_20261029"
   },
   "github_sync": {
-    "status": "pending: github.fetch_commit returned Unknown tool on current check",
+    "status": "Plugin reconnected; preparing completed results for publication",
     "last_verified_commit": "b36b3d11197dfa38b8f03a5a03fb0dbf7e96373c",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -1787,15 +1778,45 @@
     "completed_utc": "2026-11-02T06:44:13.300483+00:00"
   },
   "prodistill_AB_attribution": {
-    "pid": 32083,
+    "pid": null,
     "output": "outputs/finite_classification_prodistill_20261102/components_full",
     "started_utc": "2026-11-02T08:59:29.391830+00:00",
     "source_commit": "0834aa6fd8dcf1906c2425f21b0257eb6e77d95d",
     "new_optimizer_steps": 0,
     "new_defense_candidates": 0,
-    "status": "running",
+    "status": "completed_independently_verified",
     "calibration_result": "results/data_free_compensation/finite_classification_result.json:prodistill.components",
     "new_full_rows": 18,
-    "reused_full_rows": 6
+    "reused_full_rows": 6,
+    "completed_utc": "2026-11-02T09:22:56.646330+00:00",
+    "target_accuracy": {
+      "MNIST": [
+        28.06,
+        98.79,
+        46.07,
+        99.43
+      ],
+      "SVHN": [
+        8.14382298709281,
+        86.6702519975415,
+        20.190534726490473,
+        96.1777811923786
+      ],
+      "DTD": [
+        8.670212765957446,
+        41.170212765957444,
+        31.382978723404253,
+        66.70212765957447
+      ]
+    },
+    "column_order": [
+      "initial_A_B",
+      "trained_A_only_substitution",
+      "trained_B_only_substitution",
+      "both_trained"
+    ],
+    "new_independent_context_replays": 288,
+    "maximum_replay_error": 0,
+    "metadata_serialization_failure": "Original completed metadata failed on NumPyint64; rows and scores complete. Only metadata repaired and selected batch contexts verified; no full rerun."
   }
 }
