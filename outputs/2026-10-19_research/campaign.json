@@ -1,11 +1,11 @@
 {
-  "status": "fixed_component_evaluation_prepared",
-  "updated_utc": "2026-11-02T03:13:22.281712+00:00",
+  "status": "component_diagnosis_completed;next_constraint_formulation_under_review",
+  "updated_utc": "2026-11-02T03:34:52.635881+00:00",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Run only fixed A-only/native-fit standalone controls for existing SVHN/DTD points; no search or new candidate.",
+  "next_action": "Evaluate a finite source-classification requirement with native function preservation as the objective; no new optimizer or point implemented. Do not tune closed SVHN/DTD points.",
   "github_sync": {
     "status": "pending: connector Unknown tool",
     "last_verified_commit": "4be53a56ee0fa7a3ac50bddbb11dd7186d748f0d"
@@ -1609,5 +1609,22 @@
     ],
     "DTD_fusion_evaluated": false,
     "new_parameter_updates_after_freeze": 0
+  },
+  "latest_component_diagnosis": {
+    "record": "results/data_free_compensation/noise_calibration_transfer_result.json:fixed_component_result",
+    "SVHN_original_Aonly_nativefit_final": [
+      97.46081745543947,
+      97.41087891825445,
+      97.45313460356485,
+      95.67455439459127
+    ],
+    "DTD_original_Aonly_nativefit_final": [
+      79.41489361702128,
+      78.61702127659575,
+      79.20212765957447,
+      65.95744680851064
+    ],
+    "new_defense_candidates": 0,
+    "finding": "Initial native compensation largely retains task ability; the subsequent public objective causes most additional loss in these fixed cases."
   }
 }

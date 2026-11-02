@@ -105,3 +105,22 @@ DTD & --- & --- & --- & --- & --- \\
 Calibration uses 64 fixed random inputs, with a seed different from construction. MLP matching uses published weights and the public base. Replacement additionally knows the changed module. Matched unprotected SVHN results are 92.32/91.34/91.59 after calibration and 92.40 after replacement. The MNIST partner of protected SVHN also falls to 0.91/0.09/0.07 before calibration and 0.08/0.08/0.06 after calibration; preservation of the partner task is not claimed. Dashes denote unevaluated cases. Source and complete paired statistics are in noise\_calibration\_transfer\_result.json.
 \end{minipage}
 \end{table*}
+
+
+\begin{table*}[t]
+\centering\small
+\caption{Standalone accuracy at fixed components of the construction (\%).}
+\label{tab:noise-native-components}
+\begin{tabular}{lrrrr}
+\toprule
+Task & Original & Input matrix and bias only & Initial native fit & Final model \\
+\midrule
+SVHN & 97.46 & 97.41 & 97.45 & 95.67 \\
+DTD & 79.41 & 78.62 & 79.20 & 65.96 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize
+All component weights are frozen before real-image evaluation. The initial native fit is the original conditional ridge solution before optimizing the public classification objective; inputs and coefficients are unchanged. Original and final scores are reused. The additional loss from the native fit to the final model is 1.78 points on SVHN (paired 95\% interval: [1.59, 1.97]) and 13.24 points on DTD [11.47, 15.02]. These are diagnostic controls, not newly selected defenses; their fusion protection is not evaluated.
+\end{minipage}
+\end{table*}
