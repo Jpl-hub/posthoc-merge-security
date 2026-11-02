@@ -516,5 +516,22 @@
   "planned_pilot_rows": 12,
   "registration_utc": "2026-11-02T06:14:08.067583+00:00",
   "defense_result": "results/data_free_compensation/finite_classification_result.json",
-  "previous_comparison": "results/attack_generalization_20261028/prodistill/protocol.json"
+  "previous_comparison": "results/attack_generalization_20261028/prodistill/protocol.json",
+  "component_analysis": {
+    "registered_utc": "2026-11-02T08:54:05.095039+00:00",
+    "question": "Which final-MLP side accounts for the observed ProDistill recovery under fixed trained surrounding parameters?",
+    "models": [
+      "initial_A_initial_B",
+      "trained_A_initial_B",
+      "initial_A_trained_B",
+      "trained_A_trained_B"
+    ],
+    "reference": "All non-MLP-A/B parameters use the completed trained merger. Initial A/B from the original published model plus partner with the exact0.3 ProDistill initialization. Both input and output biases move with their matrices.",
+    "inputs": "Same64 unlabeled attack-training images per task and same frozen indices. No benchmark images in this diagnostic. Original task labels are not read for fitting or selection.",
+    "report": "Complete target/partner classifier accuracy on the calibration set, agreement to the published teacher, and all four frozen variants. These are attack-calibration diagnostics, not full-test accuracy or a new defense.",
+    "new_optimizer_steps": 0,
+    "new_defense_candidates": 0,
+    "no_result_based_selection": true,
+    "output": "outputs/finite_classification_prodistill_20261102/components"
+  }
 }
