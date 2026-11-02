@@ -36,6 +36,8 @@ def main():
     parser.add_argument("--input-bias", action="store_true")
     parser.add_argument("--noise-calibration", action="store_true")
     parser.add_argument("--finite-classification", action="store_true")
+    parser.add_argument("--without-task-projection", action="store_true",
+                        help="Ablation: remove only the two task-SVD constraints on A")
     parser.add_argument("--preserve-native", action="store_true",
                         help="Retain initial native source predictions at every accepted step")
     parser.add_argument("--output", type=Path)
@@ -85,8 +87,11 @@ def main():
     ]
     # Change A outside the selected task-SVD directions.
     D = A - A0
-    (U, _, Vh) = torch.linalg.svd(D, full_matrices=False)
-    (U, V) = (U[:, :32], Vh[:32].T)
+    if args.without_task_projection:
+        U, V = D[:, :0], D.T[:, :0]
+    else:
+        (U, _, Vh) = torch.linalg.svd(D, full_matrices=False)
+        (U, V) = (U[:, :32], Vh[:32].T)
     if args.input_bias:
         # Preserve affine preactivations at beta + span(V), while including
         # the input bias in the public incoming-weight correspondence.
@@ -562,6 +567,7 @@ def main():
         input_bias=args.input_bias,
         noise_calibration=args.noise_calibration,
         finite_classification=args.finite_classification,
+        task_projection=not args.without_task_projection,
         preserve_native=preserve_native,
         first_finite_classification=first_feasible,
         construction_noise_seed=2026110201 if args.noise_calibration else None,
