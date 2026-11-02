@@ -28,11 +28,53 @@
     "new_source_generations": 0,
     "expert_training_updates": 0
   },
-  "source_sha256": "99e64b148bc4c0e48ae8a618271a97408208ab976c132250baf3b5d29ec11aee",
+  "source_sha256": "44392ef31bdc8df514d57ee0cb268cdfdbb63f088be0522c5e964ed43d953b20",
   "drivers_sha256": {
     "outputs/finite_classification_20261102/run.sh": "c5654726e14173a1807668e83e7b63283772c536e24e240e96ed845a5c0dd51a",
     "outputs/finite_classification_20261102/source_check.py": "5be88c7cc5de376d0a01ba373254123d95e44de81fcd08bf89d1221347fed0ba",
     "outputs/finite_classification_20261102/native.py": "ab16b16c7c7fe8e1aae5de9ae479a641c00b6f9b58edc8f6d6163bc01fef81b9"
   },
-  "status": "preregistered_not_started"
+  "status": "preregistered_not_started",
+  "preoptimization_check_fix": {
+    "failure": "Fixed finite-difference step1e-6 crosses a nonsmooth branch at initial RN. No optimizer updates/publication or real images before failure.",
+    "fixed_initial_point_diagnosis": {
+      "checks": [
+        {
+          "step": 1e-05,
+          "finite_difference": -12.550272608802258,
+          "autograd": -12.552022570198318,
+          "relative_error": 0.00012914584426316992
+        },
+        {
+          "step": 1e-06,
+          "finite_difference": -12.55026869850795,
+          "autograd": -12.552022570198318,
+          "relative_error": 0.00012943445841496795
+        },
+        {
+          "step": 1e-07,
+          "finite_difference": -12.552022563561138,
+          "autograd": -12.552022570198318,
+          "relative_error": 4.897556555566277e-10
+        },
+        {
+          "step": 1e-08,
+          "finite_difference": -12.552022576883815,
+          "autograd": -12.552022570198318,
+          "relative_error": 4.933209462158425e-10
+        },
+        {
+          "step": 1e-09,
+          "finite_difference": -12.552022532474892,
+          "autograd": -12.552022570198318,
+          "relative_error": 2.783601198286025e-09
+        }
+      ],
+      "optimizer_updates": 0,
+      "real_images": 0
+    },
+    "correction": "Finite-classification check only: central difference step1e-8, same relative error tolerance1e-5. Source data/optimization/backtracking/parameters unchanged; old runs retain1e-6.",
+    "source_failure_archive": "outputs/finite_classification_20261102/MNIST/point.derivative_failure",
+    "diagnostic_driver_sha256": "680793092eb6d404cec46deb258629669d018dae28cea1535f500314475adc8c"
+  }
 }
