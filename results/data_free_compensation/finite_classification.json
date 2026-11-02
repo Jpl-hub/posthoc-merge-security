@@ -76,5 +76,99 @@
     "correction": "Finite-classification check only: central difference step1e-8, same relative error tolerance1e-5. Source data/optimization/backtracking/parameters unchanged; old runs retain1e-6.",
     "source_failure_archive": "outputs/finite_classification_20261102/MNIST/point.derivative_failure",
     "diagnostic_driver_sha256": "680793092eb6d404cec46deb258629669d018dae28cea1535f500314475adc8c"
+  },
+  "evaluation_extension": {
+    "registered_utc": "2026-11-02T04:43:32.076355+00:00",
+    "frozen_points": {
+      "MNIST": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1",
+      "SVHN": "5819a9bff4c25311633a07e18600721d2f18366dc0ebe056fe33544d3d809386",
+      "DTD": "fd8d553e1c3b491ca2753accc1f846d2b650084c4bd489fefc4e2f7ab67ec170"
+    },
+    "unprotected_controls": {
+      "MNIST": {
+        "path": "outputs/native_ellipse_classification_20261026/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "5f36e2ff939c328678bafedfc6a1aa1ae6bad7072dd5aa39651499237b1d7ed8"
+      },
+      "SVHN": {
+        "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c"
+      },
+      "DTD": {
+        "path": "outputs/attack_generalization_20261028/baselines/full/02_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "38a972fba54a1c2339711fcc7ea22d480c048ebeeecbe954e60e1f5ad6cfba1b"
+      }
+    },
+    "scope": "Same registered three tasks; existing TA.5, original author AGA target-only/both, independent64 noise output calibration, full targets and partners, original128batch replay, NumPy pairs. Standalone and exact unprotected scores reused. No model updates or new attack families.",
+    "driver_sha256": {
+      "outputs/finite_classification_20261102/evaluate.py": "1978dcfb1a7c1dc71dcd745ea903cab42ac6dc4fb4ca843c6f484ad76f2a81b3",
+      "outputs/finite_classification_20261102/paired_check.py": "780e85b87f2b6eacd2bcb1e8956987b31fe3430b754c2c0b2a8054ddeceecff5",
+      "outputs/finite_classification_20261102/recovery.json": "ec6724f9fc81c8ca40117b5dd54d5d2fc721872e642a91d521a9dec73fc3f6d3",
+      "outputs/noise_calibration_other_20261102/calibrate.py": "6926ab7a764d20120297c131eefaf493f37ac7fbe024d89f998f777f45583e5a"
+    },
+    "new_AGA_calls": 3,
+    "new_primary_real_forwards": 251832,
+    "new_noise_model_forwards": 1152,
+    "new_defense_updates": 0,
+    "new_standalone_forwards": 0
+  },
+  "recovery_extension": {
+    "registered_utc": "2026-11-02T04:54:39.748246+00:00",
+    "scope": "Existing full12 MLP matching on all3 frozen points. Same knownlastB+b replacement: complete158tensor equality permits reuse for MNIST/SVHN; DTD newevaluation with matched same-operation unprotected control. No additional attack permissions or algorithm.",
+    "driver_path": "outputs/finite_classification_20261102/recovery.py",
+    "driver_sha256": "f794acd4f41d18498d71ab83d9e96829d70501e25ab4d01f76666f59f04a7652",
+    "primary_real_forwards": 135616,
+    "new_matching_calls": 3,
+    "new_AGA_calls": 0,
+    "new_defense_updates": 0
+  },
+  "native_constraint_control": {
+    "registered_utc": "2026-11-02T05:14:49.024491+00:00",
+    "purpose": "Isolate the native-retention acceptance condition: original probability objective plus per-step native source prediction retention. Compare all3 tasks with the unchanged original probability rule and the completed finite-margin rule.",
+    "tasks": [
+      "MNIST",
+      "SVHN",
+      "DTD"
+    ],
+    "output": "outputs/native_constraint_20261102",
+    "construction": "Fresh original expert/base, identical taskSVD32 A/inputbias construction and conditional initial B, same synthetic source/head/classes, rho/tau, six contexts and 3readouts, 500steps/24backtracks. No old optimized point, real images, partner or test tuning.",
+    "only_changed_component": "Require native teacher argmax count >= its initial count at each accepted step. Old probability objective and ordinary original line-search objective remain; no finite-margin phase and no native-ray refinement.",
+    "hypothesis": "Native hard acceptance may account for improved standalone retention without reducing suppression of the corrected public probabilities. It may instead stop before source feasibility or fail to improve natural accuracy; report each outcome.",
+    "source_failure_rule": "Original source condition unchanged and independently recounted; failed source closes that task. All18 raw/calibrated counts explicitly reported, not assumed zero. No retry or threshold relaxation. Numerical/implementation failure preserves log and halts queue.",
+    "evaluation": "Freeze allthree before any real image. Source-passing points get complete standalone then TA.5/AGA target+both and fixed independent64-noise output calibration regardless of standalone score. Existing unprotected full scores reused. Matching/B replacement deferred; not claimed.",
+    "scope": "Component ablation, not a new optimizer or established new defense. Does not change known-B-reset structural limitation, does not establish SVD benefit.",
+    "source_sha256": "910879a2588096613de5860cbde864ebad312c71c87d9f9878538e8603e85bd9",
+    "input_config_sha256": "894209da2c9cdca0dc6bbd674a407e2970865d847f2346a78e8f09a93b68a722",
+    "unprotected_controls": {
+      "MNIST": {
+        "path": "outputs/native_ellipse_classification_20261026/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+        "sha256": "5f36e2ff939c328678bafedfc6a1aa1ae6bad7072dd5aa39651499237b1d7ed8"
+      },
+      "SVHN": {
+        "path": "outputs/attack_generalization_20261028/baselines/full/01_SVHN_MNIST/artifacts/predictions.pt",
+        "sha256": "9088d29018ea0af50ee706234264e2022dc6c6d869bf6adb6b95ec2c352d796c"
+      },
+      "DTD": {
+        "path": "outputs/attack_generalization_20261028/baselines/full/02_DTD_MNIST/artifacts/predictions.pt",
+        "sha256": "38a972fba54a1c2339711fcc7ea22d480c048ebeeecbe954e60e1f5ad6cfba1b"
+      }
+    },
+    "maximum_cost": {
+      "new_points": 3,
+      "real_construction_images": 0,
+      "expert_training_updates": 0,
+      "construction_noise_forwards": 768,
+      "task_reference_synthetic_forwards": 5360,
+      "standalone_primary_forwards": 75824,
+      "TA_AGA_primary_forwards": 251832,
+      "calibration_noise_forwards": 1152,
+      "new_AGA_calls": 3
+    },
+    "driver_sha256": {
+      "outputs/native_constraint_20261102/run.py": "7dcc1cb9c75f29e40e1170bd9e1e2ee2fff8b0299b3abb1eeb90fb4c3f9b49b5",
+      "outputs/native_constraint_20261102/recovery.json": "ec6724f9fc81c8ca40117b5dd54d5d2fc721872e642a91d521a9dec73fc3f6d3",
+      "outputs/noise_calibration_other_20261102/source_check.py": "15d388870ce90df2931a601c23c2756efd9b64ef4f555c842732ab551a6094d0",
+      "outputs/finite_classification_20261102/paired_check.py": "780e85b87f2b6eacd2bcb1e8956987b31fe3430b754c2c0b2a8054ddeceecff5",
+      "outputs/noise_calibration_other_20261102/calibrate.py": "6926ab7a764d20120297c131eefaf493f37ac7fbe024d89f998f777f45583e5a"
+    }
   }
 }
