@@ -1,0 +1,12 @@
+\begin{table}[t]
+\centering\small
+\caption{MNIST test accuracy (\%) with the public base as the second teacher. Both teachers see the same 64 synthetic images generated using the clean expert. The last column applies the frozen readout to the mean of the two teachers' final CLS features.}
+\begin{tabular}{lrrr}
+\toprule
+Target & Initial & Distilled & Feature mean \\
+\midrule
+Unprotected & 97.45 & 98.88 & 99.69 \\
+Defense 2 & 10.35 & 95.51 & 99.59 \\
+\bottomrule
+\end{tabular}
+\end{table}
