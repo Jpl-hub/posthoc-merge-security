@@ -1,0 +1,123 @@
+{
+  "status": "registered_before_model_evaluation",
+  "registered_utc": "2026-11-03T05:54:13.071053+00:00",
+  "backbone": "ViT-B-16",
+  "experiment": "Same weight-only Defense1 on a second CLIP backbone; no source or benchmark selection",
+  "output": "outputs/backbone_b16_20261103/evaluation",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    },
+    "DTD": {
+      "classes": 47,
+      "test_n": 1880
+    }
+  },
+  "targets": {
+    "MNIST": {},
+    "SVHN": {},
+    "DTD": {}
+  },
+  "bias": {
+    "noise_seed": 20261014,
+    "numerical_relative_tolerance": 1e-10,
+    "proxy_beta": 0.5,
+    "bias_safety": 2.0
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TA"
+  ],
+  "attack_scopes": [
+    "None",
+    "Protected expert",
+    "All experts"
+  ],
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "original_batch_context_replays": true,
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "AGA_references": {},
+  "defenses": {},
+  "legacy": {},
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "defenses": [
+        "Defense1_MNIST"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense1_SVHN"
+      ]
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense1_DTD"
+      ]
+    }
+  ],
+  "calibration": {
+    "driver": "outputs/noise_calibration_other_20261102/calibrate.py",
+    "input_seed": 2026102509,
+    "input_n": 64,
+    "rule": "For each own fused model, p_cf=mean softmax(logits(noise)); predict argmax(logits(test)-log(p_cf)). This is the official diagonal probability division computed stably in log space. One fixed rule, no scale/temperature/mapping/source/seed selection.",
+    "permissions": "Own already-created fused model, fixed public classifier/class IDs and synthetic noise. Fitting does not access original target expert, real training/test data, old clean teacher generated cache, protected-source data or labels. Research assembly uses pinned published/original-AGA weights and own partner exactly as the original fixed merging evaluation. The unprotected matched release is corrected by the same rule on itself."
+  },
+  "source_sha256": {
+    "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+    "configs/checkpoints_vit_b16.json": "96fe576536f682f56ce9b7413a89dbdc2e6f9a7d378bce0a5e511ab9a7285734",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/evaluate.py": "db733c87bdbb5e2a747c5b4e33e40023ae307bf7823d64bebba8e6510bf753f1",
+    "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+    "experiment/recover.py": "a6770bb3f99fc9a05e69ae8e2c3df48480be9370878e04d73096234a9d57641f",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "outputs/backbone_b16_20261103/run.py": "470b67664d16a333b51dc33c2fdffec375aae1683cf13360e7959ff7c8a19d61",
+    "outputs/noise_calibration_other_20261102/calibrate.py": "6926ab7a764d20120297c131eefaf493f37ac7fbe024d89f998f777f45583e5a"
+  },
+  "checkpoint_manifest": "configs/checkpoints_vit_b16.json",
+  "checkpoints_source": "https://github.com/mlfoundations/task_vectors#checkpoints",
+  "AGA_adaptation": "Call unchanged pinned author attention and MLP functions on verified12-layer12-head ViT-B16. Official entry is B32; this is an architecture transfer, not an official B16 reproduction.",
+  "construction_access": "Frozen target, public base and public classifier weights only; zero real or synthetic construction images, zero expert updates. Freeze all3 releases and AGA outputs before benchmark access.",
+  "evaluation": "Complete official MNIST10000/SVHN26032/DTD1880. Previously used datasets; new backbone, not a new blind benchmark. Matched unprotected models under every processing scope. Native accuracy,paired changes,all classes,partner and costs reported.",
+  "runtime_configuration": "Fill artifact hashes mechanically after construction. Reuse4 full reverse-order clean rows only after model_parameter_sha256 equality. No accuracy-based branch, rerun, seed/amplitude tuning or defense replacement.",
+  "budget": {
+    "new_defense_points": 3,
+    "new_AGA_calls": 6,
+    "full_rows": 42,
+    "reused_full_rows": 4,
+    "new_full_image_forwards": 507424,
+    "pilot_rows": 42,
+    "replays_per_stage": 672,
+    "maximum_calibration_noise_forwards": 1152,
+    "expert_training_updates": 0,
+    "wall_limit_seconds": 14400
+  },
+  "scope_limit": "Defense1 only in this batch; does not complete Defense2 B16,8-task evaluation,or prove recovery resistance. Existing B32 weakness remains unchanged.",
+  "driver_source": "\"\"\"Run the declared B/16 control using existing construction and evaluation entries.\"\"\"\nimport gc\nimport json\nimport subprocess\nimport sys\nfrom pathlib import Path\n\nimport torch\n\nfrom cfg import BACKBONE, load_config\nfrom _impl.attacks import author_recover, load_author\nfrom _impl.evaluate import run, verify\nfrom _impl.io import digest, save_json\nfrom _impl.models import initialize, load_checkpoint\n\nprotocol = Path('results/backbone_b16/protocol.json')\ncfg = load_config(protocol)\nassert BACKBONE == cfg['backbone'] == 'ViT-B-16'\nroot = Path(cfg['output']).parent\ninitialize()\ngeometry, clean = {}, {}\nbase = load_checkpoint('zeroshot.pt')\nauthor, author_sha = load_author('external/secure-merge-attack/' + cfg['AGA']['file'], True)\nassert author_sha == cfg['AGA']['sha256']\nassert digest('external/secure-merge-attack/' + cfg['AGA']['file']) == cfg['AGA']['raw_sha256']\nfor task in cfg['tasks']:\n    expert = load_checkpoint(task + '/finetuned.pt')\n    head = load_checkpoint('head_' + task + '.pt')\n    visual = expert.model.visual\n    assert visual.conv1.weight.shape == (768, 3, 16, 16)\n    assert visual.positional_embedding.shape == (197, 768)\n    assert len(visual.transformer.resblocks) == 12\n    assert all(block.attn.num_heads == 12 for block in visual.transformer.resblocks)\n    assert head.weight.shape == (cfg['tasks'][task]['classes'], 512)\n    geometry[task] = dict(patch=16, tokens=197, layers=12, heads=12, width=768,\n                          output=512, preprocessing=repr(expert.val_preprocess))\n    restored = author_recover(expert, base, author)\n    dest = root / ('clean_AGA_' + task + '.pt')\n    assert not dest.exists()\n    torch.save(restored.state_dict(), dest)\n    clean[task] = dict(path=str(dest), sha256=digest(dest))\n    del expert, restored, head\n    gc.collect()\ndel base\ncfg['AGA_references'] = clean\nsave_json(root / 'geometry.json', geometry)\nprepared = root / 'evaluation.json'\nsave_json(prepared, cfg)\nfor task in cfg['tasks']:\n    out = root / task\n    subprocess.run([sys.executable, '-m', 'experiment.construct', '--method', 'bias',\n                    '--target', task, '--protocol', str(protocol), '--output', str(out)], check=True)\n    release = dict(path=str(out / 'release.pt'), sha256=digest(out / 'release.pt'))\n    subprocess.run([sys.executable, '-m', 'experiment.recover', '--target', task,\n                    '--protocol', str(prepared), '--publication', release['path'],\n                    '--sha256', release['sha256'], '--aligned-reference',\n                    '--output', str(out / 'AGA')], check=True)\n    cfg['defenses']['Defense1_' + task] = dict(target=task, release=release,\n        AGA_edits=dict(path=str(out / 'AGA/edits.pt'), sha256=digest(out / 'AGA/edits.pt')))\nsave_json(root / 'before_images.json', dict(backbone=BACKBONE, defenses=cfg['defenses'],\n    AGA_references=clean, protocol_sha256=digest(protocol), real_construction_images=0,\n    synthetic_construction_images=0, expert_training_updates=0))\nsave_json(prepared, cfg)\nfor i, case in enumerate(cfg['cases']):\n    run(str(prepared), i, True)\n    part = f\"{i:02d}_{case['target']}_{case['partner']}\"\n    verify(Path(cfg['output']) / 'pilot' / part)\n    run(str(prepared), i, False)\n    full = Path(cfg['output']) / 'full' / part\n    verify(full)\n    if i == 0:\n        meta = json.loads((full / 'execution.json').read_text())\n        reuse = {}\n        for stage, scope in [('direct', 'None'), ('AGA_both', 'All experts')]:\n            reuse[stage] = dict(path=str(full / 'artifacts/predictions.pt'),\n                sha256=meta['predictions_sha256'], key_template='Unprotected/TA/{stage}/{task}',\n                stage=scope, model_parameter_sha256=meta['evaluated_parameter_sha256']['Unprotected/TA/' + scope])\n        cfg['legacy']['SVHN_MNIST/Unprotected'] = reuse\n        save_json(prepared, cfg)\ncalibration = dict(output=str(root / 'calibration'), input_seed=cfg['calibration']['input_seed'],\n                  input_n=cfg['calibration']['input_n'], cases=[])\nfor i, case in enumerate(cfg['cases']):\n    task, peer = case['target'], case['partner']\n    spec = cfg['defenses']['Defense1_' + task]\n    scores = Path(cfg['output']) / 'full' / f'{i:02d}_{task}_{peer}' / 'artifacts/predictions.pt'\n    calibration['cases'].append(dict(target=task, partner=peer, name='Defense1_' + task,\n        release=spec['release'], AGA_edits=spec['AGA_edits'], AGA_references=clean,\n        raw_scores=dict(path=str(scores), sha256=digest(scores))))\ncalibration_path = root / 'calibration.json'\nsave_json(calibration_path, calibration)\nsubprocess.run([sys.executable, cfg['calibration']['driver'], str(calibration_path)], check=True)\nsave_json(root / 'completed.json', dict(status='evaluation_and_existing_replay_complete',\n    cases=3, full_rows=42, calibration_rows=36, independent_summary_pending=True,\n    protocol_sha256=digest(protocol), evaluation_sha256=digest(prepared)))\nprint('BACKBONE_B16_FINISHED', flush=True)\n"
+}
