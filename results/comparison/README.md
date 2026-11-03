@@ -11,6 +11,7 @@
 | [新版TIES/DARE](defense2_mergers.md) / [TeX](defense2_mergers.tex) | 同一新版防御二，目标与伙伴分别报告 |
 | [任务投影约束对照](defense2_projection.md) / [TeX](defense2_projection.tex) | 同一构造仅移除A的两侧SVD约束；[伙伴结果](defense2_projection_partners.md) |
 | [投影对照的恢复比较](defense2_projection_recovery.md) / [TeX](defense2_projection_recovery.tex) | 同三份发布的MLP匹配、已知B及偏置替换、固定ProDistill；[伙伴结果](defense2_projection_recovery_partners.md) |
+| [八专家投影对照](defense2_projection_eight.md) / [TeX](defense2_projection_eight.tex) | 三个保护任务的独立、TA与AGA准确率，另列[七个测试集](defense2_projection_eight_datasets.md)。 |
 
 PaRaMS是已有防御方法；TA是融合算法。AGA、输出校正、MLP匹配和蒸馏是不同的恢复处理。输出校正采用固定64张随机图，不需要干净目标专家或修改位置；蒸馏额外使用无标签训练图和学生训练，单独说明权限。已知位置的公开模块替换仍见[防御二结果](../attack_generalization_20261028/attack_comparison.md)和[防御一结果](../phase3/bias_weight_only/attacks/projection.md)。这些实现的论文来源和适配范围见[攻击清单](../attack_generalization_20261028/attack_inventory.md)，不都称作官方CLIP攻击复现。
 
@@ -53,4 +54,4 @@ python -m experiment.report --defense-comparison --output results/comparison
 
 任务投影对照的独立准确率为99.68/97.41/77.87%，原专家为99.69/97.46/79.41%；AGA后再校正为10.23/12.32/0.90%。三任务同规则、同输入，没有分任务择优。MNIST/SVHN未完全满足合成输入上的零分类违反条件，DTD满足；按执行前约定仍完整报告所有数值有效对照。这是组件作用的证据，不替换主方法发布，也不沿用主方法的TIES/DARE、八专家或蒸馏成绩。
 
-去投影对照的恢复比较已完成。ProDistill后MNIST/SVHN/DTD为99.07/95.82/20.53%，保留约束的主发布为99.43/96.18/66.70%；输入图片、索引和训练步数相同。DTD有明显改善，但数字任务仍被恢复；已知B及偏置替换仍为99.34/92.26/65.96%。同三份发布的八专家及固定64随机图校正正在运行，主方法不替换。
+去投影对照的恢复比较已完成。ProDistill后MNIST/SVHN/DTD为99.07/95.82/20.53%，保留约束的主发布为99.43/96.18/66.70%；输入图片、索引和训练步数相同。DTD有明显改善，但数字任务仍被恢复；已知B及偏置替换仍为99.34/92.26/65.96%。同三份发布的八专家校正评价已经完成。AGA加校正后，去投影的三个目标为22.31/29.48/2.39%，保留投影为22.99/17.16/28.46%。

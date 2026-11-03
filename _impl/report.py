@@ -414,6 +414,38 @@ def defense_comparison(directory):
     write("defense2_projection_recovery_partners", "Partner accuracy after recovery of projection controls",
           ["Target", "Projection", "MLP match", "B reset", "ProDistill"],
           recovery_tables[1], recovery_note + " MNIST is paired with SVHN; SVHN and DTD with MNIST.", "llrrr")
+    removed = read("results/data_free_compensation/projection_eight/calibration.json")
+    paired = read("results/data_free_compensation/projection_eight/paired.json")
+    assert removed["independent_validation"]["comparisons"] == 126
+    assert len(paired["paired_comparisons"]) == 84
+    summary_rows, dataset_rows = [], []
+    for task, label, standalone, *_ in recovery_tables[0]:
+        scores = removed if label == "Removed" else calibration
+        model = "Unprotected" if label == "Unprotected" else "Defense2_" + task
+        summary = [task, label, standalone]
+        for scope, processing in [("None", "TA"), ("Protected expert", "AGA")]:
+            raw, corrected = [], []
+            for dataset in cfg["evaluate"]:
+                key = "/".join([task, model, scope, dataset])
+                row = one(scores["rows"], key=key)
+                before = row["correct"] + row["paired"]["lost"] - row["paired"]["gained"]
+                raw.append(f"{100 * before / row['n']:.2f}")
+                corrected.append(accuracy(row))
+                if dataset == task:
+                    summary.extend([raw[-1], corrected[-1]])
+            if label == "Removed":
+                dataset_rows.append([task, processing] + raw)
+                dataset_rows.append([task, processing + " + calibration"] + corrected)
+        summary_rows.append(summary)
+    eight_note = ("Eight experts participate in TA with coefficient 0.2. AGA processes the protected "
+                  "expert. Output calibration uses 64 random images. The removed condition drops the "
+                  "two projections used to construct A and keeps the task-specific synthetic inputs. "
+                  "Seven complete test sets are available. The original EuroSAT split is unverified.")
+    write("defense2_projection_eight", "Task projection in eight-expert merging",
+          ["Task", "Projection", "Standalone", "TA", "+calib.", "AGA", "+calib."],
+          summary_rows, eight_note, "llrrrrr")
+    write("defense2_projection_eight_datasets", "Seven test sets with the task projection removed",
+          ["Protected task", "Processing"] + cfg["evaluate"], dataset_rows, eight_note, "llrrrrrrr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"

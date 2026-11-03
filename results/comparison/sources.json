@@ -25,7 +25,9 @@
     "results/comparison/eight_calibration/PaRaMS.json": "d850ec43ba4caee62db2177306b303965b4b956fffb1051b1bb7ee0b24fed4c2",
     "results/data_free_compensation/finite_mergers_result.json": "d30df8845a1a0ff23e89a40e8aba9ed8fd8c3f6864731ce4fbfed41e96399bf4",
     "results/data_free_compensation/finite_projection_ablation_result.json": "4f36b8317146dc7569d583dd83cdc3fd16bed39f2a46849bac8feacd91335f2c",
-    "results/data_free_compensation/projection_recovery_result.json": "54b8d87bf8bdb8f81093331199407fbc5ec47a9b0cdc1a4b668a8a1c320d440e"
+    "results/data_free_compensation/projection_recovery_result.json": "54b8d87bf8bdb8f81093331199407fbc5ec47a9b0cdc1a4b668a8a1c320d440e",
+    "results/data_free_compensation/projection_eight/calibration.json": "256883bc726e579660cc7e300a7d4033efa2d24107c1f0222e442e96067eaa92",
+    "results/data_free_compensation/projection_eight/paired.json": "795515a0f663e7925f7d5444b0a0bb75352d09cb634256dfdda1df7dacafd657"
   },
   "eight_expert_rows": [
     {
@@ -3972,6 +3974,249 @@
       ],
       "note": "The same fixed projection controls as the preceding ablation. MLP matching uses public weights without images. B reset replaces the last MLP output matrix and bias with the public base, requiring knowledge of the modified location; its unprotected control receives the same replacement. Both use TA coefficient 0.5. ProDistill uses 64 additional unlabeled training images per task, 100 epochs per block and coefficient initialization 0.3; no AGA preprocessing. Data, indices and training steps match the retained-projection comparison. These recovery conditions are separate, not one common attacker. Standalone columns precede recovery. MNIST and SVHN synthetic source-condition failures remain reported; no new defense updates. MNIST is paired with SVHN; SVHN and DTD with MNIST."
     },
+    "defense2_projection_eight": {
+      "headers": [
+        "Task",
+        "Projection",
+        "Standalone",
+        "TA",
+        "+calib.",
+        "AGA",
+        "+calib."
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Unprotected",
+          "99.69",
+          "94.00",
+          "94.04",
+          "93.23",
+          "93.19"
+        ],
+        [
+          "MNIST",
+          "Retained",
+          "99.57",
+          "24.71",
+          "24.03",
+          "23.35",
+          "22.99"
+        ],
+        [
+          "MNIST",
+          "Removed",
+          "99.68",
+          "16.75",
+          "17.53",
+          "18.56",
+          "22.31"
+        ],
+        [
+          "SVHN",
+          "Unprotected",
+          "97.46",
+          "74.42",
+          "74.61",
+          "72.53",
+          "72.82"
+        ],
+        [
+          "SVHN",
+          "Retained",
+          "96.66",
+          "15.25",
+          "23.74",
+          "11.03",
+          "17.16"
+        ],
+        [
+          "SVHN",
+          "Removed",
+          "97.41",
+          "27.24",
+          "21.94",
+          "30.91",
+          "29.48"
+        ],
+        [
+          "DTD",
+          "Unprotected",
+          "79.41",
+          "52.18",
+          "38.67",
+          "51.38",
+          "38.35"
+        ],
+        [
+          "DTD",
+          "Retained",
+          "76.33",
+          "4.84",
+          "26.17",
+          "3.24",
+          "28.46"
+        ],
+        [
+          "DTD",
+          "Removed",
+          "77.87",
+          "2.07",
+          "7.87",
+          "2.34",
+          "2.39"
+        ]
+      ],
+      "note": "Eight experts participate in TA with coefficient 0.2. AGA processes the protected expert. Output calibration uses 64 random images. The removed condition drops the two projections used to construct A and keeps the task-specific synthetic inputs. Seven complete test sets are available. The original EuroSAT split is unverified."
+    },
+    "defense2_projection_eight_datasets": {
+      "headers": [
+        "Protected task",
+        "Processing",
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45",
+        "Cars",
+        "SUN397"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "TA",
+          "16.75",
+          "12.31",
+          "2.23",
+          "14.82",
+          "10.16",
+          "4.78",
+          "1.13"
+        ],
+        [
+          "MNIST",
+          "TA + calibration",
+          "17.53",
+          "12.59",
+          "43.67",
+          "30.29",
+          "60.70",
+          "45.28",
+          "44.58"
+        ],
+        [
+          "MNIST",
+          "AGA",
+          "18.56",
+          "14.70",
+          "2.61",
+          "8.97",
+          "14.65",
+          "7.41",
+          "1.24"
+        ],
+        [
+          "MNIST",
+          "AGA + calibration",
+          "22.31",
+          "21.55",
+          "44.15",
+          "33.09",
+          "61.54",
+          "45.52",
+          "44.57"
+        ],
+        [
+          "SVHN",
+          "TA",
+          "20.94",
+          "27.24",
+          "4.84",
+          "3.54",
+          "2.13",
+          "1.89",
+          "0.62"
+        ],
+        [
+          "SVHN",
+          "TA + calibration",
+          "18.73",
+          "21.94",
+          "42.07",
+          "36.51",
+          "67.81",
+          "44.45",
+          "50.49"
+        ],
+        [
+          "SVHN",
+          "AGA",
+          "20.89",
+          "30.91",
+          "5.59",
+          "3.56",
+          "2.19",
+          "2.38",
+          "0.81"
+        ],
+        [
+          "SVHN",
+          "AGA + calibration",
+          "38.58",
+          "29.48",
+          "43.30",
+          "47.47",
+          "67.90",
+          "48.46",
+          "50.73"
+        ],
+        [
+          "DTD",
+          "TA",
+          "81.19",
+          "58.77",
+          "2.07",
+          "0.69",
+          "2.97",
+          "3.52",
+          "0.87"
+        ],
+        [
+          "DTD",
+          "TA + calibration",
+          "93.74",
+          "72.65",
+          "7.87",
+          "39.94",
+          "64.94",
+          "42.59",
+          "46.73"
+        ],
+        [
+          "DTD",
+          "AGA",
+          "80.62",
+          "59.25",
+          "2.34",
+          "0.74",
+          "4.51",
+          "3.46",
+          "0.74"
+        ],
+        [
+          "DTD",
+          "AGA + calibration",
+          "94.15",
+          "74.57",
+          "2.39",
+          "40.27",
+          "60.57",
+          "41.94",
+          "38.98"
+        ]
+      ],
+      "note": "Eight experts participate in TA with coefficient 0.2. AGA processes the protected expert. Output calibration uses 64 random images. The removed condition drops the two projections used to construct A and keeps the task-specific synthetic inputs. Seven complete test sets are available. The original EuroSAT split is unverified."
+    },
     "prodistill_components": {
       "headers": [
         "Target",
@@ -4035,5 +4280,5 @@
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "5bc9073a836af2430a5b56ff6ddc9d624cdcd5dc8a043cd914e5ed14857cbccd"
+  "report_source_sha256": "0e34c34ff37fc0895f99d98663a119be222d64d2961fcaf87feb190a165dc8ba"
 }

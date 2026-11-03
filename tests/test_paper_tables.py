@@ -17,7 +17,8 @@ def test_current_comparison_is_reproducible_and_keeps_partner_results(tmp_path):
                  "defense2_eight_calibration", "defense2_eight_calibration_target",
                  "eight_calibration", "eight_calibration_target", "defense2_mergers", "prodistill_components",
                  "defense2_projection", "defense2_projection_partners",
-                 "defense2_projection_recovery", "defense2_projection_recovery_partners"]:
+                 "defense2_projection_recovery", "defense2_projection_recovery_partners",
+                 "defense2_projection_eight", "defense2_projection_eight_datasets"]:
         for suffix in ["md", "tex"]:
             assert (tmp_path / f"{name}.{suffix}").read_bytes() == (root / f"{name}.{suffix}").read_bytes()
     rebuilt = json.loads((tmp_path / "sources.json").read_text())
