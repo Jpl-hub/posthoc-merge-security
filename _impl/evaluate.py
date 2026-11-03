@@ -13,6 +13,7 @@ from .io import check_files, digest, save_json
 from .merge import fuse, load_ties, parameter_hash
 from .metrics import row_metrics
 from .models import apply, initialize, load_checkpoint
+from cfg import BACKBONE
 
 
 def case_models(cfg, case, anchor, originals, aligned, name):
@@ -77,6 +78,8 @@ def evaluate(model, head, loader, device: str, prediction_sink=None, logit_sink=
 
 def setup(cfg):
     initialize()
+    if cfg.get("backbone", "ViT-B-32") != BACKBONE:
+        raise ValueError("Protocol and selected backbone differ")
     if not torch.cuda.is_available():
         raise RuntimeError("CLIP evaluation requires a CUDA runtime")
     author_path = Path("external/secure-merge-attack/utils_attack_B32.py")

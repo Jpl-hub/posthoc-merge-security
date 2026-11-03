@@ -7,7 +7,7 @@ from pathlib import Path
 
 import torch
 
-from cfg import AUTHOR, CHECKPOINTS, ROOT
+from cfg import AUTHOR, BACKBONE, CHECKPOINTS, CHECKPOINT_MANIFEST
 
 from .io import digest, read_json
 
@@ -33,8 +33,8 @@ def initialize():
 
 def load_checkpoint(name):
     pins = {
-        x["path"].removeprefix("ViT-B-32/"): x["sha256"]
-        for x in read_json(ROOT / "configs" / "checkpoints.json")["files"]
+        x["path"].removeprefix(BACKBONE + "/"): x["sha256"]
+        for x in read_json(CHECKPOINT_MANIFEST)["files"]
     }
     path = CHECKPOINTS / name
     if digest(path) != pins[name]:
