@@ -539,6 +539,22 @@ def defense_comparison(directory):
               ["Target", "Dataset", "Variant", "Standalone", "TA", "AGA-T", "AGA-B", "AGA-T+cal."],
               comparison_rows, "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. "
               "Calibration uses 64 random images. " + note, "lllrrrrr")
+    unmask = read("results/comparison/unmask_current/summary.json")
+    assert unmask["status"] == "completed_independently_verified"
+    unmask_rows = []
+    for task in tasks:
+        for method in methods:
+            values = [r for r in unmask["rows"] if r["target"] == task and
+                      (r["defense"].startswith(method.replace(" ", "")))]
+            unmask_rows.append([task, method] + [accuracy(one(values, dataset=t))
+                                               for t in cfg["evaluate"]])
+    write("unmask", "Unmask with matched unprotected controls",
+          ["Target", "Defense"] + cfg["evaluate"], unmask_rows,
+          "Eight experts; TA and whole-publication subtraction coefficients are both 0.2. "
+          "Paper-formula adaptation, not author code. Every protected prediction equals the "
+          "equally processed unprotected prediction. Low accuracy also occurs without protection; "
+          "it does not demonstrate a defense advantage. Seven complete test datasets; no eight-task mean.",
+          "llrrrrrrr")
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 

@@ -27,11 +27,11 @@
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T12:32:11.953624+00:00",
+    "verified_utc": "2026-11-03T13:09:59.424797+00:00",
     "primary_available_GiB": 26,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "Unmask resume active; fixed two-publication composition waiting, no concurrent GPU fitting",
+    "primary_workspace_status": "Unmask complete; two fixed PaRaMS compositions constructing serially",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
@@ -39,7 +39,7 @@
       "socket": "/tmp/posthoc_4090_41558.sock",
       "role": "CPU source/archive; original incomplete evaluation retained"
     },
-    "queued_jobs": 1
+    "queued_jobs": 0
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "established_methods": {
@@ -120,25 +120,15 @@
     "active_defense2_matches_commit": "be57bec"
   },
   "delivery_preference": "有实质结果、失败或需要判断的分歧及时向用户反馈，便于用户向老师沟通；不代发消息、不将未完成写成work。用户人工约60分钟后查看，不新建自动任务。",
-  "updated_utc": "2026-11-03T12:32:11.953624+00:00",
-  "status": "unmask_resume_running_fixed_compositions_queued",
+  "updated_utc": "2026-11-03T13:09:59.424797+00:00",
+  "status": "unmask_completed_compositions_running",
   "active_focus": "按最新聊天要求研究现有防御应对蒸馏与公开参数替换的机制，并检验与冻结Defense1/2的互补；不继续扩展输出校准攻击。",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "pid": 47228,
-      "GPU": "RTX4090D21516",
-      "status": "running",
-      "protocol": "results/comparison/unmask_current/resume.json",
-      "log": "outputs/unmask_current_20261103/resumed/run.log",
-      "scope": "Resume four missing evaluations and replay all84 rows; 80 original rows retained/reused",
-      "new_defense_points": 0,
-      "new_AGA_calls": 0
-    },
-    {
       "pid": 51167,
       "GPU": "RTX4090D21516",
-      "status": "waiting_for_Unmask_independent_completion",
+      "status": "running_construction",
       "source_commit": "15617824e3b55a6ab367aaa64ac0a5ba3dd77c6b",
       "protocol": "results/comparison/params_composition/protocol.json",
       "log": "outputs/params_composition_20261103/run.log",
@@ -149,45 +139,20 @@
       "maximum_coefficient_steps": 2400
     }
   ],
-  "next_action": "人工约60分钟后看Unmask核验和两个组合的实际进度；逐项报告结果，完成后复用现有表格。不重启有效作业，不按结果扫参。",
+  "next_action": "人工约60分钟后检查两个固定组合的独立/融合、AGA、ProDistill及匹配模块恢复。Unmask已完成；不再扩大攻击清单或重跑已有结果。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
     "rule": "原模型、逐图分数、失败证据及执行源码保留；不按测试结果重启已关闭点。"
   },
   "latest_completed_batch": {
-    "name": "native_class_means",
-    "record": "results/data_free_compensation/native_class_means_result.json",
-    "table": "results/comparison/defense2_native_means.md",
-    "status": "completed_not_promoted",
-    "standalone_percent": [
-      99.61,
-      96.88460356484327,
-      76.43617021276596
-    ],
-    "AGA_target_percent": [
-      5.03,
-      2.3086969883220654,
-      2.074468085106383
-    ],
-    "AGA_then_calibration_percent": [
-      9.71,
-      7.1873079287031345,
-      6.75531914893617
-    ],
-    "net_correct_vs_main": [
-      4,
-      58,
-      2
-    ],
-    "full_score_replays": 672,
-    "independent_paired_comparisons": 39,
-    "all_three_sources_passed": true,
-    "archive_manifest": "ed24f19429cf17dfb568aeba09dd004ecc34dd6e345d06e6e68d457ca2be427c",
-    "verified_on": [
-      "21516",
-      "41558"
-    ]
+    "name": "unmask_current",
+    "status": "completed_independently_verified",
+    "record": "results/comparison/unmask_current/summary.json",
+    "table": "results/comparison/unmask.md",
+    "rows": 84,
+    "scope": "8 experts; 7 complete test sets",
+    "no_new_defense": true
   },
   "latest_closed_control": {
     "name": "native_view_response",
@@ -195,7 +160,7 @@
     "status": "closed_not_promoted"
   },
   "unmask_current": {
-    "status": "original_full_timed_out_at80_of84; verified_resume_running",
+    "status": "completed_independently_verified",
     "protocol": "results/comparison/unmask_current/protocol.json",
     "output": "outputs/unmask_current_20261103",
     "defenses": [
@@ -209,11 +174,21 @@
     "rows_per_stage": 84,
     "new_defense_points": 0,
     "new_AGA_calls": 0,
-    "pid": 47228,
+    "pid": null,
     "source_commit": "a26860ee6ed09918fb41873bb7173f0052b2796f",
     "log": "outputs/unmask_current_20261103/resumed/run.log",
     "resume_protocol": "results/comparison/unmask_current/resume.json",
-    "original_partial_scores_sha256": "1cbab685b51752efe5007771192752ebef855f49764e0ee10f72a01ff4a55443"
+    "original_partial_scores_sha256": "1cbab685b51752efe5007771192752ebef855f49764e0ee10f72a01ff4a55443",
+    "record": "results/comparison/unmask_current/summary.json",
+    "table": "results/comparison/unmask.md",
+    "score_replays": 1344,
+    "maximum_context_score_error": 0.0,
+    "target_accuracy_percent": [
+      11.35,
+      12.576828518746158,
+      6.117021276595745
+    ],
+    "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
     "status": "pending; single connector check returned Unknown tool github.get_profile; no successful publish this turn",
@@ -221,7 +196,7 @@
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "params_composition": {
-    "status": "queued_not_yet_constructed",
+    "status": "running_construction",
     "record": "results/comparison/params_composition/protocol.json",
     "pid": 51167,
     "new_algorithm_claim": false,
