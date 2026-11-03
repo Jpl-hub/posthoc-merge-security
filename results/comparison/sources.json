@@ -2240,12 +2240,12 @@
         [
           "MNIST",
           "Defense 2",
-          "99.61",
-          "9.80",
-          "9.80",
-          "89.21",
-          "56.34",
-          "9.80",
+          "99.57",
+          "25.15",
+          "2.99",
+          "29.78",
+          "10.76",
+          "9.39",
           "95.53"
         ],
         [
@@ -2284,13 +2284,13 @@
         [
           "SVHN",
           "Defense 2",
-          "96.98",
-          "6.70",
-          "6.70",
-          "84.56",
-          "53.84",
-          "6.70",
-          "85.84"
+          "96.66",
+          "2.26",
+          "1.86",
+          "7.41",
+          "6.99",
+          "7.96",
+          "85.00"
         ],
         [
           "DTD",
@@ -2328,16 +2328,16 @@
         [
           "DTD",
           "Defense 2",
-          "76.12",
+          "76.33",
           "2.13",
-          "2.13",
-          "59.31",
-          "52.61",
-          "2.13",
-          "58.56"
+          "2.07",
+          "6.60",
+          "5.00",
+          "2.29",
+          "58.09"
         ]
       ],
-      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection."
+      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection. Defense 2 uses the updated frozen release throughout; earlier versions are reported separately."
     },
     "partners": {
       "headers": [
@@ -2384,11 +2384,11 @@
         [
           "MNIST/SVHN",
           "Defense 2",
-          "6.70",
-          "6.70",
-          "85.53",
-          "54.05",
-          "6.70",
+          "13.26",
+          "2.02",
+          "22.81",
+          "8.75",
+          "4.33",
           "95.95"
         ],
         [
@@ -2424,12 +2424,12 @@
         [
           "SVHN/MNIST",
           "Defense 2",
-          "9.80",
-          "9.80",
-          "87.66",
-          "69.99",
-          "9.80",
-          "99.40"
+          "0.22",
+          "0.24",
+          "9.92",
+          "11.53",
+          "10.29",
+          "99.34"
         ],
         [
           "DTD/MNIST",
@@ -2464,15 +2464,15 @@
         [
           "DTD/MNIST",
           "Defense 2",
-          "98.44",
-          "75.64",
-          "99.45",
-          "99.42",
-          "96.78",
-          "99.54"
+          "99.22",
+          "99.02",
+          "99.48",
+          "99.47",
+          "99.13",
+          "99.51"
         ]
       ],
-      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. These are partner accuracies, not protection scores."
+      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. These are partner accuracies, not protection scores. Defense 2 uses the updated frozen release throughout; earlier versions are reported separately."
     },
     "feature_distillation": {
       "headers": [
@@ -2507,9 +2507,9 @@
         [
           "MNIST",
           "Defense 2",
-          "99.45",
+          "99.43",
           "SVHN",
-          "96.49"
+          "96.22"
         ],
         [
           "SVHN",
@@ -2535,9 +2535,9 @@
         [
           "SVHN",
           "Defense 2",
-          "95.78",
+          "96.18",
           "MNIST",
-          "99.28"
+          "99.27"
         ],
         [
           "DTD",
@@ -2563,12 +2563,12 @@
         [
           "DTD",
           "Defense 2",
-          "63.83",
+          "66.70",
           "MNIST",
           "99.51"
         ]
       ],
-      "note": "Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table."
+      "note": "Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table. Defense 2 is the same updated release as the main attack table."
     },
     "defense2_versions": {
       "headers": [
@@ -5195,5 +5195,5 @@
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "0a2921bd24a7b8facb1c7f24c2210e0597ccddc94186306f9fc31ddb24ea1694"
+  "report_source_sha256": "d8e2115876509969bcf0eaece666cf1915b337dc76c975bad62883a19f7dd72a"
 }

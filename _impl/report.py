@@ -467,6 +467,37 @@ def defense_comparison(directory):
           "effects of the teacher labels. MNIST reuses the same student because all 2048 teacher "
           "labels coincide. Standalone reports the evaluated student or expert. Defender weights "
           "are unchanged; additional real images are used only by the attacker.", "llrrr")
+    # Keep the main comparison on one current release; earlier versions stay above.
+    for table, role in [("attacks", 0), ("partners", 1)]:
+        rows = tables[table]["rows"]
+        for task in tasks:
+            dataset = task if role == 0 else ("SVHN" if task == "MNIST" else "MNIST")
+            record = updated["tasks"][task]
+            name = "FiniteClassification_" + task
+            values = ([accuracy(one(record["evaluation"]["raw_rows"], defense=name,
+                merger="Standalone", attack_scope="None", dataset=task))] if role == 0 else [])
+            values += [accuracy(one(record["evaluation"]["raw_rows"], defense=name,
+                merger="TA", attack_scope=s, dataset=dataset)) for s in ["None", "Protected expert"]]
+            values += [accuracy(one(record["evaluation"]["calibrated_rows"],
+                key="/".join([task, name, "TA", s, dataset]))) for s in ["None", "Protected expert"]]
+            match = one(record["recovery"]["matching"]["rows"], defense=name + "_matched",
+                        merger="TA", attack_scope="None", dataset=dataset)
+            values += [f"{100 * match['correct'] / match['n']:.2f}", accuracy(one(hard_labels["rows"],
+                task=task, model="Student from updated Defense 2", merger="TA", dataset=dataset))]
+            row = next(r for r in rows if r[0].split("/")[0] == task and r[1] == "Defense 2")
+            row[2:] = values
+        spec = tables[table]
+        write(table, "Recovery attacks on the protected task" if role == 0 else
+              "Partner-task accuracy under the same attacks", spec["headers"], rows,
+              spec["note"] + " Defense 2 uses the updated frozen release throughout; earlier versions are reported separately.",
+              "llrrrrrrr" if role == 0 else "llrrrrrr")
+    for row in distilled:
+        if row[1] == "Defense 2":
+            row[2], row[4] = [accuracy(one(updated["prodistill"]["rows"], target=row[0],
+                defense="Defense2", dataset=t, stage="full")) for t in [row[0], row[3]]]
+    spec = tables["feature_distillation"]
+    write("feature_distillation", "ProDistill recovery comparison", spec["headers"], distilled,
+          spec["note"] + " Defense 2 is the same updated release as the main attack table.", "llrlr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"

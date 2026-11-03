@@ -12,19 +12,19 @@ Task & Defense & Standalone & TA & AGA & Calib. & AGA+calib. & MLP match & Disti
 MNIST & Unprotected & 99.69 & 99.37 & 99.30 & 99.34 & 99.29 & 99.37 & 95.53 \\
 MNIST & PaRaMS & 99.69 & 8.92 & 99.30 & 9.86 & 99.29 & 10.72 & 95.53 \\
 MNIST & Defense 1 & 99.69 & 9.80 & 9.80 & 99.35 & 99.30 & 9.80 & 95.53 \\
-MNIST & Defense 2 & 99.61 & 9.80 & 9.80 & 89.21 & 56.34 & 9.80 & 95.53 \\
+MNIST & Defense 2 & 99.57 & 25.15 & 2.99 & 29.78 & 10.76 & 9.39 & 95.53 \\
 \midrule
 SVHN & Unprotected & 97.46 & 92.50 & 91.56 & 92.32 & 91.34 & 92.50 & 86.22 \\
 SVHN & PaRaMS & 97.46 & 9.09 & 91.56 & 8.45 & 91.34 & 9.55 & 86.22 \\
 SVHN & Defense 1 & 97.46 & 6.70 & 6.70 & 92.24 & 91.25 & 6.70 & 86.22 \\
-SVHN & Defense 2 & 96.98 & 6.70 & 6.70 & 84.56 & 53.84 & 6.70 & 85.84 \\
+SVHN & Defense 2 & 96.66 & 2.26 & 1.86 & 7.41 & 6.99 & 7.96 & 85.00 \\
 \midrule
 DTD & Unprotected & 79.41 & 69.31 & 68.40 & 55.69 & 55.00 & 69.31 & 58.19 \\
 DTD & PaRaMS & 79.41 & 2.07 & 68.35 & 2.87 & 55.00 & 2.93 & 58.19 \\
 DTD & Defense 1 & 79.41 & 2.13 & 2.13 & 57.71 & 57.07 & 2.13 & 58.19 \\
-DTD & Defense 2 & 76.12 & 2.13 & 2.13 & 59.31 & 52.61 & 2.13 & 58.56 \\
+DTD & Defense 2 & 76.33 & 2.13 & 2.07 & 6.60 & 5.00 & 2.29 & 58.09 \\
 \bottomrule
 \end{tabular}
 \par\smallskip
-\begin{minipage}{\textwidth}\footnotesize Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection.\end{minipage}
+\begin{minipage}{\textwidth}\footnotesize Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection. Defense 2 uses the updated frozen release throughout; earlier versions are reported separately.\end{minipage}
 \end{table*}

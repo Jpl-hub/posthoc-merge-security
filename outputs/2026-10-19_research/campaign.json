@@ -1,12 +1,12 @@
 {
-  "updated_utc": "2026-11-03T15:36:53.182362+00:00",
-  "status": "residual_bias_closed_after_full_evaluation",
-  "active_focus": "按最新聊天要求研究现有防御应对蒸馏与公开参数替换的机制，并检验与冻结Defense1/2的互补；不继续扩展输出校准攻击。",
+  "updated_utc": "2026-11-03T16:10:56.794726+00:00",
+  "status": "fixed_pruning_closed_current_results_consolidated",
+  "active_focus": "现有方法完整结果统一到当前发布；固定剪枝损伤独立能力，关闭。重点仍是保持独立任务并限制公开替换/蒸馏恢复。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "从既有防御和固定ProDistill源码分析如何保持分类、同时避免块输出被逐层拟合；先建立明确可检验的机制，再决定下一批。当前偏置点关闭，无待运行实验。",
+  "next_action": "不重复关闭点。当前实验清单与论文来源已经归并；核心未解决项仍如实保留，按用户人工继续推进。",
   "latest_completed_batch": {
     "name": "residual_bias",
     "status": "completed_independently_verified_closed",
@@ -73,7 +73,7 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "pending; GitHub tools unavailable in current session; no successful publish this turn",
+    "status": "Connector authenticated; current verified result upload in progress, receipt remains authoritative.",
     "last_verified_remote_commit": "e323d1969f811945183c2a816d287b07b29ec2d7",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -125,5 +125,22 @@
     "prodistill_percent": 99.02,
     "matched_clean_prodistill_percent": 99.45,
     "all_known_reset_tensor_equal": true
+  },
+  "params_pruning": {
+    "status": "completed_independently_verified_closed",
+    "record": "results/comparison/params_pruning/result.json",
+    "table": "results/comparison/params_pruning/summary.md",
+    "native_percent": [
+      94.35,
+      95.6,
+      95.6,
+      40.73
+    ],
+    "new_releases": 4,
+    "real_construction_images": 0,
+    "new_AGA_calls": 0,
+    "distillation_steps": 0,
+    "context_score_replays": 80,
+    "conclusion": "Pruning destroys current Defense2 standalone utility; closed without retries or attack expansion."
   }
 }
