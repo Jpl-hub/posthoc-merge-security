@@ -23,15 +23,15 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T05:57:23.191356+00:00",
-    "primary_available_GiB": 33,
+    "verified_utc": "2026-11-03T06:39:34.130137+00:00",
+    "primary_available_GiB": 30,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "ViT-B16 fixed Defense1 construction and matched recovery/evaluation running",
+    "primary_workspace_status": "B16 production and replay complete; preparing current Defense2 component controls",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
@@ -42,10 +42,10 @@
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "teacher_screenshots_last_reread_utc": "2026-10-26T11:47:44.037987+00:00",
-  "updated_utc": "2026-11-03T05:57:23.191356+00:00",
-  "status": "backbone_b16_running",
-  "active_focus": "冻结原方法，补ViT-B/16的三任务Defense1及无保护TA/AGA/输出校正。Defense2当前弱点和任务投影贡献尚未解决。",
-  "active_GPU_jobs": 1,
+  "updated_utc": "2026-11-03T06:39:34.130137+00:00",
+  "status": "core_components_prepared",
+  "active_focus": "核心方法优先：当前四张量防御二的组件和同幅度随机对照；不再扩展骨干。",
+  "active_GPU_jobs": 0,
   "research_jobs": [
     {
       "pid": 18437,
@@ -54,12 +54,12 @@
       "source_commit": "409da457fe3fe01998fdbd5c18b494437409770c",
       "output": "outputs/backbone_b16_20261103",
       "protocol": "results/backbone_b16/protocol.json",
-      "status": "construction_then_fixed_pilot_full_and_calibration",
+      "status": "completed_existing_replay_independent_summary_pending",
       "timeout_seconds": 14400,
       "log": "outputs/backbone_b16_20261103/run.log"
     }
   ],
-  "next_action": "约60–90分钟后人工检查ViT-B16三个任务的独立、TA、AGA及输出校正结果；运行期间不修改生产源码，不重复启动。Defense2的B16合成源尚未构造，需按原生成规则及源计算的尺度单列。",
+  "next_action": "启动已登记的同版本九个组件/随机对照。完成后判断功能损失和保护来自哪侧；不根据测试挑点。B16现有批次仅收尾。",
   "closed_history": {
     "full_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -102,7 +102,7 @@
         17.159649661954518,
         28.45744680851064
       ],
-      "limitation": "DTD standalone loss3.085pp;knownB+b replacement and extra-real-data ProDistill restore high performance. A/B contribution tested;SVD classification benefit not demonstrated."
+      "limitation": "DTD standalone loss3.085pp;knownB+b replacement and extra-real-data ProDistill restore high performance. Current deletion/random controls pending; ProDistill-side A/B substitution is not the same ablation. SVD classification benefit not demonstrated."
     }
   },
   "evaluation_scope": {
@@ -359,7 +359,7 @@
   },
   "delivery_preference": "用户要求先做扎实基本实验与核心方法，再整理给老师看的材料；不提前制作或发送汇报，不把未完成写成全部work。",
   "backbone_b16": {
-    "status": "running",
+    "status": "production_and_existing_replay_complete_independent_summary_pending",
     "protocol": "results/backbone_b16/protocol.json",
     "output": "outputs/backbone_b16_20261103",
     "checkpoint_files": 7,
@@ -368,5 +368,13 @@
     "scope": "Defense1 three tasks on ViT-B16; Defense2 not started on B16",
     "source_changed": "16 lines added,4 replaced in existing loader/config/evaluator; no new production modules",
     "source_commit": "409da457fe3fe01998fdbd5c18b494437409770c"
+  },
+  "finite_components": {
+    "protocol": "results/data_free_compensation/finite_components_protocol.json",
+    "output": "outputs/finite_components_20261103",
+    "status": "registered_not_started",
+    "new_controls": 9,
+    "main_publication_replacements": 0,
+    "core_question": "A/input-bias versus B/output-bias contributions and same per-tensor norm random baseline; old-version deletion controls are insufficient."
   }
 }

@@ -1,10 +1,10 @@
 {
-  "updated_utc": "2026-11-03T05:57:23.191356+00:00",
-  "status": "backbone_b16_running",
-  "active_focus": "冻结原方法，补ViT-B/16的三任务Defense1及无保护TA/AGA/输出校正。Defense2当前弱点和任务投影贡献尚未解决。",
+  "updated_utc": "2026-11-03T06:39:34.130137+00:00",
+  "status": "core_components_prepared",
+  "active_focus": "核心方法优先：当前四张量防御二的组件和同幅度随机对照；不再扩展骨干。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
+  "active_GPU_jobs": 0,
   "research_jobs": [
     {
       "pid": 18437,
@@ -13,12 +13,12 @@
       "source_commit": "409da457fe3fe01998fdbd5c18b494437409770c",
       "output": "outputs/backbone_b16_20261103",
       "protocol": "results/backbone_b16/protocol.json",
-      "status": "construction_then_fixed_pilot_full_and_calibration",
+      "status": "completed_existing_replay_independent_summary_pending",
       "timeout_seconds": 14400,
       "log": "outputs/backbone_b16_20261103/run.log"
     }
   ],
-  "next_action": "约60–90分钟后人工检查ViT-B16三个任务的独立、TA、AGA及输出校正结果；运行期间不修改生产源码，不重复启动。Defense2的B16合成源尚未构造，需按原生成规则及源计算的尺度单列。",
+  "next_action": "启动已登记的同版本九个组件/随机对照。完成后判断功能损失和保护来自哪侧；不根据测试挑点。B16现有批次仅收尾。",
   "latest_completed_batch": {
     "status": "completed_independently_verified",
     "record": "results/data_free_compensation/projection_eight/calibration.json",
@@ -242,7 +242,7 @@
     "hardware_note": "Historical RTX3090 students, new RTX4090D students. Same budget, not isolated label-change causal attribution."
   },
   "backbone_b16": {
-    "status": "running",
+    "status": "production_and_existing_replay_complete_independent_summary_pending",
     "protocol": "results/backbone_b16/protocol.json",
     "output": "outputs/backbone_b16_20261103",
     "checkpoint_files": 7,
@@ -251,5 +251,13 @@
     "scope": "Defense1 three tasks on ViT-B16; Defense2 not started on B16",
     "source_changed": "16 lines added,4 replaced in existing loader/config/evaluator; no new production modules",
     "source_commit": "409da457fe3fe01998fdbd5c18b494437409770c"
+  },
+  "finite_components": {
+    "protocol": "results/data_free_compensation/finite_components_protocol.json",
+    "output": "outputs/finite_components_20261103",
+    "status": "registered_not_started",
+    "new_controls": 9,
+    "main_publication_replacements": 0,
+    "core_question": "A/input-bias versus B/output-bias contributions and same per-tensor norm random baseline; old-version deletion controls are insufficient."
   }
 }
