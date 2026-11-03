@@ -1,23 +1,12 @@
 {
-  "updated_utc": "2026-11-03T05:06:09.660154+00:00",
-  "status": "projection_eight_complete_hard_label_students_running",
-  "active_focus": "补齐防御二主发布的同预算硬标签蒸馏，使用已登记的学生训练及TA0.5完整评价。",
+  "updated_utc": "2026-11-03T05:23:53.102421+00:00",
+  "status": "hard_label_complete_core_weaknesses_open",
+  "active_focus": "本批蒸馏与八专家投影比较均完成。优先处理无数据恢复下的核心弱点和方法贡献，保留额外数据攻击的独立结论。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 16194,
-      "started_utc": "2026-11-03T05:04:30.936644+00:00",
-      "log": "outputs/finite_hard_label_20261103/students.log",
-      "status": "fixed_students_then_TA_and_independent_replay",
-      "source_commit": "19aa4b59793c5658e583bb0c7f71068e6f35db34",
-      "output": "outputs/finite_hard_label_20261103",
-      "timeout_seconds": 7200,
-      "host": "connect.cqa1.seetacloud.com:21516"
-    }
-  ],
-  "next_action": "核对SVHN和DTD学生独立与融合成绩、相同学生预算的无保护对照及伙伴，然后更新主表。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "集中分析防御一被输出校正恢复和防御二任务投影未显示整体收益的原因；已有固定结果不重跑、不按测试改参数。Unmask新版、EuroSAT原划分和第二骨干仍未完成，不写完整实验已全部通过。",
   "latest_completed_batch": {
     "status": "completed_independently_verified",
     "record": "results/data_free_compensation/projection_eight/calibration.json",
@@ -49,7 +38,7 @@
     ]
   },
   "github_sync": {
-    "status": "Exact remote and local trees in sync receipt",
+    "status": "Current changes committed locally; GitHub connector unavailable in this session and CLI HTTPS connection refused. Last verified remote retained.",
     "last_verified_remote_commit": "58bedb8d0d4b8c7e33ebb9000f5e67b7245d4efc",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -209,19 +198,35 @@
     ]
   },
   "hard_label_students": {
-    "protocol": "results/data_free_compensation/hard_label/protocol.json",
-    "execution_plan": "results/data_free_compensation/hard_label/students.json",
-    "queries": "results/data_free_compensation/hard_label/queries.json",
-    "status": "MNIST exact complete label reuse; SVHN and DTD queued sequentially",
-    "query_disagreements": [
-      0,
-      30,
-      42
+    "status": "completed_independently_verified",
+    "record": "results/data_free_compensation/hard_label/result.json",
+    "table": "results/comparison/defense2_hard_label.md",
+    "output": "outputs/finite_hard_label_20261103",
+    "new_students": 2,
+    "reused_students": 1,
+    "new_student_backward_steps": 1550,
+    "discarded_pilot_backward_steps": 2,
+    "new_defense_updates": 0,
+    "full_context_replays": 192,
+    "pilot_context_replays": 192,
+    "maximum_score_error": 1.33514404296875e-05,
+    "paired_comparisons": 18,
+    "archive_manifest_sha256": "59d36d88885660b9a2d2a9b380796a1b370e2f52af929f8f76ed354ead757e12",
+    "archive_verified_on": [
+      "21516",
+      "41558"
     ],
-    "N": [
-      2048,
-      2048,
-      1880
-    ]
+    "archive_files": 39,
+    "student_TA_target_percent": [
+      95.53,
+      84.99923171481254,
+      58.08510638297872
+    ],
+    "matched_historical_student_TA_percent": [
+      95.53,
+      86.22464658881377,
+      58.191489361702125
+    ],
+    "hardware_note": "Historical RTX3090 students, new RTX4090D students. Same budget, not isolated label-change causal attribution."
   }
 }

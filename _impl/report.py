@@ -446,6 +446,27 @@ def defense_comparison(directory):
           summary_rows, eight_note, "llrrrrr")
     write("defense2_projection_eight_datasets", "Seven test sets with the task projection removed",
           ["Protected task", "Processing"] + cfg["evaluate"], dataset_rows, eight_note, "llrrrrrrr")
+    hard_labels = read("results/data_free_compensation/hard_label/result.json")
+    assert hard_labels["status"] == "completed_independently_verified"
+    student_rows = []
+    for task in tasks:
+        partner = "SVHN" if task == "MNIST" else "MNIST"
+        for model in ["Original expert", "Student from unprotected",
+                      "Student from earlier Defense 2", "Student from updated Defense 2"]:
+            values = [accuracy(one(hard_labels["rows"], task=task, model=model,
+                                   merger=merger, dataset=dataset))
+                      for merger, dataset in [("Standalone", task), ("TA", task), ("TA", partner)]]
+            student_rows.append([task, model] + values)
+    write("defense2_hard_label", "Hard-label student recovery",
+          ["Task", "Model", "Standalone", "Fused target", "Fused partner"], student_rows,
+          "TA coefficient 0.5. Additional unlabeled training images: MNIST and SVHN 2048 each, "
+          "DTD train1 1880. The attacker trains a public-base student for 50 epochs using teacher "
+          "class predictions, without ground-truth labels. The fixed images, seed, initialization, "
+          "optimizer and training budget match the historical comparison. Historical students used "
+          "an RTX 3090; new students used an RTX 4090 D. Small differences are not isolated causal "
+          "effects of the teacher labels. MNIST reuses the same student because all 2048 teacher "
+          "labels coincide. Standalone reports the evaluated student or expert. Defender weights "
+          "are unchanged; additional real images are used only by the attacker.", "llrrr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"

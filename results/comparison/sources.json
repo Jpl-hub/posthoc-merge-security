@@ -27,7 +27,8 @@
     "results/data_free_compensation/finite_projection_ablation_result.json": "4f36b8317146dc7569d583dd83cdc3fd16bed39f2a46849bac8feacd91335f2c",
     "results/data_free_compensation/projection_recovery_result.json": "54b8d87bf8bdb8f81093331199407fbc5ec47a9b0cdc1a4b668a8a1c320d440e",
     "results/data_free_compensation/projection_eight/calibration.json": "256883bc726e579660cc7e300a7d4033efa2d24107c1f0222e442e96067eaa92",
-    "results/data_free_compensation/projection_eight/paired.json": "795515a0f663e7925f7d5444b0a0bb75352d09cb634256dfdda1df7dacafd657"
+    "results/data_free_compensation/projection_eight/paired.json": "795515a0f663e7925f7d5444b0a0bb75352d09cb634256dfdda1df7dacafd657",
+    "results/data_free_compensation/hard_label/result.json": "f114b630682419f32a368e91aecd368cd7bef92809f7d34b4fcce78895e14790"
   },
   "eight_expert_rows": [
     {
@@ -4217,6 +4218,102 @@
       ],
       "note": "Eight experts participate in TA with coefficient 0.2. AGA processes the protected expert. Output calibration uses 64 random images. The removed condition drops the two projections used to construct A and keeps the task-specific synthetic inputs. Seven complete test sets are available. The original EuroSAT split is unverified."
     },
+    "defense2_hard_label": {
+      "headers": [
+        "Task",
+        "Model",
+        "Standalone",
+        "Fused target",
+        "Fused partner"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Original expert",
+          "99.69",
+          "99.37",
+          "92.50"
+        ],
+        [
+          "MNIST",
+          "Student from unprotected",
+          "98.50",
+          "95.53",
+          "95.95"
+        ],
+        [
+          "MNIST",
+          "Student from earlier Defense 2",
+          "98.50",
+          "95.53",
+          "95.95"
+        ],
+        [
+          "MNIST",
+          "Student from updated Defense 2",
+          "98.50",
+          "95.53",
+          "95.95"
+        ],
+        [
+          "SVHN",
+          "Original expert",
+          "97.46",
+          "92.50",
+          "99.37"
+        ],
+        [
+          "SVHN",
+          "Student from unprotected",
+          "93.09",
+          "86.22",
+          "99.34"
+        ],
+        [
+          "SVHN",
+          "Student from earlier Defense 2",
+          "92.39",
+          "85.84",
+          "99.40"
+        ],
+        [
+          "SVHN",
+          "Student from updated Defense 2",
+          "92.96",
+          "85.00",
+          "99.34"
+        ],
+        [
+          "DTD",
+          "Original expert",
+          "79.41",
+          "69.31",
+          "99.45"
+        ],
+        [
+          "DTD",
+          "Student from unprotected",
+          "73.30",
+          "58.19",
+          "99.53"
+        ],
+        [
+          "DTD",
+          "Student from earlier Defense 2",
+          "73.24",
+          "58.56",
+          "99.54"
+        ],
+        [
+          "DTD",
+          "Student from updated Defense 2",
+          "73.46",
+          "58.09",
+          "99.51"
+        ]
+      ],
+      "note": "TA coefficient 0.5. Additional unlabeled training images: MNIST and SVHN 2048 each, DTD train1 1880. The attacker trains a public-base student for 50 epochs using teacher class predictions, without ground-truth labels. The fixed images, seed, initialization, optimizer and training budget match the historical comparison. Historical students used an RTX 3090; new students used an RTX 4090 D. Small differences are not isolated causal effects of the teacher labels. MNIST reuses the same student because all 2048 teacher labels coincide. Standalone reports the evaluated student or expert. Defender weights are unchanged; additional real images are used only by the attacker."
+    },
     "prodistill_components": {
       "headers": [
         "Target",
@@ -4280,5 +4377,5 @@
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "0e34c34ff37fc0895f99d98663a119be222d64d2961fcaf87feb190a165dc8ba"
+  "report_source_sha256": "3ac62123be75af2ff1b72dc68df84352ccc21244baa4c76aa773681a126b730a"
 }
