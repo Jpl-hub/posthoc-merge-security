@@ -29,6 +29,7 @@
 | [校正后的七任务结果](eight_calibration.md) / [TeX](eight_calibration.tex) | 相同模型在七个完整测试集上的表现 |
 | [新版硬标签蒸馏](defense2_hard_label.md) / [TeX](defense2_hard_label.tex) | 相同图像与训练预算；学生独立、目标与伙伴结果 |
 | [新版TIES/DARE](defense2_mergers.md) / [TeX](defense2_mergers.tex) | 同一新版防御二，目标与伙伴分别报告 |
+| [互补视图的补偿结果](defense2_native_views.md) / [TeX](defense2_native_views.tex) | 两个通过源条件的任务及伙伴。SVHN 独立净多判对 149 张，DTD 净少判对 31 张。MNIST 源检查失败。 |
 | [当前防御二组件](defense2_components.md) / [TeX](defense2_components.tex) | 独立、TA与两种AGA范围，另列[伙伴结果](defense2_component_partners.md)。 |
 | [任务投影约束对照](defense2_projection.md) / [TeX](defense2_projection.tex) | 同一构造仅移除A的两侧SVD约束；[伙伴结果](defense2_projection_partners.md) |
 | [投影对照的恢复比较](defense2_projection_recovery.md) / [TeX](defense2_projection_recovery.tex) | 同三份发布的MLP匹配、已知B及偏置替换、固定ProDistill；[伙伴结果](defense2_projection_recovery_partners.md) |

@@ -1,23 +1,12 @@
 {
-  "updated_utc": "2026-11-03T08:18:34.810345+00:00",
-  "status": "native_view_response_running",
-  "active_focus": "在原补偿目标中保持同一合成图两个互补视图的末块响应差。",
+  "updated_utc": "2026-11-03T08:59:26.171070+00:00",
+  "status": "native_class_means_registered",
+  "active_focus": "以源内逐类平均末块输出作为等式，检验原功能补偿及融合保护。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 25133,
-      "host": "connect.cqa1.seetacloud.com:21516",
-      "protocol": "results/data_free_compensation/native_view_response_protocol.json",
-      "source_commit": "eddce4e647302329bd3c396f173b7be859109d85",
-      "output": "outputs/native_view_response_20261103",
-      "log": "outputs/native_view_response_20261103/run.log",
-      "status": "construction_running",
-      "timeout_seconds": 10800
-    }
-  ],
-  "next_action": "先独立核对三个无数据构造。源通过的发布统一补完整独立、TA、两种AGA及已有输出校正。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "先执行三个固定无数据构造并独立检验，再执行通过条件的独立与融合评价。",
   "latest_completed_batch": {
     "status": "completed_independently_verified",
     "record": "results/data_free_compensation/projection_eight/calibration.json",
@@ -309,11 +298,30 @@
     }
   },
   "native_view_response": {
-    "status": "running",
+    "status": "closed_not_promoted",
     "protocol": "results/data_free_compensation/native_view_response_protocol.json",
     "output": "outputs/native_view_response_20261103",
     "pid": 25133,
     "source_commit": "eddce4e647302329bd3c396f173b7be859109d85",
-    "observed": "MNIST paired inputs saved; solver began with native teacher predictions retained on 800 source views."
+    "observed": "MNIST paired inputs saved; solver began with native teacher predictions retained on 800 source views.",
+    "evaluated": [
+      "SVHN",
+      "DTD"
+    ],
+    "result": "results/data_free_compensation/native_view_response_result.json",
+    "archive": {
+      "sha256": "bae04d4676fbc25da978699d45405257ebf9940336f2324020a5e6d631cb10d5",
+      "files": 110,
+      "bytes": 241288441,
+      "verified_on": [
+        "21516",
+        "41558"
+      ]
+    }
+  },
+  "native_class_means": {
+    "status": "registered",
+    "protocol": "results/data_free_compensation/native_class_means_protocol.json",
+    "output": "outputs/native_class_means_20261103"
   }
 }

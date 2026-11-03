@@ -29,7 +29,8 @@
     "results/data_free_compensation/projection_eight/calibration.json": "256883bc726e579660cc7e300a7d4033efa2d24107c1f0222e442e96067eaa92",
     "results/data_free_compensation/projection_eight/paired.json": "795515a0f663e7925f7d5444b0a0bb75352d09cb634256dfdda1df7dacafd657",
     "results/data_free_compensation/hard_label/result.json": "f114b630682419f32a368e91aecd368cd7bef92809f7d34b4fcce78895e14790",
-    "results/data_free_compensation/finite_components_result.json": "276c78d011c569568f1009d417f198ca12785f5ab715ef6fcfd21c8216e242fd"
+    "results/data_free_compensation/finite_components_result.json": "276c78d011c569568f1009d417f198ca12785f5ab715ef6fcfd21c8216e242fd",
+    "results/data_free_compensation/native_view_response_result.json": "21c30f93cbd1ca633999e65aa89b2f2842efa2501fc52b6659617d39fff74960"
   },
   "eight_expert_rows": [
     {
@@ -4641,8 +4642,103 @@
         ]
       ],
       "note": "Same current Defense 2 releases. A and B include their respective biases. A-only and B-only retain the selected changes without refitting. Gaussian perturbations match each of the four tensor-change norms, with one fixed seed. TA coefficient 0.5; AGA-T processes the protected expert and AGA-B both experts. Low merged accuracy is useful only alongside preserved standalone accuracy. No output calibration or distillation is added to these component comparisons."
+    },
+    "defense2_native_views": {
+      "headers": [
+        "Target",
+        "Dataset",
+        "Variant",
+        "Standalone",
+        "TA",
+        "AGA-T",
+        "AGA-B",
+        "AGA-T+cal."
+      ],
+      "rows": [
+        [
+          "SVHN",
+          "SVHN",
+          "Previous",
+          "96.66",
+          "2.26",
+          "1.86",
+          "1.87",
+          "6.99"
+        ],
+        [
+          "SVHN",
+          "SVHN",
+          "Two views",
+          "97.23",
+          "4.85",
+          "3.27",
+          "3.12",
+          "2.62"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Previous",
+          "--",
+          "0.22",
+          "0.24",
+          "0.25",
+          "11.53"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Two views",
+          "--",
+          "1.05",
+          "1.70",
+          "1.12",
+          "4.18"
+        ],
+        [
+          "DTD",
+          "DTD",
+          "Previous",
+          "76.33",
+          "2.13",
+          "2.07",
+          "2.07",
+          "5.00"
+        ],
+        [
+          "DTD",
+          "DTD",
+          "Two views",
+          "74.68",
+          "2.02",
+          "1.22",
+          "1.22",
+          "4.52"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Previous",
+          "--",
+          "99.22",
+          "99.02",
+          "98.81",
+          "99.47"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Two views",
+          "--",
+          "98.98",
+          "98.70",
+          "98.28",
+          "99.44"
+        ]
+      ],
+      "note": "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. Calibration uses 64 random images. The MNIST construction failed one source decision among the 18 required conditions and stopped before natural evaluation. All completed tasks are shown."
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "f1173bdd5ba7c8201ceb30e154889e7cce2d12ec5db94079ff6ff8b248f8da7d"
+  "report_source_sha256": "3214ba3d360c6a6172f0fa44d732eed9bd979d8ffabe138c99129d96d6f66cb1"
 }
