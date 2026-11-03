@@ -1,0 +1,410 @@
+{
+  "status": "completed_independently_counted_from_saved_scores",
+  "scope": "Current MNIST release, public base as second model, 64 existing clean-expert synthetic inputs in both teacher groups, no real recovery images or other task expert. Test data used for evaluation only.",
+  "source_commit": "1fff173e029fff1d5547cd11aa9920ef94e204cd",
+  "source_protocol_sha256": "329187b72b8508f3578842aeb752ab91ef44e8156e42e6aa3fde6646c37c0e85",
+  "replay": {
+    "status": "passed",
+    "score_replays": 128,
+    "maximum_context_score_error": 0.0,
+    "raw_sha256": "559ebaa26e0d5be9685d735b468bb54c089e26f3425d1940a6349fb1c4869655",
+    "full_rows": 4
+  },
+  "counts": {
+    "pilot": {
+      "n": 64,
+      "correct": {
+        "Unprotected initial": 60,
+        "Unprotected": 62,
+        "Defense2 initial": 7,
+        "Defense2": 62
+      },
+      "pairs": [
+        {
+          "before": "Unprotected initial",
+          "after": "Unprotected",
+          "lost": 0,
+          "gained": 2,
+          "changed_predictions": 2,
+          "delta_pp": 3.125,
+          "paired_95ci_pp": [
+            -1.171518293274735,
+            7.421518293274735
+          ],
+          "exact_mcnemar_p": 0.5,
+          "class_lost": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "class_gained": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1
+          ]
+        },
+        {
+          "before": "Defense2 initial",
+          "after": "Defense2",
+          "lost": 0,
+          "gained": 55,
+          "changed_predictions": 56,
+          "delta_pp": 85.9375,
+          "paired_95ci_pp": [
+            77.3531301192225,
+            94.5218698807775
+          ],
+          "exact_mcnemar_p": 5.551115123125783e-17,
+          "class_lost": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "class_gained": [
+            1,
+            6,
+            6,
+            9,
+            4,
+            4,
+            8,
+            7,
+            0,
+            10
+          ]
+        },
+        {
+          "before": "Unprotected initial",
+          "after": "Defense2 initial",
+          "lost": 53,
+          "gained": 0,
+          "changed_predictions": 56,
+          "delta_pp": -82.8125,
+          "paired_95ci_pp": [
+            -92.12872781464925,
+            -73.49627218535075
+          ],
+          "exact_mcnemar_p": 2.220446049250313e-16,
+          "class_lost": [
+            1,
+            6,
+            6,
+            9,
+            4,
+            4,
+            8,
+            6,
+            0,
+            9
+          ],
+          "class_gained": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "before": "Unprotected",
+          "after": "Defense2",
+          "lost": 0,
+          "gained": 0,
+          "changed_predictions": 0,
+          "delta_pp": 0.0,
+          "paired_95ci_pp": [
+            0.0,
+            0.0
+          ],
+          "exact_mcnemar_p": 1.0,
+          "class_lost": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "class_gained": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "full": {
+      "n": 10000,
+      "correct": {
+        "Unprotected initial": 9745,
+        "Unprotected": 9888,
+        "Defense2 initial": 1035,
+        "Defense2": 9551
+      },
+      "pairs": [
+        {
+          "before": "Unprotected initial",
+          "after": "Unprotected",
+          "lost": 4,
+          "gained": 147,
+          "changed_predictions": 163,
+          "delta_pp": 1.43,
+          "paired_95ci_pp": [
+            1.1907755989715834,
+            1.6692244010284165
+          ],
+          "exact_mcnemar_p": 1.4983753071938456e-38,
+          "class_lost": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            2,
+            1,
+            0,
+            0,
+            0
+          ],
+          "class_gained": [
+            6,
+            3,
+            20,
+            17,
+            9,
+            4,
+            34,
+            12,
+            18,
+            24
+          ]
+        },
+        {
+          "before": "Defense2 initial",
+          "after": "Defense2",
+          "lost": 7,
+          "gained": 8523,
+          "changed_predictions": 8886,
+          "delta_pp": 85.16,
+          "paired_95ci_pp": [
+            84.45934394643695,
+            85.86065605356305
+          ],
+          "exact_mcnemar_p": 0.0,
+          "class_lost": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            7,
+            0
+          ],
+          "class_gained": [
+            932,
+            969,
+            983,
+            1006,
+            956,
+            843,
+            917,
+            925,
+            0,
+            992
+          ]
+        },
+        {
+          "before": "Unprotected initial",
+          "after": "Defense2 initial",
+          "lost": 8741,
+          "gained": 31,
+          "changed_predictions": 8966,
+          "delta_pp": -87.1,
+          "paired_95ci_pp": [
+            -87.77490873796421,
+            -86.42509126203578
+          ],
+          "exact_mcnemar_p": 0.0,
+          "class_lost": [
+            969,
+            1126,
+            1003,
+            988,
+            963,
+            842,
+            884,
+            1000,
+            0,
+            966
+          ],
+          "class_gained": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            31,
+            0
+          ]
+        },
+        {
+          "before": "Unprotected",
+          "after": "Defense2",
+          "lost": 358,
+          "gained": 21,
+          "changed_predictions": 404,
+          "delta_pp": -3.37,
+          "paired_95ci_pp": [
+            -3.7458296131038753,
+            -2.994170386896125
+          ],
+          "exact_mcnemar_p": 2.721054295278701e-80,
+          "class_lost": [
+            44,
+            161,
+            40,
+            0,
+            17,
+            1,
+            7,
+            87,
+            1,
+            0
+          ],
+          "class_gained": [
+            1,
+            2,
+            0,
+            1,
+            1,
+            0,
+            7,
+            0,
+            7,
+            2
+          ]
+        }
+      ]
+    }
+  },
+  "synthetic_teacher_agreement": {
+    "fit": {
+      "n": 64,
+      "teacher_classes": [
+        6,
+        6,
+        8,
+        5,
+        8,
+        5,
+        11,
+        4,
+        6,
+        5
+      ],
+      "agree": {
+        "Unprotected initial": 64,
+        "Unprotected": 64,
+        "Defense2 initial": 6,
+        "Defense2": 64
+      }
+    },
+    "unused_for_recovery": {
+      "n": 96,
+      "teacher_classes": [
+        10,
+        10,
+        8,
+        11,
+        8,
+        11,
+        5,
+        12,
+        10,
+        11
+      ],
+      "agree": {
+        "Unprotected initial": 96,
+        "Unprotected": 96,
+        "Defense2 initial": 11,
+        "Defense2": 96
+      }
+    }
+  },
+  "synthetic_score_sha256": "a4b11cbb9382d661c1eca226a7da245a6498c21747beb01f978f6588f4b84d0d",
+  "identical_coefficient_hash_by_block": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+  ],
+  "training_steps": [
+    1200,
+    1200
+  ],
+  "training_seconds": [
+    28.382080864161253,
+    27.224901797249913
+  ],
+  "frozen_parameter_hashes": {
+    "MNIST/Unprotected initial": "543f037a914588f002644cf061c59cfec4be8bc6793fb57b2adc97160d4ddcb4",
+    "MNIST/Unprotected": "bed2946d1f2849598733dd247dbba5e2243fb2b4f55dcfc6e4bf0ce325e7eaa5",
+    "MNIST/Defense2 initial": "d2b80814350e28d230b88395daa02421a2bddcffdc6f592782bb6c2b54a4e1be",
+    "MNIST/Defense2": "45f25685b340a8b07aa7d17cb80ad84b5dba3cc46b7bc0d36c9ec56835e7fd5b"
+  },
+  "real_calibration_images": 0,
+  "defense_updates": 0,
+  "source_readout_note": "Predictions on all 160 historical synthetic inputs, unshifted and with their original normalization. The 96 held out from coefficient fitting were used in prior research. These are teacher agreements, not ground truth accuracies.",
+  "check_seconds": 11.479773269966245
+}
