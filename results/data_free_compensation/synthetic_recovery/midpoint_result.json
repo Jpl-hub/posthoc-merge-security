@@ -265,5 +265,39 @@
   },
   "construction_updates": 0,
   "recovery_updates": 0,
-  "implementation_note": "Initial readout diagnostic was interrupted before saving scores. Calling hooked ln_post directly could overwrite the cached clean-control feature used for MSE. Functional LayerNorm with identical frozen parameters avoids that hook. Primary recovery run was unaffected."
+  "implementation_note": "Initial readout diagnostic was interrupted before saving scores. Calling hooked ln_post directly could overwrite the cached clean-control feature used for MSE. Functional LayerNorm with identical frozen parameters avoids that hook. Primary recovery run was unaffected.",
+  "fixed_feature_segment": {
+    "scope": "64 synthetic fit images only. Entire line segment of current final CLS endpoints under the one frozen mixed readout. Sufficient bound, not a certificate on unknown images, modified endpoints, or a changed readout.",
+    "n": 64,
+    "target_endpoint_matches": 64,
+    "base_endpoint_matches": 60,
+    "both_endpoint_matches": 60,
+    "whole_feature_segment_certified": 59,
+    "actual_midpoint_matches": 64,
+    "label_count": [
+      6,
+      6,
+      8,
+      5,
+      8,
+      5,
+      11,
+      4,
+      6,
+      5
+    ],
+    "certified_by_label": [
+      6,
+      6,
+      8,
+      1,
+      8,
+      5,
+      11,
+      4,
+      6,
+      4
+    ],
+    "source_sha256": "f76537cbc246a475ca8c5ddbd7a2510ccef00b81f37347026c750280210576c6"
+  }
 }
