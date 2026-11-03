@@ -1,0 +1,29 @@
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{Known-module recovery of the same compositions. Accuracy (\%).}
+\label{tab:params_composition_recovery}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Defense & Processing & Standalone & MNIST & SVHN \\
+\midrule
+D1 control & Known module & 99.69 & 99.37 & 92.50 \\
+\midrule
+Defense 1 + PaRaMS & Known module & 99.69 & 8.92 & 9.16 \\
+\midrule
+D2 control & Known module & 99.68 & 99.35 & 92.45 \\
+\midrule
+Defense 2 + PaRaMS & Known module & 99.65 & 8.92 & 9.15 \\
+\midrule
+D1 control & AGA + known module & 99.68 & 99.30 & 92.79 \\
+\midrule
+Defense 1 + PaRaMS & AGA + known module & 99.68 & 99.30 & 92.79 \\
+\midrule
+D2 control & AGA + known module & 99.64 & 99.29 & 92.79 \\
+\midrule
+Defense 2 + PaRaMS & AGA + known module & 99.65 & 99.28 & 92.64 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize Extra knowledge: the modified location. Defense 1 uses final-bias projection; Defense 2 replaces the last MLP output weight and bias with public base values. Each control undergoes the same operation. AGA followed by module recovery is a composed procedure, separate from AGA alone. TA coefficient 0.5; no real attack data.\end{minipage}
+\end{table*}

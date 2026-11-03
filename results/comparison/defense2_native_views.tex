@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{Matching native responses to complementary synthetic views. Accuracy (\%).}
+\label{tab:defense2_native_views}
+\begin{tabular}{@{}lllrrrrr@{}}
+\toprule
+Target & Dataset & Variant & Standalone & TA & AGA-T & AGA-B & AGA-T+cal. \\
+\midrule
+SVHN & SVHN & Previous & 96.66 & 2.26 & 1.86 & 1.87 & 6.99 \\
+SVHN & SVHN & Two views & 97.23 & 4.85 & 3.27 & 3.12 & 2.62 \\
+SVHN & MNIST & Previous & -- & 0.22 & 0.24 & 0.25 & 11.53 \\
+SVHN & MNIST & Two views & -- & 1.05 & 1.70 & 1.12 & 4.18 \\
+\midrule
+DTD & DTD & Previous & 76.33 & 2.13 & 2.07 & 2.07 & 5.00 \\
+DTD & DTD & Two views & 74.68 & 2.02 & 1.22 & 1.22 & 4.52 \\
+DTD & MNIST & Previous & -- & 99.22 & 99.02 & 98.81 & 99.47 \\
+DTD & MNIST & Two views & -- & 98.98 & 98.70 & 98.28 & 99.44 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. Calibration uses 64 random images. MNIST failed one source decision and stopped before natural evaluation.\end{minipage}
+\end{table*}

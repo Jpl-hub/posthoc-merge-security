@@ -23,47 +23,25 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T08:18:34.810345+00:00",
-    "primary_available_GiB": 30,
+    "verified_utc": "2026-11-03T16:10:56.794726+00:00",
+    "primary_available_GiB": 21,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "MNIST/SVHN/DTD complementary synthetic view construction and evaluation of qualifying releases",
+    "primary_workspace_status": "Fixed pruning native evaluation and replay complete; no GPU job running",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
       "endpoint": "connect.cqa1.seetacloud.com:41558",
       "socket": "/tmp/posthoc_4090_41558.sock",
       "role": "CPU source/archive; original incomplete evaluation retained"
-    }
+    },
+    "queued_jobs": 0
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
-  "teacher_screenshots_last_reread_utc": "2026-10-26T11:47:44.037987+00:00",
-  "updated_utc": "2026-11-03T08:18:34.810345+00:00",
-  "status": "native_view_response_running",
-  "active_focus": "在原补偿目标中保持同一合成图两个互补视图的末块响应差。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 25133,
-      "host": "connect.cqa1.seetacloud.com:21516",
-      "protocol": "results/data_free_compensation/native_view_response_protocol.json",
-      "source_commit": "eddce4e647302329bd3c396f173b7be859109d85",
-      "output": "outputs/native_view_response_20261103",
-      "log": "outputs/native_view_response_20261103/run.log",
-      "status": "construction_running",
-      "timeout_seconds": 10800
-    }
-  ],
-  "next_action": "先独立核对三个无数据构造。源通过的发布统一补完整独立、TA、两种AGA及已有输出校正。",
-  "closed_history": {
-    "full_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
-    "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
-    "rule": "Historical failed points, source, unique models and raw scores preserved. No closed-family restart by seed/rank/angle/layer/amplitude or optimizer substitution."
-  },
   "established_methods": {
     "Defense1": {
       "record": "results/phase3/bias_weight_only/other_tasks/summary.md",
@@ -126,36 +104,6 @@
     "matching_versions": "Earlier and updated releases reported separately;do not substitute old TIES/DARE/hardlabelKD/Unmask as new-version evidence.",
     "tables": "results/comparison/README.md"
   },
-  "latest_completed_batch": {
-    "status": "completed_independently_verified",
-    "record": "results/data_free_compensation/projection_eight/calibration.json",
-    "paired": "results/data_free_compensation/projection_eight/paired.json",
-    "table": "results/comparison/defense2_projection_eight.md",
-    "datasets_table": "results/comparison/defense2_projection_eight_datasets.md",
-    "output": "outputs/projection_eight_20261103/resumed_21516",
-    "full_rows": 84,
-    "new_full_rows": 36,
-    "reused_rows": 48,
-    "full_score_replays": 1344,
-    "maximum_score_error": 3.814697265625e-05,
-    "production_image_forwards": 443515,
-    "replay_context_forwards": 164316,
-    "calibration_noise_forwards": 384,
-    "calibration_independent_comparisons": 126,
-    "main_vs_control_comparisons": 84,
-    "AGA_then_calibrated_percent": [
-      22.31,
-      29.475261216963737,
-      2.393617021276596
-    ],
-    "participating_experts": 8,
-    "complete_datasets": 7,
-    "archive_manifest_sha256": "b7cf1aa1aab24e7f7d9e6acd6e116a4bcdf22cfad9d3ea88c76e2336a1dd0a94",
-    "archive_verified_on": [
-      "21516",
-      "41558"
-    ]
-  },
   "engineering": {
     "new_production_modules": 0,
     "new_frameworks": 0,
@@ -166,271 +114,155 @@
     ],
     "raw_evidence": "Retained servers;lightweight results and source references in Git",
     "unique_models_scores_failures_deleted": 0,
-    "state_compaction": "Completed history removed from active state only; exact prior state in full_state_commit."
+    "state_compaction": "Completed history removed from active state only; exact prior state in full_state_commit.",
+    "retired_optional_lines": 43,
+    "retired_source_commit": "a973133",
+    "active_defense2_matches_commit": "be57bec"
+  },
+  "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
+  "updated_utc": "2026-11-03T16:10:56.794726+00:00",
+  "status": "fixed_pruning_closed_current_results_consolidated",
+  "active_focus": "现有方法完整结果统一到当前发布；固定剪枝损伤独立能力，关闭。重点仍是保持独立任务并限制公开替换/蒸馏恢复。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "不重复关闭点。当前实验清单与论文来源已经归并；核心未解决项仍如实保留，按用户人工继续推进。",
+  "closed_history": {
+    "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
+    "index": "results/comparison/README.md",
+    "rule": "原模型、逐图分数、失败证据及执行源码保留；不按测试结果重启已关闭点。"
+  },
+  "latest_completed_batch": {
+    "name": "residual_bias",
+    "status": "completed_independently_verified_closed",
+    "record": "results/data_free_compensation/residual_bias/result.json",
+    "table": "results/data_free_compensation/residual_bias/evaluation.md",
+    "independent_rows": 34,
+    "context_score_replays": 544,
+    "maximum_score_error": 1.52587890625e-05,
+    "native_percent": 97.43,
+    "TA_percent": 19.72,
+    "AGA_target_percent": 1.21,
+    "AGA_both_percent": 1.34,
+    "known_B_reset_percent": 9.8,
+    "prodistill_percent": 99.02,
+    "matched_clean_prodistill_percent": 99.45,
+    "all_known_reset_tensor_equal": true
+  },
+  "latest_closed_control": {
+    "name": "residual_bias",
+    "status": "completed_independently_verified_closed",
+    "record": "results/data_free_compensation/residual_bias/result.json",
+    "table": "results/data_free_compensation/residual_bias/evaluation.md",
+    "independent_rows": 34,
+    "context_score_replays": 544,
+    "maximum_score_error": 1.52587890625e-05,
+    "native_percent": 97.43,
+    "TA_percent": 19.72,
+    "AGA_target_percent": 1.21,
+    "AGA_both_percent": 1.34,
+    "known_B_reset_percent": 9.8,
+    "prodistill_percent": 99.02,
+    "matched_clean_prodistill_percent": 99.45,
+    "all_known_reset_tensor_equal": true
+  },
+  "unmask_current": {
+    "status": "completed_independently_verified",
+    "protocol": "results/comparison/unmask_current/protocol.json",
+    "output": "outputs/unmask_current_20261103",
+    "defenses": [
+      "Unprotected",
+      "Defense1",
+      "Defense2 current",
+      "PaRaMS"
+    ],
+    "participating_experts": 8,
+    "evaluated_datasets": 7,
+    "rows_per_stage": 84,
+    "new_defense_points": 0,
+    "new_AGA_calls": 0,
+    "pid": null,
+    "source_commit": "a26860ee6ed09918fb41873bb7173f0052b2796f",
+    "log": "outputs/unmask_current_20261103/resumed/run.log",
+    "resume_protocol": "results/comparison/unmask_current/resume.json",
+    "original_partial_scores_sha256": "1cbab685b51752efe5007771192752ebef855f49764e0ee10f72a01ff4a55443",
+    "record": "results/comparison/unmask_current/summary.json",
+    "table": "results/comparison/unmask.md",
+    "score_replays": 1344,
+    "maximum_context_score_error": 0.0,
+    "target_accuracy_percent": [
+      11.35,
+      12.576828518746158,
+      6.117021276595745
+    ],
+    "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Connector reads restored. New results publication in progress; receipt holds last verified commit.",
-    "last_verified_remote_commit": "9b3a30b350c8d826c8e3beb17ec238ead645fbce",
+    "status": "Connector authenticated; current verified result upload in progress, receipt remains authoritative.",
+    "last_verified_remote_commit": "e323d1969f811945183c2a816d287b07b29ec2d7",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
-  "latest_merger_batch": {
-    "status": "completed_independently_verified",
-    "record": "results/data_free_compensation/finite_mergers_result.json",
-    "table": "results/comparison/defense2_mergers.md",
-    "full_rows": 30,
-    "new_full_rows": 12,
-    "reused_full_rows": 18,
-    "new_real_evaluation_forwards": 167888,
-    "new_defense_points": 0,
+  "params_composition": {
+    "status": "completed_independently_verified_not_promoted",
+    "record": "results/comparison/params_composition/protocol.json",
+    "pid": null,
+    "new_algorithm_claim": false,
+    "note": "Ordinary combination; test feature-distillation complementarity. PaRaMS paper KD82.27 vs clean84.13 does not establish KD resistance. No new hard-label KD or output calibration.",
+    "summary": "results/comparison/params_composition/summary.json",
+    "target": "MNIST",
+    "standalone_percent": [
+      99.69,
+      99.57
+    ],
+    "AGA_target_percent": [
+      9.8,
+      2.99
+    ],
+    "prodistill_percent": [
+      9.8,
+      89.74
+    ],
+    "AGA_then_known_module_percent": [
+      99.3,
+      99.28
+    ],
+    "matched_clean_AGA_then_known_module_percent": [
+      99.3,
+      99.29
+    ],
+    "conclusion": "Keeps AGA protection; does not solve known-module recovery after AGA. Defense2 ProDistill89.74 versus same-budget PaRaMS89.27 shows no added protection at this point. Closed; no cross-task extension or parameter search."
+  },
+  "residual_bias": {
+    "name": "residual_bias",
+    "status": "completed_independently_verified_closed",
+    "record": "results/data_free_compensation/residual_bias/result.json",
+    "table": "results/data_free_compensation/residual_bias/evaluation.md",
+    "independent_rows": 34,
+    "context_score_replays": 544,
+    "maximum_score_error": 1.52587890625e-05,
+    "native_percent": 97.43,
+    "TA_percent": 19.72,
+    "AGA_target_percent": 1.21,
+    "AGA_both_percent": 1.34,
+    "known_B_reset_percent": 9.8,
+    "prodistill_percent": 99.02,
+    "matched_clean_prodistill_percent": 99.45,
+    "all_known_reset_tensor_equal": true
+  },
+  "params_pruning": {
+    "status": "completed_independently_verified_closed",
+    "record": "results/comparison/params_pruning/result.json",
+    "table": "results/comparison/params_pruning/summary.md",
+    "native_percent": [
+      94.35,
+      95.6,
+      95.6,
+      40.73
+    ],
+    "new_releases": 4,
+    "real_construction_images": 0,
     "new_AGA_calls": 0,
-    "full_context_score_replays": 480,
-    "maximum_score_error": 1.33514404296875e-05,
-    "target_TIES_percent": [
-      29.78,
-      13.921327596803934,
-      2.2872340425531914
-    ],
-    "target_DARE_percent": [
-      26.57,
-      2.2818070067609098,
-      2.8191489361702127
-    ]
-  },
-  "projection_ablation": {
-    "status": "completed_independently_verified",
-    "protocol": "results/data_free_compensation/finite_projection_ablation.json",
-    "result": "results/data_free_compensation/finite_projection_ablation_result.json",
-    "table": "results/comparison/defense2_projection.md",
-    "output": "outputs/finite_projection_ablation_20261103",
-    "source_commit": "fe4512a4da3db1ddf8620c3c93aaf96ef35f94a8",
-    "new_component_controls": 3,
-    "main_publication_replacements": 0,
-    "source_feasible": {
-      "MNIST": false,
-      "SVHN": false,
-      "DTD": true
-    },
-    "standalone_accuracy_percent": [
-      99.68,
-      97.40703749231714,
-      77.87234042553192
-    ],
-    "AGA_then_calibration_percent": [
-      10.23,
-      12.323294406883836,
-      0.9042553191489361
-    ],
-    "limitation": "Task-projection contribution not established; three native accuracies improve, but SVHN recovery protection weakens. Fixed task-shaped probes remain. No main-point replacement, rank search or result extrapolation to other attacks.",
-    "cost": {
-      "construction_seconds": 591.4662779700011,
-      "construction_noise_forwards": 768,
-      "synthetic_reference_forwards": 5360,
-      "native_forwards": 75824,
-      "pilot_forwards": 2688,
-      "full_fusion_forwards": 251832,
-      "full_score_replays": 672,
-      "pilot_score_replays": 672,
-      "replay_context_forwards": 84000,
-      "maximum_score_error": 2.288818359375e-05,
-      "calibration_noise_forwards": 1152,
-      "new_AGA_calls": 3,
-      "real_construction_images": 0,
-      "expert_updates": 0
-    }
-  },
-  "projection_recovery": {
-    "protocol": "results/data_free_compensation/projection_recovery_protocol.json",
-    "prodistill_protocol": "results/data_free_compensation/projection_prodistill_protocol.json",
-    "output": "outputs/projection_recovery_20261103",
-    "status": "completed_independently_verified",
-    "new_defense_updates": 0,
-    "new_AGA_calls": 0,
-    "pid": 75620,
-    "source_commit": "d896c3117ffe9432fd4910e1466a425c4c4242f3",
-    "estimated_minutes": 20,
-    "result": "results/data_free_compensation/projection_recovery_result.json",
-    "table": "results/comparison/defense2_projection_recovery.md",
-    "target_prodistill_percent": [
-      99.07,
-      95.81668715427166,
-      20.53191489361702
-    ],
-    "cost": {
-      "new_defense_updates": 0,
-      "new_AGA_calls": 0,
-      "recovery_full_forwards": 243712,
-      "recovery_pilot_forwards": 2304,
-      "recovery_context_score_replays": 1152,
-      "recovery_context_forwards": 71936,
-      "prodistill_training_seconds": 86.4458126295358,
-      "prodistill_backward_steps": 3600,
-      "prodistill_new_evaluation_forwards": 84328,
-      "prodistill_context_score_replays": 384,
-      "maximum_score_error": 1.52587890625e-05,
-      "real_defense_construction_images": 0,
-      "prodistill_unlabeled_images_per_task": 64
-    },
-    "archive": {
-      "primary": "21516:outputs/projection_recovery_20261103",
-      "secondary": "41558:outputs/projection_recovery_20261103",
-      "files": 152,
-      "bytes": 1464133305,
-      "manifest_sha256": "74f17983dfb20bca85b49d304f331cc65b47f236a3f88f8563edad2f10d8d24f",
-      "all_sha256_equal": true,
-      "local_temp_copy": "Not retained; authoritative complete copies on both servers"
-    }
-  },
-  "projection_eight": {
-    "status": "completed_independently_verified",
-    "protocol": "results/data_free_compensation/projection_eight/protocol.json",
-    "output": "outputs/projection_eight_20261103/resumed_21516",
-    "new_defense_points": 0,
-    "new_AGA_calls": 0,
-    "full_rows": 84,
-    "evaluated_tasks": 7,
-    "participating_experts": 8,
-    "source_commit": "54369864e12c154ef8394354e0fc26569a067557",
-    "pilot": {
-      "rows": 84,
-      "score_replays": 1344,
-      "independent_pass": true
-    },
-    "resume_protocol": "results/data_free_compensation/projection_eight/resume_21516.json",
-    "resume_output": "outputs/projection_eight_20261103/resumed_21516",
-    "old_complete_full_rows": 13,
-    "reused_full_rows": 48,
-    "new_full_rows": 36,
-    "record": "results/data_free_compensation/projection_eight/calibration.json",
-    "paired": "results/data_free_compensation/projection_eight/paired.json",
-    "table": "results/comparison/defense2_projection_eight.md",
-    "datasets_table": "results/comparison/defense2_projection_eight_datasets.md",
-    "reused_rows": 48,
-    "full_score_replays": 1344,
-    "maximum_score_error": 3.814697265625e-05,
-    "production_image_forwards": 443515,
-    "replay_context_forwards": 164316,
-    "calibration_noise_forwards": 384,
-    "calibration_independent_comparisons": 126,
-    "main_vs_control_comparisons": 84,
-    "AGA_then_calibrated_percent": [
-      22.31,
-      29.475261216963737,
-      2.393617021276596
-    ],
-    "complete_datasets": 7,
-    "archive_manifest_sha256": "b7cf1aa1aab24e7f7d9e6acd6e116a4bcdf22cfad9d3ea88c76e2336a1dd0a94",
-    "archive_verified_on": [
-      "21516",
-      "41558"
-    ]
-  },
-  "hard_label_students": {
-    "status": "completed_independently_verified",
-    "record": "results/data_free_compensation/hard_label/result.json",
-    "table": "results/comparison/defense2_hard_label.md",
-    "output": "outputs/finite_hard_label_20261103",
-    "new_students": 2,
-    "reused_students": 1,
-    "new_student_backward_steps": 1550,
-    "discarded_pilot_backward_steps": 2,
-    "new_defense_updates": 0,
-    "full_context_replays": 192,
-    "pilot_context_replays": 192,
-    "maximum_score_error": 1.33514404296875e-05,
-    "paired_comparisons": 18,
-    "archive_manifest_sha256": "59d36d88885660b9a2d2a9b380796a1b370e2f52af929f8f76ed354ead757e12",
-    "archive_verified_on": [
-      "21516",
-      "41558"
-    ],
-    "archive_files": 39,
-    "student_TA_target_percent": [
-      95.53,
-      84.99923171481254,
-      58.08510638297872
-    ],
-    "matched_historical_student_TA_percent": [
-      95.53,
-      86.22464658881377,
-      58.191489361702125
-    ],
-    "hardware_note": "Historical RTX3090 students, new RTX4090D students. Same budget, not isolated label-change causal attribution."
-  },
-  "delivery_preference": "用户要求先做扎实基本实验与核心方法，再整理给老师看的材料；不提前制作或发送汇报，不把未完成写成全部work。",
-  "backbone_b16": {
-    "status": "completed_independently_verified",
-    "protocol": "results/backbone_b16/protocol.json",
-    "output": "outputs/backbone_b16_20261103",
-    "checkpoint_files": 7,
-    "code_commit": "c664795",
-    "existing_tests": "25 passed: test_refactor.py and test_weight_only_bias.py",
-    "scope": "Defense1 three tasks on ViT-B16; Defense2 not started on B16",
-    "source_changed": "16 lines added,4 replaced in existing loader/config/evaluator; no new production modules",
-    "source_commit": "409da457fe3fe01998fdbd5c18b494437409770c",
-    "result": "results/backbone_b16/summary.json",
-    "table": "results/backbone_b16/summary.md",
-    "archive": {
-      "status": "all_sizes_and_sha256_equal",
-      "files": 76,
-      "bytes": 3211595761,
-      "manifest_sha256": "8164792a85fe34f32b4ff807a6d8f139c6f57d2c70934bd091cb65bbdcbd6de9",
-      "hosts": [
-        "21516",
-        "41558"
-      ]
-    },
-    "full_rows": 42,
-    "calibration_rows": 36,
-    "matched_calibration_comparisons": 18,
-    "full_score_replays": 672,
-    "maximum_numpy_prior_error": 1.4210854715202004e-14,
-    "conclusion": "独立预测保持；AGA后28.70/6.70/2.13，输出校正后99.33/94.73/62.18，接近匹配无保护。该骨干扩展不解决已知校正弱点。"
-  },
-  "finite_components": {
-    "protocol": "results/data_free_compensation/finite_components_protocol.json",
-    "output": "outputs/finite_components_20261103",
-    "status": "completed_independently_verified",
-    "new_controls": 9,
-    "main_publication_replacements": 0,
-    "core_question": "A/input-bias versus B/output-bias contributions and same per-tensor norm random baseline; old-version deletion controls are insufficient.",
-    "pid": 21097,
-    "source_commit": "be57bec71c73f0812e8bd738ef892815366e6f59",
-    "log": "outputs/finite_components_20261103/run.log",
-    "first_pilot_rows": 35,
-    "first_pilot_score_replays": 560,
-    "first_pilot_maximum_error": 0.0,
-    "table": "results/comparison/defense2_components.md",
-    "result": "results/data_free_compensation/finite_components_result.json",
-    "cost": {
-      "real_construction_images": 0,
-      "expert_updates": 0,
-      "new_controls": 9,
-      "new_AGA_calls": 9,
-      "construction_and_AGA_seconds": 40.36691786535084,
-      "AGA_seconds": 33.044876139611006,
-      "full_new_image_forwards": 869232,
-      "pilot_image_forwards": 6720,
-      "full_score_replays": 1680,
-      "pilot_score_replays": 1680,
-      "context_image_forwards": 210000,
-      "maximum_score_error": 2.574920654296875e-05
-    },
-    "archive": {
-      "files": 57,
-      "bytes": 339946622,
-      "manifest_sha256": "49525bbf792255611b62b3bdf96bc5677268ea5034c3b81ea54a703f07d17d29",
-      "verified_on": [
-        "21516",
-        "41558"
-      ]
-    }
-  },
-  "native_view_response": {
-    "status": "running",
-    "protocol": "results/data_free_compensation/native_view_response_protocol.json",
-    "output": "outputs/native_view_response_20261103",
-    "pid": 25133,
-    "source_commit": "eddce4e647302329bd3c396f173b7be859109d85",
-    "observed": "MNIST paired inputs saved; solver began with native teacher predictions retained on 800 source views."
+    "distillation_steps": 0,
+    "context_score_replays": 80,
+    "conclusion": "Pruning destroys current Defense2 standalone utility; closed without retries or attack expansion."
   }
 }

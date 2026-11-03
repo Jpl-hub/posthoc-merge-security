@@ -29,7 +29,11 @@
     "results/data_free_compensation/projection_eight/calibration.json": "256883bc726e579660cc7e300a7d4033efa2d24107c1f0222e442e96067eaa92",
     "results/data_free_compensation/projection_eight/paired.json": "795515a0f663e7925f7d5444b0a0bb75352d09cb634256dfdda1df7dacafd657",
     "results/data_free_compensation/hard_label/result.json": "f114b630682419f32a368e91aecd368cd7bef92809f7d34b4fcce78895e14790",
-    "results/data_free_compensation/finite_components_result.json": "276c78d011c569568f1009d417f198ca12785f5ab715ef6fcfd21c8216e242fd"
+    "results/data_free_compensation/finite_components_result.json": "276c78d011c569568f1009d417f198ca12785f5ab715ef6fcfd21c8216e242fd",
+    "results/data_free_compensation/native_view_response_result.json": "21c30f93cbd1ca633999e65aa89b2f2842efa2501fc52b6659617d39fff74960",
+    "results/data_free_compensation/native_class_means_result.json": "05a9954b2a8ef08912b8d670253768f5e63815719238651a172e8f8936285eb5",
+    "results/comparison/unmask_current/summary.json": "c4c8cb2adac756384b572e6659f643103da95688ca25dc8800b5aae4377e67ba",
+    "results/comparison/params_composition/summary.json": "96a2854c6776ba246253d8a57b992e3608cd04eef7069b78a89b5f8f902795b9"
   },
   "eight_expert_rows": [
     {
@@ -2236,12 +2240,12 @@
         [
           "MNIST",
           "Defense 2",
-          "99.61",
-          "9.80",
-          "9.80",
-          "89.21",
-          "56.34",
-          "9.80",
+          "99.57",
+          "25.15",
+          "2.99",
+          "29.78",
+          "10.76",
+          "9.39",
           "95.53"
         ],
         [
@@ -2280,13 +2284,13 @@
         [
           "SVHN",
           "Defense 2",
-          "96.98",
-          "6.70",
-          "6.70",
-          "84.56",
-          "53.84",
-          "6.70",
-          "85.84"
+          "96.66",
+          "2.26",
+          "1.86",
+          "7.41",
+          "6.99",
+          "7.96",
+          "85.00"
         ],
         [
           "DTD",
@@ -2324,16 +2328,16 @@
         [
           "DTD",
           "Defense 2",
-          "76.12",
+          "76.33",
           "2.13",
-          "2.13",
-          "59.31",
-          "52.61",
-          "2.13",
-          "58.56"
+          "2.07",
+          "6.60",
+          "5.00",
+          "2.29",
+          "58.09"
         ]
       ],
-      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection."
+      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection. Defense 2 uses the updated frozen release throughout; earlier versions are reported separately."
     },
     "partners": {
       "headers": [
@@ -2380,11 +2384,11 @@
         [
           "MNIST/SVHN",
           "Defense 2",
-          "6.70",
-          "6.70",
-          "85.53",
-          "54.05",
-          "6.70",
+          "13.26",
+          "2.02",
+          "22.81",
+          "8.75",
+          "4.33",
           "95.95"
         ],
         [
@@ -2420,12 +2424,12 @@
         [
           "SVHN/MNIST",
           "Defense 2",
-          "9.80",
-          "9.80",
-          "87.66",
-          "69.99",
-          "9.80",
-          "99.40"
+          "0.22",
+          "0.24",
+          "9.92",
+          "11.53",
+          "10.29",
+          "99.34"
         ],
         [
           "DTD/MNIST",
@@ -2460,15 +2464,15 @@
         [
           "DTD/MNIST",
           "Defense 2",
-          "98.44",
-          "75.64",
-          "99.45",
-          "99.42",
-          "96.78",
-          "99.54"
+          "99.22",
+          "99.02",
+          "99.48",
+          "99.47",
+          "99.13",
+          "99.51"
         ]
       ],
-      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. These are partner accuracies, not protection scores."
+      "note": "Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. These are partner accuracies, not protection scores. Defense 2 uses the updated frozen release throughout; earlier versions are reported separately."
     },
     "feature_distillation": {
       "headers": [
@@ -2503,9 +2507,9 @@
         [
           "MNIST",
           "Defense 2",
-          "99.45",
+          "99.43",
           "SVHN",
-          "96.49"
+          "96.22"
         ],
         [
           "SVHN",
@@ -2531,9 +2535,9 @@
         [
           "SVHN",
           "Defense 2",
-          "95.78",
+          "96.18",
           "MNIST",
-          "99.28"
+          "99.27"
         ],
         [
           "DTD",
@@ -2559,12 +2563,12 @@
         [
           "DTD",
           "Defense 2",
-          "63.83",
+          "66.70",
           "MNIST",
           "99.51"
         ]
       ],
-      "note": "Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table."
+      "note": "Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table. Defense 2 is the same updated release as the main attack table."
     },
     "defense2_versions": {
       "headers": [
@@ -4641,8 +4645,555 @@
         ]
       ],
       "note": "Same current Defense 2 releases. A and B include their respective biases. A-only and B-only retain the selected changes without refitting. Gaussian perturbations match each of the four tensor-change norms, with one fixed seed. TA coefficient 0.5; AGA-T processes the protected expert and AGA-B both experts. Low merged accuracy is useful only alongside preserved standalone accuracy. No output calibration or distillation is added to these component comparisons."
+    },
+    "defense2_native_views": {
+      "headers": [
+        "Target",
+        "Dataset",
+        "Variant",
+        "Standalone",
+        "TA",
+        "AGA-T",
+        "AGA-B",
+        "AGA-T+cal."
+      ],
+      "rows": [
+        [
+          "SVHN",
+          "SVHN",
+          "Previous",
+          "96.66",
+          "2.26",
+          "1.86",
+          "1.87",
+          "6.99"
+        ],
+        [
+          "SVHN",
+          "SVHN",
+          "Two views",
+          "97.23",
+          "4.85",
+          "3.27",
+          "3.12",
+          "2.62"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Previous",
+          "--",
+          "0.22",
+          "0.24",
+          "0.25",
+          "11.53"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Two views",
+          "--",
+          "1.05",
+          "1.70",
+          "1.12",
+          "4.18"
+        ],
+        [
+          "DTD",
+          "DTD",
+          "Previous",
+          "76.33",
+          "2.13",
+          "2.07",
+          "2.07",
+          "5.00"
+        ],
+        [
+          "DTD",
+          "DTD",
+          "Two views",
+          "74.68",
+          "2.02",
+          "1.22",
+          "1.22",
+          "4.52"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Previous",
+          "--",
+          "99.22",
+          "99.02",
+          "98.81",
+          "99.47"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Two views",
+          "--",
+          "98.98",
+          "98.70",
+          "98.28",
+          "99.44"
+        ]
+      ],
+      "note": "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. Calibration uses 64 random images. MNIST failed one source decision and stopped before natural evaluation."
+    },
+    "defense2_native_means": {
+      "headers": [
+        "Target",
+        "Dataset",
+        "Variant",
+        "Standalone",
+        "TA",
+        "AGA-T",
+        "AGA-B",
+        "AGA-T+cal."
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "MNIST",
+          "Previous",
+          "99.57",
+          "25.15",
+          "2.99",
+          "1.33",
+          "10.76"
+        ],
+        [
+          "MNIST",
+          "MNIST",
+          "Class means",
+          "99.61",
+          "25.81",
+          "5.03",
+          "2.98",
+          "9.71"
+        ],
+        [
+          "MNIST",
+          "SVHN",
+          "Previous",
+          "--",
+          "13.26",
+          "2.02",
+          "1.50",
+          "8.75"
+        ],
+        [
+          "MNIST",
+          "SVHN",
+          "Class means",
+          "--",
+          "13.96",
+          "7.18",
+          "6.43",
+          "9.10"
+        ],
+        [
+          "SVHN",
+          "SVHN",
+          "Previous",
+          "96.66",
+          "2.26",
+          "1.86",
+          "1.87",
+          "6.99"
+        ],
+        [
+          "SVHN",
+          "SVHN",
+          "Class means",
+          "96.88",
+          "3.79",
+          "2.31",
+          "2.24",
+          "7.19"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Previous",
+          "--",
+          "0.22",
+          "0.24",
+          "0.25",
+          "11.53"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Class means",
+          "--",
+          "0.80",
+          "0.57",
+          "0.47",
+          "19.03"
+        ],
+        [
+          "DTD",
+          "DTD",
+          "Previous",
+          "76.33",
+          "2.13",
+          "2.07",
+          "2.07",
+          "5.00"
+        ],
+        [
+          "DTD",
+          "DTD",
+          "Class means",
+          "76.44",
+          "2.34",
+          "2.07",
+          "2.07",
+          "6.76"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Previous",
+          "--",
+          "99.22",
+          "99.02",
+          "98.81",
+          "99.47"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Class means",
+          "--",
+          "99.22",
+          "99.04",
+          "98.91",
+          "99.47"
+        ]
+      ],
+      "note": "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. Calibration uses 64 random images. All three constructions passed their source conditions. No main release is replaced."
+    },
+    "unmask": {
+      "headers": [
+        "Target",
+        "Defense",
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45",
+        "Cars",
+        "SUN397"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Unprotected",
+          "11.35",
+          "17.97",
+          "6.06",
+          "5.13",
+          "5.46",
+          "0.90",
+          "2.64"
+        ],
+        [
+          "MNIST",
+          "PaRaMS",
+          "11.35",
+          "17.97",
+          "6.06",
+          "5.13",
+          "5.46",
+          "0.90",
+          "2.64"
+        ],
+        [
+          "MNIST",
+          "Defense 1",
+          "11.35",
+          "17.97",
+          "6.06",
+          "5.13",
+          "5.46",
+          "0.90",
+          "2.64"
+        ],
+        [
+          "MNIST",
+          "Defense 2",
+          "11.35",
+          "17.97",
+          "6.06",
+          "5.13",
+          "5.46",
+          "0.90",
+          "2.64"
+        ],
+        [
+          "SVHN",
+          "Unprotected",
+          "11.35",
+          "12.58",
+          "6.81",
+          "4.66",
+          "5.75",
+          "0.80",
+          "2.55"
+        ],
+        [
+          "SVHN",
+          "PaRaMS",
+          "11.35",
+          "12.58",
+          "6.81",
+          "4.66",
+          "5.75",
+          "0.80",
+          "2.55"
+        ],
+        [
+          "SVHN",
+          "Defense 1",
+          "11.35",
+          "12.58",
+          "6.81",
+          "4.66",
+          "5.75",
+          "0.80",
+          "2.55"
+        ],
+        [
+          "SVHN",
+          "Defense 2",
+          "11.35",
+          "12.58",
+          "6.81",
+          "4.66",
+          "5.75",
+          "0.80",
+          "2.55"
+        ],
+        [
+          "DTD",
+          "Unprotected",
+          "11.35",
+          "15.35",
+          "6.12",
+          "5.60",
+          "5.06",
+          "0.71",
+          "2.44"
+        ],
+        [
+          "DTD",
+          "PaRaMS",
+          "11.35",
+          "15.35",
+          "6.12",
+          "5.60",
+          "5.06",
+          "0.71",
+          "2.44"
+        ],
+        [
+          "DTD",
+          "Defense 1",
+          "11.35",
+          "15.35",
+          "6.12",
+          "5.60",
+          "5.06",
+          "0.71",
+          "2.44"
+        ],
+        [
+          "DTD",
+          "Defense 2",
+          "11.35",
+          "15.35",
+          "6.12",
+          "5.60",
+          "5.06",
+          "0.71",
+          "2.44"
+        ]
+      ],
+      "note": "Eight experts; TA and whole-publication subtraction coefficients are both 0.2. Paper-formula adaptation, not author code. Every protected prediction equals the equally processed unprotected prediction. Low accuracy also occurs without protection; it does not demonstrate a defense advantage. Seven complete test datasets; no eight-task mean."
+    },
+    "params_composition": {
+      "headers": [
+        "Defense",
+        "Processing",
+        "MNIST",
+        "SVHN"
+      ],
+      "rows": [
+        [
+          "Unprotected",
+          "Standalone",
+          "99.69",
+          "--"
+        ],
+        [
+          "Unprotected",
+          "TA",
+          "99.37",
+          "92.50"
+        ],
+        [
+          "Unprotected",
+          "AGA-T + TA",
+          "99.30",
+          "92.78"
+        ],
+        [
+          "Unprotected",
+          "AGA-B + TA",
+          "99.32",
+          "91.77"
+        ],
+        [
+          "Unprotected",
+          "ProDistill",
+          "99.45",
+          "96.73"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "Standalone",
+          "99.69",
+          "--"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "TA",
+          "9.80",
+          "6.70"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "AGA-T + TA",
+          "9.80",
+          "6.70"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "AGA-B + TA",
+          "9.80",
+          "6.70"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "ProDistill",
+          "9.80",
+          "6.70"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "Standalone",
+          "99.57",
+          "--"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "TA",
+          "9.74",
+          "6.38"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "AGA-T + TA",
+          "2.99",
+          "2.03"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "AGA-B + TA",
+          "1.33",
+          "1.50"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "ProDistill",
+          "89.74",
+          "59.37"
+        ]
+      ],
+      "note": "MNIST is protected; SVHN is the partner. TA coefficient 0.5. AGA-T processes the target; AGA-B processes both experts. ProDistill uses 64 additional unlabeled images per task and 100 epochs per block, with initial coefficient 0.3. Official default PaRaMS is applied to each frozen defense; construction uses no images."
+    },
+    "params_composition_recovery": {
+      "headers": [
+        "Defense",
+        "Processing",
+        "Standalone",
+        "MNIST",
+        "SVHN"
+      ],
+      "rows": [
+        [
+          "D1 control",
+          "Known module",
+          "99.69",
+          "99.37",
+          "92.50"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "Known module",
+          "99.69",
+          "8.92",
+          "9.16"
+        ],
+        [
+          "D2 control",
+          "Known module",
+          "99.68",
+          "99.35",
+          "92.45"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "Known module",
+          "99.65",
+          "8.92",
+          "9.15"
+        ],
+        [
+          "D1 control",
+          "AGA + known module",
+          "99.68",
+          "99.30",
+          "92.79"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "AGA + known module",
+          "99.68",
+          "99.30",
+          "92.79"
+        ],
+        [
+          "D2 control",
+          "AGA + known module",
+          "99.64",
+          "99.29",
+          "92.79"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "AGA + known module",
+          "99.65",
+          "99.28",
+          "92.64"
+        ]
+      ],
+      "note": "Extra knowledge: the modified location. Defense 1 uses final-bias projection; Defense 2 replaces the last MLP output weight and bias with public base values. Each control undergoes the same operation. AGA followed by module recovery is a composed procedure, separate from AGA alone. TA coefficient 0.5; no real attack data."
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "f1173bdd5ba7c8201ceb30e154889e7cce2d12ec5db94079ff6ff8b248f8da7d"
+  "report_source_sha256": "d8e2115876509969bcf0eaece666cf1915b337dc76c975bad62883a19f7dd72a"
 }

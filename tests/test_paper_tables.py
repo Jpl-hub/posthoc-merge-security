@@ -28,6 +28,15 @@ def test_current_comparison_is_reproducible_and_keeps_partner_results(tmp_path):
     assert len(saved["eight_expert_rows"]) == 3 * 4 * 2 * 7
     assert len(saved["tables"]["attacks"]["rows"]) == len(saved["tables"]["partners"]["rows"]) == 12
     assert len(saved["tables"]["feature_distillation"]["rows"]) == 12
+    current = json.loads(Path("results/data_free_compensation/finite_classification_result.json").read_text())
+    for task in ["MNIST", "SVHN", "DTD"]:
+        displayed = next(r for r in saved["tables"]["attacks"]["rows"] if r[:2] == [task, "Defense 2"])
+        measured = current["tasks"][task]["native"]["rows"][0]
+        assert displayed[2] == f"{100 * measured['after_correct'] / measured['n']:.2f}"
+        feature = next(r for r in saved["tables"]["feature_distillation"]["rows"] if r[:2] == [task, "Defense 2"])
+        raw = next(r for r in current["prodistill"]["rows"] if r['target'] == task and r['dataset'] == task
+                   and r['defense'] == 'Defense2' and r['stage'] == 'full')
+        assert feature[2] == f"{100 * raw['correct'] / raw['n']:.2f}"
     assert len(saved["tables"]["defense2_versions"]["rows"]) == 6
     assert len(saved["tables"]["defense2_version_partners"]["rows"]) == 6
     assert len(saved["tables"]["defense2_eight_versions"]["rows"]) == 18

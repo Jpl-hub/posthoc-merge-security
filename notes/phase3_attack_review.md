@@ -699,3 +699,39 @@ EuroSAT再核TaskArithmetic作者Issue1与原eurosat.py：代码读取现成trai
 再次追溯[Task Arithmetic作者issue1](https://github.com/mlfoundations/task_vectors/issues/1)：作者确认EuroSAT随机分为21600/2700/2700，但没有给出原检查点对应文件清单或种子；后续贡献者脚本使用未设种子的random.shuffle。公开2700张镜像或自行重划分均不能据此认作原测试集。此缺口仍明确保留，当前七个完整数据集不计算八任务平均。
 
 新定义：results/data_free_compensation/finite_eight/protocol.json。所有已知保持损失和恢复限制保留；结果不用于挑选模型或调整参数。
+
+### 2026-11-03：恢复实验之后，检查可用于现有防御的机制
+
+重新阅读原文和固定源码后，不能把“论文测试过恢复”写成“论文已经防住恢复”。本轮停止扩展输出校正；历史结果保留。当前恢复测试收尾后，优先检验已有保护机制与当前发布的组合，不新增攻击目录或优化框架。
+
+| 工作与原始来源 | 机制、恢复结果及实施条件 | 本项目处理 |
+|---|---|---|
+| Wei Junhao、Yu Zhe、Jun Sakuma，**Disrupting Model Merging: A Parameter-Level Defense Without Sacrificing Accuracy**，ICCV 2025。[§6、表4](https://arxiv.org/html/2503.07661v1#S6) | MLP置换与Attention配对缩放保持函数。另加10%随机剪枝后，适应恢复准确率64.35%，无保护84.13%；硬标签蒸馏仍达82.27%。因此剪枝不是已经解决蒸馏的方法。 | 官方`ISCT-W/PaRaMS@4159a9a`，`src/PaRaMS/PaRaMS_algorithm.py:params`；本地`_impl/baselines.py`已调用默认核。当前只组合其既有函数保持变换，不加随机剪枝，不声称解决硬标签复制。 |
+| Qinfeng Li等，**Do Not Merge My Model! Safeguarding Open-Source LLMs Against Unauthorized Model Merging**，AAAI 2026。[§3.2—3.3、§4.1、表2](https://arxiv.org/html/2511.10712v1) | Q/K共同正交变换；FFN改成激活多项式系数。实验将改写层换回公开基座后融合。展开点使用训练集，且推理结构改变。 | 有参数替换实验依据，但不能称为本项目末层B替换的官方复现。未找到可核的官方执行库；不能把其Q/K规范变换当作抗AGA结论，也不能直接搬含真实数据的展开点选择。 |
+| Wei-Jia Chen等，**Defending Unauthorized Model Merging via Dual-Stage Weight Protection**，CVPR 2026。[§5、§7、表5](https://arxiv.org/html/2511.11851v1) | 第一阶段CE+L2训练；第二阶段按任务表现选层并减掩码任务向量。Unmask/GradErase后平均64.64/51.77%，无保护84.47%。该表不是硬标签KD或ProDistill结果。 | 正式PDF已有本地固定副本；未取得可核官方实现。完整方法不满足本项目无真实数据构造；不能只取第二步就沿用整篇效果。 |
+| Minwoo Jang、Hoyoung Kim、Jabin Koo、Jungseul Ok，**Making Models Unmergeable via Scaling-Sensitive Loss Landscape**，ICML 2026。[§5—6.4、表14](https://arxiv.org/html/2601.21898v2) | 训练正常尺度低损失、其他尺度高损失。64图/任务的ProDistill下49.153%，无保护73.823%；这是有限恢复预算下的结果。 | [官方ef65a265](https://github.com/ml-postech/Trap2/blob/ef65a26590d92fe07955c5621c08bb315484ff29/training_scripts/8vision_training_full_trap2.py)109—170行直接优化模型参数并读取真实标签。可借鉴正常/融合状态共同约束，但不能改名为无数据后处理复现。 |
+
+引用关系：PaRaMS §6将硬标签伪标注训练作为KD恢复，引用Hinton、Vinyals、Dean的[**Distilling the Knowledge in a Neural Network**, 2015](https://arxiv.org/abs/1503.02531)；基础KD文献不等于本项目硬标签训练入口。Trap²引用Jing Xu、Jiazheng Li、Jingzhao Zhang的[**Scalable Model Merging with Progressive Layer-wise Distillation**, ICML 2025](https://proceedings.mlr.press/v267/xu25r.html)。本项目使用后者`c773fcae`的逐元素系数核，二专家驱动是本项目适配。已知模块替换的相关依据是MergeBarrier §4.1，不是另有一个作者官方“B+b攻击”算法。
+
+当前代码的原因也明确：防御一只改变最终偏置，层内特征蒸馏不修改它；防御二只修改最后MLP四张量，替换该模块会直接去掉发布改动，其他层仍保留任务能力。硬标签蒸馏只看输出类别，函数保持变换本身不能使完全相同的标签训练问题不同。上述为对本项目结构的分析，不是所有有限预算蒸馏都必然成功的定理。
+
+先检验一个有限组合：对当前MNIST防御一、二的固定发布分别应用官方默认PaRaMS（seed0，12层；无剪枝、无参数搜索）。它将中间特征改到另一组坐标，可改变ProDistill的层特征目标，同时当前防御负责AGA后的保护。组合是否互补由实际结果判断，不把普通方法叠加称为新算法或已解决漏洞。独立/TA/AGA与ProDistill分别评价；公开替换及AGA后再替换也必须报告，防止仅靠另一变换未被处理而误判。硬标签恢复不重复训练：该组合没有已经成立的抗硬标签机制。构造无真实图，恢复方仍按原64图和100轮/块。若独立能力下降或恢复仍接近无保护，就关闭这个固定组合，不调种子、范围或层数追分。
+
+同日核对补充问答：蒸馏和公开替换是本项目已发现的弱点，不是所有论文统一的两项必测攻击。PaRaMS表4的82.27%属于PaRaMS+dropout后知识蒸馏；Trap²表14的49.153%是64图/任务、逐元素ProDistill结果，不能替代硬标签学生训练。另[AGA论文](https://arxiv.org/abs/2606.30360)中的AGA是攻击、ARF是需要微调的防御，不能并列成两种攻击。引用具体原文及条件，不以同学建议代替来源。
+
+当前Unmask已完成：原作业超时前80条完整结果保留，续作复用80条并补4条，84条共1344个原128批上下文分数重放误差0，独立NumPy全索引/逐类/配对统计通过。固定TA0.2并减整份发布的0.2倍，MNIST/SVHN/DTD为11.35/12.58/6.12%，三种防御和匹配无保护全部逐图预测相同。这符合参数相消关系；低准确率本身不是防御优势，也不是恢复独有任务知识的证据。完整七数据集表见results/comparison/unmask.{md,tex}；不称八任务平均或作者完整复现。
+
+### 2026-11-03：固定PaRaMS组合完成，不扩展
+
+两个冻结MNIST发布分别加官方默认PaRaMS后，独立准确率保持99.69/99.57%，AGA仅处理目标后的融合准确率9.80/2.99%，双方处理9.80/1.33%。ProDistill分别为9.80/89.74%，匹配无保护99.45%。防御二原本为99.43%，组合下降9.69个百分点；但同预算PaRaMS单独89.27%，因此当前点没有显示超越该组件的蒸馏保护。防御一最终偏置不在ProDistill训练范围内，不能把9.80%解释为普遍抗蒸馏。
+
+仅处理已知模块时，两种组合融合准确率均8.92%；AGA后再执行同一模块处理，则为99.30/99.28%，各自匹配无保护99.30/99.29%。防御一为最终偏置投影，防御二为末层B及偏置公开替换，两者不是同一种操作；额外位置知识单独声明。原因与结构一致：只处理局部模块时PaRaMS仍在，AGA处理后再去掉局部修改即可恢复。不能用单项恢复失败推出组合可靠，也不因此否定原本AGA条件下的效果。
+
+原128批上下文重放1632分数、最大误差1.52587890625e-5；复用既有独立NumPy统计函数核对102条pilot/full记录、完整索引、逐类、配对区间和精确McNemar。构造457.47秒，2次AGA，额外系数训练2400步/55.42秒；专家训练0、构造真实图0。两个固定组合按登记规则关闭，不扩到其他任务、不扫种子或层数。源码及完整证据保留，结果见results/comparison/params_composition/summary.json。
+
+
+### 11月4日　PaRaMS剪枝定义与固定适配
+
+重新读取PaRaMS官方4159a9a的全部28个Python文件和README。没有随机剪枝实现，仅args.py有未接入的WANDA参数提示；apply_PaRaMS.py的SHA为ca38861c7feea904bf93a3bf72fe3546a5a2347ffe7c043b7e610296a90f6437。论文第6节明确随机置零10%权重，但没有完整指定张量范围及随机实现。为检验非可逆修改能否接入现有方法，4149975执行前登记48个Attention/MLP权重矩阵的Bernoulli零化，seed0、无重缩放、同坐标共享掩码，偏置/LN/最终投影不动。这是标明范围的论文思路适配，不是作者剪枝代码或表4复现。
+
+完整MNIST独立：无保护剪枝94.35，PaRaMS剪枝95.60，防御一加PaRaMS剪枝95.60，防御二加PaRaMS剪枝40.73。与各自未剪枝发布相比净损失5.34/4.09/4.09/58.84pp。最后一组5888失4得，说明这一非可逆处理严重破坏现有补偿，不能仅凭可能降低恢复准确率就当作防御改善。停止此固定点，不换率/范围/种子修补，不运行AGA、TA或蒸馏。全部原始权重及分数保留。5行、80个原批分数重放误差7.63e-6，6项配对、逐类及索引已核。来源和结果见results/comparison/params_pruning。

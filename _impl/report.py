@@ -467,6 +467,37 @@ def defense_comparison(directory):
           "effects of the teacher labels. MNIST reuses the same student because all 2048 teacher "
           "labels coincide. Standalone reports the evaluated student or expert. Defender weights "
           "are unchanged; additional real images are used only by the attacker.", "llrrr")
+    # Keep the main comparison on one current release; earlier versions stay above.
+    for table, role in [("attacks", 0), ("partners", 1)]:
+        rows = tables[table]["rows"]
+        for task in tasks:
+            dataset = task if role == 0 else ("SVHN" if task == "MNIST" else "MNIST")
+            record = updated["tasks"][task]
+            name = "FiniteClassification_" + task
+            values = ([accuracy(one(record["evaluation"]["raw_rows"], defense=name,
+                merger="Standalone", attack_scope="None", dataset=task))] if role == 0 else [])
+            values += [accuracy(one(record["evaluation"]["raw_rows"], defense=name,
+                merger="TA", attack_scope=s, dataset=dataset)) for s in ["None", "Protected expert"]]
+            values += [accuracy(one(record["evaluation"]["calibrated_rows"],
+                key="/".join([task, name, "TA", s, dataset]))) for s in ["None", "Protected expert"]]
+            match = one(record["recovery"]["matching"]["rows"], defense=name + "_matched",
+                        merger="TA", attack_scope="None", dataset=dataset)
+            values += [f"{100 * match['correct'] / match['n']:.2f}", accuracy(one(hard_labels["rows"],
+                task=task, model="Student from updated Defense 2", merger="TA", dataset=dataset))]
+            row = next(r for r in rows if r[0].split("/")[0] == task and r[1] == "Defense 2")
+            row[2:] = values
+        spec = tables[table]
+        write(table, "Recovery attacks on the protected task" if role == 0 else
+              "Partner-task accuracy under the same attacks", spec["headers"], rows,
+              spec["note"] + " Defense 2 uses the updated frozen release throughout; earlier versions are reported separately.",
+              "llrrrrrrr" if role == 0 else "llrrrrrr")
+    for row in distilled:
+        if row[1] == "Defense 2":
+            row[2], row[4] = [accuracy(one(updated["prodistill"]["rows"], target=row[0],
+                defense="Defense2", dataset=t, stage="full")) for t in [row[0], row[3]]]
+    spec = tables["feature_distillation"]
+    write("feature_distillation", "ProDistill recovery comparison", spec["headers"], distilled,
+          spec["note"] + " Defense 2 is the same updated release as the main attack table.", "llrlr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"
@@ -514,6 +545,77 @@ def defense_comparison(directory):
     write("defense2_component_partners", "Partner accuracy in the component comparison",
           ["Target", "Partner", "Variant", "TA", "AGA-T", "AGA-B"],
           component_partners, note, "lllrrr")
+    for record, table, title, prefix, label, note in [
+        ("native_view_response", "defense2_native_views", "Matching native responses to complementary synthetic views",
+         "NativeResponse_", "Two views", "MNIST failed one source decision and stopped before natural evaluation."),
+        ("native_class_means", "defense2_native_means", "Preserving class means on synthetic inputs",
+         "ClassMeans_", "Class means", "All three constructions passed their source conditions. No main release is replaced.")
+    ]:
+        values = read(f"results/data_free_compensation/{record}_result.json")
+        comparison_rows = []
+        for task in values["evaluated"]:
+            for dataset in [task, "SVHN" if task == "MNIST" else "MNIST"]:
+                for variant, field in [("Previous", "before_accuracy_percent"), (label, "accuracy_percent")]:
+                    row = [task, dataset, variant]
+                    for method, scope, stage in [("Standalone", "None", "raw"), ("TA", "None", "raw"),
+                                                  ("TA", "Protected expert", "raw"), ("TA", "All experts", "raw"),
+                                                  ("TA", "Protected expert", "calibrated")]:
+                        if method == "Standalone" and task != dataset:
+                            row.append("--")
+                            continue
+                        key = (task + "/" if stage == "calibrated" else "") + "/".join([prefix + task, method, scope, dataset])
+                        row.append(f"{one(values['vs_main'], key=key, stage=stage)[field]:.2f}")
+                    comparison_rows.append(row)
+        write(table, title,
+              ["Target", "Dataset", "Variant", "Standalone", "TA", "AGA-T", "AGA-B", "AGA-T+cal."],
+              comparison_rows, "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. "
+              "Calibration uses 64 random images. " + note, "lllrrrrr")
+    unmask = read("results/comparison/unmask_current/summary.json")
+    assert unmask["status"] == "completed_independently_verified"
+    unmask_rows = []
+    for task in tasks:
+        for method in methods:
+            values = [r for r in unmask["rows"] if r["target"] == task and
+                      (r["defense"].startswith(method.replace(" ", "")))]
+            unmask_rows.append([task, method] + [accuracy(one(values, dataset=t))
+                                               for t in cfg["evaluate"]])
+    write("unmask", "Unmask with matched unprotected controls",
+          ["Target", "Defense"] + cfg["evaluate"], unmask_rows,
+          "Eight experts; TA and whole-publication subtraction coefficients are both 0.2. "
+          "Paper-formula adaptation, not author code. Every protected prediction equals the "
+          "equally processed unprotected prediction. Low accuracy also occurs without protection; "
+          "it does not demonstrate a defense advantage. Seven complete test datasets; no eight-task mean.",
+          "llrrrrrrr")
+    composed = read("results/comparison/params_composition/summary.json")
+    assert composed["status"] == "completed_independently_verified"
+    native = one(composed["groups"], method="evaluation", stage="full")["rows"]
+    combination_rows = []
+    for name, label in [("Unprotected", "Unprotected"), ("Defense1_PaRaMS", "Defense 1 + PaRaMS"),
+                        ("Defense2_PaRaMS", "Defense 2 + PaRaMS")]:
+        for merger, scope, process in [("Standalone", "None", "Standalone"), ("TA", "None", "TA"),
+                                       ("TA", "Protected expert", "AGA-T + TA"), ("TA", "All experts", "AGA-B + TA")]:
+            values = [accuracy(one(native, defense=name, merger=merger, attack_scope=scope, dataset=t))
+                      if merger != "Standalone" or t == "MNIST" else "--" for t in ["MNIST", "SVHN"]]
+            combination_rows.append([label, process] + values)
+        combination_rows.append([label, "ProDistill"] + [accuracy(one(composed["prodistill"]["rows"],
+            defense=name, stage="full", dataset=t)) for t in ["MNIST", "SVHN"]])
+    write("params_composition", "Fixed PaRaMS compositions on MNIST", ["Defense", "Processing", "MNIST", "SVHN"],
+          combination_rows, "MNIST is protected; SVHN is the partner. TA coefficient 0.5. AGA-T processes the target; "
+          "AGA-B processes both experts. ProDistill uses 64 additional unlabeled images per task and 100 epochs per block, "
+          "with initial coefficient 0.3. Official default PaRaMS is applied to each frozen defense; construction uses no images.", "llrr")
+    recovery_rows = []
+    for method, process in [("reset", "Known module"), ("AGA_then_reset", "AGA + known module")]:
+        for index, name in enumerate(["Defense1_PaRaMS", "Defense2_PaRaMS"]):
+            group = next(g for g in composed["groups"] if g["method"] == method and g["stage"] == "full"
+                         and Path(g["directory"]).name.startswith(f"{index:02d}_"))
+            for key, label in [("Unprotected", f"D{index + 1} control"), (name, f"Defense {index + 1} + PaRaMS")]:
+                recovery_rows.append([label, process] + [accuracy(one(group["rows"], defense=key, merger=m,
+                    attack_scope="None", dataset=t)) for m, t in [("Standalone", "MNIST"), ("TA", "MNIST"), ("TA", "SVHN")]])
+    write("params_composition_recovery", "Known-module recovery of the same compositions",
+          ["Defense", "Processing", "Standalone", "MNIST", "SVHN"], recovery_rows,
+          "Extra knowledge: the modified location. Defense 1 uses final-bias projection; Defense 2 replaces the last MLP "
+          "output weight and bias with public base values. Each control undergoes the same operation. AGA followed by "
+          "module recovery is a composed procedure, separate from AGA alone. TA coefficient 0.5; no real attack data.", "llrrr")
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 
