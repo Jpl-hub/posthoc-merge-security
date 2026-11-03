@@ -63,7 +63,7 @@ after["defenses"] = {"Unprotected":dict(release=clean_ref,full_state=True),name:
 sequential = measure("AGA_then_reset",after)
 # Reuse the previously registered matched raw recovery result as the decision threshold.
 previous=json.loads(Path("results/data_free_compensation/finite_classification_result.json").read_text())["tasks"]["MNIST"]["recovery"]["replacement"]["rows"]
-before=next(r["accuracy_percent"] for r in previous if r["defense"]!="Unprotected" and r["merger"]=="TA" and r["dataset"]=="MNIST")
+before=next(100*r["correct"]/r["n"] for r in previous if r["defense"]!="Unprotected" and r["merger"]=="TA" and r["dataset"]=="MNIST")
 eligible = target_accuracy(standard,"Standalone")>48.25 and target_accuracy(local,"TA")<before
 save_json(root/"recovery_result.json",dict(native=target_accuracy(standard,"Standalone"),TA=target_accuracy(standard,"TA"),AGA_target=target_accuracy(standard,"TA","Protected expert"),AGA_both=target_accuracy(standard,"TA","All experts"),reset=target_accuracy(local,"TA"),AGA_then_reset=target_accuracy(sequential,"TA"),previous_reset=before,prodistill_eligible=eligible))
 if eligible:
