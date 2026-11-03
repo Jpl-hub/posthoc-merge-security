@@ -42,12 +42,12 @@
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "teacher_screenshots_last_reread_utc": "2026-10-26T11:47:44.037987+00:00",
-  "updated_utc": "2026-11-03T05:23:53.102421+00:00",
-  "status": "hard_label_complete_core_weaknesses_open",
-  "active_focus": "本批蒸馏与八专家投影比较均完成。优先处理无数据恢复下的核心弱点和方法贡献，保留额外数据攻击的独立结论。",
+  "updated_utc": "2026-11-03T05:55:12.303849+00:00",
+  "status": "backbone_b16_registered",
+  "active_focus": "冻结原方法，补ViT-B/16的三任务Defense1及无保护TA/AGA/输出校正。Defense2当前弱点和任务投影贡献尚未解决。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "集中分析防御一被输出校正恢复和防御二任务投影未显示整体收益的原因；已有固定结果不重跑、不按测试改参数。Unmask新版、EuroSAT原划分和第二骨干仍未完成，不写完整实验已全部通过。",
+  "next_action": "启动已登记第二骨干批次；同一固定规则，不调参数。随后处理Defense2跨骨干输入准备及同规则验证。",
   "closed_history": {
     "full_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -158,8 +158,8 @@
     "state_compaction": "Completed history removed from active state only; exact prior state in full_state_commit."
   },
   "github_sync": {
-    "status": "Current changes committed locally; GitHub connector unavailable in this session and CLI HTTPS connection refused. Last verified remote retained.",
-    "last_verified_remote_commit": "58bedb8d0d4b8c7e33ebb9000f5e67b7245d4efc",
+    "status": "Completed eight-expert and hard-label results published and read back",
+    "last_verified_remote_commit": "770cdf93d4f0b9d7e5716ad0b3fbd8d37a146083",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_merger_batch": {
@@ -345,5 +345,15 @@
     ],
     "hardware_note": "Historical RTX3090 students, new RTX4090D students. Same budget, not isolated label-change causal attribution."
   },
-  "delivery_preference": "用户要求先做扎实基本实验与核心方法，再整理给老师看的材料；不提前制作或发送汇报，不把未完成写成全部work。"
+  "delivery_preference": "用户要求先做扎实基本实验与核心方法，再整理给老师看的材料；不提前制作或发送汇报，不把未完成写成全部work。",
+  "backbone_b16": {
+    "status": "registered_before_evaluation",
+    "protocol": "results/backbone_b16/protocol.json",
+    "output": "outputs/backbone_b16_20261103",
+    "checkpoint_files": 7,
+    "code_commit": "c664795",
+    "existing_tests": "25 passed: test_refactor.py and test_weight_only_bias.py",
+    "scope": "Defense1 three tasks on ViT-B16; Defense2 not started on B16",
+    "source_changed": "16 lines added,4 replaced in existing loader/config/evaluator; no new production modules"
+  }
 }
