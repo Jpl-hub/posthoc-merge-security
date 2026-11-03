@@ -27,11 +27,11 @@
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T16:10:56.794726+00:00",
+    "verified_utc": "2026-11-03T18:17:46Z",
     "primary_available_GiB": 21,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "Fixed pruning native evaluation and replay complete; no GPU job running",
+    "primary_workspace_status": "Source and mechanism review; no GPU job running",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
@@ -120,12 +120,12 @@
     "active_defense2_matches_commit": "be57bec"
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-03T17:32:53.319672+00:00",
+  "updated_utc": "2026-11-03T18:19:02.784148+00:00",
   "status": "mechanism_and_official_source_review",
-  "active_focus": "核对融合防护与蒸馏防护的真实机制；当前无新可执行防御构造，不重复关闭点。",
+  "active_focus": "核对恢复后的构造目标；DisTaC、TAR官方实现和ASVP正文已读，尚无新的可执行防御点。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "继续解决无数据任务功能依赖：补偿必须作用于真实分类，不能仅在可整块删除的附加参数上追求大距离。新构造形成后再固定一次源检验和独立/融合/恢复评价。",
+  "next_action": "继续研究无数据条件下保持原任务、且恢复后仍改变分类的参数依赖；不重跑固定B替换、旧系数范围或已关闭构造。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -197,8 +197,8 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Current source-review edits pending: plugin returns Unknown tool;last verified publication retained.",
-    "last_verified_remote_commit": "1a3d45ecb98441dc76e50e621aea0c6ec7f04c67",
+    "status": "Current source reviews pending; GitHub plugin tools unavailable. Last verified publication retained.",
+    "last_verified_remote_commit": "15e821dd8fee9c9a9ad24153bfa2c3734ef7dac5",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "params_composition": {
@@ -277,14 +277,14 @@
   },
   "latest_source_review": {
     "record": "results/data_free_compensation/paper_protocol_review.json",
-    "section": "source_review_20261104",
-    "files": 9,
+    "section": "recovery_objective_review_20261104",
+    "new_files": 8,
     "official_repositories": [
-      "ml-postech/Trap2",
-      "VITA-Group/Nasty-Teacher",
-      "UNITES-Lab/DOGe"
+      "katoro8989/DisTaC",
+      "rishub-tamirisa/tamper-resistance"
     ],
     "new_models": 0,
-    "new_GPU_jobs": 0
+    "new_GPU_jobs": 0,
+    "author_training_executed": false
   }
 }
