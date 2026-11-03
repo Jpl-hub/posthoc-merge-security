@@ -23,15 +23,15 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T14:12:02.547583+00:00",
+    "verified_utc": "2026-11-03T14:22:48.691027+00:00",
     "primary_available_GiB": 23,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "Cross-module source and standalone evaluation finished",
+    "primary_workspace_status": "Frozen residual-bias point in matched full evaluation",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
@@ -120,12 +120,23 @@
     "active_defense2_matches_commit": "be57bec"
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-03T14:12:02.547583+00:00",
-  "status": "readout_replacement_closed_at_native_utility",
+  "updated_utc": "2026-11-03T14:22:48.691027+00:00",
+  "status": "residual_bias_fixed_evaluation_running",
   "active_focus": "按最新聊天要求研究现有防御应对蒸馏与公开参数替换的机制，并检验与冻结Defense1/2的互补；不继续扩展输出校准攻击。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "限定保留原专家识别能力的构造条件。基座主干上仅由两个位置拟合原专家的固定点已关闭。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 66865,
+      "source_commit": "41be5c4",
+      "evaluation_commit": "366a29c",
+      "status": "running",
+      "protocol": "results/data_free_compensation/residual_bias/protocol.json",
+      "frozen_weight_sha256": "e27b08b095e29979db848f0124e7f18a2eb75464c6fb4de5ac72bb2ee4cc5198",
+      "scope": "MNIST expert and SVHN partner, TA, AGA, original and sequential B+b reset, matched all-edits reset; conditional fixed ProDistill",
+      "log": "outputs/residual_bias_20261103/evaluate.log"
+    }
+  ],
+  "next_action": "核对完整MNIST独立、固定TA、AGA、已知B+b恢复、扩大已知位置对照及符合执行条件的ProDistill；完成后决定是否值得扩任务。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -218,5 +229,11 @@
       99.29
     ],
     "conclusion": "Keeps AGA protection; does not solve known-module recovery after AGA. Defense2 ProDistill89.74 versus same-budget PaRaMS89.27 shows no added protection at this point. Closed; no cross-task extension or parameter search."
+  },
+  "residual_bias": {
+    "record": "results/data_free_compensation/residual_bias/protocol.json",
+    "status": "frozen_evaluation_running",
+    "source_record": "results/data_free_compensation/residual_bias/source_result.json",
+    "real_construction_images": 0
   }
 }
