@@ -28,7 +28,8 @@
     "results/data_free_compensation/projection_recovery_result.json": "54b8d87bf8bdb8f81093331199407fbc5ec47a9b0cdc1a4b668a8a1c320d440e",
     "results/data_free_compensation/projection_eight/calibration.json": "256883bc726e579660cc7e300a7d4033efa2d24107c1f0222e442e96067eaa92",
     "results/data_free_compensation/projection_eight/paired.json": "795515a0f663e7925f7d5444b0a0bb75352d09cb634256dfdda1df7dacafd657",
-    "results/data_free_compensation/hard_label/result.json": "f114b630682419f32a368e91aecd368cd7bef92809f7d34b4fcce78895e14790"
+    "results/data_free_compensation/hard_label/result.json": "f114b630682419f32a368e91aecd368cd7bef92809f7d34b4fcce78895e14790",
+    "results/data_free_compensation/finite_components_result.json": "276c78d011c569568f1009d417f198ca12785f5ab715ef6fcfd21c8216e242fd"
   },
   "eight_expert_rows": [
     {
@@ -4374,8 +4375,274 @@
         ]
       ],
       "note": "Complete test accuracy. Other parameters remain fixed at the trained ProDistill model. A and B include their respective biases. Initial values use the same 0.3 initialization; trained values come from one completed joint coefficient fit. These are fixed component substitutions, not separately trained A-only or B-only attacks. Both-trained scores are reused from the same frozen model. No new optimization."
+    },
+    "defense2_components": {
+      "headers": [
+        "Task",
+        "Variant",
+        "Standalone",
+        "TA",
+        "AGA-T",
+        "AGA-B"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "Unprotected",
+          "99.69",
+          "99.37",
+          "99.30",
+          "99.32"
+        ],
+        [
+          "MNIST",
+          "A only",
+          "99.68",
+          "99.37",
+          "99.33",
+          "99.35"
+        ],
+        [
+          "MNIST",
+          "B only",
+          "0.06",
+          "16.49",
+          "15.73",
+          "14.98"
+        ],
+        [
+          "MNIST",
+          "Gaussian",
+          "99.67",
+          "99.34",
+          "99.31",
+          "99.33"
+        ],
+        [
+          "MNIST",
+          "A+B",
+          "99.57",
+          "25.15",
+          "2.99",
+          "1.33"
+        ],
+        [
+          "SVHN",
+          "Unprotected",
+          "97.46",
+          "92.50",
+          "91.56",
+          "91.77"
+        ],
+        [
+          "SVHN",
+          "A only",
+          "97.41",
+          "92.44",
+          "91.46",
+          "91.74"
+        ],
+        [
+          "SVHN",
+          "B only",
+          "0.55",
+          "2.40",
+          "2.52",
+          "2.44"
+        ],
+        [
+          "SVHN",
+          "Gaussian",
+          "94.20",
+          "92.76",
+          "91.81",
+          "92.13"
+        ],
+        [
+          "SVHN",
+          "A+B",
+          "96.66",
+          "2.26",
+          "1.86",
+          "1.87"
+        ],
+        [
+          "DTD",
+          "Unprotected",
+          "79.41",
+          "69.31",
+          "68.40",
+          "68.78"
+        ],
+        [
+          "DTD",
+          "A only",
+          "78.62",
+          "68.03",
+          "65.00",
+          "65.37"
+        ],
+        [
+          "DTD",
+          "B only",
+          "1.86",
+          "2.39",
+          "2.45",
+          "2.45"
+        ],
+        [
+          "DTD",
+          "Gaussian",
+          "66.33",
+          "69.63",
+          "67.87",
+          "67.87"
+        ],
+        [
+          "DTD",
+          "A+B",
+          "76.33",
+          "2.13",
+          "2.07",
+          "2.07"
+        ]
+      ],
+      "note": "Same current Defense 2 releases. A and B include their respective biases. A-only and B-only retain the selected changes without refitting. Gaussian perturbations match each of the four tensor-change norms, with one fixed seed. TA coefficient 0.5; AGA-T processes the protected expert and AGA-B both experts. Low merged accuracy is useful only alongside preserved standalone accuracy. No output calibration or distillation is added to these component comparisons."
+    },
+    "defense2_component_partners": {
+      "headers": [
+        "Target",
+        "Partner",
+        "Variant",
+        "TA",
+        "AGA-T",
+        "AGA-B"
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "SVHN",
+          "Unprotected",
+          "92.50",
+          "92.78",
+          "91.77"
+        ],
+        [
+          "MNIST",
+          "SVHN",
+          "A only",
+          "92.54",
+          "92.61",
+          "91.59"
+        ],
+        [
+          "MNIST",
+          "SVHN",
+          "B only",
+          "7.82",
+          "7.44",
+          "6.74"
+        ],
+        [
+          "MNIST",
+          "SVHN",
+          "Gaussian",
+          "92.66",
+          "92.97",
+          "92.09"
+        ],
+        [
+          "MNIST",
+          "SVHN",
+          "A+B",
+          "13.26",
+          "2.02",
+          "1.50"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Unprotected",
+          "99.37",
+          "99.39",
+          "99.32"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "A only",
+          "99.37",
+          "99.36",
+          "99.34"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "B only",
+          "0.35",
+          "0.32",
+          "0.33"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Gaussian",
+          "99.32",
+          "99.36",
+          "99.28"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "A+B",
+          "0.22",
+          "0.24",
+          "0.25"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Unprotected",
+          "99.45",
+          "99.45",
+          "99.42"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "A only",
+          "99.42",
+          "99.45",
+          "99.41"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "B only",
+          "99.10",
+          "99.09",
+          "98.86"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Gaussian",
+          "99.45",
+          "99.46",
+          "99.44"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "A+B",
+          "99.22",
+          "99.02",
+          "98.81"
+        ]
+      ],
+      "note": "Same current Defense 2 releases. A and B include their respective biases. A-only and B-only retain the selected changes without refitting. Gaussian perturbations match each of the four tensor-change norms, with one fixed seed. TA coefficient 0.5; AGA-T processes the protected expert and AGA-B both experts. Low merged accuracy is useful only alongside preserved standalone accuracy. No output calibration or distillation is added to these component comparisons."
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "3ac62123be75af2ff1b72dc68df84352ccc21244baa4c76aa773681a126b730a"
+  "report_source_sha256": "f1173bdd5ba7c8201ceb30e154889e7cce2d12ec5db94079ff6ff8b248f8da7d"
 }

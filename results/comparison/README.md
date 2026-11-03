@@ -8,7 +8,7 @@
 | 防御二：当前同一发布 | 完成独立、TA、AGA、校正及匹配 | 独立99.57/96.66/76.33%；AGA加校正10.76/6.99/5.00%。DTD独立损失3.09个百分点。 |
 | 其他恢复方法 | 完成MLP匹配、已知模块替换、硬标签蒸馏、ProDistill | 修改位置、额外真实数据和训练分别声明；不能说所有恢复都防住。 |
 | 防御基线 | 完成匹配无保护、PaRaMS及防御一比较 | PaRaMS是防御方法，TA/TIES/DARE是融合方法。 |
-| 防御二组件贡献 | 当前任务投影对照已完成 | 三任务未证明投影约束的整体收益；当前四张量版本的九个A侧、B侧和同幅度随机对照已冻结，正在完整评价。 |
+| 防御二组件贡献 | 当前任务投影对照已完成 | 三任务未证明投影约束的整体收益；九个同版本删项与随机对照已完成。只留A侧缺少保护，只留B侧会损伤独立任务，两侧合用有补偿作用。 |
 | 八专家融合 | 三个保护任务，七个完整测试集已完成 | EuroSAT原专家划分未核实；不能写完整八任务平均，也不是保护八种任务。 |
 | 第二种骨干 | 防御一ViT-B/16完整评价、原批重放和独立复核完成 | 不代替方法改进；防御二第二骨干暂不展开。 |
 | Unmask及其他论文处理 | Unmask只有早期版结果；GradErase缺少可复现细节，MergeLock官方实现未提供 | 未执行的不计完成；不用自造攻击补数量。 |
@@ -29,6 +29,7 @@
 | [校正后的七任务结果](eight_calibration.md) / [TeX](eight_calibration.tex) | 相同模型在七个完整测试集上的表现 |
 | [新版硬标签蒸馏](defense2_hard_label.md) / [TeX](defense2_hard_label.tex) | 相同图像与训练预算；学生独立、目标与伙伴结果 |
 | [新版TIES/DARE](defense2_mergers.md) / [TeX](defense2_mergers.tex) | 同一新版防御二，目标与伙伴分别报告 |
+| [当前防御二组件](defense2_components.md) / [TeX](defense2_components.tex) | 独立、TA与两种AGA范围，另列[伙伴结果](defense2_component_partners.md)。 |
 | [任务投影约束对照](defense2_projection.md) / [TeX](defense2_projection.tex) | 同一构造仅移除A的两侧SVD约束；[伙伴结果](defense2_projection_partners.md) |
 | [投影对照的恢复比较](defense2_projection_recovery.md) / [TeX](defense2_projection_recovery.tex) | 同三份发布的MLP匹配、已知B及偏置替换、固定ProDistill；[伙伴结果](defense2_projection_recovery_partners.md) |
 | [八专家投影对照](defense2_projection_eight.md) / [TeX](defense2_projection_eight.tex) | 三个保护任务的独立、TA与AGA准确率，另列[七个测试集](defense2_projection_eight_datasets.md)。 |

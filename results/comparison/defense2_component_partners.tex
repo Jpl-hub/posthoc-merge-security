@@ -1,0 +1,31 @@
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{Partner accuracy in the component comparison. Accuracy (\%).}
+\label{tab:defense2_component_partners}
+\begin{tabular}{@{}lllrrr@{}}
+\toprule
+Target & Partner & Variant & TA & AGA-T & AGA-B \\
+\midrule
+MNIST & SVHN & Unprotected & 92.50 & 92.78 & 91.77 \\
+MNIST & SVHN & A only & 92.54 & 92.61 & 91.59 \\
+MNIST & SVHN & B only & 7.82 & 7.44 & 6.74 \\
+MNIST & SVHN & Gaussian & 92.66 & 92.97 & 92.09 \\
+MNIST & SVHN & A+B & 13.26 & 2.02 & 1.50 \\
+\midrule
+SVHN & MNIST & Unprotected & 99.37 & 99.39 & 99.32 \\
+SVHN & MNIST & A only & 99.37 & 99.36 & 99.34 \\
+SVHN & MNIST & B only & 0.35 & 0.32 & 0.33 \\
+SVHN & MNIST & Gaussian & 99.32 & 99.36 & 99.28 \\
+SVHN & MNIST & A+B & 0.22 & 0.24 & 0.25 \\
+\midrule
+DTD & MNIST & Unprotected & 99.45 & 99.45 & 99.42 \\
+DTD & MNIST & A only & 99.42 & 99.45 & 99.41 \\
+DTD & MNIST & B only & 99.10 & 99.09 & 98.86 \\
+DTD & MNIST & Gaussian & 99.45 & 99.46 & 99.44 \\
+DTD & MNIST & A+B & 99.22 & 99.02 & 98.81 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize Same current Defense 2 releases. A and B include their respective biases. A-only and B-only retain the selected changes without refitting. Gaussian perturbations match each of the four tensor-change norms, with one fixed seed. TA coefficient 0.5; AGA-T processes the protected expert and AGA-B both experts. Low merged accuracy is useful only alongside preserved standalone accuracy. No output calibration or distillation is added to these component comparisons.\end{minipage}
+\end{table*}

@@ -1,0 +1,84 @@
+{
+  "registered_utc": "2026-11-03T08:17:25.346448+00:00",
+  "purpose": "Test whether preserving input-dependent native MLP responses across two complementary views improves standalone accuracy while retaining measured fusion protection.",
+  "output": "outputs/native_view_response_20261103",
+  "tasks": [
+    "MNIST",
+    "SVHN",
+    "DTD"
+  ],
+  "reference_protocol": "results/data_free_compensation/finite_mergers_protocol.json",
+  "reuse": {
+    "MNIST": {
+      "path": "outputs/finite_classification_20261102/MNIST/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt",
+      "sha256": "fb628b3d813a85d45cf36132ae1b2e7434b72a287e106620e380f7f44c94a990",
+      "execution": "outputs/finite_classification_20261102/MNIST/evaluation/full/00_MNIST_SVHN/execution.json"
+    },
+    "SVHN": {
+      "path": "outputs/finite_classification_20261102/SVHN/evaluation/full/00_SVHN_MNIST/artifacts/predictions.pt",
+      "sha256": "3286288d8f569fdf610f1ef67c957210a7bccc48c19719c8aa1ce55ddf9a1e23",
+      "execution": "outputs/finite_classification_20261102/SVHN/evaluation/full/00_SVHN_MNIST/execution.json"
+    },
+    "DTD": {
+      "path": "outputs/finite_classification_20261102/DTD/evaluation/full/00_DTD_MNIST/artifacts/predictions.pt",
+      "sha256": "d18c370ab91d626eeeb71f13d3270dbf2381f0fa11bf6d7e98d1643ab69cdad7",
+      "execution": "outputs/finite_classification_20261102/DTD/evaluation/full/00_DTD_MNIST/execution.json"
+    }
+  },
+  "views": "All fixed base synthetic pixels from the original source. Upsample to 224 as before. Per image, keep even or odd 32x32 ViT-patch checkerboard cells. Set the complement to the preprocessing mean. Frozen teacher processes both masked inputs, taking their actual last MLP CLS inputs. No labels copied between views. No view selection, regenerated seeds, real data or partner.",
+  "mathematics": "For each pair let dh be the difference in modified nonlinear hidden activations and dy the original expert MLP output difference. Add sum ||B dh - dy||^2 / sum ||dy||^2 to the two original native population errors. The constant output bias cancels. Same Cholesky and finite public classification solver, original rho and SVD32. Combined native budget = original budget + measured pair error at original B. The original budget is checked separately on the FP32 candidate.",
+  "hypothesis": "Constraining the way the expert responds to visible content across two views may reduce the loss hidden by perfect native top-1 on confident synthetic examples. Synthetic-view fit alone need not improve natural classification.",
+  "source_gate": "Independent recount of all existing 18 finite public criteria and native scores, no loosening. Check the original native bound separately and require pair error strictly lower than the current frozen main on the same synthetic pairs. NumPy independently reconstructs the nonlinear responses and norms. Freeze all three before evaluation. Source failures are retained and not promoted.",
+  "evaluation": "All source-passing releases get full native, TA.5, both original AGA scopes, both datasets, and independent64 noise calibration, regardless of native test accuracy. Compare with the same frozen main and clean controls, report all tasks and failures. No result-based repair or cross-task mixing. Success of the proposed improvement requires smaller standalone losses with protection retained, assessed task by task with paired natural outcomes. Stronger-permission results remain specific to the prior releases until tested.",
+  "reference": "Patch masking in vision distillation is established (DINOv2, https://arxiv.org/abs/2304.07193 and official dinov2/train/ssl_meta_arch.py). Here complementary masked synthetic inputs go through the same frozen teacher and we fit their finite last-block response difference. The method does not reproduce DINOv2 training or claim mask design as an original contribution. The source generation remains the pinned prior project implementation.",
+  "budget": {
+    "real_construction_images": 0,
+    "new_expert_training_updates": 0,
+    "new_optimizers": 0,
+    "new_candidates": 3,
+    "paired_teacher_forwards": 2144,
+    "pair_counts": [
+      160,
+      160,
+      752
+    ],
+    "max_additional_task_reference_synthetic_forwards": 5360,
+    "max_construction_noise_forwards": 768,
+    "max_AGA": 3,
+    "timeout_seconds": 10800
+  },
+  "source_sha256": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/evaluate.py": "db733c87bdbb5e2a747c5b4e33e40023ae307bf7823d64bebba8e6510bf753f1",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/prodistill.py": "076ef4a01767fab9dd94d6edd70b4f0eef007b6295ec1561127985fa999cd326",
+    "_impl/report.py": "f1173bdd5ba7c8201ceb30e154889e7cce2d12ec5db94079ff6ff8b248f8da7d",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "74333de01927ee5bfdcd20573607121cd8043850221f08041268bb8b8697ce57",
+    "experiment/defense2.py": "4f4b63f5f8f670a0143029f5eb43e1b49617afc150355bc8e1c3c801950fc145",
+    "experiment/distill.py": "e1e07d6d7d1a582ee412454eca7e4f6368641abbd3c01dae8429e6432b98d53f",
+    "experiment/eight_task.py": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+    "experiment/recover.py": "a6770bb3f99fc9a05e69ae8e2c3df48480be9370878e04d73096234a9d57641f",
+    "experiment/report.py": "e0938e02c32fba7be8e5a46ba6dfba7f00452962f28b77f8c8eab6b60c5fbba2",
+    "results/data_free_compensation/finite_mergers_protocol.json": "af6dce895e6b3e57a57ac0579ae1bc089d3094e3d5c1f9e1e9ba987741c76ffb",
+    "outputs/native_view_response_20261103/run.py": "4543f27b4014d3f582c830b364643745a79687315737db4e2a709d486311b5f4",
+    "outputs/finite_classification_20261102/source_check.py": "5be88c7cc5de376d0a01ba373254123d95e44de81fcd08bf89d1221347fed0ba",
+    "outputs/finite_classification_20261102/paired_check.py": "780e85b87f2b6eacd2bcb1e8956987b31fe3430b754c2c0b2a8054ddeceecff5",
+    "outputs/noise_calibration_other_20261102/calibrate.py": "6926ab7a764d20120297c131eefaf493f37ac7fbe024d89f998f777f45583e5a",
+    "configs/defense2_inputs.json": "894209da2c9cdca0dc6bbd674a407e2970865d847f2346a78e8f09a93b68a722",
+    "results/data_free_compensation/readout_calibration_protocol.json": "5a57dd86839eba2768ab0b6668fb81180e4388955b39a6b09754b7096479065c"
+  },
+  "driver_source": "\"\"\"One fixed two-view native-response experiment on existing synthetic images.\"\"\"\nimport gc\nimport subprocess\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport torch\nimport torch.nn.functional as F\nfrom scipy.special import expit\n\nfrom cfg import load_config\nfrom _impl.evaluate import run, verify\nfrom _impl.io import digest, read_json, save_json\nfrom _impl.models import initialize, load_checkpoint\n\nprotocol = load_config('results/data_free_compensation/native_view_response_protocol.json')\nroot = Path(protocol['output'])\nbase_cfg = read_json(protocol['reference_protocol'])\ninputs = read_json('configs/defense2_inputs.json')\nold = Path('outputs/finite_classification_20261102')\ninitialize()\n\ndef execute(log, *args):\n    with log.open('x') as sink:\n        subprocess.run([sys.executable, '-u', *map(str, args)], stdout=sink, stderr=subprocess.STDOUT, check=True)\n\n@torch.no_grad()\ndef make_pairs(task, path):\n    spec = inputs[task]\n    src = Path(spec['root'])/'source/source.pt'\n    assert digest(src) == spec['source_sha256']\n    pixels = torch.load(src, map_location='cpu', weights_only=False)['final']\n    model = load_checkpoint(task+'/finetuned.pt').cuda().eval()\n    assert model.model.visual.conv1.kernel_size == (32,32)\n    mean, std = (torch.tensor(v,device='cuda')[None,:,None,None] for v in\n                 (model.val_preprocess.transforms[-1].mean, model.val_preprocess.transforms[-1].std))\n    axis = torch.arange(224,device='cuda') // 32\n    mask = (axis[:,None]+axis[None,:]) % 2 == 0\n    collected = []\n    hook = model.model.visual.transformer.resblocks[-1].mlp.c_fc.register_forward_pre_hook(\n        lambda layer, args: collected.append(args[0][0].detach().cpu()))\n    try:\n        for batch in pixels.split(8):\n            x = (F.interpolate(batch.cuda().float(), size=(224,224), mode='bilinear',align_corners=False)-mean)/std\n            model(torch.cat([x*mask, x*(~mask)]))\n    finally:\n        hook.remove()\n    pairs = torch.cat([b.reshape(2,-1,768) for b in collected],1)\n    assert pairs.shape == (2,len(pixels),768) and pairs.isfinite().all()\n    torch.save(pairs,path)\n    return len(pixels)\n\ndef independent_pair_error(task, directory, result):\n    # Separate NumPy forward at the recorded classifier-token inputs, using FP32 release weights.\n    model = load_checkpoint(task+'/finetuned.pt')\n    state = model.state_dict()\n    pair = torch.load(directory/'pairs.pt',weights_only=True).numpy().astype(float)\n    prefix = 'model.visual.transformer.resblocks.11.mlp.'\n    def response(params):\n        A,a,B = [params[prefix+k].numpy().astype(float) for k in ('c_fc.weight','c_fc.bias','c_proj.weight')]\n        z = pair @ A.T + a\n        h = z * expit(1.702*z)\n        return (h[0]-h[1]) @ B.T\n    target = response(state)\n    den = np.square(target).sum()\n    def err(params):\n        return float(np.square(response(params)-target).sum()/den)\n    ref = base_cfg['defenses']['Defense2_'+task]['release']\n    assert digest(ref['path']) == ref['sha256']\n    prior = torch.load(ref['path'],weights_only=True)\n    current = torch.load(directory/'point/point.pt',weights_only=True)\n    value = err(current)\n    base_error = err(state | {k:v for k,v in current.items() if '.c_fc.' in k})\n    stats = result['native_pair_error']\n    np.testing.assert_allclose([value,base_error],[stats['published_B'],stats['original_B']],rtol=1e-8,atol=1e-10)\n    return dict(new=value, prior=err(prior), original_B=base_error)\n\nfrozen = {}\nfor task in protocol['tasks']:\n    directory = root/task\n    directory.mkdir(exist_ok=False)\n    n = make_pairs(task,directory/'pairs.pt')\n    inputs[task]['native_response_pairs'] = dict(path=str(directory/'pairs.pt'),sha256=digest(directory/'pairs.pt'))\n    save_json(directory/'inputs.json',{task:inputs[task]})\n    execute(directory/'construction.log','-m','experiment.defense2','--target',task,'--inputs',directory/'inputs.json',\n            '--calibration-aware','--task-reference','--input-bias','--noise-calibration','--finite-classification','--output',directory/'point')\n    execute(directory/'source_check.log',old/'source_check.py',directory)\n    r = read_json(directory/'point/result.json')\n    pair = independent_pair_error(task,directory,r)\n    limit = inputs[task]['original_native_limit']\n    passed = (read_json(directory/'point/source_check.json')['source_feasible'] and pair['new'] < pair['prior']\n              and r['native_pair_error']['original_quadratic'] <= limit+1e-5*(1+abs(limit)))\n    frozen[task] = dict(sha256=r['point_sha256'],passed=bool(passed),pair_error=pair,pairs=n,\n                        old_quadratic=r['native_pair_error']['original_quadratic'],old_limit=limit,source_feasible=r['source_feasible'])\n    save_json(root/'source_outcomes.json',frozen)\n    print('FROZEN',task,frozen[task],flush=True)\nsave_json(root/'before_evaluation.json',frozen)\ngc.collect()\ntorch.cuda.empty_cache()\n\nfor task, point in frozen.items():\n    if not point['passed']:\n        continue\n    peer = 'SVHN' if task=='MNIST' else 'MNIST'\n    p = root/task\n    name = 'NativeResponse_'+task\n    release = dict(path=str(p/'point/point.pt'),sha256=point['sha256'])\n    execute(p/'native.log','-m','experiment.native','--target',task,'--publication',release['path'],\n            '--sha256',release['sha256'],'--test-only','--output',p/'native')\n    execute(p/'native_check.log','-m','experiment.native','--verify',p/'native')\n    cfg = {k:base_cfg[k] for k in ['tasks','TA_coefficient','AGA','AGA_references','pilot_n','replay_n','score_tolerance']}\n    cfg.update(experiment='Native response to complementary synthetic views',output=str(p/'evaluation'),mergers=['TA'],\n               attack_scopes=['None','Protected expert','All experts'],source_sha256=protocol['source_sha256'],\n               cases=[dict(target=task,partner=peer,defenses=[name])])\n    save_json(p/'recovery.json',cfg)\n    execute(p/'aga.log','-m','experiment.recover','--target',task,'--publication',release['path'],'--sha256',release['sha256'],\n            '--aligned-reference','--protocol',p/'recovery.json','--output',p/'AGA')\n    aga = dict(path=str(p/'AGA/edits.pt'),sha256=read_json(p/'AGA/execution.json')['output_sha256'])\n    cfg['defenses']={name:dict(target=task,release=release,AGA_edits=aga)}\n    ref = protocol['reuse'][task]\n    ids = read_json(ref['execution'])['evaluated_parameter_sha256']\n    case = task+'_'+peer\n    cfg['legacy']={case+'/Unprotected':{stage:dict(path=ref['path'],sha256=ref['sha256'],key_template='Unprotected/'+key+'/{task}',\n                        model_parameter_sha256=ids['Unprotected/'+key]) for stage,key in\n                        [('standalone','Standalone/None'),('direct','TA/None'),('AGA_target_only','TA/Protected expert'),('AGA_both','TA/All experts')]},\n                   case+'/'+name:{'standalone':dict(path=str(p/'native/full.pt'),sha256=digest(p/'native/full.pt'),native_score_field='after')}}\n    save_json(p/'evaluation.json',cfg)\n    for pilot in [True,False]:\n        run(p/'evaluation.json',0,pilot)\n        folder=p/'evaluation'/('pilot' if pilot else 'full')/('00_'+case)\n        verify(folder)\n    cal = read_json('results/data_free_compensation/readout_calibration_protocol.json')\n    cal.update(output=str(p/'calibration'),cases=[dict(target=task,partner=peer,name=name,release=release,AGA_edits=aga,\n               AGA_references=cfg['AGA_references'],raw_scores=dict(path=str(folder/'artifacts/predictions.pt'),sha256=digest(folder/'artifacts/predictions.pt')))])\n    save_json(p/'calibration.json',cal)\n    execute(p/'calibration.log','outputs/noise_calibration_other_20261102/calibrate.py',p/'calibration.json')\n    save_json(p/'completed.json',dict(status='evaluation_complete',point_sha256=point['sha256']))\n    execute(p/'paired.log',old/'paired_check.py',p)\nsave_json(root/'completed.json',dict(source=frozen,evaluated=[t for t,r in frozen.items() if r['passed']]))\n"
+}

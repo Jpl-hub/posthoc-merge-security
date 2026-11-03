@@ -485,6 +485,35 @@ def defense_comparison(directory):
               "trained values come from one completed joint coefficient fit. "
               "These are fixed component substitutions, not separately trained A-only or B-only attacks. "
               "Both-trained scores are reused from the same frozen model. No new optimization.", "llrrrr")
+    components = read("results/data_free_compensation/finite_components_result.json")
+    assert components["status"] == "completed_independently_verified"
+    component_rows, component_partners = [], []
+    for task in tasks:
+        partner = "SVHN" if task == "MNIST" else "MNIST"
+        for label, name in [("Unprotected", "Unprotected"), ("A only", "A_only_" + task),
+                            ("B only", "B+b_only_" + task), ("Gaussian", "Random_noise_" + task),
+                            ("A+B", "Defense2_" + task)]:
+            def component_score(method, scope, dataset):
+                return accuracy(one(components["records"], target=task,
+                                    key="/".join([name, method, scope, dataset])))
+            native = component_score("Standalone", "None", task)
+            scopes = ["None", "Protected expert", "All experts"]
+            component_rows.append([task, label, native] + [
+                component_score("TA", scope, task) for scope in scopes])
+            component_partners.append([task, partner, label] + [
+                component_score("TA", scope, partner) for scope in scopes])
+    note = ("Same current Defense 2 releases. A and B include their respective biases. "
+            "A-only and B-only retain the selected changes without refitting. Gaussian perturbations "
+            "match each of the four tensor-change norms, with one fixed seed. TA coefficient 0.5; "
+            "AGA-T processes the protected expert and AGA-B both experts. "
+            "Low merged accuracy is useful only alongside preserved standalone accuracy. "
+            "No output calibration or distillation is added to these component comparisons.")
+    write("defense2_components", "Components of the current Defense 2",
+          ["Task", "Variant", "Standalone", "TA", "AGA-T", "AGA-B"],
+          component_rows, note, "llrrrr")
+    write("defense2_component_partners", "Partner accuracy in the component comparison",
+          ["Target", "Partner", "Variant", "TA", "AGA-T", "AGA-B"],
+          component_partners, note, "lllrrr")
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 

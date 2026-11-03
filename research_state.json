@@ -23,15 +23,15 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T06:47:11.600613+00:00",
+    "verified_utc": "2026-11-03T08:17:25.346448+00:00",
     "primary_available_GiB": 30,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "Current Defense2 fixed component and Gaussian controls; full evaluation running",
+    "primary_workspace_status": "Components complete. Native response experiment prepared.",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
@@ -42,23 +42,12 @@
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "teacher_screenshots_last_reread_utc": "2026-10-26T11:47:44.037987+00:00",
-  "updated_utc": "2026-11-03T06:47:11.600613+00:00",
-  "status": "current_defense2_components_running",
-  "active_focus": "核心方法优先：当前四张量防御二的组件和同幅度随机对照；不再扩展骨干。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 21097,
-      "host": "connect.cqa1.seetacloud.com:21516",
-      "source_commit": "be57bec71c73f0812e8bd738ef892815366e6f59",
-      "output": "outputs/finite_components_20261103",
-      "protocol": "results/data_free_compensation/finite_components_protocol.json",
-      "status": "full_running_after_all_nine_frozen_and_first_pilot_verified",
-      "timeout_seconds": 7200,
-      "log": "outputs/finite_components_20261103/run.log"
-    }
-  ],
-  "next_action": "约35分钟后人工检查当前四张量防御二三个任务的A侧、B侧及同范数随机对照；比较独立/TA/AGA和主方法，完成逐类配对核验，不自动加批次或根据成绩选点。",
+  "updated_utc": "2026-11-03T08:17:25.346448+00:00",
+  "status": "native_response_registered",
+  "active_focus": "在原补偿目标中保持同一合成图两个互补视图的末块响应差。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "先独立核对三个无数据构造。源通过的发布统一补完整独立、TA、两种AGA及已有输出校正。",
   "closed_history": {
     "full_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -101,7 +90,7 @@
         17.159649661954518,
         28.45744680851064
       ],
-      "limitation": "DTD standalone loss3.085pp;knownB+b replacement and extra-real-data ProDistill restore high performance. Current deletion/random controls pending; ProDistill-side A/B substitution is not the same ablation. SVD classification benefit not demonstrated."
+      "limitation": "Single-side deletions and matched Gaussian controls establish an interaction of A and B for the current fixed releases. DTD standalone loss3.085pp; no general SVD gain. Known replacement and data-assisted distillation can recover."
     }
   },
   "evaluation_scope": {
@@ -389,7 +378,7 @@
   "finite_components": {
     "protocol": "results/data_free_compensation/finite_components_protocol.json",
     "output": "outputs/finite_components_20261103",
-    "status": "nine_controls_frozen_first_pilot_verified_full_running",
+    "status": "completed_independently_verified",
     "new_controls": 9,
     "main_publication_replacements": 0,
     "core_question": "A/input-bias versus B/output-bias contributions and same per-tensor norm random baseline; old-version deletion controls are insufficient.",
@@ -399,6 +388,35 @@
     "first_pilot_rows": 35,
     "first_pilot_score_replays": 560,
     "first_pilot_maximum_error": 0.0,
-    "estimated_remaining_minutes": 35
+    "table": "results/comparison/defense2_components.md",
+    "result": "results/data_free_compensation/finite_components_result.json",
+    "cost": {
+      "real_construction_images": 0,
+      "expert_updates": 0,
+      "new_controls": 9,
+      "new_AGA_calls": 9,
+      "construction_and_AGA_seconds": 40.36691786535084,
+      "AGA_seconds": 33.044876139611006,
+      "full_new_image_forwards": 869232,
+      "pilot_image_forwards": 6720,
+      "full_score_replays": 1680,
+      "pilot_score_replays": 1680,
+      "context_image_forwards": 210000,
+      "maximum_score_error": 2.574920654296875e-05
+    },
+    "archive": {
+      "files": 57,
+      "bytes": 339946622,
+      "manifest_sha256": "49525bbf792255611b62b3bdf96bc5677268ea5034c3b81ea54a703f07d17d29",
+      "verified_on": [
+        "21516",
+        "41558"
+      ]
+    }
+  },
+  "native_view_response": {
+    "status": "registered",
+    "protocol": "results/data_free_compensation/native_view_response_protocol.json",
+    "output": "outputs/native_view_response_20261103"
   }
 }
