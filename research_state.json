@@ -27,18 +27,19 @@
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T10:39:16.818549+00:00",
-    "primary_available_GiB": 28,
+    "verified_utc": "2026-11-03T12:32:11.953624+00:00",
+    "primary_available_GiB": 26,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "Frozen Unmask pilot running; no defense construction",
+    "primary_workspace_status": "Unmask resume active; fixed two-publication composition waiting, no concurrent GPU fitting",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
       "endpoint": "connect.cqa1.seetacloud.com:41558",
       "socket": "/tmp/posthoc_4090_41558.sock",
       "role": "CPU source/archive; original incomplete evaluation retained"
-    }
+    },
+    "queued_jobs": 1
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "established_methods": {
@@ -118,25 +119,37 @@
     "retired_source_commit": "a973133",
     "active_defense2_matches_commit": "be57bec"
   },
-  "delivery_preference": "用户要求先做扎实基本实验与核心方法，再整理给老师看的材料；不提前制作或发送汇报，不把未完成写成全部work。",
-  "updated_utc": "2026-11-03T10:39:16.818549+00:00",
-  "status": "unmask_current_pilot_running",
-  "active_focus": "核心问题仍是独立功能保持及任务约束贡献；补当前冻结方法的一项已登记恢复缺口。",
+  "delivery_preference": "有实质结果、失败或需要判断的分歧及时向用户反馈，便于用户向老师沟通；不代发消息、不将未完成写成work。用户人工约60分钟后查看，不新建自动任务。",
+  "updated_utc": "2026-11-03T12:32:11.953624+00:00",
+  "status": "unmask_resume_running_fixed_compositions_queued",
+  "active_focus": "按最新聊天要求研究现有防御应对蒸馏与公开参数替换的机制，并检验与冻结Defense1/2的互补；不继续扩展输出校准攻击。",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "pid": 32174,
+      "pid": 47228,
       "GPU": "RTX4090D21516",
-      "source_commit": "a26860ee6ed09918fb41873bb7173f0052b2796f",
-      "protocol": "results/comparison/unmask_current/protocol.json",
-      "log": "outputs/unmask_current_20261103/run.log",
-      "scope": "Unmask on fixed Defense1/current Defense2/PaRaMS and matched unprotected;8experts/7testsets",
-      "estimated_minutes": 45,
+      "status": "running",
+      "protocol": "results/comparison/unmask_current/resume.json",
+      "log": "outputs/unmask_current_20261103/resumed/run.log",
+      "scope": "Resume four missing evaluations and replay all84 rows; 80 original rows retained/reused",
       "new_defense_points": 0,
       "new_AGA_calls": 0
+    },
+    {
+      "pid": 51167,
+      "GPU": "RTX4090D21516",
+      "status": "waiting_for_Unmask_independent_completion",
+      "source_commit": "15617824e3b55a6ab367aaa64ac0a5ba3dd77c6b",
+      "protocol": "results/comparison/params_composition/protocol.json",
+      "log": "outputs/params_composition_20261103/run.log",
+      "scope": "Official unchanged PaRaMS applied to frozen MNIST Defense1 and Defense2; standalone,TA,AGA,ProDistill,matched known-module recovery and AGA plus recovery",
+      "new_defense_points": 2,
+      "new_AGA_calls": 2,
+      "real_construction_images": 0,
+      "maximum_coefficient_steps": 2400
     }
   ],
-  "next_action": "人工约45分钟后查看；先完整评价，再独立逐图统计和匹配无保护比较。不新建自动任务。",
+  "next_action": "人工约60分钟后看Unmask核验和两个组合的实际进度；逐项报告结果，完成后复用现有表格。不重启有效作业，不按结果扫参。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -182,7 +195,7 @@
     "status": "closed_not_promoted"
   },
   "unmask_current": {
-    "status": "pilot_running",
+    "status": "original_full_timed_out_at80_of84; verified_resume_running",
     "protocol": "results/comparison/unmask_current/protocol.json",
     "output": "outputs/unmask_current_20261103",
     "defenses": [
@@ -196,13 +209,22 @@
     "rows_per_stage": 84,
     "new_defense_points": 0,
     "new_AGA_calls": 0,
-    "pid": 32174,
+    "pid": 47228,
     "source_commit": "a26860ee6ed09918fb41873bb7173f0052b2796f",
-    "log": "outputs/unmask_current_20261103/run.log"
+    "log": "outputs/unmask_current_20261103/resumed/run.log",
+    "resume_protocol": "results/comparison/unmask_current/resume.json",
+    "original_partial_scores_sha256": "1cbab685b51752efe5007771192752ebef855f49764e0ee10f72a01ff4a55443"
   },
   "github_sync": {
-    "status": "pending; GitHub connector absent in current tool list; direct remote connection refused",
+    "status": "pending; single connector check returned Unknown tool github.get_profile; no successful publish this turn",
     "last_verified_remote_commit": "e323d1969f811945183c2a816d287b07b29ec2d7",
     "receipt": "outputs/latest_github_sync_receipt.json"
+  },
+  "params_composition": {
+    "status": "queued_not_yet_constructed",
+    "record": "results/comparison/params_composition/protocol.json",
+    "pid": 51167,
+    "new_algorithm_claim": false,
+    "note": "Ordinary combination; test feature-distillation complementarity. PaRaMS paper KD82.27 vs clean84.13 does not establish KD resistance. No new hard-label KD or output calibration."
   }
 }
