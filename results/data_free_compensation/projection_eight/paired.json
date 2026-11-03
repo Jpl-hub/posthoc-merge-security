@@ -1,0 +1,1379 @@
+{
+  "status": "completed_independently_verified",
+  "previous_predictions_sha256": "ac8e9b5e103004344d9c97c24cdbd9cc4bc909b8b799d6daa794753878fd7ab3",
+  "current_predictions_sha256": "2a134fa03b3cd2e33eb95f8273155c0cf0586ed23fc68d837883f7f70e4d94b4",
+  "full_check_sha256": "62b5e9ed7bc4de6e30dc62bf0a146b797888602477ba890291e637d2096a84cf",
+  "raw_validation": {
+    "status": "passed",
+    "rows": 84,
+    "raw_sha256": "2ef6f0e0ba0291fc8a042ca5556debde784cd92806220be01a35c11d66e2a3df",
+    "score_replays": 1344,
+    "maximum_context_score_error": 3.814697265625e-05,
+    "wall_seconds": 3886.7109077982605,
+    "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+    "new_image_forwards": 607831,
+    "production_image_forwards": 443515,
+    "replay_context_image_forwards": 164316,
+    "reused_evaluation_records": 48,
+    "new_AGA_calls": 0,
+    "new_defense_weights": 0,
+    "expert_training_updates": 0,
+    "scope": "Fixed task-projection controls; eight expert evaluation without new defense construction",
+    "evaluated_datasets": [
+      "MNIST",
+      "SVHN",
+      "DTD",
+      "GTSRB",
+      "RESISC45",
+      "Cars",
+      "SUN397"
+    ]
+  },
+  "identical_clean_conditions": 42,
+  "paired_comparisons": [
+    {
+      "key": "MNIST/Defense2_MNIST/None/MNIST",
+      "stage": "raw",
+      "n": 10000,
+      "retained_correct": 2471,
+      "removed_correct": 1675,
+      "lost": 982,
+      "gained": 186,
+      "delta_pp": -7.960000000000001,
+      "paired_95ci_pp": [
+        -8.611460150567,
+        -7.308539849433002
+      ],
+      "mcnemar_log10_p": -130.3170896153818,
+      "bonferroni84_log10_p": -128.39281032931993
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/MNIST",
+      "stage": "calibrated",
+      "n": 10000,
+      "retained_correct": 2403,
+      "removed_correct": 1753,
+      "lost": 702,
+      "gained": 52,
+      "delta_pp": -6.5,
+      "paired_95ci_pp": [
+        -7.022927552651925,
+        -5.977072447348075
+      ],
+      "mcnemar_log10_p": -145.7073751470704,
+      "bonferroni84_log10_p": -143.78309586100852
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/SVHN",
+      "stage": "raw",
+      "n": 26032,
+      "retained_correct": 3426,
+      "removed_correct": 3205,
+      "lost": 1762,
+      "gained": 1541,
+      "delta_pp": -0.8489551321450522,
+      "paired_95ci_pp": [
+        -1.281556396026266,
+        -0.4163538682638385
+      ],
+      "mcnemar_log10_p": -3.8910505040639984,
+      "bonferroni84_log10_p": -1.9667712180021168
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/SVHN",
+      "stage": "calibrated",
+      "n": 26032,
+      "retained_correct": 6962,
+      "removed_correct": 3278,
+      "lost": 4221,
+      "gained": 537,
+      "delta_pp": -14.151813153042408,
+      "paired_95ci_pp": [
+        -14.641894336059213,
+        -13.661731970025603
+      ],
+      "mcnemar_log10_p": -705.3676871548086,
+      "bonferroni84_log10_p": -703.4434078687467
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/DTD",
+      "stage": "raw",
+      "n": 1880,
+      "retained_correct": 286,
+      "removed_correct": 42,
+      "lost": 260,
+      "gained": 16,
+      "delta_pp": -12.978723404255318,
+      "paired_95ci_pp": [
+        -14.608784401171162,
+        -11.348662407339473
+      ],
+      "mcnemar_log10_p": -57.21443092405176,
+      "bonferroni84_log10_p": -55.29015163798988
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/DTD",
+      "stage": "calibrated",
+      "n": 1880,
+      "retained_correct": 837,
+      "removed_correct": 821,
+      "lost": 88,
+      "gained": 72,
+      "delta_pp": -0.851063829787234,
+      "paired_95ci_pp": [
+        -2.1695903310101294,
+        0.4674626714356612
+      ],
+      "mcnemar_log10_p": -0.627857109352174,
+      "bonferroni84_log10_p": 0.0
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/GTSRB",
+      "stage": "raw",
+      "n": 12630,
+      "retained_correct": 2165,
+      "removed_correct": 1872,
+      "lost": 1205,
+      "gained": 912,
+      "delta_pp": -2.3198733174980206,
+      "paired_95ci_pp": [
+        -3.0327788892344465,
+        -1.6069677457615947
+      ],
+      "mcnemar_log10_p": -9.684455452422283,
+      "bonferroni84_log10_p": -7.7601761663604005
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/GTSRB",
+      "stage": "calibrated",
+      "n": 12630,
+      "retained_correct": 4016,
+      "removed_correct": 3825,
+      "lost": 510,
+      "gained": 319,
+      "delta_pp": -1.5122723673792557,
+      "paired_95ci_pp": [
+        -1.9583282426503787,
+        -1.0662164921081327
+      ],
+      "mcnemar_log10_p": -10.467432589215377,
+      "bonferroni84_log10_p": -8.543153303153495
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/RESISC45",
+      "stage": "raw",
+      "n": 6300,
+      "retained_correct": 3156,
+      "removed_correct": 640,
+      "lost": 2691,
+      "gained": 175,
+      "delta_pp": -39.93650793650794,
+      "paired_95ci_pp": [
+        -41.27879751416996,
+        -38.594218358845914
+      ],
+      "mcnemar_log10_p": -577.8047637894362,
+      "bonferroni84_log10_p": -575.8804845033743
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/RESISC45",
+      "stage": "calibrated",
+      "n": 6300,
+      "retained_correct": 3652,
+      "removed_correct": 3824,
+      "lost": 228,
+      "gained": 400,
+      "delta_pp": 2.7301587301587302,
+      "paired_95ci_pp": [
+        1.9533752271000817,
+        3.5069422332173787
+      ],
+      "mcnemar_log10_p": -11.180413506124125,
+      "bonferroni84_log10_p": -9.256134220062243
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/Cars",
+      "stage": "raw",
+      "n": 8041,
+      "retained_correct": 2804,
+      "removed_correct": 384,
+      "lost": 2467,
+      "gained": 47,
+      "delta_pp": -30.095759233926128,
+      "paired_95ci_pp": [
+        -31.125849189915307,
+        -29.065669277936948
+      ],
+      "mcnemar_log10_p": -656.2634372839012,
+      "bonferroni84_log10_p": -654.3391579978394
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/Cars",
+      "stage": "calibrated",
+      "n": 8041,
+      "retained_correct": 4077,
+      "removed_correct": 3641,
+      "lost": 793,
+      "gained": 357,
+      "delta_pp": -5.422211167765203,
+      "paired_95ci_pp": [
+        -6.240320719831871,
+        -4.604101615698536
+      ],
+      "mcnemar_log10_p": -37.84378527926033,
+      "bonferroni84_log10_p": -35.91950599319845
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/SUN397",
+      "stage": "raw",
+      "n": 19850,
+      "retained_correct": 3917,
+      "removed_correct": 225,
+      "lost": 3813,
+      "gained": 121,
+      "delta_pp": -18.599496221662466,
+      "paired_95ci_pp": [
+        -19.162184861857995,
+        -18.036807581466938
+      ],
+      "mcnemar_log10_p": -950.6799772256526,
+      "bonferroni84_log10_p": -948.7556979395907
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/None/SUN397",
+      "stage": "calibrated",
+      "n": 19850,
+      "retained_correct": 8293,
+      "removed_correct": 8850,
+      "lost": 904,
+      "gained": 1461,
+      "delta_pp": 2.8060453400503778,
+      "paired_95ci_pp": [
+        2.327434820828515,
+        3.2846558592722404
+      ],
+      "mcnemar_log10_p": -29.810798614502808,
+      "bonferroni84_log10_p": -27.886519328440926
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/MNIST",
+      "stage": "raw",
+      "n": 10000,
+      "retained_correct": 2335,
+      "removed_correct": 1856,
+      "lost": 972,
+      "gained": 493,
+      "delta_pp": -4.79,
+      "paired_95ci_pp": [
+        -5.534335675689276,
+        -4.045664324310724
+      ],
+      "mcnemar_log10_p": -35.691952634588546,
+      "bonferroni84_log10_p": -33.767673348526664
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/MNIST",
+      "stage": "calibrated",
+      "n": 10000,
+      "retained_correct": 2299,
+      "removed_correct": 2231,
+      "lost": 201,
+      "gained": 133,
+      "delta_pp": -0.6799999999999999,
+      "paired_95ci_pp": [
+        -1.0379729303702834,
+        -0.3220270696297165
+      ],
+      "mcnemar_log10_p": -3.6281627321976266,
+      "bonferroni84_log10_p": -1.703883446135745
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/SVHN",
+      "stage": "raw",
+      "n": 26032,
+      "retained_correct": 3354,
+      "removed_correct": 3827,
+      "lost": 1658,
+      "gained": 2131,
+      "delta_pp": 1.8169944683466503,
+      "paired_95ci_pp": [
+        1.3540530079738549,
+        2.279935928719446
+      ],
+      "mcnemar_log10_p": -13.790766948229846,
+      "bonferroni84_log10_p": -11.866487662167964
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/SVHN",
+      "stage": "calibrated",
+      "n": 26032,
+      "retained_correct": 6707,
+      "removed_correct": 5610,
+      "lost": 1558,
+      "gained": 461,
+      "delta_pp": -4.214044253226798,
+      "paired_95ci_pp": [
+        -4.548466621353394,
+        -3.8796218851002022
+      ],
+      "mcnemar_log10_p": -137.91723235634365,
+      "bonferroni84_log10_p": -135.99295307028177
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/DTD",
+      "stage": "raw",
+      "n": 1880,
+      "retained_correct": 229,
+      "removed_correct": 49,
+      "lost": 197,
+      "gained": 17,
+      "delta_pp": -9.574468085106384,
+      "paired_95ci_pp": [
+        -11.037280839197791,
+        -8.111655331014976
+      ],
+      "mcnemar_log10_p": -39.29805714077421,
+      "bonferroni84_log10_p": -37.37377785471233
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/DTD",
+      "stage": "calibrated",
+      "n": 1880,
+      "retained_correct": 864,
+      "removed_correct": 830,
+      "lost": 104,
+      "gained": 70,
+      "delta_pp": -1.8085106382978722,
+      "paired_95ci_pp": [
+        -3.18166591870825,
+        -0.43535535788749424
+      ],
+      "mcnemar_log10_p": -1.915847281006734,
+      "bonferroni84_log10_p": 0.0
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/GTSRB",
+      "stage": "raw",
+      "n": 12630,
+      "retained_correct": 1883,
+      "removed_correct": 1133,
+      "lost": 934,
+      "gained": 184,
+      "delta_pp": -5.938242280285035,
+      "paired_95ci_pp": [
+        -6.446710122456506,
+        -5.429774438113564
+      ],
+      "mcnemar_log10_p": -120.52068199600849,
+      "bonferroni84_log10_p": -118.59640270994662
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/GTSRB",
+      "stage": "calibrated",
+      "n": 12630,
+      "retained_correct": 4038,
+      "removed_correct": 4179,
+      "lost": 348,
+      "gained": 489,
+      "delta_pp": 1.1163895486935866,
+      "paired_95ci_pp": [
+        0.6678261025261956,
+        1.5649529948609777
+      ],
+      "mcnemar_log10_p": -5.908509983669467,
+      "bonferroni84_log10_p": -3.9842306976075856
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/RESISC45",
+      "stage": "raw",
+      "n": 6300,
+      "retained_correct": 2660,
+      "removed_correct": 923,
+      "lost": 1962,
+      "gained": 225,
+      "delta_pp": -27.57142857142857,
+      "paired_95ci_pp": [
+        -28.857321005607314,
+        -26.285536137249824
+      ],
+      "mcnemar_log10_p": -344.8177270693807,
+      "bonferroni84_log10_p": -342.8934477833188
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/RESISC45",
+      "stage": "calibrated",
+      "n": 6300,
+      "retained_correct": 3655,
+      "removed_correct": 3877,
+      "lost": 220,
+      "gained": 442,
+      "delta_pp": 3.5238095238095237,
+      "paired_95ci_pp": [
+        2.728020993649161,
+        4.319598053969886
+      ],
+      "mcnemar_log10_p": -17.369923459785554,
+      "bonferroni84_log10_p": -15.445644173723672
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/Cars",
+      "stage": "raw",
+      "n": 8041,
+      "retained_correct": 2569,
+      "removed_correct": 596,
+      "lost": 2007,
+      "gained": 34,
+      "delta_pp": -24.53674916055217,
+      "paired_95ci_pp": [
+        -25.4985872512464,
+        -23.57491106985794
+      ],
+      "mcnemar_log10_p": -540.1493118717787,
+      "bonferroni84_log10_p": -538.2250325857168
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/Cars",
+      "stage": "calibrated",
+      "n": 8041,
+      "retained_correct": 4116,
+      "removed_correct": 3660,
+      "lost": 807,
+      "gained": 351,
+      "delta_pp": -5.670936450690213,
+      "paired_95ci_pp": [
+        -6.491142909694577,
+        -4.850729991685849
+      ],
+      "mcnemar_log10_p": -41.11391234177845,
+      "bonferroni84_log10_p": -39.18963305571657
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/SUN397",
+      "stage": "raw",
+      "n": 19850,
+      "retained_correct": 1988,
+      "removed_correct": 247,
+      "lost": 1888,
+      "gained": 147,
+      "delta_pp": -8.770780856423174,
+      "paired_95ci_pp": [
+        -9.199182375784156,
+        -8.342379337062193
+      ],
+      "mcnemar_log10_p": -384.485388635542,
+      "bonferroni84_log10_p": -382.5611093494801
+    },
+    {
+      "key": "MNIST/Defense2_MNIST/Protected expert/SUN397",
+      "stage": "calibrated",
+      "n": 19850,
+      "retained_correct": 8911,
+      "removed_correct": 8847,
+      "lost": 1318,
+      "gained": 1254,
+      "delta_pp": -0.3224181360201511,
+      "paired_95ci_pp": [
+        -0.8231722892282023,
+        0.17833601718790004
+      ],
+      "mcnemar_log10_p": -0.6693013220323942,
+      "bonferroni84_log10_p": 0.0
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/MNIST",
+      "stage": "raw",
+      "n": 10000,
+      "retained_correct": 1356,
+      "removed_correct": 2094,
+      "lost": 789,
+      "gained": 1527,
+      "delta_pp": 7.380000000000001,
+      "paired_95ci_pp": [
+        6.447863527193366,
+        8.312136472806635
+      ],
+      "mcnemar_log10_p": -53.10860585669466,
+      "bonferroni84_log10_p": -51.18432657063278
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/MNIST",
+      "stage": "calibrated",
+      "n": 10000,
+      "retained_correct": 2870,
+      "removed_correct": 1873,
+      "lost": 1206,
+      "gained": 209,
+      "delta_pp": -9.969999999999999,
+      "paired_95ci_pp": [
+        -10.680950838923152,
+        -9.259049161076845
+      ],
+      "mcnemar_log10_p": -169.79364432575858,
+      "bonferroni84_log10_p": -167.8693650396967
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/SVHN",
+      "stage": "raw",
+      "n": 26032,
+      "retained_correct": 3971,
+      "removed_correct": 7092,
+      "lost": 1634,
+      "gained": 4755,
+      "delta_pp": 11.989090350338046,
+      "paired_95ci_pp": [
+        11.405150367528165,
+        12.573030333147926
+      ],
+      "mcnemar_log10_p": -347.1323595340261,
+      "bonferroni84_log10_p": -345.2080802479642
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/SVHN",
+      "stage": "calibrated",
+      "n": 26032,
+      "retained_correct": 6181,
+      "removed_correct": 5711,
+      "lost": 2185,
+      "gained": 1715,
+      "delta_pp": -1.8054701905347266,
+      "paired_95ci_pp": [
+        -2.275165466542375,
+        -1.3357749145270783
+      ],
+      "mcnemar_log10_p": -13.25791070826599,
+      "bonferroni84_log10_p": -11.333631422204109
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/DTD",
+      "stage": "raw",
+      "n": 1880,
+      "retained_correct": 143,
+      "removed_correct": 91,
+      "lost": 77,
+      "gained": 25,
+      "delta_pp": -2.7659574468085104,
+      "paired_95ci_pp": [
+        -3.8117127232424584,
+        -1.7202021703745625
+      ],
+      "mcnemar_log10_p": -6.61049523800899,
+      "bonferroni84_log10_p": -4.6862159519471085
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/DTD",
+      "stage": "calibrated",
+      "n": 1880,
+      "retained_correct": 742,
+      "removed_correct": 791,
+      "lost": 83,
+      "gained": 132,
+      "delta_pp": 2.606382978723404,
+      "paired_95ci_pp": [
+        1.0818414545382988,
+        4.13092450290851
+      ],
+      "mcnemar_log10_p": -2.9932113549007417,
+      "bonferroni84_log10_p": -1.0689320688388602
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/GTSRB",
+      "stage": "raw",
+      "n": 12630,
+      "retained_correct": 1067,
+      "removed_correct": 447,
+      "lost": 677,
+      "gained": 57,
+      "delta_pp": -4.908946951702296,
+      "paired_95ci_pp": [
+        -5.320591039587962,
+        -4.49730286381663
+      ],
+      "mcnemar_log10_p": -134.8495181664099,
+      "bonferroni84_log10_p": -132.92523888034802
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/GTSRB",
+      "stage": "calibrated",
+      "n": 12630,
+      "retained_correct": 4206,
+      "removed_correct": 4611,
+      "lost": 887,
+      "gained": 1292,
+      "delta_pp": 3.2066508313539197,
+      "paired_95ci_pp": [
+        2.4843793781373282,
+        3.928922284570511
+      ],
+      "mcnemar_log10_p": -17.400588320911254,
+      "bonferroni84_log10_p": -15.476309034849372
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/RESISC45",
+      "stage": "raw",
+      "n": 6300,
+      "retained_correct": 1025,
+      "removed_correct": 134,
+      "lost": 898,
+      "gained": 7,
+      "delta_pp": -14.142857142857142,
+      "paired_95ci_pp": [
+        -15.011247790010989,
+        -13.274466495703296
+      ],
+      "mcnemar_log10_p": -255.14371732710399,
+      "bonferroni84_log10_p": -253.2194380410421
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/RESISC45",
+      "stage": "calibrated",
+      "n": 6300,
+      "retained_correct": 3036,
+      "removed_correct": 4272,
+      "lost": 211,
+      "gained": 1447,
+      "delta_pp": 19.61904761904762,
+      "paired_95ci_pp": [
+        18.448453752595043,
+        20.789641485500198
+      ],
+      "mcnemar_log10_p": -225.82063835237597,
+      "bonferroni84_log10_p": -223.8963590663141
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/Cars",
+      "stage": "raw",
+      "n": 8041,
+      "retained_correct": 723,
+      "removed_correct": 152,
+      "lost": 578,
+      "gained": 7,
+      "delta_pp": -7.101106827509017,
+      "paired_95ci_pp": [
+        -7.6698983120486774,
+        -6.532315342969356
+      ],
+      "mcnemar_log10_p": -160.14423188088398,
+      "bonferroni84_log10_p": -158.2199525948221
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/Cars",
+      "stage": "calibrated",
+      "n": 8041,
+      "retained_correct": 2702,
+      "removed_correct": 3574,
+      "lost": 323,
+      "gained": 1195,
+      "delta_pp": 10.844422335530407,
+      "paired_95ci_pp": [
+        9.92473101945282,
+        11.764113651607994
+      ],
+      "mcnemar_log10_p": -116.88438898547118,
+      "bonferroni84_log10_p": -114.9601096994093
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/SUN397",
+      "stage": "raw",
+      "n": 19850,
+      "retained_correct": 210,
+      "removed_correct": 124,
+      "lost": 183,
+      "gained": 97,
+      "delta_pp": -0.43324937027707805,
+      "paired_95ci_pp": [
+        -0.5983681105174758,
+        -0.26813063003668025
+      ],
+      "mcnemar_log10_p": -6.5115546982423576,
+      "bonferroni84_log10_p": -4.587275412180476
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/None/SUN397",
+      "stage": "calibrated",
+      "n": 19850,
+      "retained_correct": 7338,
+      "removed_correct": 10023,
+      "lost": 665,
+      "gained": 3350,
+      "delta_pp": 13.526448362720403,
+      "paired_95ci_pp": [
+        12.929741715576094,
+        14.123155009864712
+      ],
+      "mcnemar_log10_p": -427.28863466798816,
+      "bonferroni84_log10_p": -425.36435538192626
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/MNIST",
+      "stage": "raw",
+      "n": 10000,
+      "retained_correct": 1395,
+      "removed_correct": 2089,
+      "lost": 989,
+      "gained": 1683,
+      "delta_pp": 6.94,
+      "paired_95ci_pp": [
+        5.935971216147724,
+        7.944028783852277
+      ],
+      "mcnemar_log10_p": -40.70620348309471,
+      "bonferroni84_log10_p": -38.78192419703283
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/MNIST",
+      "stage": "calibrated",
+      "n": 10000,
+      "retained_correct": 2550,
+      "removed_correct": 3858,
+      "lost": 549,
+      "gained": 1857,
+      "delta_pp": 13.08,
+      "paired_95ci_pp": [
+        12.153366159908154,
+        14.006633840091846
+      ],
+      "mcnemar_log10_p": -164.34957107125294,
+      "bonferroni84_log10_p": -162.42529178519106
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/SVHN",
+      "stage": "raw",
+      "n": 26032,
+      "retained_correct": 2871,
+      "removed_correct": 8047,
+      "lost": 1900,
+      "gained": 7076,
+      "delta_pp": 19.88322065150584,
+      "paired_95ci_pp": [
+        19.212017116722624,
+        20.554424186289058
+      ],
+      "mcnemar_log10_p": -691.4541975868285,
+      "bonferroni84_log10_p": -689.5299183007667
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/SVHN",
+      "stage": "calibrated",
+      "n": 26032,
+      "retained_correct": 4467,
+      "removed_correct": 7673,
+      "lost": 913,
+      "gained": 4119,
+      "delta_pp": 12.31561155500922,
+      "paired_95ci_pp": [
+        11.802888332795094,
+        12.828334777223345
+      ],
+      "mcnemar_log10_p": -481.28739762927967,
+      "bonferroni84_log10_p": -479.36311834321776
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/DTD",
+      "stage": "raw",
+      "n": 1880,
+      "retained_correct": 129,
+      "removed_correct": 105,
+      "lost": 53,
+      "gained": 29,
+      "delta_pp": -1.276595744680851,
+      "paired_95ci_pp": [
+        -2.219153170279861,
+        -0.3340383190818409
+      ],
+      "mcnemar_log10_p": -1.9731609218034074,
+      "bonferroni84_log10_p": -0.04888163574152582
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/DTD",
+      "stage": "calibrated",
+      "n": 1880,
+      "retained_correct": 817,
+      "removed_correct": 814,
+      "lost": 97,
+      "gained": 94,
+      "delta_pp": -0.15957446808510636,
+      "paired_95ci_pp": [
+        -1.6007769376698322,
+        1.2816280014996195
+      ],
+      "mcnemar_log10_p": -0.0530640219251711,
+      "bonferroni84_log10_p": 0.0
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/GTSRB",
+      "stage": "raw",
+      "n": 12630,
+      "retained_correct": 885,
+      "removed_correct": 450,
+      "lost": 495,
+      "gained": 60,
+      "delta_pp": -3.44418052256532,
+      "paired_95ci_pp": [
+        -3.804820575395626,
+        -3.083540469735014
+      ],
+      "mcnemar_log10_p": -85.4147503797153,
+      "bonferroni84_log10_p": -83.49047109365343
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/GTSRB",
+      "stage": "calibrated",
+      "n": 12630,
+      "retained_correct": 5016,
+      "removed_correct": 5996,
+      "lost": 459,
+      "gained": 1439,
+      "delta_pp": 7.759303246239114,
+      "paired_95ci_pp": [
+        7.096874464395553,
+        8.421732028082674
+      ],
+      "mcnemar_log10_p": -116.57274561476073,
+      "bonferroni84_log10_p": -114.64846632869886
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/RESISC45",
+      "stage": "raw",
+      "n": 6300,
+      "retained_correct": 888,
+      "removed_correct": 138,
+      "lost": 762,
+      "gained": 12,
+      "delta_pp": -11.904761904761903,
+      "paired_95ci_pp": [
+        -12.718912391667557,
+        -11.09061141785625
+      ],
+      "mcnemar_log10_p": -206.7419744753878,
+      "bonferroni84_log10_p": -204.81769518932592
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/RESISC45",
+      "stage": "calibrated",
+      "n": 6300,
+      "retained_correct": 3681,
+      "removed_correct": 4278,
+      "lost": 324,
+      "gained": 921,
+      "delta_pp": 9.476190476190476,
+      "paired_95ci_pp": [
+        8.403594227877857,
+        10.548786724503096
+      ],
+      "mcnemar_log10_p": -65.89670117133184,
+      "bonferroni84_log10_p": -63.97242188526996
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/Cars",
+      "stage": "raw",
+      "n": 8041,
+      "retained_correct": 593,
+      "removed_correct": 191,
+      "lost": 425,
+      "gained": 23,
+      "delta_pp": -4.999378186792688,
+      "paired_95ci_pp": [
+        -5.5036276304038445,
+        -4.495128743181532
+      ],
+      "mcnemar_log10_p": -96.21894014922105,
+      "bonferroni84_log10_p": -94.29466086315918
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/Cars",
+      "stage": "calibrated",
+      "n": 8041,
+      "retained_correct": 3290,
+      "removed_correct": 3897,
+      "lost": 428,
+      "gained": 1035,
+      "delta_pp": 7.5488123367740325,
+      "paired_95ci_pp": [
+        6.631144890810752,
+        8.466479782737313
+      ],
+      "mcnemar_log10_p": -57.483601003373614,
+      "bonferroni84_log10_p": -55.55932171731173
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/SUN397",
+      "stage": "raw",
+      "n": 19850,
+      "retained_correct": 180,
+      "removed_correct": 160,
+      "lost": 126,
+      "gained": 106,
+      "delta_pp": -0.10075566750629722,
+      "paired_95ci_pp": [
+        -0.25115005542190305,
+        0.04963872040930864
+      ],
+      "mcnemar_log10_p": -0.673344355766328,
+      "bonferroni84_log10_p": 0.0
+    },
+    {
+      "key": "SVHN/Defense2_SVHN/Protected expert/SUN397",
+      "stage": "calibrated",
+      "n": 19850,
+      "retained_correct": 8683,
+      "removed_correct": 10070,
+      "lost": 876,
+      "gained": 2263,
+      "delta_pp": 6.987405541561713,
+      "paired_95ci_pp": [
+        6.442787342389822,
+        7.532023740733603
+      ],
+      "mcnemar_log10_p": -139.0760490795411,
+      "bonferroni84_log10_p": -137.15176979347922
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/MNIST",
+      "stage": "raw",
+      "n": 10000,
+      "retained_correct": 9445,
+      "removed_correct": 8119,
+      "lost": 1420,
+      "gained": 94,
+      "delta_pp": -13.26,
+      "paired_95ci_pp": [
+        -13.977024212670782,
+        -12.542975787329217
+      ],
+      "mcnemar_log10_p": -303.8136988916096,
+      "bonferroni84_log10_p": -301.8894196055477
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/MNIST",
+      "stage": "calibrated",
+      "n": 10000,
+      "retained_correct": 9419,
+      "removed_correct": 9374,
+      "lost": 108,
+      "gained": 63,
+      "delta_pp": -0.44999999999999996,
+      "paired_95ci_pp": [
+        -0.7061642629504773,
+        -0.19383573704952262
+      ],
+      "mcnemar_log10_p": -3.1430727261193474,
+      "bonferroni84_log10_p": -1.2187934400574658
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/SVHN",
+      "stage": "raw",
+      "n": 26032,
+      "retained_correct": 19474,
+      "removed_correct": 15298,
+      "lost": 5602,
+      "gained": 1426,
+      "delta_pp": -16.04179471419791,
+      "paired_95ci_pp": [
+        -16.642166634606824,
+        -15.441422793788997
+      ],
+      "mcnemar_log10_p": -577.5961558077801,
+      "bonferroni84_log10_p": -575.6718765217182
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/SVHN",
+      "stage": "calibrated",
+      "n": 26032,
+      "retained_correct": 19370,
+      "removed_correct": 18913,
+      "lost": 865,
+      "gained": 408,
+      "delta_pp": -1.7555316533497234,
+      "paired_95ci_pp": [
+        -2.0233240424958012,
+        -1.4877392642036453
+      ],
+      "mcnemar_log10_p": -37.47706212014949,
+      "bonferroni84_log10_p": -35.55278283408761
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/DTD",
+      "stage": "raw",
+      "n": 1880,
+      "retained_correct": 91,
+      "removed_correct": 39,
+      "lost": 91,
+      "gained": 39,
+      "delta_pp": -2.7659574468085104,
+      "paired_95ci_pp": [
+        -3.9483714477425105,
+        -1.5835434458745103
+      ],
+      "mcnemar_log10_p": -5.230889399591972,
+      "bonferroni84_log10_p": -3.3066101135300907
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/DTD",
+      "stage": "calibrated",
+      "n": 1880,
+      "retained_correct": 492,
+      "removed_correct": 148,
+      "lost": 374,
+      "gained": 30,
+      "delta_pp": -18.29787234042553,
+      "paired_95ci_pp": [
+        -20.223738802803165,
+        -16.372005878047897
+      ],
+      "mcnemar_log10_p": -75.99064768172953,
+      "bonferroni84_log10_p": -74.06636839566765
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/GTSRB",
+      "stage": "raw",
+      "n": 12630,
+      "retained_correct": 2662,
+      "removed_correct": 87,
+      "lost": 2639,
+      "gained": 64,
+      "delta_pp": -20.387965162311954,
+      "paired_95ci_pp": [
+        -21.11223406538505,
+        -19.663696259238858
+      ],
+      "mcnemar_log10_p": -683.1641445040322,
+      "bonferroni84_log10_p": -681.2398652179703
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/GTSRB",
+      "stage": "calibrated",
+      "n": 12630,
+      "retained_correct": 6921,
+      "removed_correct": 5044,
+      "lost": 2394,
+      "gained": 517,
+      "delta_pp": -14.861441013460016,
+      "paired_95ci_pp": [
+        -15.657631610116317,
+        -14.065250416803716
+      ],
+      "mcnemar_log10_p": -286.27615997630335,
+      "bonferroni84_log10_p": -284.35188069024144
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/RESISC45",
+      "stage": "raw",
+      "n": 6300,
+      "retained_correct": 4114,
+      "removed_correct": 187,
+      "lost": 3977,
+      "gained": 50,
+      "delta_pp": -62.33333333333333,
+      "paired_95ci_pp": [
+        -63.56974881652506,
+        -61.096917850141594
+      ],
+      "mcnemar_log10_p": -1096.3079196509,
+      "bonferroni84_log10_p": -1094.3836403648381
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/RESISC45",
+      "stage": "calibrated",
+      "n": 6300,
+      "retained_correct": 4173,
+      "removed_correct": 4091,
+      "lost": 460,
+      "gained": 378,
+      "delta_pp": -1.3015873015873016,
+      "paired_95ci_pp": [
+        -2.2016966253417682,
+        -0.4014779778328351
+      ],
+      "mcnemar_log10_p": -2.2915637967380764,
+      "bonferroni84_log10_p": -0.36728451067619483
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/Cars",
+      "stage": "raw",
+      "n": 8041,
+      "retained_correct": 4252,
+      "removed_correct": 283,
+      "lost": 4085,
+      "gained": 116,
+      "delta_pp": -49.359532396468104,
+      "paired_95ci_pp": [
+        -50.51373775700259,
+        -48.20532703593362
+      ],
+      "mcnemar_log10_p": -1035.2311083299753,
+      "bonferroni84_log10_p": -1033.3068290439135
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/Cars",
+      "stage": "calibrated",
+      "n": 8041,
+      "retained_correct": 4290,
+      "removed_correct": 3425,
+      "lost": 1306,
+      "gained": 441,
+      "delta_pp": -10.757368486506653,
+      "paired_95ci_pp": [
+        -11.748734535483731,
+        -9.766002437529576
+      ],
+      "mcnemar_log10_p": -98.41167951241657,
+      "bonferroni84_log10_p": -96.4874002263547
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/SUN397",
+      "stage": "raw",
+      "n": 19850,
+      "retained_correct": 9977,
+      "removed_correct": 173,
+      "lost": 9882,
+      "gained": 78,
+      "delta_pp": -49.3904282115869,
+      "paired_95ci_pp": [
+        -50.096821493585026,
+        -48.684034929588776
+      ],
+      "mcnemar_log10_p": -2801.2753515788145,
+      "bonferroni84_log10_p": -2799.3510722927526
+    },
+    {
+      "key": "DTD/Defense2_DTD/None/SUN397",
+      "stage": "calibrated",
+      "n": 19850,
+      "retained_correct": 10296,
+      "removed_correct": 9276,
+      "lost": 2214,
+      "gained": 1194,
+      "delta_pp": -5.138539042821159,
+      "paired_95ci_pp": [
+        -5.710532083941798,
+        -4.5665460017005195
+      ],
+      "mcnemar_log10_p": -68.52539304581737,
+      "bonferroni84_log10_p": -66.60111375975549
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/MNIST",
+      "stage": "raw",
+      "n": 10000,
+      "retained_correct": 9436,
+      "removed_correct": 8062,
+      "lost": 1567,
+      "gained": 193,
+      "delta_pp": -13.74,
+      "paired_95ci_pp": [
+        -14.51695387335165,
+        -12.96304612664835
+      ],
+      "mcnemar_log10_p": -266.6549882245041,
+      "bonferroni84_log10_p": -264.7307089384422
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/MNIST",
+      "stage": "calibrated",
+      "n": 10000,
+      "retained_correct": 9423,
+      "removed_correct": 9415,
+      "lost": 84,
+      "gained": 76,
+      "delta_pp": -0.08,
+      "paired_95ci_pp": [
+        -0.3279300068665157,
+        0.16793000686651566
+      ],
+      "mcnemar_log10_p": -0.23647526965104493,
+      "bonferroni84_log10_p": 0.0
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/SVHN",
+      "stage": "raw",
+      "n": 26032,
+      "retained_correct": 19485,
+      "removed_correct": 15425,
+      "lost": 5790,
+      "gained": 1730,
+      "delta_pp": -15.59618930547019,
+      "paired_95ci_pp": [
+        -16.22102444609426,
+        -14.971354164846124
+      ],
+      "mcnemar_log10_p": -503.8223227638013,
+      "bonferroni84_log10_p": -501.8980434777394
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/SVHN",
+      "stage": "calibrated",
+      "n": 26032,
+      "retained_correct": 19405,
+      "removed_correct": 19412,
+      "lost": 828,
+      "gained": 835,
+      "delta_pp": 0.026889981561155504,
+      "paired_95ci_pp": [
+        -0.28015553220659833,
+        0.33393549532890937
+      ],
+      "mcnemar_log10_p": -0.05402254030016166,
+      "bonferroni84_log10_p": 0.0
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/DTD",
+      "stage": "raw",
+      "n": 1880,
+      "retained_correct": 61,
+      "removed_correct": 44,
+      "lost": 61,
+      "gained": 44,
+      "delta_pp": -0.9042553191489361,
+      "paired_95ci_pp": [
+        -1.9720561702120936,
+        0.16354553191422128
+      ],
+      "mcnemar_log10_p": -0.9281180607608552,
+      "bonferroni84_log10_p": 0.0
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/DTD",
+      "stage": "calibrated",
+      "n": 1880,
+      "retained_correct": 535,
+      "removed_correct": 45,
+      "lost": 495,
+      "gained": 5,
+      "delta_pp": -26.063829787234045,
+      "paired_95ci_pp": [
+        -28.07594492682827,
+        -24.05171464763982
+      ],
+      "mcnemar_log10_p": -138.80261998197568,
+      "bonferroni84_log10_p": -136.8783406959138
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/GTSRB",
+      "stage": "raw",
+      "n": 12630,
+      "retained_correct": 1889,
+      "removed_correct": 93,
+      "lost": 1878,
+      "gained": 82,
+      "delta_pp": -14.220110847189233,
+      "paired_95ci_pp": [
+        -14.860851123119339,
+        -13.579370571259126
+      ],
+      "mcnemar_log10_p": -443.1567032397684,
+      "bonferroni84_log10_p": -441.2324239537065
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/GTSRB",
+      "stage": "calibrated",
+      "n": 12630,
+      "retained_correct": 7141,
+      "removed_correct": 5086,
+      "lost": 2401,
+      "gained": 346,
+      "delta_pp": -16.270783847980997,
+      "paired_95ci_pp": [
+        -17.033066018026567,
+        -15.50850167793543
+      ],
+      "mcnemar_log10_p": -376.49752907409066,
+      "bonferroni84_log10_p": -374.57324978802876
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/RESISC45",
+      "stage": "raw",
+      "n": 6300,
+      "retained_correct": 3663,
+      "removed_correct": 284,
+      "lost": 3440,
+      "gained": 61,
+      "delta_pp": -53.63492063492063,
+      "paired_95ci_pp": [
+        -54.91348666647267,
+        -52.356354603368594
+      ],
+      "mcnemar_log10_p": -921.3353332968243,
+      "bonferroni84_log10_p": -919.4110540107624
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/RESISC45",
+      "stage": "calibrated",
+      "n": 6300,
+      "retained_correct": 4197,
+      "removed_correct": 3816,
+      "lost": 696,
+      "gained": 315,
+      "delta_pp": -6.0476190476190474,
+      "paired_95ci_pp": [
+        -7.025575145925445,
+        -5.06966294931265
+      ],
+      "mcnemar_log10_p": -32.96820429647118,
+      "bonferroni84_log10_p": -31.043925010409296
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/Cars",
+      "stage": "raw",
+      "n": 8041,
+      "retained_correct": 3898,
+      "removed_correct": 278,
+      "lost": 3721,
+      "gained": 101,
+      "delta_pp": -45.01927620942669,
+      "paired_95ci_pp": [
+        -46.160637727536866,
+        -43.87791469131652
+      ],
+      "mcnemar_log10_p": -948.9655642708251,
+      "bonferroni84_log10_p": -947.0412849847633
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/Cars",
+      "stage": "calibrated",
+      "n": 8041,
+      "retained_correct": 4207,
+      "removed_correct": 3372,
+      "lost": 1428,
+      "gained": 593,
+      "delta_pp": -10.38428056211914,
+      "paired_95ci_pp": [
+        -11.456377240251683,
+        -9.312183883986595
+      ],
+      "mcnemar_log10_p": -78.38234301031736,
+      "bonferroni84_log10_p": -76.45806372425548
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/SUN397",
+      "stage": "raw",
+      "n": 19850,
+      "retained_correct": 8573,
+      "removed_correct": 146,
+      "lost": 8508,
+      "gained": 81,
+      "delta_pp": -42.45340050377834,
+      "paired_95ci_pp": [
+        -43.1524183841527,
+        -41.75438262340398
+      ],
+      "mcnemar_log10_p": -2387.5196528862602,
+      "bonferroni84_log10_p": -2385.5953736001984
+    },
+    {
+      "key": "DTD/Defense2_DTD/Protected expert/SUN397",
+      "stage": "calibrated",
+      "n": 19850,
+      "retained_correct": 10506,
+      "removed_correct": 7737,
+      "lost": 3835,
+      "gained": 1066,
+      "delta_pp": -13.94962216624685,
+      "paired_95ci_pp": [
+        -14.613094213006043,
+        -13.286150119487658
+      ],
+      "mcnemar_log10_p": -362.00944231874087,
+      "bonferroni84_log10_p": -360.08516303267896
+    }
+  ]
+}

@@ -23,15 +23,15 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T03:43:11.500637+00:00",
-    "primary_available_GiB": 34.5,
+    "verified_utc": "2026-11-03T05:23:53.102421+00:00",
+    "primary_available_GiB": 33,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "Migrated required data and fixed weights; verified archive; resumed full evaluation",
+    "primary_workspace_status": "Both fixed students and independent evaluations finished; no active GPU experiment.",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
@@ -42,26 +42,12 @@
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "teacher_screenshots_last_reread_utc": "2026-10-26T11:47:44.037987+00:00",
-  "updated_utc": "2026-11-03T03:43:11.500637+00:00",
-  "status": "projection_eight_resumed_21516",
-  "active_focus": "新21516继续同三份固定去投影对照的八专家评价，复用48条完整分数，补36条；随后固定输出校正及独立复核。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 2693,
-      "started_utc": "2026-11-03T03:42:15.210271+00:00",
-      "source_commit": "54369864e12c154ef8394354e0fc26569a067557",
-      "host": "connect.cqa1.seetacloud.com:21516",
-      "output": "outputs/projection_eight_20261103/resumed_21516",
-      "protocol_sha256": "0ed2d046f55f11cf53ded9e32be6bc7cd46b5123ce32f7e0f541544f76b42fda",
-      "reused_rows": 48,
-      "new_full_rows": 36,
-      "status": "running_full_then_fixed_calibration",
-      "timeout_seconds": 10800,
-      "log": "outputs/projection_eight_20261103/resumed_21516/run.log"
-    }
-  ],
-  "next_action": "约60–75分钟后人工查看剩余评价，汇总同一版本的目标及七任务结果；不新建自动任务。",
+  "updated_utc": "2026-11-03T05:23:53.102421+00:00",
+  "status": "hard_label_complete_core_weaknesses_open",
+  "active_focus": "本批蒸馏与八专家投影比较均完成。优先处理无数据恢复下的核心弱点和方法贡献，保留额外数据攻击的独立结论。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "集中分析防御一被输出校正恢复和防御二任务投影未显示整体收益的原因；已有固定结果不重跑、不按测试改参数。Unmask新版、EuroSAT原划分和第二骨干仍未完成，不写完整实验已全部通过。",
   "closed_history": {
     "full_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -130,37 +116,34 @@
     "tables": "results/comparison/README.md"
   },
   "latest_completed_batch": {
-    "protocol": "results/data_free_compensation/projection_recovery_protocol.json",
-    "prodistill_protocol": "results/data_free_compensation/projection_prodistill_protocol.json",
-    "output": "outputs/projection_recovery_20261103",
     "status": "completed_independently_verified",
-    "new_defense_updates": 0,
-    "new_AGA_calls": 0,
-    "pid": 75620,
-    "source_commit": "d896c3117ffe9432fd4910e1466a425c4c4242f3",
-    "estimated_minutes": 20,
-    "result": "results/data_free_compensation/projection_recovery_result.json",
-    "table": "results/comparison/defense2_projection_recovery.md",
-    "target_prodistill_percent": [
-      99.07,
-      95.81668715427166,
-      20.53191489361702
+    "record": "results/data_free_compensation/projection_eight/calibration.json",
+    "paired": "results/data_free_compensation/projection_eight/paired.json",
+    "table": "results/comparison/defense2_projection_eight.md",
+    "datasets_table": "results/comparison/defense2_projection_eight_datasets.md",
+    "output": "outputs/projection_eight_20261103/resumed_21516",
+    "full_rows": 84,
+    "new_full_rows": 36,
+    "reused_rows": 48,
+    "full_score_replays": 1344,
+    "maximum_score_error": 3.814697265625e-05,
+    "production_image_forwards": 443515,
+    "replay_context_forwards": 164316,
+    "calibration_noise_forwards": 384,
+    "calibration_independent_comparisons": 126,
+    "main_vs_control_comparisons": 84,
+    "AGA_then_calibrated_percent": [
+      22.31,
+      29.475261216963737,
+      2.393617021276596
     ],
-    "cost": {
-      "new_defense_updates": 0,
-      "new_AGA_calls": 0,
-      "recovery_full_forwards": 243712,
-      "recovery_pilot_forwards": 2304,
-      "recovery_context_score_replays": 1152,
-      "recovery_context_forwards": 71936,
-      "prodistill_training_seconds": 86.4458126295358,
-      "prodistill_backward_steps": 3600,
-      "prodistill_new_evaluation_forwards": 84328,
-      "prodistill_context_score_replays": 384,
-      "maximum_score_error": 1.52587890625e-05,
-      "real_defense_construction_images": 0,
-      "prodistill_unlabeled_images_per_task": 64
-    }
+    "participating_experts": 8,
+    "complete_datasets": 7,
+    "archive_manifest_sha256": "b7cf1aa1aab24e7f7d9e6acd6e116a4bcdf22cfad9d3ea88c76e2336a1dd0a94",
+    "archive_verified_on": [
+      "21516",
+      "41558"
+    ]
   },
   "engineering": {
     "new_production_modules": 0,
@@ -175,8 +158,8 @@
     "state_compaction": "Completed history removed from active state only; exact prior state in full_state_commit."
   },
   "github_sync": {
-    "status": "Scientific result and protocols published; tree equality and eight critical file blobs verified",
-    "last_verified_remote_commit": "c6312e3af3c5144e6cd7cbd53966a3be2d579e22",
+    "status": "Current changes committed locally; GitHub connector unavailable in this session and CLI HTTPS connection refused. Last verified remote retained.",
+    "last_verified_remote_commit": "58bedb8d0d4b8c7e33ebb9000f5e67b7245d4efc",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_merger_batch": {
@@ -287,15 +270,14 @@
     }
   },
   "projection_eight": {
-    "status": "resumed_full_running",
+    "status": "completed_independently_verified",
     "protocol": "results/data_free_compensation/projection_eight/protocol.json",
-    "output": "outputs/projection_eight_20261103",
+    "output": "outputs/projection_eight_20261103/resumed_21516",
     "new_defense_points": 0,
     "new_AGA_calls": 0,
     "full_rows": 84,
     "evaluated_tasks": 7,
     "participating_experts": 8,
-    "pid": 2693,
     "source_commit": "54369864e12c154ef8394354e0fc26569a067557",
     "pilot": {
       "rows": 84,
@@ -306,6 +288,62 @@
     "resume_output": "outputs/projection_eight_20261103/resumed_21516",
     "old_complete_full_rows": 13,
     "reused_full_rows": 48,
-    "new_full_rows": 36
-  }
+    "new_full_rows": 36,
+    "record": "results/data_free_compensation/projection_eight/calibration.json",
+    "paired": "results/data_free_compensation/projection_eight/paired.json",
+    "table": "results/comparison/defense2_projection_eight.md",
+    "datasets_table": "results/comparison/defense2_projection_eight_datasets.md",
+    "reused_rows": 48,
+    "full_score_replays": 1344,
+    "maximum_score_error": 3.814697265625e-05,
+    "production_image_forwards": 443515,
+    "replay_context_forwards": 164316,
+    "calibration_noise_forwards": 384,
+    "calibration_independent_comparisons": 126,
+    "main_vs_control_comparisons": 84,
+    "AGA_then_calibrated_percent": [
+      22.31,
+      29.475261216963737,
+      2.393617021276596
+    ],
+    "complete_datasets": 7,
+    "archive_manifest_sha256": "b7cf1aa1aab24e7f7d9e6acd6e116a4bcdf22cfad9d3ea88c76e2336a1dd0a94",
+    "archive_verified_on": [
+      "21516",
+      "41558"
+    ]
+  },
+  "hard_label_students": {
+    "status": "completed_independently_verified",
+    "record": "results/data_free_compensation/hard_label/result.json",
+    "table": "results/comparison/defense2_hard_label.md",
+    "output": "outputs/finite_hard_label_20261103",
+    "new_students": 2,
+    "reused_students": 1,
+    "new_student_backward_steps": 1550,
+    "discarded_pilot_backward_steps": 2,
+    "new_defense_updates": 0,
+    "full_context_replays": 192,
+    "pilot_context_replays": 192,
+    "maximum_score_error": 1.33514404296875e-05,
+    "paired_comparisons": 18,
+    "archive_manifest_sha256": "59d36d88885660b9a2d2a9b380796a1b370e2f52af929f8f76ed354ead757e12",
+    "archive_verified_on": [
+      "21516",
+      "41558"
+    ],
+    "archive_files": 39,
+    "student_TA_target_percent": [
+      95.53,
+      84.99923171481254,
+      58.08510638297872
+    ],
+    "matched_historical_student_TA_percent": [
+      95.53,
+      86.22464658881377,
+      58.191489361702125
+    ],
+    "hardware_note": "Historical RTX3090 students, new RTX4090D students. Same budget, not isolated label-change causal attribution."
+  },
+  "delivery_preference": "用户要求先做扎实基本实验与核心方法，再整理给老师看的材料；不提前制作或发送汇报，不把未完成写成全部work。"
 }
