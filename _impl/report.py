@@ -514,28 +514,31 @@ def defense_comparison(directory):
     write("defense2_component_partners", "Partner accuracy in the component comparison",
           ["Target", "Partner", "Variant", "TA", "AGA-T", "AGA-B"],
           component_partners, note, "lllrrr")
-    views = read("results/data_free_compensation/native_view_response_result.json")
-    view_rows = []
-    for task in views["evaluated"]:
-        for dataset in [task, "MNIST"]:
-            for label, field in [("Previous", "before_accuracy_percent"), ("Two views", "accuracy_percent")]:
-                row = [task, dataset, label]
-                for method, scope, stage in [("Standalone", "None", "raw"), ("TA", "None", "raw"),
-                                              ("TA", "Protected expert", "raw"), ("TA", "All experts", "raw"),
-                                              ("TA", "Protected expert", "calibrated")]:
-                    if method == "Standalone" and task != dataset:
-                        row.append("--")
-                        continue
-                    prefix = task + "/" if stage == "calibrated" else ""
-                    key = prefix + "/".join(["NativeResponse_" + task, method, scope, dataset])
-                    row.append(f"{one(views['vs_main'], key=key, stage=stage)[field]:.2f}")
-                view_rows.append(row)
-    write("defense2_native_views", "Matching native responses to complementary synthetic views",
-          ["Target", "Dataset", "Variant", "Standalone", "TA", "AGA-T", "AGA-B", "AGA-T+cal."],
-          view_rows, "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. "
-          "Calibration uses 64 random images. The MNIST construction failed one source decision among "
-          "the 18 required conditions and stopped before natural evaluation. All completed tasks are shown.",
-          "lllrrrrr")
+    for record, table, title, prefix, label, note in [
+        ("native_view_response", "defense2_native_views", "Matching native responses to complementary synthetic views",
+         "NativeResponse_", "Two views", "MNIST failed one source decision and stopped before natural evaluation."),
+        ("native_class_means", "defense2_native_means", "Preserving class means on synthetic inputs",
+         "ClassMeans_", "Class means", "All three constructions passed their source conditions. No main release is replaced.")
+    ]:
+        values = read(f"results/data_free_compensation/{record}_result.json")
+        comparison_rows = []
+        for task in values["evaluated"]:
+            for dataset in [task, "SVHN" if task == "MNIST" else "MNIST"]:
+                for variant, field in [("Previous", "before_accuracy_percent"), (label, "accuracy_percent")]:
+                    row = [task, dataset, variant]
+                    for method, scope, stage in [("Standalone", "None", "raw"), ("TA", "None", "raw"),
+                                                  ("TA", "Protected expert", "raw"), ("TA", "All experts", "raw"),
+                                                  ("TA", "Protected expert", "calibrated")]:
+                        if method == "Standalone" and task != dataset:
+                            row.append("--")
+                            continue
+                        key = (task + "/" if stage == "calibrated" else "") + "/".join([prefix + task, method, scope, dataset])
+                        row.append(f"{one(values['vs_main'], key=key, stage=stage)[field]:.2f}")
+                    comparison_rows.append(row)
+        write(table, title,
+              ["Target", "Dataset", "Variant", "Standalone", "TA", "AGA-T", "AGA-B", "AGA-T+cal."],
+              comparison_rows, "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. "
+              "Calibration uses 64 random images. " + note, "lllrrrrr")
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 

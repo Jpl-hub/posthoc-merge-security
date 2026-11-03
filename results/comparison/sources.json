@@ -30,7 +30,8 @@
     "results/data_free_compensation/projection_eight/paired.json": "795515a0f663e7925f7d5444b0a0bb75352d09cb634256dfdda1df7dacafd657",
     "results/data_free_compensation/hard_label/result.json": "f114b630682419f32a368e91aecd368cd7bef92809f7d34b4fcce78895e14790",
     "results/data_free_compensation/finite_components_result.json": "276c78d011c569568f1009d417f198ca12785f5ab715ef6fcfd21c8216e242fd",
-    "results/data_free_compensation/native_view_response_result.json": "21c30f93cbd1ca633999e65aa89b2f2842efa2501fc52b6659617d39fff74960"
+    "results/data_free_compensation/native_view_response_result.json": "21c30f93cbd1ca633999e65aa89b2f2842efa2501fc52b6659617d39fff74960",
+    "results/data_free_compensation/native_class_means_result.json": "05a9954b2a8ef08912b8d670253768f5e63815719238651a172e8f8936285eb5"
   },
   "eight_expert_rows": [
     {
@@ -4736,9 +4737,144 @@
           "99.44"
         ]
       ],
-      "note": "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. Calibration uses 64 random images. The MNIST construction failed one source decision among the 18 required conditions and stopped before natural evaluation. All completed tasks are shown."
+      "note": "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. Calibration uses 64 random images. MNIST failed one source decision and stopped before natural evaluation."
+    },
+    "defense2_native_means": {
+      "headers": [
+        "Target",
+        "Dataset",
+        "Variant",
+        "Standalone",
+        "TA",
+        "AGA-T",
+        "AGA-B",
+        "AGA-T+cal."
+      ],
+      "rows": [
+        [
+          "MNIST",
+          "MNIST",
+          "Previous",
+          "99.57",
+          "25.15",
+          "2.99",
+          "1.33",
+          "10.76"
+        ],
+        [
+          "MNIST",
+          "MNIST",
+          "Class means",
+          "99.61",
+          "25.81",
+          "5.03",
+          "2.98",
+          "9.71"
+        ],
+        [
+          "MNIST",
+          "SVHN",
+          "Previous",
+          "--",
+          "13.26",
+          "2.02",
+          "1.50",
+          "8.75"
+        ],
+        [
+          "MNIST",
+          "SVHN",
+          "Class means",
+          "--",
+          "13.96",
+          "7.18",
+          "6.43",
+          "9.10"
+        ],
+        [
+          "SVHN",
+          "SVHN",
+          "Previous",
+          "96.66",
+          "2.26",
+          "1.86",
+          "1.87",
+          "6.99"
+        ],
+        [
+          "SVHN",
+          "SVHN",
+          "Class means",
+          "96.88",
+          "3.79",
+          "2.31",
+          "2.24",
+          "7.19"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Previous",
+          "--",
+          "0.22",
+          "0.24",
+          "0.25",
+          "11.53"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "Class means",
+          "--",
+          "0.80",
+          "0.57",
+          "0.47",
+          "19.03"
+        ],
+        [
+          "DTD",
+          "DTD",
+          "Previous",
+          "76.33",
+          "2.13",
+          "2.07",
+          "2.07",
+          "5.00"
+        ],
+        [
+          "DTD",
+          "DTD",
+          "Class means",
+          "76.44",
+          "2.34",
+          "2.07",
+          "2.07",
+          "6.76"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Previous",
+          "--",
+          "99.22",
+          "99.02",
+          "98.81",
+          "99.47"
+        ],
+        [
+          "DTD",
+          "MNIST",
+          "Class means",
+          "--",
+          "99.22",
+          "99.04",
+          "98.91",
+          "99.47"
+        ]
+      ],
+      "note": "Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. Calibration uses 64 random images. All three constructions passed their source conditions. No main release is replaced."
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "3214ba3d360c6a6172f0fa44d732eed9bd979d8ffabe138c99129d96d6f66cb1"
+  "report_source_sha256": "018b7e7a05357a51550ab310cdf6794eca69e5fee0462bce0d71af5af3a5a393"
 }

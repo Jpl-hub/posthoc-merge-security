@@ -17,7 +17,9 @@
 | 实验评价 | [experiment/main_table.py](experiment/main_table.py)、[_impl/evaluate.py](_impl/evaluate.py) | 固定发布、目标与伙伴评价 |
 | 最新对比结果 | [results/comparison](results/comparison) | 防御一、二与PaRaMS的攻击、伙伴和八专家结果；MD / TeX |
 
-`experiment/defense2.py` 的默认路径保留当前 MNIST 发布的原始计算。默认保留 MNIST 构造，`--target SVHN` 或 `--target DTD` 使用 `configs/defense2_inputs.json` 固定的对应任务源和原功能约束：运行需要原合成缓存 `outputs/native_ellipse_classification_20261026/source/` 和 `outputs/task_shaped_compensation_20261026/layer_inputs.pt`，输出目录必须尚不存在。当前评价直接加载已冻结权重，无需重新构造。 `--calibration-aware --output <新目录>` 将输出校正纳入求解；再加 `--task-reference` 则同时约束原专家与保护专家各半时的分类。`--input-bias` 在上述两项基础上增加输入偏置补偿和每次重算的联合MLP匹配，协议见 `results/data_free_compensation/input_bias_check.json`，目前仅完成MNIST评价。`--noise-calibration` 在输入偏置实验上增加独立随机输入的输出校正目标，MNIST已完成，AGA后再校正为0.48%，完整比较见下表。上述选项均为单独登记的研究实验，不替换三任务主方法；定义分别见 `results/data_free_compensation/calibrated_objective_protocol.json` 和 `task_reference_protocol.json`。此前SVHN、DTD 的执行源码及哈希仍在 `results/data_free_compensation/population_compensation_result.json` 的对应任务定义中。
+当前防御二由同一入口构造 MNIST、SVHN、DTD。用 `--target` 指定任务，固定输入及参数见 `configs/defense2_inputs.json`。当前三任务主方法使用 `--calibration-aware --task-reference --input-bias --noise-calibration --finite-classification`，定义和发布指纹见 [固定协议](results/data_free_compensation/finite_classification.json) 及 [结果](results/data_free_compensation/finite_classification_result.json)。已有发布直接用于评价，无需重新构造。原合成缓存路径写在配置中，新输出目录必须不存在。
+
+互补视图、逐类均值两项试验已结束，未替换主方法，其分支已从活动入口移除。执行源码保留于 Git `a973133` 和两台服务器的原始结果，分别见 [视图对照](results/comparison/defense2_native_views.md) 与 [均值对照](results/comparison/defense2_native_means.md)。旧实验应检出其执行版本，不能用当前源码冒充复现。
 
 防御一和防御二的当前构造均不使用真实图片。防御一的方向和幅度完全由权重确定，也不使用合成图片；三个保护任务的完整独立预测均保持不变，TA及AGA后MNIST/SVHN/DTD准确率分别为9.80%/6.70%/2.13%，伙伴准确率也明显降低。[三任务完整表](results/phase3/bias_weight_only/other_tasks/summary.md)。历史图片辅助幅度单独保留。
 
@@ -61,7 +63,7 @@ _impl/
   report.py                  # 已验证结果生成同源 MD / TeX / 图
 experiment/
   construct.py               # 防御一及已有基线构造
-  defense2.py                # 当前数值防御二的固定 MNIST 构造源码
+  defense2.py                # 数值防御二的三任务构造
   native.py                  # 冻结发布的独立任务检查
   main_table.py              # 主实验：TA / 原版 AGA / 匹配基线
   eight_task.py              # 八专家融合及Unmask；当前主表已有七个数据集

@@ -1,6 +1,6 @@
 # Matching native responses to complementary synthetic views
 
-Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. Calibration uses 64 random images. The MNIST construction failed one source decision among the 18 required conditions and stopped before natural evaluation. All completed tasks are shown.
+Two-expert TA at 0.5. AGA-T processes the target expert and AGA-B processes both. Calibration uses 64 random images. MNIST failed one source decision and stopped before natural evaluation.
 
 | Target | Dataset | Variant | Standalone | TA | AGA-T | AGA-B | AGA-T+cal. |
 | --- | --- | --- | --- | --- | --- | --- | --- |

@@ -235,50 +235,14 @@ def main():
     G += rho * torch.eye(len(G), device="cuda")
     T += rho * Rorig
     constant += rho * Rorig.square().sum()
-    pair_reference = inputs.get("native_response_pairs")
-    pair_baseline = 0.
-    if pair_reference:
-        assert args.finite_classification and args.input_bias
-        assert digest(pair_reference["path"]) == pair_reference["sha256"]
-        x1, x2 = torch.load(pair_reference["path"], map_location="cpu", weights_only=True).unbind(0)
-        x1, x2 = to(x1), to(x2)
-        # The output bias cancels in a difference between two inputs.
-        pair_hidden = augmented(x1) - augmented(x2)
-        pair_teacher = B @ (activate(x1 @ A.T + a) - activate(x2 @ A.T + a)).T
-        energy = pair_teacher.square().sum()
-        assert torch.isfinite(energy) and energy > 0
-        def pair_error(value):
-            return float((value @ pair_hidden - pair_teacher).square().sum() / energy)
-        pair_baseline = pair_error(Rorig)
-        G += (pair_hidden @ pair_hidden.T) / energy
-        T += (pair_teacher @ pair_hidden.T) / energy
-        constant += 1.
     L = torch.linalg.cholesky(G)
     RN = torch.cholesky_solve(T.T, L).T
-    preserve_means = inputs.get("preserve_native_class_means", False)
-    if preserve_means:
-        assert args.finite_classification and not pair_reference
-        labels = raw["teacher_class"].long().cuda()
-        H = augmented(cache["native"]["x"])
-        Y = (cache["native"]["final"] - cache["native"]["prefix"]).T
-        classes = range(head.weight.shape[0])
-        M = torch.stack([H[:, labels == c].mean(1) for c in classes], dim=1)
-        means = torch.stack([Y[:, labels == c].mean(1) for c in classes], dim=1)
-        inverse_metric_means = torch.cholesky_solve(M, L)
-        # Nearest native regression solution satisfying R M = means in the G metric.
-        right_inverse = torch.cholesky_solve(inverse_metric_means.T, torch.linalg.cholesky(M.T @ inverse_metric_means))
-        RN += (means - RN @ M) @ right_inverse
-        torch.testing.assert_close(RN @ M, means, rtol=1e-8, atol=1e-8)
     native = lambda R: float((R @ G * R).sum() - 2 * (R * T).sum() + constant)
     tau = native(Rorig)
     if args.input_bias:
-        tau = inputs["original_native_limit"] + pair_baseline
+        tau = inputs["original_native_limit"]  # Preserve this task's original bound.
     minimum = native(RN)
     radius2 = tau - minimum
-    if preserve_means and radius2 <= 1e-12:
-        save_json(out / "mean_bound.json", dict(native_minimum=minimum, native_limit=tau,
-                  status="no_interior_for_original_solver", target=args.target))
-        return
     assert radius2 > 1e-12, (tau, minimum)
     # Build the public-base fusion and AGA contexts, including the full classifier.
     hidden = {}
@@ -470,8 +434,6 @@ def main():
             continue
         grad = torch.autograd.grad(loss, R)[0]
         dual = torch.cholesky_solve(grad.T, L).T
-        if preserve_means:
-            dual -= (dual @ M) @ right_inverse
         dn = float((dual * grad).sum())
         assert dn >= 0
         if dn < 1e-24:
@@ -622,11 +584,6 @@ def main():
         native_minimum=minimum,
         native_final=native(R),
         native_final_FP32=native(Rf),
-        native_class_mean_max_error=(float((Rf @ M - means).abs().max())
-                                     if preserve_means else None),
-        native_pair_error=(dict(original_B=pair_baseline, published_B=pair_error(Rf),
-                                original_quadratic=native(Rf)-pair_error(Rf))
-                           if pair_reference else None),
         native_groups=groups,
         ridge=float(rho),
         original_tail_maximum_error=original_tail_error,
