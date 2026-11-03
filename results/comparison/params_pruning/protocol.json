@@ -1,0 +1,37 @@
+{
+  "registered_utc": "2026-11-03T16:06:31.773254+00:00",
+  "status": "registered_before_construction",
+  "question": "Does the paper-motivated noninvertible pruning retain standalone utility when composed with the frozen defenses? If native utility is destroyed, stop without strength/seed/layer repairs.",
+  "paper": "Disrupting Model Merging: A Parameter-Level Defense Without Sacrificing Accuracy, ICCV 2025, section 6 and table 4",
+  "paper_url": "https://arxiv.org/html/2503.07661v1#S6",
+  "official_commit": "4159a9a8bf253088694154d944f4583db8eca60e",
+  "source_check": "All 28 Python files and README fetched at pinned commit and searched. No random-pruning implementation; only WANDA argument in args.py. apply_PaRaMS.py SHA256 ca38861c7feea904bf93a3bf72fe3546a5a2347ffe7c043b7e610296a90f6437.",
+  "adaptation": "Paper-motivated native adaptation, not official pruning implementation or Table4 reproduction. Bernoulli zeroing only the 48 attention/MLP weight matrices touched by the parameter-transform architecture; leave biases, LayerNorm, embeddings, conv and final projection unchanged. Paper does not specify this complete implementation scope.",
+  "prune_probability": 0.1,
+  "seed": 0,
+  "rescale": false,
+  "mask_sharing": "CPU torch.Generator seed0, sorted keys, identical masks at corresponding published coordinates for all four controls; no relation to secret original neuron order.",
+  "inputs": {
+    "Clean_pruned": null,
+    "PaRaMS_pruned": {
+      "path": "outputs/phase2_params_default_20261016/artifacts/PaRaMS.pt",
+      "sha256": "5a7bca84cc9a40528f16676b617ef06823197b5ce2242e132fd3f5d18413b706",
+      "full_state": true
+    },
+    "Defense1_PaRaMS_pruned": {
+      "path": "outputs/params_composition_20261103/Defense1/publication/release.pt",
+      "sha256": "242fdff9245e3e3cac20b5de93a26fab79d180f274c8d4210496d4bee2362075"
+    },
+    "Defense2_PaRaMS_pruned": {
+      "path": "outputs/params_composition_20261103/Defense2/publication/release.pt",
+      "sha256": "64bc4d8e7d78c1b6eebc8539aafc50b10d60b3ee3181c94c5053a1717ecef182"
+    }
+  },
+  "target": "MNIST",
+  "real_construction_images": 0,
+  "expert_training_updates": 0,
+  "new_releases": 4,
+  "evaluation": "Freeze all four masks and releases before complete native evaluation. Original unprotected scores reused with original-context replay. No attack, optimizer, or training launched at this stage.",
+  "paper_limit": "Paper table4 pruned adaptive recovery64.35 vs clean84.13, but KD82.27; pruning is not an established KD solution. Their native SVHN97.46 to96.33 cannot be asserted for our MNIST implementation.",
+  "driver_sha256": "bc0ab020270b80ef44b291111fba3f0aecbad0aca976663018b855e1cf7c5a81"
+}
