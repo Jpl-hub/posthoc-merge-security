@@ -555,6 +555,36 @@ def defense_comparison(directory):
           "equally processed unprotected prediction. Low accuracy also occurs without protection; "
           "it does not demonstrate a defense advantage. Seven complete test datasets; no eight-task mean.",
           "llrrrrrrr")
+    composed = read("results/comparison/params_composition/summary.json")
+    assert composed["status"] == "completed_independently_verified"
+    native = one(composed["groups"], method="evaluation", stage="full")["rows"]
+    combination_rows = []
+    for name, label in [("Unprotected", "Unprotected"), ("Defense1_PaRaMS", "Defense 1 + PaRaMS"),
+                        ("Defense2_PaRaMS", "Defense 2 + PaRaMS")]:
+        for merger, scope, process in [("Standalone", "None", "Standalone"), ("TA", "None", "TA"),
+                                       ("TA", "Protected expert", "AGA-T + TA"), ("TA", "All experts", "AGA-B + TA")]:
+            values = [accuracy(one(native, defense=name, merger=merger, attack_scope=scope, dataset=t))
+                      if merger != "Standalone" or t == "MNIST" else "--" for t in ["MNIST", "SVHN"]]
+            combination_rows.append([label, process] + values)
+        combination_rows.append([label, "ProDistill"] + [accuracy(one(composed["prodistill"]["rows"],
+            defense=name, stage="full", dataset=t)) for t in ["MNIST", "SVHN"]])
+    write("params_composition", "Fixed PaRaMS compositions on MNIST", ["Defense", "Processing", "MNIST", "SVHN"],
+          combination_rows, "MNIST is protected; SVHN is the partner. TA coefficient 0.5. AGA-T processes the target; "
+          "AGA-B processes both experts. ProDistill uses 64 additional unlabeled images per task and 100 epochs per block, "
+          "with initial coefficient 0.3. Official default PaRaMS is applied to each frozen defense; construction uses no images.", "llrr")
+    recovery_rows = []
+    for method, process in [("reset", "Known module"), ("AGA_then_reset", "AGA + known module")]:
+        for index, name in enumerate(["Defense1_PaRaMS", "Defense2_PaRaMS"]):
+            group = next(g for g in composed["groups"] if g["method"] == method and g["stage"] == "full"
+                         and Path(g["directory"]).name.startswith(f"{index:02d}_"))
+            for key, label in [("Unprotected", f"D{index + 1} control"), (name, f"Defense {index + 1} + PaRaMS")]:
+                recovery_rows.append([label, process] + [accuracy(one(group["rows"], defense=key, merger=m,
+                    attack_scope="None", dataset=t)) for m, t in [("Standalone", "MNIST"), ("TA", "MNIST"), ("TA", "SVHN")]])
+    write("params_composition_recovery", "Known-module recovery of the same compositions",
+          ["Defense", "Processing", "Standalone", "MNIST", "SVHN"], recovery_rows,
+          "Extra knowledge: the modified location. Defense 1 uses final-bias projection; Defense 2 replaces the last MLP "
+          "output weight and bias with public base values. Each control undergoes the same operation. AGA followed by "
+          "module recovery is a composed procedure, separate from AGA alone. TA coefficient 0.5; no real attack data.", "llrrr")
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 

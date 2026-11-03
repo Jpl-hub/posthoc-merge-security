@@ -1,34 +1,20 @@
 {
-  "updated_utc": "2026-11-03T13:09:59.424797+00:00",
-  "status": "unmask_completed_compositions_running",
+  "updated_utc": "2026-11-03T13:46:46.960746+00:00",
+  "status": "fixed_params_compositions_completed_not_promoted",
   "active_focus": "按最新聊天要求研究现有防御应对蒸馏与公开参数替换的机制，并检验与冻结Defense1/2的互补；不继续扩展输出校准攻击。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 51167,
-      "GPU": "RTX4090D21516",
-      "status": "running_construction",
-      "source_commit": "15617824e3b55a6ab367aaa64ac0a5ba3dd77c6b",
-      "protocol": "results/comparison/params_composition/protocol.json",
-      "log": "outputs/params_composition_20261103/run.log",
-      "scope": "Official unchanged PaRaMS applied to frozen MNIST Defense1 and Defense2; standalone,TA,AGA,ProDistill,matched known-module recovery and AGA plus recovery",
-      "new_defense_points": 2,
-      "new_AGA_calls": 2,
-      "real_construction_images": 0,
-      "maximum_coefficient_steps": 2400
-    }
-  ],
-  "next_action": "人工约60分钟后检查两个固定组合的独立/融合、AGA、ProDistill及匹配模块恢复。Unmask已完成；不再扩大攻击清单或重跑已有结果。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "向用户反馈固定组合的真实结果及位置知识区别。该组合不扩到其他任务；后续先研究能用于无数据后处理的具体机制，不启动没有依据的新优化或重复失败点。",
   "latest_completed_batch": {
-    "name": "unmask_current",
-    "status": "completed_independently_verified",
-    "record": "results/comparison/unmask_current/summary.json",
-    "table": "results/comparison/unmask.md",
-    "rows": 84,
-    "scope": "8 experts; 7 complete test sets",
-    "no_new_defense": true
+    "name": "params_composition",
+    "status": "completed_independently_verified_not_promoted",
+    "record": "results/comparison/params_composition/summary.json",
+    "table": "results/comparison/params_composition.md",
+    "independent_rows": 102,
+    "context_score_replays": 1632,
+    "maximum_score_error": 1.52587890625e-05
   },
   "latest_closed_control": {
     "name": "native_view_response",
@@ -67,17 +53,40 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "pending; single connector check returned Unknown tool github.get_profile; no successful publish this turn",
+    "status": "pending; GitHub tools unavailable in current session; no successful publish this turn",
     "last_verified_remote_commit": "e323d1969f811945183c2a816d287b07b29ec2d7",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_state": "research_state.json",
   "historical_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
   "params_composition": {
-    "status": "running_construction",
+    "status": "completed_independently_verified_not_promoted",
     "record": "results/comparison/params_composition/protocol.json",
-    "pid": 51167,
+    "pid": null,
     "new_algorithm_claim": false,
-    "note": "Ordinary combination; test feature-distillation complementarity. PaRaMS paper KD82.27 vs clean84.13 does not establish KD resistance. No new hard-label KD or output calibration."
+    "note": "Ordinary combination; test feature-distillation complementarity. PaRaMS paper KD82.27 vs clean84.13 does not establish KD resistance. No new hard-label KD or output calibration.",
+    "summary": "results/comparison/params_composition/summary.json",
+    "target": "MNIST",
+    "standalone_percent": [
+      99.69,
+      99.57
+    ],
+    "AGA_target_percent": [
+      9.8,
+      2.99
+    ],
+    "prodistill_percent": [
+      9.8,
+      89.74
+    ],
+    "AGA_then_known_module_percent": [
+      99.3,
+      99.28
+    ],
+    "matched_clean_AGA_then_known_module_percent": [
+      99.3,
+      99.29
+    ],
+    "conclusion": "Keeps AGA protection; does not solve known-module recovery after AGA. Defense2 ProDistill89.74 versus same-budget PaRaMS89.27 shows no added protection at this point. Closed; no cross-task extension or parameter search."
   }
 }

@@ -32,7 +32,8 @@
     "results/data_free_compensation/finite_components_result.json": "276c78d011c569568f1009d417f198ca12785f5ab715ef6fcfd21c8216e242fd",
     "results/data_free_compensation/native_view_response_result.json": "21c30f93cbd1ca633999e65aa89b2f2842efa2501fc52b6659617d39fff74960",
     "results/data_free_compensation/native_class_means_result.json": "05a9954b2a8ef08912b8d670253768f5e63815719238651a172e8f8936285eb5",
-    "results/comparison/unmask_current/summary.json": "c4c8cb2adac756384b572e6659f643103da95688ca25dc8800b5aae4377e67ba"
+    "results/comparison/unmask_current/summary.json": "c4c8cb2adac756384b572e6659f643103da95688ca25dc8800b5aae4377e67ba",
+    "results/comparison/params_composition/summary.json": "1558c7e79590adf99c1e33d65c021b7579a596bfb21e7b4818dfbc3db8f852ad"
   },
   "eight_expert_rows": [
     {
@@ -5022,8 +5023,177 @@
         ]
       ],
       "note": "Eight experts; TA and whole-publication subtraction coefficients are both 0.2. Paper-formula adaptation, not author code. Every protected prediction equals the equally processed unprotected prediction. Low accuracy also occurs without protection; it does not demonstrate a defense advantage. Seven complete test datasets; no eight-task mean."
+    },
+    "params_composition": {
+      "headers": [
+        "Defense",
+        "Processing",
+        "MNIST",
+        "SVHN"
+      ],
+      "rows": [
+        [
+          "Unprotected",
+          "Standalone",
+          "99.69",
+          "--"
+        ],
+        [
+          "Unprotected",
+          "TA",
+          "99.37",
+          "92.50"
+        ],
+        [
+          "Unprotected",
+          "AGA-T + TA",
+          "99.30",
+          "92.78"
+        ],
+        [
+          "Unprotected",
+          "AGA-B + TA",
+          "99.32",
+          "91.77"
+        ],
+        [
+          "Unprotected",
+          "ProDistill",
+          "99.45",
+          "96.73"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "Standalone",
+          "99.69",
+          "--"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "TA",
+          "9.80",
+          "6.70"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "AGA-T + TA",
+          "9.80",
+          "6.70"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "AGA-B + TA",
+          "9.80",
+          "6.70"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "ProDistill",
+          "9.80",
+          "6.70"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "Standalone",
+          "99.57",
+          "--"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "TA",
+          "9.74",
+          "6.38"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "AGA-T + TA",
+          "2.99",
+          "2.03"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "AGA-B + TA",
+          "1.33",
+          "1.50"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "ProDistill",
+          "89.74",
+          "59.37"
+        ]
+      ],
+      "note": "MNIST is protected; SVHN is the partner. TA coefficient 0.5. AGA-T processes the target; AGA-B processes both experts. ProDistill uses 64 additional unlabeled images per task and 100 epochs per block, with initial coefficient 0.3. Official default PaRaMS is applied to each frozen defense; construction uses no images."
+    },
+    "params_composition_recovery": {
+      "headers": [
+        "Defense",
+        "Processing",
+        "Standalone",
+        "MNIST",
+        "SVHN"
+      ],
+      "rows": [
+        [
+          "D1 control",
+          "Known module",
+          "99.69",
+          "99.37",
+          "92.50"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "Known module",
+          "99.69",
+          "8.92",
+          "9.16"
+        ],
+        [
+          "D2 control",
+          "Known module",
+          "99.68",
+          "99.35",
+          "92.45"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "Known module",
+          "99.65",
+          "8.92",
+          "9.15"
+        ],
+        [
+          "D1 control",
+          "AGA + known module",
+          "99.68",
+          "99.30",
+          "92.79"
+        ],
+        [
+          "Defense 1 + PaRaMS",
+          "AGA + known module",
+          "99.68",
+          "99.30",
+          "92.79"
+        ],
+        [
+          "D2 control",
+          "AGA + known module",
+          "99.64",
+          "99.29",
+          "92.79"
+        ],
+        [
+          "Defense 2 + PaRaMS",
+          "AGA + known module",
+          "99.65",
+          "99.28",
+          "92.64"
+        ]
+      ],
+      "note": "Extra knowledge: the modified location. Defense 1 uses final-bias projection; Defense 2 replaces the last MLP output weight and bias with public base values. Each control undergoes the same operation. AGA followed by module recovery is a composed procedure, separate from AGA alone. TA coefficient 0.5; no real attack data."
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "7c110340bfda6f449f6efa41916ab68d52c957de8b5d30b3e07bb4ba7ca4b0d3"
+  "report_source_sha256": "0a2921bd24a7b8facb1c7f24c2210e0597ccddc94186306f9fc31ddb24ea1694"
 }
