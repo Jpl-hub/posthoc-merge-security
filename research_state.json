@@ -23,15 +23,15 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T10:35:34.517004+00:00",
-    "primary_available_GiB": 30,
+    "verified_utc": "2026-11-03T10:39:16.818549+00:00",
+    "primary_available_GiB": 28,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "Class-means batch complete; Unmask protocol registered",
+    "primary_workspace_status": "Frozen Unmask pilot running; no defense construction",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
@@ -119,12 +119,24 @@
     "active_defense2_matches_commit": "be57bec"
   },
   "delivery_preference": "用户要求先做扎实基本实验与核心方法，再整理给老师看的材料；不提前制作或发送汇报，不把未完成写成全部work。",
-  "updated_utc": "2026-11-03T10:35:34.517004+00:00",
-  "status": "class_means_closed_unmask_registered",
+  "updated_utc": "2026-11-03T10:39:16.818549+00:00",
+  "status": "unmask_current_pilot_running",
   "active_focus": "核心问题仍是独立功能保持及任务约束贡献；补当前冻结方法的一项已登记恢复缺口。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "运行当前防御一、当前防御二、PaRaMS和匹配无保护的Unmask七数据集对照；不增加新防御候选。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 32174,
+      "GPU": "RTX4090D21516",
+      "source_commit": "a26860ee6ed09918fb41873bb7173f0052b2796f",
+      "protocol": "results/comparison/unmask_current/protocol.json",
+      "log": "outputs/unmask_current_20261103/run.log",
+      "scope": "Unmask on fixed Defense1/current Defense2/PaRaMS and matched unprotected;8experts/7testsets",
+      "estimated_minutes": 45,
+      "new_defense_points": 0,
+      "new_AGA_calls": 0
+    }
+  ],
+  "next_action": "人工约45分钟后查看；先完整评价，再独立逐图统计和匹配无保护比较。不新建自动任务。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -170,7 +182,7 @@
     "status": "closed_not_promoted"
   },
   "unmask_current": {
-    "status": "registered",
+    "status": "pilot_running",
     "protocol": "results/comparison/unmask_current/protocol.json",
     "output": "outputs/unmask_current_20261103",
     "defenses": [
@@ -183,7 +195,10 @@
     "evaluated_datasets": 7,
     "rows_per_stage": 84,
     "new_defense_points": 0,
-    "new_AGA_calls": 0
+    "new_AGA_calls": 0,
+    "pid": 32174,
+    "source_commit": "a26860ee6ed09918fb41873bb7173f0052b2796f",
+    "log": "outputs/unmask_current_20261103/run.log"
   },
   "github_sync": {
     "status": "pending; GitHub connector absent in current tool list; direct remote connection refused",

@@ -1,12 +1,24 @@
 {
-  "updated_utc": "2026-11-03T10:35:34.517004+00:00",
-  "status": "class_means_closed_unmask_registered",
+  "updated_utc": "2026-11-03T10:39:16.818549+00:00",
+  "status": "unmask_current_pilot_running",
   "active_focus": "核心问题仍是独立功能保持及任务约束贡献；补当前冻结方法的一项已登记恢复缺口。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "运行当前防御一、当前防御二、PaRaMS和匹配无保护的Unmask七数据集对照；不增加新防御候选。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 32174,
+      "GPU": "RTX4090D21516",
+      "source_commit": "a26860ee6ed09918fb41873bb7173f0052b2796f",
+      "protocol": "results/comparison/unmask_current/protocol.json",
+      "log": "outputs/unmask_current_20261103/run.log",
+      "scope": "Unmask on fixed Defense1/current Defense2/PaRaMS and matched unprotected;8experts/7testsets",
+      "estimated_minutes": 45,
+      "new_defense_points": 0,
+      "new_AGA_calls": 0
+    }
+  ],
+  "next_action": "人工约45分钟后查看；先完整评价，再独立逐图统计和匹配无保护比较。不新建自动任务。",
   "latest_completed_batch": {
     "name": "native_class_means",
     "record": "results/data_free_compensation/native_class_means_result.json",
@@ -47,7 +59,7 @@
     "status": "closed_not_promoted"
   },
   "unmask_current": {
-    "status": "registered",
+    "status": "pilot_running",
     "protocol": "results/comparison/unmask_current/protocol.json",
     "output": "outputs/unmask_current_20261103",
     "defenses": [
@@ -60,7 +72,10 @@
     "evaluated_datasets": 7,
     "rows_per_stage": 84,
     "new_defense_points": 0,
-    "new_AGA_calls": 0
+    "new_AGA_calls": 0,
+    "pid": 32174,
+    "source_commit": "a26860ee6ed09918fb41873bb7173f0052b2796f",
+    "log": "outputs/unmask_current_20261103/run.log"
   },
   "github_sync": {
     "status": "pending; GitHub connector absent in current tool list; direct remote connection refused",
