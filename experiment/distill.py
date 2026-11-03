@@ -276,7 +276,7 @@ def progressive(protocol):
     for case in cfg["cases"]:
         target, partner = case["target"], case["partner"]
         original = load_checkpoint(target + "/finetuned.pt")
-        peer = load_checkpoint(partner + "/finetuned.pt")
+        peer = load_checkpoint(case.get("partner_checkpoint", partner + "/finetuned.pt"))
         teachers = {target: original, partner: peer}
         folder = out / target
         folder.mkdir()
@@ -287,6 +287,16 @@ def progressive(protocol):
             dest.mkdir()
             own = original if ref is None else apply(original, ref)
             before = parameter_hash(own.state_dict())
+            if case.get("include_initial"):
+                initial = prodistill.initial(base, [own, peer])
+                publication = save_student(initial, base, dest / "initial.pt")
+                frozen[target + "/" + name + " initial"] = dict(
+                    publication=publication,
+                    parameter_sha256=parameter_hash(initial.state_dict()),
+                    training=dict(new_backward_steps=0),
+                    teacher_parameter_sha256=before,
+                )
+                del initial
             historical = case.get("unprotected_model") if ref is None else None
             if historical:
                 model = apply(base, historical, full=True)
@@ -334,11 +344,15 @@ def progressive(protocol):
     # Freeze every model before reading any benchmark images.
     for case in cfg["cases"]:
         target, partner = case["target"], case["partner"]
-        heads = {t: load_checkpoint("head_" + t + ".pt") for t in (target, partner)}
+        evaluation_tasks = case.get("evaluation_tasks", [target, partner])
+        heads = {t: load_checkpoint("head_" + t + ".pt") for t in evaluation_tasks}
         raw, rows = {}, []
         reference_model = None
         replays, maximum = 0, 0.0
-        for name in ["Unprotected", *case["releases"]]:
+        names = ["Unprotected", *case["releases"]]
+        if case.get("include_initial"):
+            names = [item for name in names for item in [name, name + " initial"]]
+        for name in names:
             item = frozen[target + "/" + name]
             ref = item["publication"]
             model = apply(
@@ -356,7 +370,7 @@ def progressive(protocol):
                 assert digest(saved["path"]) == saved["sha256"]
                 reused_scores = torch.load(saved["path"], map_location="cpu", weights_only=False)
             for stage in ["pilot", "full"]:
-                for task in (target, partner):
+                for task in evaluation_tasks:
                     data = dataset(task, "data", model.val_preprocess)
                     ids = (
                         list(range(len(data)))
@@ -382,10 +396,11 @@ def progressive(protocol):
                     np.testing.assert_array_equal(labels.numpy(), official_labels(task)[ids])
                     assert torch.isfinite(scores).all()
                     key = "/".join([name, stage, task])
+                    reference_name = "Unprotected initial" if name.endswith(" initial") else "Unprotected"
                     before = (
                         scores
-                        if name == "Unprotected"
-                        else raw["/".join(["Unprotected", stage, task])]["logits"]
+                        if name == reference_name
+                        else raw["/".join([reference_name, stage, task])]["logits"]
                     )
                     row = dict(
                         defense=name,
@@ -393,7 +408,7 @@ def progressive(protocol):
                         partner=partner,
                         dataset=task,
                         stage=stage,
-                        merger="ProDistill",
+                        merger="Initial coefficient model" if name.endswith(" initial") else "ProDistill",
                         attack_scope="None",
                         role="target" if task == target else "partner",
                         **row_metrics(scores, labels, before, scores.shape[1]),
