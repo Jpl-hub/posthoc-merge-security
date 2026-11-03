@@ -23,15 +23,15 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24576,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T06:39:34.130137+00:00",
+    "verified_utc": "2026-11-03T06:47:11.600613+00:00",
     "primary_available_GiB": 30,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "B16 production and replay complete; preparing current Defense2 component controls",
+    "primary_workspace_status": "Current Defense2 fixed component and Gaussian controls; full evaluation running",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
@@ -42,24 +42,23 @@
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "teacher_screenshots_last_reread_utc": "2026-10-26T11:47:44.037987+00:00",
-  "updated_utc": "2026-11-03T06:39:34.130137+00:00",
-  "status": "core_components_prepared",
+  "updated_utc": "2026-11-03T06:47:11.600613+00:00",
+  "status": "current_defense2_components_running",
   "active_focus": "核心方法优先：当前四张量防御二的组件和同幅度随机对照；不再扩展骨干。",
-  "active_GPU_jobs": 0,
+  "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "pid": 18437,
-      "worker_pid": 18438,
+      "pid": 21097,
       "host": "connect.cqa1.seetacloud.com:21516",
-      "source_commit": "409da457fe3fe01998fdbd5c18b494437409770c",
-      "output": "outputs/backbone_b16_20261103",
-      "protocol": "results/backbone_b16/protocol.json",
-      "status": "completed_existing_replay_independent_summary_pending",
-      "timeout_seconds": 14400,
-      "log": "outputs/backbone_b16_20261103/run.log"
+      "source_commit": "be57bec71c73f0812e8bd738ef892815366e6f59",
+      "output": "outputs/finite_components_20261103",
+      "protocol": "results/data_free_compensation/finite_components_protocol.json",
+      "status": "full_running_after_all_nine_frozen_and_first_pilot_verified",
+      "timeout_seconds": 7200,
+      "log": "outputs/finite_components_20261103/run.log"
     }
   ],
-  "next_action": "启动已登记的同版本九个组件/随机对照。完成后判断功能损失和保护来自哪侧；不根据测试挑点。B16现有批次仅收尾。",
+  "next_action": "约35分钟后人工检查当前四张量防御二三个任务的A侧、B侧及同范数随机对照；比较独立/TA/AGA和主方法，完成逐类配对核验，不自动加批次或根据成绩选点。",
   "closed_history": {
     "full_state_commit": "fa51d36326b22407e2643cc6928839ca4ad1ca4f",
     "records": "notes/phase2_coupling.md; notes/phase2_related_work_and_novelty.md; results/data_free_compensation/*",
@@ -170,8 +169,8 @@
     "state_compaction": "Completed history removed from active state only; exact prior state in full_state_commit."
   },
   "github_sync": {
-    "status": "Completed eight-expert and hard-label results published and read back",
-    "last_verified_remote_commit": "ce76a81d3677356201416c3c5aaf5846f5e2967b",
+    "status": "new local commits pending; connector backend returned Unknown tool github.fetch_file",
+    "last_verified_remote_commit": "9b3a30b350c8d826c8e3beb17ec238ead645fbce",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "latest_merger_batch": {
@@ -359,7 +358,7 @@
   },
   "delivery_preference": "用户要求先做扎实基本实验与核心方法，再整理给老师看的材料；不提前制作或发送汇报，不把未完成写成全部work。",
   "backbone_b16": {
-    "status": "production_and_existing_replay_complete_independent_summary_pending",
+    "status": "completed_independently_verified",
     "protocol": "results/backbone_b16/protocol.json",
     "output": "outputs/backbone_b16_20261103",
     "checkpoint_files": 7,
@@ -367,14 +366,39 @@
     "existing_tests": "25 passed: test_refactor.py and test_weight_only_bias.py",
     "scope": "Defense1 three tasks on ViT-B16; Defense2 not started on B16",
     "source_changed": "16 lines added,4 replaced in existing loader/config/evaluator; no new production modules",
-    "source_commit": "409da457fe3fe01998fdbd5c18b494437409770c"
+    "source_commit": "409da457fe3fe01998fdbd5c18b494437409770c",
+    "result": "results/backbone_b16/summary.json",
+    "table": "results/backbone_b16/summary.md",
+    "archive": {
+      "status": "all_sizes_and_sha256_equal",
+      "files": 76,
+      "bytes": 3211595761,
+      "manifest_sha256": "8164792a85fe34f32b4ff807a6d8f139c6f57d2c70934bd091cb65bbdcbd6de9",
+      "hosts": [
+        "21516",
+        "41558"
+      ]
+    },
+    "full_rows": 42,
+    "calibration_rows": 36,
+    "matched_calibration_comparisons": 18,
+    "full_score_replays": 672,
+    "maximum_numpy_prior_error": 1.4210854715202004e-14,
+    "conclusion": "独立预测保持；AGA后28.70/6.70/2.13，输出校正后99.33/94.73/62.18，接近匹配无保护。该骨干扩展不解决已知校正弱点。"
   },
   "finite_components": {
     "protocol": "results/data_free_compensation/finite_components_protocol.json",
     "output": "outputs/finite_components_20261103",
-    "status": "registered_not_started",
+    "status": "nine_controls_frozen_first_pilot_verified_full_running",
     "new_controls": 9,
     "main_publication_replacements": 0,
-    "core_question": "A/input-bias versus B/output-bias contributions and same per-tensor norm random baseline; old-version deletion controls are insufficient."
+    "core_question": "A/input-bias versus B/output-bias contributions and same per-tensor norm random baseline; old-version deletion controls are insufficient.",
+    "pid": 21097,
+    "source_commit": "be57bec71c73f0812e8bd738ef892815366e6f59",
+    "log": "outputs/finite_components_20261103/run.log",
+    "first_pilot_rows": 35,
+    "first_pilot_score_replays": 560,
+    "first_pilot_maximum_error": 0.0,
+    "estimated_remaining_minutes": 35
   }
 }
