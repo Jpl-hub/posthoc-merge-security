@@ -735,3 +735,21 @@ EuroSAT再核TaskArithmetic作者Issue1与原eurosat.py：代码读取现成trai
 重新读取PaRaMS官方4159a9a的全部28个Python文件和README。没有随机剪枝实现，仅args.py有未接入的WANDA参数提示；apply_PaRaMS.py的SHA为ca38861c7feea904bf93a3bf72fe3546a5a2347ffe7c043b7e610296a90f6437。论文第6节明确随机置零10%权重，但没有完整指定张量范围及随机实现。为检验非可逆修改能否接入现有方法，4149975执行前登记48个Attention/MLP权重矩阵的Bernoulli零化，seed0、无重缩放、同坐标共享掩码，偏置/LN/最终投影不动。这是标明范围的论文思路适配，不是作者剪枝代码或表4复现。
 
 完整MNIST独立：无保护剪枝94.35，PaRaMS剪枝95.60，防御一加PaRaMS剪枝95.60，防御二加PaRaMS剪枝40.73。与各自未剪枝发布相比净损失5.34/4.09/4.09/58.84pp。最后一组5888失4得，说明这一非可逆处理严重破坏现有补偿，不能仅凭可能降低恢复准确率就当作防御改善。停止此固定点，不换率/范围/种子修补，不运行AGA、TA或蒸馏。全部原始权重及分数保留。5行、80个原批分数重放误差7.63e-6，6项配对、逐类及索引已核。来源和结果见results/comparison/params_pruning。
+
+### 11月4日　从恢复目标核对论文和官方实现
+
+本轮检索覆盖直接相关的PaRaMS、MergeLock、MergeBarrier、MergeGuard、Trap²，并向蒸馏防护追溯Nasty Teacher和DOGe。这不是文献已穷尽的声明。MergeLock官方树仍只有README；Sensitivity as a Shield全文仍跳转验证页，不从索引摘要推导方法。GitHub插件本轮返回Unknown tool，公开源码改由GitHub官方API读取，未执行作者训练代码。
+
+| 原始工作 | 本轮核读的官方实现 | 可借鉴部分和实际限制 |
+|---|---|---|
+| Jang等，Making Models Unmergeable via Scaling-Sensitive Loss Landscape，ICML 2026，[正式条目](https://proceedings.mlr.press/v306/jang26e.html) | [ef65a265训练入口](https://github.com/ml-postech/Trap2/blob/ef65a26590d92fe07955c5621c08bb315484ff29/training_scripts/8vision_training_full_trap2.py#L121)，及评价入口100—121行 | 正常参数正确、缩放更新后错误；代码用真实带标签批次更新全部视觉参数。已有缩放状态约束不能再算新机制。表14的49.153是跨保护配置的汇总，不是某个保护任务的单独准确率；公开评价函数同时输出各任务及跨任务均值。恢复脚本没有随库提供，不能将该函数冒充表14的ProDistill入口。 |
+| Ma等，Undistillable: Making A Nasty Teacher That CANNOT teach students，ICLR 2021，[原文§3](https://arxiv.org/html/2105.07381v1) | [2f9c444c/train_nasty.py:42—79](https://github.com/VITA-Group/Nasty-Teacher/blob/2f9c444c2246a15f1b276ed5cc0ab1d631a270b5/train_nasty.py#L42)，train_kd.py:44—52，data_loader.py:38—48 | 真实标签交叉熵保持任务，负KL改变软概率。其Data-Free KD指学生攻击条件，不代表防御构造无图像。只改变软概率而不改变类别答案，不能改变我们已经跑过的硬标签训练问题。 |
+| Li等，DOGe: Defensive Output Generation for LLM Protection Against Knowledge Distillation，[2505.19504v2](https://arxiv.org/html/2505.19504v2)；本轮未核实正式会议版本 | [23b709aa/distill_wrapper.py:46—90](https://github.com/UNITES-Lab/DOGe/blob/23b709aaa21206030307e078af6a2a4014b2a1e5/src/doge/models/distill_wrapper.py#L46)，finetune-doge.py:103—135 | 冻结主体与代理模型，只更新LM head；通过带掩码的负KL改变生成内容，同时保留答案。分类任务没有同样的推理文本可供修改；该输出机制也未直接作用于ProDistill拟合的中间特征。不能将它照搬成CLIP参数融合保护。 |
+
+前述MergeGuard的§4明确不把昂贵蒸馏放入主要威胁模型；其训练和参数减法不能当作已证明抗蒸馏。MergeBarrier的§4.1明确先把结构改写层换回基座再融合；其余注意力保护仍存在，不能只摘多项式部分就归因整套恢复结果。本轮未取得其官方实现，不据论文描述自行标注“作者复现”。
+
+对当前源码的直接含义：若只修改最终读出，而ProDistill的训练目标只含各Transformer块输出，则这项修改不会改变该训练目标。若防御改动全部在模块M，且恢复把M整块换回公开基座，受保护与无保护接受同操作后参数完全相同。这两点分别限制了直接照搬输出防蒸馏损失、继续只优化末层B的价值；不构成所有无数据防御均不可能的结论。
+
+后续核心条件仍是：参数改变必须让实际任务计算依赖补偿，而公开替换不能只删除一个可有可无的附加项。需要检验的是这种功能依赖能否无数据构造；目前还没有新的可执行构造，不能把上述必要条件写成新方法。普通方法叠加、输出KL和更多参数距离均不自动解决它。已有两种防御的有效结果保留，本轮没有新增模型、训练或恢复成绩。
+
+9份官方文件共93070字节，固定提交与逐文件SHA见paper_protocol_review.json的source_review_20261104；原文件留outputs/2026-11-04_paper_sources。当前恢复清单同步去除“Unmask运行中”等过期描述，不扩建工程入口。
