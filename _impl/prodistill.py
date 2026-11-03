@@ -96,16 +96,32 @@ def train(cfg, case, out, anchor, experts, own, peer, env):
     torch.manual_seed(0)
     torch.cuda.reset_peak_memory_stats()
     tasks = [case.get("target", "MNIST"), case.get("partner", "SVHN")]
-    data = {t: dataset(t, "data", experts[t].val_preprocess, True) for t in tasks}
-    ids = {
-        t: torch.randperm(len(data[t]), generator=torch.Generator().manual_seed(0))[-64:].tolist()
-        for t in data
-    }
+    if "synthetic_source" in case:
+        ref = case["synthetic_source"]
+        assert digest(ref["path"]) == ref["sha256"]
+        raw = torch.load(ref["path"], map_location="cpu", weights_only=False)
+        selected = ref["indices"]
+        assert len(selected) == len(set(selected)) == 64
+        pixels = raw["final"][selected].cuda()
+        assert pixels.shape == (64, 3, 32, 32) and bool(((pixels >= 0) & (pixels <= 1)).all())
+        norm = own.val_preprocess.transforms[-1]
+        mean = torch.tensor(norm.mean, device="cuda")[None, :, None, None]
+        std = torch.tensor(norm.std, device="cuda")[None, :, None, None]
+        images = (F.interpolate(pixels, (224, 224), mode="bilinear", align_corners=False) - mean) / std
+        images = torch.cat([images, images])
+        ids = {t: selected for t in tasks}
+        del raw, pixels
+    else:
+        data = {t: dataset(t, "data", experts[t].val_preprocess, True) for t in tasks}
+        ids = {
+            t: torch.randperm(len(data[t]), generator=torch.Generator().manual_seed(0))[-64:].tolist()
+            for t in data
+        }
+        images = torch.stack([data[t][i][0] for t in ids for i in ids[t]]).cuda()
+        del data
     save_json(out / "calibration_indices.json", ids)
     if "calibration_indices" in case:
         assert ids == case["calibration_indices"]
-    images = torch.stack([data[t][i][0] for t in ids for i in ids[t]]).cuda()
-    del data
     image_sha = hashlib.sha256(images.cpu().numpy().tobytes()).hexdigest()
     source = torch.tensor([0] * 64 + [1] * 64, device="cuda")
     merged = initial(anchor, [own, peer])
@@ -203,6 +219,7 @@ def train(cfg, case, out, anchor, experts, own, peer, env):
             defense_updates=0,
             selection_from_test=False,
             image_tensor_sha256=image_sha,
+            synthetic_source=case.get("synthetic_source"),
         ),
     )
     return merged

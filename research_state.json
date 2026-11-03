@@ -120,12 +120,12 @@
     "active_defense2_matches_commit": "be57bec"
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-03T18:19:02.784148+00:00",
-  "status": "mechanism_and_official_source_review",
-  "active_focus": "核对恢复后的构造目标；DisTaC、TAR官方实现和ASVP正文已读，尚无新的可执行防御点。",
+  "updated_utc": "2026-11-03T18:33:12.219665+00:00",
+  "status": "synthetic_recovery_registered",
+  "active_focus": "检查固定合成源能否模拟当前防御二的系数恢复；尚无新的防御构造。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "继续研究无数据条件下保持原任务、且恢复后仍改变分类的参数依赖；不重跑固定B替换、旧系数范围或已关闭构造。",
+  "next_action": "执行一次固定公开基座环境模拟，冻结四个模型后完整MNIST评价及配对复核，不改防御。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -286,5 +286,13 @@
     "new_models": 0,
     "new_GPU_jobs": 0,
     "author_training_executed": false
+  },
+  "synthetic_recovery": {
+    "status": "registered_not_started",
+    "protocol": "results/data_free_compensation/synthetic_recovery/protocol.json",
+    "output": "outputs/synthetic_recovery_20261104",
+    "new_defense_updates": 0,
+    "real_calibration_images": 0,
+    "coefficient_backward_steps": 2400
   }
 }
