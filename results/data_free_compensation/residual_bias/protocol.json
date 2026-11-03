@@ -1,0 +1,30 @@
+{
+  "registered_utc": "2026-11-03T14:20:25.531781+00:00",
+  "target": "MNIST",
+  "partner": "SVHN for evaluation only",
+  "output": "outputs/residual_bias_20261103",
+  "main": {
+    "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+    "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+  },
+  "source": {
+    "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+    "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+  },
+  "construct": {
+    "path": "outputs/residual_bias_20261103/construct.py",
+    "sha256": "e353bb47ff4b5fe36401beeaf10a161eac1d57e19ab6bbeae949ca59b9bd8990"
+  },
+  "safety": 2.0,
+  "mechanism": "Preserve the complete current expert and four existing changes. Opposite constant offsets in final attention output bias and MLP output bias cancel in the residual stream. Fit two per-coordinate LN2 affine parameters on even unshifted synthetic origins to approximate the original MLP input after translation. Replacing B and b removes one copy of the translation. Native cancellation beyond the skip term and protection under real merging remain empirical.",
+  "direction": "Fixed class 0 vs all rivals, minimum norm solution in the complement of ones, leading 32 left task directions of the last attention output matrix, and the centered native fit residuals. At TA0.5 the offset must dominate the original public-proxy reset margins on the fit set under a frozen-MLP response. The positive exposure coefficient is verified for every rival before the sole amplitude is chosen. Re-evaluate the actual shifted, nonlinear MLP in source checks.",
+  "budget": "One direction, one amplitude from the bound times prior safety 2.0, one per-channel least-squares solution. Weight range separately declared without a norm cap. No real construction images, partner, free strength search or expert gradient updates.",
+  "source_split": "Original source, 160 synthetic origins. Even unshifted subset fits LN2 and sets offset. Five views of odd origins for descriptive source checks only. Previous work used the same images.",
+  "evaluation": "Freeze once, evaluate complete native, TA0.5, both AGA scopes, original known B+b reset and AGA-target then B+b reset. Use equally processed clean controls. Compare expanded restore of all edited keys to matched clean at tensor level. If native exceeds the public base AND regular B+b recovery improves on the frozen previous Defense2, also evaluate unchanged 64-image/task ProDistill. Report native loss separately; no automatic promotion, no tuning using any outcome.",
+  "limitations": "A public-base restorer that resets all seven known tensors is able to remove this entire edit. This is a narrower hypothesis on the previous B+b reset. A constant output displacement is not resistance to hard-label student copying.",
+  "references": [
+    "https://arxiv.org/abs/1607.06450",
+    "https://arxiv.org/abs/2304.09145",
+    "https://arxiv.org/html/2511.10712v1#S4"
+  ]
+}
