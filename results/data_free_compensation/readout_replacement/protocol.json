@@ -1,0 +1,24 @@
+{
+  "registered_utc": "2026-11-03T14:08:18.754833+00:00",
+  "target": "MNIST",
+  "old_method": "finite_classification_20261102",
+  "phase": "Source feasibility only, one fixed readout conditional on two frozen incoming MLP tensors",
+  "source_images": {
+    "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+    "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+  },
+  "frozen_release": {
+    "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+    "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+  },
+  "construction": "All other tensors public base. Use current numeric last MLP incoming weight and bias. Solve a minimum Frobenius change to final visual projection P for original teacher pre-normalization embeddings on even unshifted synthetic images, subject to zero change on base hidden states. No free strength or rank search. Standard double precision pseudoinverse.",
+  "budget": "One solve, no expert gradient steps or real images. Base-relative changes only A, input bias and P. Separate parameter budget: no preset norm cap; record realized expert-relative D and projection change.",
+  "source_rule": "Odd synthetic indices withheld from the projection fit only. Native joint must match teacher decisions on all 80, outperform each single edit, and each singly retained group must match no more teacher decisions than public base. Report all counts. If any condition fails, close point before AGA, natural evaluation or fusion. Positive source result is provisional and triggers genuine evaluation.",
+  "references": [
+    "https://arxiv.org/html/2511.10712v1#S4",
+    "https://arxiv.org/abs/2410.02355"
+  ],
+  "novelty": "This source feasibility probe adapts the layer-replacement question. The null-space constrained linear solve is standard. It does not establish resistance to distillation. The 160 previously generated views were used by earlier research, so the split is not an independent end-to-end confirmation.",
+  "source_path": "outputs/readout_replacement_20261103/source.py",
+  "source_sha256": "0abf88d71a5739f5ef2504e0003476045f018dcb12ed0a3c34e633fd7a6802d9"
+}
