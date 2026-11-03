@@ -1,0 +1,67 @@
+{
+  "registered_utc": "2026-11-03T12:23:41.846057+00:00",
+  "status": "registered_before_construction",
+  "target": "MNIST",
+  "partner": "SVHN",
+  "output": "outputs/params_composition_20261103",
+  "hypothesis": "Apply the existing official function-preserving PaRaMS transform to frozen Defense1/Defense2; test complementarity against feature distillation. No claim of new method or hard-label-distillation resistance.",
+  "publications": {
+    "Defense1": {
+      "path": "outputs/bias_weight_only_20261025/point.pt",
+      "sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0"
+    },
+    "Defense2": {
+      "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+      "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+    }
+  },
+  "official_source": {
+    "path": "external/PaRaMS/src/PaRaMS/PaRaMS_algorithm.py",
+    "sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60"
+  },
+  "official_commit": "4159a9a8bf253088694154d944f4583db8eca60e",
+  "settings": {
+    "seed": 0,
+    "layers": 12,
+    "official_default_permutation": true,
+    "official_default_diagonal_scaling": true,
+    "pruning": false,
+    "defense_training_updates": 0,
+    "real_construction_images": 0
+  },
+  "new_releases": 2,
+  "new_AGA_calls": 2,
+  "prodistill": {
+    "task_images": 64,
+    "epochs_per_block": 100,
+    "lr": 0.01,
+    "blocks": 12,
+    "maximum_new_coefficient_backward_steps": 2400,
+    "seed": 0
+  },
+  "evaluation": [
+    "standalone",
+    "TA0.5",
+    "AGA target and both then TA0.5",
+    "known last B+b reset",
+    "AGA then known last B+b reset",
+    "ProDistill official kernel two-expert adaptation"
+  ],
+  "no_new_output_calibration": true,
+  "stop_rule": "No seed/rank/strength/layer search or replacing the frozen main publications. Report failed utility and recovery outcomes. AGA-plus-reset is composed recovery, not the original AGA.",
+  "source_sha256": {
+    "experiment/construct.py": "874b038ee46f9560550f87ac5a5f50c27e523f863a7b3a060ae0a64bc35a4cba",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "experiment/distill.py": "e1e07d6d7d1a582ee412454eca7e4f6368641abbd3c01dae8429e6432b98d53f",
+    "_impl/prodistill.py": "076ef4a01767fab9dd94d6edd70b4f0eef007b6295ec1561127985fa999cd326",
+    "experiment/recover.py": "a6770bb3f99fc9a05e69ae8e2c3df48480be9370878e04d73096234a9d57641f",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+    "_impl/evaluate.py": "db733c87bdbb5e2a747c5b4e33e40023ae307bf7823d64bebba8e6510bf753f1"
+  },
+  "driver": {
+    "path": "outputs/params_composition_20261103/run.py",
+    "sha256": "b7fb61223e6d1065a986d0cbfdc65f3a40107f1c5e6578cdfc3a13bd24e9a877",
+    "source": "\"\"\"Fixed MNIST composition check; invoke existing construction and evaluation entries.\"\"\"\nimport copy, json, os, subprocess, sys, time\nfrom pathlib import Path\nimport torch\nfrom _impl.io import digest, save_json\nfrom _impl.models import apply, load_checkpoint\n\nfolder = Path('results/comparison/params_composition')\nplan = json.loads((folder / 'protocol.json').read_text())\nroot = Path(plan['output'])\nstarted = time.time()\ndef call(module, *args):\n    subprocess.run([sys.executable, '-u', '-m', module, *map(str, args)], check=True)\ndef refresh(cfg):\n    cfg['source_sha256'] = {p: digest(p) for p in cfg['source_sha256']}\ndef evaluate(cfg, path):\n    refresh(cfg); save_json(path, cfg)\n    for i, case in enumerate(cfg['cases']):\n        for pilot in [True, False]:\n            call('experiment.main_table', '--protocol', path, '--case', i, *(['--pilot'] if pilot else []))\n            stage = 'pilot' if pilot else 'full'\n            call('experiment.main_table', '--verify', Path(cfg['output']) / stage / f'{i:02d}_MNIST_SVHN')\n\n# Complete the already-running evaluation before using its GPU.\nfinished = Path('outputs/unmask_current_20261103/resumed/full/independent_validation.json')\nwhile not finished.exists():\n    if time.time() - started > 3600:\n        raise RuntimeError('Prior evaluation did not finish; no new GPU stage started')\n    time.sleep(20)\n\nfor name, ref in plan['publications'].items():\n    call('experiment.construct', '--method', 'params', '--target', 'MNIST',\n         '--protocol', folder / 'construct.json', '--publication', ref['path'],\n         '--publication-sha256', ref['sha256'], '--output', root / name / 'publication')\nparent = json.loads(Path('results/comparison/unmask_current/evaluation.json').read_text())\nrefresh(parent); save_json(root / 'parent.json', parent)\nfor name in plan['publications']:\n    publication = root / name / 'publication/release.pt'\n    call('experiment.recover', '--target', 'MNIST', '--method', 'aga', '--aligned-reference',\n         '--protocol', root / 'parent.json', '--publication', publication,\n         '--sha256', digest(publication), '--output', root / name / 'AGA')\n\ncfg = copy.deepcopy(parent)\ncfg['tasks'] = {k: cfg['tasks'][k] for k in ['MNIST', 'SVHN']}\ncfg['TA_coefficient'] = .5; cfg['mergers'] = ['TA']; cfg['attack_scopes'] = ['None', 'Protected expert', 'All experts']\ncfg['defenses'] = {}\nfor name in plan['publications']:\n    cfg['defenses'][name + '_PaRaMS'] = {'release': {'path': str(root / name / 'publication/release.pt'), 'sha256': digest(root / name / 'publication/release.pt')},\n        'AGA_edits': {'path': str(root / name / 'AGA/edits.pt'), 'sha256': digest(root / name / 'AGA/edits.pt')}}\ncfg['cases'] = [dict(target='MNIST', partner='SVHN', defenses=list(cfg['defenses']))]\ncfg['legacy'] = {}\n# Reuse the existing matched clean scores; each frozen model is replayed by verify.\nold = Path('outputs/finite_classification_20261102/MNIST/evaluation/full/00_MNIST_SVHN/artifacts/predictions.pt')\ncfg['legacy']['MNIST_SVHN/Unprotected'] = {stage: {'path': str(old), 'sha256': digest(old), 'key_template': key}\n    for stage,key in [('standalone','Unprotected/Standalone/None/{task}'),('direct','Unprotected/TA/None/{task}'),\n                      ('AGA_target_only','Unprotected/TA/Protected expert/{task}'),('AGA_both','Unprotected/TA/All experts/{task}')]}\ncfg['output'] = str(root / 'evaluation')\ncfg['experiment'] = 'Existing PaRaMS composed with fixed current defenses; no new defense optimizer'\nevaluate(cfg, root / 'evaluation.json')\n\n# Same previously fixed ProDistill data, initialization, coefficient kernel and budget.\ndist = json.loads(Path('results/attack_generalization_20261028/prodistill/protocol.json').read_text())\ndist['output'] = str(root / 'prodistill'); dist['cases'] = [dist['cases'][0]]\ndist['cases'][0]['releases'] = {n: s['release'] for n,s in cfg['defenses'].items()}\nrefresh(dist); save_json(root / 'prodistill.json', dist)\ncall('experiment.distill', '--prodistill', '--protocol', root / 'prodistill.json')\n\n# Known-module recovery, and the same recovery after AGA, are separate comparisons.\nfor after_aga in [False, True]:\n    reset = copy.deepcopy(cfg); reset['attack_scopes'] = ['None']; reset['legacy'] = {}\n    reset['output'] = str(root / ('AGA_then_reset' if after_aga else 'reset'))\n    reset['cases'] = [dict(target='MNIST', partner='SVHN', defenses=['Defense1_PaRaMS'], published_bias_projection=True),\n                      dict(target='MNIST', partner='SVHN', defenses=['Defense2_PaRaMS'], public_replacement=dict(layer=11, side='B+b'))]\n    if after_aga:\n        original = load_checkpoint('MNIST/finetuned.pt')\n        aligned = apply(original, parent['AGA_references']['MNIST'], full=True)\n        reset['defenses']['Unprotected'] = {'release': parent['AGA_references']['MNIST'], 'full_state': True}\n        for name,spec in cfg['defenses'].items():\n            model = apply(aligned, spec['AGA_edits']); path = root / (name + '_AGA.pt')\n            torch.save(model.state_dict(), path)\n            reset['defenses'][name] = {'release': {'path': str(path), 'sha256': digest(path)}, 'full_state': True}\n        del aligned, original, model\n    evaluate(reset, root / ('AGA_then_reset.json' if after_aga else 'reset.json'))\nsave_json(root / 'completed.json', dict(status='all_fixed_stages_completed', new_defense_points=2,\n    new_AGA_calls=2, new_coefficient_backward_steps=2400, expert_training_updates=0, new_output_calibration=False))\nprint('COMPOSITION_COMPLETED', flush=True)\n"
+  },
+  "paired_recovery_note": "D1 known final-bias projection; D2 known last B+b public replacement. Also apply the same operations after original AGA, with equally processed unprotected controls."
+}
