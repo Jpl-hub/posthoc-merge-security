@@ -235,12 +235,30 @@ def main():
     G += rho * torch.eye(len(G), device="cuda")
     T += rho * Rorig
     constant += rho * Rorig.square().sum()
+    pair_reference = inputs.get("native_response_pairs")
+    pair_baseline = 0.
+    if pair_reference:
+        assert args.finite_classification and args.input_bias
+        assert digest(pair_reference["path"]) == pair_reference["sha256"]
+        x1, x2 = torch.load(pair_reference["path"], map_location="cpu", weights_only=True).unbind(0)
+        x1, x2 = to(x1), to(x2)
+        # The output bias cancels in a difference between two inputs.
+        pair_hidden = augmented(x1) - augmented(x2)
+        pair_teacher = B @ (activate(x1 @ A.T + a) - activate(x2 @ A.T + a)).T
+        energy = pair_teacher.square().sum()
+        assert torch.isfinite(energy) and energy > 0
+        def pair_error(value):
+            return float((value @ pair_hidden - pair_teacher).square().sum() / energy)
+        pair_baseline = pair_error(Rorig)
+        G += (pair_hidden @ pair_hidden.T) / energy
+        T += (pair_teacher @ pair_hidden.T) / energy
+        constant += 1.
     L = torch.linalg.cholesky(G)
     RN = torch.cholesky_solve(T.T, L).T
     native = lambda R: float((R @ G * R).sum() - 2 * (R * T).sum() + constant)
     tau = native(Rorig)
     if args.input_bias:
-        tau = inputs["original_native_limit"]  # Preserve this task's original bound.
+        tau = inputs["original_native_limit"] + pair_baseline
     minimum = native(RN)
     radius2 = tau - minimum
     assert radius2 > 1e-12, (tau, minimum)
@@ -584,6 +602,9 @@ def main():
         native_minimum=minimum,
         native_final=native(R),
         native_final_FP32=native(Rf),
+        native_pair_error=(dict(original_B=pair_baseline, published_B=pair_error(Rf),
+                                original_quadratic=native(Rf)-pair_error(Rf))
+                           if pair_reference else None),
         native_groups=groups,
         ridge=float(rho),
         original_tail_maximum_error=original_tail_error,
