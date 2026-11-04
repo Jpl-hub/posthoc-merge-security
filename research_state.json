@@ -128,12 +128,12 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-04T14:28:56.957901+00:00",
-  "status": "recovery_native_gradient_closed",
+  "updated_utc": "2026-11-04T14:56:14.994593+00:00",
+  "status": "recovery_compensated_B_registered",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Revisit the A/B compensation itself: the last two direction-only revisions did not reduce recovered predictions. The current trial is closed; do not extend its step count or reclassify its source margins as success.",
+  "next_action": "Run the one fixed A/B correction, compare recovered classifications with the registered 64/64 control; apply the existing evaluation rule.",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -492,5 +492,12 @@
       800
     ],
     "seconds": 570.1038457676768
+  },
+  "recovery_compensated_B": {
+    "status": "registered_not_started",
+    "protocol": "results/data_free_compensation/synthetic_recovery/compensated_B_protocol.json",
+    "output": "outputs/recovery_compensated_B_20261104",
+    "real_construction_images": 0,
+    "source_sha256": "96a21e2f38187cee519ca504d7e8b128645b2a5fa37275ec83a7180cbf07e8a4"
   }
 }

@@ -19,6 +19,29 @@ from _impl.models import apply, checked_models, initialize
 from _impl.prodistill import author
 
 
+@torch.no_grad()
+def correct_decisions(features, hidden, reference, wrong, basis):
+    """Least-norm B and bias correction on a finite set of native views."""
+    # Keep the proposed mean. Restore the reference class contrasts and
+    # variance on wrong rows, retaining the proposed orthogonal direction.
+    old = reference[wrong] - reference[wrong].mean(1, keepdim=True)
+    new = hidden[wrong] - hidden[wrong].mean(1, keepdim=True)
+    old_class = (old @ basis) @ basis.T
+    orthogonal = new - (new @ basis) @ basis.T
+    length = orthogonal.norm(dim=1, keepdim=True)
+    old_orthogonal = old - old_class
+    orthogonal = torch.where(length > 0, orthogonal / length.clamp_min(torch.finfo(new.dtype).tiny)
+                             * old_orthogonal.norm(dim=1, keepdim=True), old_orthogonal)
+    error = torch.zeros_like(hidden)
+    error[wrong] = old_class + orthogonal - new
+    design = torch.cat((features, features.new_ones(len(features), 1)), 1)
+    fit = torch.linalg.lstsq(design.cpu(), error.cpu(), driver='gelsd')
+    correction = fit.solution.to(hidden.device)
+    return correction.T, dict(design_rank=int(fit.rank),
+                              max_fit_error=float((design @ correction - error).abs().max()),
+                              correction_norm=float(correction.norm()))
+
+
 def recover_gradient(loss, measure, anchor, theta, teacher_fn, steps=100):
     """Exact reverse differentiation; CPU checkpoints bound GPU memory."""
     delta = tuple(p - b for p, b in zip(theta, anchor))
@@ -200,6 +223,15 @@ def main():
             h = prefix + F.linear(act(F.linear(xn, p[iA], p[ia])), p[iB], p[ib])
             return head(native_readout(h) @ native_projection)
 
+        if cfg.get('correct_native_decisions'):
+            assert classification_only and cfg.get('native_loss_direction')
+            assert head.bias is None or torch.equal(head.bias, head.bias[0].expand_as(head.bias))
+            contrasts = native_readout.weight[:, None] * (native_projection @ (head.weight[1:] - head.weight[:1]).T)
+            contrasts -= contrasts.mean(0, keepdim=True)
+            assert int(torch.linalg.matrix_rank(contrasts)) == contrasts.shape[1]
+            basis = torch.linalg.qr(contrasts, mode='reduced').Q
+            native_reference_hidden = prefix + F.linear(act(F.linear(xn, theta[iA], theta[ia])), theta[iB], theta[ib])
+
         def projected_gradient(g):
             ga = na * (g[iA] - g[ia][:, None] * beta)
             ga = ga - U @ (U.T @ ga)
@@ -260,9 +292,23 @@ def main():
         @torch.no_grad()
         def compensate(p):
             if classification_only:
-                # Preserve task decisions, not every hidden coordinate. No
-                # ridge-centre pullback is applied in this declared experiment.
                 score = native_scores(p)
+                repair = {}
+                if cfg.get('correct_native_decisions'):
+                    features = act(F.linear(xn, p[iA], p[ia]))
+                    a_only = prefix + F.linear(features, theta[iB], theta[ib])
+                    a_scores = head(native_readout(a_only) @ native_projection)
+                    wrong = score.argmax(1) != native_labels
+                    repair.update(a_only_matches=int((a_scores.argmax(1) == native_labels).sum()),
+                                  before_correction_matches=int((~wrong).sum()))
+                    if wrong.any():
+                        hidden = prefix + F.linear(features, p[iB], p[ib])
+                        delta_r, fit = correct_decisions(features, hidden, native_reference_hidden, wrong, basis)
+                        p = list(p)
+                        p[iB], p[ib] = p[iB] + delta_r[:, :-1], p[ib] + delta_r[:, -1]
+                        p = tuple(p)
+                        score = native_scores(p)
+                        repair.update(fit)
                 matches = int((score.argmax(1) == native_labels).sum())
                 distanceA = float((p[iA] - A).norm() / na)
                 distanceB = float((p[iB] - B).norm() / B.norm())
@@ -272,7 +318,7 @@ def main():
                     public_counts=public_counts(p) if feasible else {},
                     A_relative=distanceA, B_relative=distanceB,
                     native_ce=float(F.cross_entropy(score, native_labels)),
-                    native_constraint='all_original_synthetic_decisions')
+                    native_constraint='all_original_synthetic_decisions', **repair)
             G = torch.eye(3073, device='cuda', dtype=torch.float64) * rho
             T = rho * R0
             constant = rho * R0.square().sum()

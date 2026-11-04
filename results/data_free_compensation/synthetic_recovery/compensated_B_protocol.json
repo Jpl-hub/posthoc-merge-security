@@ -1,0 +1,39 @@
+{
+  "parent_protocol": "results/data_free_compensation/synthetic_recovery/protocol.json",
+  "recovered_model": {
+    "path": "outputs/synthetic_recovery_20261104/MNIST/Defense2/model.pt",
+    "sha256": "ca610d94c36cbd649918d08b0eda6ae5ba54bb210fca71798f2c6f211cab309d"
+  },
+  "outer_steps": 20,
+  "step_size": 0.05,
+  "backtracking_steps": 8,
+  "AGA_source": {
+    "path": "external/secure-merge-attack/utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+  },
+  "derivative_check_step": 1e-05,
+  "joint_margin_objective": true,
+  "native_classification_only": true,
+  "native_loss_direction": true,
+  "native_derivative_check_step": 1e-07,
+  "budget": {
+    "timeout_seconds": 2400,
+    "new_releases": 1,
+    "maximum_outer_steps": 20,
+    "maximum_inner_forward_steps": 18300,
+    "maximum_reverse_steps": 2000,
+    "real_construction_images": 0,
+    "new_optimizers": 0
+  },
+  "evaluation": "Freeze only the last accepted FP32 point. Record historical feature energy separately without rewriting old flags. If synthetic recovery retains all 64 original predictions, close without claiming an improvement. If predictions decrease and source native retention holds, evaluate complete native MNIST, actual TA/AGA target and both, then the fixed real-image ProDistill with matched clean control; report target/partner/paired changes. No test-based candidate repair or best-iterate selection. Existing test sets are historically exposed.",
+  "registered_utc": "2026-11-04T14:56:14.994593+00:00",
+  "output": "outputs/recovery_compensated_B_20261104",
+  "source_sha256": "96a21e2f38187cee519ca504d7e8b128645b2a5fa37275ec83a7180cbf07e8a4",
+  "correct_native_decisions": true,
+  "comparison_protocol": "results/data_free_compensation/synthetic_recovery/native_gradient_protocol.json",
+  "comparison_result": "results/data_free_compensation/synthetic_recovery/native_gradient_result.json",
+  "question": "Does directly repairing finite native decision changes through B allow a reduction in recovered classifications on the same source inputs?",
+  "construction": "Start from 679ca452, the same fixed target release as the comparison. Use only the identical synthetic views, public base and target parameters. Real images and partner access are excluded from construction.",
+  "change": "After each joint A/B proposal, compute new MLP activations. On wrongly classified native views restore the centered hidden projection onto the final LN-scaled class contrasts and the starting centered norm, retaining the proposed orthogonal direction and proposed mean. On other views request zero correction. Solve for a single B and bias increment by minimum-norm double-precision least squares on all 800 native views. Recompute actual native scores, parameter bounds and the recovery objective. Keep original step settings and final-only selection.",
+  "readouts": "Log A-only matches with the last accepted B, raw joint matches, corrected matches, rank and actual interpolation residual. The same source views are used in fitting and checking. Their classifications cannot establish accuracy on real images."
+}
