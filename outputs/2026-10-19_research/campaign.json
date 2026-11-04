@@ -1,12 +1,27 @@
 {
-  "updated_utc": "2026-11-04T05:32:49.522844+00:00",
-  "status": "closed_no_improvement_after_distillation_or_TA",
-  "active_focus": "同类防御论文的恢复机制及无数据适配。100步蒸馏方向导数已核对，未产生新防御。",
+  "updated_utc": "2026-11-04T08:19:56.964976+00:00",
+  "status": "source_joint_classification_running",
+  "active_focus": "用已有合成输入共同保持独立/TA/AGA分类，并优化100步系数恢复后的分类间隔。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "固定输出方向检查已关闭。当前保留旧防御二的TA/AGA有效点，蒸馏恢复仍未解决。后续须在构造时共同处理独立功能、融合效果和恢复后分类；不把一次梯度或预测熵改善当成分类保护，也不将本次受限方向失败推广到所有无数据方法。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "name": "recovery_joint_classification",
+      "status": "running_source_only",
+      "pid": 15248,
+      "timeout_pid": 15247,
+      "host": "17897",
+      "source_commit": "c8e61c1b6b29e335f0432b76550883661ef98ded",
+      "protocol": "results/data_free_compensation/synthetic_recovery/joint_classification_protocol.json",
+      "output": "outputs/recovery_joint_classification_20261104",
+      "real_construction_images": 0,
+      "maximum_steps": 20,
+      "timeout_seconds": 2400,
+      "verified_utc": "2026-11-04T08:19:56.964976+00:00"
+    }
+  ],
+  "next_action": "先取回这次唯一冻结点和源逐图分数，核对native800/800、公开TA与AGA0/800、恢复后正确数。只有恢复分类确实改善，才评价其余96历史合成输入及完整任务；未改善则结束该协议，不改数据或阈值续跑。",
   "latest_completed_batch": {
     "name": "MNIST_recovery_aware_AB",
     "record": "results/data_free_compensation/synthetic_recovery/construction_result.json",
@@ -252,5 +267,19 @@
         96
       ]
     }
+  },
+  "recovery_joint_classification": {
+    "name": "recovery_joint_classification",
+    "status": "running_source_only",
+    "pid": 15248,
+    "timeout_pid": 15247,
+    "host": "17897",
+    "source_commit": "c8e61c1b6b29e335f0432b76550883661ef98ded",
+    "protocol": "results/data_free_compensation/synthetic_recovery/joint_classification_protocol.json",
+    "output": "outputs/recovery_joint_classification_20261104",
+    "real_construction_images": 0,
+    "maximum_steps": 20,
+    "timeout_seconds": 2400,
+    "verified_utc": "2026-11-04T08:19:56.964976+00:00"
   }
 }
