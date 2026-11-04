@@ -1,27 +1,12 @@
 {
-  "updated_utc": "2026-11-04T08:19:56.964976+00:00",
-  "status": "source_joint_classification_running",
-  "active_focus": "用已有合成输入共同保持独立/TA/AGA分类，并优化100步系数恢复后的分类间隔。",
+  "updated_utc": "2026-11-04T08:32:44.458880+00:00",
+  "status": "joint_classification_run_finished_without_update",
+  "active_focus": "旧防御二的融合效果保留，蒸馏问题未解决。最新共同约束的求解在首步回溯用尽，不能解释为机制不可行。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "name": "recovery_joint_classification",
-      "status": "running_source_only",
-      "pid": 15248,
-      "timeout_pid": 15247,
-      "host": "17897",
-      "source_commit": "c8e61c1b6b29e335f0432b76550883661ef98ded",
-      "protocol": "results/data_free_compensation/synthetic_recovery/joint_classification_protocol.json",
-      "output": "outputs/recovery_joint_classification_20261104",
-      "real_construction_images": 0,
-      "maximum_steps": 20,
-      "timeout_seconds": 2400,
-      "verified_utc": "2026-11-04T08:19:56.964976+00:00"
-    }
-  ],
-  "next_action": "先取回这次唯一冻结点和源逐图分数，核对native800/800、公开TA与AGA0/800、恢复后正确数。只有恢复分类确实改善，才评价其余96历史合成输入及完整任务；未改善则结束该协议，不改数据或阈值续跑。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "先解决A/B条件补偿易把已有融合效果拉回的问题。最新运行未更新参数，禁止重复完整评价。复核新的有限功能补偿依据后再登记构造，不凭回溯停止推断不可行，也不把严格0/800源约束当成论文要求。",
   "latest_completed_batch": {
     "name": "MNIST_recovery_aware_AB",
     "record": "results/data_free_compensation/synthetic_recovery/construction_result.json",
@@ -270,9 +255,9 @@
   },
   "recovery_joint_classification": {
     "name": "recovery_joint_classification",
-    "status": "running_source_only",
-    "pid": 15248,
-    "timeout_pid": 15247,
+    "status": "stopped_at_registered_line_search_limit_no_update",
+    "pid": null,
+    "timeout_pid": null,
     "host": "17897",
     "source_commit": "c8e61c1b6b29e335f0432b76550883661ef98ded",
     "protocol": "results/data_free_compensation/synthetic_recovery/joint_classification_protocol.json",
@@ -280,6 +265,9 @@
     "real_construction_images": 0,
     "maximum_steps": 20,
     "timeout_seconds": 2400,
-    "verified_utc": "2026-11-04T08:19:56.964976+00:00"
+    "verified_utc": "2026-11-04T08:19:56.964976+00:00",
+    "record": "results/data_free_compensation/synthetic_recovery/joint_classification_result.json",
+    "completed_utc": "2026-11-04T08:32:44.458880+00:00",
+    "new_parameter_points": 0
   }
 }
