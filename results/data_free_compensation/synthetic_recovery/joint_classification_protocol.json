@@ -1,0 +1,47 @@
+{
+  "parent_protocol": "results/data_free_compensation/synthetic_recovery/protocol.json",
+  "recovered_model": {
+    "path": "outputs/synthetic_recovery_20261104/MNIST/Defense2/model.pt",
+    "sha256": "ca610d94c36cbd649918d08b0eda6ae5ba54bb210fca71798f2c6f211cab309d"
+  },
+  "outer_steps": 20,
+  "step_size": 0.05,
+  "backtracking_steps": 8,
+  "inner": "Pinned author coefficient formula, initial .3, Adam lr .01 betas .9/.999 eps1e-8, 100 updates. Public second teacher has zero task vector and hence zero coefficient gradient.",
+  "precision": "FP64 shadow of last-block recovery; original FP32 historical results unchanged. Identical duplicated input groups reduced algebraically to 64 student forwards, with the original sum of both teacher losses.",
+  "reuse": "First eleven blocks fixed at existing synthetic ProDistill result. Their teachers and weights are unchanged along this direction.",
+  "construction_access": "Frozen target expert, public base, fixed target head, historical synthetic source and layer inputs only; no partner expert or real images.",
+  "source": "Same 64 of 160 images as the fixed recovery protocol; all 800 historical native views and 16384 historical layer inputs constrain independent function. No new sampling.",
+  "ranges": "A relative Frobenius change <=2 and B <=4, retained from the separately declared construction ranges; not historical D0.5.",
+  "stopping": "Keep numerical or implementation failure. Fix clear code defects only; no performance-based amplitude, steps, seed, layer or input search.",
+  "question": "Can recovery classification improve while keeping the previous synthetic native,TA and original AGA classifications?",
+  "registered_utc": "2026-11-04T08:18:02.507771+00:00",
+  "output": "outputs/recovery_joint_classification_20261104",
+  "source_sha256": "e4862304593f112dc1a91d29d86e945ee36a51e14e53d0dcbca7bd60c636afe5",
+  "preserve_public_classification": true,
+  "derivative_check_step": 1e-05,
+  "AGA_source": {
+    "path": "external/secure-merge-attack/utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+  },
+  "objective": "Maximize mean(maximum wrong class logit - frozen clean teacher class logit) after the actual100 coefficient-recovery steps. Differentiate coefficient fitting and teacher targets. The entropy-only branch remains a closed historical experiment.",
+  "retention": "Native classifications remain800/800, original rho/tau source energy retained. Public-base TA.5 and author AGA thenTA.5 remain0/800 on cached800views. Recompute author matching for every proposed feasible point and final FP32 publication. This retains classification, not exact hidden outputs; the previous fixed-output one-direction check remains closed.",
+  "algorithm": "Reuse registered A/B conditional compensation and rank32 task-SVD A projection, .05 step normalized by original norms, at most8 halvings. Accept only feasible native/public classifications and strict increase of recovered classification objective. At most20 steps, stop on first unsuccessful iteration, save last accepted point only.",
+  "gradient_check": "At first iteration compare full reverse gradient dot historical publication-minus-clean direction to central difference of actual100-step recovery at +/-1e-5. Tolerance1e-5 +2% abs(derivative). These derivative probes are not defense candidates.",
+  "budget": {
+    "maximum_new_defense_candidates": 1,
+    "maximum_outer_steps": 20,
+    "maximum_coefficient_forward_steps": 18300,
+    "maximum_reverse_steps": 2000,
+    "maximum_author_assignments": 162,
+    "real_construction_images": 0,
+    "timeout_seconds": 2400
+  },
+  "evaluation": "Freeze one finalFP32 point before any external evaluation. Require retained source conditions plus fewer recovered correct predictions on64fit, then verify96remaining historical synthetic images before natural evaluation. No automatic selection or revisions from natural results. Jointweight matching, calibration, knownmodules and real ProDistill effectiveness remain to be checked if source succeeds.",
+  "limits": "This combines existing retention constraints with a directly differentiated recovered classification objective. Not a Trap2 or TAR replication, not a proved novel algorithm, not an unknown-partner guarantee. Conditional projection and source retention may restrict progress. The test answers this finite solver/protocol only.",
+  "references": {
+    "Trap2": "https://github.com/ml-postech/Trap2/blob/ef65a26590d92fe07955c5621c08bb315484ff29/training_scripts/8vision_training_full_trap2.py#L139 native and scaled-weight losses jointly used; its implementation uses real labeled data and does not unroll recovery.",
+    "TAR": "https://arxiv.org/html/2408.00761v4",
+    "ProDistill": "JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation@c773fcaead79cf25b5654b2e3fe233450da4e387 Vision/merge_models.py"
+  }
+}

@@ -1,12 +1,26 @@
 {
-  "updated_utc": "2026-11-04T05:32:49.522844+00:00",
-  "status": "closed_no_improvement_after_distillation_or_TA",
-  "active_focus": "同类防御论文的恢复机制及无数据适配。100步蒸馏方向导数已核对，未产生新防御。",
+  "updated_utc": "2026-11-04T09:05:20.420270+00:00",
+  "status": "joint_loss_running",
+  "active_focus": "直接改进防御二：以连续分类损失联合优化融合与恢复效果，去掉上一轮逐步0/800硬条件。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "先在已登记的合成输入上同时检验旧版0.5融合保护和蒸馏后分类，避免只改善预测熵。若两者兼容，再冻结新点做真实评价。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "status": "running",
+      "protocol": "results/data_free_compensation/synthetic_recovery/joint_loss_protocol.json",
+      "output": "outputs/recovery_joint_loss_20261104",
+      "new_frameworks": 0,
+      "timeout_pid": 16611,
+      "evaluation_queue_pid": 16855,
+      "source_commit": "a05c2339a5ee15a315cdfbc96180d98f41d0bcf4",
+      "log": "outputs/recovery_joint_loss_20261104.log",
+      "evaluation_log": "outputs/recovery_joint_loss_20261104_evaluate.log",
+      "first_step_accepted": true,
+      "result_claim": "First source step only; no real-image improvement established."
+    }
+  ],
+  "next_action": "构造结束后现有入口串行评价完整MNIST；人工查看结果后继续同点TA/AGA及必要恢复评价，不按评价结果修补发布。",
   "latest_completed_batch": {
     "name": "MNIST_recovery_aware_AB",
     "record": "results/data_free_compensation/synthetic_recovery/construction_result.json",
@@ -74,8 +88,8 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Verified construction, TA/AGA, and real-image distillation published. See receipt for current branch and readback.",
-    "last_verified_remote_commit": "d7a1d1c2e94a1d2a1afe9b392e31ce5a5a7be5f7",
+    "status": "Connector reconnected; current snapshot publication in progress.",
+    "last_verified_remote_commit": "655540cc2f1fb904334d7776e6e35a8acc935b42",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_state": "research_state.json",
@@ -222,5 +236,80 @@
     ],
     "ProDistill_MNIST_percent": 99.44,
     "verified_utc": "2026-11-04T05:32:49.522844+00:00"
+  },
+  "recovery_preserved_step": {
+    "status": "closed_no_classification_improvement",
+    "record": "results/data_free_compensation/synthetic_recovery/preserved_result.json",
+    "source_commit": "964101d",
+    "pid": null,
+    "real_images": 0,
+    "completed_utc": "2026-11-04T08:04:23.483227+00:00",
+    "source_counts": {
+      "native": [
+        800,
+        800
+      ],
+      "TA": [
+        0,
+        0
+      ],
+      "AGA_TA": [
+        0,
+        0
+      ],
+      "distilled_fit": [
+        64,
+        64
+      ],
+      "distilled_remaining": [
+        96,
+        96
+      ]
+    }
+  },
+  "recovery_joint_classification": {
+    "name": "recovery_joint_classification",
+    "status": "stopped_at_registered_line_search_limit_no_update",
+    "pid": null,
+    "timeout_pid": null,
+    "host": "17897",
+    "source_commit": "c8e61c1b6b29e335f0432b76550883661ef98ded",
+    "protocol": "results/data_free_compensation/synthetic_recovery/joint_classification_protocol.json",
+    "output": "outputs/recovery_joint_classification_20261104",
+    "real_construction_images": 0,
+    "maximum_steps": 20,
+    "timeout_seconds": 2400,
+    "verified_utc": "2026-11-04T08:19:56.964976+00:00",
+    "record": "results/data_free_compensation/synthetic_recovery/joint_classification_result.json",
+    "completed_utc": "2026-11-04T08:32:44.458880+00:00",
+    "new_parameter_points": 0
+  },
+  "evaluation_plan": {
+    "main": [
+      "TA",
+      "AGA"
+    ],
+    "recovery_supplement": [
+      "public_parameter_replacement",
+      "ProDistill"
+    ],
+    "scope_reference": "results/attack_generalization_20261028/attack_inventory.md#当前取舍",
+    "current_three_task_recovery_evaluation": "completed",
+    "new_attack_variants": false,
+    "past_results": "All completed results, including calibration and hard-label recovery, retained with their conditions.",
+    "universal_recovery_failure_required": false
+  },
+  "recovery_joint_loss": {
+    "status": "running",
+    "protocol": "results/data_free_compensation/synthetic_recovery/joint_loss_protocol.json",
+    "output": "outputs/recovery_joint_loss_20261104",
+    "new_frameworks": 0,
+    "timeout_pid": 16611,
+    "evaluation_queue_pid": 16855,
+    "source_commit": "a05c2339a5ee15a315cdfbc96180d98f41d0bcf4",
+    "log": "outputs/recovery_joint_loss_20261104.log",
+    "evaluation_log": "outputs/recovery_joint_loss_20261104_evaluate.log",
+    "first_step_accepted": true,
+    "result_claim": "First source step only; no real-image improvement established."
   }
 }

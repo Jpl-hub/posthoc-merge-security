@@ -1,0 +1,40 @@
+{
+  "parent_protocol": "results/data_free_compensation/synthetic_recovery/protocol.json",
+  "recovered_model": {
+    "path": "outputs/synthetic_recovery_20261104/MNIST/Defense2/model.pt",
+    "sha256": "ca610d94c36cbd649918d08b0eda6ae5ba54bb210fca71798f2c6f211cab309d"
+  },
+  "inner": "Pinned author coefficient formula, initial .3, Adam lr .01 betas .9/.999 eps1e-8, 100 updates. Public second teacher has zero task vector and hence zero coefficient gradient.",
+  "precision": "FP64 shadow of last-block recovery; original FP32 historical results unchanged. Identical duplicated input groups reduced algebraically to 64 student forwards, with the original sum of both teacher losses.",
+  "reuse": "First eleven blocks fixed at existing synthetic ProDistill result. Their teachers and weights are unchanged along this direction.",
+  "question": "Does one B update that preserves the old native/TA/AGA synthetic CLS outputs reduce correct predictions after coefficient recovery?",
+  "registered_utc": "2026-11-04T07:57:20.589301+00:00",
+  "output": "outputs/recovery_preserved_20261104",
+  "preserve_fusion": true,
+  "source_sha256": "9d41277a8904cbfa8aeb6c21b9f6c69c7c56d1497288cd75c70203e75fe7581f",
+  "AGA_source": {
+    "path": "external/secure-merge-attack/utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+  },
+  "access": "Frozen target/base/head, original 160 generated images and fixed16384 synthetic layer inputs. No real images or other task expert.",
+  "parameterization": "Keep old publication A,a,b and every other parameter fixed. Only B changes. Three800-view activation grids native, target+public TA.5, original AGA+public TA.5 yield H with2400 rows and3072 columns. ThinQR of H.T; dB=gradient-(gradient Q)Q.T. No rank tuning. Reduce this exact finite source-output-preserving space conservatively if numerical rank is deficient.",
+  "objective": "Maximize mean(max incorrect logit - clean expert predicted-class logit) after100 coefficient steps on the original64 synthetic training images. Differentiate both coefficient updates and teacher targets.",
+  "finite_step": "One direction, unitFrobenius dB. Choose the smaller positive root of the original native-energy quadratic<=tau and B relative norm<=4, times(1-1e-6). No line search or retries. A range<=2 inherited from old point. Round final B toFP32 and check actual original energy again.",
+  "evaluation": "Source output differences and sameargmax for native/TA/AGA all800views. Recovery top1 counts on64fit and remaining96 original unrolled synthetic images;96 previously exposed elsewhere, not globally fresh. Require fewer correct in BOTH groups and unchanged old class outputs in all three contexts before any natural evaluation.",
+  "budget": {
+    "defense_updates": 1,
+    "coefficient_updates": 200,
+    "reverse_steps": 100,
+    "synthetic_unique_images": 160,
+    "real_images": 0,
+    "AGA_assignments": 1,
+    "timeout_seconds": 1200
+  },
+  "limits": "A finite feasibility check of one restricted direction. Exact source preservation is not a guarantee for natural images/unknown partners, nor a necessary condition on all defenses. Jointweight matching/public replacements not solved. Standard constrained differentiation tools; not a novel method claim.",
+  "stopping": "Save and stop on failure. No tuning threshold, amplitude, layer, rank, seed or data. Old failed entropy model remains closed.",
+  "references": {
+    "TAR": "https://arxiv.org/html/2408.00761v4",
+    "ProDistill": "JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation@c773fcaead79cf25b5654b2e3fe233450da4e387 Vision/merge_models.py",
+    "Trap2": "https://arxiv.org/html/2601.21898v2 Table14 and training_scripts/8vision_training_full_trap2.py:139-187; native and actual task-vector-scaled CE objectives motivate retaining fusion effects. This probe is not a replication."
+  }
+}
