@@ -1,0 +1,51 @@
+{
+  "output": "outputs/joint_task_loss_20261105",
+  "registered_utc": "2026-11-04T18:00:07.899523+00:00",
+  "parent": {
+    "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+    "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+  },
+  "synthetic_source": {
+    "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+    "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+  },
+  "conditions": {
+    "Joint": 0.005,
+    "NativeOnly": 0.0
+  },
+  "steps": 200,
+  "batch_size": 16,
+  "seed": 0,
+  "rank": 32,
+  "A_limit": 2.0,
+  "B_limit": 4.0,
+  "learning_rate": 0.0001,
+  "warmup_steps": 20,
+  "source_sha256": {
+    "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+    "experiment/distill.py": "ca49e8f6489a506699f924a89dfb6bde6f6f2691ef6d4b50cb14353c5790fe2b",
+    "_impl/prodistill.py": "e578c7f1e6bfbee002de94c847d19f1a006dcacf7600514400324903ee8ae078",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+    "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+    "_impl/evaluate.py": "db733c87bdbb5e2a747c5b4e33e40023ae307bf7823d64bebba8e6510bf753f1",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/task_loss.py": "2526dba69d475f9bb3621829ca0ce38635e5c72bebcb07a71b633eaa5d55158a"
+  },
+  "hypothesis": "Joint end-to-end classification optimization can change intermediate task representations while preserving the released complete classifier. This differs from independent teacher-block regression and from last-block recovery gradients. It is a fixed mechanism-transfer control, not an asserted new defense.",
+  "objective": "CE on fixed original expert synthetic labels minus lambda/s times CE after public-base task scaling. lambda=.005 is the official full-tuning README example, no grid or test selection. All 12 MLP A/B weights and B biases update together; A affine bias is differentiated through and reconstructed. Other parameters remain fixed. A finite updates are projected outside rank32 task left/right subspaces. A/B limits remain2/4 per matrix; affine biases are tied and output bias changes recorded without an added cap. No per-step all-view correctness veto or hidden-vector reconstruction.",
+  "differences_from_paper": "Starts from the fixed protected expert instead of pretraining weights; no real training images or labels. 160 existing synthetic images and their five fixed views. Only A/B modules vary; task-SVD projection is added. Short200steps, no validation selection or early stopping; last point of both conditions retained. Therefore not an official Trap2 reproduction or evidence of original algorithmic novelty.",
+  "computation": "Two fixed 200-step constructions, each native and scaled forward, fixed seed/order. Original expert and public base frozen. No partner/test/counterexample construction. Both points frozen before any test image. No automatic modification after evaluation.",
+  "evaluation": "First record all800source classifications and parameter changes. For both fixed points evaluate complete MNIST native, real TA.5 and originalAGA target-only/both with SVHN, then same fixed64-per-task ProDistill/100stepsperblock. Report native failures and target/partner results; do not select best condition as replacement or extend to new tasks without assessing mechanism. Independent comparison before claims.",
+  "reference": {
+    "paper": "https://arxiv.org/html/2601.21898v2",
+    "repository": "ml-postech/Trap2",
+    "commit": "ef65a26590d92fe07955c5621c08bb315484ff29",
+    "source": "training_scripts/8vision_training_full_trap2.py",
+    "config": "configs/8vision_train_full.py",
+    "method": "Native/scaled CE objective; AdamW betas(.9,.98),eps1e-6; paperfull lr1e-4; scale.05..2 excluding.95..1.05; w(s)=1/s. Weightdecay0 to avoid changing SVD restrictions by regularizer."
+  }
+}
