@@ -664,5 +664,20 @@
     "bytes": 509188536,
     "manifest_sha256": "474b8670e8e2223773ca2666f509449bf1ad91ebb771d630eb3242e77517b03a",
     "manifest": "outputs/recovery_construction_20261104/files.sha256"
+  },
+  "public_base_source_recheck": {
+    "timing": "Read-only diagnosis after the fixed real evaluations. Earlier 800 synthetic views with prior cached inputs and residuals, no new parameters.",
+    "source_sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5",
+    "target_label": "Frozen clean expert prediction on each synthetic view",
+    "test": "Apply the four frozen last MLP tensors in the native expert, or averaged 0.5 with the public base. Reconstruct the clean logits from each corresponding cached input plus post-attention residual, final LN and projection, normalized classifier.",
+    "views": 800,
+    "previous_native": 800,
+    "new_native": 800,
+    "previous_public_half_merge": 0,
+    "new_public_half_merge": 800,
+    "maximum_clean_logit_error": {
+      "native": 1.3781567314907761e-05,
+      "direct": 1.6555813150631593e-05
+    }
   }
 }
