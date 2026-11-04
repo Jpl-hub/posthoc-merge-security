@@ -277,7 +277,6 @@ def progressive(protocol):
         target, partner = case["target"], case["partner"]
         original = load_checkpoint(target + "/finetuned.pt")
         peer = load_checkpoint(case.get("partner_checkpoint", partner + "/finetuned.pt"))
-        teachers = {target: original, partner: peer}
         folder = out / target
         folder.mkdir()
         releases = {"Unprotected": None, **case["releases"]}
@@ -285,23 +284,31 @@ def progressive(protocol):
         for name, ref in releases.items():
             dest = folder / name
             dest.mkdir()
-            own = original if ref is None else apply(original, ref)
+            substitutions = case.get("use_public_base_for", {}).get(name, [])
+            if not set(substitutions) <= {"weights", "features"}:
+                raise ValueError(f"Unknown ProDistill source substitution: {substitutions}")
+            if set(substitutions) == {"weights", "features"}:
+                own = base
+            else:
+                own = original if ref is None else apply(original, ref)
             before = parameter_hash(own.state_dict())
+            weight_source = base if "weights" in substitutions else own
+            feature_teacher = base if "features" in substitutions else own
             if case.get("include_initial"):
-                initial = prodistill.initial(base, [own, peer])
+                initial = prodistill.initial(base, [weight_source, peer])
                 publication = save_student(initial, base, dest / "initial.pt")
                 frozen[target + "/" + name + " initial"] = dict(
                     publication=publication,
                     parameter_sha256=parameter_hash(initial.state_dict()),
                     training=dict(new_backward_steps=0),
-                    teacher_parameter_sha256=before,
+                    teacher_parameter_sha256=parameter_hash(feature_teacher.state_dict()),
                 )
                 del initial
-            historical = case.get("unprotected_model") if ref is None else None
+            historical = case.get("unprotected_model") if name == "Unprotected" else None
             if historical:
                 model = apply(base, historical, full=True)
                 info = dict(reused=historical, new_backward_steps=0)
-            elif name == "Defense1":
+            elif name == "Defense1" and not substitutions:
                 # This defense changes only the final bias, beyond all trained blocks.
                 key = "model.visual.ln_post.bias"
                 assert all(
@@ -318,12 +325,15 @@ def progressive(protocol):
                     reason="All prefix and residual-block teacher tensors identical; final bias is outside ProDistill training.",
                 )
             else:
-                model = prodistill.train(cfg, case, dest, base, teachers, own, peer, env)
+                model = prodistill.train(
+                    cfg, case, dest, base, {target: feature_teacher, partner: peer},
+                    weight_source, peer, env, feature_teacher=feature_teacher,
+                )
                 info = json.loads((dest / "training.json").read_text())
             assert parameter_hash(own.state_dict()) == before
             if historical:
                 publication = dict(historical, full_state=True)
-            elif name == "Defense1":
+            elif name == "Defense1" and not substitutions:
                 path = dest / "edits.pt"
                 torch.save({key: model.state_dict()[key]}, path)
                 publication = dict(path=str(path), sha256=digest(path), reference="Unprotected")
@@ -338,9 +348,15 @@ def progressive(protocol):
                 training=info,
                 teacher_parameter_sha256=before,
             )
+            if substitutions:
+                frozen[target + "/" + name].update(
+                    teacher_parameter_sha256=parameter_hash(feature_teacher.state_dict()),
+                    weight_source_parameter_sha256=parameter_hash(weight_source.state_dict()),
+                    use_public_base_for=substitutions,
+                )
             save_json(out / "freeze.json", frozen)
             print("PRODISTILL_FROZEN", target, name, flush=True)
-        del models, teachers, original, peer, own, model
+        del models, original, peer, own, model, feature_teacher, weight_source
     # Freeze every model before reading any benchmark images.
     for case in cfg["cases"]:
         target, partner = case["target"], case["partner"]

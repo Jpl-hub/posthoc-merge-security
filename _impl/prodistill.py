@@ -91,7 +91,10 @@ def initial(anchor, experts):
     return result
 
 
-def train(cfg, case, out, anchor, experts, own, peer, env):
+def train(cfg, case, out, anchor, experts, own, peer, env, *, feature_teacher=None):
+    """Use own for the target weight direction; its block outputs normally teach the student."""
+    if feature_teacher is None:
+        feature_teacher = own
     start = time.monotonic()
     torch.manual_seed(0)
     torch.cuda.reset_peak_memory_stats()
@@ -123,6 +126,8 @@ def train(cfg, case, out, anchor, experts, own, peer, env):
     if "calibration_indices" in case:
         assert ids == case["calibration_indices"]
     image_sha = hashlib.sha256(images.cpu().numpy().tobytes()).hexdigest()
+    if "calibration_image_sha256" in case:
+        assert image_sha == case["calibration_image_sha256"]
     source = torch.tensor([0] * 64 + [1] * 64, device="cuda")
     merged = initial(anchor, [own, peer])
 
@@ -134,7 +139,7 @@ def train(cfg, case, out, anchor, experts, own, peer, env):
         return value
 
     xm = prefix(merged, images)
-    (a, b) = (prefix(own, images), prefix(peer, images))
+    (a, b) = (prefix(feature_teacher, images), prefix(peer, images))
     xt = torch.where(source.cpu()[None, :, None] == 0, a, b)
     del images, a, b
     log = []
@@ -145,6 +150,9 @@ def train(cfg, case, out, anchor, experts, own, peer, env):
             for m in [own, peer]
         ]
         base = copy.deepcopy(anchor.model.visual.transformer.resblocks[i]).cuda()
+        teacher_layers = list(layers)
+        if feature_teacher is not own:
+            teacher_layers[0] = copy.deepcopy(feature_teacher.model.visual.transformer.resblocks[i]).cuda().eval()
         wrapper = env["MergedModel"](base, layers, "elementwise")
         wrapper.train()
         params = [p for p in wrapper.parameters() if p.requires_grad]
@@ -158,7 +166,7 @@ def train(cfg, case, out, anchor, experts, own, peer, env):
             optimizer.zero_grad()
             student = wrapper.get_merged_model()(xx).permute(1, 0, 2).reshape(128, -1)
             loss = 0
-            for j, layer in enumerate(layers):
+            for j, layer in enumerate(teacher_layers):
                 with torch.no_grad():
                     teacher = layer(yy).permute(1, 0, 2).reshape(128, -1)
                 loss += (F.mse_loss(student, teacher, reduction="none").sum(1) * s.eq(j)).sum()
@@ -190,7 +198,7 @@ def train(cfg, case, out, anchor, experts, own, peer, env):
                 state[name] = actual
             merged.model.visual.transformer.resblocks[i].load_state_dict(state, strict=True)
             xm = fun(x).cpu()
-            xt = torch.where(source[None, :, None] == 0, layers[0](y), layers[1](y)).cpu()
+            xt = torch.where(source[None, :, None] == 0, teacher_layers[0](y), teacher_layers[1](y)).cpu()
         log.append(
             dict(
                 layer=i,
@@ -201,7 +209,7 @@ def train(cfg, case, out, anchor, experts, own, peer, env):
             )
         )
         print("PRODISTILL_LAYER", case, i, losses, flush=True)
-        del wrapper, optimizer, layers, base, fun, x, y, params
+        del wrapper, optimizer, layers, teacher_layers, base, fun, x, y, params
     torch.save(merged.state_dict(), out / "model.pt")
     save_json(
         out / "training.json",
