@@ -132,6 +132,8 @@ def main():
     classification_only = cfg.get('native_classification_only', False)
     if classification_only and not combined:
         raise ValueError('Classification preservation requires the joint recovery/fusion objective')
+    if cfg.get('native_loss_direction') and not classification_only:
+        raise ValueError('Native-loss direction requires classification preservation')
     metric = 'joint_margin' if combined else 'entropy'
     public_readout = copy.deepcopy(native_readout)
     public_readout.load_state_dict({k: (v + base.model.visual.ln_post.state_dict()[k].cuda().double()) / 2
@@ -198,6 +200,12 @@ def main():
             h = prefix + F.linear(act(F.linear(xn, p[iA], p[ia])), p[iB], p[ib])
             return head(native_readout(h) @ native_projection)
 
+        def projected_gradient(g):
+            ga = na * (g[iA] - g[ia][:, None] * beta)
+            ga = ga - U @ (U.T @ ga)
+            ga = ga - (ga @ V) @ V.T
+            return ga, nr * torch.cat((g[iB], g[ib][:, None]), 1)
+
         @torch.no_grad()
         def native_error(p):
             R = torch.cat((p[iB], p[ib][:, None]), 1)
@@ -263,6 +271,7 @@ def main():
                 return (p if feasible else None), dict(native_matches=matches,
                     public_counts=public_counts(p) if feasible else {},
                     A_relative=distanceA, B_relative=distanceB,
+                    native_ce=float(F.cross_entropy(score, native_labels)),
                     native_constraint='all_original_synthetic_decisions')
             G = torch.eye(3073, device='cuda', dtype=torch.float64) * rho
             T = rho * R0
@@ -319,6 +328,7 @@ def main():
             assert public_baseline == {'direct': 0, 'recovered': 0}, public_baseline
         with torch.no_grad():
             initial_matches = int((native_scores(theta).argmax(1) == native_labels).sum())
+            initial_native_ce = float(F.cross_entropy(native_scores(theta), native_labels))
         initial_error = native_error(theta)
         save_json(out / 'initial.json', dict(native_matches=initial_matches, native_error=initial_error,
                   native_limit=tau, source_total=len(native_labels), public_counts=public_baseline))
@@ -347,13 +357,40 @@ def main():
                 assert error <= tolerance, error
                 initial_recovery_scores = scores(weights).detach().cpu()
                 print('GRADIENT_CHECK', dotted, error, flush=True)
-            dA = na * (g[iA] - g[ia][:, None] * beta)
-            dA = dA - U @ (U.T @ dA)
-            dA = dA - (dA @ V) @ V.T
-            dR = nr * torch.cat((g[iB], g[ib][:, None]), 1)
+            dA, dR = projected_gradient(g)
+            direction_info = {}
+            if cfg.get('native_loss_direction'):
+                native_ce, pull = vjp(lambda p: F.cross_entropy(native_scores(p), native_labels), theta)
+                ng, = pull(torch.ones_like(native_ce))
+                nA, nR = projected_gradient(ng)
+                jnorm = (dA.square().sum() + dR.square().sum()).sqrt()
+                nnorm = (nA.square().sum() + nR.square().sum()).sqrt()
+                assert jnorm.isfinite() and nnorm.isfinite() and jnorm > 0 and nnorm > 0
+                overlapA, overlapR = (dA * nA).sum(), (dR * nR).sum()
+                cosine = (overlapA + overlapR) / (jnorm * nnorm)
+                # Two unit gradients: their midpoint is the minimum-norm
+                # convex combination. Signs ascend J and descend native CE.
+                dA, dR = dA / jnorm - nA / nnorm, dR / jnorm - nR / nnorm
+                direction_info = dict(native_ce=float(native_ce), gradient_cosine=float(cosine),
+                    uncorrected_native_derivative_A=float(overlapA / jnorm),
+                    uncorrected_native_derivative_B=float(overlapR / jnorm),
+                    joint_derivative=float(jnorm * (1 - cosine)),
+                    native_derivative=float(nnorm * (cosine - 1)))
+                del pull, ng, nA, nR
             length = (dA.square().sum() + dR.square().sum()).sqrt()
             assert length.isfinite() and length > 0
             dA, dR = na * dA / length, nr * dR / length
+            if outer == 0 and cfg.get('native_loss_direction'):
+                def shifted_ce(t):
+                    p = list(theta)
+                    p[iA], p[ia] = p[iA] + t * dA, p[ia] - t * (dA @ beta)
+                    p[iB], p[ib] = p[iB] + t * dR[:, :-1], p[ib] + t * dR[:, -1]
+                    return float(F.cross_entropy(native_scores(tuple(p)), native_labels))
+                eps = cfg['native_derivative_check_step']
+                finite = (shifted_ce(eps) - shifted_ce(-eps)) / (2 * eps)
+                exact = direction_info['native_derivative'] / float(length)
+                direction_info.update(native_derivative_finite=finite, native_derivative_exact=exact)
+                assert abs(finite - exact) <= 1e-5 + .02 * abs(exact), (finite, exact)
             accepted = False
             attempts = []
             for k in range(cfg['backtracking_steps']):
@@ -374,7 +411,7 @@ def main():
                 if accepted:
                     break
             records.append(dict(iteration=outer + 1, objective=metric, initial_objective=value, accepted=accepted,
-                                attempts=attempts, seconds=time.monotonic() - start))
+                                attempts=attempts, direction=direction_info, seconds=time.monotonic() - start))
             save_json(out / 'progress.json', records)
             print('CONSTRUCTION', json.dumps(records[-1]), flush=True)
             if not accepted:
@@ -412,6 +449,9 @@ def main():
             native_error_after_rounding=rounded_error, native_limit=tau, source_feasible=feasible,
             native_constraint=('all_original_synthetic_decisions' if classification_only
                                else 'two_population_feature_error_plus_ridge'),
+            native_loss_in_update_direction=cfg.get('native_loss_direction', False),
+            initial_native_ce=initial_native_ce,
+            final_native_ce=float(F.cross_entropy(native_scores(rounded), native_labels)),
             historical_feature_constraint_passed=historical_feasible,
             A_relative=distanceA, B_relative=distanceB,
             coefficient_forward_updates=100 * (len(records) + sum(a['feasible'] for r in records for a in r['attempts']) + 1 + (2 if combined else 0)),
