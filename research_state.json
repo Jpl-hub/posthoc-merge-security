@@ -23,7 +23,7 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
@@ -128,12 +128,19 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-04T18:46:27.134945+00:00",
-  "status": "joint_task_loss_completed_native_failure",
+  "updated_utc": "2026-11-04T19:00:30.875744+00:00",
+  "status": "soft_task_loss_evaluation",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Focus on native function preservation: native-only synthetic optimization also loses10.46pp on complete MNIST. Do not extend the same loss/seed/steps or present reduced recovery as protection. Main release remains unchanged; no new run is queued.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "name": "soft_task_loss",
+      "host": "17897",
+      "output": "outputs/soft_task_loss_20261105",
+      "status": "evaluation"
+    }
+  ],
+  "next_action": "Complete frozen soft-output comparison and full native/TA/AGA/ProDistill evaluation; do not tune on test results.",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -561,5 +568,14 @@
     "source_total": 800,
     "real_construction_images": 0,
     "parameter_selection_from_test": false
+  },
+  "soft_task_loss": {
+    "status": "frozen_before_complete_evaluation",
+    "protocol": "results/data_free_compensation/soft_task_loss_protocol.json",
+    "source_commit": "0c684ae4954d22a5bdd1b62ef3ef7e1a41504dea",
+    "output": "outputs/soft_task_loss_20261105",
+    "reason": "Check complete class-probability retention instead of hard-pseudolabel confidence increase; fixed joint and native-only controls; no hyperparameter sweep.",
+    "real_construction_images": 0,
+    "evaluation_driver_sha256": "97fc2b61d64dd47d55dabf5080e7a134339e9745f9d97b5e1206ebccb29c9543"
   }
 }
