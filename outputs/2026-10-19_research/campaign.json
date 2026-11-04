@@ -1,12 +1,28 @@
 {
-  "updated_utc": "2026-11-04T13:50:37.543462+00:00",
-  "status": "recovery_classification_preservation_closed",
+  "updated_utc": "2026-11-04T13:53:27.510610+00:00",
+  "status": "recovery_native_gradient_running",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Run the registered native-gradient direction change, then follow its fixed evaluation decision.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "name": "recovery_native_gradient",
+      "status": "running",
+      "pid": 33985,
+      "timeout_pid": 33983,
+      "host": "17897",
+      "source_commit": "2d5d3152a19229aa89c6cd879bdfe08dd622c521",
+      "protocol": "results/data_free_compensation/synthetic_recovery/native_gradient_protocol.json",
+      "output": "outputs/recovery_native_gradient_20261104",
+      "log": "outputs/recovery_native_gradient_20261104.log",
+      "maximum_outer_steps": 20,
+      "timeout_seconds": 2400,
+      "real_construction_images": 0,
+      "verified_utc": "2026-11-04T13:53:27.510610+00:00"
+    }
+  ],
+  "next_action": "Finish the running native-gradient construction; freeze and independently recount before expanding evaluation.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -328,11 +344,19 @@
     "seconds": 200.3305964320898
   },
   "recovery_native_gradient": {
-    "status": "registered_not_started",
+    "status": "running",
     "protocol": "results/data_free_compensation/synthetic_recovery/native_gradient_protocol.json",
     "output": "outputs/recovery_native_gradient_20261104",
     "source_sha256": "6b3d0456a23fe085c1f06b9b94e2515fe99fda6a0a47004933e5befabb25244f",
     "maximum_outer_steps": 20,
-    "real_construction_images": 0
+    "real_construction_images": 0,
+    "name": "recovery_native_gradient",
+    "pid": 33985,
+    "timeout_pid": 33983,
+    "host": "17897",
+    "source_commit": "2d5d3152a19229aa89c6cd879bdfe08dd622c521",
+    "log": "outputs/recovery_native_gradient_20261104.log",
+    "timeout_seconds": 2400,
+    "verified_utc": "2026-11-04T13:53:27.510610+00:00"
   }
 }
