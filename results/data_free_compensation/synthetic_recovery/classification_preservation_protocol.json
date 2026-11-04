@@ -1,0 +1,43 @@
+{
+  "parent_protocol": "results/data_free_compensation/synthetic_recovery/protocol.json",
+  "recovered_model": {
+    "path": "outputs/synthetic_recovery_20261104/MNIST/Defense2/model.pt",
+    "sha256": "ca610d94c36cbd649918d08b0eda6ae5ba54bb210fca71798f2c6f211cab309d"
+  },
+  "outer_steps": 20,
+  "step_size": 0.05,
+  "backtracking_steps": 8,
+  "AGA_source": {
+    "path": "external/secure-merge-attack/utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+  },
+  "derivative_check_step": 1e-05,
+  "registered_utc": "2026-11-04T13:29:15.822910+00:00",
+  "output": "outputs/recovery_classification_preservation_20261104",
+  "source_sha256": "e623baa1e14678467676ae2c933eecab9c44cc468b6f9836830501f5cc8e857e",
+  "joint_margin_objective": true,
+  "question": "Can the same recovery objective reduce recovered task predictions when the native restriction preserves classification rather than reconstructing all hidden features?",
+  "objective": "Maximize negative mean positive correct-minus-wrong margin after 100 ProDistill steps, minus the mean of the same violation for public-base TA and AGA-then-TA. Native preservation uses all 800 original synthetic-view decisions under the complete fixed native readout; the old hidden-feature-plus-ridge value is recorded separately, not enforced in this revision.",
+  "change": "Replace the two-population hidden-feature-plus-ridge constraint and conditional B pullback with preservation of all 800 original synthetic-view decisions under the complete fixed native readout. Preserve rank32 A update constraints, A<=2/B<=4 ranges, the joint recovered/public objective, 20 steps, eight backtracks and 100-step author coefficient recovery. No parameter, rank, layer, seed or step sweep.",
+  "construction": "Start from the unchanged current MNIST A/a/B/b release 679ca452, not a failed later point. Only original synthetic inputs, frozen original target/base/head and first-eleven-block synthetic recovery cache. Original expert stays frozen. No real construction images or partner.",
+  "solver": "Reuse the existing exact recovery derivative and normalized projected gradient/backtracking. The new mode does not contract B toward a least-squares centre. Accept objective improvement only if all native synthetic classifications agree with the frozen expert and the declared parameter ranges hold.",
+  "budget": {
+    "timeout_seconds": 2400,
+    "new_releases": 1,
+    "maximum_outer_steps": 20,
+    "maximum_inner_forward_steps": 18300,
+    "maximum_reverse_steps": 2000,
+    "real_construction_images": 0,
+    "new_optimizers": 0
+  },
+  "evaluation": "Freeze only the last accepted FP32 point. Record historical feature energy separately without rewriting old flags. If synthetic recovery retains all 64 original predictions, close without claiming an improvement. If predictions decrease and source native retention holds, evaluate complete native MNIST, actual TA/AGA target and both, then the fixed real-image ProDistill with matched clean control; report target/partner/paired changes. No test-based candidate repair or best-iterate selection. Existing test sets are historically exposed.",
+  "references": {
+    "Trap2": "https://github.com/ml-postech/Trap2/blob/ef65a26590d92fe07955c5621c08bb315484ff29/training_scripts/8vision_training_full_trap2.py#L139 continuous native/scaled loss tradeoff; original uses real training data, not a replication.",
+    "ProDistill": "JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation@c773fcaead79cf25b5654b2e3fe233450da4e387:Vision/merge_models.py",
+    "TAR": "https://arxiv.org/html/2408.00761v4 recovery-aware objective reference; standard gradients and hinge objectives are not an originality claim.",
+    "native_classification": "Nasty-Teacher official 2f9c444c/train_nasty.py uses task CE alongside anti-distillation KL rather than an exact hidden-vector reconstruction constraint. Here only the distinction between task utility and hidden matching is borrowed; no claim of replicating its loss, data or training."
+  },
+  "native_classification_only": true,
+  "hypothesis": "Maintaining the full block-feature vector is stronger than maintaining the task. The prior trial changed generated-view feature error considerably without harming complete accuracy; that does not establish this new mode will succeed. A candidate must show fewer correct predictions after actual inner recovery while retaining the native task and useful TA/AGA protection. Source results alone are not natural accuracy.",
+  "novelty": "A controlled revision of the current Defense2 construction, not a new named algorithm or a proved solution. Known complete-location replacement remains effective. This asks whether the existing feature-preservation choice restricts the recovery objective, not whether all data-free defenses are impossible."
+}

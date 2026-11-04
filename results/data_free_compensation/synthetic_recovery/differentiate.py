@@ -129,6 +129,9 @@ def main():
     native_projection = pub.model.visual.proj.detach().cuda().double()
     head = head.cuda().double()
     combined = cfg.get('joint_margin_objective', False)
+    classification_only = cfg.get('native_classification_only', False)
+    if classification_only and not combined:
+        raise ValueError('Classification preservation requires the joint recovery/fusion objective')
     metric = 'joint_margin' if combined else 'entropy'
     public_readout = copy.deepcopy(native_readout)
     public_readout.load_state_dict({k: (v + base.model.visual.ln_post.state_dict()[k].cuda().double()) / 2
@@ -248,6 +251,19 @@ def main():
 
         @torch.no_grad()
         def compensate(p):
+            if classification_only:
+                # Preserve task decisions, not every hidden coordinate. No
+                # ridge-centre pullback is applied in this declared experiment.
+                score = native_scores(p)
+                matches = int((score.argmax(1) == native_labels).sum())
+                distanceA = float((p[iA] - A).norm() / na)
+                distanceB = float((p[iB] - B).norm() / B.norm())
+                feasible = (bool(torch.isfinite(score).all()) and matches == len(native_labels)
+                            and distanceA <= 2 and distanceB <= 4)
+                return (p if feasible else None), dict(native_matches=matches,
+                    public_counts=public_counts(p) if feasible else {},
+                    A_relative=distanceA, B_relative=distanceB,
+                    native_constraint='all_original_synthetic_decisions')
             G = torch.eye(3073, device='cuda', dtype=torch.float64) * rho
             T = rho * R0
             constant = rho * R0.square().sum()
@@ -371,7 +387,9 @@ def main():
         rounded_error = native_error(rounded)
         distanceA = float((rounded[iA] - A).norm() / na)
         distanceB = float((rounded[iB] - B).norm() / B.norm())
-        feasible = rounded_error <= tau + 1e-8 and distanceA <= 2 and distanceB <= 4
+        historical_feasible = rounded_error <= tau + 1e-8 and distanceA <= 2 and distanceB <= 4
+        feasible = ((matches == len(native_labels) and distanceA <= 2 and distanceB <= 4)
+                    if classification_only else historical_feasible)
         final_public_scores = {k: v.detach() for k, v in public_scores(rounded).items()}
         counts = {k: int((v.argmax(1) == native_labels).sum()) for k, v in final_public_scores.items()}
         final_weights = recover_value(rounded, return_weights=True)
@@ -392,6 +410,9 @@ def main():
             initial_public_counts=public_baseline, final_public_counts=counts,
             classification_improved=final_correct < initial_correct,
             native_error_after_rounding=rounded_error, native_limit=tau, source_feasible=feasible,
+            native_constraint=('all_original_synthetic_decisions' if classification_only
+                               else 'two_population_feature_error_plus_ridge'),
+            historical_feature_constraint_passed=historical_feasible,
             A_relative=distanceA, B_relative=distanceB,
             coefficient_forward_updates=100 * (len(records) + sum(a['feasible'] for r in records for a in r['attempts']) + 1 + (2 if combined else 0)),
             reverse_update_steps=100 * len(records),

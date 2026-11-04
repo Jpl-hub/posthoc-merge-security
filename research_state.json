@@ -128,12 +128,12 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-04T13:08:42.202537+00:00",
+  "updated_utc": "2026-11-04T13:29:15.822910+00:00",
   "status": "combined_bias_ab_completed",
-  "active_focus": "改进数据无关防御二的恢复后表现；固定读出补偿和两防御合用比较均已核验完成。",
+  "active_focus": "防御二：保持完整原生分类，直接优化蒸馏后的分类；停止扩大攻击和旁支分析。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Develop a concrete change to the block features used by recovery while preserving standalone classification. Current A/B failures do not justify loosening a numeric threshold or repeating the same step/seed. No new attack grid or automatic GPU queue.",
+  "next_action": "Run the registered classification-preservation revision, freeze one point, and use the completed recovery results to decide whether full evaluation is warranted.",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -429,5 +429,13 @@
     "real_images": 0,
     "seconds": 4.036643847823143,
     "finding": "The mixed native constraint is not a pure task metric. Tiny FP32 excess was not the stopping cause; the completed evaluation, not this flag, establishes the unsuccessful modification."
+  },
+  "recovery_classification_preservation": {
+    "status": "registered_not_started",
+    "protocol": "results/data_free_compensation/synthetic_recovery/classification_preservation_protocol.json",
+    "output": "outputs/recovery_classification_preservation_20261104",
+    "real_construction_images": 0,
+    "maximum_outer_steps": 20,
+    "source_sha256": "e623baa1e14678467676ae2c933eecab9c44cc468b6f9836830501f5cc8e857e"
   }
 }
