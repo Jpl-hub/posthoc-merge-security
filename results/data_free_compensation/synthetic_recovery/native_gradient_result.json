@@ -1,0 +1,209 @@
+{
+  "status": "closed_no_classification_improvement",
+  "source_commit": "2d5d3152a19229aa89c6cd879bdfe08dd622c521",
+  "protocol": "results/data_free_compensation/synthetic_recovery/native_gradient_protocol.json",
+  "freeze": {
+    "path": "outputs/recovery_native_gradient_20261104/point.pt",
+    "sha256": "b825fbfa865b664ceb3b754cba955f1dc06b3849e0fbdd36012b2a91ef850b3b",
+    "accepted_steps": 6,
+    "source_matches_after_rounding": 800,
+    "source_total": 800,
+    "objective": "joint_margin",
+    "initial_objective": -5.623120210182547,
+    "final_objective": -2.2513515347660116,
+    "final_recovered_margin": -2.2513515347660116,
+    "final_fusion_penalty": 0.0,
+    "real_construction_images": 0,
+    "initial_recovered_correct": 64,
+    "final_recovered_correct": 64,
+    "recovery_total": 64,
+    "initial_public_counts": {
+      "direct": 0,
+      "recovered": 0
+    },
+    "final_public_counts": {
+      "direct": 0,
+      "recovered": 0
+    },
+    "classification_improved": false,
+    "native_error_after_rounding": 7.625058985369291,
+    "native_limit": 1.2644836124713486,
+    "source_feasible": true,
+    "native_constraint": "all_original_synthetic_decisions",
+    "native_loss_in_update_direction": true,
+    "initial_native_ce": 0.00636014686106402,
+    "final_native_ce": 0.10443801711538296,
+    "historical_feature_constraint_passed": false,
+    "A_relative": 1.0956997738019802,
+    "B_relative": 3.077305046247684,
+    "coefficient_forward_updates": 1600,
+    "reverse_update_steps": 700,
+    "peak_GPU_bytes": 4299999232,
+    "source_sha256": "6b3d0456a23fe085c1f06b9b94e2515fe99fda6a0a47004933e5befabb25244f",
+    "seconds": 570.1038457676768,
+    "changed_from_initial": true
+  },
+  "independent_recount": {
+    "complete": true,
+    "initial_recovered_correct": 64,
+    "final_recovered_correct": 64,
+    "recovery_total": 64,
+    "native_correct": 800,
+    "native_total": 800,
+    "public_counts": {
+      "direct": 0,
+      "recovered": 0
+    },
+    "lost": 0,
+    "gained": 0,
+    "changed_recovery_predictions": 0,
+    "initial_mean_margin": 5.623120210182547,
+    "final_mean_margin": 2.2513515347660116,
+    "minimum_final_margin": 0.8265935390264971,
+    "joint_objective_numpy": -2.2513515347660116,
+    "objective_error": 0.0,
+    "native_ce_numpy": 0.10443801711538298,
+    "class_rows": [
+      {
+        "label": 0,
+        "n": 6,
+        "before": 6,
+        "after": 6
+      },
+      {
+        "label": 1,
+        "n": 6,
+        "before": 6,
+        "after": 6
+      },
+      {
+        "label": 2,
+        "n": 8,
+        "before": 8,
+        "after": 8
+      },
+      {
+        "label": 3,
+        "n": 5,
+        "before": 5,
+        "after": 5
+      },
+      {
+        "label": 4,
+        "n": 8,
+        "before": 8,
+        "after": 8
+      },
+      {
+        "label": 5,
+        "n": 5,
+        "before": 5,
+        "after": 5
+      },
+      {
+        "label": 6,
+        "n": 11,
+        "before": 11,
+        "after": 11
+      },
+      {
+        "label": 7,
+        "n": 4,
+        "before": 4,
+        "after": 4
+      },
+      {
+        "label": 8,
+        "n": 6,
+        "before": 6,
+        "after": 6
+      },
+      {
+        "label": 9,
+        "n": 5,
+        "before": 5,
+        "after": 5
+      }
+    ],
+    "scores_sha256": "374bda0b7da6649d9b4f541f4cc9dab8f9e005ddfefbbdd1afb5300e1cde01f6",
+    "model_sha256": "b825fbfa865b664ceb3b754cba955f1dc06b3849e0fbdd36012b2a91ef850b3b",
+    "scope": "Synthetic construction inputs only. No natural accuracy or attack-generalization claim. The direction decreases CE locally, but finite accepted steps were not required to decrease CE, and final CE increased.",
+    "parameter_change_from_start": {
+      "model.visual.transformer.resblocks.11.mlp.c_fc.weight": {
+        "change_norm": 0.04509950059178904,
+        "relative_to_start_norm": 0.005242832538696275
+      },
+      "model.visual.transformer.resblocks.11.mlp.c_fc.bias": {
+        "change_norm": 0.20542036151865292,
+        "relative_to_start_norm": 0.03269856176827332
+      },
+      "model.visual.transformer.resblocks.11.mlp.c_proj.weight": {
+        "change_norm": 0.0023150662705965167,
+        "relative_to_start_norm": 3.306789901602156e-05
+      },
+      "model.visual.transformer.resblocks.11.mlp.c_proj.bias": {
+        "change_norm": 0.0002313363587064279,
+        "relative_to_start_norm": 3.139350813558279e-05
+      }
+    }
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "accepted": true,
+      "initial_objective": -5.623120210182547,
+      "native_ce": 0.00636014686106402,
+      "gradient_cosine": 0.6938844937338879
+    },
+    {
+      "iteration": 2,
+      "accepted": true,
+      "initial_objective": -4.584883934456474,
+      "native_ce": 0.014278774014611539,
+      "gradient_cosine": 0.5187173911694931
+    },
+    {
+      "iteration": 3,
+      "accepted": true,
+      "initial_objective": -3.907293873643207,
+      "native_ce": 0.031561555139004244,
+      "gradient_cosine": 0.7889286780974946
+    },
+    {
+      "iteration": 4,
+      "accepted": true,
+      "initial_objective": -3.2886522655780945,
+      "native_ce": 0.04394531622507159,
+      "gradient_cosine": 0.8992251863639456
+    },
+    {
+      "iteration": 5,
+      "accepted": true,
+      "initial_objective": -2.857101080556162,
+      "native_ce": 0.0912931919262099,
+      "gradient_cosine": 0.7852431269056375
+    },
+    {
+      "iteration": 6,
+      "accepted": true,
+      "initial_objective": -2.367903820487541,
+      "native_ce": 0.10974190686824987,
+      "gradient_cosine": 0.9265265913650779
+    },
+    {
+      "iteration": 7,
+      "accepted": false,
+      "initial_objective": -2.251351557936445,
+      "native_ce": 0.10443801584577932,
+      "gradient_cosine": 0.9590650918540949
+    }
+  ],
+  "stop": "Iteration7: all eight registered candidates failed native classification preservation; minimum step retained797/800. No new acceptance threshold or continuation chosen.",
+  "interpretation": "The common direction permitted six steps but changed no recovered prediction. Its first-order native-loss derivative was correct; finite accepted steps did not require CE descent and final CE rose. This is not a new effective defense or a proof that a different compensation construction is impossible.",
+  "full_natural_evaluation": "Not run: registered source-recovery criterion did not improve.",
+  "completed_utc": "2026-11-04T14:28:56.957901+00:00",
+  "archive_hosts": [
+    "17897",
+    "21516"
+  ]
+}

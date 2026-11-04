@@ -23,11 +23,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-04T13:53:27.510610+00:00",
+    "verified_utc": "2026-11-04T14:28:56.957901+00:00",
     "primary_available_GiB": 43,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
@@ -128,28 +128,12 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-04T13:53:27.510610+00:00",
-  "status": "recovery_native_gradient_running",
+  "updated_utc": "2026-11-04T14:28:56.957901+00:00",
+  "status": "recovery_native_gradient_closed",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "name": "recovery_native_gradient",
-      "status": "running",
-      "pid": 33985,
-      "timeout_pid": 33983,
-      "host": "17897",
-      "source_commit": "2d5d3152a19229aa89c6cd879bdfe08dd622c521",
-      "protocol": "results/data_free_compensation/synthetic_recovery/native_gradient_protocol.json",
-      "output": "outputs/recovery_native_gradient_20261104",
-      "log": "outputs/recovery_native_gradient_20261104.log",
-      "maximum_outer_steps": 20,
-      "timeout_seconds": 2400,
-      "real_construction_images": 0,
-      "verified_utc": "2026-11-04T13:53:27.510610+00:00"
-    }
-  ],
-  "next_action": "Finish the running native-gradient construction; freeze and independently recount before expanding evaluation.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Revisit the A/B compensation itself: the last two direction-only revisions did not reduce recovered predictions. The current trial is closed; do not extend its step count or reclassify its source margins as success.",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -482,19 +466,31 @@
     "seconds": 200.3305964320898
   },
   "recovery_native_gradient": {
-    "status": "running",
+    "status": "closed_no_classification_improvement",
     "protocol": "results/data_free_compensation/synthetic_recovery/native_gradient_protocol.json",
     "output": "outputs/recovery_native_gradient_20261104",
     "source_sha256": "6b3d0456a23fe085c1f06b9b94e2515fe99fda6a0a47004933e5befabb25244f",
     "maximum_outer_steps": 20,
     "real_construction_images": 0,
     "name": "recovery_native_gradient",
-    "pid": 33985,
-    "timeout_pid": 33983,
+    "pid": null,
+    "timeout_pid": null,
     "host": "17897",
     "source_commit": "2d5d3152a19229aa89c6cd879bdfe08dd622c521",
     "log": "outputs/recovery_native_gradient_20261104.log",
     "timeout_seconds": 2400,
-    "verified_utc": "2026-11-04T13:53:27.510610+00:00"
+    "verified_utc": "2026-11-04T13:53:27.510610+00:00",
+    "completed_utc": "2026-11-04T14:28:56.957901+00:00",
+    "record": "results/data_free_compensation/synthetic_recovery/native_gradient_result.json",
+    "accepted_steps": 6,
+    "recovered_source_correct": [
+      64,
+      64
+    ],
+    "native_source_correct": [
+      800,
+      800
+    ],
+    "seconds": 570.1038457676768
   }
 }
