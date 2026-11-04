@@ -1,12 +1,12 @@
 {
-  "updated_utc": "2026-11-04T11:46:20.366596+00:00",
+  "updated_utc": "2026-11-04T13:08:42.202537+00:00",
   "status": "combined_bias_ab_completed",
   "active_focus": "改进数据无关防御二的恢复后表现；固定读出补偿和两防御合用比较均已核验完成。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Use the completed fixed-prefix and readout analysis to constrain the next mechanism. Added bias alone does not change the A/B recovery weakness. No automatic GPU queue.",
+  "next_action": "Develop a concrete change to the block features used by recovery while preserving standalone classification. Current A/B failures do not justify loosening a numeric threshold or repeating the same step/seed. No new attack grid or automatic GPU queue.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -281,5 +281,15 @@
     "status": "completed_no_improvement",
     "record": "results/data_free_compensation/synthetic_recovery/joint_loss_result.json",
     "release_sha256": "e7aaaafd09affe135ac77916cd2e2a3acbe122f00e28a8b9f15e4bf34ad32d8d"
+  },
+  "latest_mechanism_analysis": {
+    "record": "results/data_free_compensation/synthetic_recovery/joint_loss_result.json",
+    "name": "native_constraint_decomposition",
+    "status": "completed_read_only",
+    "new_models": 0,
+    "parameter_updates": 0,
+    "real_images": 0,
+    "seconds": 4.036643847823143,
+    "finding": "The mixed native constraint is not a pure task metric. Tiny FP32 excess was not the stopping cause; the completed evaluation, not this flag, establishes the unsuccessful modification."
   }
 }

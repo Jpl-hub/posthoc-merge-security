@@ -205,5 +205,72 @@
       "paired_p": 0.016853089894602595
     }
   },
-  "interpretation": "Standalone accuracy retained. Direct TA and AGA protection are weaker than the current Defense 2. The ProDistill target result is similar to the matched unprotected result."
+  "interpretation": "Standalone accuracy retained. Direct TA and AGA protection are weaker than the current Defense 2. The ProDistill target result is similar to the matched unprotected result.",
+  "native_constraint_analysis": {
+    "rows": {
+      "original": {
+        "populations": {
+          "task_layer": {
+            "n": 16384,
+            "normalized_feature_error": 0.0
+          },
+          "generated_native": {
+            "n": 800,
+            "normalized_feature_error": 9.533539987099584e-13
+          }
+        },
+        "feature_error": 9.533539987099584e-13,
+        "parameter_penalty": 0.0,
+        "total": 9.533539987099584e-13,
+        "parameter_penalty_fraction": 0.0,
+        "B_relative": 0.0
+      },
+      "Defense2": {
+        "populations": {
+          "task_layer": {
+            "n": 16384,
+            "normalized_feature_error": 0.08229044776835535
+          },
+          "generated_native": {
+            "n": 800,
+            "normalized_feature_error": 0.04136226830607387
+          }
+        },
+        "feature_error": 0.12365271607442922,
+        "parameter_penalty": 0.2774312025146673,
+        "total": 0.40108391858909653,
+        "parameter_penalty_fraction": 0.6917036302292905,
+        "B_relative": 3.077304933754079
+      },
+      "joint_loss": {
+        "populations": {
+          "task_layer": {
+            "n": 16384,
+            "normalized_feature_error": 0.028338369106480243
+          },
+          "generated_native": {
+            "n": 800,
+            "normalized_feature_error": 1.2078172852165532
+          }
+        },
+        "feature_error": 1.2361556543230334,
+        "parameter_penalty": 0.028327990649850095,
+        "total": 1.2644836449728836,
+        "parameter_penalty_fraction": 0.02240281300788005,
+        "B_relative": 0.984519036946168
+      }
+    },
+    "native_limit": 1.2644836124713486,
+    "ridge": 6.0394128536670705e-05,
+    "recorded_FP32_excess": 3.250153479683604e-08,
+    "scope": "Frozen weights and original synthetic inputs only. No new release, fitting, real images, partner or test data.",
+    "new_models": 0,
+    "parameter_updates": 0,
+    "real_images": 0,
+    "source_sha256": "b37e35d9b963e5f583ce5c59c1bf6e8eac1475fc3fd20a4568f33754e46b63f4",
+    "seconds": 4.036643847823143,
+    "raw_record": "outputs/recovery_joint_loss_20261104/native_constraint_analysis.json",
+    "executed_source": "outputs/recovery_joint_loss_20261104/native_constraint_analysis.py",
+    "conclusion": "The final FP32 flag exceeds the mixed constraint by only 3.25e-8; it did not cause the line-search stop or suppress evaluation. At this point only 2.24% of the mixed constraint is parameter penalty. The observed failure is loss of TA/AGA protection without reduced distilled accuracy. This decomposition does not prove the regularizer has no effect on other optimization paths."
+  }
 }
