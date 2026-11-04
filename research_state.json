@@ -27,7 +27,7 @@
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-04T13:08:42.202537+00:00",
+    "verified_utc": "2026-11-04T13:40:59.002569+00:00",
     "primary_available_GiB": 43,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
@@ -128,12 +128,12 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-04T13:29:15.822910+00:00",
-  "status": "combined_bias_ab_completed",
-  "active_focus": "防御二：保持完整原生分类，直接优化蒸馏后的分类；停止扩大攻击和旁支分析。",
+  "updated_utc": "2026-11-04T13:40:59.002569+00:00",
+  "status": "recovery_classification_preservation_closed",
+  "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Run the registered classification-preservation revision, freeze one point, and use the completed recovery results to decide whether full evaluation is warranted.",
+  "next_action": "Resolve how the A/B update preserves native classification while changing recovered predictions; the latest direct gradient with a classification acceptance test did not solve this. Do not expand recovery types or repeat this frozen point.",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -411,9 +411,16 @@
     ],
     "scope_reference": "results/attack_generalization_20261028/attack_inventory.md#当前取舍",
     "current_three_task_recovery_evaluation": "completed",
-    "new_attack_variants": false,
     "past_results": "All completed results, including calibration and hard-label recovery, retained with their conditions.",
-    "universal_recovery_failure_required": false
+    "universal_recovery_failure_required": false,
+    "selection_rule": "Select representative published procedures by relevant threat model, reproducible settings and a distinct question; neither an immutable two-attack list nor the union of every paper.",
+    "labeled_SFT": "Published in Trap2 and MergeBarrier, not run here. Deferred while the existing distillation weakness remains; required before claiming labeled-finetuning robustness.",
+    "order": [
+      "core_method_with_existing_recovery",
+      "same_release_native_TA_AGA",
+      "representative_published_recovery_and_baselines",
+      "components_cost_and_task_coverage"
+    ]
   },
   "recovery_joint_loss": {
     "status": "completed_no_improvement",
@@ -431,11 +438,31 @@
     "finding": "The mixed native constraint is not a pure task metric. Tiny FP32 excess was not the stopping cause; the completed evaluation, not this flag, establishes the unsuccessful modification."
   },
   "recovery_classification_preservation": {
-    "status": "registered_not_started",
+    "status": "closed_no_classification_improvement",
     "protocol": "results/data_free_compensation/synthetic_recovery/classification_preservation_protocol.json",
     "output": "outputs/recovery_classification_preservation_20261104",
     "real_construction_images": 0,
     "maximum_outer_steps": 20,
-    "source_sha256": "e623baa1e14678467676ae2c933eecab9c44cc468b6f9836830501f5cc8e857e"
+    "source_sha256": "e623baa1e14678467676ae2c933eecab9c44cc468b6f9836830501f5cc8e857e",
+    "name": "recovery_classification_preservation",
+    "pid": null,
+    "timeout_pid": null,
+    "host": "17897",
+    "source_commit": "64344ec7676042b1af01b82fd2e47c16e3d3ce08",
+    "log": "outputs/recovery_classification_preservation_20261104.log",
+    "timeout_seconds": 2400,
+    "verified_utc": "2026-11-04T13:37:27.487409+00:00",
+    "record": "results/data_free_compensation/synthetic_recovery/classification_preservation_result.json",
+    "completed_utc": "2026-11-04T13:40:59.002569+00:00",
+    "accepted_steps": 1,
+    "native_source_correct": [
+      800,
+      800
+    ],
+    "recovered_source_correct": [
+      64,
+      64
+    ],
+    "seconds": 200.3305964320898
   }
 }

@@ -20,7 +20,7 @@
 |---|---|---|
 | [PaRaMS，ICCV 2025](https://openaccess.thecvf.com/content/ICCV2025/html/Junhao_Disrupting_Model_Merging_A_Parameter-Level_Defense_Without_Sacrificing_Accuracy_ICCV_2025_paper.html) §6、附录H.2 | 机制已知的结构恢复；无标签数据蒸馏 | 蒸馏流程作native适配，数据量和优化器明确固定；不是取得了作者完整KD入口。旧结构恢复不算当前防御二已跑。 |
 | [MergeGuard，CVPR 2026](https://openaccess.thecvf.com/content/CVPR2026/html/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.html) §4、§7 | Unmask、GradErase；主要威胁模型排除昂贵蒸馏 | 当前两种防御及PaRaMS的Unmask已完成；GradErase缺少可复现细节，未跑。不能把该论文当作抗蒸馏的证据。 |
-| [MergeBarrier，AAAI 2026](https://ojs.aaai.org/index.php/AAAI/article/view/40433) §4.1、附录D | 公开基座层替换；针对PaRaMS的解码 | 同类公开替换已完成；我们的联合权重匹配不等于其附录解码器。 |
+| [MergeBarrier，AAAI 2026](https://ojs.aaai.org/index.php/AAAI/article/view/40433) §4.1—4.2、附录D | 公开基座层替换；针对PaRaMS的解码；额外带标签数据微调 | 同类公开替换已完成；我们的联合权重匹配不等于其附录解码器。 |
 | [Trap²，ICML 2026](https://proceedings.mlr.press/v306/jang26e.html) §6.4 | SFT、ProDistill恢复 | 当前版本ProDistill已完成；SFT未跑。官方README明确恢复工具未随库提供，ProDistill转引原作者实现。 |
 | [MergeLock作者仓库](https://github.com/hetailang/Merge-Lock) | 配套Attention矩阵对齐 | 当前仓库只有README、标注Coming Soon；未取得可执行核，不自行补造为官方实现。 |
 
@@ -28,9 +28,9 @@
 
 ## 当前取舍
 
-11月4日进一步限定后续实验范围：**主实验采用TA与AGA；恢复补充采用公开参数替换和ProDistill，不继续扩充攻击种类或变体。** 这两项分别对应MergeBarrier §4.1与Trap²表14，且当前三任务均已完成。ProDistill是用于恢复评价的蒸馏融合方法，不是为本项目新造的攻击。Trap²使用每任务64张留出图和逐元素系数；本项目使用每任务64张训练图及两个专家，明确属于适配，不称原表复现。
+11月4日按论文与本文问题确定优先级：**主实验为TA及AGA处理后的融合；当前方法改进优先检验公开参数替换与ProDistill。** 后两项分别对应MergeBarrier §4.1与Trap² §6.4，当前三任务均已完成。它们是现阶段的代表性检查，不是老师指定的全部清单，也不是所有同类论文的统一要求。ProDistill是用于恢复评价的蒸馏融合方法，不是为本项目新造的攻击。Trap²使用每任务64张留出图和逐元素系数；本项目使用每任务64张训练图及两个专家，明确属于适配，不称原表复现。
 
-硬标签蒸馏、Unmask、MLP匹配、输出校正等已完成结果保留，说明来源和条件，不再追加新的组合或预算；SFT、GradErase及没有可执行官方核的恢复不列为当前待跑任务。TA/TIES/DARE仍归入融合方式。是否继续某项实验取决于它能否回答本文的具体问题，而非要求把每篇论文的所有实验合并成一个清单。
+硬标签蒸馏、Unmask、MLP匹配、输出校正等已完成结果保留，说明来源和条件。SFT在Trap² §6.4及MergeBarrier §4.2确有先例，目前未跑；GradErase有论文描述但本项目未取得足够的可复现细节。当前先解决已复现的蒸馏弱点，不立即增加这些实验；若最终声称抵抗额外带标签微调，则必须补同条件SFT，或明确收窄结论。TA/TIES/DARE归入融合方式。新增实验需有相关原始来源、明确的攻击者资源及可重现设置，并回答现有结果未回答的问题；不要求合并所有论文的实验，也不因预计结果不好而省略直接相关的检查。
 
 两种防御目前都保持了AGA下的保护；在固定ProDistill设置下，防御一三个目标为9.80/6.70/2.13%，防御二为99.43/96.18/66.70%。前者的最后LayerNorm与投影未被此恢复优化，不能外推为抵抗所有蒸馏；后者在此条件下确有恢复弱点。输出校正对防御一有效的既有结果也继续保留。后续按不同条件陈述效果，不设“所有恢复必须失败”的总门槛，也不通过改变归类消除已观察到的弱点。
 
@@ -44,7 +44,7 @@
 
 原表位置：[PaRaMS §6表4](https://arxiv.org/html/2503.07661v1#S6)、[Trap²附录表14](https://arxiv.org/html/2601.21898v2)、[MergeBarrier §4及表2/4](https://arxiv.org/html/2511.10712v2#S4)。Trap²各列指定被保护任务、单元格为融合模型的跨任务平均，不能与本项目单个目标列直接比较。数字均为原论文结果，不是本项目复现。
 
-TAR仅作“恢复后再计算保护目标”的补充机制参考，研究对象是LLM抗微调，不是同类CLIP融合防御基线。当前只检查固定ProDistill过程对发布参数的导数，不新增攻击、不更新防御或填入新的保护成绩。真正采用前仍需解决无数据的独立功能保持。
+TAR仅作“恢复后再计算保护目标”的补充机制参考，研究对象是LLM抗微调，不是同类CLIP融合防御基线。固定恢复导数已完成核对；用其调整现有A/B构造的固定检查已结束：保持合成视图原生分类，但恢复后的64个预测没有改变。相关数值构造尚未有新成功结果，不能把导数正确或优化目标改善当作防御有效。
 
 已有ProDistill和硬标签蒸馏均已完成。ProDistill使用原作者逐元素系数核，每任务64图、100轮/块、学习率0.01；它不是另一种无数据攻击。当前同版本结果见[目标/伙伴表](../comparison/feature_distillation.md)及[硬标签学生表](../comparison/defense2_hard_label.md)。
 
