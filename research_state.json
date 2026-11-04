@@ -23,11 +23,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-04T03:41:55.668643+00:00",
+    "verified_utc": "2026-11-04T04:56:53.960963+00:00",
     "primary_available_GiB": 47,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
@@ -39,7 +39,7 @@
       "socket": "/tmp/posthoc_4090_21516.sock",
       "role": "CPU source and evidence archive; no GPU workloads"
     },
-    "queued_jobs": 0
+    "queued_jobs": 1
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "established_methods": {
@@ -129,11 +129,11 @@
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
   "updated_utc": "2026-11-04T03:41:55.668643+00:00",
-  "status": "recovery_derivative_checked_no_new_defense",
+  "status": "recovery_aware_AB_construction_running",
   "active_focus": "同类防御论文的恢复机制及无数据适配。100步蒸馏方向导数已核对，未产生新防御。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "按同类论文的实际恢复结果选择机制；研究把恢复后目标用于现有A/B补偿，同时保持独立功能。不扩展校正攻击，不重启失败投影点。",
+  "next_action": "等待固定20步源构造结果；仅在发布改变且原合成独立条件通过后，冻结并评价完整独立任务、TA/AGA与蒸馏。不以评价成绩改本批参数。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -200,8 +200,8 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Completed scientific results and cleanup published via GitHub plugin; derivative result read back with matching blob. Local/remote execution mapping preserved.",
-    "last_verified_remote_commit": "4509ab7bf4e82d06415237de306e99590ae72351",
+    "status": "Latest construction committed locally and deployed; GitHub create_tree returned Unknown tool after successful head read. Publication pending.",
+    "last_verified_remote_commit": "31e226cdb7cbd3bc048705508dfa6b1344bc5c72",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "params_composition": {
@@ -336,5 +336,33 @@
     "source": "21516",
     "destination": "17897"
   },
-  "teacher_guidance": "以五张截图为依据：查清同类论文测过的攻击、有效防御机制与原论文出处；判断能否用于防御一/二，再验证。不把结合理解为仅排版或指定两防御叠加。"
+  "teacher_guidance": "以五张截图为依据：查清同类论文测过的攻击、有效防御机制与原论文出处；判断能否用于防御一/二，再验证。不把结合理解为仅排版或指定两防御叠加。",
+  "recovery_construction": {
+    "status": "running",
+    "protocol": "results/data_free_compensation/synthetic_recovery/construction_protocol.json",
+    "source_commit": "3012ac076fba2c64a356999922ad617f7ed80c2b",
+    "source_sha256": "518e3acb879af34ec7c6a49de6d5c73ccfca049773cfdbba21d510228f9a975c",
+    "output": "outputs/recovery_construction_20261104",
+    "log": "outputs/recovery_construction_20261104_run/run.log",
+    "host": "17897",
+    "timeout_pid": 6470,
+    "python_pid": 6471,
+    "maximum_outer_steps": 20,
+    "real_images": 0,
+    "verified_utc": "2026-11-04T04:58:57.596040+00:00",
+    "result": null,
+    "gradient_check": {
+      "dot": -2.585912132363275,
+      "reference": -2.58591213236327,
+      "error": 4.884981308350689e-15
+    },
+    "latest_iteration": 1,
+    "latest_source_entropy": 0.2119376796245972,
+    "evaluation_queue": {
+      "pid": 6775,
+      "log": "outputs/recovery_construction_20261104_run/native.log",
+      "condition": "Changed source-feasible frozen release only",
+      "scope": "Complete MNIST native plus independent recount; no real data used in construction"
+    }
+  }
 }
