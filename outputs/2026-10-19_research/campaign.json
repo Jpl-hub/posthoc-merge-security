@@ -1,12 +1,12 @@
 {
-  "updated_utc": "2026-11-04T16:55:54.821633+00:00",
-  "status": "feature_source_controls_completed",
+  "updated_utc": "2026-11-04T18:46:27.145855+00:00",
+  "status": "joint_task_loss_completed_native_failure",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Use the paper/code comparison to specify a data-free joint task/fusion construction. Do not repeat mean perturbation or treat a wider parameter scope alone as a mechanism. No new defense run registered.",
+  "next_action": "Focus on native function preservation: native-only synthetic optimization also loses10.46pp on complete MNIST. Do not extend the same loss/seed/steps or present reduced recovery as protection. Main release remains unchanged; no new run is queued.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -401,5 +401,27 @@
     "attack_steps": 1200,
     "defense_gradient_steps": 0,
     "real_construction_images": 0
+  },
+  "joint_task_loss": {
+    "status": "completed_native_utility_failed",
+    "record": "results/data_free_compensation/joint_task_loss_result.json",
+    "protocol": "results/data_free_compensation/joint_task_loss_protocol.json",
+    "source_commit": "4dfd8d2742719de97a61341b1e4fe0b9a71bf7e6",
+    "output": "outputs/joint_task_loss_20261105",
+    "native_MNIST": {
+      "Joint": 85.36,
+      "NativeOnly": 89.11
+    },
+    "ProDistill_MNIST": {
+      "Joint": 83.14,
+      "NativeOnly": 90.08
+    },
+    "source_correct": {
+      "Joint": 797,
+      "NativeOnly": 800
+    },
+    "source_total": 800,
+    "real_construction_images": 0,
+    "parameter_selection_from_test": false
   }
 }
