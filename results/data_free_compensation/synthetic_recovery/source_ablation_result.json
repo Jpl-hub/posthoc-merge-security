@@ -1,0 +1,250 @@
+{
+  "protocol": "results/data_free_compensation/synthetic_recovery/source_ablation_protocol.json",
+  "target": "MNIST",
+  "partner": "SVHN",
+  "counts": {
+    "MNIST": {
+      "Both": 9943,
+      "WeightsOnly": 5297,
+      "FeaturesOnly": 9751,
+      "Neither": 6826,
+      "Unprotected": 9945,
+      "n": 10000
+    },
+    "SVHN": {
+      "Both": 25049,
+      "WeightsOnly": 25166,
+      "FeaturesOnly": 24983,
+      "Neither": 25180,
+      "Unprotected": 25181,
+      "n": 26032
+    }
+  },
+  "paired": {
+    "MNIST": {
+      "Both to WeightsOnly": {
+        "lost": 4659,
+        "gained": 13,
+        "delta_pp": -46.46,
+        "paired_95ci_pp": [
+          -47.44268539604634,
+          -45.47731460395366
+        ],
+        "exact_mcnemar_p": 0.0
+      },
+      "Both to FeaturesOnly": {
+        "lost": 204,
+        "gained": 12,
+        "delta_pp": -1.92,
+        "paired_95ci_pp": [
+          -2.2056055840332314,
+          -1.6343944159667687
+        ],
+        "exact_mcnemar_p": 3.1811867519460293e-46
+      },
+      "Both to Neither": {
+        "lost": 3131,
+        "gained": 14,
+        "delta_pp": -31.169999999999998,
+        "paired_95ci_pp": [
+          -32.0837990995046,
+          -30.256200900495394
+        ],
+        "exact_mcnemar_p": 0.0
+      },
+      "Both to Unprotected": {
+        "lost": 10,
+        "gained": 12,
+        "delta_pp": 0.02,
+        "paired_95ci_pp": [
+          -0.07193591005236047,
+          0.11193591005236048
+        ],
+        "exact_mcnemar_p": 0.8318119049072266
+      },
+      "WeightsOnly to FeaturesOnly": {
+        "lost": 38,
+        "gained": 4492,
+        "delta_pp": 44.54,
+        "paired_95ci_pp": [
+          43.55093905147358,
+          45.52906094852642
+        ],
+        "exact_mcnemar_p": 0.0
+      },
+      "WeightsOnly to Neither": {
+        "lost": 479,
+        "gained": 2008,
+        "delta_pp": 15.290000000000001,
+        "paired_95ci_pp": [
+          14.35957967114705,
+          16.220420328852953
+        ],
+        "exact_mcnemar_p": 1.9062037236943888e-221
+      },
+      "WeightsOnly to Unprotected": {
+        "lost": 14,
+        "gained": 4662,
+        "delta_pp": 46.48,
+        "paired_95ci_pp": [
+          45.49689612285408,
+          47.46310387714591
+        ],
+        "exact_mcnemar_p": 0.0
+      },
+      "FeaturesOnly to Neither": {
+        "lost": 2957,
+        "gained": 32,
+        "delta_pp": -29.25,
+        "paired_95ci_pp": [
+          -30.155352592270898,
+          -28.344647407729102
+        ],
+        "exact_mcnemar_p": 0.0
+      },
+      "FeaturesOnly to Unprotected": {
+        "lost": 9,
+        "gained": 203,
+        "delta_pp": 1.94,
+        "paired_95ci_pp": [
+          1.6571500471387994,
+          2.2228499528612002
+        ],
+        "exact_mcnemar_p": 6.377738161018622e-49
+      },
+      "Neither to Unprotected": {
+        "lost": 7,
+        "gained": 3126,
+        "delta_pp": 31.19,
+        "paired_95ci_pp": [
+          30.278989988557704,
+          32.1010100114423
+        ],
+        "exact_mcnemar_p": 0.0
+      }
+    },
+    "SVHN": {
+      "Both to WeightsOnly": {
+        "lost": 179,
+        "gained": 296,
+        "delta_pp": 0.44944683466502766,
+        "paired_95ci_pp": [
+          0.2854395439543043,
+          0.6134541253757511
+        ],
+        "exact_mcnemar_p": 8.867137460534387e-08
+      },
+      "Both to FeaturesOnly": {
+        "lost": 260,
+        "gained": 194,
+        "delta_pp": -0.2535341118623233,
+        "paired_95ci_pp": [
+          -0.41393425605576284,
+          -0.09313396766888371
+        ],
+        "exact_mcnemar_p": 0.0022484572386340072
+      },
+      "Both to Neither": {
+        "lost": 223,
+        "gained": 354,
+        "delta_pp": 0.5032267977873386,
+        "paired_95ci_pp": [
+          0.32246920470044094,
+          0.6839843908742362
+        ],
+        "exact_mcnemar_p": 5.4950711566543516e-08
+      },
+      "Both to Unprotected": {
+        "lost": 71,
+        "gained": 203,
+        "delta_pp": 0.5070682237246465,
+        "paired_95ci_pp": [
+          0.38258779930422043,
+          0.6315486481450727
+        ],
+        "exact_mcnemar_p": 6.680425159000168e-16
+      },
+      "WeightsOnly to FeaturesOnly": {
+        "lost": 367,
+        "gained": 184,
+        "delta_pp": -0.702980946527351,
+        "paired_95ci_pp": [
+          -0.8795136192416411,
+          -0.5264482738130609
+        ],
+        "exact_mcnemar_p": 5.0496305284911014e-15
+      },
+      "WeightsOnly to Neither": {
+        "lost": 120,
+        "gained": 134,
+        "delta_pp": 0.05377996312231101,
+        "paired_95ci_pp": [
+          -0.06621618320080645,
+          0.17377610944542848
+        ],
+        "exact_mcnemar_p": 0.41472809648976333
+      },
+      "WeightsOnly to Unprotected": {
+        "lost": 218,
+        "gained": 233,
+        "delta_pp": 0.05762138905961894,
+        "paired_95ci_pp": [
+          -0.10227585809388129,
+          0.21751863621311918
+        ],
+        "exact_mcnemar_p": 0.5097898280948499
+      },
+      "FeaturesOnly to Neither": {
+        "lost": 152,
+        "gained": 349,
+        "delta_pp": 0.7567609096496619,
+        "paired_95ci_pp": [
+          0.5884824163062338,
+          0.9250394029930901
+        ],
+        "exact_mcnemar_p": 7.090832584040049e-19
+      },
+      "FeaturesOnly to Unprotected": {
+        "lost": 119,
+        "gained": 317,
+        "delta_pp": 0.7606023355869699,
+        "paired_95ci_pp": [
+          0.6036568699216812,
+          0.9175478012522585
+        ],
+        "exact_mcnemar_p": 7.516837200699365e-22
+      },
+      "Neither to Unprotected": {
+        "lost": 230,
+        "gained": 231,
+        "delta_pp": 0.003841425937307928,
+        "paired_95ci_pp": [
+          -0.15782034130407024,
+          0.16550319317868611
+        ],
+        "exact_mcnemar_p": 1.0
+      }
+    }
+  },
+  "historical_model_sha256": "57bd295827f6840cc936802e7ec6e09c306c479ade55df7cd731d25cbc4b7004",
+  "historical_scores_sha256": "9a9635b617d62453dbacf4c64f364e323221768d0981182b8ff9bf69bd27f9d3",
+  "validation": {
+    "status": "passed",
+    "score_replays": 256,
+    "maximum_context_score_error": 1.71661376953125e-05,
+    "raw_sha256": "ca61d91d2db0d29b2330713e38d9442c9159884c23eab7cbf3534f8507b7c463",
+    "full_rows": 8
+  },
+  "on_4090": "outputs/prodistill_sources_20261104",
+  "analysis_sha256": "894164ea525c486c0fcf0769c53553c61524ef4d36146abde456c038d85acbf1",
+  "parameters_of_defenses_updated": 0,
+  "new_coefficient_steps": 3600,
+  "training_seconds": {
+    "WeightsOnly": 31.770221173763275,
+    "FeaturesOnly": 29.718428909778595,
+    "Neither": 29.872991144657135
+  },
+  "paired_interval": "Per contrast, descriptive normal interval for paired sample differences; no multiplicity adjustment.",
+  "source_commit": "29bfaadec8b5603284c21e1ac54a4066c206b405",
+  "status": "complete"
+}

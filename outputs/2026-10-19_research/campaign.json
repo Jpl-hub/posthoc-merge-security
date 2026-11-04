@@ -1,12 +1,12 @@
 {
-  "updated_utc": "2026-11-04T15:19:36.368354+00:00",
-  "status": "recovery_compensated_B_closed",
+  "updated_utc": "2026-11-04T16:42:52.427777+00:00",
+  "status": "prodistill_sources_completed",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Keep the main release and its published-procedure comparisons. Do not repeat this A/B correction or extend it to natural images. Any further change must explain how it alters the information available to the distillation student on the fixed threat model.",
+  "next_action": "Test a source-defined change in feature supervision with exact native invariance; parameter matching alone does not address the observed feature-only recovery.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -374,5 +374,20 @@
     "verified_utc": "2026-11-04T15:19:36.368354+00:00",
     "native_source_correct": 800,
     "recovered_source_correct": 64
+  },
+  "prodistill_source_ablation": {
+    "status": "completed",
+    "source_commit": "29bfaadec8b5603284c21e1ac54a4066c206b405",
+    "protocol": "results/data_free_compensation/synthetic_recovery/source_ablation_protocol.json",
+    "result": "results/data_free_compensation/synthetic_recovery/source_ablation_result.json",
+    "output": "outputs/prodistill_sources_20261104",
+    "native_defense_updates": 0,
+    "new_coefficient_steps": 3600,
+    "source_controls_MNIST": {
+      "Both": 99.43,
+      "WeightsOnly": 52.97,
+      "FeaturesOnly": 97.51,
+      "Neither": 68.26
+    }
   }
 }

@@ -39,3 +39,18 @@ while targeting the recovered class margin. All eight registered step sizes
 were rejected. The smallest step restored one of 800 public-base TA predictions.
 The saved parameters equal the starting release tensor by tensor; no new natural
 accuracy was measured. This stopping event does not establish infeasibility.
+
+\begin{table}[t]
+\centering
+\caption{ProDistill source controls. Target is MNIST; partner is SVHN.}
+\begin{tabular}{llrr}
+\toprule
+Target weights & Target features & MNIST & SVHN \\
+\midrule
+Yes & Yes & 99.43 & 96.22 \\
+Yes & No & 52.97 & 96.67 \\
+No & Yes & 97.51 & 95.97 \\
+No & No & 68.26 & 96.73 \\
+\bottomrule
+\end{tabular}
+\end{table}
