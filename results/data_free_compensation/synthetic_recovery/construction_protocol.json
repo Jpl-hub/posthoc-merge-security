@@ -1,0 +1,43 @@
+{
+  "question": "Does joint A/B construction using the full gradient through coefficient recovery increase recovered entropy while retaining the existing synthetic native constraints?",
+  "registered_utc": "2026-11-04T04:07:31.447076+00:00",
+  "parent_protocol": "results/data_free_compensation/synthetic_recovery/protocol.json",
+  "source_sha256": "518e3acb879af34ec7c6a49de6d5c73ccfca049773cfdbba21d510228f9a975c",
+  "output": "outputs/recovery_construction_20261104",
+  "recovered_model": {
+    "path": "outputs/synthetic_recovery_20261104/MNIST/Defense2/model.pt",
+    "sha256": "ca610d94c36cbd649918d08b0eda6ae5ba54bb210fca71798f2c6f211cab309d"
+  },
+  "outer_steps": 20,
+  "step_size": 0.05,
+  "backtracking_steps": 8,
+  "inner": "Pinned author coefficient formula, initial .3, Adam lr .01 betas .9/.999 eps1e-8, 100 updates. Public second teacher has zero task vector and hence zero coefficient gradient.",
+  "precision": "FP64 shadow of last-block recovery; original FP32 historical results unchanged. Identical duplicated input groups reduced algebraically to 64 student forwards, with the original sum of both teacher losses.",
+  "reuse": "First eleven blocks fixed at existing synthetic ProDistill result. Their teachers and weights are unchanged along this direction.",
+  "construction_access": "Frozen target expert, public base, fixed target head, historical synthetic source and layer inputs only; no partner expert or real images.",
+  "source": "Same 64 of 160 images as the fixed recovery protocol; all 800 historical native views and 16384 historical layer inputs constrain independent function. No new sampling.",
+  "objective": "Maximize mean recovered entropy on the fixed 64 inputs; differentiate both the 100 Adam updates and the published teacher targets. No use of real evaluation scores.",
+  "parameterization": "Only last MLP A/a/B/b. Project A steps outside both rank32 task-SVD subspaces and compensate a by -dA beta. Row-anchor orthogonality of the initial point is not imposed after updates; AGA effectiveness is unverified.",
+  "native_constraints": "Keep original MNIST rho=6.0394128536670705e-5 and tau=1.2644836124713486 from configs/defense2_inputs.json; conditional B/b quadratic uses both historical populations. Contract B/b toward the conditional center if necessary; retain all 800 source predictions. These source conditions do not imply real-image utility.",
+  "ranges": "A relative Frobenius change <=2 and B <=4, retained from the separately declared construction ranges; not historical D0.5.",
+  "steps": "Normalize A and augmented B/b gradients by their original parameter norms. Each of at most20 iterations tries .05/2^k for k=0..7 and accepts the first source-feasible step with entropy increase >1e-8. Stop on no accepted step.",
+  "first_gradient_check": "Dot full reverse gradient with the previously verified publication-minus-expert direction. Compare derivative_result.json entropy derivative within 1e-5*(1+abs(dot)).",
+  "freezing": "Save the last accepted point only, convert four tensors to FP32 and recheck all source conditions without repairing. No intermediate selection using real data. If unchanged or source-infeasible, no natural evaluation.",
+  "budget": {
+    "real_construction_images": 0,
+    "maximum_defense_updates": 20,
+    "maximum_coefficient_forward_updates": 18100,
+    "maximum_reverse_update_steps": 2000,
+    "maximum_new_published_candidates": 1,
+    "new_AGA_calls_during_construction": 0,
+    "timeout_seconds": 7200
+  },
+  "evaluation": "After a changed source-feasible publication is frozen: full standalone MNIST before fixed TA/AGA and existing ProDistill recovery evaluation. Original results retained. No automatic new construction from evaluation outcomes.",
+  "stopping": "Keep numerical or implementation failure. Fix clear code defects only; no performance-based amplitude, steps, seed, layer or input search.",
+  "references": {
+    "TAR_paper": "https://arxiv.org/html/2408.00761v4",
+    "TAR_code": "rishub-tamirisa/tamper-resistance@19de233f652078f82dd45422331498ad431ab2da modules/training.py:793-827",
+    "ProDistill_code": "JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation@c773fcaead79cf25b5654b2e3fe233450da4e387 Vision/merge_models.py"
+  },
+  "novelty_boundary": "TAR motivates the post-recovery objective; exact differentiation, projected gradients and conditional quadratic compensation are standard tools. This is a data-free adaptation experiment, not a reproduction of TAR and not a claimed effective or novel defense before evaluation."
+}
