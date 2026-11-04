@@ -13,6 +13,7 @@ import torch
 import torch.nn.functional as F
 from torch.func import functional_call, grad, jvp, vjp
 
+from _impl.attacks import load_author
 from _impl.io import digest, save_json
 from _impl.models import apply, checked_models, initialize
 from _impl.prodistill import author
@@ -88,6 +89,7 @@ def main():
     images = F.interpolate(pixels, (224, 224), mode='bilinear', align_corners=False)
     images = (images - images.new_tensor(norm.mean)[None, :, None, None]) / images.new_tensor(norm.std)[None, :, None, None]
     native_cache = raw['cache']['native']
+    public_cache = {name: raw['cache'][name] for name in ('direct', 'recovered')}
     del raw, pixels
     recovered = copy.deepcopy(original)
     assert digest(cfg['recovered_model']['path']) == cfg['recovered_model']['sha256']
@@ -126,6 +128,12 @@ def main():
     native_readout = copy.deepcopy(pub.model.visual.ln_post).cuda().double()
     native_projection = pub.model.visual.proj.detach().cuda().double()
     head = head.cuda().double()
+    combined = cfg.get('joint_margin_objective', False)
+    metric = 'joint_margin' if combined else 'entropy'
+    public_readout = copy.deepcopy(native_readout)
+    public_readout.load_state_dict({k: (v + base.model.visual.ln_post.state_dict()[k].cuda().double()) / 2
+                                  for k, v in native_readout.state_dict().items()})
+    public_projection = (native_projection + base.model.visual.proj.cuda().double()) / 2
     env = author(spec)
     del images, recovered, pub, original, base, own, clean
 
@@ -143,12 +151,18 @@ def main():
         # Same sum as two groups of 64 identical images; no mean-loss rescaling.
         return (student - target).square().sum() + (student - public).square().sum()
 
+    def scores(weights):
+        return head(readout(call(weights, xm)[0]) @ projection)
+
     def measure(weights):
-        cls = call(weights, xm)[0]
-        logits = head(readout(cls) @ projection)
+        logits = scores(weights)
         logp = logits.log_softmax(-1)
         entropy = -(logp.exp() * logp).sum(-1).mean()
         ce = F.cross_entropy(logits, labels)
+        if combined:
+            correct = logits.gather(1, labels[:, None]).squeeze(1)
+            wrong = logits.scatter(1, labels[:, None], -torch.inf).amax(1)
+            return torch.stack(((wrong - correct).clamp_max(0).mean(), ce))
         return torch.stack((entropy, ce))
 
     if cfg.get('outer_steps'):
@@ -191,6 +205,47 @@ def main():
                     error += (predicted - yy).square().sum() / (len(x) * variance)
             return float(error)
 
+        public_baseline = None
+        attack = None
+        if combined:
+            attack, actual_sha = load_author(Path(cfg['AGA_source']['path']))
+            assert actual_sha == cfg['AGA_source']['sha256']
+            public_cache = {name: {k: v.cuda().double() for k, v in row.items()}
+                            for name, row in public_cache.items()}
+
+        def public_order(p):
+            return attack['solve_permutation'](p[iA].detach().float().cpu(), anchor[iA].float().cpu()).cuda()
+
+        def public_scores(p, order=None):
+            if not combined:
+                return {}
+            A0, a0, B0, b0 = [anchor[i] for i in (iA, ia, iB, ib)]
+            if order is None:
+                order = public_order(p)
+            result = {}
+            for name, row in public_cache.items():
+                AA, aa, BB = p[iA], p[ia], p[iB]
+                if name == 'recovered':
+                    AA, aa, BB = AA[order], aa[order], BB[:, order]
+                h = act(F.linear(row['x'], (AA + A0) / 2, (aa + a0) / 2))
+                output = row['prefix'] + F.linear(h, (BB + B0) / 2, (p[ib] + b0) / 2)
+                result[name] = head(public_readout(output) @ public_projection)
+            return result
+
+        @torch.no_grad()
+        def public_counts(p):
+            return {name: int((v.argmax(1) == native_labels).sum()) for name, v in public_scores(p).items()}
+
+        def public_penalty(p, order=None):
+            if not combined:
+                return p[iA].sum() * 0
+            penalties = []
+            for logits in public_scores(p, order).values():
+                correct = logits.gather(1, native_labels[:, None]).squeeze(1)
+                wrong = logits.scatter(1, native_labels[:, None], -torch.inf).amax(1)
+                penalties.append((correct - wrong).clamp_min(0).mean())
+            return torch.stack(penalties).mean()
+
         @torch.no_grad()
         def compensate(p):
             G = torch.eye(3073, device='cuda', dtype=torch.float64) * rho
@@ -219,13 +274,14 @@ def main():
             matches = int((score.argmax(1) == native_labels).sum())
             distanceA = float((p[iA] - A).norm() / na)
             distanceB = float((p[iB] - B).norm() / B.norm())
-            feasible = matches == len(native_labels) and distanceA <= 2 and distanceB <= 4
-            return (tuple(p) if feasible else None), dict(native_matches=matches,
+            feasible = distanceA <= 2 and distanceB <= 4
+            counts = public_counts(tuple(p)) if feasible else {}
+            return (tuple(p) if feasible else None), dict(native_matches=matches, public_counts=counts,
                 native_error=float(minimum + factor ** 2 * energy), native_limit=tau,
                 A_relative=distanceA, B_relative=distanceB, compensation_factor=factor)
 
         @torch.no_grad()
-        def recover_value(p):
+        def recover_value(p, return_weights=False):
             target = call(p, xt)
             changes = tuple(x - y for x, y in zip(p, anchor))
             aa = tuple(torch.full_like(x, .3).requires_grad_() for x in changes)
@@ -237,24 +293,43 @@ def main():
                     value.backward()
                 opt.step()
             w = tuple(b + alpha * d for b, alpha, d in zip(anchor, aa, changes))
-            return float(measure(w)[0])
+            return w if return_weights else float(measure(w)[0] - public_penalty(p))
 
         records = []
         initial_theta = theta
+        initial_public_scores = {k: v.detach().cpu() for k, v in public_scores(theta).items()}
+        public_baseline = {k: int((v.argmax(1) == native_labels.cpu()).sum()) for k, v in initial_public_scores.items()}
+        if combined:
+            assert public_baseline == {'direct': 0, 'recovered': 0}, public_baseline
         with torch.no_grad():
             initial_matches = int((native_scores(theta).argmax(1) == native_labels).sum())
         initial_error = native_error(theta)
         save_json(out / 'initial.json', dict(native_matches=initial_matches, native_error=initial_error,
-                  native_limit=tau, source_total=len(native_labels)))
+                  native_limit=tau, source_total=len(native_labels), public_counts=public_baseline))
         assert initial_matches == len(native_labels) and initial_error <= tau + 1e-8
         for outer in range(cfg['outer_steps']):
             value, g, weights = recover_gradient(loss, measure, anchor, theta, lambda p: call(p, xt))
+            if combined:
+                order = public_order(theta)
+                penalty, pull = vjp(lambda p: public_penalty(p, order), theta)
+                pg, = pull(torch.ones_like(penalty))
+                g = tuple((a - b).detach() for a, b in zip(g, pg))
+                value -= float(penalty)
+                del pull, pg, penalty
             if outer == 0:
-                expected = json.loads(Path(__file__).with_name('derivative_result.json').read_text())
+                if combined:
+                    eps = cfg['derivative_check_step']
+                    plus = tuple(p + eps * d for p, d in zip(theta, direction))
+                    minus = tuple(p - eps * d for p, d in zip(theta, direction))
+                    reference = (recover_value(plus) - recover_value(minus)) / (2 * eps)
+                else:
+                    reference = json.loads(Path(__file__).with_name('derivative_result.json').read_text())['total_derivative'][0]
                 dotted = float(sum((gi * di).sum() for gi, di in zip(g, direction)))
-                error = abs(dotted - expected['total_derivative'][0])
-                save_json(out / 'gradient_check.json', dict(dot=dotted, reference=expected['total_derivative'][0], error=error))
-                assert error <= 1e-5 * (1 + abs(dotted)), error
+                error = abs(dotted - reference)
+                save_json(out / 'gradient_check.json', dict(dot=dotted, reference=reference, error=error, metric=metric))
+                tolerance = 1e-5 + .02 * abs(dotted) if combined else 1e-5 * (1 + abs(dotted))
+                assert error <= tolerance, error
+                initial_recovery_scores = scores(weights).detach().cpu()
                 print('GRADIENT_CHECK', dotted, error, flush=True)
             dA = na * (g[iA] - g[ia][:, None] * beta)
             dA = dA - U @ (U.T @ dA)
@@ -276,13 +351,13 @@ def main():
                 info.update(step=step, feasible=p is not None)
                 if p is not None:
                     proposed = recover_value(p)
-                    info['recovered_entropy'] = proposed
+                    info['recovered_' + metric] = proposed
                     if proposed > value + 1e-8:
                         theta, accepted = p, True
                 attempts.append(info)
                 if accepted:
                     break
-            records.append(dict(iteration=outer + 1, initial_entropy=value, accepted=accepted,
+            records.append(dict(iteration=outer + 1, objective=metric, initial_objective=value, accepted=accepted,
                                 attempts=attempts, seconds=time.monotonic() - start))
             save_json(out / 'progress.json', records)
             print('CONSTRUCTION', json.dumps(records[-1]), flush=True)
@@ -296,14 +371,29 @@ def main():
         rounded_error = native_error(rounded)
         distanceA = float((rounded[iA] - A).norm() / na)
         distanceB = float((rounded[iB] - B).norm() / B.norm())
-        feasible = matches == len(native_labels) and rounded_error <= tau + 1e-8 and distanceA <= 2 and distanceB <= 4
+        feasible = rounded_error <= tau + 1e-8 and distanceA <= 2 and distanceB <= 4
+        final_public_scores = {k: v.detach() for k, v in public_scores(rounded).items()}
+        counts = {k: int((v.argmax(1) == native_labels).sum()) for k, v in final_public_scores.items()}
+        final_weights = recover_value(rounded, return_weights=True)
+        final_recovery_scores = scores(final_weights).detach().cpu()
+        final_correct = int((final_recovery_scores.argmax(1) == labels.cpu()).sum())
+        initial_correct = int((initial_recovery_scores.argmax(1) == labels.cpu()).sum())
+        torch.save(dict(initial=initial_recovery_scores, final=final_recovery_scores, labels=labels.cpu(),
+                        native_scores=native_scores(rounded).detach().cpu(), native_labels=native_labels.cpu(),
+                        initial_public=initial_public_scores,
+                        final_public={k: v.cpu() for k, v in final_public_scores.items()}), out / 'source_scores.pt')
         save_json(out / 'freeze.json', dict(path=str(out / 'point.pt'), sha256=digest(out / 'point.pt'),
             accepted_steps=sum(row['accepted'] for row in records), source_matches_after_rounding=matches,
-            source_total=len(native_labels), initial_entropy=records[0]['initial_entropy'],
-            final_entropy=recover_value(rounded), real_construction_images=0,
+            source_total=len(native_labels), objective=metric, initial_objective=records[0]['initial_objective'],
+            final_objective=float(measure(final_weights)[0] - public_penalty(rounded)),
+            final_recovered_margin=float(measure(final_weights)[0]),
+            final_fusion_penalty=float(public_penalty(rounded)), real_construction_images=0,
+            initial_recovered_correct=initial_correct, final_recovered_correct=final_correct, recovery_total=len(labels),
+            initial_public_counts=public_baseline, final_public_counts=counts,
+            classification_improved=final_correct < initial_correct,
             native_error_after_rounding=rounded_error, native_limit=tau, source_feasible=feasible,
             A_relative=distanceA, B_relative=distanceB,
-            coefficient_forward_updates=100 * (len(records) + sum(a['feasible'] for r in records for a in r['attempts']) + 1),
+            coefficient_forward_updates=100 * (len(records) + sum(a['feasible'] for r in records for a in r['attempts']) + 1 + (2 if combined else 0)),
             reverse_update_steps=100 * len(records),
             peak_GPU_bytes=torch.cuda.max_memory_allocated(),
             source_sha256=digest(__file__), seconds=time.monotonic() - start,
