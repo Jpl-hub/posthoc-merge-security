@@ -16,28 +16,28 @@
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "compute": {
-    "primary_GPU": "NVIDIA GeForce RTX 4090 D",
+    "primary_GPU": "NVIDIA GeForce RTX 4090",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "ssh_control_socket": "/tmp/posthoc_4090_21516.sock",
+    "ssh_control_socket": "/tmp/posthoc_4090_17897.sock",
     "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
-    "GPU_memory_MiB": 24576,
+    "GPU_memory_MiB": 24564,
     "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-03T19:24:24.778117+00:00",
-    "primary_available_GiB": 21,
+    "verified_utc": "2026-11-04T03:01:57.566952+00:00",
+    "primary_available_GiB": 47,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
-    "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
-    "primary_workspace_status": "Frozen MNIST recovery and feature readout complete",
+    "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
+    "primary_workspace_status": "Current MNIST models, data, environment, and source migrated; fixed readout evaluation completed",
     "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "previous_primary": {
-      "endpoint": "connect.cqa1.seetacloud.com:41558",
-      "socket": "/tmp/posthoc_4090_41558.sock",
-      "role": "CPU source/archive; original incomplete evaluation retained"
+      "endpoint": "connect.cqa1.seetacloud.com:21516",
+      "socket": "/tmp/posthoc_4090_21516.sock",
+      "role": "CPU source and evidence archive; no GPU workloads"
     },
     "queued_jobs": 0
   },
@@ -120,22 +120,30 @@
     "active_defense2_matches_commit": "be57bec"
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-03T19:27:23.801392+00:00",
-  "status": "synthetic_recovery_verified",
-  "active_focus": "已确认合成图上的系数蒸馏可恢复当前 MNIST 防御二。下一项研究原生读出与同图两教师特征均值读出的分类约束。",
+  "updated_utc": "2026-11-04T03:01:57.566952+00:00",
+  "status": "projection_fit_closed_standalone_loss",
+  "active_focus": "当前MNIST防御二仅调整投影的固定检查已关闭：蒸馏恢复降低，但独立准确率降至67.54%。主发布保持不变。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "在预先允许的合成源上检验这两个分类要求能否同时满足，再决定是否构造一次新的发布。",
+  "next_action": "继续检查无数据构造的功能保持条件及对应论文实现；不扩展本次失败点，不按真实图失败类别修补。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
     "rule": "原模型、逐图分数、失败证据及执行源码保留；不按测试结果重启已关闭点。"
   },
   "latest_completed_batch": {
-    "name": "synthetic_recovery",
-    "status": "completed_independently_verified",
-    "record": "results/data_free_compensation/synthetic_recovery/result.json",
-    "table": "results/data_free_compensation/synthetic_recovery/summary.md"
+    "name": "feature_mean_projection",
+    "status": "completed_independently_verified_closed",
+    "record": "results/data_free_compensation/feature_mean/evaluation.json",
+    "table": "results/data_free_compensation/feature_mean/summary.md",
+    "native_percent": 67.54,
+    "recovered_percent": 10.58,
+    "previous_native_percent": 99.57,
+    "previous_recovered_percent": 95.51,
+    "context_replays": 48,
+    "maximum_score_error": 1.33514404296875e-05,
+    "new_expert_training_steps": 0,
+    "new_recovery_training_steps": 0
   },
   "latest_closed_control": {
     "name": "residual_bias",
@@ -186,7 +194,7 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Recovery protocol and independently verified batch published through GitHub and read back on main. Latest branch receipt is maintained separately.",
+    "status": "Latest completed projection result and current host state are local; GitHub plugin tools unavailable in this turn. Prior verified remote commit retained in receipt.",
     "last_verified_remote_commit": "ccb0b41bfa6348d2ce6bc35fe7203a973e399de8",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -313,5 +321,13 @@
       "bytes": 1916797019,
       "sha256_manifest": "280f0bc3c9d7eb91228924eafbdeae7eb2554f0ad472d990939eb5ffdf93b1c5"
     }
+  },
+  "migration_17897": {
+    "status": "82 files verified by size and SHA256",
+    "bytes": 2977786515,
+    "manifest": "outputs/17897_migration_manifest.json",
+    "scope": "Current MNIST experiment and source; not a full migration of all historical evidence",
+    "source": "21516",
+    "destination": "17897"
   }
 }
