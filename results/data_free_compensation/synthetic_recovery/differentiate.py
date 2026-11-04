@@ -13,6 +13,7 @@ import torch
 import torch.nn.functional as F
 from torch.func import functional_call, grad, jvp, vjp
 
+from _impl.attacks import load_author
 from _impl.io import digest, save_json
 from _impl.models import apply, checked_models, initialize
 from _impl.prodistill import author
@@ -83,7 +84,10 @@ def main():
     ref = case['synthetic_source']
     assert digest(ref['path']) == ref['sha256']
     raw = torch.load(ref['path'], map_location='cpu', weights_only=False)
-    pixels = raw['final'][ref['indices']].cuda()
+    preserve_fusion = cfg.get('preserve_fusion', False)
+    selection = slice(None) if preserve_fusion else ref['indices']
+    pixels = raw['final'][selection].cuda()
+    fusion_cache, source_labels = raw['cache'], raw['teacher_class']
     norm = original.val_preprocess.transforms[-1]
     images = F.interpolate(pixels, (224, 224), mode='bilinear', align_corners=False)
     images = (images - images.new_tensor(norm.mean)[None, :, None, None]) / images.new_tensor(norm.std)[None, :, None, None]
@@ -126,6 +130,9 @@ def main():
     native_readout = copy.deepcopy(pub.model.visual.ln_post).cuda().double()
     native_projection = pub.model.visual.proj.detach().cuda().double()
     head = head.cuda().double()
+    mixed_readout = {k: (v.cuda().double() + base.model.visual.ln_post.state_dict()[k].cuda().double()) / 2
+                     for k, v in native_readout.state_dict().items()} if preserve_fusion else None
+    mixed_projection = (native_projection + base.model.visual.proj.cuda().double()) / 2 if preserve_fusion else None
     env = author(spec)
     del images, recovered, pub, original, base, own, clean
 
@@ -137,11 +144,13 @@ def main():
     with torch.no_grad():
         public = call(anchor, xb)
 
+    fitting = torch.tensor(ref['indices'], device='cuda') if preserve_fusion else slice(None)
+
     def loss(alphas, changes, target):
         weights = tuple(b + a * d for b, a, d in zip(anchor, alphas, changes))
-        student = call(weights, xm)
+        student = call(weights, xm[:, fitting])
         # Same sum as two groups of 64 identical images; no mean-loss rescaling.
-        return (student - target).square().sum() + (student - public).square().sum()
+        return (student - target).square().sum() + (student - public[:, fitting]).square().sum()
 
     def measure(weights):
         cls = call(weights, xm)[0]
@@ -150,6 +159,146 @@ def main():
         entropy = -(logp.exp() * logp).sum(-1).mean()
         ce = F.cross_entropy(logits, labels)
         return torch.stack((entropy, ce))
+
+    if preserve_fusion:
+        # Fixed A/a makes all three cached CLS outputs affine in B. One projected
+        # gradient step preserves these outputs while targeting learned recovery.
+        iA, ia, iB, ib = [names.index(n) for n in ('mlp.c_fc.weight', 'mlp.c_fc.bias',
+                                                 'mlp.c_proj.weight', 'mlp.c_proj.bias')]
+        Ap, ap, Bp, bp = [theta[i] for i in (iA, ia, iB, ib)]
+        A0, a0, B0, b0 = [anchor[i] for i in (iA, ia, iB, ib)]
+        A, a, B, b = [original_parameters[i] for i in (iA, ia, iB, ib)]
+        attack, attack_sha = load_author(Path(cfg['AGA_source']['path']))
+        assert attack_sha == cfg['AGA_source']['sha256']
+        order = attack['solve_permutation'](Ap.float().cpu(), A0.float().cpu()).cuda()
+        activate = lambda x: x * torch.sigmoid(1.702 * x)
+        grids, fixed, readouts = {}, {}, {}
+        for name in ('native', 'direct', 'recovered'):
+            row = {k: v.cuda().double() for k, v in fusion_cache[name].items()}
+            if name == 'native':
+                h = activate(F.linear(row['x'], Ap, ap))
+                fixed[name] = row['prefix'] + bp
+                readouts[name] = (native_readout, native_projection)
+            else:
+                AA, aa = (Ap[order], ap[order]) if name == 'recovered' else (Ap, ap)
+                h = activate(F.linear(row['x'], (AA + A0) / 2, (aa + a0) / 2))
+                fixed[name] = row['prefix'] + (F.linear(h, B0, b0) + bp) / 2
+                if name == 'recovered':
+                    back = torch.empty_like(h)
+                    back[:, order] = h
+                    h = back
+                h = h / 2
+                mixed_ln = copy.deepcopy(native_readout)
+                mixed_ln.load_state_dict(mixed_readout)
+                readouts[name] = (mixed_ln, mixed_projection)
+            grids[name] = h
+        H = torch.cat(list(grids.values()))
+        Q, _ = torch.linalg.qr(H.T, mode='reduced')
+
+        def logits(weights):
+            return head(readout(call(weights, xm)[0]) @ projection)
+
+        def classification(weights):
+            scores = logits(weights)[fitting]
+            correct = scores.gather(1, labels[fitting, None]).squeeze(1)
+            wrong = scores.scatter(1, labels[fitting, None], -torch.inf).amax(1)
+            return (wrong - correct).mean().reshape(1)
+
+        value, gradient, recovered_weights = recover_gradient(
+            loss, classification, anchor, theta, lambda p: call(p, xt[:, fitting]))
+        dB = gradient[iB] - (gradient[iB] @ Q) @ Q.T
+        retained_fraction = float(dB.norm() / gradient[iB].norm())
+        assert dB.norm() > 0 and torch.isfinite(dB).all()
+        dB = dB / dB.norm()
+        orthogonal_error = float((H @ dB.T).abs().max())
+        assert orthogonal_error < 1e-9, orthogonal_error
+        task = json.loads(Path('configs/defense2_inputs.json').read_text())['MNIST']
+        assert digest(task['layer_inputs']['path']) == task['layer_inputs']['sha256']
+        u = torch.load(task['layer_inputs']['path'], map_location='cpu', weights_only=False).cuda().double()
+        gamma, beta = [original_parameters[names.index('ln_2.' + k)] for k in ('weight', 'bias')]
+        rho, tau = task['original_ridge'], task['original_native_limit']
+        populations = [(beta + gamma * u, None), (native_cache['x'].cuda().double(),
+                       native_cache['final'].cuda().double() - native_cache['prefix'].cuda().double())]
+        qa = rho * dB.square().sum()
+        qb = rho * ((Bp - B) * dB).sum()
+        qc = rho * ((Bp - B).square().sum() + (bp - b).square().sum())
+        for x, y in populations:
+            if y is None:
+                y = torch.cat([F.linear(activate(F.linear(xx, A, a)), B, b) for xx in x.split(256)])
+            variance = y.square().sum() / len(y) - y.mean(0).square().sum()
+            for xx, yy in zip(x.split(256), y.split(256)):
+                h = activate(F.linear(xx, Ap, ap))
+                residual = F.linear(h, Bp, bp) - yy
+                effect = h @ dB.T
+                qa += effect.square().sum() / (len(x) * variance)
+                qb += (effect * residual).sum() / (len(x) * variance)
+                qc += residual.square().sum() / (len(x) * variance)
+        assert qc < tau
+        task_limit = float((-qb + (qb.square() + qa * (tau - qc)).sqrt()) / qa)
+        dot = ((Bp - B) * dB).sum()
+        distance_limit = float(-dot + (dot.square() + (4 * B.norm()).square() - (Bp - B).square().sum()).sqrt())
+        step = min(task_limit, distance_limit) * (1 - 1e-6)
+        proposed = list(theta)
+        proposed[iB] = (Bp + step * dB).float().double()
+        proposed = tuple(proposed)
+        energy_polynomial = float(qa * step ** 2 + 2 * qb * step + qc)
+        rounded_error = rho * ((proposed[iB] - B).square().sum() + (bp - b).square().sum())
+        for x, y in populations:
+            if y is None:
+                y = torch.cat([F.linear(activate(F.linear(xx, A, a)), B, b) for xx in x.split(256)])
+            variance = y.square().sum() / len(y) - y.mean(0).square().sum()
+            for xx, yy in zip(x.split(256), y.split(256)):
+                predicted = F.linear(activate(F.linear(xx, Ap, ap)), proposed[iB], bp)
+                rounded_error += (predicted - yy).square().sum() / (len(x) * variance)
+        after_error = float(rounded_error)
+        torch.save({f'model.visual.transformer.resblocks.11.{names[i]}': proposed[i].float().cpu()
+                    for i in (iA, ia, iB, ib)}, out / 'point.pt')
+        before_scores, after_scores, context_checks = {}, {}, {}
+        with torch.no_grad():
+            for name, h in grids.items():
+                ln, proj = readouts[name]
+                old = head(ln(fixed[name] + h @ Bp.T) @ proj)
+                new = head(ln(fixed[name] + h @ proposed[iB].T) @ proj)
+                before_scores[name], after_scores[name] = old.cpu(), new.cpu()
+                context_checks[name] = dict(before=int((old.argmax(1).cpu() == source_labels).sum()),
+                    after=int((new.argmax(1).cpu() == source_labels).sum()),
+                    changed=int((new.argmax(1) != old.argmax(1)).sum()),
+                    score_error=float((new - old).abs().max()))
+            initial_scores = logits(recovered_weights).cpu()
+            target = call(proposed, xt[:, fitting]).detach()
+        changes = tuple(p - q for p, q in zip(proposed, anchor))
+        alphas = tuple(torch.full_like(p, .3).requires_grad_() for p in changes)
+        optimizer = torch.optim.Adam(alphas, lr=.01, foreach=False)
+        for _ in range(100):
+            optimizer.zero_grad(set_to_none=True)
+            loss(alphas, changes, target).backward()
+            optimizer.step()
+        with torch.no_grad():
+            weights = tuple(b + alpha * d for b, alpha, d in zip(anchor, alphas, changes))
+            final_scores = logits(weights).cpu()
+        held_out = [i for i in range(len(labels)) if i not in ref['indices']]
+        recovery = {}
+        for name, ids in [('fit', ref['indices']), ('held_out', held_out)]:
+            recovery[name] = dict(total=len(ids), before=int((initial_scores[ids].argmax(1) == labels[ids].cpu()).sum()),
+                                 after=int((final_scores[ids].argmax(1) == labels[ids].cpu()).sum()))
+        torch.save(dict(H=H.cpu(), direction=dB.cpu(), initial_B=Bp.cpu(), final_B=proposed[iB].cpu(),
+            before_scores=before_scores, after_scores=after_scores, initial_scores=initial_scores,
+            final_scores=final_scores, labels=labels.cpu(), source_labels=source_labels,
+            quadratic=[float(qa), float(qb), float(qc)], step=step), out / 'check.pt')
+        passed = (all(x['changed'] == 0 and x['score_error'] < 5e-4 for x in context_checks.values())
+                  and all(x['after'] < x['before'] for x in recovery.values())
+                  and after_error <= tau and float((proposed[iB] - B).norm() / B.norm()) <= 4)
+        result = dict(source_passed=passed, context_checks=context_checks, recovery=recovery,
+            initial_margin_objective=value, final_margin_objective=float(classification(weights)[0]),
+            retained_gradient_fraction=retained_fraction, orthogonal_error=orthogonal_error,
+            parameter_step=step, native_energy_before=float(qc), native_energy_after=after_error,
+            native_limit=tau, energy_before_rounding=energy_polynomial, B_relative=float((proposed[iB] - B).norm() / B.norm()),
+            real_images=0, updates=1, coefficient_updates=200, reverse_steps=100,
+            point_sha256=digest(out / 'point.pt'), seconds=time.monotonic() - start,
+            peak_GPU_bytes=torch.cuda.max_memory_allocated())
+        save_json(out / 'result.json', result)
+        print('FIXED_STEP', json.dumps(result), flush=True)
+        return
 
     if cfg.get('outer_steps'):
         # Only A/a/B/b are changed. The fixed prefix and other tensors remain the
@@ -361,7 +510,7 @@ def main():
         for _ in range(100):
             opt.zero_grad(set_to_none=True)
             student = wrapper(xm)
-            value = (student - wanted).square().sum() + (student - public).square().sum()
+            value = (student - wanted).square().sum() + (student - public[:, fitting]).square().sum()
             value.backward()
             opt.step()
         params = tuple(b + wrapper.alphas[0][i].detach() * (p + offset * q - b)
