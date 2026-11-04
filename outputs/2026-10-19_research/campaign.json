@@ -1,12 +1,23 @@
 {
-  "updated_utc": "2026-11-04T14:56:14.994593+00:00",
-  "status": "recovery_compensated_B_registered",
+  "updated_utc": "2026-11-04T14:57:06.263666+00:00",
+  "status": "recovery_compensated_B_running",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Run the one fixed A/B correction, compare recovered classifications with the registered 64/64 control; apply the existing evaluation rule.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "name": "recovery_compensated_B",
+      "host": "17897",
+      "pid": 36307,
+      "timeout_pid": 36305,
+      "source_commit": "6c5a077423444629fb8db51f14f5b152e31cfdfb",
+      "start_utc": "2026-11-04T14:56:48.926949+00:00",
+      "log": "outputs/recovery_compensated_B_20261104.log",
+      "timeout_seconds": 2400
+    }
+  ],
+  "next_action": "Check the current run by its log and frozen scores on the next manual request. If synthetic classifications improve and source constraints hold, evaluate the fixed model on complete MNIST and the matched attacks.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -356,10 +367,18 @@
     "seconds": 570.1038457676768
   },
   "recovery_compensated_B": {
-    "status": "registered_not_started",
+    "status": "running",
     "protocol": "results/data_free_compensation/synthetic_recovery/compensated_B_protocol.json",
     "output": "outputs/recovery_compensated_B_20261104",
     "real_construction_images": 0,
-    "source_sha256": "96a21e2f38187cee519ca504d7e8b128645b2a5fa37275ec83a7180cbf07e8a4"
+    "source_sha256": "96a21e2f38187cee519ca504d7e8b128645b2a5fa37275ec83a7180cbf07e8a4",
+    "name": "recovery_compensated_B",
+    "host": "17897",
+    "pid": 36307,
+    "timeout_pid": 36305,
+    "source_commit": "6c5a077423444629fb8db51f14f5b152e31cfdfb",
+    "start_utc": "2026-11-04T14:56:48.926949+00:00",
+    "log": "outputs/recovery_compensated_B_20261104.log",
+    "timeout_seconds": 2400
   }
 }
