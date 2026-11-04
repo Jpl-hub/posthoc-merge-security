@@ -23,7 +23,7 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
@@ -39,7 +39,7 @@
       "socket": "/tmp/posthoc_4090_21516.sock",
       "role": "CPU source and evidence archive; no GPU workloads"
     },
-    "queued_jobs": 0
+    "queued_jobs": 1
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "established_methods": {
@@ -128,12 +128,26 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-04T08:57:39.724643+00:00",
-  "status": "joint_loss_registered_not_started",
+  "updated_utc": "2026-11-04T09:05:20.420270+00:00",
+  "status": "joint_loss_running",
   "active_focus": "直接改进防御二：以连续分类损失联合优化融合与恢复效果，去掉上一轮逐步0/800硬条件。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "执行同一无数据A/B入口的新联合目标，最终冻结后完整评价；不加攻击类别，不把源分数作为真实效果。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "status": "running",
+      "protocol": "results/data_free_compensation/synthetic_recovery/joint_loss_protocol.json",
+      "output": "outputs/recovery_joint_loss_20261104",
+      "new_frameworks": 0,
+      "timeout_pid": 16611,
+      "evaluation_queue_pid": 16855,
+      "source_commit": "a05c2339a5ee15a315cdfbc96180d98f41d0bcf4",
+      "log": "outputs/recovery_joint_loss_20261104.log",
+      "evaluation_log": "outputs/recovery_joint_loss_20261104_evaluate.log",
+      "first_step_accepted": true,
+      "result_claim": "First source step only; no real-image improvement established."
+    }
+  ],
+  "next_action": "构造结束后现有入口串行评价完整MNIST；人工查看结果后继续同点TA/AGA及必要恢复评价，不按评价结果修补发布。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -206,7 +220,7 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Local additions pending publication; connector unavailable in current tool set.",
+    "status": "Connector reconnected; current snapshot publication in progress.",
     "last_verified_remote_commit": "655540cc2f1fb904334d7776e6e35a8acc935b42",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -424,9 +438,16 @@
     "universal_recovery_failure_required": false
   },
   "recovery_joint_loss": {
-    "status": "registered_not_started",
+    "status": "running",
     "protocol": "results/data_free_compensation/synthetic_recovery/joint_loss_protocol.json",
     "output": "outputs/recovery_joint_loss_20261104",
-    "new_frameworks": 0
+    "new_frameworks": 0,
+    "timeout_pid": 16611,
+    "evaluation_queue_pid": 16855,
+    "source_commit": "a05c2339a5ee15a315cdfbc96180d98f41d0bcf4",
+    "log": "outputs/recovery_joint_loss_20261104.log",
+    "evaluation_log": "outputs/recovery_joint_loss_20261104_evaluate.log",
+    "first_step_accepted": true,
+    "result_claim": "First source step only; no real-image improvement established."
   }
 }
