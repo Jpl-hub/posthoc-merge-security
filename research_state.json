@@ -27,7 +27,7 @@
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-04T05:32:49.522844+00:00",
+    "verified_utc": "2026-11-04T08:04:23.483227+00:00",
     "primary_available_GiB": 47,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
@@ -133,7 +133,7 @@
   "active_focus": "同类防御论文的恢复机制及无数据适配。100步蒸馏方向导数已核对，未产生新防御。",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "先在已登记的合成输入上同时检验旧版0.5融合保护和蒸馏后分类，避免只改善预测熵。若两者兼容，再冻结新点做真实评价。",
+  "next_action": "固定输出方向检查已关闭。当前保留旧防御二的TA/AGA有效点，蒸馏恢复仍未解决。后续须在构造时共同处理独立功能、融合效果和恢复后分类；不把一次梯度或预测熵改善当成分类保护，也不将本次受限方向失败推广到所有无数据方法。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
@@ -360,5 +360,35 @@
     ],
     "ProDistill_MNIST_percent": 99.44,
     "verified_utc": "2026-11-04T05:32:49.522844+00:00"
+  },
+  "recovery_preserved_step": {
+    "status": "closed_no_classification_improvement",
+    "record": "results/data_free_compensation/synthetic_recovery/preserved_result.json",
+    "source_commit": "964101d",
+    "pid": null,
+    "real_images": 0,
+    "completed_utc": "2026-11-04T08:04:23.483227+00:00",
+    "source_counts": {
+      "native": [
+        800,
+        800
+      ],
+      "TA": [
+        0,
+        0
+      ],
+      "AGA_TA": [
+        0,
+        0
+      ],
+      "distilled_fit": [
+        64,
+        64
+      ],
+      "distilled_remaining": [
+        96,
+        96
+      ]
+    }
   }
 }

@@ -6,7 +6,7 @@
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "先在已登记的合成输入上同时检验旧版0.5融合保护和蒸馏后分类，避免只改善预测熵。若两者兼容，再冻结新点做真实评价。",
+  "next_action": "固定输出方向检查已关闭。当前保留旧防御二的TA/AGA有效点，蒸馏恢复仍未解决。后续须在构造时共同处理独立功能、融合效果和恢复后分类；不把一次梯度或预测熵改善当成分类保护，也不将本次受限方向失败推广到所有无数据方法。",
   "latest_completed_batch": {
     "name": "MNIST_recovery_aware_AB",
     "record": "results/data_free_compensation/synthetic_recovery/construction_result.json",
@@ -222,5 +222,35 @@
     ],
     "ProDistill_MNIST_percent": 99.44,
     "verified_utc": "2026-11-04T05:32:49.522844+00:00"
+  },
+  "recovery_preserved_step": {
+    "status": "closed_no_classification_improvement",
+    "record": "results/data_free_compensation/synthetic_recovery/preserved_result.json",
+    "source_commit": "964101d",
+    "pid": null,
+    "real_images": 0,
+    "completed_utc": "2026-11-04T08:04:23.483227+00:00",
+    "source_counts": {
+      "native": [
+        800,
+        800
+      ],
+      "TA": [
+        0,
+        0
+      ],
+      "AGA_TA": [
+        0,
+        0
+      ],
+      "distilled_fit": [
+        64,
+        64
+      ],
+      "distilled_remaining": [
+        96,
+        96
+      ]
+    }
   }
 }
