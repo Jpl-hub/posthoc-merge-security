@@ -1,38 +1,18 @@
 {
-  "updated_utc": "2026-11-04T09:52:08.965372+00:00",
-  "status": "joint_loss_frozen_full_evaluation",
-  "active_focus": "直接改进防御二：以连续分类损失联合优化融合与恢复效果，去掉上一轮逐步0/800硬条件。",
+  "updated_utc": "2026-11-04T10:01:47.911372+00:00",
+  "status": "joint_loss_completed_no_improvement",
+  "active_focus": "保留主表的防御一和防御二。MNIST这次改动已完成恢复对比，结果单列。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "status": "TA_and_AGA_then_real_ProDistill",
-      "target": "MNIST",
-      "partner": "SVHN",
-      "timeout_pid": 18138,
-      "log": "outputs/recovery_joint_loss_20261104_run/evaluate.log",
-      "output": "outputs/recovery_joint_loss_20261104"
-    }
-  ],
-  "next_action": "Read back the queued full TA, AGA (two scopes), and ProDistill target/partner results for the same frozen model. Keep existing main methods.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "保留当前主方法；这次联合损失的固定检查结束，不扩到其他任务。",
   "latest_completed_batch": {
-    "name": "MNIST_recovery_aware_AB",
-    "record": "results/data_free_compensation/synthetic_recovery/construction_result.json",
-    "source_commit": "3012ac076fba2c64a356999922ad617f7ed80c2b",
-    "status": "closed_no_improvement_after_distillation_or_TA",
-    "real_construction_images": 0,
-    "new_defense_models": 1,
-    "accepted_updates": 9,
-    "stopped_at_iteration": 10,
-    "native_percent": 99.66000000000001,
-    "TA_and_AGA_MNIST_percent": [
-      99.35000000000001,
-      99.3,
-      99.31
-    ],
-    "ProDistill_MNIST_percent": 99.44,
-    "verified_utc": "2026-11-04T05:32:49.522844+00:00"
+    "name": "MNIST_joint_loss",
+    "record": "results/data_free_compensation/synthetic_recovery/joint_loss_result.json",
+    "source_commit": "a05c2339a5ee15a315cdfbc96180d98f41d0bcf4",
+    "status": "completed_no_improvement",
+    "verified_utc": "2026-11-04T10:01:47.911372+00:00"
   },
   "latest_closed_control": {
     "name": "residual_bias",
@@ -83,7 +63,7 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Prior snapshot read back; current evaluation update pending publication.",
+    "status": "Previous snapshot verified. Completed joint-loss evaluation pending upload.",
     "last_verified_remote_commit": "93d93237a9657acc9d0430ace23ad68532037b65",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -295,9 +275,8 @@
     "universal_recovery_failure_required": false
   },
   "recovery_joint_loss": {
-    "protocol": "results/data_free_compensation/synthetic_recovery/joint_loss_protocol.json",
-    "result_status": "Full MNIST native verified; TA and both AGA scopes running, followed by real ProDistill.",
-    "release_sha256": "e7aaaafd09affe135ac77916cd2e2a3acbe122f00e28a8b9f15e4bf34ad32d8d",
-    "details": "research_state.json#recovery_joint_loss"
+    "status": "completed_no_improvement",
+    "record": "results/data_free_compensation/synthetic_recovery/joint_loss_result.json",
+    "release_sha256": "e7aaaafd09affe135ac77916cd2e2a3acbe122f00e28a8b9f15e4bf34ad32d8d"
   }
 }

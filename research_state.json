@@ -23,11 +23,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-04T09:52:08.965372+00:00",
+    "verified_utc": "2026-11-04T10:01:47.911372+00:00",
     "primary_available_GiB": 44,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
@@ -128,43 +128,23 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-04T09:52:08.965372+00:00",
-  "status": "joint_loss_frozen_full_evaluation",
-  "active_focus": "直接改进防御二：以连续分类损失联合优化融合与恢复效果，去掉上一轮逐步0/800硬条件。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "status": "TA_and_AGA_then_real_ProDistill",
-      "target": "MNIST",
-      "partner": "SVHN",
-      "timeout_pid": 18138,
-      "log": "outputs/recovery_joint_loss_20261104_run/evaluate.log",
-      "output": "outputs/recovery_joint_loss_20261104"
-    }
-  ],
-  "next_action": "Read back the queued full TA, AGA (two scopes), and ProDistill target/partner results for the same frozen model. Keep existing main methods.",
+  "updated_utc": "2026-11-04T10:01:47.911372+00:00",
+  "status": "joint_loss_completed_no_improvement",
+  "active_focus": "保留主表的防御一和防御二。MNIST这次改动已完成恢复对比，结果单列。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "保留当前主方法；这次联合损失的固定检查结束，不扩到其他任务。",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
     "rule": "原模型、逐图分数、失败证据及执行源码保留；不按测试结果重启已关闭点。"
   },
   "latest_completed_batch": {
-    "name": "MNIST_recovery_aware_AB",
-    "record": "results/data_free_compensation/synthetic_recovery/construction_result.json",
-    "source_commit": "3012ac076fba2c64a356999922ad617f7ed80c2b",
-    "status": "closed_no_improvement_after_distillation_or_TA",
-    "real_construction_images": 0,
-    "new_defense_models": 1,
-    "accepted_updates": 9,
-    "stopped_at_iteration": 10,
-    "native_percent": 99.66000000000001,
-    "TA_and_AGA_MNIST_percent": [
-      99.35000000000001,
-      99.3,
-      99.31
-    ],
-    "ProDistill_MNIST_percent": 99.44,
-    "verified_utc": "2026-11-04T05:32:49.522844+00:00"
+    "name": "MNIST_joint_loss",
+    "record": "results/data_free_compensation/synthetic_recovery/joint_loss_result.json",
+    "source_commit": "a05c2339a5ee15a315cdfbc96180d98f41d0bcf4",
+    "status": "completed_no_improvement",
+    "verified_utc": "2026-11-04T10:01:47.911372+00:00"
   },
   "latest_closed_control": {
     "name": "residual_bias",
@@ -215,7 +195,7 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Prior snapshot read back; current evaluation update pending publication.",
+    "status": "Previous snapshot verified. Completed joint-loss evaluation pending upload.",
     "last_verified_remote_commit": "93d93237a9657acc9d0430ace23ad68532037b65",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -433,33 +413,8 @@
     "universal_recovery_failure_required": false
   },
   "recovery_joint_loss": {
-    "status": "TA_and_AGA_then_real_ProDistill",
-    "target": "MNIST",
-    "partner": "SVHN",
-    "protocol": "results/data_free_compensation/synthetic_recovery/joint_loss_protocol.json",
-    "output": "outputs/recovery_joint_loss_20261104",
-    "release_sha256": "e7aaaafd09affe135ac77916cd2e2a3acbe122f00e28a8b9f15e4bf34ad32d8d",
-    "source_commit": "a05c2339a5ee15a315cdfbc96180d98f41d0bcf4",
-    "timeout_pid": 18138,
-    "log": "outputs/recovery_joint_loss_20261104_run/evaluate.log",
-    "results": {
-      "source_updates_accepted": 1,
-      "synthetic_recovered_correct_before_after": [
-        64,
-        64
-      ],
-      "synthetic_recovered_n": 64,
-      "source_constraint_passed": false,
-      "full_native": {
-        "n": 10000,
-        "original_correct": 9969,
-        "protected_correct": 9968,
-        "changed_predictions": 6,
-        "strict_margin_R": 16.67534888898165,
-        "strict_passed": false,
-        "raw_sha256": "fd243b780d6667283a42fcf665839b2bc0e584b759b4b7e9c733c092cbe5e707",
-        "independently_recounted": true
-      }
-    }
+    "status": "completed_no_improvement",
+    "record": "results/data_free_compensation/synthetic_recovery/joint_loss_result.json",
+    "release_sha256": "e7aaaafd09affe135ac77916cd2e2a3acbe122f00e28a8b9f15e4bf34ad32d8d"
   }
 }
