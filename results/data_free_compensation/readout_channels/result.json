@@ -1,0 +1,355 @@
+{
+  "target": "MNIST",
+  "partner": "SVHN",
+  "frozen": {
+    "releases": {
+      "ReadoutOnly": {
+        "path": "outputs/readout_channels_20261104/ReadoutOnly.pt",
+        "sha256": "43fa7c1ae96563a645a457ad4246390d782950c2102f178d134ca426a864f7a4"
+      },
+      "ABReadout": {
+        "path": "outputs/readout_channels_20261104/ABReadout.pt",
+        "sha256": "07bc7625e78d501fc95a4b7517201b481502a25542321c5f0eae378bae738cc7"
+      }
+    },
+    "canonical": {
+      "CleanCanonical": {
+        "path": "outputs/readout_channels_20261104/CleanCanonical.pt",
+        "sha256": "552365a9366b840ffabfa79e999f1cb27491a87e1a6c586c5e6b33c63752aa0a"
+      },
+      "ABCanonical": {
+        "path": "outputs/readout_channels_20261104/ABCanonical.pt",
+        "sha256": "2eb33ca33381169376e9a29067301ff08a9e356a35594db4faa827ce2de79fb6"
+      }
+    },
+    "checkpoints": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "channel": 580,
+    "channel_scale": 31.696615140270005,
+    "background_scale": -1.7887885053796073,
+    "relative_edits": {
+      "model.visual.ln_post.weight": 2.961264517050076,
+      "model.visual.ln_post.bias": 2.856621086476419,
+      "model.visual.proj": 1.5583812365003356
+    },
+    "native_weight_max_error": 8.378529869901286e-09,
+    "native_offset_max_error": 1.51054879715673e-08,
+    "real_construction_images": 0,
+    "source_sha256": "2c6d05f44022d07a36128db057d5e1e33eb946c96e8d78040e0f111624635c1d"
+  },
+  "native_vs_AB_parent": {
+    "n": 10000,
+    "changed_from_AB_parent": 0,
+    "max_logit_difference": 7.62939453125e-06
+  },
+  "full": {
+    "ta/Unprotected/Standalone/None/MNIST": {
+      "n": 10000,
+      "correct": 9969,
+      "negated_correct": 0
+    },
+    "ta/Unprotected/TA/None/MNIST": {
+      "n": 10000,
+      "correct": 9937,
+      "negated_correct": 0
+    },
+    "ta/Unprotected/TA/None/SVHN": {
+      "n": 26032,
+      "correct": 24079,
+      "negated_correct": 18
+    },
+    "ta/Unprotected/TA/Protected expert/MNIST": {
+      "n": 10000,
+      "correct": 9930,
+      "negated_correct": 0
+    },
+    "ta/Unprotected/TA/Protected expert/SVHN": {
+      "n": 26032,
+      "correct": 24153,
+      "negated_correct": 17
+    },
+    "ta/Unprotected/TA/All experts/MNIST": {
+      "n": 10000,
+      "correct": 9932,
+      "negated_correct": 0
+    },
+    "ta/Unprotected/TA/All experts/SVHN": {
+      "n": 26032,
+      "correct": 23890,
+      "negated_correct": 17
+    },
+    "ta/ReadoutOnly/Standalone/None/MNIST": {
+      "n": 10000,
+      "correct": 9969,
+      "negated_correct": 0
+    },
+    "ta/ReadoutOnly/TA/None/MNIST": {
+      "n": 10000,
+      "correct": 1,
+      "negated_correct": 5856
+    },
+    "ta/ReadoutOnly/TA/None/SVHN": {
+      "n": 26032,
+      "correct": 179,
+      "negated_correct": 15426
+    },
+    "ta/ReadoutOnly/TA/Protected expert/MNIST": {
+      "n": 10000,
+      "correct": 2,
+      "negated_correct": 5639
+    },
+    "ta/ReadoutOnly/TA/Protected expert/SVHN": {
+      "n": 26032,
+      "correct": 185,
+      "negated_correct": 15263
+    },
+    "ta/ReadoutOnly/TA/All experts/MNIST": {
+      "n": 10000,
+      "correct": 2,
+      "negated_correct": 5466
+    },
+    "ta/ReadoutOnly/TA/All experts/SVHN": {
+      "n": 26032,
+      "correct": 253,
+      "negated_correct": 14870
+    },
+    "ta/ABReadout/Standalone/None/MNIST": {
+      "n": 10000,
+      "correct": 9957,
+      "negated_correct": 0
+    },
+    "ta/ABReadout/TA/None/MNIST": {
+      "n": 10000,
+      "correct": 7,
+      "negated_correct": 2128
+    },
+    "ta/ABReadout/TA/None/SVHN": {
+      "n": 26032,
+      "correct": 89,
+      "negated_correct": 5654
+    },
+    "ta/ABReadout/TA/Protected expert/MNIST": {
+      "n": 10000,
+      "correct": 8,
+      "negated_correct": 46
+    },
+    "ta/ABReadout/TA/Protected expert/SVHN": {
+      "n": 26032,
+      "correct": 126,
+      "negated_correct": 1137
+    },
+    "ta/ABReadout/TA/All experts/MNIST": {
+      "n": 10000,
+      "correct": 9,
+      "negated_correct": 39
+    },
+    "ta/ABReadout/TA/All experts/SVHN": {
+      "n": 26032,
+      "correct": 159,
+      "negated_correct": 1063
+    },
+    "canonical/Unprotected/Standalone/None/MNIST": {
+      "n": 10000,
+      "correct": 9969,
+      "negated_correct": 0
+    },
+    "canonical/Unprotected/TA/None/MNIST": {
+      "n": 10000,
+      "correct": 9937,
+      "negated_correct": 0
+    },
+    "canonical/Unprotected/TA/None/SVHN": {
+      "n": 26032,
+      "correct": 24079,
+      "negated_correct": 18
+    },
+    "canonical/CleanCanonical/Standalone/None/MNIST": {
+      "n": 10000,
+      "correct": 9969,
+      "negated_correct": 0
+    },
+    "canonical/CleanCanonical/TA/None/MNIST": {
+      "n": 10000,
+      "correct": 9937,
+      "negated_correct": 0
+    },
+    "canonical/CleanCanonical/TA/None/SVHN": {
+      "n": 26032,
+      "correct": 24079,
+      "negated_correct": 18
+    },
+    "canonical/ABCanonical/Standalone/None/MNIST": {
+      "n": 10000,
+      "correct": 9957,
+      "negated_correct": 0
+    },
+    "canonical/ABCanonical/TA/None/MNIST": {
+      "n": 10000,
+      "correct": 2514,
+      "negated_correct": 86
+    },
+    "canonical/ABCanonical/TA/None/SVHN": {
+      "n": 26032,
+      "correct": 3451,
+      "negated_correct": 985
+    },
+    "prodistill/Unprotected/full/MNIST": {
+      "n": 10000,
+      "correct": 9945,
+      "negated_correct": 0
+    },
+    "prodistill/Unprotected/full/SVHN": {
+      "n": 26032,
+      "correct": 25181,
+      "negated_correct": 19
+    },
+    "prodistill/ReadoutOnly/full/MNIST": {
+      "n": 10000,
+      "correct": 9910,
+      "negated_correct": 0
+    },
+    "prodistill/ReadoutOnly/full/SVHN": {
+      "n": 26032,
+      "correct": 24589,
+      "negated_correct": 11
+    },
+    "prodistill/ABReadout/full/MNIST": {
+      "n": 10000,
+      "correct": 9863,
+      "negated_correct": 0
+    },
+    "prodistill/ABReadout/full/SVHN": {
+      "n": 26032,
+      "correct": 24085,
+      "negated_correct": 24
+    }
+  },
+  "validation": [
+    {
+      "raw_sha256": "cb75f8be1fef90d0ea97c21acfbfc8a54e3042aa6bba1b5426346e6de76a692a",
+      "rows": 21,
+      "maximum_score_error": 2.288818359375e-05,
+      "full_image_prediction_replays": 336
+    },
+    {
+      "raw_sha256": "c3bef0a131535c9541bc036b161c7385ef30525aebe52ca8afb688d074560ec5",
+      "rows": 9,
+      "maximum_score_error": 9.5367431640625e-06,
+      "full_image_prediction_replays": 144
+    },
+    {
+      "raw_sha256": "82f2a3fa59be41d95a6d43c654fcc65b358667ea9f4332db44ff69840f97234e",
+      "full_rows": 6,
+      "maximum_context_score_error": 1.71661376953125e-05,
+      "score_replays": 192
+    }
+  ],
+  "cross_readout": [
+    {
+      "prefix": "TA0.5",
+      "readout": "0.3",
+      "task": "MNIST",
+      "n": 10000,
+      "correct": 1909,
+      "reused": false
+    },
+    {
+      "prefix": "TA0.5",
+      "readout": "0.3",
+      "task": "SVHN",
+      "n": 26032,
+      "correct": 3044,
+      "reused": false
+    },
+    {
+      "prefix": "TA0.5",
+      "readout": "0.5",
+      "task": "MNIST",
+      "n": 10000,
+      "correct": 7,
+      "reused": true
+    },
+    {
+      "prefix": "TA0.5",
+      "readout": "0.5",
+      "task": "SVHN",
+      "n": 26032,
+      "correct": 89,
+      "reused": true
+    },
+    {
+      "prefix": "ProDistill_initial0.3",
+      "readout": "0.3",
+      "task": "MNIST",
+      "n": 10000,
+      "correct": 1848,
+      "reused": false
+    },
+    {
+      "prefix": "ProDistill_initial0.3",
+      "readout": "0.3",
+      "task": "SVHN",
+      "n": 26032,
+      "correct": 2701,
+      "reused": false
+    },
+    {
+      "prefix": "ProDistill_initial0.3",
+      "readout": "0.5",
+      "task": "MNIST",
+      "n": 10000,
+      "correct": 67,
+      "reused": false
+    },
+    {
+      "prefix": "ProDistill_initial0.3",
+      "readout": "0.5",
+      "task": "SVHN",
+      "n": 26032,
+      "correct": 329,
+      "reused": false
+    },
+    {
+      "prefix": "ProDistill_trained",
+      "readout": "0.3",
+      "task": "MNIST",
+      "n": 10000,
+      "correct": 9863,
+      "reused": true
+    },
+    {
+      "prefix": "ProDistill_trained",
+      "readout": "0.3",
+      "task": "SVHN",
+      "n": 26032,
+      "correct": 24085,
+      "reused": true
+    },
+    {
+      "prefix": "ProDistill_trained",
+      "readout": "0.5",
+      "task": "MNIST",
+      "n": 10000,
+      "correct": 5,
+      "reused": false
+    },
+    {
+      "prefix": "ProDistill_trained",
+      "readout": "0.5",
+      "task": "SVHN",
+      "n": 26032,
+      "correct": 93,
+      "reused": false
+    }
+  ],
+  "cross_readout_validation": {
+    "rows": 12,
+    "new_rows": 8,
+    "raw_sha256": "11e052030c06829bb579692d6cef4a933ab998f0bdb3ffee81b96d9d4442ffa6",
+    "independent_official_label_and_top1_recount_new_rows": 8
+  },
+  "interpretation": "Fixed MNIST/SVHN only. Readout-only already strongly suppresses TA and AGA. At the same 0.3 readout coefficient, fitting ProDistill blocks restores MNIST from 18.48 to 98.63 percent. Known readout normalization before TA removes essentially the added benefit versus the original A/B."
+}

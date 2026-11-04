@@ -1,0 +1,209 @@
+{
+  "target": "MNIST",
+  "partner": "SVHN",
+  "release": "e7aaaafd09affe135ac77916cd2e2a3acbe122f00e28a8b9f15e4bf34ad32d8d",
+  "protocol": "results/data_free_compensation/synthetic_recovery/joint_loss_protocol.json",
+  "source_sha256": "590e0a244e9edfd3ff0fbfbc697e806431cf8ea930f36fddb11f2dd7bcd006a1",
+  "output": "outputs/recovery_joint_loss_20261104",
+  "construction": {
+    "real_images": 0,
+    "accepted_steps": 1,
+    "source_feasible": false,
+    "initial_objective": -5.623120210182547,
+    "final_objective": -4.8908235514589125,
+    "initial_recovered_correct": 64,
+    "final_recovered_correct": 64,
+    "recovery_total": 64,
+    "seconds": 407.58307760953903
+  },
+  "native": {
+    "n": 10000,
+    "changed": 6,
+    "R": 16.67534888898165,
+    "stage": "full",
+    "before_correct": 9969,
+    "after_correct": 9968,
+    "strict_task_passed": false,
+    "accuracy_loss_pp": 0.01,
+    "passed": false,
+    "raw_sha256": "fd243b780d6667283a42fcf665839b2bc0e584b759b4b7e9c733c092cbe5e707"
+  },
+  "full_evaluation": [
+    {
+      "defense": "Unprotected",
+      "merger": "Standalone",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9969
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9937
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 24079
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9930
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 24153
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9932
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 23890
+    },
+    {
+      "defense": "Defense2",
+      "merger": "Standalone",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9968
+    },
+    {
+      "defense": "Defense2",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9733
+    },
+    {
+      "defense": "Defense2",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 19037
+    },
+    {
+      "defense": "Defense2",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 7810
+    },
+    {
+      "defense": "Defense2",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 16131
+    },
+    {
+      "defense": "Defense2",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 7660
+    },
+    {
+      "defense": "Defense2",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 14948
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9945
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 25181
+    },
+    {
+      "defense": "Defense2",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9949
+    },
+    {
+      "defense": "Defense2",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 25159
+    }
+  ],
+  "TA_validation": {
+    "rows": 14,
+    "raw_sha256": "066953c22f80c16c3b20fe82753f7585b54e7e2a642e3f84e048fcacf735abc4",
+    "maximum_score_error": 2.288818359375e-05,
+    "full_image_prediction_replays": 224
+  },
+  "ProDistill_validation": {
+    "status": "passed",
+    "score_replays": 128,
+    "maximum_context_score_error": 1.71661376953125e-05,
+    "raw_sha256": "903518e71556ddc637fe9fa10cb0791653be0275307f28883cf7d7bdbf437a1f",
+    "full_rows": 4
+  },
+  "ProDistill_paired_vs_unprotected": {
+    "MNIST": {
+      "n": 10000,
+      "unprotected_correct": 9945,
+      "protected_correct": 9949,
+      "lost": 3,
+      "gained": 7,
+      "paired_p": 0.34375
+    },
+    "SVHN": {
+      "n": 26032,
+      "unprotected_correct": 25181,
+      "protected_correct": 25159,
+      "lost": 50,
+      "gained": 28,
+      "paired_p": 0.016853089894602595
+    }
+  },
+  "interpretation": "Standalone accuracy retained. Direct TA and AGA protection are weaker than the current Defense 2. The ProDistill target result is similar to the matched unprotected result."
+}
