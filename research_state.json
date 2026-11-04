@@ -23,11 +23,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-04T11:09:20.826658+00:00",
+    "verified_utc": "2026-11-04T11:46:20.366596+00:00",
     "primary_available_GiB": 44,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
@@ -128,32 +128,26 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-04T11:09:20.826658+00:00",
-  "status": "combined_bias_ab_running",
-  "active_focus": "冻结原防御一与防御二，检验偏置对同一蒸馏协议的作用及已知位置清理后的边界。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "status": "running",
-      "timeout_pid": 26781,
-      "protocol": "results/comparison/combined_bias_ab/protocol.json",
-      "log": "outputs/combined_bias_ab_20261104.log",
-      "source_commit": "09efd93f6bf40e88e04dd60c518cb1c1640cb2a4",
-      "scope": "Combined ablation on one fixed MNIST/SVHN pair; known-bias cleanup matched"
-    }
-  ],
-  "next_action": "Complete and recount the combined comparison. Keep single-defense and data-assisted treatment separate.",
+  "updated_utc": "2026-11-04T11:46:20.366596+00:00",
+  "status": "combined_bias_ab_completed",
+  "active_focus": "改进数据无关防御二的恢复后表现；固定读出补偿和两防御合用比较均已核验完成。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Use the completed fixed-prefix and readout analysis to constrain the next mechanism. Added bias alone does not change the A/B recovery weakness. No automatic GPU queue.",
   "closed_history": {
     "full_state_commit": "a97313343c67f9fb9f5f2010d1fd559a4fb8425d",
     "index": "results/comparison/README.md",
     "rule": "原模型、逐图分数、失败证据及执行源码保留；不按测试结果重启已关闭点。"
   },
   "latest_completed_batch": {
-    "name": "readout_channels",
-    "record": "results/data_free_compensation/readout_channels/result.json",
-    "summary": "results/data_free_compensation/readout_channels/summary.md",
-    "cross_readout_raw_rows_verified": 8,
-    "status": "completed_not_promoted"
+    "name": "combined_bias_ab",
+    "record": "results/comparison/combined_bias_ab/result.json",
+    "summary": "results/comparison/combined_bias_ab/summary.md",
+    "status": "completed_frozen_supplement",
+    "native_MNIST": 99.57,
+    "TA_AGA_ProDistill_MNIST": 9.8,
+    "bias_cleanup_ProDistill_MNIST": 99.43,
+    "readout_constant_class_verified": true
   },
   "latest_closed_control": {
     "name": "residual_bias",
@@ -204,8 +198,8 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Previous snapshot verified. Completed joint-loss evaluation pending upload.",
-    "last_verified_remote_commit": "93d93237a9657acc9d0430ace23ad68532037b65",
+    "status": "Readout completion and combined preregistration published; combined final results pending publication.",
+    "last_verified_remote_commit": "296384b25bd3354602ccd32a909436d680e7c30c",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "params_composition": {

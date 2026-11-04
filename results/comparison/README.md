@@ -25,6 +25,7 @@
 |---|---|
 | [攻击结果](attacks.md) / [TeX](attacks.tex) | 无保护、PaRaMS、防御一、防御二；三个保护任务，同条件攻击 |
 | [当前Unmask](unmask.md) / [TeX](unmask.tex) | 当前两种防御、PaRaMS及匹配无保护；八专家、七个完整测试集 |
+| [防御一与防御二合用](combined_bias_ab/summary.md) / [TeX](combined_bias_ab/summary.tex) | 固定MNIST发布，独立、TA、AGA、偏置清理、B替换和ProDistill；原组件不重拟合。 |
 | [PaRaMS组合对照](params_composition.md) / [TeX](params_composition.tex) | 固定MNIST组合的独立、TA、AGA和ProDistill；已知位置恢复另见[恢复表](params_composition_recovery.md)。 |
 | [伙伴结果](partners.md) / [TeX](partners.tex) | 相同模型在伙伴任务上的表现 |
 | [ProDistill恢复](feature_distillation.md) / [TeX](feature_distillation.tex) | 额外64图/任务的中间特征蒸馏；目标和伙伴同时报告 |

@@ -1,0 +1,14 @@
+\begin{tabular}{lrrrr}
+\toprule
+& \multicolumn{2}{c}{MNIST} & \multicolumn{2}{c}{SVHN} \\
+Processing & Clean & Combined & Clean & Combined \\
+\midrule
+TA & 99.37 & 9.80 & 92.50 & 6.70 \\
+AGA (target) + TA & 99.30 & 9.80 & 92.78 & 6.70 \\
+AGA (both) + TA & 99.32 & 9.80 & 91.77 & 6.70 \\
+Bias cleanup + TA & 99.37 & 25.15 & 92.50 & 13.25 \\
+B reset + TA & 99.35 & 9.80 & 92.45 & 6.70 \\
+ProDistill & 99.45 & 9.80 & 96.73 & 6.70 \\
+Bias cleanup + ProDistill & 99.45 & 99.43 & 96.73 & 96.22 \\
+\bottomrule
+\end{tabular}
