@@ -1,12 +1,39 @@
 {
-  "updated_utc": "2026-11-04T10:01:47.911372+00:00",
-  "status": "joint_loss_completed_no_improvement",
-  "active_focus": "保留主表的防御一和防御二。MNIST这次改动已完成恢复对比，结果单列。",
+  "updated_utc": "2026-11-04T10:12:16.928431+00:00",
+  "status": "readout_channels_frozen_evaluation",
+  "active_focus": "检验末层读出的无数据补偿及其与现有A/B的合用，保留现有主方法。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "保留当前主方法；这次联合损失的固定检查结束，不扩到其他任务。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "status": "running",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "protocol": "results/data_free_compensation/readout_channels/protocol.json",
+      "output": "outputs/readout_channels_20261104",
+      "source_commit": "00edd08aec225d0d91cadb03775afcc785919261",
+      "timeout_pid": 20290,
+      "log": "outputs/readout_channels_20261104_run/evaluate.log",
+      "releases": {
+        "ReadoutOnly": {
+          "path": "outputs/readout_channels_20261104/ReadoutOnly.pt",
+          "sha256": "43fa7c1ae96563a645a457ad4246390d782950c2102f178d134ca426a864f7a4"
+        },
+        "ABReadout": {
+          "path": "outputs/readout_channels_20261104/ABReadout.pt",
+          "sha256": "07bc7625e78d501fc95a4b7517201b481502a25542321c5f0eae378bae738cc7"
+        }
+      },
+      "evaluation": [
+        "full standalone",
+        "ProDistill",
+        "TA and AGA",
+        "known-location readout normalization with matched clean control"
+      ]
+    }
+  ],
+  "next_action": "Read back target and partner scores, compare readout-only with A/B plus readout and inspect the matched location-aware recovery. No tuning on evaluation data.",
   "latest_completed_batch": {
     "name": "MNIST_joint_loss",
     "record": "results/data_free_compensation/synthetic_recovery/joint_loss_result.json",
