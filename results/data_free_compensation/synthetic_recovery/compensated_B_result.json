@@ -1,0 +1,131 @@
+{
+  "status": "closed_no_classification_improvement",
+  "source_commit": "6c5a077423444629fb8db51f14f5b152e31cfdfb",
+  "protocol": "results/data_free_compensation/synthetic_recovery/compensated_B_protocol.json",
+  "freeze": {
+    "path": "outputs/recovery_compensated_B_20261104/point.pt",
+    "sha256": "c2c1eab6f749b22f88cfc366c4f5ae60c41bbdcd7908507a48e52a6b091e2727",
+    "accepted_steps": 5,
+    "source_matches_after_rounding": 800,
+    "source_total": 800,
+    "objective": "joint_margin",
+    "initial_objective": -5.623120210182547,
+    "final_objective": -1.9660737541047277,
+    "final_recovered_margin": -1.9660737541047277,
+    "final_fusion_penalty": 0.0,
+    "real_construction_images": 0,
+    "initial_recovered_correct": 64,
+    "final_recovered_correct": 64,
+    "recovery_total": 64,
+    "initial_public_counts": {
+      "direct": 0,
+      "recovered": 0
+    },
+    "final_public_counts": {
+      "direct": 0,
+      "recovered": 0
+    },
+    "classification_improved": false,
+    "native_error_after_rounding": 12.031309924369392,
+    "native_limit": 1.2644836124713486,
+    "source_feasible": true,
+    "native_constraint": "all_original_synthetic_decisions",
+    "native_loss_in_update_direction": true,
+    "initial_native_ce": 0.00636014686106402,
+    "final_native_ce": 0.2220569383843878,
+    "historical_feature_constraint_passed": false,
+    "A_relative": 1.0956979797447322,
+    "B_relative": 3.1535000418421513,
+    "coefficient_forward_updates": 1700,
+    "reverse_update_steps": 600,
+    "peak_GPU_bytes": 4303421440,
+    "source_sha256": "96a21e2f38187cee519ca504d7e8b128645b2a5fa37275ec83a7180cbf07e8a4",
+    "seconds": 570.4422777816653,
+    "changed_from_initial": true
+  },
+  "independent_recount": {
+    "native_matches": [
+      800,
+      800
+    ],
+    "recovered_correct_before": 64,
+    "recovered_correct_after": 64,
+    "lost": 0,
+    "gained": 0,
+    "class_counts": [
+      6,
+      6,
+      8,
+      5,
+      8,
+      5,
+      11,
+      4,
+      6,
+      5
+    ],
+    "mean_margin_before": 5.623120210182547,
+    "mean_margin_after": 1.9660737541047277,
+    "min_margin_after": 0.7329470344710884,
+    "native_ce": 0.22205693838438784,
+    "objective_numpy": -1.9660737541047277,
+    "fit_views": "Reused source inputs. Labels are frozen original expert predictions.",
+    "public_base_endpoint_in_mixed_readout": {
+      "correct": 60,
+      "recovery_correct_where_base_disagrees": 4,
+      "base_disagrees": 4,
+      "reference": "results/data_free_compensation/synthetic_recovery/midpoint_result.json"
+    }
+  },
+  "accepted_native_matches": [
+    {
+      "a_only": 800,
+      "before": 800,
+      "after": 800
+    },
+    {
+      "a_only": 800,
+      "before": 800,
+      "after": 800
+    },
+    {
+      "a_only": 797,
+      "before": 797,
+      "after": 800
+    },
+    {
+      "a_only": 798,
+      "before": 798,
+      "after": 800
+    },
+    {
+      "a_only": 800,
+      "before": 800,
+      "after": 800
+    }
+  ],
+  "last_iteration": {
+    "native_matches_after_correction": [
+      800,
+      800,
+      800,
+      800,
+      800,
+      800,
+      800,
+      800
+    ],
+    "outside_B_bound": 6,
+    "within_bounds_but_worse_objective": 2
+  },
+  "hashes": {
+    "source_scores.pt": "af563d0a3abf38fc7727f79ad12b00a5aac97c11ca96ed828660d08c5699b713",
+    "progress.json": "aac1822b6a77abf35861d3b68c23888d9b1543a028d7ac591a8898ed22fa5e04",
+    "freeze.json": "8e56abe0e31c6e2b5bfe7b0aa621a2e5b440bfc7105ed0d5082e22bac9bcc33e",
+    "gradient_check.json": "5cb89b7eb35bd2fa5a5fece5e38b2cbba424c9ca89f76e85f3201c20875594a9",
+    "protocol.json": "22181654e9307a8ef249a08192f3be1158b051aa038170192ea06864a0f4c0b3"
+  },
+  "complete_MNIST": "Not evaluated on this point because recovery retained every source prediction.",
+  "completed_utc": "2026-11-04T15:06:20Z",
+  "verified_utc": "2026-11-04T15:19:36.368354+00:00"
+}
