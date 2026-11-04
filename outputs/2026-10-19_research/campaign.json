@@ -1,12 +1,12 @@
 {
-  "updated_utc": "2026-11-04T16:42:52.427777+00:00",
-  "status": "prodistill_sources_completed",
+  "updated_utc": "2026-11-04T16:55:54.821633+00:00",
+  "status": "feature_source_controls_completed",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Test a source-defined change in feature supervision with exact native invariance; parameter matching alone does not address the observed feature-only recovery.",
+  "next_action": "Use the paper/code comparison to specify a data-free joint task/fusion construction. Do not repeat mean perturbation or treat a wider parameter scope alone as a mechanism. No new defense run registered.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -389,5 +389,17 @@
       "FeaturesOnly": 97.51,
       "Neither": 68.26
     }
+  },
+  "prodistill_mean_control": {
+    "status": "closed_no_effect",
+    "record": "results/data_free_compensation/synthetic_recovery/mean_control_result.json",
+    "source_commit": "10866f81d4f39b3e7258f5e272cb5ca95c9ff513",
+    "native_percent": 99.57,
+    "ProDistill_MNIST_percent": 99.42,
+    "ProDistill_SVHN_percent": 96.21235402581438,
+    "parent_ProDistill_MNIST_percent": 99.43,
+    "attack_steps": 1200,
+    "defense_gradient_steps": 0,
+    "real_construction_images": 0
   }
 }

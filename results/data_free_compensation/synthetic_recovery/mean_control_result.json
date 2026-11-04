@@ -1,0 +1,195 @@
+{
+  "status": "closed_no_effect",
+  "source_commit": "10866f81d4f39b3e7258f5e272cb5ca95c9ff513",
+  "protocol": "results/data_free_compensation/synthetic_recovery/mean_control_protocol.json",
+  "output": "outputs/prodistill_mean_control_20261105",
+  "freeze": {
+    "release": {
+      "path": "outputs/prodistill_mean_control_20261105/point.pt",
+      "sha256": "df4370e077edba0cd8de3d7c9766d65c396b6a8b53bcb9f3ff48427440b42dad"
+    },
+    "B_relative": 3.9999960002117847,
+    "task_right_residual": 1.474061373411316e-16,
+    "centered_B_error": 5.685834980617699e-08,
+    "added_norm": 56.083040552801336,
+    "real_construction_images": 0,
+    "known_cleanup": "Column-centering B removes this mean addition in exact arithmetic.",
+    "source_sha256": "0ebf80719ce092a54a29beb9fd4fc29e488fef3dd0c13c5ec1f2830752acc9cc"
+  },
+  "native": {
+    "n": 10000,
+    "same_predictions": 10000,
+    "before_correct": 9957,
+    "after_correct": 9957,
+    "max_score_error": 3.24249267578125e-05,
+    "raw_sha256": "ec61291ea0d239c6c784607d867c38d7eef1c82bbdfb535be11c99db74ed718e"
+  },
+  "comparison_to_parent_ProDistill": [
+    {
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9942,
+      "reference_correct": 9943,
+      "lost": 2,
+      "gained": 1,
+      "delta_pp": -0.01,
+      "paired_95ci_pp": [
+        -0.04394932752918632,
+        0.023949327529186323
+      ],
+      "exact_mcnemar_p": 1.0,
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 977,
+          "original_correct": 977
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1125,
+          "original_correct": 1131
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 1028,
+          "original_correct": 1030
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 1007,
+          "original_correct": 1009
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 978,
+          "original_correct": 979
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 885,
+          "original_correct": 883
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 952,
+          "original_correct": 949
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1018,
+          "original_correct": 1015
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 971,
+          "original_correct": 972
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 1001,
+          "original_correct": 1000
+        }
+      ]
+    },
+    {
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 25046,
+      "reference_correct": 25049,
+      "lost": 14,
+      "gained": 11,
+      "delta_pp": -0.011524277811923786,
+      "paired_95ci_pp": [
+        -0.04917071477798385,
+        0.026122159154136272
+      ],
+      "exact_mcnemar_p": 0.6900379657745361,
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1710,
+          "original_correct": 1714
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4941,
+          "original_correct": 4967
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 4043,
+          "original_correct": 4063
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 2641,
+          "original_correct": 2694
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 2456,
+          "original_correct": 2470
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2319,
+          "original_correct": 2315
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1869,
+          "original_correct": 1873
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1951,
+          "original_correct": 1965
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1616,
+          "original_correct": 1610
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 1500,
+          "original_correct": 1510
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "status": "passed",
+    "score_replays": 128,
+    "maximum_context_score_error": 1.71661376953125e-05,
+    "raw_sha256": "5fbbedb73c6dfd3008613132800000839dc782e0972268a9c7224a6bff6e20f3",
+    "full_rows": 4
+  },
+  "independently_counted_rows": 8,
+  "attack_steps": 1200,
+  "attack_training_seconds": 29.992605574429035,
+  "attack_image_sha256": "eea7e5ee56d0ff23eb5e64440903102bcbd42f071f04bf2c824f9a68789c5eb3",
+  "raw_sha256": "5fbbedb73c6dfd3008613132800000839dc782e0972268a9c7224a6bff6e20f3",
+  "note": "Complete predictions preserved; perturbing the LayerNorm-removed mean did not impede the fixed recovery. No magnitude, rank or layer retry.",
+  "source_archive": "17897:outputs/prodistill_mean_control_20261105/source.py"
+}
