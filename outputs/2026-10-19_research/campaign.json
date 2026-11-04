@@ -1,23 +1,29 @@
 {
-  "updated_utc": "2026-11-04T03:41:55.668643+00:00",
-  "status": "recovery_aware_AB_construction_running",
+  "updated_utc": "2026-11-04T05:32:49.522844+00:00",
+  "status": "closed_no_improvement_after_distillation_or_TA",
   "active_focus": "同类防御论文的恢复机制及无数据适配。100步蒸馏方向导数已核对，未产生新防御。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "等待固定20步源构造结果；仅在发布改变且原合成独立条件通过后，冻结并评价完整独立任务、TA/AGA与蒸馏。不以评价成绩改本批参数。",
+  "next_action": "保留上一版。只在能同时保住原有融合保护、并说明为何能妨碍逐层特征拟合时，才登记下一次无数据构造。",
   "latest_completed_batch": {
-    "name": "synthetic_recovery_derivative",
-    "status": "completed_directional_check",
-    "record": "results/data_free_compensation/synthetic_recovery/derivative_result.json",
-    "source_commit": "a17a754",
-    "new_defense_models": 0,
-    "defense_updates": 0,
-    "real_images": 0,
-    "inner_updates": 600,
-    "seconds": 107.4537248313427,
-    "maximum_relative_difference": 0.013338201745332307
+    "name": "MNIST_recovery_aware_AB",
+    "record": "results/data_free_compensation/synthetic_recovery/construction_result.json",
+    "source_commit": "3012ac076fba2c64a356999922ad617f7ed80c2b",
+    "status": "closed_no_improvement_after_distillation_or_TA",
+    "real_construction_images": 0,
+    "new_defense_models": 1,
+    "accepted_updates": 9,
+    "stopped_at_iteration": 10,
+    "native_percent": 99.66000000000001,
+    "TA_and_AGA_MNIST_percent": [
+      99.35000000000001,
+      99.3,
+      99.31
+    ],
+    "ProDistill_MNIST_percent": 99.44,
+    "verified_utc": "2026-11-04T05:32:49.522844+00:00"
   },
   "latest_closed_control": {
     "name": "residual_bias",
@@ -68,8 +74,8 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Latest construction committed locally and deployed; GitHub create_tree returned Unknown tool after successful head read. Publication pending.",
-    "last_verified_remote_commit": "31e226cdb7cbd3bc048705508dfa6b1344bc5c72",
+    "status": "Construction protocol read back; current result publication tracked by receipt.",
+    "last_verified_remote_commit": "fc9fb86eb83aa5094554694fc18cfc6b00216ec9",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
   "current_state": "research_state.json",
@@ -200,31 +206,21 @@
   },
   "teacher_guidance": "以五张截图为依据：查清同类论文测过的攻击、有效防御机制与原论文出处；判断能否用于防御一/二，再验证。不把结合理解为仅排版或指定两防御叠加。",
   "recovery_construction": {
-    "status": "running",
-    "protocol": "results/data_free_compensation/synthetic_recovery/construction_protocol.json",
+    "name": "MNIST_recovery_aware_AB",
+    "record": "results/data_free_compensation/synthetic_recovery/construction_result.json",
     "source_commit": "3012ac076fba2c64a356999922ad617f7ed80c2b",
-    "source_sha256": "518e3acb879af34ec7c6a49de6d5c73ccfca049773cfdbba21d510228f9a975c",
-    "output": "outputs/recovery_construction_20261104",
-    "log": "outputs/recovery_construction_20261104_run/run.log",
-    "host": "17897",
-    "timeout_pid": 6470,
-    "python_pid": 6471,
-    "maximum_outer_steps": 20,
-    "real_images": 0,
-    "verified_utc": "2026-11-04T04:58:57.596040+00:00",
-    "result": null,
-    "gradient_check": {
-      "dot": -2.585912132363275,
-      "reference": -2.58591213236327,
-      "error": 4.884981308350689e-15
-    },
-    "latest_iteration": 1,
-    "latest_source_entropy": 0.2119376796245972,
-    "evaluation_queue": {
-      "pid": 6775,
-      "log": "outputs/recovery_construction_20261104_run/native.log",
-      "condition": "Changed source-feasible frozen release only",
-      "scope": "Complete MNIST native plus independent recount; no real data used in construction"
-    }
+    "status": "closed_no_improvement_after_distillation_or_TA",
+    "real_construction_images": 0,
+    "new_defense_models": 1,
+    "accepted_updates": 9,
+    "stopped_at_iteration": 10,
+    "native_percent": 99.66000000000001,
+    "TA_and_AGA_MNIST_percent": [
+      99.35000000000001,
+      99.3,
+      99.31
+    ],
+    "ProDistill_MNIST_percent": 99.44,
+    "verified_utc": "2026-11-04T05:32:49.522844+00:00"
   }
 }

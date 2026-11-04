@@ -10,3 +10,17 @@ Defense 2 & 10.35 & 95.51 & 99.59 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{table}[t]
+\centering\small
+\caption{MNIST accuracy (\%) for the fixed release merged with SVHN. TA uses coefficient 0.5. AGA is applied to the target or both experts before TA. ProDistill uses 64 unlabeled training images per task.}
+\begin{tabular}{lrrrrr}
+\toprule
+Method & Standalone & TA & AGA (target) & AGA (both) & ProDistill \\
+\midrule
+Unprotected & 99.69 & 99.37 & 99.30 & 99.32 & 99.45 \\
+Previous Defense 2 & 99.57 & 25.15 & 2.99 & 1.33 & 99.43 \\
+Recovery objective & 99.66 & 99.35 & 99.30 & 99.31 & 99.44 \\
+\bottomrule
+\end{tabular}
+\end{table}
