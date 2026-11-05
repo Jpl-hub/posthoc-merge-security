@@ -8,7 +8,7 @@ from cfg import require_root
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--output", default="results/paper_tables")
+    p.add_argument("--output", default="/tmp/posthoc-paper-tables")
     p.add_argument("--attack-directory", help="Collect one fixed attack campaign")
     p.add_argument("--defense-comparison", action="store_true", help="Current defenses and PaRaMS, using completed results")
     a = p.parse_args()
