@@ -1,12 +1,26 @@
 {
-  "updated_utc": "2026-11-05T04:53:08.672327+00:00",
-  "status": "recovery_soft_fixed_context_registered",
+  "updated_utc": "2026-11-05T04:54:39.506377+00:00",
+  "status": "recovery_soft_fixed_context_running",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Execute fixed actual-recovery entropy plus full native/public output retention and matched retention-only control; verify derivative first, freeze final points before complete native/TA/AGA/ProDistill evaluation.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "name": "recovery_soft_fixed_context",
+      "host": "21516",
+      "pid": 9661,
+      "timeout_pid": 9659,
+      "log": "outputs/recovery_soft_fixed_context_20261105.log",
+      "source_commit": "f21cb24e600a401c217b489404ef46fa4fa16f40",
+      "stage": "initial_component_derivative_check",
+      "conditions": [
+        "JointRecovery",
+        "RetainOnly"
+      ]
+    }
+  ],
+  "next_action": "Continue fixed-context actual100-step recovery objective and paired retention-only condition. Freeze both final points; queued full native/TA/AGA/ProDistill and independent NumPy summary. First dynamic-assignment check failure preserved; no performance-based repair.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -477,10 +491,12 @@
     "failure_record": "results/data_free_compensation/recovery_soft_input_failure.json"
   },
   "recovery_soft_fixed_context": {
-    "status": "registered_not_started",
+    "status": "running",
     "protocol": "results/data_free_compensation/recovery_soft_fixed_context_protocol.json",
     "output": "outputs/recovery_soft_fixed_context_20261105",
     "log": "outputs/recovery_soft_fixed_context_20261105.log",
-    "real_construction_images": 0
+    "real_construction_images": 0,
+    "source_commit": "f21cb24e600a401c217b489404ef46fa4fa16f40",
+    "pid": 9661
   }
 }
