@@ -1,6 +1,6 @@
 # ProDistill recovery comparison
 
-Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table. Defense 2 is the same updated release as the main attack table.
+Two-expert adaptation of the fixed author coefficient kernel. The attacker uses 64 unlabeled training images per task, task identity, and 100 epochs per block. Initial coefficient 0.3; no AGA preprocessing. Final LayerNorm and projection are not optimized. Defense 1 reuses identical unprotected blocks. Lower target accuracy favors protection; partner accuracy is reported separately. Standalone accuracy is reported in the main attack table. Defense 2 is the same frozen release as the main attack table.
 
 | Target | Defense | Target accuracy | Partner | Partner accuracy |
 | --- | --- | --- | --- | --- |

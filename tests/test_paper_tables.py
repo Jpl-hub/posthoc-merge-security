@@ -37,9 +37,9 @@ def test_current_comparison_is_reproducible_and_keeps_partner_results(tmp_path):
         raw = next(r for r in current["prodistill"]["rows"] if r['target'] == task and r['dataset'] == task
                    and r['defense'] == 'Defense2' and r['stage'] == 'full')
         assert feature[2] == f"{100 * raw['correct'] / raw['n']:.2f}"
-    assert len(saved["tables"]["defense2_versions"]["rows"]) == 6
-    assert len(saved["tables"]["defense2_version_partners"]["rows"]) == 6
-    assert len(saved["tables"]["defense2_eight_versions"]["rows"]) == 18
+    assert len(saved["tables"]["defense2_versions"]["rows"]) == 3
+    assert len(saved["tables"]["defense2_version_partners"]["rows"]) == 3
+    assert len(saved["tables"]["defense2_eight_versions"]["rows"]) == 12
     assert len(saved["tables"]["defense2_eight_calibration"]["rows"]) == 12
     assert len(saved["tables"]["defense2_eight_calibration_target"]["rows"]) == 6
     assert len(saved["tables"]["eight_calibration"]["rows"]) == 24

@@ -1,6 +1,6 @@
 # All evaluated tasks after output calibration
 
-Eight experts, TA coefficient 0.2; AGA processes the protected expert. Each merged model uses the same 64 fixed random inputs for output calibration. No real attack images, clean target expert, or changed-module knowledge is used. Defense 2 denotes the updated release throughout; standalone accuracy is measured before merging. Seven complete test datasets; EuroSAT is excluded, and no eight-task mean is reported.
+Eight experts, TA coefficient 0.2; AGA processes the protected expert. Each merged model uses the same 64 fixed random inputs for output calibration. No real attack images, clean target expert, or changed-module knowledge is used. Defense 2 denotes the single frozen release throughout; standalone accuracy is measured before merging. Seven complete test datasets; EuroSAT is excluded, and no eight-task mean is reported.
 
 | Target | Defense | Processing | MNIST | SVHN | DTD | GTSRB | RESISC45 | Cars | SUN397 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

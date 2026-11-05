@@ -1,6 +1,6 @@
-# Updated Defense 2 with TIES and DARE
+# Defense 2 with TIES and DARE
 
-Same updated releases as the TA and recovery tables. Two experts; MNIST is paired with SVHN, SVHN and DTD with MNIST. Fixed author TIES kernel: top 20 percent, coefficient 1.0. DARE+TA: drop rate 0.2, seed 42, coefficient 0.5. No AGA preprocessing or parameter search. Complete test sets; matching unprotected scores and standalone scores reused after parameter-hash checks. TIES and DARE are merging algorithms, not additional recovery attacks.
+The same frozen release as the TA and recovery tables. Two experts; MNIST is paired with SVHN, SVHN and DTD with MNIST. Fixed author TIES kernel: top 20 percent, coefficient 1.0. DARE+TA: drop rate 0.2, seed 42, coefficient 0.5. No AGA preprocessing or parameter search. Complete test sets; matching unprotected scores and standalone scores reused after parameter-hash checks. TIES and DARE are merging algorithms, not additional recovery attacks.
 
 | Task | Defense | Standalone | TIES target | TIES partner | DARE target | DARE partner |
 | --- | --- | --- | --- | --- | --- | --- |

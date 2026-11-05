@@ -18,7 +18,7 @@
 
 A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任务投影约束后，三任务的收益方向不一致。论文可以描述 SVD 的构造作用和完整消融，证据还不足以把保护效果归因于 SVD。
 
-八专家 TA 0.2 已完成三个保护方向、七个完整测试集的对比。这里的“八专家”是参与融合的模型数，不是八个数据集。当前防御二使用[版本表中的 Updated 行](defense2_eight_versions.md)；Earlier 行只作版本对照。EuroSAT 的原专家测试划分仍待核实，因此不写八任务平均数。另列的防御一 ViT-B/16 结果支持第二骨干上的直接融合和 AGA 比较。
+八专家 TA 0.2 已完成三个保护方向、七个完整测试集的对比。这里的“八专家”是参与融合的模型数，不是八个数据集。当前防御二使用[八专家主表](defense2_eight_versions.md)。EuroSAT 的原专家测试划分仍待核实，因此不写八任务平均数。另列的防御一 ViT-B/16 结果支持第二骨干上的直接融合和 AGA 比较。
 
 ## 写作与汇报用表
 
@@ -27,7 +27,7 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 | 两专家正文主表 | [独立、目标与伙伴](paper_main.md) · [TeX](paper_main.tex) |
 | 输出校正、匹配及硬标签蒸馏的逐项结果 | [目标](attacks.md) · [TeX](attacks.tex) · [伙伴](partners.md) · [TeX](partners.tex) |
 | 当前发布在八专家下的 TA、AGA 和输出校正 | [三个目标](eight_calibration_target.md) · [TeX](eight_calibration_target.tex) · [七个测试集](eight_calibration.md) · [TeX](eight_calibration.tex) |
-| 防御二旧版与当前版的八专家对照 | [版本表](defense2_eight_versions.md) · [TeX](defense2_eight_versions.tex) |
+| 防御二八专家主表 | [结果](defense2_eight_versions.md) · [TeX](defense2_eight_versions.tex) |
 | 防御二的 A/B 删项和同范数随机对照 | [目标](defense2_components.md) · [TeX](defense2_components.tex) · [伙伴](defense2_component_partners.md) · [TeX](defense2_component_partners.tex) |
 | 任务 SVD 投影约束的消融 | [目标](defense2_projection.md) · [TeX](defense2_projection.tex) · [伙伴](defense2_projection_partners.md) · [TeX](defense2_projection_partners.tex) |
 | 两种防御在相同设置下的 ProDistill | [结果](feature_distillation.md) · [TeX](feature_distillation.tex) |
@@ -51,14 +51,14 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 
 ## 接下来按这个顺序
 
-1. **先把主方法定清楚。** 正文使用原来的 A/B 防御二。另一个版本只在 A/B 之后改最后的 LayerNorm 和投影，三任务的固定 ProDistill 结果为 MNIST 10.32%、SVHN 15.94%、DTD 2.13%；公开 B 替换仍能恢复，因此它放在补充表里。
+1. **先把主方法定清楚。** 正文使用 A/B 防御二。另一个补偿对照只在 A/B 之后改最后的 LayerNorm 和投影，三任务的固定 ProDistill 结果为 MNIST 10.32%、SVHN 15.94%、DTD 2.13%；公开 B 替换仍能恢复，因此它放在补充表里。
 2. **把两种防御的结论写到各自证据为止。** 防御一保留原版 AGA 和固定 ProDistill 的正结果。如果投稿主张包括知道最终偏置位置的攻击，当前只改核空间偏置的机制可以被投影直接清理，需要解决结构问题。防御二的主对比使用同一冻结发布，读出补偿、取反及投影消融单列。
 3. **方法选定后收齐稿件与复现材料。** 同一发布整理独立损失、目标和伙伴、两种 AGA 范围、选定恢复、关键消融、构造成本和复现命令。已有结果按指纹复用。当前 GitHub 同步状态以本地 `outputs/latest_github_sync_receipt.json` 为准。
 
 ## 补充与历史证据
 
 - **现版补充**：[TIES/DARE](defense2_mergers.md) · [硬标签蒸馏](defense2_hard_label.md) · [Unmask](unmask.md) · [投影约束下的恢复](defense2_projection_recovery.md) · [ViT-B/16](../backbone_b16/summary.md)。TA、TIES、DARE 属于融合方法，单列各自的恢复设置。
-- **版本与组合**：[两专家版本对比](defense2_versions.md) · [八专家版本对比](defense2_eight_versions.md) · [两防御合用](combined_bias_ab/summary.md) · [PaRaMS 组合](params_composition.md)。主文按表注明使用的发布版本。
+- **当前方法与组合**：[防御二恢复表](defense2_versions.md) · [八专家主表](defense2_eight_versions.md) · [两防御合用](combined_bias_ab/summary.md) · [PaRaMS 组合](params_composition.md)。
 - **关闭的探索**：[公开增益抵消与取反恢复](../data_free_compensation/readout_public_gain_20261106/result.json) · [PaRaMS 剪枝对照](params_pruning/summary.md) · [互补视图](defense2_native_views.md) · [逐类均值](defense2_native_means.md) · [防御二研究记录](../../notes/phase2_coupling.md)。
 - **来源与复现**：[表格输入及指纹](sources.json) · [防御一固定记录](../phase3/bias_weight_only/other_tasks/summary.md) · [防御二冻结发布及成本](../data_free_compensation/finite_classification_result.json) · [工程说明](../../docs/engineering.md)。完整逐图分数、逐类和配对统计留在服务器，轻量记录注明路径和哈希。
 

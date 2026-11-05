@@ -1,34 +1,28 @@
 \begin{table*}[t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
-\caption{Defense 2 versions in eight-expert merging. Accuracy (\%).}
+\caption{Defense 2 in eight-expert merging. Accuracy (\%).}
 \label{tab:defense2_eight_versions}
 \begin{tabular}{@{}lllrrrrrrr@{}}
 \toprule
-Target & Version & Processing & MNIST & SVHN & DTD & GTSRB & RESISC45 & Cars & SUN397 \\
+Target & Defense & Processing & MNIST & SVHN & DTD & GTSRB & RESISC45 & Cars & SUN397 \\
 \midrule
 MNIST & Unprotected & TA & 94.00 & 74.42 & 52.18 & 65.08 & 72.00 & 62.06 & 63.76 \\
-MNIST & Earlier & TA & 9.81 & 7.05 & 41.22 & 38.18 & 63.51 & 55.03 & 49.02 \\
-MNIST & Updated & TA & 24.71 & 13.16 & 15.21 & 17.14 & 50.10 & 34.87 & 19.73 \\
+MNIST & Defense 2 & TA & 24.71 & 13.16 & 15.21 & 17.14 & 50.10 & 34.87 & 19.73 \\
 MNIST & Unprotected & AGA & 93.23 & 73.90 & 52.34 & 65.16 & 72.19 & 62.02 & 63.78 \\
-MNIST & Earlier & AGA & 9.80 & 6.70 & 33.35 & 22.49 & 60.71 & 42.36 & 37.55 \\
-MNIST & Updated & AGA & 23.35 & 12.88 & 12.18 & 14.91 & 42.22 & 31.95 & 10.02 \\
+MNIST & Defense 2 & AGA & 23.35 & 12.88 & 12.18 & 14.91 & 42.22 & 31.95 & 10.02 \\
 \midrule
 SVHN & Unprotected & TA & 94.00 & 74.42 & 52.18 & 65.08 & 72.00 & 62.06 & 63.76 \\
-SVHN & Earlier & TA & 9.80 & 6.70 & 32.66 & 34.13 & 60.37 & 47.16 & 41.13 \\
-SVHN & Updated & TA & 13.56 & 15.25 & 7.61 & 8.45 & 16.27 & 8.99 & 1.06 \\
+SVHN & Defense 2 & TA & 13.56 & 15.25 & 7.61 & 8.45 & 16.27 & 8.99 & 1.06 \\
 SVHN & Unprotected & AGA & 93.78 & 72.53 & 52.18 & 64.87 & 72.19 & 62.04 & 63.80 \\
-SVHN & Earlier & AGA & 9.80 & 6.70 & 33.46 & 24.70 & 57.98 & 36.89 & 37.00 \\
-SVHN & Updated & AGA & 13.95 & 11.03 & 6.86 & 7.01 & 14.10 & 7.37 & 0.91 \\
+SVHN & Defense 2 & AGA & 13.95 & 11.03 & 6.86 & 7.01 & 14.10 & 7.37 & 0.91 \\
 \midrule
 DTD & Unprotected & TA & 94.00 & 74.42 & 52.18 & 65.08 & 72.00 & 62.06 & 63.76 \\
-DTD & Earlier & TA & 90.72 & 65.04 & 2.39 & 56.74 & 63.62 & 53.72 & 45.62 \\
-DTD & Updated & TA & 94.45 & 74.81 & 4.84 & 21.08 & 65.30 & 52.88 & 50.26 \\
+DTD & Defense 2 & TA & 94.45 & 74.81 & 4.84 & 21.08 & 65.30 & 52.88 & 50.26 \\
 DTD & Unprotected & AGA & 94.06 & 74.46 & 51.38 & 65.04 & 72.05 & 62.03 & 63.76 \\
-DTD & Earlier & AGA & 76.66 & 54.28 & 2.13 & 45.49 & 55.13 & 38.59 & 25.14 \\
-DTD & Updated & AGA & 94.36 & 74.85 & 3.24 & 14.96 & 58.14 & 48.48 & 43.19 \\
+DTD & Defense 2 & AGA & 94.36 & 74.85 & 3.24 & 14.96 & 58.14 & 48.48 & 43.19 \\
 \bottomrule
 \end{tabular}
 \par\smallskip
-\begin{minipage}{\textwidth}\footnotesize The same earlier and updated releases as the two-expert version tables. Eight experts, TA coefficient 0.2; AGA processes only the protected expert. Seven complete test datasets, including all evaluated partner tasks. Unprotected weights and scores match between versions. EuroSAT is excluded; no eight-task mean. Lower protected-task accuracy favors protection; losses on other tasks are reported without averaging.\end{minipage}
+\begin{minipage}{\textwidth}\footnotesize This table uses one frozen Defense 2 release. Eight experts, TA coefficient 0.2; AGA processes only the protected expert. Seven complete test datasets, including all evaluated partner tasks. EuroSAT is excluded; no eight-task mean. Lower protected-task accuracy favors protection; losses on other tasks are reported without averaging.\end{minipage}
 \end{table*}

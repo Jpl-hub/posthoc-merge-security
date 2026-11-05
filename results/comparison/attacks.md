@@ -1,6 +1,6 @@
 # Recovery attacks on the protected task
 
-Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection. Defense 2 uses the updated frozen release throughout; earlier versions are reported separately.
+Two experts, TA coefficient 0.5. TA uses no recovery; AGA processes the protected expert. Calib. uses 64 fixed random images for output calibration. MLP matching uses public weights. Distill. denotes hard-label student training on extra unlabeled images; ProDistill is reported separately. Defense 1 and PaRaMS share the unprotected student because their teacher labels coincide. Higher standalone accuracy and lower merged accuracy favor protection. Defense 2 uses the single frozen release throughout.
 
 | Task | Defense | Standalone | TA | AGA | Calib. | AGA+calib. | MLP match | Distill. |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |

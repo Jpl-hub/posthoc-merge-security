@@ -180,16 +180,6 @@ def defense_comparison(directory):
         evaluation = record["evaluation"]
         defense = "FiniteClassification_" + task
         for role, dataset in enumerate([task, partner]):
-            old = next(
-                row for row in (target_rows if role == 0 else partner_rows)
-                if row[0] == (task if role == 0 else task + "/" + partner)
-                and row[1] == "Defense 2")
-            distilled_old = one(progressive["rows"], target=task, defense="Defense2",
-                                dataset=dataset, stage="full")
-            versions[role].append([task, "Earlier"] +
-                                  ([old[2]] if role == 0 else []) +
-                                  [old[i] for i in [3, 4, 6, 7]] +
-                                  [accuracy(distilled_old)])
             rows = evaluation["raw_rows"]
             values = [accuracy(one(rows, defense=defense, merger="TA", dataset=dataset,
                                    attack_scope=scope)) for scope in ["None", "Protected expert"]]
@@ -201,31 +191,30 @@ def defense_comparison(directory):
                                 dataset=dataset, stage="full")
             native = [accuracy(one(rows, defense=defense, merger="Standalone",
                                    attack_scope="None", dataset=task))] if role == 0 else []
-            versions[role].append([task, "Updated"] + native + values +
+            versions[role].append([task] + native + values +
                                   [accuracy(calibrated), f"{100 * match['correct'] / match['n']:.2f}",
                                    accuracy(distilled_new)])
-    note = ("The earlier and updated Defense 2 releases use distinct frozen construction rules; "
-            "each row uses one release throughout. TA coefficient 0.5; AGA processes the protected expert. "
+    note = ("This table uses one frozen Defense 2 release throughout. TA coefficient 0.5; "
+            "AGA processes the protected expert. "
             "Calibration uses 64 random images. ProDistill uses 64 unlabeled training images per task "
             "and coefficient initialization 0.3, with no AGA preprocessing. "
             "MNIST is paired with SVHN; SVHN and DTD are paired with MNIST. "
-            "Known-module replacement is reported separately; neither version resists it.")
-    write("defense2_versions", "Defense 2 versions on the protected task",
-          ["Task", "Version", "Standalone", "TA", "AGA", "AGA+calib.", "MLP match", "ProDistill"],
-          versions[0], note, "llrrrrrr")
-    write("defense2_version_partners", "Partner accuracy for the same Defense 2 versions",
-          ["Target", "Version", "TA", "AGA", "AGA+calib.", "MLP match", "ProDistill"],
-          versions[1], note, "llrrrrr")
+            "Known-module replacement is reported separately.")
+    write("defense2_versions", "Defense 2 recovery table",
+          ["Task", "Standalone", "TA", "AGA", "AGA+calib.", "MLP match", "ProDistill"],
+          versions[0], note, "lrrrrrr")
+    write("defense2_version_partners", "Partner accuracy for Defense 2",
+          ["Target", "TA", "AGA", "AGA+calib.", "MLP match", "ProDistill"],
+          versions[1], note, "lrrrrr")
     finite_eight = read("results/data_free_compensation/finite_eight/summary.json")
     assert finite_eight["status"] == "completed_independently_verified"
     assert finite_eight["evaluated_datasets"] == cfg["evaluate"]
     eight_versions = []
     for task in tasks:
         for scope, label in [("None", "TA"), ("Protected expert", "AGA")]:
-            for method, version in [("Unprotected", "Unprotected"), ("Defense 2", "Earlier")]:
-                old = next(r for r in eight if r[:3] == [task, method, label])
-                eight_versions.append([task, version, label] + old[3:])
-            row = [task, "Updated", label]
+            old = next(r for r in eight if r[:3] == [task, "Unprotected", label])
+            eight_versions.append([task, "Unprotected", label] + old[3:])
+            row = [task, "Defense 2", label]
             for dataset in cfg["evaluate"]:
                 clean = one(finite_eight["independent_statistics"],
                             key="/".join([task, "Unprotected", scope, dataset]))
@@ -237,12 +226,12 @@ def defense_comparison(directory):
                     "/".join([task, "Defense2_" + task, scope])]
                 row.append(accuracy(value))
             eight_versions.append(row)
-    write("defense2_eight_versions", "Defense 2 versions in eight-expert merging",
-          ["Target", "Version", "Processing"] + cfg["evaluate"], eight_versions,
-          "The same earlier and updated releases as the two-expert version tables. "
+    write("defense2_eight_versions", "Defense 2 in eight-expert merging",
+          ["Target", "Defense", "Processing"] + cfg["evaluate"], eight_versions,
+          "This table uses one frozen Defense 2 release. "
           "Eight experts, TA coefficient 0.2; AGA processes only the protected expert. "
           "Seven complete test datasets, including all evaluated partner tasks. "
-          "Unprotected weights and scores match between versions. EuroSAT is excluded; no eight-task mean. "
+          "EuroSAT is excluded; no eight-task mean. "
           "Lower protected-task accuracy favors protection; losses on other tasks are reported without averaging.",
           "lllrrrrrrr")
     calibration = read("results/data_free_compensation/finite_eight/calibration.json")
@@ -314,7 +303,7 @@ def defense_comparison(directory):
     note = ("Eight experts, TA coefficient 0.2; AGA processes the protected expert. "
             "Each merged model uses the same 64 fixed random inputs for output calibration. "
             "No real attack images, clean target expert, or changed-module knowledge is used. "
-            "Defense 2 denotes the updated release throughout; standalone accuracy is measured before merging. "
+            "Defense 2 denotes the single frozen release throughout; standalone accuracy is measured before merging. "
             "Seven complete test datasets; EuroSAT is excluded, and no eight-task mean is reported.")
     write("eight_calibration_target", "Matched recovery comparison in eight-expert merging",
           ["Task", "Defense", "Standalone", "TA", "+calib.", "AGA", "+calib."],
@@ -335,10 +324,10 @@ def defense_comparison(directory):
                 row += [accuracy(one(records, defense=name, merger=merger, dataset=t))
                         for t in [task, partner]]
             merger_rows.append(row)
-    write("defense2_mergers", "Updated Defense 2 with TIES and DARE",
+    write("defense2_mergers", "Defense 2 with TIES and DARE",
           ["Task", "Defense", "Standalone", "TIES target", "TIES partner", "DARE target", "DARE partner"],
           merger_rows,
-          "Same updated releases as the TA and recovery tables. Two experts; MNIST is paired with SVHN, "
+          "The same frozen release as the TA and recovery tables. Two experts; MNIST is paired with SVHN, "
           "SVHN and DTD with MNIST. Fixed author TIES kernel: top 20 percent, coefficient 1.0. "
           "DARE+TA: drop rate 0.2, seed 42, coefficient 0.5. No AGA preprocessing or parameter search. "
           "Complete test sets; matching unprotected scores and standalone scores reused after parameter-hash checks. "
@@ -467,7 +456,7 @@ def defense_comparison(directory):
           "effects of the teacher labels. MNIST reuses the same student because all 2048 teacher "
           "labels coincide. Standalone reports the evaluated student or expert. Defender weights "
           "are unchanged; additional real images are used only by the attacker.", "llrrr")
-    # Keep the main comparison on one current release; earlier versions stay above.
+    # Keep the main comparison on one frozen release.
     for table, role in [("attacks", 0), ("partners", 1)]:
         rows = tables[table]["rows"]
         for task in tasks:
@@ -489,7 +478,7 @@ def defense_comparison(directory):
         spec = tables[table]
         write(table, "Recovery attacks on the protected task" if role == 0 else
               "Partner-task accuracy under the same attacks", spec["headers"], rows,
-              spec["note"] + " Defense 2 uses the updated frozen release throughout; earlier versions are reported separately.",
+              spec["note"] + " Defense 2 uses the single frozen release throughout.",
               "llrrrrrrr" if role == 0 else "llrrrrrr")
     main_rows = []
     for target, partner in zip(tables["attacks"]["rows"], tables["partners"]["rows"], strict=True):
@@ -507,7 +496,7 @@ def defense_comparison(directory):
                 defense="Defense2", dataset=t, stage="full")) for t in [row[0], row[3]]]
     spec = tables["feature_distillation"]
     write("feature_distillation", "ProDistill recovery comparison", spec["headers"], distilled,
-          spec["note"] + " Defense 2 is the same updated release as the main attack table.", "llrlr")
+          spec["note"] + " Defense 2 is the same frozen release as the main attack table.", "llrlr")
     components = updated["prodistill"].get("components_full")
     if components:
         assert components["status"] == "completed_independently_verified"
