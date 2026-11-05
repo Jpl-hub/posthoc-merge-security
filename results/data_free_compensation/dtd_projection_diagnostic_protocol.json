@@ -1,0 +1,42 @@
+{
+  "output": "outputs/dtd_projection_diagnostic_20261105",
+  "registered_utc": "2026-11-05T06:06:01.036591+00:00",
+  "retained_teacher": {
+    "path": "outputs/finite_classification_20261102/DTD/point/point.pt",
+    "sha256": "fd8d553e1c3b491ca2753accc1f846d2b650084c4bd489fefc4e2f7ab67ec170"
+  },
+  "removed_teacher": {
+    "path": "outputs/finite_projection_ablation_20261103/DTD/point/point.pt",
+    "sha256": "f54a7c73c34582346e872aa3d16ebefaea34b003608dce888b731565a2b239e8"
+  },
+  "recovered_removed": {
+    "path": "outputs/projection_recovery_20261103/prodistill/DTD/Defense2/model.pt",
+    "sha256": "83b57b1d2d2fd358f52f68f8209ce73cc50712942f66a925870ddea9f9c88fee",
+    "full_state": true
+  },
+  "indices": {
+    "path": "outputs/projection_recovery_20261103/prodistill/DTD/Defense2/calibration_indices.json",
+    "sha256": "3a35acac5007b94f3e407c6115738d6d7aa987e19068b8654358b1026653d232"
+  },
+  "image_tensor_sha256": "0c84e78605b437c6194b91982d702fb122ae1e9f2243f61c7b25dd8d32e4529b",
+  "question": "Does the already frozen low-scoring DTD student fail on its own64-image fit set or only on complete-test generalization? Does a fixed target readout recover fit-set predictions?",
+  "evaluation_only": true,
+  "parameter_selection_or_repair": false,
+  "budget": {
+    "new_training": 0,
+    "new_defense_models": 0,
+    "new_original_AGA": 0,
+    "support_images": 128,
+    "frozen_model_forwards": 768
+  },
+  "missing_reference": "Retained trained student on55548 is not available now; this phase cannot isolate causal effect of task projection. Original complete-test scores stay unchanged.",
+  "source_sha256": {
+    "outputs/dtd_projection_diagnostic_20261105.py": "193d5c4512168b2c6381b25be4d5ef50860b6ea9ae4da336fc39e7ec9f3105fc",
+    "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+    "_impl/prodistill.py": "e578c7f1e6bfbee002de94c847d19f1a006dcacf7600514400324903ee8ae078",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  }
+}
