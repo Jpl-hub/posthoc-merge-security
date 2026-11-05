@@ -1,21 +1,12 @@
 {
-  "updated_utc": "2026-11-05T15:37:28.987533+00:00",
-  "status": "running_fixed_method_followup",
+  "updated_utc": "2026-11-05T15:54:47.719861+00:00",
+  "status": "completed_fixed_comparison_tables",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "status": "running",
-      "host": "21516",
-      "timeout_pid": 41813,
-      "construction_protocol": "results/data_free_compensation/readout_channels_transfer_20261105/construction.json",
-      "log": "outputs/readout_channels_transfer_20261105/run.log",
-      "scope": "SVHN as protected target and MNIST as partner; frozen transfer, matched B reset, and fixed ProDistill on SVHN and DTD."
-    }
-  ],
-  "next_action": "Finish the running SVHN transfer and matched SVHN/DTD ProDistill. Independently verify scores and update tables.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Paper drafting can use the completed matched comparisons. Keep claims scoped to the observed recovery conditions and report DTD native loss and distillation recovery.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -75,7 +66,7 @@
     "protected_and_matched_clean_predictions_identical": true
   },
   "github_sync": {
-    "status": "Local and retained-server changes pending GitHub; connector unavailable.",
+    "status": "Local and retained-server updates pending GitHub. HTTPS readback connection refused.",
     "last_verified_remote_commit": "296384b25bd3354602ccd32a909436d680e7c30c",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -830,11 +821,49 @@
     }
   },
   "readout_transfer": {
-    "status": "running",
+    "status": "completed_independently_verified",
     "host": "21516",
-    "timeout_pid": 41813,
+    "timeout_pid": null,
     "construction_protocol": "results/data_free_compensation/readout_channels_transfer_20261105/construction.json",
     "log": "outputs/readout_channels_transfer_20261105/run.log",
-    "scope": "SVHN as protected target and MNIST as partner; frozen transfer, matched B reset, and fixed ProDistill on SVHN and DTD."
+    "scope": "SVHN as protected target and MNIST as partner; frozen transfer, matched B reset, and fixed ProDistill on SVHN and DTD.",
+    "record": "results/comparison/readout_svhn_distillation.json",
+    "full_rows": 50,
+    "original_batch_score_replays": 1600,
+    "archive": {
+      "hosts": [
+        "21516",
+        "55548"
+      ],
+      "files": 94,
+      "all_sha256_equal": true,
+      "manifest": "outputs/readout_transfer_20261105.sha256",
+      "sha256": "4dd3b7971116841f78a262d150ee0da78cf427a18a4ea84de31f65a7c5cf0c64",
+      "four_distilled_models": "21516:outputs/readout_channels_transfer_20261105/prodistill",
+      "distilled_model_manifest": "outputs/readout_channels_transfer_20261105/distillation_models.sha256"
+    },
+    "first_attempt_preserved": true,
+    "target_accuracy": {
+      "tasks": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "standalone": [
+        99.57,
+        96.66,
+        76.33
+      ],
+      "AGA_then_B_reset": [
+        0.07,
+        0.45,
+        0.59
+      ],
+      "ProDistill": [
+        98.63,
+        83.45,
+        30.85
+      ]
+    }
   }
 }

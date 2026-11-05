@@ -632,7 +632,7 @@ def defense_comparison(directory):
                 bias_replacement.append([task, dataset, label, native] + fused)
     write("defense1_B_replacement", "Defense 1 under public MLP output replacement",
           ["Target", "Dataset", "Defense", "Standalone", "TA", "AGA-T", "AGA-B"], bias_replacement,
-          "For both defenses in the table, replace the target's final MLP output weight and bias with the public "
+          "For each model, replace the target's final MLP output weight and bias with the public "
           "base values. Replacement follows AGA and precedes TA at 0.5. Standalone is measured after replacement. "
           "AGA-T processes the target and AGA-B both experts. Defense 1 modifies the final LayerNorm bias, "
           "which this operation leaves intact.", "lllrrrr")
@@ -654,9 +654,11 @@ def defense_comparison(directory):
                 distill_score = accuracy(one(updated["prodistill"]["rows"], target="MNIST", dataset=dataset,
                                               defense="Defense2", stage="full"))
             readout_rows.append(["MNIST", dataset, label, native] + fused + [distill_score])
-    for task in ("DTD",):
-        ordinary = one(followup["groups"], target=task, processing="TA", stage="full")["rows"]
-        replaced = one(followup["groups"], target=task, processing="B reset", stage="full")["rows"]
+    transfer = read("results/comparison/readout_svhn_distillation.json")
+    assert transfer["status"] == "completed_independently_verified"
+    for task, record in [("SVHN", transfer), ("DTD", followup)]:
+        ordinary = one(record["groups"], target=task, processing="TA", stage="full")["rows"]
+        replaced = one(record["groups"], target=task, processing="B reset", stage="full")["rows"]
         for dataset in (task, "MNIST"):
             for key, label in [("Parent", "A/B"), ("ABReadout", "A/B + readout")]:
                 native = accuracy(one(ordinary, defense=key, dataset=dataset, merger="Standalone")) if dataset == task else "--"
@@ -664,15 +666,20 @@ def defense_comparison(directory):
                          for scope in scopes]
                 fused += [accuracy(one(replaced, defense=key, dataset=dataset, merger="TA", attack_scope=scope))
                           for scope in scopes[:2]]
-                distill_score = (accuracy(one(updated["prodistill"]["rows"], target=task, dataset=dataset,
-                                               defense="Defense2", stage="full")) if key == "Parent" else "--")
+                if key == "Parent":
+                    distill_score = accuracy(one(updated["prodistill"]["rows"], target=task, dataset=dataset,
+                                                 defense="Defense2", stage="full"))
+                else:
+                    distill_score = accuracy(one(transfer["prodistill"][task]["rows"], dataset=dataset,
+                                                 defense="ABReadout"))
                 readout_rows.append([task, dataset, label, native] + fused + [distill_score])
     write("defense2_readout", "Effect of adding readout compensation to Defense 2",
           ["Target", "Dataset", "Defense", "Standalone", "TA", "AGA-T", "AGA-B", "B reset", "AGA-T + reset", "ProDistill"],
           readout_rows, "TA uses coefficient 0.5. AGA-T processes the target and AGA-B both experts. "
-          "B reset replaces the target's final MLP output weight and bias before TA. "
-          "ProDistill uses 64 unlabeled training images per task and 100 epochs per block. "
-          "Dashes indicate unavailable results or a standalone partner measurement outside the protocol.", "lllrrrrrrr")
+          "B reset replaces the target's final MLP output weight and bias with public base values. "
+          "In the combined condition, AGA precedes B reset, then TA. ProDistill starts at coefficient 0.3 "
+          "and uses 64 unlabeled training images per task and 100 epochs per block. "
+          "Standalone accuracy is reported for the protected expert.", "lllrrrrrrr")
 
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")

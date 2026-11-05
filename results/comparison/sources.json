@@ -34,9 +34,10 @@
     "results/data_free_compensation/native_class_means_result.json": "05a9954b2a8ef08912b8d670253768f5e63815719238651a172e8f8936285eb5",
     "results/comparison/unmask_current/summary.json": "c4c8cb2adac756384b572e6659f643103da95688ca25dc8800b5aae4377e67ba",
     "results/comparison/params_composition/summary.json": "96a2854c6776ba246253d8a57b992e3608cd04eef7069b78a89b5f8f902795b9",
-    "results/comparison/readout_dtd_and_bias_replacement.json": "983071e549265313b8e8cf67d9f63d6114a52fccc6d7925d9cc44f410c26e847",
+    "results/comparison/readout_dtd_and_bias_replacement.json": "e8fe86e3d1788d60e56b93dfc52f398a2f3ac9c499510ce7c8ff86ac611a556b",
     "results/data_free_compensation/readout_b_reset_result.json": "39cd0ab968ea21db99e562d449453c621588ba95a52a0a7b7a906f0eaef52760",
-    "results/data_free_compensation/readout_channels/result.json": "c17bfb04e8c51c450bd069d8f98876303df845d0091c5f639a413cc7f091c5a6"
+    "results/data_free_compensation/readout_channels/result.json": "c17bfb04e8c51c450bd069d8f98876303df845d0091c5f639a413cc7f091c5a6",
+    "results/comparison/readout_svhn_distillation.json": "5e42e7670ad2803d3f7234b4d53c562b57af28745c2011a82cd55ca7aad5e0d5"
   },
   "eight_expert_rows": [
     {
@@ -5316,7 +5317,7 @@
           "9.80"
         ]
       ],
-      "note": "For both defenses in the table, replace the target's final MLP output weight and bias with the public base values. Replacement follows AGA and precedes TA at 0.5. Standalone is measured after replacement. AGA-T processes the target and AGA-B both experts. Defense 1 modifies the final LayerNorm bias, which this operation leaves intact."
+      "note": "For each model, replace the target's final MLP output weight and bias with the public base values. Replacement follows AGA and precedes TA at 0.5. Standalone is measured after replacement. AGA-T processes the target and AGA-B both experts. Defense 1 modifies the final LayerNorm bias, which this operation leaves intact."
     },
     "defense2_readout": {
       "headers": [
@@ -5381,6 +5382,54 @@
           "92.52"
         ],
         [
+          "SVHN",
+          "SVHN",
+          "A/B",
+          "96.66",
+          "2.26",
+          "1.86",
+          "1.87",
+          "92.32",
+          "91.38",
+          "96.18"
+        ],
+        [
+          "SVHN",
+          "SVHN",
+          "A/B + readout",
+          "96.66",
+          "7.76",
+          "7.76",
+          "7.76",
+          "0.38",
+          "0.45",
+          "83.45"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "A/B",
+          "--",
+          "0.22",
+          "0.24",
+          "0.25",
+          "99.37",
+          "99.38",
+          "99.27"
+        ],
+        [
+          "SVHN",
+          "MNIST",
+          "A/B + readout",
+          "--",
+          "10.28",
+          "10.28",
+          "10.28",
+          "0.00",
+          "0.00",
+          "91.69"
+        ],
+        [
           "DTD",
           "DTD",
           "A/B",
@@ -5402,7 +5451,7 @@
           "1.76",
           "0.53",
           "0.59",
-          "--"
+          "30.85"
         ],
         [
           "DTD",
@@ -5426,12 +5475,12 @@
           "0.10",
           "0.01",
           "0.01",
-          "--"
+          "99.37"
         ]
       ],
-      "note": "TA uses coefficient 0.5. AGA-T processes the target and AGA-B both experts. B reset replaces the target's final MLP output weight and bias before TA. ProDistill uses 64 unlabeled training images per task and 100 epochs per block. Dashes indicate unavailable results or a standalone partner measurement outside the protocol."
+      "note": "TA uses coefficient 0.5. AGA-T processes the target and AGA-B both experts. B reset replaces the target's final MLP output weight and bias with public base values. In the combined condition, AGA precedes B reset, then TA. ProDistill starts at coefficient 0.3 and uses 64 unlabeled training images per task and 100 epochs per block. Standalone accuracy is reported for the protected expert."
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "e8941f44d0f44ec58b4be9a8a74448590de4ca6f6b77e8912bc0bf9498f7c1c2"
+  "report_source_sha256": "ec10f3d9c866a83a709b551abe97cd9ad6f4ecd35a9fb0fb74902e2146df9bb4"
 }

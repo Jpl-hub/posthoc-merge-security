@@ -1,6 +1,6 @@
 # Defense 1 under public MLP output replacement
 
-For both defenses in the table, replace the target's final MLP output weight and bias with the public base values. Replacement follows AGA and precedes TA at 0.5. Standalone is measured after replacement. AGA-T processes the target and AGA-B both experts. Defense 1 modifies the final LayerNorm bias, which this operation leaves intact.
+For each model, replace the target's final MLP output weight and bias with the public base values. Replacement follows AGA and precedes TA at 0.5. Standalone is measured after replacement. AGA-T processes the target and AGA-B both experts. Defense 1 modifies the final LayerNorm bias, which this operation leaves intact.
 
 | Target | Dataset | Defense | Standalone | TA | AGA-T | AGA-B |
 | --- | --- | --- | --- | --- | --- | --- |
