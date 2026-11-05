@@ -1,0 +1,16 @@
+\begin{table*}[t]
+\centering\small
+\caption{Centered affine readout transfer. Accuracy (\%).}
+\label{tab:centered_readout}
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Target & Standalone & TA & AGA target & AGA both & B reset after AGA & ProDistill & ProDistill + sign \\
+\midrule
+MNIST & 99.57 & 9.74 & 9.74 & 9.74 & 53.73 & 10.32 & 10.09 \\
+SVHN & 96.66 & 15.94 & 15.94 & 15.94 & 0.66 & 15.94 & 56.73 \\
+DTD & 76.33 & 4.15 & 2.18 & 2.18 & 17.93 & 2.13 & 13.46 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{\textwidth}\footnotesize The rule uses frozen weights and the public base without construction images. TA coefficient 0.5. ProDistill uses 64 unlabeled images per task and 100 epochs per block. The sign column applies one fixed score negation after ProDistill.\end{minipage}
+\end{table*}

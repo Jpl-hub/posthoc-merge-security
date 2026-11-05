@@ -32,6 +32,9 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 | 两种防御在相同设置下的 ProDistill | [结果](feature_distillation.md) · [TeX](feature_distillation.tex) |
 | 防御一的公开替换与已知位置恢复 | [B 替换](defense1_B_replacement.md) · [TeX](defense1_B_replacement.tex) · [最终偏置清理](../phase3/bias_weight_only/attacks/projection.md) · [TeX](../phase3/bias_weight_only/attacks/projection.tex) |
 | 防御二加入读出补偿、B 替换及取反对照 | [结果](defense2_readout.md) · [TeX](defense2_readout.tex) |
+| 防御二居中读出迁移 | [结果](centered_readout.md) · [TeX](centered_readout.tex) |
+
+居中读出迁移的三任务结果已经完成。独立预测与原 A/B 版逐图一致。固定 ProDistill 目标准确率为 MNIST 10.32%、SVHN 15.94%、DTD 2.13%。对同一蒸馏分数做一次固定取反并按 64 张噪声图校正后，分别为 0.01%、56.73%、13.46%。这项结果只作为固定 ProDistill 的补充对照，公开 B 替换仍可恢复，不能替换主 A/B 发布。
 
 读出补偿版的独立预测与同一 A/B 版一致。AGA 后替换 B 的三个目标原始准确率为 0.07%、0.45%、0.59%，统一取反后为 61.78%、62.45%、11.86%。固定 ProDistill 为 98.63%、83.45%、30.85%。汇报时同时展示这两组恢复结果。原始分数和取反使用同一批样本，详见[逐项核对](readout_sign_recovery.json)。
 

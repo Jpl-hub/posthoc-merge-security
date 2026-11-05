@@ -1,32 +1,12 @@
 {
-  "updated_utc": "2026-11-05T16:49:21.547400+00:00",
-  "status": "running_centered_readout_transfer",
+  "updated_utc": "2026-11-05T17:20:58.977974+00:00",
+  "status": "centered_readout_transfer_completed",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "21516",
-      "timeout_pid": 53799,
-      "output": "outputs/centered_readout_transfer_20261106",
-      "target": "MNIST",
-      "partner": "SVHN",
-      "status": "running_final_replacement_evaluation"
-    },
-    {
-      "host": "21516",
-      "timeout_pid": 56687,
-      "output": "outputs/centered_readout_other_20261106",
-      "targets": [
-        "SVHN",
-        "DTD"
-      ],
-      "partner": "MNIST",
-      "status": "queued_after_MNIST"
-    }
-  ],
-  "next_action": "Verify the complete MNIST transfer and finish identical SVHN/DTD rules before any manuscript method replacement.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Use the fixed A/B release as the paper main method. Report centered readout as a separate ProDistill ablation. Any further Defense 2 mechanism requires a new preregistered source and must preserve the score-negation check.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -916,32 +896,46 @@
     "readout": "separate comparison with raw and sign-reversed scores"
   },
   "centered_readout": {
-    "status": "running_fixed_transfer",
-    "jobs": [
-      {
-        "host": "21516",
-        "timeout_pid": 53799,
-        "output": "outputs/centered_readout_transfer_20261106",
-        "target": "MNIST",
-        "partner": "SVHN",
-        "status": "running_final_replacement_evaluation"
-      },
-      {
-        "host": "21516",
-        "timeout_pid": 56687,
-        "output": "outputs/centered_readout_other_20261106",
-        "targets": [
-          "SVHN",
-          "DTD"
-        ],
-        "partner": "MNIST",
-        "status": "queued_after_MNIST"
-      }
-    ],
+    "status": "completed_independently_verified",
+    "jobs": [],
     "protocols": "results/data_free_compensation/centered_readout_20261106",
     "MNIST_prodistill_percent": 10.32,
     "MNIST_prodistill_negated_percent": 10.09,
     "MNIST_prodistill_calibrated_percent": 0.01,
-    "MNIST_prodistill_negated_and_calibrated_percent": 21.58
+    "MNIST_prodistill_negated_and_calibrated_percent": 21.58,
+    "summary": "results/data_free_compensation/centered_readout_20261106/summary.json",
+    "tasks": {
+      "MNIST": {
+        "standalone": 99.57,
+        "TA": 9.74,
+        "AGA_target": 9.74,
+        "AGA_both": 9.74,
+        "B_reset_AGA_target": 53.73,
+        "ProDistill": 10.32,
+        "ProDistill_fixed_sign": 10.09
+      },
+      "SVHN": {
+        "standalone": 96.66,
+        "TA": 15.94,
+        "AGA_target": 15.94,
+        "AGA_both": 15.94,
+        "B_reset_AGA_target": 0.66,
+        "ProDistill": 15.94,
+        "ProDistill_fixed_sign": 56.73
+      },
+      "DTD": {
+        "standalone": 76.33,
+        "TA": 4.15,
+        "AGA_target": 2.18,
+        "AGA_both": 2.18,
+        "B_reset_AGA_target": 17.93,
+        "ProDistill": 2.13,
+        "ProDistill_fixed_sign": 13.46
+      }
+    },
+    "archive_hosts": [
+      "21516",
+      "55548"
+    ]
   }
 }

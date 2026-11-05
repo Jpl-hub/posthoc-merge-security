@@ -23,11 +23,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_archive.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-05T16:27:05.365447+00:00",
+    "verified_utc": "2026-11-05T17:20:58.966759+00:00",
     "primary_available_GiB": 14.79,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
@@ -39,7 +39,7 @@
       "socket": "/tmp/posthoc_4090_17897.sock",
       "role": "CPU evidence archive; joint/soft source models and all raw scores retained."
     },
-    "queued_jobs": 1
+    "queued_jobs": 0
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "established_methods": {
@@ -144,32 +144,12 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-05T16:49:21.535705+00:00",
-  "status": "running_centered_readout_transfer",
+  "updated_utc": "2026-11-05T17:20:58.966759+00:00",
+  "status": "centered_readout_transfer_completed",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "21516",
-      "timeout_pid": 53799,
-      "output": "outputs/centered_readout_transfer_20261106",
-      "target": "MNIST",
-      "partner": "SVHN",
-      "status": "running_final_replacement_evaluation"
-    },
-    {
-      "host": "21516",
-      "timeout_pid": 56687,
-      "output": "outputs/centered_readout_other_20261106",
-      "targets": [
-        "SVHN",
-        "DTD"
-      ],
-      "partner": "MNIST",
-      "status": "queued_after_MNIST"
-    }
-  ],
-  "next_action": "Verify the complete MNIST transfer and finish identical SVHN/DTD rules before any manuscript method replacement.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Use the fixed A/B release as the paper main method. Report centered readout as a separate ProDistill ablation. Any further Defense 2 mechanism requires a new preregistered source and must preserve the score-negation check.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -595,32 +575,46 @@
     "readout": "separate comparison with raw and sign-reversed scores"
   },
   "centered_readout": {
-    "status": "running_fixed_transfer",
-    "jobs": [
-      {
-        "host": "21516",
-        "timeout_pid": 53799,
-        "output": "outputs/centered_readout_transfer_20261106",
-        "target": "MNIST",
-        "partner": "SVHN",
-        "status": "running_final_replacement_evaluation"
-      },
-      {
-        "host": "21516",
-        "timeout_pid": 56687,
-        "output": "outputs/centered_readout_other_20261106",
-        "targets": [
-          "SVHN",
-          "DTD"
-        ],
-        "partner": "MNIST",
-        "status": "queued_after_MNIST"
-      }
-    ],
+    "status": "completed_independently_verified",
+    "jobs": [],
     "protocols": "results/data_free_compensation/centered_readout_20261106",
     "MNIST_prodistill_percent": 10.32,
     "MNIST_prodistill_negated_percent": 10.09,
     "MNIST_prodistill_calibrated_percent": 0.01,
-    "MNIST_prodistill_negated_and_calibrated_percent": 21.58
+    "MNIST_prodistill_negated_and_calibrated_percent": 21.58,
+    "summary": "results/data_free_compensation/centered_readout_20261106/summary.json",
+    "tasks": {
+      "MNIST": {
+        "standalone": 99.57,
+        "TA": 9.74,
+        "AGA_target": 9.74,
+        "AGA_both": 9.74,
+        "B_reset_AGA_target": 53.73,
+        "ProDistill": 10.32,
+        "ProDistill_fixed_sign": 10.09
+      },
+      "SVHN": {
+        "standalone": 96.66,
+        "TA": 15.94,
+        "AGA_target": 15.94,
+        "AGA_both": 15.94,
+        "B_reset_AGA_target": 0.66,
+        "ProDistill": 15.94,
+        "ProDistill_fixed_sign": 56.73
+      },
+      "DTD": {
+        "standalone": 76.33,
+        "TA": 4.15,
+        "AGA_target": 2.18,
+        "AGA_both": 2.18,
+        "B_reset_AGA_target": 17.93,
+        "ProDistill": 2.13,
+        "ProDistill_fixed_sign": 13.46
+      }
+    },
+    "archive_hosts": [
+      "21516",
+      "55548"
+    ]
   }
 }
