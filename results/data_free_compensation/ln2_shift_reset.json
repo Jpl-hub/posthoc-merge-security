@@ -1,0 +1,36 @@
+{
+  "status": "registered_not_started",
+  "protocol": {
+    "registered_utc": "2026-11-05T09:27:39.983845+00:00",
+    "output": "outputs/ln2_shift_reset_20261105",
+    "source_sha256": {
+      "outputs/ln2_shift_reset_20261105.py": "639624c34db2a0eb915cfaed017a0ebb999ceb5e4da6978c0c79c92468f14c5b",
+      "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+      "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+    },
+    "parent": {
+      "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+      "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+    },
+    "source": {
+      "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+      "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+    },
+    "AGA_source": "external/secure-merge-attack/utils_attack_B32.py",
+    "AGA_normalized_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "outer_steps": 20,
+    "max_eval": 30,
+    "timeout_seconds": 300,
+    "affine_tolerance": 1e-06,
+    "question": "Can a function-preserving shift between LN2 and the last MLP input bias decrease teacher agreement when the public base replaces B?",
+    "mechanism": "For parent A and a, add v to LN2 bias and subtract A v from a. The native preactivations agree for all inputs in real arithmetic. In half-average with public weights the shift is (A0-A)v/4, also with A permuted by the fixed author assignment. B and its bias are replaced by public values after each source assembly.",
+    "construction": "One fixed MNIST parent, 800 cached synthetic views, no partner or real inputs. Optimize the mean positive teacher-class margin of public B replacement in two contexts with standard LBFGS, 20 iterations, library max_eval 30 (line search can exceed it). The squared sum of LN2 bias and input bias changes relative to their parent norms is <=1. One final FP32 pair.",
+    "gate": "All native teacher decisions retained, no increase in ordinary public TA or fixed public AGA agreement, decrease in both B-replacement contexts. Source gate alone does not authorize a robustness claim. Record a public canonicalization by setting the published LN2 bias to the public value and adding A(beta_published-beta_public) to the incoming bias.",
+    "budget": "No end-to-end image forwards, new synthetic images, defense expert updates, full evaluation or new attack runs in this source test.",
+    "reference": "https://arxiv.org/abs/2304.09145",
+    "scope": "Standard affine reparameterization used as an exact native-function control. Only the public-base proxies and this fixed budget are examined. Canonicalization uses the published pair and public LN2 bias."
+  }
+}
