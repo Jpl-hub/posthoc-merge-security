@@ -11,14 +11,14 @@
 | 内容 | 文件 | 看什么 |
 |---|---|---|
 | **数值防御二** | [experiment/defense2.py](experiment/defense2.py) | A 的任务 SVD 约束、B 与偏置补偿 |
-| 防御二读出补充 | [experiment/readout_channels.py](experiment/readout_channels.py) | 最终 LayerNorm 与投影的配套修改；[MNIST 固定结果](results/data_free_compensation/readout_channels/summary.md) |
+| 防御二读出补充 | [experiment/readout_channels.py](experiment/readout_channels.py) | 最终 LayerNorm 与投影的配套修改；[读出补偿对比](results/comparison/defense2_readout.md) |
 | 防御一 | [_impl/defenses.py](_impl/defenses.py) | `construct_bias`：视觉投影核空间中的偏置扰动 |
 | AGA 与公开恢复 | [_impl/attacks.py](_impl/attacks.py) | 作者 AGA 调用、公开模块替换和权重匹配 |
 | 融合 | [_impl/merge.py](_impl/merge.py) | TA、TIES、DARE |
 | 实验评价 | [experiment/main_table.py](experiment/main_table.py)、[_impl/evaluate.py](_impl/evaluate.py) | 固定发布、目标与伙伴评价 |
 | 最新对比结果 | [results/comparison](results/comparison) | 防御一、二与PaRaMS的攻击、伙伴和八专家结果；MD / TeX |
 
-防御二 A/B 的三任务固定配置见 `configs/defense2_inputs.json` 和[有限分类协议](results/data_free_compensation/finite_classification.json)。读出补偿使用独立入口的 `--protocol` 参数，构造规则不变。已完成的[公开 B 替换评价](results/data_free_compensation/readout_b_reset_result.json)保护 MNIST，SVHN 是融合伙伴，并非已经验证 SVHN 作为保护任务。该补充只检查末层 MLP 的 B 及偏置替换，不能概括成抵抗所有公开参数替换。已有发布直接用于评价，无需重新构造。
+防御二 A/B 的三任务固定配置见 `configs/defense2_inputs.json` 和[有限分类协议](results/data_free_compensation/finite_classification.json)。读出补偿使用独立入口的 `--protocol` 参数，构造规则不变。读出补偿对比按保护任务和伙伴分别列出独立、TA、AGA、末层 MLP 输出权重及偏置替换和 ProDistill。针对已知读出结构的恢复另见[固定 MNIST 检查](results/data_free_compensation/readout_channels/summary.md)。已有发布直接用于评价，无需重新构造。
 
 互补视图、逐类均值两项试验已结束，未替换主方法，其分支已从活动入口移除。执行源码保留于 Git `a973133` 和两台服务器的原始结果，分别见 [视图对照](results/comparison/defense2_native_views.md) 与 [均值对照](results/comparison/defense2_native_means.md)。旧实验应检出其执行版本，不能用当前源码冒充复现。
 

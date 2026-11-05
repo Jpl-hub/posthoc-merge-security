@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-05T15:09:56.734442+00:00",
+  "updated_utc": "2026-11-05T15:37:28.987533+00:00",
   "status": "running_fixed_method_followup",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
@@ -7,19 +7,15 @@
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
+      "status": "running",
       "host": "21516",
-      "timeout_pid": 35209,
-      "worker_shell_pid": 35210,
-      "log": "outputs/readout_channels_dtd_20261105/followup.log",
-      "source_commit": "dcd2a43",
-      "tasks": [
-        "same_rule_DTD_readout_native_TA_AGA_and_B_reset",
-        "Defense1_three_task_B_reset"
-      ],
-      "status": "running_serial_evaluation_and_replay"
+      "timeout_pid": 41813,
+      "construction_protocol": "results/data_free_compensation/readout_channels_transfer_20261105/construction.json",
+      "log": "outputs/readout_channels_transfer_20261105/run.log",
+      "scope": "SVHN as protected target and MNIST as partner; frozen transfer, matched B reset, and fixed ProDistill on SVHN and DTD."
     }
   ],
-  "next_action": "Finish the registered DTD readout and three-task Defense1 B+b replacement comparisons, verify complete scores, then report task-specific results. Do not claim SVHN-as-target readout validation or general public replacement resistance.",
+  "next_action": "Finish the running SVHN transfer and matched SVHN/DTD ProDistill. Independently verify scores and update tables.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -817,7 +813,28 @@
       "results/data_free_compensation/readout_channels_dtd_20261105/protocol.json",
       "results/phase3/bias_weight_only/attacks/b_reset_protocol.json"
     ],
+    "status": "completed_independently_verified",
+    "note": "Readout transfer does not repair the existing DTD A/B standalone loss. B replacement differs from Defense1 known final-bias cleanup.",
+    "record": "results/comparison/readout_dtd_and_bias_replacement.json",
+    "full_rows": 84,
+    "original_batch_score_replays": 2688,
+    "archive": {
+      "hosts": [
+        "21516",
+        "55548"
+      ],
+      "files": 68,
+      "all_sha256_equal": true,
+      "manifest": "outputs/readout_dtd_bias_followup_20261105.sha256",
+      "sha256": "f1fb7ee7da40f0eae18fa2c06c8387fe3e2df8c8d071aa505dd68ec9fed83bb2"
+    }
+  },
+  "readout_transfer": {
     "status": "running",
-    "note": "Readout transfer does not repair the existing DTD A/B standalone loss. B replacement differs from Defense1 known final-bias cleanup."
+    "host": "21516",
+    "timeout_pid": 41813,
+    "construction_protocol": "results/data_free_compensation/readout_channels_transfer_20261105/construction.json",
+    "log": "outputs/readout_channels_transfer_20261105/run.log",
+    "scope": "SVHN as protected target and MNIST as partner; frozen transfer, matched B reset, and fixed ProDistill on SVHN and DTD."
   }
 }

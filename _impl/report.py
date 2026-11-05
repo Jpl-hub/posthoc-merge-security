@@ -616,6 +616,64 @@ def defense_comparison(directory):
           "Extra knowledge: the modified location. Defense 1 uses final-bias projection; Defense 2 replaces the last MLP "
           "output weight and bias with public base values. Each control undergoes the same operation. AGA followed by "
           "module recovery is a composed procedure, separate from AGA alone. TA coefficient 0.5; no real attack data.", "llrrr")
+
+    followup = read("results/comparison/readout_dtd_and_bias_replacement.json")
+    assert followup["status"] == "completed_independently_verified"
+    scopes = ["None", "Protected expert", "All experts"]
+    bias_replacement = []
+    for task in tasks:
+        group = one(followup["groups"], target=task, processing="Defense1 B reset", stage="full")
+        partner = group["rows"][0]["partner"]
+        for dataset in (task, partner):
+            for key, label in [("Unprotected", "Unprotected"), ("Defense1_" + task, "Defense 1")]:
+                rows = [r for r in group["rows"] if r["defense"] == key and r["dataset"] == dataset]
+                native = accuracy(one(rows, merger="Standalone")) if dataset == task else "--"
+                fused = [accuracy(one(rows, merger="TA", attack_scope=scope)) for scope in scopes]
+                bias_replacement.append([task, dataset, label, native] + fused)
+    write("defense1_B_replacement", "Defense 1 under public MLP output replacement",
+          ["Target", "Dataset", "Defense", "Standalone", "TA", "AGA-T", "AGA-B"], bias_replacement,
+          "For both defenses in the table, replace the target's final MLP output weight and bias with the public "
+          "base values. Replacement follows AGA and precedes TA at 0.5. Standalone is measured after replacement. "
+          "AGA-T processes the target and AGA-B both experts. Defense 1 modifies the final LayerNorm bias, "
+          "which this operation leaves intact.", "lllrrrr")
+
+    mnist_readout = read("results/data_free_compensation/readout_b_reset_result.json")
+    mnist_distill = read("results/data_free_compensation/readout_channels/result.json")["full"]
+    assert mnist_readout["status"] == "completed_full_paired_evaluation"
+    readout_rows = []
+    for dataset in ("MNIST", "SVHN"):
+        for key, label in [("parent", "A/B"), ("candidate", "A/B + readout")]:
+            rows = [r for r in mnist_readout["rows"] if r["model"] == key and r["task"] == dataset]
+            native = accuracy(one(rows, operation="native")) if dataset == "MNIST" else "--"
+            fused = [accuracy(one(rows, operation=operation))
+                     for operation in ("TA", "AGA", "AGA_both", "TA_B_reset", "AGA_B_reset")]
+            if key == "candidate":
+                distill = mnist_distill[f"prodistill/ABReadout/full/{dataset}"]
+                distill_score = f"{100 * distill['correct'] / distill['n']:.2f}"
+            else:
+                distill_score = accuracy(one(updated["prodistill"]["rows"], target="MNIST", dataset=dataset,
+                                              defense="Defense2", stage="full"))
+            readout_rows.append(["MNIST", dataset, label, native] + fused + [distill_score])
+    for task in ("DTD",):
+        ordinary = one(followup["groups"], target=task, processing="TA", stage="full")["rows"]
+        replaced = one(followup["groups"], target=task, processing="B reset", stage="full")["rows"]
+        for dataset in (task, "MNIST"):
+            for key, label in [("Parent", "A/B"), ("ABReadout", "A/B + readout")]:
+                native = accuracy(one(ordinary, defense=key, dataset=dataset, merger="Standalone")) if dataset == task else "--"
+                fused = [accuracy(one(ordinary, defense=key, dataset=dataset, merger="TA", attack_scope=scope))
+                         for scope in scopes]
+                fused += [accuracy(one(replaced, defense=key, dataset=dataset, merger="TA", attack_scope=scope))
+                          for scope in scopes[:2]]
+                distill_score = (accuracy(one(updated["prodistill"]["rows"], target=task, dataset=dataset,
+                                               defense="Defense2", stage="full")) if key == "Parent" else "--")
+                readout_rows.append([task, dataset, label, native] + fused + [distill_score])
+    write("defense2_readout", "Effect of adding readout compensation to Defense 2",
+          ["Target", "Dataset", "Defense", "Standalone", "TA", "AGA-T", "AGA-B", "B reset", "AGA-T + reset", "ProDistill"],
+          readout_rows, "TA uses coefficient 0.5. AGA-T processes the target and AGA-B both experts. "
+          "B reset replaces the target's final MLP output weight and bias before TA. "
+          "ProDistill uses 64 unlabeled training images per task and 100 epochs per block. "
+          "Dashes indicate unavailable results or a standalone partner measurement outside the protocol.", "lllrrrrrrr")
+
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
 

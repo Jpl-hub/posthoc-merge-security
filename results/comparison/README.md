@@ -28,10 +28,16 @@
 
 [第二骨干结果](../backbone_b16/summary.md) / [TeX](../backbone_b16/summary.tex)：防御一仍被输出校正恢复；本批不代表防御二有进展。
 
+防御二加入读出补偿后，MNIST 和 DTD 的独立预测与同一 A/B 版一致，AGA 后再替换末层 B 的目标准确率为 0.07% 和 0.59%。同样操作下，A/B 版为 99.28% 和 64.95%。融合也明显损伤伙伴任务。MNIST 的 ProDistill 恢复为 98.63%，已知读出结构时用公开增益重新表示读出也能消除大部分额外保护。
+
+防御一的同条件 B 替换保留了最终偏置改动，三个任务经 AGA 再融合仍为 9.80%、6.70%、2.13%。针对最终偏置的恢复使用不同的位置信息，结果单列在[偏置投影表](../phase3/bias_weight_only/attacks/projection.md)。
+
 ## 结果表
 
 | 表 | 内容 |
 |---|---|
+| [防御二读出补偿](defense2_readout.md) / [TeX](defense2_readout.tex) | 与同一 A/B 发布配对，独立、两种 AGA 范围、公开 B 替换、ProDistill，目标和伙伴同列。 |
+| [防御一公开 B 替换](defense1_B_replacement.md) / [TeX](defense1_B_replacement.tex) | 三任务、匹配无保护，替换后独立、TA、两种 AGA 范围。 |
 | [攻击结果](attacks.md) / [TeX](attacks.tex) | 无保护、PaRaMS、防御一、防御二；三个保护任务，同条件攻击 |
 | [当前Unmask](unmask.md) / [TeX](unmask.tex) | 当前两种防御、PaRaMS及匹配无保护；八专家、七个完整测试集 |
 | [防御一与防御二合用](combined_bias_ab/summary.md) / [TeX](combined_bias_ab/summary.tex) | 固定MNIST发布，独立、TA、AGA、偏置清理、B替换和ProDistill；原组件不重拟合。 |
