@@ -428,9 +428,9 @@
       "55548"
     ],
     "manifest": "outputs/dtd_projection_review_20261105/manifest.json",
-    "manifest_sha256": "9963aca38cde85398958ed47c46069caf676e93d7363bbf67c263eadf34fd6aa",
-    "files": 15,
-    "bytes": 18529893,
+    "manifest_sha256": "6182a5d1e78c6d710ffb08579972915dde911f63a2523e2166bcefbe860aab02",
+    "files": 17,
+    "bytes": 18534616,
     "all_sha256_equal": true,
     "raw_files": [
       {
@@ -446,5 +446,48 @@
         "sha256": "e79459cf936b2dcfcea707c5042be8e1d2bdae93a99f464c3fbd5082c9c1d456"
       }
     ]
+  },
+  "classification_error_decomposition": {
+    "rows": [
+      {
+        "condition": "Retained",
+        "n": 64,
+        "teacher_with_student_readout_correct": 64,
+        "student_correct": 64,
+        "correct_teacher_turned_wrong": 0,
+        "wrong_teacher_turned_correct": 0,
+        "mean_teacher_margin": 21.317477256951733,
+        "mean_student_margin": 18.078205333395918,
+        "mean_linear_margin_change": -3.2466777955533823,
+        "mean_LN_scale_margin_change": 0.007405871997570718,
+        "mean_linear_change_on_teacher_correct_student_wrong": null,
+        "mean_LN_scale_change_on_teacher_correct_student_wrong": null,
+        "maximum_margin_identity_error": 1.7985612998927536e-14
+      },
+      {
+        "condition": "Removed",
+        "n": 64,
+        "teacher_with_student_readout_correct": 64,
+        "student_correct": 47,
+        "correct_teacher_turned_wrong": 17,
+        "wrong_teacher_turned_correct": 0,
+        "mean_teacher_margin": 28.41207316403596,
+        "mean_student_margin": 4.020387274750792,
+        "mean_linear_margin_change": -24.49718543701776,
+        "mean_LN_scale_margin_change": 0.10549954773259387,
+        "mean_linear_change_on_teacher_correct_student_wrong": -43.060401728338995,
+        "mean_LN_scale_change_on_teacher_correct_student_wrong": 0.614696867466239,
+        "maximum_margin_identity_error": 2.0872192862952943e-14
+      }
+    ],
+    "scope": "Read-only reconstruction from cached CLS vectors on historical64DTD distillation support images; no forwards, updates, new defensive point or test-driven selection. Strongest competitor chosen only for reporting each existing student.",
+    "formula": "After multiplying each class score contrast by positive LN std times positive projected-feature norm, class numerator is centered(h)*gamma*P*W^T+std(h)*beta*P*W^T. Bias contrast is zero for this fixed head.",
+    "new_image_forwards": 0,
+    "new_parameter_updates": 0,
+    "head_bias_contrast": 0.0,
+    "source": {
+      "path": "outputs/dtd_projection_review_20261105/classification_error.py",
+      "sha256": "2ccee06ef3f01ac4efa2271198238c4ec860dbf9da072a7a6033fa2bea234968"
+    }
   }
 }
