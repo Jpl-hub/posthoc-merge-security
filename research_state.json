@@ -26,7 +26,7 @@
     "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_archive.sock",
-    "secondary_role": "CPU archive and current-source backup; no GPU workloads",
+    "secondary_role": "Historical CPU archive only; authoritative engineering and all new GPU experiments are on21516",
     "verified_utc": "2026-11-05T17:20:58.966759+00:00",
     "primary_available_GiB": 14.79,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
@@ -144,12 +144,19 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-05T18:16:27.853472+00:00",
-  "status": "centered_readout_transfer_completed",
-  "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
+  "updated_utc": "2026-11-05T21:56:57.805537+00:00",
+  "status": "overnight_conditional_compensation_prepared",
+  "active_focus": "一个固定防御二试验：A有限改变后每次重求B补偿，再完整评价恢复与融合。",
   "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Keep one A/B release as the paper main method. If Defense2 continues, register one candidate that survives public B replacement, pass a data-free source check first, then run the complete three-task evaluation. Otherwise write the paper with the measured recovery weakness.",
+  "research_jobs": [
+    {
+      "protocol": "results/data_free_compensation/conditional_compensation/protocol.json",
+      "output": "outputs/overnight_20261106",
+      "status": "prepared",
+      "host": "21516"
+    }
+  ],
+  "next_action": "Run the registered single candidate on21516; freeze all three tasks before real-image evaluation. Complete existing centered readout eight-expert evaluation independently. No heartbeat.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
