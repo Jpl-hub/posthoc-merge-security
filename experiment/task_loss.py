@@ -1,4 +1,4 @@
-"""Fixed synthetic-input comparison with full teacher class distributions.
+"""Fixed full-objective teacher-output and scaled-loss comparison.
 
 Adapted objective: Trap2 ef65a265, 8vision_training_full_trap2.py.
 This post-hoc A/B experiment is not a reproduction of its supervised training.
@@ -80,68 +80,75 @@ def main():
             for x in images.split(16):
                 native_scores.append(head(model(x.cuda())).cpu())
         before = torch.cat(native_scores)
-        optimizer = torch.optim.AdamW(trainable.values(), lr=cfg["learning_rate"],
-                                     weight_decay=0., betas=(.9, .98), eps=1e-6)
-        start = time.monotonic()
-        records = []
-        order = torch.randperm(len(images))
-        for step in range(cfg["steps"]):
-            offset = (step * cfg["batch_size"]) % len(images)
-            if offset == 0:
-                order = torch.randperm(len(images))
-            ids = order[offset:offset + cfg["batch_size"]]
-            x, y = images[ids].cuda(), labels[ids].cuda()
-            warm = min(1., (step + 1) / cfg["warmup_steps"])
-            phase = max(0., (step - cfg["warmup_steps"]) / (cfg["steps"] - cfg["warmup_steps"]))
-            lr = cfg["learning_rate"] * warm * .5 * (1 + math.cos(math.pi * phase))
-            optimizer.param_groups[0]["lr"] = lr
-            optimizer.zero_grad(set_to_none=True)
-            effective = dict(params)
-            for key in bases:
-                bias = key.replace("weight", "bias")
-                beta = key.replace("mlp.c_fc.weight", "ln_2.bias")
-                effective[bias] = parent.state_dict()[bias].cuda() - (params[key] - initials[key]) @ params[beta]
-            native_logits = head(functional_call(model, effective, (x,)))
-            temperature = cfg["temperature"]
-            native = temperature ** 2 * F.kl_div(
-                F.log_softmax(native_logits / temperature, dim=1),
-                F.softmax(teacher[ids].cuda() / temperature, dim=1),
-                reduction="batchmean")
-            native.backward()
+        # Every closure uses the same images and scales, as required by line search.
+        scales = []
+        for _ in images.split(cfg["batch_size"]):
             scale = rng.uniform(.05, 2.)
             while .95 < scale < 1.05:
                 scale = rng.uniform(.05, 2.)
-            # Rebuild the affine coupling after the first backward released its graph.
-            for key in bases:
+            scales.append(float(scale))
+        records = []
+        start = time.monotonic()
+        keys = list(trainable)
+        variables = [torch.nn.Parameter(p.detach().clone()) for p in trainable.values()]
+        optimizer = torch.optim.LBFGS(variables, lr=1., max_iter=20, max_eval=30,
+                                     history_size=5, line_search_fn="strong_wolfe")
+
+        def effective_parameters():
+            effective = dict(params)
+            effective.update(zip(keys, variables))
+            for key, (left, right) in bases.items():
+                a = initials[key] + outside_task(effective[key] - initials[key], left, right)
+                delta = a - originals[key]
+                # Limits are part of the differentiated parameterization.
+                a = originals[key] + delta * (cfg["A_limit"] * originals[key].norm() / delta.norm().clamp_min(1e-30)).clamp(max=1.)
+                effective[key] = a
                 bias = key.replace("weight", "bias")
                 beta = key.replace("mlp.c_fc.weight", "ln_2.bias")
-                effective[bias] = parent.state_dict()[bias].cuda() - (params[key] - initials[key]) @ params[beta]
-            scaled = {k: public[k] + scale * (p - public[k]) for k, p in effective.items()}
-            off = F.cross_entropy(head(functional_call(model, scaled, (x,))), y)
-            if strength:
-                (-strength / scale * off).backward()
-            assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in trainable.values())
-            grad_norm = torch.nn.utils.clip_grad_norm_(trainable.values(), 1.)
-            optimizer.step()
-            # Project finite A updates, then derive the matching affine bias.
-            with torch.no_grad():
-                for key, (left, right) in bases.items():
-                    a = params[key]
-                    a.copy_(initials[key] + outside_task(a - initials[key], left, right))
-                    delta = a - originals[key]
-                    a.copy_(originals[key] + delta * min(1., cfg["A_limit"] * originals[key].norm().item() / max(delta.norm().item(), 1e-30)))
-                    bias = key.replace("weight", "bias")
-                    beta = key.replace("mlp.c_fc.weight", "ln_2.bias")
-                    params[bias].copy_(parent.state_dict()[bias].cuda() - (a - initials[key]) @ params[beta])
-                    bkey = key.replace("c_fc", "c_proj")
-                    b = params[bkey]; delta = b - originals[bkey]
-                    b.copy_(originals[bkey] + delta * min(1., cfg["B_limit"] * originals[bkey].norm().item() / max(delta.norm().item(), 1e-30)))
-            records.append(dict(step=step + 1, native_KL=float(native.detach()),
-                                scaled_CE=float(off.detach()), scale=scale, lr=lr,
-                                gradient_norm=float(grad_norm)))
-            if (step + 1) % 25 == 0:
-                print(name, records[-1], flush=True)
-            del scaled, effective, native, native_logits, off
+                effective[bias] = parent.state_dict()[bias].cuda() - (a - initials[key]) @ params[beta]
+                bkey = key.replace("c_fc", "c_proj")
+                delta = effective[bkey] - originals[bkey]
+                effective[bkey] = originals[bkey] + delta * (cfg["B_limit"] * originals[bkey].norm() / delta.norm().clamp_min(1e-30)).clamp(max=1.)
+            return effective
+
+        def closure():
+            optimizer.zero_grad(set_to_none=True)
+            native_total, scaled_total = 0., 0.
+            for offset, scale in zip(range(0, len(images), cfg["batch_size"]), scales):
+                end = offset + cfg["batch_size"]
+                x = images[offset:end].cuda()
+                target = teacher[offset:end].cuda()
+                y = labels[offset:end].cuda()
+                weight = len(x) / len(images)
+                effective = effective_parameters()
+                logits = head(functional_call(model, effective, (x,)))
+                native = cfg["temperature"] ** 2 * F.kl_div(
+                    F.log_softmax(logits / cfg["temperature"], dim=1),
+                    F.softmax(target / cfg["temperature"], dim=1), reduction="batchmean")
+                (weight * native).backward()
+                native_total += weight * float(native.detach())
+                if strength:
+                    effective = effective_parameters()
+                    scaled = {k: public[k] + scale * (p - public[k]) for k, p in effective.items()}
+                    off = F.cross_entropy(head(functional_call(model, scaled, (x,))), y)
+                    (-weight * strength / scale * off).backward()
+                    scaled_total += weight * float(off.detach()) / scale
+            assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in variables)
+            objective = native_total - strength * scaled_total
+            records.append(dict(evaluation=len(records)+1, native_KL=native_total,
+                                inverse_scale_weighted_CE=scaled_total, objective=objective))
+            print(name, records[-1], flush=True)
+            save_json(folder / "progress.json", dict(records=records))
+            return torch.tensor(objective, device="cuda")
+
+        optimizer.step(closure)
+        updates = int(optimizer.state[variables[0]]["n_iter"])
+        with torch.no_grad():
+            effective = effective_parameters()
+            for key in params:
+                params[key].copy_(effective[key])
+        # Read the final point, never select a previous point from test scores.
+        closure()
         seconds = time.monotonic() - start
         model.requires_grad_(False)
         with torch.no_grad():
@@ -155,7 +162,7 @@ def main():
         torch.save(dict(before=before, after=after, teacher=teacher, labels=labels), folder / "source_scores.pt")
         svd_error = max(float(((edits.get(k, original[k]) - parent.state_dict()[k]).cuda() @ right).abs().max())
                         for k, (_, right) in bases.items())
-        result = dict(release=release, updates=cfg["steps"], seconds=seconds,
+        result = dict(release=release, updates=updates, seconds=seconds, objective_evaluations=len(records), scales=scales,
                       source_n=len(labels), before_correct=int((before.argmax(1)==labels).sum()),
                       after_correct=int((after.argmax(1)==labels).sum()), task_right_error=svd_error,
                       parameter_distance=logical_parameter_distance(edits, original),
@@ -166,7 +173,7 @@ def main():
         releases[name] = release
         save_json(out / "releases.json", releases)
         print("FROZEN", name, {k:v for k,v in result.items() if k not in {"records","checkpoint_sha256"}}, flush=True)
-        del model, optimizer, params, trainable, originals, initials
+        del model, optimizer, params, trainable, originals, initials, variables, effective
     save_json(out / "completed.json", dict(releases=releases, status="source_completed"))
 
 

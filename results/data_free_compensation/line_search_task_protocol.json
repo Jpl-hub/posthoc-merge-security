@@ -1,0 +1,65 @@
+{
+  "output": "outputs/line_search_task_20261105",
+  "registered_utc": "2026-11-05T02:30:23.613006+00:00",
+  "parent": {
+    "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+    "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+  },
+  "synthetic_source": {
+    "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+    "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+  },
+  "conditions": {
+    "JointLine": 0.005,
+    "NativeLine": 0.0
+  },
+  "batch_size": 16,
+  "seed": 0,
+  "rank": 32,
+  "A_limit": 2.0,
+  "B_limit": 4.0,
+  "source_sha256": {
+    "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+    "experiment/distill.py": "ca49e8f6489a506699f924a89dfb6bde6f6f2691ef6d4b50cb14353c5790fe2b",
+    "_impl/prodistill.py": "e578c7f1e6bfbee002de94c847d19f1a006dcacf7600514400324903ee8ae078",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+    "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+    "_impl/evaluate.py": "db733c87bdbb5e2a747c5b4e33e40023ae307bf7823d64bebba8e6510bf753f1",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/task_loss.py": "60777fb61a1abddbc8d15a0a50f07202b919c1bfc0b7dacd5e472059999b408e"
+  },
+  "hypothesis": "Previous NativeSoft first projected step has gradient dot delta=-.17054 but same-batch KL rises .01499 to .36118 and full KL .021116 to .26104. Standard full-objective line search can prevent such overshoot; whether a task-preserving yet recovery-resistant model exists is not established. No causal attribution of any new improvement solely to KL or optimizer.",
+  "objective": "Complete800-view T4 teacher-output KL, optionally minus .005 times same-image fixed-scale CE/scale. Each of50 consecutive16-view batches has a single scale drawn once from original uniform rule seed0; identical scales across all closures. Both controls start unchanged parent. This fixes the sampled objective for standard line search; it is not identical to the earlier stochastic minibatch objective sequence.",
+  "differences_from_paper": "Standard soft teacher targets and Trap2 scaling objective transfer; no official reproduction/new-method claim. Changes solver from stochastic AdamW to full fixed objective LBFGS and differentiates SVD/caps/affine coupling through parameterization. Both failed AdamW controls retained. Not a learning-rate,temperature,layer,rank or seed search.",
+  "computation": "Two fixed full-objective solves;20 library iterations,max_eval30 with internal-line-search caveat.50 native minibatches per evaluation and50 scaled for joint. Original teacher/heads frozen, no construction real images. Full matching scores native checkpoint before/after. Final release only, no validation/test checkpoint selection.",
+  "evaluation": "Freeze both final releases before any complete real-image evaluation. Same MNIST native,TA.5,AGA target/both,ProDistill64-per-task/100stepsperblock. Reuse all matched clean references. Failures fully reported; no natural-test tuning or promotion based only on synthetic scores.",
+  "temperature": 4.0,
+  "references": [
+    {
+      "paper": "https://arxiv.org/html/2601.21898v2",
+      "repository": "ml-postech/Trap2",
+      "commit": "ef65a26590d92fe07955c5621c08bb315484ff29",
+      "source": "training_scripts/8vision_training_full_trap2.py",
+      "config": "configs/8vision_train_full.py",
+      "method": "Native/scaled CE objective; AdamW betas(.9,.98),eps1e-6; paperfull lr1e-4; scale.05..2 excluding.95..1.05; w(s)=1/s. Weightdecay0 to avoid changing SVD restrictions by regularizer."
+    },
+    {
+      "paper": "https://arxiv.org/abs/1503.02531",
+      "section": "2: soft teacher targets,T^2 normalization; fixedT4 is inherited, not selected from this paper or current evaluation."
+    }
+  ],
+  "solver": {
+    "name": "torch.optim.LBFGS",
+    "version": "2.3.0",
+    "lr": 1.0,
+    "max_iter": 20,
+    "max_eval": 30,
+    "history_size": 5,
+    "line_search_fn": "strong_wolfe",
+    "note": "Standard internal line search may evaluate beyond max_eval within one iteration; report actual evaluation count. No custom optimizer or manual rate sweep."
+  }
+}

@@ -75,3 +75,18 @@ Native task loss & 89.11 & 52.87 & 29.66 & 29.98 & 90.08 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+
+\begin{table}[t]
+\centering
+\caption{Fixed full-output retention controls on MNIST (\%). All releases use the same synthetic inputs. Both controls lose standalone utility; lower recovery accuracy is not sufficient evidence of protection.}
+\begin{tabular}{lrrrrr}
+\toprule
+Condition & Standalone & TA & AGA target & AGA both & ProDistill \\
+\midrule
+Defense 2 & 99.57 & 25.15 & 2.99 & 1.33 & 99.43 \\
+Full outputs + scaled loss & 93.11 & 39.29 & 27.12 & 26.99 & 91.79 \\
+Full outputs only & 95.98 & 44.21 & 27.81 & 27.07 & 95.06 \\
+\bottomrule
+\end{tabular}
+\end{table}
