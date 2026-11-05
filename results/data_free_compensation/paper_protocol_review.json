@@ -170,7 +170,16 @@
     "evaluation_boundary": "Paper's ProDistill/SFT are data-driven recovery; they are not original AGA. Paper selects lambda and merging coefficients onvalidation;not imported into our construction.",
     "executions": 0,
     "new_models": 0,
-    "source_sha256": "6fdf570e5286a525f5c274f8e60f42360f7150c72d90988297bc6a096fffc3ff"
+    "source_sha256": "6fdf570e5286a525f5c274f8e60f42360f7150c72d90988297bc6a096fffc3ff",
+    "executions_scope": "Original supervised Trap2 training: not reproduced. Objective adaptations are recorded separately below.",
+    "adaptations": {
+      "joint_task_loss": "results/data_free_compensation/joint_task_loss_result.json",
+      "soft_task_loss": "results/data_free_compensation/soft_task_loss_result.json",
+      "line_search_task": "results/data_free_compensation/line_search_task_result.json",
+      "finding": "Latest paired MNIST native99.60/99.60; ProDistill99.41/99.43. No useful added recovery protection. No further solver/step/strength retry.",
+      "paper_table14": "Eight-task mean for each protected-task condition; aggregate73.823 to49.153.64 IID held-out samples per task, element-wise coefficients. Not protected-task-only accuracy.",
+      "official_readme": "Recovery operators not vendored; official ProDistill repository linked. Our two-expert, training-image protocol is an adaptation, not Table14 reproduction."
+    }
   },
   "ACTMat": {
     "paper": "https://arxiv.org/html/2604.01329v2",
