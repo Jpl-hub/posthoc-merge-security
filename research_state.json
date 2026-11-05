@@ -23,11 +23,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_dtd.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-05T07:22:46.169747+00:00",
+    "verified_utc": "2026-11-05T08:02:58.521754+00:00",
     "primary_available_GiB": 14.79,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
@@ -143,12 +143,28 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-05T07:22:46.169747+00:00",
-  "status": "recovery_direction_check_stopped_no_new_defense",
+  "updated_utc": "2026-11-05T08:02:58.521754+00:00",
+  "status": "running_source_only",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Develop one finite joint A/B functional-compensation construction with task-SVD as a probe rather than assuming hard A task-direction invariance preserves function. The incomplete gradient-scope test does not establish that removing its restriction will help. No strength/rank/loss sweep or candidate currently running; a new finite construction must be fixed before source and complete evaluation.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "timeout_pid": 18510,
+      "timeout_seconds": 2400,
+      "output": "outputs/finite_recovery_compensation_20261105",
+      "log": "outputs/finite_recovery_compensation_20261105.log",
+      "utc": "2026-11-05T08:02:58.521754+00:00",
+      "source_commit": "12a8b67724188b7efc2abb841afeecf5e5490e41",
+      "source_sha256": "060e43f851a69cf86d5f641089b893195e4ebec2c759e439716ec4d4a06ec81e",
+      "name": "finite_recovery_compensation",
+      "host": "21516",
+      "worker_pid": 18512,
+      "status": "running_source_only",
+      "real_construction_images": 0,
+      "protocol": "results/data_free_compensation/finite_recovery_compensation.json"
+    }
+  ],
+  "next_action": "Verify both frozen source conditions after the bounded GPU run. Only a source-eligible point goes to complete native, TA, original AGA, ProDistill and public B replacement evaluation. No automatic follow-on or tuning on real evaluation.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -164,7 +180,7 @@
     }
   },
   "github_sync": {
-    "status": "Current completed results saved locally and mirrored to both retained servers; GitHub connector unavailable, upload pending.",
+    "status": "Local and retained-server changes pending GitHub; connector unavailable.",
     "last_verified_remote_commit": "296384b25bd3354602ccd32a909436d680e7c30c",
     "receipt": "outputs/latest_github_sync_receipt.json"
   },
@@ -239,5 +255,20 @@
     "coefficient_trajectory_steps": 300,
     "coefficient_reverse_replays": 100,
     "full_scope_compared": false
+  },
+  "finite_recovery_compensation": {
+    "timeout_pid": 18510,
+    "timeout_seconds": 2400,
+    "output": "outputs/finite_recovery_compensation_20261105",
+    "log": "outputs/finite_recovery_compensation_20261105.log",
+    "utc": "2026-11-05T08:02:58.521754+00:00",
+    "source_commit": "12a8b67724188b7efc2abb841afeecf5e5490e41",
+    "source_sha256": "060e43f851a69cf86d5f641089b893195e4ebec2c759e439716ec4d4a06ec81e",
+    "name": "finite_recovery_compensation",
+    "host": "21516",
+    "worker_pid": 18512,
+    "status": "running_source_only",
+    "real_construction_images": 0,
+    "protocol": "results/data_free_compensation/finite_recovery_compensation.json"
   }
 }
