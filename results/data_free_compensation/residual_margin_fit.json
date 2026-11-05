@@ -1,5 +1,5 @@
 {
-  "status": "registered_not_started",
+  "status": "passed_source_gate",
   "protocol": {
     "registered_utc": "2026-11-05T10:47:29.525784+00:00",
     "output": "outputs/residual_margin_fit_20261105",
@@ -44,5 +44,216 @@
     "validation": "Same source checks and frozen release rules as the projection fit. Use the fixed original AGA kernel to verify the differentiable O output and the aligned B permutation. Read all five counts on the 400 odd synthetic views. Natural images and partner parameters are not used in construction or selection.",
     "scope": "No partners or real images in construction. One finite source point, no amplification of the closed O or parameter sweep. Primary natural evaluation follows only after source eligibility.",
     "reference": "https://arxiv.org/html/2606.30360v1#S3.SS1"
+  },
+  "completed_utc": "2026-11-05T10:51:33.351108+00:00",
+  "source_commit": "ea26983f477d1540d8c1588a97c4fc923def229b",
+  "launch": {
+    "pid": 25453,
+    "output": "outputs/residual_margin_fit_20261105",
+    "utc": "2026-11-05T10:48:07.392585+00:00",
+    "source_commit": "ea26983f477d1540d8c1588a97c4fc923def229b",
+    "timeout_seconds": 600,
+    "host": "21516"
+  },
+  "result": {
+    "status": "completed_source_only",
+    "source_eligible": true,
+    "conditions": {
+      "native": true,
+      "TA": true,
+      "AGA": true,
+      "TA_B_reset": true,
+      "AGA_B_reset": true
+    },
+    "parent_counts": {
+      "native": 400,
+      "TA": 0,
+      "TA_B_reset": 400,
+      "AGA": 0,
+      "AGA_B_reset": 400
+    },
+    "edited_counts": {
+      "native": 400,
+      "TA": 0,
+      "TA_B_reset": 0,
+      "AGA": 0,
+      "AGA_B_reset": 261
+    },
+    "o_fit": {
+      "initial": [
+        1.0,
+        1.0
+      ],
+      "final": [
+        0.0,
+        0.08818788848985769
+      ],
+      "closures": 27,
+      "iterations": 20,
+      "trace": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          0.9919419709911035,
+          0.9942963685309955
+        ],
+        [
+          0.9540160412578265,
+          0.9668909366515753
+        ],
+        [
+          0.7203513166943741,
+          0.7952505882163183
+        ],
+        [
+          0.09778633152399184,
+          0.40276782985448406
+        ],
+        [
+          0.0,
+          0.41467647096429744
+        ],
+        [
+          0.0,
+          0.36035057303962775
+        ],
+        [
+          0.0,
+          0.4018176191188676
+        ],
+        [
+          0.0,
+          0.33194523920924174
+        ],
+        [
+          0.0,
+          0.2954944246416407
+        ],
+        [
+          0.0,
+          0.2583575849389451
+        ],
+        [
+          0.0,
+          0.22851051359300528
+        ],
+        [
+          0.0,
+          0.20163258683511898
+        ],
+        [
+          0.0,
+          0.18754337916460237
+        ],
+        [
+          0.0,
+          0.17288663593756473
+        ],
+        [
+          0.0,
+          0.15487539129569006
+        ],
+        [
+          0.0,
+          0.16854734322284107
+        ],
+        [
+          0.0,
+          0.14133981058184034
+        ],
+        [
+          0.0,
+          0.12717157707592017
+        ],
+        [
+          0.0,
+          0.11774665326329842
+        ],
+        [
+          0.0,
+          0.11733827452287186
+        ],
+        [
+          0.0,
+          0.10858932444386668
+        ],
+        [
+          0.0,
+          0.10224229461766164
+        ],
+        [
+          0.0,
+          0.09703833612743498
+        ],
+        [
+          0.0,
+          0.09145844510141533
+        ],
+        [
+          0.0,
+          0.09002142651045851
+        ],
+        [
+          0.0,
+          0.08818788848985769
+        ]
+      ],
+      "gradient_replay": {
+        "analytical": 0.3528320349255364,
+        "finite": 0.3528320349166502
+      },
+      "radius": 12.374043903180064,
+      "displacement": 4.880769281802671
+    },
+    "b_fit": {
+      "rank": 1200,
+      "norm": 70.39621944578757,
+      "radius": 70.39621944583543,
+      "multiplier": 0.01689882744776629,
+      "kkt_residual": 8.888788760822668e-10,
+      "relative_residual": 0.014514552853161491,
+      "native_TA_AGA_MSE": [
+        0.0001012107699532385,
+        6.748564445735292e-05,
+        2.885334422435042e-05
+      ]
+    },
+    "author_o_errors": [
+      2.853716360440295e-08,
+      3.727788222551709e-08
+    ],
+    "capture_errors": [
+      1.5982132981484654e-06,
+      1.8825347414264115e-06,
+      1.685443002941156e-06
+    ],
+    "release": {
+      "path": "outputs/residual_margin_fit_20261105/edits.pt",
+      "sha256": "4291512a665c894954fa649779f9a7d811b61fffa9d2d59708db78cbcd809aa9"
+    },
+    "scores_sha256": "bd2d364af0784169019474f44ace7f26be0513c85fd37857409ed7d2575f1a44",
+    "source_sha256": "b8c89882f1636eb497aa7a51feb7ed47b388abe8523ea24a1afc6968f7d18ee7",
+    "checkpoints": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+      "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+    },
+    "real_images": 0,
+    "original_expert_updates": 0,
+    "full_AGA_calls": 2,
+    "seconds": 27.041014662012458
+  },
+  "raw_archive": {
+    "hosts": [
+      "21516",
+      "55548"
+    ],
+    "files": 7,
+    "bytes": 11923709,
+    "manifest": "outputs/residual_margin_fit_20261105_manifest.json",
+    "manifest_sha256": "8dac5b20c6a1a7725daf740107d2fbe800abda09b69ac7f7ae046ba2bae0520e",
+    "all_sha256_equal": true
   }
 }

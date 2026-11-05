@@ -1,12 +1,23 @@
 {
-  "updated_utc": "2026-11-05T10:37:34.170804+00:00",
-  "status": "completed_fixed_diagnosis",
+  "updated_utc": "2026-11-05T10:51:33.351108+00:00",
+  "status": "running_full_evaluation",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "The fixed cross-check localizes the source effect loss mainly to the last-layer O transformation. A candidate should predict class-relevant residual loss after the actual author headwise transform while retaining native and ordinary TA; require a distinct, fixed construction rather than scaling the closed O.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "pid": 25731,
+      "output": "outputs/residual_margin_full_20261105",
+      "utc": "2026-11-05T10:50:59.909112+00:00",
+      "source_commit": "700b2b8b8efa6a6181afce55f3959256f0a61b01",
+      "timeout_seconds": 1200,
+      "host": "21516",
+      "status": "running_full_evaluation",
+      "protocol": "results/data_free_compensation/residual_margin_full.json"
+    }
+  ],
+  "next_action": "Finish and verify the fixed full MNIST/SVHN paired evaluation. Check standalone and both ordinary AGA scopes before interpreting the real B-reset comparison.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -760,5 +771,17 @@
       "21516",
       "55548"
     ]
+  },
+  "residual_margin_full": {
+    "record": "results/data_free_compensation/residual_margin_full.json",
+    "status": "running_full_evaluation",
+    "launch": {
+      "pid": 25731,
+      "output": "outputs/residual_margin_full_20261105",
+      "utc": "2026-11-05T10:50:59.909112+00:00",
+      "source_commit": "700b2b8b8efa6a6181afce55f3959256f0a61b01",
+      "timeout_seconds": 1200,
+      "host": "21516"
+    }
   }
 }
