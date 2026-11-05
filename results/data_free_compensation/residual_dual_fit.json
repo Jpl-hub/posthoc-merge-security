@@ -1,0 +1,42 @@
+{
+  "status": "registered_not_started",
+  "protocol": {
+    "registered_utc": "2026-11-05T10:16:26.046635+00:00",
+    "output": "outputs/residual_dual_fit_20261105",
+    "source_sha256": {
+      "outputs/residual_dual_fit_20261105.py": "98780490e03007d3c3c513786cfa62dff0e49d71d36e17ab775e2b9cbf391ecf",
+      "results/data_free_compensation/residual_class_fit.json": "8ffe222c10393a2c68e0d42794f98ae480fc84fa5d149608d31cedab3f560619",
+      "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+      "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+      "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "outputs/residual_class_fit_20261105_v2/source.py": "04015ec8d8d922bee35001060d550c69de37d2ee27b50b526e2e6f8e39a5beb2"
+    },
+    "previous_source": "outputs/residual_class_fit_20261105_v2/source.py",
+    "parent": {
+      "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+      "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+    },
+    "source": {
+      "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+      "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+    },
+    "fixed_O_release": {
+      "path": "outputs/residual_class_fit_20261105_v2/edits.pt",
+      "sha256": "ecff37125f9265bcef2ad24a9a3c9124a2f5a248b4c71b456e88e8fbf80b4dae"
+    },
+    "AGA": {
+      "path": "external/secure-merge-attack/utils_attack_B32.py",
+      "normalized_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+    },
+    "native_loss_max": 2,
+    "timeout_seconds": 600,
+    "question": "Can the fixed class-facing O change keep its B replacement effect when a single B correction fits both the parent native and parent ordinary TA outputs?",
+    "construction": "Reuse the exact prior O tensor. Take the same 80 even synthetic images with five views each. Fit one B and bias correction against the parent last block output in both native and public half-average contexts. Multiply the TA design by the actual half-average coefficient .5. Stack the two complete feature residuals with equal per-view weight. Same norm budget on the affine B correction as prior, one FP64 SVD bounded least-squares solve and one FP32 freeze. Other tensors retain their parent values.",
+    "validation": "Check that resetting B gives the same complete state as the previous O/B point. On the same 400 odd-image views, require no more than two lost native agreements, no increase in ordinary TA agreement, and fewer B-reset agreements. If the direct gate passes, evaluate fixed original AGA then ordinary TA and AGA plus B reset, with nonincrease in ordinary AGA and fewer B-reset agreements. Report each count even on failure.",
+    "scope": "Single synthetic feasibility comparison with no real construction data, no partner, no new production entry or optimizer. Odd images are excluded from fitting, but their outcomes in the previous experiment have been seen. Natural accuracy and real fusion need separate evaluation.",
+    "previous_record": "results/data_free_compensation/residual_class_fit.json"
+  }
+}
