@@ -1,12 +1,12 @@
 {
-  "updated_utc": "2026-11-05T08:30:21.703826+00:00",
-  "status": "completed_fixed_fit_diagnosis",
+  "updated_utc": "2026-11-05T09:05:21.416794+00:00",
+  "status": "completed_full_paired_evaluation",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "The fixed DTD fit comparison gives substantial conditional B fit headroom for both students. A focused follow-up is to test whether the same-input least-squares B adjustment transfers to untouched DTD and MNIST test images, paired with the original fixed ProDistill students. Keep it separate from the primary recovery table and use no result to repair a defense.",
+  "next_action": "Close the DTD projection fit diagnosis. Preserve the matched fixed ProDistill figures and qualify the DTD projection finding using the held-out B-fit sensitivity. Any new defense experiment needs a distinct mechanism and frozen data-free construction protocol.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -607,5 +607,39 @@
     "seconds": 8.876826094463468,
     "new_model_checkpoints": 0,
     "active_GPU_jobs": 0
+  },
+  "dtd_b_fit_transfer": {
+    "status": "completed_full_paired_evaluation",
+    "record": "results/data_free_compensation/dtd_b_fit_transfer.json",
+    "source_commit": "fbdc5365253e67482038d0ca881d94cc3bb5ef2a",
+    "host": "21516",
+    "output": "outputs/dtd_b_fit_transfer_20261105",
+    "DTD_test_correct": {
+      "Retained": [
+        1254,
+        1142
+      ],
+      "Removed": [
+        386,
+        1243
+      ]
+    },
+    "MNIST_test_correct": {
+      "Retained": [
+        9951,
+        9952
+      ],
+      "Removed": [
+        9947,
+        9951
+      ]
+    },
+    "replay_count": 128,
+    "maximum_replay_error": 1.52587890625e-05,
+    "raw_archive_hosts": [
+      "21516",
+      "55548"
+    ],
+    "new_defense_updates": 0
   }
 }

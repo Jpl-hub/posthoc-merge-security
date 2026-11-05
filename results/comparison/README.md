@@ -11,7 +11,7 @@
 
 [PaRaMS §5—6](https://arxiv.org/html/2503.07661v1)、[Trap² §6及附录C/D](https://arxiv.org/html/2601.21898v2)、[MergeBarrier §4](https://arxiv.org/html/2511.10712v2)中的任务数、数据权限、融合系数和统计口径不同，本文不直接拼接原论文数字。Trap²官方README将恢复代码指向ProDistill原作者仓库；本项目采用固定原作者核并明确两专家适配。完整来源和取舍见[攻击清单](../attack_generalization_20261028/attack_inventory.md)。
 
-目前主要恢复实验已经完成。防御二在代表性蒸馏和已知B替换下仍有明显恢复。最近一组有限A/B补偿对照中，蒸馏和B替换在合成输入上分别保持64/64和800/800个原专家判断。两组都结束于预设的源检查，没有新增完整测试结果。[对照记录](../data_free_compensation/finite_recovery_compensation.json)
+目前主要恢复实验已经完成。防御二在代表性蒸馏和已知B替换下仍有明显恢复。最近一组有限A/B补偿对照中，蒸馏和B替换在合成输入上分别保持64/64和800/800个原专家判断。两组都结束于预设的源检查，没有新增完整测试结果。[对照记录](../data_free_compensation/finite_recovery_compensation.json) DTD去投影组在同一批蒸馏图上改用末层B最小二乘拟合后，完整测试恢复从20.53%升至66.12%。低恢复率依赖固定的100步求解条件。[补充实验](../data_free_compensation/dtd_b_fit_transfer.json)
 
 | 项目 | 当前情况 | 直接结论或缺口 |
 |---|---|---|
