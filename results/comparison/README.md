@@ -18,7 +18,7 @@
 
 A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任务投影约束后，三任务的收益方向不一致。论文可以描述 SVD 的构造作用和完整消融，证据还不足以把保护效果归因于 SVD。
 
-八专家 TA 0.2 已完成三个保护方向、七个完整测试集的对比。EuroSAT 的原专家测试划分仍待核实，现表按任务列结果。另列的防御一 ViT-B/16 结果支持第二骨干上的直接融合和 AGA 比较。
+八专家 TA 0.2 已完成三个保护方向、七个完整测试集的对比。这里的“八专家”是参与融合的模型数，不是八个数据集。当前防御二使用[版本表中的 Updated 行](defense2_eight_versions.md)；Earlier 行只作版本对照。EuroSAT 的原专家测试划分仍待核实，因此不写八任务平均数。另列的防御一 ViT-B/16 结果支持第二骨干上的直接融合和 AGA 比较。
 
 ## 写作与汇报用表
 
@@ -27,6 +27,7 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 | 两专家正文主表 | [独立、目标与伙伴](paper_main.md) · [TeX](paper_main.tex) |
 | 输出校正、匹配及硬标签蒸馏的逐项结果 | [目标](attacks.md) · [TeX](attacks.tex) · [伙伴](partners.md) · [TeX](partners.tex) |
 | 当前发布在八专家下的 TA、AGA 和输出校正 | [三个目标](eight_calibration_target.md) · [TeX](eight_calibration_target.tex) · [七个测试集](eight_calibration.md) · [TeX](eight_calibration.tex) |
+| 防御二旧版与当前版的八专家对照 | [版本表](defense2_eight_versions.md) · [TeX](defense2_eight_versions.tex) |
 | 防御二的 A/B 删项和同范数随机对照 | [目标](defense2_components.md) · [TeX](defense2_components.tex) · [伙伴](defense2_component_partners.md) · [TeX](defense2_component_partners.tex) |
 | 任务 SVD 投影约束的消融 | [目标](defense2_projection.md) · [TeX](defense2_projection.tex) · [伙伴](defense2_projection_partners.md) · [TeX](defense2_projection_partners.tex) |
 | 两种防御在相同设置下的 ProDistill | [结果](feature_distillation.md) · [TeX](feature_distillation.tex) |
