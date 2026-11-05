@@ -1,0 +1,45 @@
+{
+  "status": "registered_not_started",
+  "protocol": {
+    "registered_utc": "2026-11-05T10:35:10.586440+00:00",
+    "output": "outputs/residual_alignment_cross_20261105",
+    "source_sha256": {
+      "outputs/residual_alignment_cross_20261105.py": "54cd494944abf47ec61f430fad1d2d2cae1783bba976a61acb65c1045ffd8f0a",
+      "results/data_free_compensation/residual_dual_fit.json": "51ae9c8f843d3c3a66158ee1fe10a34ea063d4504ee8a0d4191459d344140b2e",
+      "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+      "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+      "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "outputs/residual_class_fit_20261105_v2/source.py": "04015ec8d8d922bee35001060d550c69de37d2ee27b50b526e2e6f8e39a5beb2"
+    },
+    "previous_source": "outputs/residual_class_fit_20261105_v2/source.py",
+    "parent": {
+      "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+      "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+    },
+    "source": {
+      "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+      "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+    },
+    "candidate": {
+      "path": "outputs/residual_dual_fit_20261105/edits.pt",
+      "sha256": "53be194223bfd698bc40c7f5208446ae2cc0b1e93e6475210f27f78aa3d346eb"
+    },
+    "AGA": {
+      "path": "external/secure-merge-attack/utils_attack_B32.py",
+      "normalized_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+    },
+    "archived_scores": {
+      "path": "outputs/residual_dual_fit_20261105/scores.pt",
+      "sha256": "2ddf24a4e6d5f4041f658d292abb028b2d81f3e6f49f030586887ea73262a604"
+    },
+    "score_tolerance": 0.0005,
+    "timeout_seconds": 180,
+    "question": "Does the failed AGA-plus-B-reset protection follow the transformed O change, the attention inputs, or the receiving residual and readout context?",
+    "design": "Keep the prior 400 odd synthetic views and both releases fixed. Recover the parent with the author AGA once, and verify its final O against the last-layer kernel. Replacing B erases all other candidate edits. Apply pre-alignment and post-alignment O differences separately to the captured attention output of direct TA and AGA-then-TA. Also add the actual direct per-view residual difference to the aligned residual. Recompute LN2, public MLP and final classifier in each context.",
+    "checks": "The parent and actual edited rows reproduce the earlier direct and AGA B-reset logits and decisions. Report all crossed conditions, teacher agreements, score margins and norms in the fixed class-readout span.",
+    "scope": "Post-hoc counterfactuals on the archived synthetic views. One full parent AGA replay, two last-layer checks, and 800 frozen synthetic image forwards. No fits, weight publications, natural evaluation, or attack benchmarks."
+  }
+}
