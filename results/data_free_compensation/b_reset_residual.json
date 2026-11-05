@@ -1,0 +1,60 @@
+{
+  "status": "registered_not_started",
+  "protocol": {
+    "registered_utc": "2026-11-05T09:47:56.814444+00:00",
+    "output": "outputs/b_reset_residual_20261105",
+    "source_sha256": {
+      "outputs/b_reset_residual_20261105.py": "12f424a9a915d3e6f41000ed100626bd4d752cbcb6b429dd4fc04bf4ed4288ac",
+      "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+      "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "configs/defense2_inputs.json": "894209da2c9cdca0dc6bbd674a407e2970865d847f2346a78e8f09a93b68a722"
+    },
+    "tasks": {
+      "MNIST": {
+        "n": 800,
+        "release": {
+          "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+          "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+        },
+        "source": {
+          "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+          "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+        }
+      },
+      "SVHN": {
+        "n": 800,
+        "release": {
+          "path": "outputs/finite_classification_20261102/SVHN/point/point.pt",
+          "sha256": "5819a9bff4c25311633a07e18600721d2f18366dc0ebe056fe33544d3d809386"
+        },
+        "source": {
+          "path": "outputs/native_ellipse_classification_SVHN_20261026/source/source.pt",
+          "sha256": "b6c0aedbfbf45a3421d63deee926de0bccca5bec61b2ebbc94c4f53613aa8a4c"
+        }
+      },
+      "DTD": {
+        "n": 3760,
+        "release": {
+          "path": "outputs/finite_classification_20261102/DTD/point/point.pt",
+          "sha256": "fd8d553e1c3b491ca2753accc1f846d2b650084c4bd489fefc4e2f7ab67ec170"
+        },
+        "source": {
+          "path": "outputs/native_ellipse_classification_DTD_20261026/source/source.pt",
+          "sha256": "f503e4503bed1d65cb3c155662f3eb9552077b1de07aaf37e442439cbfc5d48c"
+        }
+      }
+    },
+    "timeout_seconds": 180,
+    "AGA_source": {
+      "path": "external/secure-merge-attack/utils_attack_B32.py",
+      "normalized_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+    },
+    "question": "In the fixed public B-replacement proxy, does classification survive through the residual that bypasses the last MLP, through the public-B MLP branch, or through both?",
+    "design": "The same 5360 archived synthetic views for each of the two cached public-base contexts. Use the frozen Defense 2 A and a, the public B and b, and the original fixed half-average readout. In the recovered context, use the cached pre-MLP prefix and the fixed author MLP permutation. Evaluate prefix only, MLP only, and their sum with the same complete head. Recount and reproduce logits in NumPy. Split the full decision numerator against its strongest competing class into centered residual, centered MLP, and readout offsets.",
+    "scope": "Read-only cached representation diagnosis, with no parameter training, image forwards, real data, partner, or new model. Branch deletions are diagnostic counterfactuals. They are not proposed restoration attacks or evidence for natural-image accuracy.",
+    "reference": "https://github.com/openai/CLIP/blob/main/clip/model.py#L173-L176"
+  }
+}
