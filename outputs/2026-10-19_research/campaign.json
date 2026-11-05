@@ -1,28 +1,12 @@
 {
-  "updated_utc": "2026-11-05T08:02:58.521754+00:00",
-  "status": "running_source_only",
+  "updated_utc": "2026-11-05T08:22:12.310984+00:00",
+  "status": "completed_source_only_no_eligible_candidate",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "timeout_pid": 18510,
-      "timeout_seconds": 2400,
-      "output": "outputs/finite_recovery_compensation_20261105",
-      "log": "outputs/finite_recovery_compensation_20261105.log",
-      "utc": "2026-11-05T08:02:58.521754+00:00",
-      "source_commit": "12a8b67724188b7efc2abb841afeecf5e5490e41",
-      "source_sha256": "060e43f851a69cf86d5f641089b893195e4ebec2c759e439716ec4d4a06ec81e",
-      "name": "finite_recovery_compensation",
-      "host": "21516",
-      "worker_pid": 18512,
-      "status": "running_source_only",
-      "real_construction_images": 0,
-      "protocol": "results/data_free_compensation/finite_recovery_compensation.json"
-    }
-  ],
-  "next_action": "Verify both frozen source conditions after the bounded GPU run. Only a source-eligible point goes to complete native, TA, original AGA, ProDistill and public B replacement evaluation. No automatic follow-on or tuning on real evaluation.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "The finite last-block A/B correction comparison is closed. Use the established matched recovery results for current claims and require a distinct, evidence-backed mechanism before opening another defense construction.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -579,18 +563,33 @@
     "full_scope_compared": false
   },
   "finite_recovery_compensation": {
-    "timeout_pid": 18510,
-    "timeout_seconds": 2400,
-    "output": "outputs/finite_recovery_compensation_20261105",
-    "log": "outputs/finite_recovery_compensation_20261105.log",
-    "utc": "2026-11-05T08:02:58.521754+00:00",
+    "status": "completed_source_only_no_eligible_candidate",
+    "record": "results/data_free_compensation/finite_recovery_compensation.json",
     "source_commit": "12a8b67724188b7efc2abb841afeecf5e5490e41",
-    "source_sha256": "060e43f851a69cf86d5f641089b893195e4ebec2c759e439716ec4d4a06ec81e",
-    "name": "finite_recovery_compensation",
     "host": "21516",
-    "worker_pid": 18512,
-    "status": "running_source_only",
-    "real_construction_images": 0,
-    "protocol": "results/data_free_compensation/finite_recovery_compensation.json"
+    "output": "outputs/finite_recovery_compensation_20261105",
+    "seconds": 304.0175341349095,
+    "accepted_steps": {
+      "Projected": 3,
+      "Joint": 0
+    },
+    "standalone_source_matches": [
+      800,
+      800
+    ],
+    "distillation_source_matches": [
+      64,
+      64
+    ],
+    "replacement_source_matches": [
+      800,
+      800
+    ],
+    "actual_full_evaluation": false,
+    "raw_archive_hosts": [
+      "21516",
+      "55548"
+    ],
+    "real_construction_images": 0
   }
 }

@@ -1,5 +1,5 @@
 {
-  "status": "running_source_only",
+  "status": "completed_source_only_no_eligible_candidate",
   "protocol": {
     "registered_utc": "2026-11-05T08:02:03.328161+00:00",
     "output": "outputs/finite_recovery_compensation_20261105",
@@ -66,8 +66,271 @@
     "name": "finite_recovery_compensation",
     "host": "21516",
     "worker_pid": 18512,
-    "status": "running_source_only",
+    "status": "completed_source_only_no_eligible_candidate",
     "real_construction_images": 0,
     "protocol": "results/data_free_compensation/finite_recovery_compensation.json"
-  }
+  },
+  "completed_utc": "2026-11-05T08:22:12.310984+00:00",
+  "initial": {
+    "native_KL": 0.02111553665553523,
+    "public_matches": {
+      "direct": 0,
+      "recovered": 0
+    },
+    "reset_matches": 800,
+    "distilled_matches": 64,
+    "objectives": [
+      -5.623119247604604,
+      -5.59092761275077
+    ],
+    "ranges": {
+      "A": 1.0957239261497829,
+      "a": 1.0126089870747361,
+      "B": 3.077304933754079,
+      "b": 1.2700031768258098
+    }
+  },
+  "result": {
+    "status": "completed_source_only",
+    "cases": {
+      "Projected": {
+        "release": {
+          "path": "outputs/finite_recovery_compensation_20261105/Projected/point.pt",
+          "sha256": "b29f846938a3fcf6ad67328808d6da4b95e68908f9366110c289ebf66b121be4"
+        },
+        "source_feasible": false,
+        "counts": {
+          "native": 800,
+          "direct": 0,
+          "recovered": 0,
+          "distilled": 64,
+          "B_replacement": 800
+        },
+        "native_KL": 0.021115536434946635,
+        "relative_changes": {
+          "A": 1.0957271814083889,
+          "a": 1.0127859986675756,
+          "B": 3.077297222074522,
+          "b": 1.2699201597148615
+        },
+        "objectives": [
+          -5.568847214290288,
+          -5.560575051035092
+        ],
+        "accepted_steps": 3,
+        "stop_reason": "fixed_finite_correction_or_ascent_limit",
+        "trace": [
+          {
+            "iteration": 1,
+            "active": "distillation",
+            "objectives": [
+              -5.537227933786183,
+              -5.590828605769304
+            ],
+            "native_KL": 0.021115536655535175,
+            "step": 5e-05,
+            "backtracks": 5
+          },
+          {
+            "iteration": 2,
+            "active": "B_replacement",
+            "objectives": [
+              -5.5442755529609,
+              -5.5757739760173335
+            ],
+            "native_KL": 0.02111553665559091,
+            "step": 0.0002,
+            "backtracks": 3
+          },
+          {
+            "iteration": 3,
+            "active": "B_replacement",
+            "objectives": [
+              -5.5688472349051885,
+              -5.5605750518972235
+            ],
+            "native_KL": 0.021115536655538652,
+            "step": 0.0002,
+            "backtracks": 3
+          }
+        ],
+        "source_scores_sha256": "1ee358c534c05ad256426ce0b1493fdf092d7210595d1a3ed91df4e906734427"
+      },
+      "Joint": {
+        "release": {
+          "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+          "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+        },
+        "source_feasible": false,
+        "counts": {
+          "native": 800,
+          "direct": 0,
+          "recovered": 0,
+          "distilled": 64,
+          "B_replacement": 800
+        },
+        "native_KL": 0.02111553665553523,
+        "relative_changes": {
+          "A": 1.0957239261497829,
+          "a": 1.0126089870747361,
+          "B": 3.077304933754079,
+          "b": 1.2700031768258098
+        },
+        "objectives": [
+          -5.623119247604604,
+          -5.59092761275077
+        ],
+        "accepted_steps": 0,
+        "stop_reason": "fixed_finite_correction_or_ascent_limit",
+        "trace": [],
+        "source_scores_sha256": "3ccb6ecdd79cabaac77adf2f400c06f2d829a9f7ca6aac47afa79c2bdc604408"
+      }
+    },
+    "cost": {
+      "coefficient_trajectory_steps": 1000,
+      "coefficient_reverse_steps": 300,
+      "native_correction_steps": 154
+    },
+    "seconds": 304.0175341349095,
+    "original_expert_updates": 0,
+    "real_images": 0,
+    "source_sha256": "060e43f851a69cf86d5f641089b893195e4ebec2c759e439716ec4d4a06ec81e",
+    "synthetic_image_forwards": 256
+  },
+  "independent_numpy": {
+    "status": "passed",
+    "method": "NumPy replay on saved logits; no network reruns",
+    "parent": {
+      "counts": {
+        "native": 800,
+        "direct": 0,
+        "recovered": 0,
+        "B_replacement": 800,
+        "distilled": 64
+      },
+      "native_KL": 0.021115536655534693,
+      "objectives": [
+        -5.623119247604604,
+        -5.59092761275077
+      ],
+      "correct_class_margins": {
+        "distilled": {
+          "min": 2.6624594583524086,
+          "p10": 3.4293487553747277,
+          "median": 5.877790456444924,
+          "max": 7.858319987388388
+        },
+        "B_replacement": {
+          "min": 2.7140909506387416,
+          "p10": 3.3821752386349857,
+          "median": 5.81368679261627,
+          "max": 7.45878869017222
+        }
+      },
+      "scores_sha256": "c795a3206b42df27b3a15f438f715e14db8fd4f96d1fe137cfac16a4d67880c7"
+    },
+    "cases": {
+      "Projected": {
+        "counts": {
+          "native": 800,
+          "direct": 0,
+          "recovered": 0,
+          "distilled": 64,
+          "B_replacement": 800
+        },
+        "decisions_changed_vs_parent": {
+          "native": 0,
+          "direct": 1,
+          "recovered": 2,
+          "distilled": 0,
+          "B_replacement": 0
+        },
+        "max_absolute_logit_change": {
+          "native": 1.4152513576610901,
+          "direct": 0.014262673428230954,
+          "recovered": 0.013426238551296876,
+          "distilled": 0.5281074621278421,
+          "B_replacement": 0.14595965593082205
+        },
+        "correct_class_margins": {
+          "distilled": {
+            "min": 2.6272245700655716,
+            "p10": 3.4121352542669063,
+            "median": 5.812159392377966,
+            "max": 7.774438736903196
+          },
+          "B_replacement": {
+            "min": 2.692652955016534,
+            "p10": 3.3660257640881133,
+            "median": 5.781538956554918,
+            "max": 7.423003671226951
+          }
+        },
+        "native_KL": 0.021115536434946618,
+        "objectives": [
+          -5.568847214290287,
+          -5.560575051035091
+        ],
+        "source_feasible": false
+      },
+      "Joint": {
+        "counts": {
+          "native": 800,
+          "direct": 0,
+          "recovered": 0,
+          "distilled": 64,
+          "B_replacement": 800
+        },
+        "decisions_changed_vs_parent": {
+          "native": 0,
+          "direct": 0,
+          "recovered": 0,
+          "distilled": 0,
+          "B_replacement": 0
+        },
+        "max_absolute_logit_change": {
+          "native": 0.0,
+          "direct": 0.0,
+          "recovered": 0.0,
+          "distilled": 0.0,
+          "B_replacement": 0.0
+        },
+        "correct_class_margins": {
+          "distilled": {
+            "min": 2.6624594583524086,
+            "p10": 3.4293487553747277,
+            "median": 5.877790456444924,
+            "max": 7.858319987388388
+          },
+          "B_replacement": {
+            "min": 2.7140909506387416,
+            "p10": 3.3821752386349857,
+            "median": 5.81368679261627,
+            "max": 7.45878869017222
+          }
+        },
+        "native_KL": 0.021115536655534693,
+        "objectives": [
+          -5.623119247604604,
+          -5.59092761275077
+        ],
+        "source_feasible": false
+      }
+    },
+    "audit_sha256": "e6b304d0e871f85460aac2fc1146e3f6ac4effbc2a6adb095a4d50ca6685a995",
+    "new_images": 0,
+    "new_model_updates": 0
+  },
+  "raw_archive": {
+    "hosts": [
+      "21516",
+      "55548"
+    ],
+    "files": 14,
+    "bytes": 19796653,
+    "manifest": "outputs/finite_recovery_compensation_20261105_manifest.json",
+    "manifest_sha256": "e3614e060112c31e6a8ec43de4fc1b1ffbc686a27c77c2f2682a839c477481d4",
+    "all_sha256_equal": true
+  },
+  "decision": "Both final points miss the fixed source decision gate. Close this comparison without a complete-test run or a change to the existing Defense 2 release."
 }
