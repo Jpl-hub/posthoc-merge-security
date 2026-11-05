@@ -1,0 +1,48 @@
+{
+  "status": "registered_not_started",
+  "protocol": {
+    "registered_utc": "2026-11-05T10:47:29.525784+00:00",
+    "output": "outputs/residual_margin_fit_20261105",
+    "source_sha256": {
+      "results/data_free_compensation/residual_dual_fit.json": "51ae9c8f843d3c3a66158ee1fe10a34ea063d4504ee8a0d4191459d344140b2e",
+      "results/data_free_compensation/residual_alignment_cross.json": "72fa59368689f1909e1f8b7f71aaf9e34061f90e95bcf5c49f675d20b1f64712",
+      "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+      "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+      "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "outputs/residual_class_fit_20261105_v2/source.py": "04015ec8d8d922bee35001060d550c69de37d2ee27b50b526e2e6f8e39a5beb2",
+      "outputs/residual_dual_fit_20261105/source.py": "98780490e03007d3c3c513786cfa62dff0e49d71d36e17ab775e2b9cbf391ecf",
+      "outputs/residual_margin_fit_20261105.py": "b8c89882f1636eb497aa7a51feb7ed47b388abe8523ea24a1afc6968f7d18ee7"
+    },
+    "capture_source": "outputs/residual_class_fit_20261105_v2/source.py",
+    "compensation_source": "outputs/residual_dual_fit_20261105/source.py",
+    "parent": {
+      "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+      "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+    },
+    "source": {
+      "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+      "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+    },
+    "AGA": {
+      "path": "external/secure-merge-attack/utils_attack_B32.py",
+      "normalized_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+    },
+    "baseline_scores": {
+      "path": "outputs/residual_dual_fit_20261105/scores.pt",
+      "sha256": "2ddf24a4e6d5f4041f658d292abb028b2d81f3e6f49f030586887ea73262a604"
+    },
+    "o_steps": 20,
+    "o_max_eval": 30,
+    "timeout_seconds": 600,
+    "author_o_tolerance": 1e-05,
+    "native_loss_max": 2,
+    "question": "Does fitting actual post-reset class margins, with native, TA and AGA compensation, address the previous projection loss and ordinary AGA failure?",
+    "construction": "Keep the same parent, rank-nine O directions, budgets, optimizer, and even-image views. Replace squared residual projection loss by the mean positive teacher-class margin of the actual final classifier under public B reset, equally normalized in the ordinary TA and AGA contexts. AGA uses the same differentiable ridge map with unchanged 1e-8 regularizer. Fit one B correction jointly to the parent block features in native, TA and AGA-TA, with the known AGA column permutation applied only to the aligned correction design. Full B reset erases that B correction, isolating the O change for both reset conditions.",
+    "validation": "Same source checks and frozen release rules as the projection fit. Use the fixed original AGA kernel to verify the differentiable O output and the aligned B permutation. Read all five counts on the 400 odd synthetic views. Natural images and partner parameters are not used in construction or selection.",
+    "scope": "No partners or real images in construction. One finite source point, no amplification of the closed O or parameter sweep. Primary natural evaluation follows only after source eligibility.",
+    "reference": "https://arxiv.org/html/2606.30360v1#S3.SS1"
+  }
+}
