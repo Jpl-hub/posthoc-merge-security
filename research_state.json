@@ -23,11 +23,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-05T03:15:07.045653+00:00",
+    "verified_utc": "2026-11-05T04:47:50.195066+00:00",
     "primary_available_GiB": 17,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
@@ -143,11 +143,26 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-05T04:45:32.972717+00:00",
-  "status": "recovery_soft_registered",
+  "updated_utc": "2026-11-05T04:47:50.195066+00:00",
+  "status": "recovery_soft_running",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "name": "recovery_soft",
+      "host": "21516",
+      "pid": 8770,
+      "timeout_pid": 8768,
+      "log": "outputs/recovery_soft_20261105.log",
+      "source_commit": "ed3a655404030051c33c313edd3c54e273a458aa",
+      "stage": "initial_full_derivative_check",
+      "conditions": [
+        "JointRecovery",
+        "RetainOnly"
+      ],
+      "followed_by": "Frozen full native/TA/AGA/ProDistill evaluation; independent NumPy summary on completion."
+    }
+  ],
   "next_action": "Execute fixed actual-recovery entropy plus full native/public output retention and matched retention-only control; verify derivative first, freeze final points before complete native/TA/AGA/ProDistill evaluation.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
@@ -235,11 +250,13 @@
     "finding": "Recovery permissions differ across papers; no common anti-distillation guarantee."
   },
   "recovery_soft": {
-    "status": "registered_not_started",
+    "status": "running",
     "protocol": "results/data_free_compensation/recovery_soft_protocol.json",
     "output": "outputs/recovery_soft_20261105",
     "log": "outputs/recovery_soft_20261105.log",
     "real_construction_images": 0,
-    "new_points": 2
+    "new_points": 2,
+    "source_commit": "ed3a655404030051c33c313edd3c54e273a458aa",
+    "pid": 8770
   }
 }
