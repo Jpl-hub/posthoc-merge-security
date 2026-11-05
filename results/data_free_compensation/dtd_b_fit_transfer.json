@@ -1,0 +1,66 @@
+{
+  "status": "registered_not_started",
+  "protocol": {
+    "registered_utc": "2026-11-05T08:38:49.076285+00:00",
+    "output": "outputs/dtd_b_fit_transfer_20261105",
+    "fit_diagnosis": "results/data_free_compensation/dtd_final_b_fit.json",
+    "fit_source": "outputs/dtd_final_b_fit_20261105/source.py",
+    "source_sha256": {
+      "outputs/dtd_b_fit_transfer_20261105.py": "9bb238a0f9b5f899ae12e26cd11f958fc049454645a0647d3218c32886f054dd",
+      "results/data_free_compensation/dtd_final_b_fit.json": "96b9136852399897b87e4829b52a869d554e8ab0024a0576be60c88073d5b5c4",
+      "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+      "_impl/evaluate.py": "db733c87bdbb5e2a747c5b4e33e40023ae307bf7823d64bebba8e6510bf753f1",
+      "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+      "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+      "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "outputs/dtd_final_b_fit_20261105/source.py": "bb28bc51f80aac869a79ed8614b4468dba6e7203bcc1601ceed638edb490e84f"
+    },
+    "baseline_scores": {
+      "Retained": {
+        "path": "outputs/finite_classification_prodistill_20261102/DTD/scores.pt",
+        "sha256": "d20901aa4d5018c2e605018797837bf399994524cad596f37b237976837a19eb",
+        "correct": {
+          "DTD": 1254,
+          "MNIST": 9951
+        },
+        "keys": {
+          "DTD": "Defense2/full/DTD",
+          "MNIST": "Defense2/full/MNIST"
+        }
+      },
+      "Removed": {
+        "path": "outputs/projection_recovery_20261103/prodistill/DTD/scores.pt",
+        "sha256": "477ee14282442dbb78e4e7d1fc708494cd53b3fbc569f42990bf248c3d9d0626",
+        "correct": {
+          "DTD": 386,
+          "MNIST": 9947
+        },
+        "keys": {
+          "DTD": "Defense2/full/DTD",
+          "MNIST": "Defense2/full/MNIST"
+        }
+      }
+    },
+    "tasks": {
+      "DTD": {
+        "n": 1880,
+        "classes": 47
+      },
+      "MNIST": {
+        "n": 10000,
+        "classes": 10
+      }
+    },
+    "batch_size": 128,
+    "replay_n": 16,
+    "score_tolerance": 0.0005,
+    "timeout_seconds": 600,
+    "question": "Does the conditional decrease in feature loss transfer to higher classification accuracy on the complete DTD and MNIST test sets?",
+    "fit": "Exactly one FP64 QR solution per fixed student using its original teacher features and the same 64 unlabeled training images per task. Joint squared loss over all 6400 tokens. Change only the last MLP output matrix and bias. Cast the solution once to the original dtype and freeze both before opening the test datasets. No regularization, tuning or test selection.",
+    "evaluation": "Compare each new B-only student with its hash-verified original 100-step student on all original test indices. Report DTD and partner MNIST, paired flips and per-class counts, intervals and exact McNemar. Replay original 128-image contexts with equally spaced fixed indices for both original and adjusted models.",
+    "scope": "Supplementary recovery diagnostic using the same data access as ProDistill and a different, exact conditional solver. Separate from the original protocol. No new defense checkpoint, expert updates or tests used in fitting."
+  }
+}
