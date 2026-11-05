@@ -2,15 +2,15 @@
   "status": "registered_not_started",
   "protocol": {
     "registered_utc": "2026-11-05T10:00:24.434052+00:00",
-    "output": "outputs/residual_class_fit_20261105",
+    "output": "outputs/residual_class_fit_20261105_v2",
     "source_sha256": {
-      "outputs/residual_class_fit_20261105.py": "944d4953f80cb92119f873d8479710358d12b68ff06679ce08785a03812a243e",
       "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
       "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
       "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
       "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
       "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
-      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "outputs/residual_class_fit_20261105_v2.py": "04015ec8d8d922bee35001060d550c69de37d2ee27b50b526e2e6f8e39a5beb2"
     },
     "parent": {
       "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
@@ -32,5 +32,53 @@
     "scope": "Finite source-only feasibility test. Existing O/B concepts and trust-region least squares are standard tools. The concrete change is fitting the residual projected onto actual readout contrasts before the separate nonlinear native correction, rather than maximizing parameter distance or a local Jacobian. No new natural accuracy or defense claim from this source test.",
     "prior": "results/data_free_compensation/b_reset_residual.json",
     "reference": "https://github.com/openai/CLIP/blob/main/clip/model.py#L173-L176"
+  },
+  "first_launch_failure": {
+    "launch": {
+      "pid": 23253,
+      "output": "outputs/residual_class_fit_20261105",
+      "utc": "2026-11-05T10:01:30.941039+00:00",
+      "source_commit": "f8c2828a3852998f35f0d1c1e8ce126bac0dc2e2",
+      "timeout_seconds": 600,
+      "host": "21516"
+    },
+    "protocol": {
+      "registered_utc": "2026-11-05T10:00:24.434052+00:00",
+      "output": "outputs/residual_class_fit_20261105",
+      "source_sha256": {
+        "outputs/residual_class_fit_20261105.py": "944d4953f80cb92119f873d8479710358d12b68ff06679ce08785a03812a243e",
+        "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+        "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+        "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+        "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+        "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+        "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+      },
+      "parent": {
+        "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+        "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+      },
+      "source": {
+        "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+        "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+      },
+      "AGA": {
+        "path": "external/secure-merge-attack/utils_attack_B32.py",
+        "normalized_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778"
+      },
+      "native_loss_max": 2,
+      "timeout_seconds": 600,
+      "question": "Can a direct fit in the class-facing residual directions retain independent use and harm the known B reset in a fixed source proxy?",
+      "construction": "Freeze current MNIST Defense 2. Use only 80 even synthetic image indices and their five fixed views. For public half-average, compute the centered linear class-contrast subspace from its final readout. Fit one last attention output weight edit in that subspace to cancel the matching residual components. Recalculate native LN2 and QuickGELU exactly, then solve for the compensating B and bias to match the parent last-block feature. Standard FP64 SVD bounded least squares in each fit, trust radii equal to the respective parent O and affine B Frobenius norms. No target images, partner, sweep, change of A, or alternative candidate.",
+      "validation": "Verify original attention output on the fitting views, the two solve residuals and KKT, and freeze the actual three edited tensors before the 80 odd-index images are evaluated. Holdout views are excluded from these two fits, but were used by earlier work. Test native, ordinary public TA, and public B replacement using the same 400 holdout views. For this source test allow at most two fewer native decisions, require no increase in ordinary TA and a decrease after B replacement. If these pass, run author AGA for both fixed points then the same B replacement and TA, requiring a decrease there too. Report all observed rows and keep the failure if any.",
+      "scope": "Finite source-only feasibility test. Existing O/B concepts and trust-region least squares are standard tools. The concrete change is fitting the residual projected onto actual readout contrasts before the separate nonlinear native correction, rather than maximizing parameter distance or a local Jacobian. No new natural accuracy or defense claim from this source test.",
+      "prior": "results/data_free_compensation/b_reset_residual.json",
+      "reference": "https://github.com/openai/CLIP/blob/main/clip/model.py#L173-L176"
+    },
+    "log": "outputs/residual_class_fit_20261105.log",
+    "reason": "The released visual block takes its attention mask as an argument, not a stored attribute. Failed in the first capture hook before fitting.",
+    "correction": "Check the actual visual block Identity post-attention and sequence-first layout. Visual attention has no mask in these calls. The reconstruction of the actual residual checks this assumption.",
+    "fitted_weights": 0,
+    "holdout_views_evaluated": 0
   }
 }
