@@ -23,7 +23,7 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_archive.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
@@ -39,7 +39,7 @@
       "socket": "/tmp/posthoc_4090_17897.sock",
       "role": "CPU evidence archive; joint/soft source models and all raw scores retained."
     },
-    "queued_jobs": 0
+    "queued_jobs": 2
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "established_methods": {
@@ -144,12 +144,26 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-05T15:54:47.719861+00:00",
-  "status": "completed_fixed_comparison_tables",
+  "updated_utc": "2026-11-05T16:14:03.046100+00:00",
+  "status": "running_public_gain_fixed_evaluation",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Paper drafting can use the completed matched comparisons. Keep claims scoped to the observed recovery conditions and report DTD native loss and distillation recovery.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "timeout_pid": 49351,
+      "source_commit": "489e5a8",
+      "construction": "results/data_free_compensation/readout_public_gain_20261106/construction.json",
+      "output": "outputs/readout_public_gain_20261106",
+      "log": "outputs/readout_public_gain_20261106/run.log",
+      "status": "running_fixed_evaluation",
+      "sha256": "57b219dd0243c8500faf485d64c517caa0dd82aadcce5aea5117af03a0155fd5",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "real_construction_images": 0
+    }
+  ],
+  "next_action": "Finish the fixed ProDistill, TA/AGA and public B replacement tests before deciding whether the public gain rule advances.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -544,5 +558,18 @@
         30.85
       ]
     }
+  },
+  "public_gain_followup": {
+    "host": "21516",
+    "timeout_pid": 49351,
+    "source_commit": "489e5a8",
+    "construction": "results/data_free_compensation/readout_public_gain_20261106/construction.json",
+    "output": "outputs/readout_public_gain_20261106",
+    "log": "outputs/readout_public_gain_20261106/run.log",
+    "status": "running_fixed_evaluation",
+    "sha256": "57b219dd0243c8500faf485d64c517caa0dd82aadcce5aea5117af03a0155fd5",
+    "target": "MNIST",
+    "partner": "SVHN",
+    "real_construction_images": 0
   }
 }
