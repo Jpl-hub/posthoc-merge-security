@@ -1,0 +1,450 @@
+{
+  "status": "completed_read_only_diagnosis_no_new_defense",
+  "completed_utc": "2026-11-05T06:25:55.834334+00:00",
+  "protocols": [
+    "results/data_free_compensation/dtd_projection_diagnostic_protocol.json",
+    "results/data_free_compensation/dtd_projection_pair_protocol.json",
+    "results/data_free_compensation/dtd_projection_function_protocol.json"
+  ],
+  "preregistration_commits": [
+    "c1c1a527154426abefb0c3c3574f87696bbb6f84",
+    "cb429926b2c6a67a34a7b17b8d074ede9b7fce81",
+    "eea50fa49b40ce9681e1f41c2697c1f4f4a38657"
+  ],
+  "task": "DTD",
+  "frozen_releases": {
+    "Retained": {
+      "path": "outputs/finite_classification_20261102/DTD/point/point.pt",
+      "sha256": "fd8d553e1c3b491ca2753accc1f846d2b650084c4bd489fefc4e2f7ab67ec170"
+    },
+    "Removed": {
+      "path": "outputs/finite_projection_ablation_20261103/DTD/point/point.pt",
+      "sha256": "f54a7c73c34582346e872aa3d16ebefaea34b003608dce888b731565a2b239e8"
+    }
+  },
+  "frozen_students": {
+    "retained_student": {
+      "path": "outputs/finite_classification_prodistill_20261102/DTD/Defense2/model.pt",
+      "sha256": "beb976881f3ffe923936ae8e06adf67d6b39797cdf482408116c550568a46da2",
+      "full_state": true
+    },
+    "removed_student": {
+      "path": "outputs/projection_recovery_20261103/prodistill/DTD/Defense2/model.pt",
+      "sha256": "83b57b1d2d2fd358f52f68f8209ce73cc50712942f66a925870ddea9f9c88fee",
+      "full_state": true
+    }
+  },
+  "archive_model_retrieval": {
+    "from_host": "55548",
+    "to_host": "21516",
+    "path": "outputs/finite_classification_prodistill_20261102/DTD/Defense2/model.pt",
+    "bytes": 453845234,
+    "sha256": "beb976881f3ffe923936ae8e06adf67d6b39797cdf482408116c550568a46da2",
+    "source_preserved": true,
+    "source_and_destination_sha256_equal": true
+  },
+  "support": {
+    "image_count_per_task": 64,
+    "task_order": [
+      "DTD",
+      "MNIST"
+    ],
+    "indices": {
+      "path": "outputs/projection_recovery_20261103/prodistill/DTD/Defense2/calibration_indices.json",
+      "sha256": "3a35acac5007b94f3e407c6115738d6d7aa987e19068b8654358b1026653d232"
+    },
+    "image_tensor_sha256": "0c84e78605b437c6194b91982d702fb122ae1e9f2243f61c7b25dd8d32e4529b",
+    "official_labels_checked": true,
+    "purpose": "Evaluation of already trained students; no construction, selection or repair."
+  },
+  "support_rows": [
+    {
+      "model": "Original",
+      "task": "DTD",
+      "n": 64,
+      "correct": 63,
+      "teacher_matches": 63,
+      "predicted_classes": 35,
+      "mean_teacher_class_margin": 12.775376319885254
+    },
+    {
+      "model": "Original",
+      "task": "MNIST",
+      "n": 64,
+      "correct": 30,
+      "teacher_matches": 30,
+      "predicted_classes": 9,
+      "mean_teacher_class_margin": -0.06603237986564636
+    },
+    {
+      "model": "RetainedTeacher",
+      "task": "DTD",
+      "n": 64,
+      "correct": 63,
+      "teacher_matches": 63,
+      "predicted_classes": 35,
+      "mean_teacher_class_margin": 9.970020294189453
+    },
+    {
+      "model": "RetainedTeacher",
+      "task": "MNIST",
+      "n": 64,
+      "correct": 39,
+      "teacher_matches": 39,
+      "predicted_classes": 9,
+      "mean_teacher_class_margin": 0.013826906681060791
+    },
+    {
+      "model": "RemovedTeacher",
+      "task": "DTD",
+      "n": 64,
+      "correct": 64,
+      "teacher_matches": 64,
+      "predicted_classes": 35,
+      "mean_teacher_class_margin": 10.986690521240234
+    },
+    {
+      "model": "RemovedTeacher",
+      "task": "MNIST",
+      "n": 64,
+      "correct": 27,
+      "teacher_matches": 27,
+      "predicted_classes": 9,
+      "mean_teacher_class_margin": -0.02342301607131958
+    },
+    {
+      "model": "Peer",
+      "task": "DTD",
+      "n": 64,
+      "correct": 20,
+      "teacher_matches": 20,
+      "predicted_classes": 21,
+      "mean_teacher_class_margin": -1.0972092151641846
+    },
+    {
+      "model": "Peer",
+      "task": "MNIST",
+      "n": 64,
+      "correct": 64,
+      "teacher_matches": 64,
+      "predicted_classes": 10,
+      "mean_teacher_class_margin": 8.156806945800781
+    },
+    {
+      "model": "RecoveredRemoved",
+      "task": "DTD",
+      "n": 64,
+      "correct": 47,
+      "teacher_matches": 47,
+      "predicted_classes": 26,
+      "mean_teacher_class_margin": 2.0381412506103516
+    },
+    {
+      "model": "RecoveredRemoved",
+      "task": "MNIST",
+      "n": 64,
+      "correct": 64,
+      "teacher_matches": 64,
+      "predicted_classes": 10,
+      "mean_teacher_class_margin": 6.80117130279541
+    },
+    {
+      "model": "InitialRemoved",
+      "task": "DTD",
+      "n": 64,
+      "correct": 1,
+      "teacher_matches": 1,
+      "predicted_classes": 2,
+      "mean_teacher_class_margin": -11.288803100585938
+    },
+    {
+      "model": "InitialRemoved",
+      "task": "MNIST",
+      "n": 64,
+      "correct": 29,
+      "teacher_matches": 29,
+      "predicted_classes": 7,
+      "mean_teacher_class_margin": -0.014934420585632324
+    },
+    {
+      "model": "RecoveredRemoved_target_readout",
+      "task": "DTD",
+      "n": 64,
+      "correct": 48
+    },
+    {
+      "model": "RecoveredRemoved_target_readout",
+      "task": "MNIST",
+      "n": 64,
+      "correct": 64
+    },
+    {
+      "model": "RecoveredRetained",
+      "task": "DTD",
+      "n": 64,
+      "correct": 64,
+      "teacher_matches": 63
+    },
+    {
+      "model": "RecoveredRetained",
+      "task": "MNIST",
+      "n": 64,
+      "correct": 64,
+      "teacher_matches": 64
+    },
+    {
+      "model": "RecoveredRetained_target_readout",
+      "task": "DTD",
+      "n": 64,
+      "correct": 64
+    }
+  ],
+  "feature_fit": {
+    "Retained": {
+      "DTD": {
+        "cls_MSE": 0.005767519099712886,
+        "patch_MSE_per_token": 0.005115588220583266,
+        "patch_share": 0.9775085250625272,
+        "sum_feature_loss": 12604.113317476413
+      },
+      "MNIST": {
+        "cls_MSE": 0.0029117233172866763,
+        "patch_MSE_per_token": 0.001552861509481506,
+        "patch_share": 0.9631436466311252,
+        "sum_feature_loss": 3883.1032212789887
+      }
+    },
+    "Removed": {
+      "DTD": {
+        "cls_MSE": 0.024398791511897555,
+        "patch_MSE_per_token": 0.011117810121615945,
+        "patch_share": 0.9571327938082328,
+        "sum_feature_loss": 27975.91695217847
+      },
+      "MNIST": {
+        "cls_MSE": 0.015873154787545227,
+        "patch_MSE_per_token": 0.0034875840919045675,
+        "patch_share": 0.9150099114630998,
+        "sum_feature_loss": 9179.862235096794
+      }
+    },
+    "definition": "Mean squared last-block feature difference to the corresponding frozen teacher: DTD teacher on DTD support, MNIST teacher on MNIST support. CLS normalized by64*768; patch by49*64*768. The two DTD teachers differ; absolute MSE alone is not an invariant or causal measure of recoverability."
+  },
+  "student_parameter_groups": {
+    "first11": {
+      "tensors": 132,
+      "changed": 0,
+      "relative_distance": 0.0
+    },
+    "last": {
+      "tensors": 12,
+      "changed": 12,
+      "relative_distance": 0.30700512388831214
+    },
+    "outside": {
+      "tensors": 14,
+      "changed": 0,
+      "relative_distance": 0.0
+    }
+  },
+  "existing_complete_test": {
+    "n": 1880,
+    "original_native_correct": 1493,
+    "Retained": {
+      "native_correct": 1435,
+      "ProDistill_correct": 1254
+    },
+    "Removed": {
+      "native_correct": 1464,
+      "ProDistill_correct": 386
+    },
+    "support_class_coverage": [
+      {
+        "group": "covered",
+        "classes": 35,
+        "n": 1400,
+        "Retained_correct": 1001,
+        "Retained_accuracy": 71.5,
+        "Removed_correct": 343,
+        "Removed_accuracy": 24.5
+      },
+      {
+        "group": "uncovered",
+        "classes": 12,
+        "n": 480,
+        "Retained_correct": 253,
+        "Retained_accuracy": 52.708333333333336,
+        "Removed_correct": 43,
+        "Removed_accuracy": 8.958333333333334
+      }
+    ],
+    "references": [
+      "results/data_free_compensation/finite_classification_result.json",
+      "results/data_free_compensation/finite_projection_ablation_result.json",
+      "results/data_free_compensation/projection_recovery_result.json"
+    ],
+    "new_complete_test_forwards": 0
+  },
+  "synthetic_function": {
+    "source": {
+      "path": "outputs/native_ellipse_classification_DTD_20261026/source/source.pt",
+      "sha256": "f503e4503bed1d65cb3c155662f3eb9552077b1de07aaf37e442439cbfc5d48c"
+    },
+    "rows": [
+      {
+        "condition": "Clean/both",
+        "n": 3760,
+        "matches": 3760,
+        "T4_KL": 2.4984268221423794e-12,
+        "mean_teacher_class_margin": 8.19022564456818
+      },
+      {
+        "condition": "Retained/A_only",
+        "n": 3760,
+        "matches": 3760,
+        "T4_KL": 0.933025664746206,
+        "mean_teacher_class_margin": 6.669635904596207
+      },
+      {
+        "condition": "Retained/B_only",
+        "n": 3760,
+        "matches": 0,
+        "T4_KL": 25.80053625363647,
+        "mean_teacher_class_margin": -12.581751348363593
+      },
+      {
+        "condition": "Retained/both",
+        "n": 3760,
+        "matches": 3760,
+        "T4_KL": 0.1265004699616509,
+        "mean_teacher_class_margin": 7.781760614476306
+      },
+      {
+        "condition": "Removed/A_only",
+        "n": 3760,
+        "matches": 3744,
+        "T4_KL": 3.191901534493985,
+        "mean_teacher_class_margin": 4.656710341128897
+      },
+      {
+        "condition": "Removed/B_only",
+        "n": 3760,
+        "matches": 41,
+        "T4_KL": 32.20592918882295,
+        "mean_teacher_class_margin": -13.532227109594547
+      },
+      {
+        "condition": "Removed/both",
+        "n": 3760,
+        "matches": 3760,
+        "T4_KL": 0.10096446417008981,
+        "mean_teacher_class_margin": 7.95417518032358
+      },
+      {
+        "condition": "reference",
+        "n": 3760,
+        "matches": 3760,
+        "T4_KL": 8.076022263329089e-16,
+        "mean_teacher_class_margin": 8.190225618189954
+      }
+    ],
+    "task_metrics": {
+      "Retained": {
+        "A_relative": 1.0857476732449032,
+        "task_right_energy_fraction": 3.632420486440238e-18,
+        "task_left_energy_fraction": 9.546271140364265e-19
+      },
+      "Removed": {
+        "A_relative": 1.0102819881492107,
+        "task_right_energy_fraction": 0.04609626316338025,
+        "task_left_energy_fraction": 0.012318511414800622
+      }
+    },
+    "task_metrics_definition": "Delta A relative to the original expert; left/right energy fractions use leading32 singular directions of original-minus-public A. They are separate projections, not additive partitions. T4_KL means16*mean KL(original_softmax(scores/4)||condition_softmax(scores/4)). Labels are original-expert predictions on3760cached synthetic views."
+  },
+  "independent_validation": {
+    "paired": {
+      "status": "passed_independent_numpy",
+      "rows": 17,
+      "maximum_readout_score_error": 1.010475557094992e-05,
+      "support_classes": 35,
+      "coverage": [
+        {
+          "group": "covered",
+          "classes": 35,
+          "n": 1400,
+          "Retained_correct": 1001,
+          "Retained_accuracy": 71.5,
+          "Removed_correct": 343,
+          "Removed_accuracy": 24.5
+        },
+        {
+          "group": "uncovered",
+          "classes": 12,
+          "n": 480,
+          "Retained_correct": 253,
+          "Retained_accuracy": 52.708333333333336,
+          "Removed_correct": 43,
+          "Removed_accuracy": 8.958333333333334
+        }
+      ],
+      "raw_sha256": [
+        "5af78c530a8e3bb57363f3056bbd2f2a1c00c47f9981d5d40dbe737ad11f1615",
+        "15a8e45417744ec837676686157ea969f5880de9cc29b454b40e8075a31ff46c"
+      ],
+      "new_images": 0,
+      "new_updates": 0,
+      "scope": "The class-coverage split is a post-hoc audit of existing full-test records. No selection or repair of defense parameters."
+    },
+    "synthetic": {
+      "status": "passed_independent_numpy",
+      "maximum_original_score_error": 1.71661376953125e-05,
+      "raw_sha256": "e79459cf936b2dcfcea707c5042be8e1d2bdae93a99f464c3fbd5082c9c1d456",
+      "new_images": 0,
+      "new_updates": 0
+    }
+  },
+  "budget": {
+    "new_defense_models": 0,
+    "parameter_updates": 0,
+    "new_coefficient_training": 0,
+    "new_AGA_calls": 0,
+    "real_construction_images": 0,
+    "real_support_image_forwards": 1024,
+    "cached_synthetic_views": 3760,
+    "cached_function_conditions": 7
+  },
+  "findings": [
+    "The two trained students are identical outside their final transformer block. Lower DTD recovery is localized to this block, not a different prefix or final readout.",
+    "On the same64DTD support images, the retained-projection student is correct64times and the removed-projection student47times. Substituting the original target readout changes the latter only to48; no complete-test score is claimed for this substitution.",
+    "Both support-covered and uncovered test classes have lower recovery for Removed. Missing-class coverage alone cannot explain the observed difference.",
+    "On cached synthetic views, Removed A alone has larger functional output changes despite smaller relative parameter distance; B compensation restores all3760labels. This is a diagnostic association, not proof of the cause of distillation failure.",
+    "The frozen removed-projection controls remain recoverable on MNIST and SVHN; no general SVD benefit or stable new anti-distillation defense has been established."
+  ],
+  "scope": "Read-only comparison of pre-existing frozen controls. Stage2supersedes stage1missing-reference limitation; original records unchanged. Historical real support/test records are used only for diagnosis, not defender construction or choosing a replacement point.",
+  "raw_evidence": {
+    "hosts": [
+      "21516",
+      "55548"
+    ],
+    "manifest": "outputs/dtd_projection_review_20261105/manifest.json",
+    "manifest_sha256": "9963aca38cde85398958ed47c46069caf676e93d7363bbf67c263eadf34fd6aa",
+    "files": 15,
+    "bytes": 18529893,
+    "all_sha256_equal": true,
+    "raw_files": [
+      {
+        "path": "outputs/dtd_projection_diagnostic_20261105/diagnostic.pt",
+        "sha256": "5af78c530a8e3bb57363f3056bbd2f2a1c00c47f9981d5d40dbe737ad11f1615"
+      },
+      {
+        "path": "outputs/dtd_projection_pair_20261105/paired_raw.pt",
+        "sha256": "15a8e45417744ec837676686157ea969f5880de9cc29b454b40e8075a31ff46c"
+      },
+      {
+        "path": "outputs/dtd_projection_function_20261105/source_scores.pt",
+        "sha256": "e79459cf936b2dcfcea707c5042be8e1d2bdae93a99f464c3fbd5082c9c1d456"
+      }
+    ]
+  }
+}
