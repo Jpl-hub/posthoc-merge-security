@@ -1,0 +1,58 @@
+{
+  "status": "registered_not_started",
+  "protocol": {
+    "registered_utc": "2026-11-05T08:02:03.328161+00:00",
+    "output": "outputs/finite_recovery_compensation_20261105",
+    "parent": {
+      "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+      "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+    },
+    "parent_source": "outputs/recovery_soft_fixed_context_20261105/source.py",
+    "parent_protocol": "results/data_free_compensation/recovery_soft_fixed_context_protocol.json",
+    "source_sha256": {
+      "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+      "experiment/distill.py": "ca49e8f6489a506699f924a89dfb6bde6f6f2691ef6d4b50cb14353c5790fe2b",
+      "_impl/prodistill.py": "e578c7f1e6bfbee002de94c847d19f1a006dcacf7600514400324903ee8ae078",
+      "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+      "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+      "_impl/evaluate.py": "db733c87bdbb5e2a747c5b4e33e40023ae307bf7823d64bebba8e6510bf753f1",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+      "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+      "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+      "results/data_free_compensation/synthetic_recovery/differentiate.py": "96a21e2f38187cee519ca504d7e8b128645b2a5fa37275ec83a7180cbf07e8a4",
+      "results/data_free_compensation/recovery_soft_fixed_context_protocol.json": "8f40c1e7865776a3f654df1fef072b0c0edccf6c26552b0df5422cd030e67b49",
+      "outputs/finite_recovery_compensation_20261105.py": "060e43f851a69cf86d5f641089b893195e4ebec2c759e439716ec4d4a06ec81e",
+      "outputs/recovery_soft_fixed_context_20261105/source.py": "1316096ce7ca3b1c5789393f75821f977162fdc7a0e936eeddae809d4cabf59a",
+      "external/secure-merge-attack/utils_attack_B32.py": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de"
+    },
+    "AGA_normalized_source_sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "conditions": [
+      "Projected",
+      "Joint"
+    ],
+    "rank": 32,
+    "A_limit": 2.0,
+    "B_limit": 4.0,
+    "outer_steps": 4,
+    "outer_step": 0.0016,
+    "backtracking_steps": 6,
+    "correction_steps": 6,
+    "timeout_seconds": 2400,
+    "question": "Can a finite A and B update maintain native outputs while reducing class recovery under two distinct fixed public-base source checks? Does the hard task-SVD projection on the A update prevent this?",
+    "access": "One frozen MNIST parent, original target and public base, fixed target head, existing 800 native synthetic views and 64 synthetic recovery inputs. No real images, partner, new synthesis, or original expert updates. First 11 recovered blocks and fixed public fusion and AGA assignment are reused. Same input indices and cached contexts in both conditions.",
+    "retention": "Native logits T=4 KL to original expert must be no greater than the parent value at each finite accepted step (FP64 allowance 1e-12); all 800 native decisions and nonincrease of fixed public TA and AGA decision agreement required. Correction holds A and its tied bias fixed and changes only B and its bias. A and B matrix relative changes <=2 and <=4 from original expert, biases reported separately. Rounded FP32 final point rechecked, with 1e-6 KL allowance for rounding only.",
+    "recovery": "Maximize the worse mean negative positive correct-class margin, capped at zero, of actual fixed 100-step last-block elementwise coefficient distillation and public output-side (B and bias) replacement before half-average with the public base. Distillation targets use protected expert and base; the exact reverse trajectory is only a proposal direction, with finite acceptance checked by replay. B replacement leaves A editable and has no dependence on B. Not full MLP replacement or an unknown-partner result.",
+    "solver": "Identical finite proposal, backtracking and B-only correction in both conditions. Projected restricts A increments to the double rank32 complement; Joint drops only this hard restriction. A bias follows the fixed LN bias centering. Initial step 32 times the prior derivative check displacement; six halving trials end at that displacement. At most four accepted steps per condition, no selection of intermediate or other parameters. Max 5900 coefficient forward steps and 800 reverse steps. If no legal improvement, stop that condition.",
+    "source_gate": "Only final FP32 points. Require at least one accepted step, retained full native decisions and native KL bound, legal matrix ranges, higher worse margin than parent, strictly fewer than parent of 64 recovered decisions, and no more correct decisions than parent in the public B replacement and fixed public TA/AGA source contexts. This is eligibility for complete evaluation, not evidence of natural image protection or of improvement under both attacks.",
+    "evaluation": "Both fixed source conditions reported. Joint is the intended candidate. After source verification, only source-eligible frozen candidates go to complete native, TA, actual AGA, matched ProDistill and public replacement evaluation. No automatic follow-on. Exact four-tensor replacement remains an explicit scope limitation.",
+    "distinction": "Earlier derivative check was inconclusive for finite native KL. Do not rerun that check or extrapolate the derivative; this experiment evaluates finite B-only correction with actual native KL and two recovery objectives, and isolates the SVD restriction. No new optimizer or published method reproduction.",
+    "references": {
+      "TAR": "https://arxiv.org/html/2408.00761v4 §4.2 entropy after recovery; official19de233f652078f82dd45422331498ad431ab2da modules/training.py793-827,1081-1126",
+      "ProDistill": "JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation@c773fcaead79cf25b5654b2e3fe233450da4e387 Vision/merge_models.py",
+      "MergeBarrier": "https://arxiv.org/html/2511.10712v2 §4.1 public replacement; our output-side replacement is narrower."
+    },
+    "prior": "results/data_free_compensation/recovery_gradient_scope.json"
+  }
+}
