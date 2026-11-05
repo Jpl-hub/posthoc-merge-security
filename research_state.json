@@ -23,11 +23,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_active.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-05T02:32:18.370768+00:00",
+    "verified_utc": "2026-11-05T02:51:18.391494+00:00",
     "primary_available_GiB": 18,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
@@ -133,26 +133,22 @@
       "bytes": 23312161,
       "all_sha256_equal": true,
       "heavy_failed_weights": "Retained17897, not duplicated on activeGPU. Original parent/source/checkpoints present21516 and hashes checked."
+    },
+    "latest_cleanup": {
+      "retired_file": "experiment/task_loss.py",
+      "source_commit": "9904868861ab5f07b9913ea02b0249c00d39f88d",
+      "source_archive": "21516:outputs/line_search_task_20261105/source.py",
+      "source_sha256": "60777fb61a1abddbc8d15a0a50f07202b919c1bfc0b7dacd5e472059999b408e",
+      "unique_models_or_scores_deleted": 0
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-05T02:32:18.370768+00:00",
-  "status": "line_search_task_running",
+  "updated_utc": "2026-11-05T02:51:18.391494+00:00",
+  "status": "line_search_completed_no_added_recovery_protection",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "status": "source_running",
-      "protocol": "results/data_free_compensation/line_search_task_protocol.json",
-      "source_commit": "9904868861ab5f07b9913ea02b0249c00d39f88d",
-      "output": "outputs/line_search_task_20261105",
-      "log": "outputs/line_search_task_20261105.log",
-      "host": "21516",
-      "next": "Automatic sequential existing complete native/TA/AGA/ProDistill evaluation for both final points; no new candidates beyond fixed pair.",
-      "real_construction_images": 0
-    }
-  ],
-  "next_action": "Read fixed full-objective results and complete queued evaluation; do not start new method or change settings in flight. Complete source now on21516; last failed pair archived17897 and lightweight/raw-score copy21516.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Native utility was retained, but fixed scaling objective adds no useful ProDistill protection. Do not repeat solver/step/lambda variants. Reassess recovery-specific mechanism using existing source ablations and full task preservation; no new experiment queued.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -207,13 +203,24 @@
     "score_replays": 528
   },
   "line_search_task": {
-    "status": "source_running",
+    "status": "completed_native_retained_recovery_not_improved",
     "protocol": "results/data_free_compensation/line_search_task_protocol.json",
     "source_commit": "9904868861ab5f07b9913ea02b0249c00d39f88d",
     "output": "outputs/line_search_task_20261105",
     "log": "outputs/line_search_task_20261105.log",
     "host": "21516",
-    "next": "Automatic sequential existing complete native/TA/AGA/ProDistill evaluation for both final points; no new candidates beyond fixed pair.",
-    "real_construction_images": 0
+    "next": "Fixed pair closed; no same-point step/coefficient extension. Preserve main defense2.",
+    "real_construction_images": 0,
+    "record": "results/data_free_compensation/line_search_task_result.json",
+    "native_MNIST": {
+      "JointLine": 99.6,
+      "NativeLine": 99.6
+    },
+    "ProDistill_MNIST": {
+      "JointLine": 99.41,
+      "NativeLine": 99.43
+    },
+    "full_rows": 27,
+    "score_replays": 528
   }
 }

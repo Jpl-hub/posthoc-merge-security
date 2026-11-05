@@ -1,10 +1,10 @@
 {
-  "updated_utc": "2026-11-05T02:32:18.370768+00:00",
-  "status": "line_search_task_running",
+  "updated_utc": "2026-11-05T02:51:18.391494+00:00",
+  "status": "line_search_completed_no_added_recovery_protection",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
+  "active_GPU_jobs": 0,
   "research_jobs": [],
   "next_action": "Focus on native function preservation: native-only synthetic optimization also loses10.46pp on complete MNIST. Do not extend the same loss/seed/steps or present reduced recovery as protection. Main release remains unchanged; no new run is queued.",
   "latest_completed_batch": {
@@ -445,13 +445,24 @@
     "score_replays": 528
   },
   "line_search_task": {
-    "status": "source_running",
+    "status": "completed_native_retained_recovery_not_improved",
     "protocol": "results/data_free_compensation/line_search_task_protocol.json",
     "source_commit": "9904868861ab5f07b9913ea02b0249c00d39f88d",
     "output": "outputs/line_search_task_20261105",
     "log": "outputs/line_search_task_20261105.log",
     "host": "21516",
-    "next": "Automatic sequential existing complete native/TA/AGA/ProDistill evaluation for both final points; no new candidates beyond fixed pair.",
-    "real_construction_images": 0
+    "next": "Fixed pair closed; no same-point step/coefficient extension. Preserve main defense2.",
+    "real_construction_images": 0,
+    "record": "results/data_free_compensation/line_search_task_result.json",
+    "native_MNIST": {
+      "JointLine": 99.6,
+      "NativeLine": 99.6
+    },
+    "ProDistill_MNIST": {
+      "JointLine": 99.41,
+      "NativeLine": 99.43
+    },
+    "full_rows": 27,
+    "score_replays": 528
   }
 }
