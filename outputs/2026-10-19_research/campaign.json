@@ -1,12 +1,12 @@
 {
-  "updated_utc": "2026-11-05T07:12:24.068871+00:00",
-  "status": "recovery_update_subspace_derivative_check_running",
+  "updated_utc": "2026-11-05T07:22:46.169747+00:00",
+  "status": "recovery_direction_check_stopped_no_new_defense",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
+  "active_GPU_jobs": 0,
   "research_jobs": [],
-  "next_action": "Check the existing16901/16902process and its result; do not duplicate launch. This tests whether the A task-direction update restriction discards recovery-classification ascent compatible with local native retention. A passing derivative does not justify a new defense without a separately fixed finite construction and full evaluation.",
+  "next_action": "Develop one finite joint A/B functional-compensation construction with task-SVD as a probe rather than assuming hard A task-direction invariance preserves function. The incomplete gradient-scope test does not establish that removing its restriction will help. No strength/rank/loss sweep or candidate currently running; a new finite construction must be fixed before source and complete evaluation.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -290,21 +290,20 @@
     "release_sha256": "e7aaaafd09affe135ac77916cd2e2a3acbe122f00e28a8b9f15e4bf34ad32d8d"
   },
   "latest_mechanism_analysis": {
-    "status": "completed_read_only",
-    "record": "results/data_free_compensation/dtd_projection_diagnostic_result.json",
-    "section": "task_partition_result",
-    "tasks": [
-      "MNIST",
-      "SVHN",
-      "DTD"
-    ],
-    "cached_views": 5360,
-    "independent_rows": 24,
-    "seconds": 10.347284115850925,
-    "new_models": 0,
-    "parameter_updates": 0,
-    "image_forwards": 0,
-    "finding": "Both parameter-direction components participate in the existing source-function compensation for all three controls; this alone does not explain DTD-specific lower recovery."
+    "status": "stopped_at_registered_derivative_check_inconclusive",
+    "record": "results/data_free_compensation/recovery_gradient_scope.json",
+    "source_commit": "f965bdd23019b7ab48f534f4716d1d50ff5dffa7",
+    "host": "21516",
+    "timeout_pid": null,
+    "worker_pid": null,
+    "output": "outputs/recovery_direction_20261105",
+    "seconds": 102.74329402856529,
+    "defense_updates": 0,
+    "new_defense_releases": 0,
+    "real_images": 0,
+    "coefficient_trajectory_steps": 300,
+    "coefficient_reverse_replays": 100,
+    "full_scope_compared": false
   },
   "recovery_classification_preservation": {
     "status": "closed_no_classification_improvement",
@@ -548,18 +547,19 @@
     "finding": "Both parameter-direction components participate in the existing source-function compensation for all three controls; this alone does not explain DTD-specific lower recovery."
   },
   "recovery_gradient_scope": {
-    "status": "running_read_only_derivative_check",
-    "protocol": "results/data_free_compensation/recovery_gradient_scope.json",
+    "status": "stopped_at_registered_derivative_check_inconclusive",
+    "record": "results/data_free_compensation/recovery_gradient_scope.json",
     "source_commit": "f965bdd23019b7ab48f534f4716d1d50ff5dffa7",
     "host": "21516",
-    "timeout_pid": 16901,
-    "worker_pid": 16902,
+    "timeout_pid": null,
+    "worker_pid": null,
     "output": "outputs/recovery_direction_20261105",
-    "log": "outputs/recovery_direction_20261105.log",
-    "maximum_seconds": 600,
+    "seconds": 102.74329402856529,
     "defense_updates": 0,
     "new_defense_releases": 0,
     "real_images": 0,
-    "automatic_continuation": false
+    "coefficient_trajectory_steps": 300,
+    "coefficient_reverse_replays": 100,
+    "full_scope_compared": false
   }
 }
