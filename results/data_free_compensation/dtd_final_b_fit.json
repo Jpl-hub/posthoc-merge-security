@@ -1,0 +1,54 @@
+{
+  "status": "registered_not_started",
+  "protocol": {
+    "registered_utc": "2026-11-05T08:27:11.638579+00:00",
+    "output": "outputs/dtd_final_b_fit_20261105",
+    "pair_protocol": "results/data_free_compensation/dtd_projection_pair_protocol.json",
+    "diagnosis": "results/data_free_compensation/dtd_projection_diagnostic_result.json",
+    "indices": {
+      "path": "outputs/projection_recovery_20261103/prodistill/DTD/Defense2/calibration_indices.json",
+      "sha256": "3a35acac5007b94f3e407c6115738d6d7aa987e19068b8654358b1026653d232"
+    },
+    "cases": {
+      "Retained": [
+        {
+          "path": "outputs/finite_classification_20261102/DTD/point/point.pt",
+          "sha256": "fd8d553e1c3b491ca2753accc1f846d2b650084c4bd489fefc4e2f7ab67ec170"
+        },
+        {
+          "path": "outputs/finite_classification_prodistill_20261102/DTD/Defense2/model.pt",
+          "sha256": "beb976881f3ffe923936ae8e06adf67d6b39797cdf482408116c550568a46da2",
+          "full_state": true
+        }
+      ],
+      "Removed": [
+        {
+          "path": "outputs/finite_projection_ablation_20261103/DTD/point/point.pt",
+          "sha256": "f54a7c73c34582346e872aa3d16ebefaea34b003608dce888b731565a2b239e8"
+        },
+        {
+          "path": "outputs/projection_recovery_20261103/prodistill/DTD/Defense2/model.pt",
+          "sha256": "83b57b1d2d2fd358f52f68f8209ce73cc50712942f66a925870ddea9f9c88fee",
+          "full_state": true
+        }
+      ]
+    },
+    "source_sha256": {
+      "outputs/dtd_final_b_fit_20261105.py": "6f8d2721debe9f9f2322c928c1bd89059a3db7a9550f5366e90acc6a6e170601",
+      "results/data_free_compensation/dtd_projection_diagnostic_protocol.json": "a394ab1660de78cef71c3dfe43e47ca11ce06a162ae2e58b0840ae2fafb4b2a3",
+      "results/data_free_compensation/dtd_projection_pair_protocol.json": "2ac4f961a94d668f94cb1aa684d943b1f771c555d37f41e90eb536a046ef3410",
+      "results/data_free_compensation/dtd_projection_diagnostic_result.json": "0690edfe9ca71191625332cf17b20edbbebd265d0e67f9af4d9ec0a4b7c19318",
+      "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+      "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+      "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+    },
+    "timeout_seconds": 600,
+    "question": "Does a large last-block fitting gap persist when the output-side affine map is solved exactly, with each recovered student input, attention, LN and A fixed?",
+    "calculation": "Replay the original support-set feature MSE. Project the residual onto the span of the fixed activated MLP design plus bias using FP64 QR over all 50 tokens of both 64-image groups. Report observed and minimum MSE for all tokens, task CLS and patches separately. Check rank of the CLS-only design for comparison. The output-side optimum is exact for continuous coefficients if every scalar is movable in at least one of the two task-vector directions, otherwise it is a relaxation.",
+    "validation": "Verify image and checkpoint hashes, four archived MSEs per student, affine block replay, and independent NumPy orthogonality, span and Pythagorean checks on fixed output columns spaced by 97.",
+    "scope": "Conditional lower bound on historical fitting inputs, not full recovery accuracy. No real images for defense construction, no candidate selection, no new defense or student checkpoint, no training or parameter updates. Teachers differ between the two published defenses.",
+    "next_decision": "If the all-token fit substantially reduces the removed case error, treat optimizer or fit allocation as a candidate explanation of the budget-specific result. A large residual would isolate a limitation of the fixed design, not all allowed ProDistill parameters or all attacks."
+  }
+}
