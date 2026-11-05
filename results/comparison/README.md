@@ -31,12 +31,12 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 | 任务 SVD 投影约束的消融 | [目标](defense2_projection.md) · [TeX](defense2_projection.tex) · [伙伴](defense2_projection_partners.md) · [TeX](defense2_projection_partners.tex) |
 | 两种防御在相同设置下的 ProDistill | [结果](feature_distillation.md) · [TeX](feature_distillation.tex) |
 | 防御一的公开替换与已知位置恢复 | [B 替换](defense1_B_replacement.md) · [TeX](defense1_B_replacement.tex) · [最终偏置清理](../phase3/bias_weight_only/attacks/projection.md) · [TeX](../phase3/bias_weight_only/attacks/projection.tex) |
-| 防御二加入读出补偿、B 替换及取反对照 | [结果](defense2_readout.md) · [TeX](defense2_readout.tex) |
+| 早期读出补偿对照（已关闭） | [结果](defense2_readout.md) · [TeX](defense2_readout.tex) |
 | 防御二居中读出迁移 | [结果](centered_readout.md) · [TeX](centered_readout.tex) |
 
 居中读出迁移的三任务结果已经完成。独立预测与原 A/B 版逐图一致。固定 ProDistill 目标准确率为 MNIST 10.32%、SVHN 15.94%、DTD 2.13%。对同一蒸馏分数做一次固定取反并按 64 张噪声图校正后，分别为 0.01%、56.73%、13.46%。这项结果只作为固定 ProDistill 的补充对照，公开 B 替换仍可恢复，不能替换主 A/B 发布。
 
-读出补偿版的独立预测与同一 A/B 版一致。AGA 后替换 B 的三个目标原始准确率为 0.07%、0.45%、0.59%，统一取反后为 61.78%、62.45%、11.86%。固定 ProDistill 为 98.63%、83.45%、30.85%。汇报时同时展示这两组恢复结果。原始分数和取反使用同一批样本，详见[逐项核对](readout_sign_recovery.json)。
+早期读出补偿版的结果只作为关闭记录：它的独立预测与 A/B 版一致，但公开 B 替换和分数取反仍能恢复，不能作为当前主方法。原始分数与取反使用同一批样本，详见[逐项核对](readout_sign_recovery.json)。当前三任务读出迁移结果只看[居中读出表](centered_readout.md)。
 
 ## 参考论文和代码后的安排
 
@@ -50,7 +50,7 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 
 ## 接下来按这个顺序
 
-1. **先解决防御二的主要缺口。** 在现有无真实训练图、冻结专家的设置下，先用 MNIST 检验新补偿是否同时保持独立能力、压低固定 ProDistill 后的准确率，并且在分数统一取反后仍有收益。继续使用匹配无保护、原 A/B 和读出补偿对照。机制与参数先固定，结果出来后再决定是否按同一规则做 SVHN 和 DTD。DTD 的独立损失需要一起报告和改善。
+1. **先把主方法定清楚。** 正文使用原来的 A/B 防御二。另一个版本只在 A/B 之后改最后的 LayerNorm 和投影，三任务的固定 ProDistill 结果为 MNIST 10.32%、SVHN 15.94%、DTD 2.13%；公开 B 替换仍能恢复，因此它放在补充表里。
 2. **把两种防御的结论写到各自证据为止。** 防御一保留原版 AGA 和固定 ProDistill 的正结果。如果投稿主张包括知道最终偏置位置的攻击，当前只改核空间偏置的机制可以被投影直接清理，需要解决结构问题。防御二的主对比使用同一冻结发布，读出补偿、取反及投影消融单列。
 3. **方法选定后收齐稿件与复现材料。** 同一发布整理独立损失、目标和伙伴、两种 AGA 范围、选定恢复、关键消融、构造成本和复现命令。已有结果按指纹复用。当前 GitHub 同步状态以本地 `outputs/latest_github_sync_receipt.json` 为准。
 
@@ -61,8 +61,8 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 - **关闭的探索**：[公开增益抵消与取反恢复](../data_free_compensation/readout_public_gain_20261106/result.json) · [PaRaMS 剪枝对照](params_pruning/summary.md) · [互补视图](defense2_native_views.md) · [逐类均值](defense2_native_means.md) · [防御二研究记录](../../notes/phase2_coupling.md)。
 - **来源与复现**：[表格输入及指纹](sources.json) · [防御一固定记录](../phase3/bias_weight_only/other_tasks/summary.md) · [防御二冻结发布及成本](../data_free_compensation/finite_classification_result.json) · [工程说明](../../docs/engineering.md)。完整逐图分数、逐类和配对统计留在服务器，轻量记录注明路径和哈希。
 
-从仓库根目录重建当前 Markdown 和 TeX：
+从仓库根目录把当前 Markdown 和 TeX 重建到临时目录：
 
 ```bash
-python -m experiment.report --defense-comparison --output results/comparison
+python -m experiment.report --defense-comparison --output /tmp/posthoc-paper-tables
 ```
