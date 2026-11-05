@@ -186,6 +186,41 @@ def test_public_mlp_replacement_preserves_every_other_tensor(side, count):
     assert all(torch.equal(published[k], before[k]) for k in before)
 
 
+@pytest.mark.parametrize("scopes", [["None"], ["None", "Protected expert", "All experts"]])
+def test_replacement_after_aga_keeps_other_parameters_and_inputs(scopes):
+    from _impl.evaluate import case_models
+
+    class State:
+        def __init__(self, values):
+            self.values = values
+
+        def state_dict(self):
+            return self.values
+
+        def load_state_dict(self, values, strict):
+            assert strict and values.keys() == self.values.keys()
+            self.values = values
+
+    base, _ = small_clip()
+    own = {k: v + 1 for k, v in base.items()}
+    aga = {k: v + 2 for k, v in base.items()}
+    result = case_models(
+        dict(defenses={}, attack_scopes=scopes),
+        dict(target="task", public_replacement=dict(layer=1, side="B+b")),
+        State(base), {"task": State(own)}, {"task": State(aga)}, "Unprotected",
+    )
+    reset = {"model.visual.transformer.resblocks.1.mlp." + k
+             for k in ["c_proj.weight", "c_proj.bias"]}
+    for original, model in zip([own, aga], result):
+        if model is None:
+            assert scopes == ["None"]
+            continue
+        for k, v in model.state_dict().items():
+            assert torch.equal(v, base[k] if k in reset else original[k])
+    assert all(torch.equal(own[k], v + 1) and torch.equal(aga[k], v + 2)
+               for k, v in base.items())
+
+
 def test_joint_mlp_matching_restores_known_permutation_and_transformer_output():
     state, x = small_clip()
     published = dict(state)

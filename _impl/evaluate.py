@@ -32,12 +32,18 @@ def case_models(cfg, case, anchor, originals, aligned, name):
     if any(s != "None" for s in scopes):
         attacked = aligned[target] if spec is None else apply(aligned[target], spec["AGA_edits"])
     if "public_replacement" in case:
-        assert scopes == ["None"], "Replacement and AGA are separate declared pipelines"
-        own = copy.deepcopy(own)
-        own.load_state_dict(
-            public_mlp_replace(own.state_dict(), anchor.state_dict(), **case["public_replacement"]),
-            strict=True,
-        )
+        # Replacement follows AGA when that scope is requested; keep inputs frozen.
+        def replaced(model):
+            if model is None:
+                return None
+            result = copy.deepcopy(model)
+            result.load_state_dict(
+                public_mlp_replace(model.state_dict(), anchor.state_dict(), **case["public_replacement"]),
+                strict=True,
+            )
+            return result
+
+        own, attacked = replaced(own), replaced(attacked)
     if case.get("published_bias_projection"):
         assert scopes == ["None"], "Bias projection is evaluated separately from AGA"
         own = copy.deepcopy(own)

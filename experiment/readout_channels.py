@@ -1,4 +1,6 @@
 """Freeze a compensated CLIP readout and its A/B ablation without images."""
+
+import argparse
 from pathlib import Path
 
 import torch
@@ -9,7 +11,9 @@ from _impl.models import checked_models, initialize
 
 @torch.no_grad()
 def main():
-    cfg = read_json("results/data_free_compensation/readout_channels/protocol.json")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--protocol", default="results/data_free_compensation/readout_channels/protocol.json")
+    cfg = read_json(parser.parse_args().protocol)
     initialize()
     base, expert, head, pins = checked_models(cfg["target"])
     ref = cfg["parent"]
