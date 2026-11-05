@@ -81,6 +81,9 @@ def main():
                 for k in ('direct', 'recovered')}
     head = head.cuda().double()
     attack, _ = load_author(Path(cfg['AGA_source']['path']))
+    # A fixed source context is a differentiable proxy. Real AGA is rerun only
+    # after publication; its discrete assignment is not differentiated here.
+    order = attack['solve_permutation'](initial[iA].float().cpu(), anchor[iA].float().cpu()).cuda()
     del raw, recovered, original, parent, base, images, pixels, Vh
     act = lambda x: x * torch.sigmoid(1.702 * x)
     call = lambda p, x: functional_call(block, dict(zip(names, p)), (x,))
@@ -101,7 +104,6 @@ def main():
     def class_scores(p):
         hidden = native['prefix'] + F.linear(act(F.linear(native['x'], p[iA], p[ia])), p[iB], p[ib])
         result = {'native': head(native_ln(hidden) @ native_proj)}
-        order = attack['solve_permutation'](p[iA].detach().float().cpu(), anchor[iA].float().cpu()).cuda()
         for name, row in contexts.items():
             a, aa, b = p[iA], p[ia], p[iB]
             if name == 'recovered':
@@ -163,6 +165,8 @@ def main():
             public_kl = torch.stack([kl(scores[k], fixed[k]) for k in contexts]).mean()
             retain = native_kl + public_kl
             retain.backward(retain_graph=bool(strength))
+            direction = [initial[i] - clean[i] for i in (iA, iB, ib)]
+            retention_dot = float(sum((v.grad*d).sum() for v,d in zip(variables, direction)))
             entropy = 0.
             if strength:
                 entropy, gradient, _ = recover_gradient(inner_loss, measure, anchor,
@@ -172,9 +176,8 @@ def main():
             objective = float(retain.detach()) + strength * (math.log(head.weight.shape[0]) - entropy)
             assert all(v.grad is not None and torch.isfinite(v.grad).all() for v in variables)
             if strength and not records:
-                direction = [initial[i] - clean[i] for i in (iA, iB, ib)]
                 dotted = float(sum((v.grad * d).sum() for v, d in zip(variables, direction)))
-                offsets = []
+                offsets, retention_values = [], []
                 for sign in (1, -1):
                     with torch.no_grad():
                         for v, d, i in zip(variables, direction, (iA, iB, ib)):
@@ -182,15 +185,25 @@ def main():
                         q = tuple(v.detach() for v in effective())
                         qs = class_scores(q)
                         value = kl(qs['native'], fixed['native']) + torch.stack([kl(qs[k], fixed[k]) for k in contexts]).mean()
+                        retention_values.append(float(value))
                     w = recovered_forward(q)
                     offsets.append(float(value) + strength * (math.log(head.weight.shape[0]) - float(measure(w)[0])))
                 with torch.no_grad():
                     for v, i in zip(variables, (iA, iB, ib)):
                         v.copy_(initial[i])
                 finite = (offsets[0] - offsets[1]) / (2 * cfg['derivative_epsilon'])
-                error = abs(finite - dotted)
-                save_json(folder/'gradient_check.json', dict(exact=dotted, finite=finite, absolute_error=error))
-                assert error <= 1e-5 + .02 * abs(dotted), (finite, dotted)
+                retain_finite = (retention_values[0]-retention_values[1])/(2*cfg['derivative_epsilon'])
+                recovery_dot, recovery_finite = dotted-retention_dot, finite-retain_finite
+                checks = dict(retention=dict(exact=retention_dot,finite=retain_finite),
+                              negative_entropy=dict(exact=recovery_dot,finite=recovery_finite),
+                              combined=dict(exact=dotted,finite=finite))
+                # Check each loss gradient separately to avoid cancellation
+                # hiding an error or amplifying a relative-error ratio.
+                for k in ('retention','negative_entropy'):
+                    row=checks[k];row['absolute_error']=abs(row['finite']-row['exact'])
+                    row['passed']=row['absolute_error'] <= 1e-5+.02*abs(row['exact'])
+                save_json(folder/'gradient_check.json',checks)
+                assert checks['retention']['passed'] and checks['negative_entropy']['passed'], checks
             records.append(dict(evaluation=len(records)+1, objective=objective, native_KL=float(native_kl.detach()),
                                 public_KL=float(public_kl.detach()), recovered_entropy=entropy if strength else None,
                                 seconds=time.monotonic()-start))

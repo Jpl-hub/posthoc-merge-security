@@ -1,26 +1,11 @@
 {
-  "updated_utc": "2026-11-05T04:47:50.195066+00:00",
-  "status": "recovery_soft_running",
+  "updated_utc": "2026-11-05T04:53:08.672327+00:00",
+  "status": "recovery_soft_fixed_context_registered",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "name": "recovery_soft",
-      "host": "21516",
-      "pid": 8770,
-      "timeout_pid": 8768,
-      "log": "outputs/recovery_soft_20261105.log",
-      "source_commit": "ed3a655404030051c33c313edd3c54e273a458aa",
-      "stage": "initial_full_derivative_check",
-      "conditions": [
-        "JointRecovery",
-        "RetainOnly"
-      ],
-      "followed_by": "Frozen full native/TA/AGA/ProDistill evaluation; independent NumPy summary on completion."
-    }
-  ],
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
   "next_action": "Execute fixed actual-recovery entropy plus full native/public output retention and matched retention-only control; verify derivative first, freeze final points before complete native/TA/AGA/ProDistill evaluation.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
@@ -481,13 +466,21 @@
     "score_replays": 528
   },
   "recovery_soft": {
-    "status": "running",
+    "status": "derivative_check_failed_before_updates",
     "protocol": "results/data_free_compensation/recovery_soft_protocol.json",
     "output": "outputs/recovery_soft_20261105",
     "log": "outputs/recovery_soft_20261105.log",
     "real_construction_images": 0,
     "new_points": 2,
     "source_commit": "ed3a655404030051c33c313edd3c54e273a458aa",
-    "pid": 8770
+    "pid": 8770,
+    "failure_record": "results/data_free_compensation/recovery_soft_input_failure.json"
+  },
+  "recovery_soft_fixed_context": {
+    "status": "registered_not_started",
+    "protocol": "results/data_free_compensation/recovery_soft_fixed_context_protocol.json",
+    "output": "outputs/recovery_soft_fixed_context_20261105",
+    "log": "outputs/recovery_soft_fixed_context_20261105.log",
+    "real_construction_images": 0
   }
 }
