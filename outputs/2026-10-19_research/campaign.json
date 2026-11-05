@@ -1,26 +1,12 @@
 {
-  "updated_utc": "2026-11-05T04:54:39.506377+00:00",
-  "status": "recovery_soft_fixed_context_running",
+  "updated_utc": "2026-11-05T05:39:28.662464+00:00",
+  "status": "recovery_soft_completed_no_useful_improvement",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "name": "recovery_soft_fixed_context",
-      "host": "21516",
-      "pid": 9661,
-      "timeout_pid": 9659,
-      "log": "outputs/recovery_soft_fixed_context_20261105.log",
-      "source_commit": "f21cb24e600a401c217b489404ef46fa4fa16f40",
-      "stage": "initial_component_derivative_check",
-      "conditions": [
-        "JointRecovery",
-        "RetainOnly"
-      ]
-    }
-  ],
-  "next_action": "Continue fixed-context actual100-step recovery objective and paired retention-only condition. Freeze both final points; queued full native/TA/AGA/ProDistill and independent NumPy summary. First dynamic-assignment check failure preserved; no performance-based repair.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Fixed actual-recovery entropy and full-output preservation pair closed: confidence falls but64/64 synthetic decisions and99.36percent real ProDistill remain. No step/strength/temperature or solver retry; retain main release. Further work needs a distinct feature-transfer mechanism, not more confidence-only loss changes.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -491,12 +477,23 @@
     "failure_record": "results/data_free_compensation/recovery_soft_input_failure.json"
   },
   "recovery_soft_fixed_context": {
-    "status": "running",
+    "status": "completed_closed",
     "protocol": "results/data_free_compensation/recovery_soft_fixed_context_protocol.json",
     "output": "outputs/recovery_soft_fixed_context_20261105",
     "log": "outputs/recovery_soft_fixed_context_20261105.log",
     "real_construction_images": 0,
     "source_commit": "f21cb24e600a401c217b489404ef46fa4fa16f40",
-    "pid": 9661
+    "pid": null,
+    "record": "results/data_free_compensation/recovery_soft_fixed_context_result.json",
+    "native_MNIST": {
+      "JointRecovery": 99.53,
+      "RetainOnly": 99.58
+    },
+    "ProDistill_MNIST": {
+      "JointRecovery": 99.36,
+      "RetainOnly": 99.41
+    },
+    "score_replays": 528,
+    "independent_numpy_rows": 27
   }
 }

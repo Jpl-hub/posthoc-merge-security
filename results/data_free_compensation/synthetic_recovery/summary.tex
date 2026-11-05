@@ -105,3 +105,17 @@ Full outputs only & 99.60 & 25.45 & 3.44 & 1.61 & 99.43 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+
+\begin{table}[t]
+\centering
+\caption{Fixed recovery-aware objective comparison on MNIST. Standalone and complete merged-task accuracy (\%). TA coefficient is 0.5. The reference uses the unchanged Defense 2 release.}
+\begin{tabular}{lrrrrr}\toprule
+Condition & Standalone & TA & AGA target & AGA both & ProDistill \\
+\midrule
+Defense 2 & 99.57 & 25.15 & 2.99 & 1.33 & 99.43 \\
+Retention only & 99.58 & 25.25 & 3.82 & 1.85 & 99.41 \\
+Retention + recovered entropy & 99.53 & 25.27 & 1.75 & 0.94 & 99.36 \\
+\bottomrule
+\end{tabular}
+\end{table}

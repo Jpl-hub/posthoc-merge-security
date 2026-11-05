@@ -1,0 +1,844 @@
+{
+  "status": "completed_closed_no_useful_distillation_protection",
+  "completed_utc": "2026-11-05T05:39:28.604939+00:00",
+  "protocol": "results/data_free_compensation/recovery_soft_fixed_context_protocol.json",
+  "source_commit": "f21cb24e600a401c217b489404ef46fa4fa16f40",
+  "host": "21516",
+  "output": "outputs/recovery_soft_fixed_context_20261105",
+  "source": {
+    "JointRecovery": {
+      "release": {
+        "path": "outputs/recovery_soft_fixed_context_20261105/JointRecovery/point.pt",
+        "sha256": "77315e29a74e6c1fda92f4fde6afde493426c09412e9b1c437f863d1db7a67c6"
+      },
+      "iterations": 20,
+      "seconds": 1668.1723732482642,
+      "real_construction_images": 0,
+      "original_expert_updates": 0,
+      "native_matches": 800,
+      "recovery_matches": 64,
+      "A_relative": 1.0957220791310467,
+      "B_relative": 3.0773046014797782,
+      "source_scores_sha256": "7a9f35c3d0d62d3f261a2f13afa2af0b1f8dd4a7743a2886102778d442258bec",
+      "objective_evaluations": 27,
+      "initial_objective": {
+        "evaluation": 1,
+        "objective": 2.2138984406944693,
+        "native_KL": 0.02111553665553523,
+        "public_KL": 3.719247132494274e-17,
+        "recovered_entropy": 0.10980218895511192,
+        "seconds": 96.22318613156676
+      },
+      "final_objective": {
+        "evaluation": 27,
+        "objective": 2.121270011772322,
+        "native_KL": 0.09016751126615855,
+        "public_KL": 0.00013554645924399673,
+        "recovered_entropy": 0.2716181389471265,
+        "seconds": 1654.0759127158672
+      }
+    },
+    "RetainOnly": {
+      "release": {
+        "path": "outputs/recovery_soft_fixed_context_20261105/RetainOnly/point.pt",
+        "sha256": "f61d094730cf11e558ac309809283d1bd47883f70446d6ff1efda8f39500a3fe"
+      },
+      "iterations": 20,
+      "seconds": 15.923943316563964,
+      "real_construction_images": 0,
+      "original_expert_updates": 0,
+      "native_matches": 800,
+      "recovery_matches": 64,
+      "A_relative": 1.0957257009330803,
+      "B_relative": 3.0773041178929397,
+      "source_scores_sha256": "d682fe77918352d92468ad6c8c53a02649bc13631ce47a3a92de063e7e7e2615",
+      "objective_evaluations": 26,
+      "initial_objective": {
+        "evaluation": 1,
+        "objective": 0.02111553665553527,
+        "native_KL": 0.02111553665553523,
+        "public_KL": 3.719247132494274e-17,
+        "recovered_entropy": null,
+        "seconds": 0.0669711995869875
+      },
+      "final_objective": {
+        "evaluation": 26,
+        "objective": 0.012362821998798706,
+        "native_KL": 0.012354729212969052,
+        "public_KL": 8.092785829653809e-06,
+        "recovered_entropy": null,
+        "seconds": 1.824165504425764
+      }
+    }
+  },
+  "rows": [
+    {
+      "defense": "Unprotected",
+      "merger": "Standalone",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9969,
+      "accuracy_percent": 99.69,
+      "paired": {
+        "both_correct": 9969,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 31,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9937,
+      "accuracy_percent": 99.37,
+      "paired": {
+        "both_correct": 9937,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 63,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 24079,
+      "accuracy_percent": 92.49769514443761,
+      "paired": {
+        "both_correct": 24079,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 1953,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9930,
+      "accuracy_percent": 99.3,
+      "paired": {
+        "both_correct": 9930,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 70,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 24153,
+      "accuracy_percent": 92.7819606637984,
+      "paired": {
+        "both_correct": 24153,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 1879,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9932,
+      "accuracy_percent": 99.32,
+      "paired": {
+        "both_correct": 9932,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 68,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 23890,
+      "accuracy_percent": 91.77166564228642,
+      "paired": {
+        "both_correct": 23890,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 2142,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "defense": "JointRecovery",
+      "merger": "Standalone",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9953,
+      "accuracy_percent": 99.53,
+      "paired": {
+        "both_correct": 9950,
+        "lost": 19,
+        "gained": 3,
+        "both_wrong": 28,
+        "loss_pp": 0.16,
+        "exact_mcnemar_p": 0.0008554458618164062
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -0.2518832398045172,
+        -0.06811676019548284
+      ]
+    },
+    {
+      "defense": "JointRecovery",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 2527,
+      "accuracy_percent": 25.27,
+      "paired": {
+        "both_correct": 2519,
+        "lost": 7418,
+        "gained": 8,
+        "both_wrong": 55,
+        "loss_pp": 74.1,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -74.96226268624699,
+        -73.23773731375302
+      ]
+    },
+    {
+      "defense": "JointRecovery",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 3426,
+      "accuracy_percent": 13.160725261216962,
+      "paired": {
+        "both_correct": 3338,
+        "lost": 20741,
+        "gained": 88,
+        "both_wrong": 1865,
+        "loss_pp": 79.33696988322065,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -79.83887452237573,
+        -78.83506524406558
+      ]
+    },
+    {
+      "defense": "JointRecovery",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 175,
+      "accuracy_percent": 1.7500000000000002,
+      "paired": {
+        "both_correct": 166,
+        "lost": 9764,
+        "gained": 9,
+        "both_wrong": 61,
+        "loss_pp": 97.55,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -97.86422608644627,
+        -97.23577391355374
+      ]
+    },
+    {
+      "defense": "JointRecovery",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 919,
+      "accuracy_percent": 3.5302704363859863,
+      "paired": {
+        "both_correct": 816,
+        "lost": 23337,
+        "gained": 103,
+        "both_wrong": 1776,
+        "loss_pp": 89.25169022741241,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -89.64316246728549,
+        -88.86021798753934
+      ]
+    },
+    {
+      "defense": "JointRecovery",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 94,
+      "accuracy_percent": 0.9400000000000001,
+      "paired": {
+        "both_correct": 87,
+        "lost": 9845,
+        "gained": 7,
+        "both_wrong": 61,
+        "loss_pp": 98.38,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -98.63809035541678,
+        -98.12190964458323
+      ]
+    },
+    {
+      "defense": "JointRecovery",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 670,
+      "accuracy_percent": 2.5737553779963123,
+      "paired": {
+        "both_correct": 568,
+        "lost": 23322,
+        "gained": 102,
+        "both_wrong": 2040,
+        "loss_pp": 89.1979102642901,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -89.59003239609088,
+        -88.80578813248933
+      ]
+    },
+    {
+      "defense": "RetainOnly",
+      "merger": "Standalone",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9958,
+      "accuracy_percent": 99.58,
+      "paired": {
+        "both_correct": 9954,
+        "lost": 15,
+        "gained": 4,
+        "both_wrong": 27,
+        "loss_pp": 0.11,
+        "exact_mcnemar_p": 0.0192108154296875
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -0.1954114815239679,
+        -0.024588518476032113
+      ]
+    },
+    {
+      "defense": "RetainOnly",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 2525,
+      "accuracy_percent": 25.25,
+      "paired": {
+        "both_correct": 2517,
+        "lost": 7420,
+        "gained": 8,
+        "both_wrong": 55,
+        "loss_pp": 74.12,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -74.98204780559894,
+        -73.25795219440106
+      ]
+    },
+    {
+      "defense": "RetainOnly",
+      "merger": "TA",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 3480,
+      "accuracy_percent": 13.368162261831593,
+      "paired": {
+        "both_correct": 3392,
+        "lost": 20687,
+        "gained": 88,
+        "both_wrong": 1865,
+        "loss_pp": 79.12953288260603,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -79.63321741536889,
+        -78.62584834984317
+      ]
+    },
+    {
+      "defense": "RetainOnly",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 382,
+      "accuracy_percent": 3.82,
+      "paired": {
+        "both_correct": 372,
+        "lost": 9558,
+        "gained": 10,
+        "both_wrong": 60,
+        "loss_pp": 95.48,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -95.89652410106578,
+        -95.06347589893423
+      ]
+    },
+    {
+      "defense": "RetainOnly",
+      "merger": "TA",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 650,
+      "accuracy_percent": 2.496926859250154,
+      "paired": {
+        "both_correct": 548,
+        "lost": 23605,
+        "gained": 102,
+        "both_wrong": 1777,
+        "loss_pp": 90.28503380454825,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -90.66054397570764,
+        -89.90952363338887
+      ]
+    },
+    {
+      "defense": "RetainOnly",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 185,
+      "accuracy_percent": 1.8499999999999999,
+      "paired": {
+        "both_correct": 177,
+        "lost": 9755,
+        "gained": 8,
+        "both_wrong": 60,
+        "loss_pp": 97.47,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -97.78763211309929,
+        -97.15236788690072
+      ]
+    },
+    {
+      "defense": "RetainOnly",
+      "merger": "TA",
+      "attack_scope": "All experts",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 474,
+      "accuracy_percent": 1.8208358942839582,
+      "paired": {
+        "both_correct": 368,
+        "lost": 23522,
+        "gained": 106,
+        "both_wrong": 2036,
+        "loss_pp": 89.95082974800246,
+        "exact_mcnemar_p": 0.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -90.3321678389735,
+        -89.5694916570314
+      ]
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9945,
+      "accuracy_percent": 99.45,
+      "paired": {
+        "both_correct": 9945,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 55,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "defense": "Unprotected",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 25181,
+      "accuracy_percent": 96.73094652735095,
+      "paired": {
+        "both_correct": 25181,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 851,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "defense": "JointRecovery",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9936,
+      "accuracy_percent": 99.36,
+      "paired": {
+        "both_correct": 9925,
+        "lost": 20,
+        "gained": 11,
+        "both_wrong": 44,
+        "loss_pp": 0.09,
+        "exact_mcnemar_p": 0.14961278438568115
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -0.19911937961654344,
+        0.019119379616543468
+      ]
+    },
+    {
+      "defense": "JointRecovery",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 25057,
+      "accuracy_percent": 96.25460971112477,
+      "paired": {
+        "both_correct": 24990,
+        "lost": 191,
+        "gained": 67,
+        "both_wrong": 784,
+        "loss_pp": 0.4763368162261832,
+        "exact_mcnemar_p": 5.563590309909723e-15
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -0.5971373991519127,
+        -0.3555362333004536
+      ]
+    },
+    {
+      "defense": "RetainOnly",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "n": 10000,
+      "correct": 9941,
+      "accuracy_percent": 99.41,
+      "paired": {
+        "both_correct": 9930,
+        "lost": 15,
+        "gained": 11,
+        "both_wrong": 44,
+        "loss_pp": 0.04,
+        "exact_mcnemar_p": 0.557197093963623
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -0.1399427045782662,
+        0.05994270457826622
+      ]
+    },
+    {
+      "defense": "RetainOnly",
+      "merger": "ProDistill",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "n": 26032,
+      "correct": 25053,
+      "accuracy_percent": 96.23924400737553,
+      "paired": {
+        "both_correct": 24978,
+        "lost": 203,
+        "gained": 75,
+        "both_wrong": 776,
+        "loss_pp": 0.49170251997541486,
+        "exact_mcnemar_p": 8.619020851498716e-15
+      },
+      "paired_accuracy_delta_95ci_pp": [
+        -0.6170995084760816,
+        -0.3663055314747481
+      ]
+    }
+  ],
+  "matched_loss_comparison": [
+    {
+      "merger": "Standalone",
+      "scope": "None",
+      "dataset": "MNIST",
+      "reference": "RetainOnly",
+      "condition": "JointRecovery",
+      "lost": 6,
+      "gained": 1,
+      "delta_pp": -0.05,
+      "paired_95ci_pp": [
+        -0.10185005730801353,
+        0.0018500573080135175
+      ],
+      "exact_mcnemar_p": 0.125
+    },
+    {
+      "merger": "TA",
+      "scope": "None",
+      "dataset": "MNIST",
+      "reference": "RetainOnly",
+      "condition": "JointRecovery",
+      "lost": 6,
+      "gained": 8,
+      "delta_pp": 0.02,
+      "paired_95ci_pp": [
+        -0.05333910415610378,
+        0.09333910415610377
+      ],
+      "exact_mcnemar_p": 0.79052734375
+    },
+    {
+      "merger": "TA",
+      "scope": "None",
+      "dataset": "SVHN",
+      "reference": "RetainOnly",
+      "condition": "JointRecovery",
+      "lost": 72,
+      "gained": 18,
+      "delta_pp": -0.20743700061462816,
+      "paired_95ci_pp": [
+        -0.27882212122553607,
+        -0.13605188000372026
+      ],
+      "exact_mcnemar_p": 8.07074444411569e-09
+    },
+    {
+      "merger": "TA",
+      "scope": "Protected expert",
+      "dataset": "MNIST",
+      "reference": "RetainOnly",
+      "condition": "JointRecovery",
+      "lost": 220,
+      "gained": 13,
+      "delta_pp": -2.07,
+      "paired_95ci_pp": [
+        -2.366432083307461,
+        -1.773567916692539
+      ],
+      "exact_mcnemar_p": 1.0483893925059404e-49
+    },
+    {
+      "merger": "TA",
+      "scope": "Protected expert",
+      "dataset": "SVHN",
+      "reference": "RetainOnly",
+      "condition": "JointRecovery",
+      "lost": 33,
+      "gained": 302,
+      "delta_pp": 1.0333435771358328,
+      "paired_95ci_pp": [
+        0.8961069726177291,
+        1.1705801816539365
+      ],
+      "exact_mcnemar_p": 1.5341305844248354e-55
+    },
+    {
+      "merger": "TA",
+      "scope": "All experts",
+      "dataset": "MNIST",
+      "reference": "RetainOnly",
+      "condition": "JointRecovery",
+      "lost": 98,
+      "gained": 7,
+      "delta_pp": -0.91,
+      "paired_95ci_pp": [
+        -1.1100566903953408,
+        -0.7099433096046593
+      ],
+      "exact_mcnemar_p": 1.2065431169279858e-21
+    },
+    {
+      "merger": "TA",
+      "scope": "All experts",
+      "dataset": "SVHN",
+      "reference": "RetainOnly",
+      "condition": "JointRecovery",
+      "lost": 13,
+      "gained": 209,
+      "delta_pp": 0.7529194837123541,
+      "paired_95ci_pp": [
+        0.6411083421002773,
+        0.8647306253244308
+      ],
+      "exact_mcnemar_p": 1.1291282354191219e-46
+    },
+    {
+      "merger": "ProDistill",
+      "scope": "None",
+      "dataset": "MNIST",
+      "reference": "RetainOnly",
+      "condition": "JointRecovery",
+      "lost": 7,
+      "gained": 2,
+      "delta_pp": -0.05,
+      "paired_95ci_pp": [
+        -0.10879477257825097,
+        0.008794772578250983
+      ],
+      "exact_mcnemar_p": 0.1796875
+    },
+    {
+      "merger": "ProDistill",
+      "scope": "None",
+      "dataset": "SVHN",
+      "reference": "RetainOnly",
+      "condition": "JointRecovery",
+      "lost": 22,
+      "gained": 26,
+      "delta_pp": 0.015365703749231713,
+      "paired_95ci_pp": [
+        -0.036798756208562614,
+        0.06753016370702605
+      ],
+      "exact_mcnemar_p": 0.6654658120766188
+    }
+  ],
+  "validation": {
+    "numpy_full_rows": 27,
+    "TA": {
+      "status": "passed",
+      "rows": 21,
+      "official_label_numpy_recount": true,
+      "full_image_prediction_replays": 336,
+      "context_forward_images": 40944,
+      "original_evaluation_batch_size": 128,
+      "maximum_score_error": 1.52587890625e-05,
+      "score_tolerance": 0.0005,
+      "explicit_TA_reconstruction": true,
+      "original_TIES_functions": false,
+      "independent_TIES_small_numpy_fixture": false,
+      "independent_full_TIES_reimplementation": false,
+      "raw_sha256": "8e9263a8e7c74da0c4b1a096fa7398fb1099dccef904d0f102effa2b9f49e02a",
+      "DARE_NumPy_mask_arithmetic": false,
+      "DARE_independent_RNG": false,
+      "source_sha256": "db733c87bdbb5e2a747c5b4e33e40023ae307bf7823d64bebba8e6510bf753f1",
+      "original_evaluation_source_sha256": "db733c87bdbb5e2a747c5b4e33e40023ae307bf7823d64bebba8e6510bf753f1",
+      "reason": "Preserve original batch/GEMM context after observed 16-vs-128 numerical discrepancy; no scores, weights or tolerance changed."
+    },
+    "ProDistill": {
+      "status": "passed",
+      "score_replays": 192,
+      "maximum_context_score_error": 0.0,
+      "raw_sha256": "43bba92ac5aad140d0255b2aa90e334efdfaafbf39d2a31d56326d3185c0e3a1",
+      "full_rows": 6
+    },
+    "class_pairs": {
+      "path": "outputs/recovery_soft_fixed_context_20261105/class_pairs.json",
+      "sha256": "3a2c26931be43620098f29360d20561132834fcfdf6498f8a1cb329cef82ed16",
+      "status": "passed_independent_numpy_class_lost_gained_net_loss"
+    }
+  },
+  "real_construction_images": 0,
+  "original_expert_updates": 0,
+  "selection_from_test": false,
+  "source_archive": "outputs/recovery_soft_fixed_context_20261105/source.py",
+  "source_sha256": "1316096ce7ca3b1c5789393f75821f977162fdc7a0e936eeddae809d4cabf59a",
+  "raw_summary": {
+    "path": "outputs/recovery_soft_fixed_context_20261105/summary.json",
+    "sha256": "ac60a92d68ebfa97d584da06abbc5ab18202ca87f1bd46462e8789984c8605d6",
+    "metadata_correction": "The inherited summary driver labels the old recovery_soft_protocol.json. Actual runtime protocol.json, output and frozen source identify recovery_soft_fixed_context_protocol.json. Original raw summary unchanged; this record corrects the protocol reference."
+  },
+  "conclusion": "Complete native accuracy retained but ProDistill recovers99.36%, matched retention-only99.41%. Lost7/gained2 vs matched control, delta-.05pp CI[-.108795,.008795], exactMcNemar.1796875. Synthetic entropy increases .109802 to .271618 but all64 predictions still match original expert. No effective anti-distillation improvement; main release unchanged. No same-point step/strength/temperature/solver retry.",
+  "cost": {
+    "construction_seconds": {
+      "JointRecovery": 1668.1723732482642,
+      "RetainOnly": 15.923943316563964
+    },
+    "outer_iterations_each": 20,
+    "meta_forward_updates_JointRecovery": 3000,
+    "meta_reverse_updates_JointRecovery": 2700,
+    "meta_forward_updates_RetainOnly": 100,
+    "new_full_ProDistill_backwards": 2400,
+    "new_author_AGA_calls": 2
+  },
+  "retired_entry": {
+    "path": "experiment/recovery_task.py",
+    "source_commit": "f21cb24e600a401c217b489404ef46fa4fa16f40",
+    "archive": "outputs/recovery_soft_fixed_context_20261105/source.py",
+    "sha256": "1316096ce7ca3b1c5789393f75821f977162fdc7a0e936eeddae809d4cabf59a"
+  }
+}
