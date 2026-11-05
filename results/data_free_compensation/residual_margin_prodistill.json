@@ -286,5 +286,84 @@
     "new_optimizer_steps": 0,
     "registered_utc": "2026-11-02T10:22:52.782513+00:00"
   },
-  "parent_model_parameter_sha256": "57bd295827f6840cc936802e7ec6e09c306c479ade55df7cd731d25cbc4b7004"
+  "parent_model_parameter_sha256": "57bd295827f6840cc936802e7ec6e09c306c479ade55df7cd731d25cbc4b7004",
+  "status": "completed_fixed_candidate_evaluation",
+  "completed_utc": "2026-11-05T12:03:57.673336+00:00",
+  "result": {
+    "rows": [
+      {
+        "defense": "Unprotected",
+        "stage": "pilot",
+        "dataset": "MNIST",
+        "n": 64,
+        "correct": 63,
+        "accuracy_percent": 98.4375
+      },
+      {
+        "defense": "Unprotected",
+        "stage": "pilot",
+        "dataset": "SVHN",
+        "n": 64,
+        "correct": 64,
+        "accuracy_percent": 100.0
+      },
+      {
+        "defense": "Unprotected",
+        "stage": "full",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9945,
+        "accuracy_percent": 99.45
+      },
+      {
+        "defense": "Unprotected",
+        "stage": "full",
+        "dataset": "SVHN",
+        "n": 26032,
+        "correct": 25181,
+        "accuracy_percent": 96.73094652735095
+      },
+      {
+        "defense": "MarginFit",
+        "stage": "pilot",
+        "dataset": "MNIST",
+        "n": 64,
+        "correct": 63,
+        "accuracy_percent": 98.4375
+      },
+      {
+        "defense": "MarginFit",
+        "stage": "pilot",
+        "dataset": "SVHN",
+        "n": 64,
+        "correct": 62,
+        "accuracy_percent": 96.875
+      },
+      {
+        "defense": "MarginFit",
+        "stage": "full",
+        "dataset": "MNIST",
+        "n": 10000,
+        "correct": 9919,
+        "accuracy_percent": 99.19
+      },
+      {
+        "defense": "MarginFit",
+        "stage": "full",
+        "dataset": "SVHN",
+        "n": 26032,
+        "correct": 24983,
+        "accuracy_percent": 95.97034419176399
+      }
+    ],
+    "validation": {
+      "status": "passed",
+      "score_replays": 128,
+      "maximum_context_score_error": 1.71661376953125e-05,
+      "raw_sha256": "064c4ee9bc9f20e62334b2794b39a5445c012dfcb61c92d15fd2a72a65c0d503",
+      "full_rows": 4
+    },
+    "training_output": "outputs/residual_margin_prodistill_20261105/MNIST/MarginFit/training.json",
+    "finding": "The fixed margin-fit candidate retains 99.56% native MNIST but ProDistill reaches 99.19% MNIST and 95.97% SVHN. This candidate is closed as a partial defense."
+  }
 }

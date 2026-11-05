@@ -23,11 +23,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_dtd.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-05T11:02:59.839805+00:00",
+    "verified_utc": "2026-11-05T12:03:57.673336+00:00",
     "primary_available_GiB": 14.79,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
@@ -143,20 +143,12 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-05T11:02:59.839805+00:00",
-  "status": "evaluating_fixed_candidates",
+  "updated_utc": "2026-11-05T12:03:57.673336+00:00",
+  "status": "completed_fixed_core_evaluation",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "pid": 26406,
-      "output": "outputs/residual_margin_prodistill_20261105",
-      "protocol": "results/data_free_compensation/residual_margin_prodistill.json",
-      "host": "21516",
-      "status": "launched"
-    }
-  ],
-  "next_action": "Verify the matched ProDistill output and run the frozen public-base versus SVHN context diagnosis. The current margin fit is not promoted.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Use the frozen ABReadout point as the main fixed defense result. Keep ProDistill as the explicit recovery limitation; do not start another tuning branch.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -448,7 +440,7 @@
     ]
   },
   "residual_margin_full": {
-    "status": "completed_full_paired_evaluation",
+    "status": "completed_partial_candidate",
     "raw_archive": {
       "hosts": [
         "21516",
@@ -460,5 +452,27 @@
     },
     "finding": "Direct B reset suppressed MNIST from 99.36% to 9.77%; AGA then B reset still reaches 98.96%. Native 99.56% and partner trade-off retained.",
     "record": "results/data_free_compensation/residual_margin_full.json"
+  },
+  "readout_b_reset": {
+    "record": "results/data_free_compensation/readout_b_reset_result.json",
+    "protocol": "results/data_free_compensation/readout_b_reset.json",
+    "status": "completed_fixed_existing_point",
+    "mnist_standalone_percent": 99.57,
+    "mnist_TA_percent": 0.07,
+    "mnist_AGA_target_percent": 0.08,
+    "mnist_AGA_both_percent": 0.09,
+    "mnist_TA_B_reset_percent": 0.05,
+    "mnist_AGA_B_reset_percent": 0.07,
+    "svhn_TA_B_reset_percent": 0.88,
+    "svhn_AGA_B_reset_percent": 1.05,
+    "real_construction_images": 0,
+    "new_defense_updates": 0,
+    "maximum_replay_error": 1.9073486328125e-05
+  },
+  "residual_margin_prodistill": {
+    "record": "results/data_free_compensation/residual_margin_prodistill.json",
+    "status": "completed_partial_candidate",
+    "mnist_full_percent": 99.19,
+    "svhn_full_percent": 95.97034419176399
   }
 }
