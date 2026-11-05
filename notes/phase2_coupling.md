@@ -2705,13 +2705,13 @@ MNIST 冻结点 eedc959c 的独立准确率为 99.57%，相对原 A/B 加读出�
 
 在 MNIST 点冻结后，按同一公式和同一参数范围迁移到 SVHN、DTD。构造仍只读冻结权重、公开基座和固定分类头，不用图片；独立预测与各自 A/B 发布逐图一致。三任务结果如下，均为完整测试集准确率（%）。
 
-| 任务 | 独立 | TA | AGA目标 | AGA双方 | AGA后换回B | ProDistill | ProDistill后固定取反 |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| MNIST | 99.57 | 9.74 | 9.74 | 9.74 | 53.73 | 10.32 | 10.09 |
-| SVHN | 96.66 | 15.94 | 15.94 | 15.94 | 0.66 | 15.94 | 56.73 |
-| DTD | 76.33 | 4.15 | 2.18 | 2.18 | 17.93 | 2.13 | 13.46 |
+| 任务 | 独立 | TA | AGA目标 | AGA双方 | AGA后换回B | ProDistill | ProDistill取反 | 取反并校正 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| MNIST | 99.57 | 9.74 | 9.74 | 9.74 | 53.73 | 10.32 | 10.09 | 21.58 |
+| SVHN | 96.66 | 15.94 | 15.94 | 15.94 | 0.66 | 15.94 | 6.13 | 56.73 |
+| DTD | 76.33 | 4.15 | 2.18 | 2.18 | 17.93 | 2.13 | 2.13 | 13.46 |
 
-固定 ProDistill 在三项任务上都没有恢复到干净模型；但知道修改位置后换回 B，SVHN 和 DTD 仍能明显恢复，说明这项读出改动没有解决公开位置恢复。固定取反也能大幅改变 SVHN 结果，不能只看取反前的低准确率。该迁移作为 A/B 的补充对照保留，不替换主发布。逐项结果在 [centered_readout_20261106](../results/data_free_compensation/centered_readout_20261106/summary.json)，表格在 [centered_readout.md](../results/comparison/centered_readout.md)。
+固定 ProDistill 在三项任务上都没有恢复到干净模型；但知道修改位置后换回 B，MNIST 和 DTD 仍能部分恢复，说明这项读出改动没有解决公开位置恢复。SVHN 在取反后再校正时回到56.73%，这是两项处理共同作用；此前汇总将它和DTD13.46%误放在“只取反”列，现已按原始计数纠正，原模型和分数不变。该迁移作为 A/B 的补充对照保留，不替换主发布。逐项结果在 [centered_readout_20261106](../results/data_free_compensation/centered_readout_20261106/summary.json)，表格在 [centered_readout.md](../results/comparison/centered_readout.md)。
 
 ### 2026年11月6日：夜间固定条件补偿试验（执行前）
 

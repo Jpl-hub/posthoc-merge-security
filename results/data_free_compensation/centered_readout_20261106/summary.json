@@ -8,7 +8,9 @@
       "AGA_both": 9.74,
       "B_reset_AGA_target": 53.73,
       "ProDistill": 10.32,
-      "ProDistill_fixed_sign": 10.09
+      "ProDistill_fixed_sign": 10.09,
+      "ProDistill_calibrated": 0.01,
+      "ProDistill_fixed_sign_calibrated": 21.58
     },
     "SVHN": {
       "standalone": 96.66,
@@ -17,7 +19,9 @@
       "AGA_both": 15.94,
       "B_reset_AGA_target": 0.66,
       "ProDistill": 15.94,
-      "ProDistill_fixed_sign": 56.73
+      "ProDistill_fixed_sign": 6.127074370006146,
+      "ProDistill_calibrated": 0.19207129686539642,
+      "ProDistill_fixed_sign_calibrated": 56.72633681622618
     },
     "DTD": {
       "standalone": 76.33,
@@ -26,7 +30,9 @@
       "AGA_both": 2.18,
       "B_reset_AGA_target": 17.93,
       "ProDistill": 2.13,
-      "ProDistill_fixed_sign": 13.46
+      "ProDistill_fixed_sign": 2.127659574468085,
+      "ProDistill_calibrated": 0.425531914893617,
+      "ProDistill_fixed_sign_calibrated": 13.457446808510639
     }
   },
   "construction_images": 0,
@@ -35,5 +41,6 @@
     "MNIST_result.json",
     "SVHN_result.json",
     "DTD_result.json"
-  ]
+  ],
+  "summary_correction": "The previous SVHN/DTD fixed-sign entries incorrectly used sign-plus-calibration results. Corrected from the existing independently recounted frozen score records; no model, input, or forward pass changed."
 }

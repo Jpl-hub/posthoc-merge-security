@@ -23,7 +23,7 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_archive.sock",
     "secondary_role": "Historical CPU archive only; authoritative engineering and all new GPU experiments are on21516",
@@ -145,15 +145,17 @@
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
   "updated_utc": "2026-11-05T21:56:57.805537+00:00",
-  "status": "overnight_conditional_compensation_prepared",
+  "status": "overnight_conditional_compensation_running",
   "active_focus": "一个固定防御二试验：A有限改变后每次重求B补偿，再完整评价恢复与融合。",
-  "active_GPU_jobs": 0,
+  "active_GPU_jobs": 1,
   "research_jobs": [
     {
       "protocol": "results/data_free_compensation/conditional_compensation/protocol.json",
       "output": "outputs/overnight_20261106",
-      "status": "prepared",
-      "host": "21516"
+      "status": "running",
+      "host": "21516",
+      "pid": 2187,
+      "log": "outputs/overnight_20261106/run.log"
     }
   ],
   "next_action": "Run the registered single candidate on21516; freeze all three tasks before real-image evaluation. Complete existing centered readout eight-expert evaluation independently. No heartbeat.",
@@ -598,7 +600,9 @@
         "AGA_both": 9.74,
         "B_reset_AGA_target": 53.73,
         "ProDistill": 10.32,
-        "ProDistill_fixed_sign": 10.09
+        "ProDistill_fixed_sign": 10.09,
+        "ProDistill_calibrated": 0.01,
+        "ProDistill_fixed_sign_calibrated": 21.58
       },
       "SVHN": {
         "standalone": 96.66,
@@ -607,7 +611,9 @@
         "AGA_both": 15.94,
         "B_reset_AGA_target": 0.66,
         "ProDistill": 15.94,
-        "ProDistill_fixed_sign": 56.73
+        "ProDistill_fixed_sign": 6.127074370006146,
+        "ProDistill_calibrated": 0.19207129686539642,
+        "ProDistill_fixed_sign_calibrated": 56.72633681622618
       },
       "DTD": {
         "standalone": 76.33,
@@ -616,7 +622,9 @@
         "AGA_both": 2.18,
         "B_reset_AGA_target": 17.93,
         "ProDistill": 2.13,
-        "ProDistill_fixed_sign": 13.46
+        "ProDistill_fixed_sign": 2.127659574468085,
+        "ProDistill_calibrated": 0.425531914893617,
+        "ProDistill_fixed_sign_calibrated": 13.457446808510639
       }
     },
     "archive_hosts": [
