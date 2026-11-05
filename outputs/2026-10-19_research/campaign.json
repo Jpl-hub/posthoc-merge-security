@@ -1,6 +1,6 @@
 {
-  "updated_utc": "2026-11-04T19:00:30.875744+00:00",
-  "status": "soft_task_loss_evaluation",
+  "updated_utc": "2026-11-05T02:32:18.370768+00:00",
+  "status": "line_search_task_running",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -425,12 +425,33 @@
     "parameter_selection_from_test": false
   },
   "soft_task_loss": {
-    "status": "frozen_before_complete_evaluation",
+    "status": "completed_native_utility_failed",
     "protocol": "results/data_free_compensation/soft_task_loss_protocol.json",
     "source_commit": "0c684ae4954d22a5bdd1b62ef3ef7e1a41504dea",
     "output": "outputs/soft_task_loss_20261105",
     "reason": "Check complete class-probability retention instead of hard-pseudolabel confidence increase; fixed joint and native-only controls; no hyperparameter sweep.",
     "real_construction_images": 0,
-    "evaluation_driver_sha256": "97fc2b61d64dd47d55dabf5080e7a134339e9745f9d97b5e1206ebccb29c9543"
+    "evaluation_driver_sha256": "97fc2b61d64dd47d55dabf5080e7a134339e9745f9d97b5e1206ebccb29c9543",
+    "record": "results/data_free_compensation/soft_task_loss_result.json",
+    "native_percent": {
+      "JointSoft": 93.11,
+      "NativeSoft": 95.98
+    },
+    "ProDistill_percent": {
+      "JointSoft": 91.79,
+      "NativeSoft": 95.06
+    },
+    "independent_numpy_rows": 27,
+    "score_replays": 528
+  },
+  "line_search_task": {
+    "status": "source_running",
+    "protocol": "results/data_free_compensation/line_search_task_protocol.json",
+    "source_commit": "9904868861ab5f07b9913ea02b0249c00d39f88d",
+    "output": "outputs/line_search_task_20261105",
+    "log": "outputs/line_search_task_20261105.log",
+    "host": "21516",
+    "next": "Automatic sequential existing complete native/TA/AGA/ProDistill evaluation for both final points; no new candidates beyond fixed pair.",
+    "real_construction_images": 0
   }
 }
