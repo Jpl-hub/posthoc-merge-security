@@ -2,7 +2,7 @@
 
 研究 CLIP ViT-B/32 专家的训练后参数保护：单独使用时保持任务能力，未经授权融合及 AGA 攻击后降低受保护任务准确率。专家不重新训练。
 
-当前主线为防御一和数值防御二。防御一由权重构造偏置噪声；防御二不使用真实构造图片：使用冻结专家、公开基座、任务 SVD 和已声明的固定分类头，研究任务功能保持与跨模块补偿。生成输入用于构造，真实图像只用于冻结后的评价。
+当前主线为防御一和冻结的数值防御二。防御一由权重构造偏置噪声；防御二不使用真实构造图片：使用冻结专家、公开基座、任务 SVD 和固定分类头，研究任务功能保持与跨模块补偿。当前用于主结果的是已经冻结的 ABReadout 版本；早期 A/B 版本只作历史对照。生成输入只用于构造，真实图像只用于冻结后的评价。
 
 ## 从哪里看代码
 
@@ -10,14 +10,14 @@
 
 | 内容 | 文件 | 看什么 |
 |---|---|---|
-| **数值防御二** | [experiment/defense2.py](experiment/defense2.py) | A 的任务 SVD 约束、B 与偏置补偿、融合分类目标 |
+| **数值防御二** | [experiment/defense2.py](experiment/defense2.py) | A 的任务 SVD 约束、B 与偏置补偿；冻结主结果见 [ABReadout 评价](results/data_free_compensation/readout_b_reset_result.json) |
 | 防御一 | [_impl/defenses.py](_impl/defenses.py) | `construct_bias`：视觉投影核空间中的偏置扰动 |
 | AGA 与公开恢复 | [_impl/attacks.py](_impl/attacks.py) | 作者 AGA 调用、公开模块替换和权重匹配 |
 | 融合 | [_impl/merge.py](_impl/merge.py) | TA、TIES、DARE |
 | 实验评价 | [experiment/main_table.py](experiment/main_table.py)、[_impl/evaluate.py](_impl/evaluate.py) | 固定发布、目标与伙伴评价 |
 | 最新对比结果 | [results/comparison](results/comparison) | 防御一、二与PaRaMS的攻击、伙伴和八专家结果；MD / TeX |
 
-当前防御二由同一入口构造 MNIST、SVHN、DTD。用 `--target` 指定任务，固定输入及参数见 `configs/defense2_inputs.json`。当前三任务主方法使用 `--calibration-aware --task-reference --input-bias --noise-calibration --finite-classification`，定义和发布指纹见 [固定协议](results/data_free_compensation/finite_classification.json) 及 [结果](results/data_free_compensation/finite_classification_result.json)。已有发布直接用于评价，无需重新构造。原合成缓存路径写在配置中，新输出目录必须不存在。
+防御二的构造入口仍由同一文件维护，固定输入及参数见 `configs/defense2_inputs.json`。当前主结果是已冻结的 ABReadout 发布参数，协议和分数见 [固定协议](results/data_free_compensation/readout_b_reset.json) 及 [完整结果](results/data_free_compensation/readout_b_reset_result.json)。已有发布直接用于评价，无需重新构造；早期有限分类版本仍保留作历史对照。
 
 互补视图、逐类均值两项试验已结束，未替换主方法，其分支已从活动入口移除。执行源码保留于 Git `a973133` 和两台服务器的原始结果，分别见 [视图对照](results/comparison/defense2_native_views.md) 与 [均值对照](results/comparison/defense2_native_means.md)。旧实验应检出其执行版本，不能用当前源码冒充复现。
 
