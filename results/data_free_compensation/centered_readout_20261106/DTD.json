@@ -1,0 +1,18 @@
+{
+  "target": "DTD",
+  "partner_for_evaluation_only": "MNIST",
+  "prodistill_coefficient": 0.3,
+  "TA_coefficient": 0.5,
+  "readout_relative_limits": [
+    3.6,
+    3.6,
+    2.5
+  ],
+  "parent": {
+    "path": "outputs/finite_classification_20261102/DTD/point/point.pt",
+    "sha256": "fd8d553e1c3b491ca2753accc1f846d2b650084c4bd489fefc4e2f7ab67ec170"
+  },
+  "rule": "Let L=H diag(g) P where H subtracts channel means and r=beta P. Set g'=-((1-t_d)/t_d)g0, c=sign(beta dot g)||beta||/||g||, beta'=c g'. Set P'=k diag(g')^-1 (L+1 r/(d c)), k=((1-t_m)/t_m)*((1-t_d)/t_d). The complete standalone embedding equals k times the original for every hidden input in exact arithmetic, preserving the normalized readout. Public gain cancels at t_d; projection at t_m contains the centered task difference and a rank-one mean term. Gamma, bias and projection ranges are separate from the frozen A/B. No images, partners or outcomes used to construct.",
+  "evaluation": "Exact transfer of the frozen MNIST construction rule. Complete independent TA, original AGA target/both, matched B replacement, and fixed ProDistill. Use the registered 64 unlabeled examples per task. Preserve all results.",
+  "scope": "Known affine/readout symmetry adapted to two fixed merger operating points. Report the exact tested recovery scope. This does not imply protection against a readout-refitting attacker or arbitrary coefficients."
+}

@@ -1,0 +1,18 @@
+{
+  "target": "MNIST",
+  "partner_for_evaluation_only": "SVHN",
+  "prodistill_coefficient": 0.3,
+  "TA_coefficient": 0.5,
+  "readout_relative_limits": [
+    3.6,
+    3.6,
+    2.5
+  ],
+  "parent": {
+    "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+    "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+  },
+  "rule": "Let L=H diag(g) P where H subtracts channel means and r=beta P. Set g'=-((1-t_d)/t_d)g0, c=sign(beta dot g)||beta||/||g||, beta'=c g'. Set P'=k diag(g')^-1 (L+1 r/(d c)), k=((1-t_m)/t_m)*((1-t_d)/t_d). The complete standalone embedding equals k times the original for every hidden input in exact arithmetic, preserving the normalized readout. Public gain cancels at t_d; projection at t_m contains the centered task difference and a rank-one mean term. Gamma, bias and projection ranges are separate from the frozen A/B. No images, partners or outcomes used to construct.",
+  "evaluation": "Same two experts, support images, source kernel and coefficients as the previous fixed MNIST ProDistill. Test standalone, direct TA 0.5, two AGA scopes, matched B replacement, and fixed score negation. If still useful, also apply the existing 64-random-input output calibration on frozen merged models. One release only.",
+  "scope": "Known affine/readout symmetry adapted to two fixed merger operating points. Report the exact tested recovery scope. This does not imply protection against a readout-refitting attacker or arbitrary coefficients."
+}

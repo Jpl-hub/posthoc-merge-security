@@ -1,12 +1,32 @@
 {
-  "updated_utc": "2026-11-05T16:36:13.200160+00:00",
-  "status": "public_gain_closed_sign_recovery",
+  "updated_utc": "2026-11-05T16:49:21.547400+00:00",
+  "status": "running_centered_readout_transfer",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Preserve the fixed paper comparison. Prioritize a data-free Defense 2 mechanism that retains standalone predictions and lowers fixed ProDistill recovery even after score negation. Use the matched MNIST case before any task extension.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "timeout_pid": 53799,
+      "output": "outputs/centered_readout_transfer_20261106",
+      "target": "MNIST",
+      "partner": "SVHN",
+      "status": "running_final_replacement_evaluation"
+    },
+    {
+      "host": "21516",
+      "timeout_pid": 56687,
+      "output": "outputs/centered_readout_other_20261106",
+      "targets": [
+        "SVHN",
+        "DTD"
+      ],
+      "partner": "MNIST",
+      "status": "queued_after_MNIST"
+    }
+  ],
+  "next_action": "Verify the complete MNIST transfer and finish identical SVHN/DTD rules before any manuscript method replacement.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -894,5 +914,34 @@
       "Defense 2 frozen November 2 A/B"
     ],
     "readout": "separate comparison with raw and sign-reversed scores"
+  },
+  "centered_readout": {
+    "status": "running_fixed_transfer",
+    "jobs": [
+      {
+        "host": "21516",
+        "timeout_pid": 53799,
+        "output": "outputs/centered_readout_transfer_20261106",
+        "target": "MNIST",
+        "partner": "SVHN",
+        "status": "running_final_replacement_evaluation"
+      },
+      {
+        "host": "21516",
+        "timeout_pid": 56687,
+        "output": "outputs/centered_readout_other_20261106",
+        "targets": [
+          "SVHN",
+          "DTD"
+        ],
+        "partner": "MNIST",
+        "status": "queued_after_MNIST"
+      }
+    ],
+    "protocols": "results/data_free_compensation/centered_readout_20261106",
+    "MNIST_prodistill_percent": 10.32,
+    "MNIST_prodistill_negated_percent": 10.09,
+    "MNIST_prodistill_calibrated_percent": 0.01,
+    "MNIST_prodistill_negated_and_calibrated_percent": 21.58
   }
 }

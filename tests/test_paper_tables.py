@@ -12,7 +12,7 @@ def test_current_comparison_is_reproducible_and_keeps_partner_results(tmp_path):
     saved = json.loads((root / "sources.json").read_text())
     before = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in saved["input_sha256"]}
     defense_comparison(tmp_path)
-    for name in ["eight_expert", "attacks", "partners", "feature_distillation",
+    for name in ["paper_main", "eight_expert", "attacks", "partners", "feature_distillation",
                  "defense2_versions", "defense2_version_partners", "defense2_eight_versions",
                  "defense2_eight_calibration", "defense2_eight_calibration_target",
                  "eight_calibration", "eight_calibration_target", "defense2_mergers", "prodistill_components",

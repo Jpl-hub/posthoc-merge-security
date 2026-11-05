@@ -24,7 +24,8 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 
 | 用途 | Markdown / TeX |
 |---|---|
-| 两专家主对比和两项防御的限制 | [目标](attacks.md) · [TeX](attacks.tex) · [伙伴](partners.md) · [TeX](partners.tex) |
+| 两专家正文主表 | [独立、目标与伙伴](paper_main.md) · [TeX](paper_main.tex) |
+| 输出校正、匹配及硬标签蒸馏的逐项结果 | [目标](attacks.md) · [TeX](attacks.tex) · [伙伴](partners.md) · [TeX](partners.tex) |
 | 当前发布在八专家下的 TA、AGA 和输出校正 | [三个目标](eight_calibration_target.md) · [TeX](eight_calibration_target.tex) · [七个测试集](eight_calibration.md) · [TeX](eight_calibration.tex) |
 | 防御二的 A/B 删项和同范数随机对照 | [目标](defense2_components.md) · [TeX](defense2_components.tex) · [伙伴](defense2_component_partners.md) · [TeX](defense2_component_partners.tex) |
 | 任务 SVD 投影约束的消融 | [目标](defense2_projection.md) · [TeX](defense2_projection.tex) · [伙伴](defense2_projection_partners.md) · [TeX](defense2_projection_partners.tex) |
@@ -33,6 +34,16 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 | 防御二加入读出补偿、B 替换及取反对照 | [结果](defense2_readout.md) · [TeX](defense2_readout.tex) |
 
 读出补偿版的独立预测与同一 A/B 版一致。AGA 后替换 B 的三个目标原始准确率为 0.07%、0.45%、0.59%，统一取反后为 61.78%、62.45%、11.86%。固定 ProDistill 为 98.63%、83.45%、30.85%。汇报时同时展示这两组恢复结果。原始分数和取反使用同一批样本，详见[逐项核对](readout_sign_recovery.json)。
+
+## 参考论文和代码后的安排
+
+| 参考 | 对本项目的用法 |
+|---|---|
+| [PaRaMS，ICCV 2025，表 1](https://arxiv.org/html/2503.07661v1#S5) · [官方代码](https://github.com/ISCT-W/PaRaMS) | 正文同一行并列独立准确率、融合后的目标和伙伴结果。无保护、基线及两种防御用本文固定的同条件数据。 |
+| [MergeGuard，CVPR 2026，§6–7](https://openaccess.thecvf.com/content/CVPR2026/html/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.html) | 将正常使用、融合和适应恢复分开交代。本文额外做了 ProDistill，单列其图片和训练预算。 |
+| [Trap²，ICML 2026，表 5 与附录表 14](https://arxiv.org/html/2601.21898v2#S6.SS4) · [官方全参数评价入口](https://github.com/ml-postech/Trap2/blob/ef65a26590d92fe07955c5621c08bb315484ff29/eval_scripts/8vision_pertask_linearsearch_full.py) | 正文和补充分别回答主要设置与更强恢复。仓库沿用固定配置、冻结发布、评价入口分离的结构。本文的两专家 ProDistill 使用每任务 64 张训练图，结果按目标和伙伴列出。 |
+
+方法图画独立使用时如何补偿，以及融合后补偿为何失配。准确率用表报告。系数曲线用同一冻结发布和同一对照的实测点绘制，曲线上的测试结果用于解释机制。
 
 ## 接下来按这个顺序
 

@@ -491,6 +491,16 @@ def defense_comparison(directory):
               "Partner-task accuracy under the same attacks", spec["headers"], rows,
               spec["note"] + " Defense 2 uses the updated frozen release throughout; earlier versions are reported separately.",
               "llrrrrrrr" if role == 0 else "llrrrrrr")
+    main_rows = []
+    for target, partner in zip(tables["attacks"]["rows"], tables["partners"]["rows"], strict=True):
+        assert target[0] == partner[0].split("/")[0] and target[1] == partner[1]
+        main_rows.append([partner[0], target[1], target[2],
+                          f"{target[3]} / {partner[2]}", f"{target[4]} / {partner[3]}"])
+    write("paper_main", "Standalone and two-expert merging",
+          ["Target / partner", "Defense", "Standalone", "TA", "AGA + TA"], main_rows,
+          "Standalone accuracy refers to the target expert. Each merged cell gives target / partner accuracy. "
+          "TA uses coefficient 0.5. AGA processes the target before merging, with the same procedure for the "
+          "unprotected control. Defense 2 uses the frozen A/B release. All entries use complete test sets.", "llrrr")
     for row in distilled:
         if row[1] == "Defense 2":
             row[2], row[4] = [accuracy(one(updated["prodistill"]["rows"], target=row[0],
