@@ -1,5 +1,5 @@
 {
-  "status": "registered_not_started",
+  "status": "completed_fixed_fit_diagnosis",
   "protocol": {
     "registered_utc": "2026-11-05T08:27:11.638579+00:00",
     "output": "outputs/dtd_final_b_fit_20261105",
@@ -50,5 +50,130 @@
     "validation": "Verify image and checkpoint hashes, four archived MSEs per student, affine block replay, and independent NumPy orthogonality, span and Pythagorean checks on fixed output columns spaced by 97.",
     "scope": "Conditional lower bound on historical fitting inputs, not full recovery accuracy. No real images for defense construction, no candidate selection, no new defense or student checkpoint, no training or parameter updates. Teachers differ between the two published defenses.",
     "next_decision": "If the all-token fit substantially reduces the removed case error, treat optimizer or fit allocation as a candidate explanation of the budget-specific result. A large residual would isolate a limitation of the fixed design, not all allowed ProDistill parameters or all attacks."
-  }
+  },
+  "completed_utc": "2026-11-05T08:30:21.703826+00:00",
+  "source_commit": "a83e2d1d684d830f0452f5cc49ff724f8c51e7be",
+  "launch": {
+    "pid": 19561,
+    "output": "outputs/dtd_final_b_fit_20261105",
+    "utc": "2026-11-05T08:28:13.980624+00:00",
+    "source_commit": "a83e2d1d684d830f0452f5cc49ff724f8c51e7be",
+    "timeout_seconds": 600,
+    "host": "21516"
+  },
+  "result": {
+    "status": "completed_fixed_fit_diagnosis",
+    "cases": {
+      "Retained": {
+        "observed_MSE": {
+          "all_tokens": 0.0033543327921791025,
+          "DTD_CLS": 0.005767519101524897,
+          "MNIST_CLS": 0.0029117233170579096,
+          "DTD_patch": 0.005115588221088633,
+          "MNIST_patch": 0.0015528615095098846
+        },
+        "reconstructed_MSE": {
+          "all_tokens": 0.0033543327926319247,
+          "DTD_CLS": 0.005767519032325599,
+          "MNIST_CLS": 0.002911723415343094,
+          "DTD_patch": 0.005115588225108295,
+          "MNIST_patch": 0.0015528615058207618
+        },
+        "attainable_B_only_MSE": {
+          "all_tokens": 0.0008976845566116717,
+          "DTD_CLS": 0.00036494729283664606,
+          "MNIST_CLS": 0.0005906548169025755,
+          "DTD_patch": 0.0011886562199544609,
+          "MNIST_patch": 0.0006238509953808035
+        },
+        "design_shape": [
+          6400,
+          3073
+        ],
+        "cls_design_rows": 128,
+        "cls_design_rank": 128,
+        "fixed_scalar_coefficients": 0,
+        "continuous_B_only_bound_exact_for_coefficient_support": true,
+        "block_output_replay_max_error": 1.3715926976409776e-06,
+        "qr_min_to_max_diagonal": 0.010608918281924992,
+        "numpy_sampled_normal_residual": 4.8790226818784184e-17,
+        "numpy_sampled_span_max_error": 1.494637746901617e-13
+      },
+      "Removed": {
+        "observed_MSE": {
+          "all_tokens": 0.007559362627233416,
+          "DTD_CLS": 0.024398791507307206,
+          "MNIST_CLS": 0.01587315478763085,
+          "DTD_patch": 0.01111781012116657,
+          "MNIST_patch": 0.003487584091657991
+        },
+        "reconstructed_MSE": {
+          "all_tokens": 0.007559362630594944,
+          "DTD_CLS": 0.024398791399140703,
+          "MNIST_CLS": 0.015873154630092,
+          "DTD_patch": 0.011117810124503002,
+          "MNIST_patch": 0.0034875841006043787
+        },
+        "attainable_B_only_MSE": {
+          "all_tokens": 0.0008848716886052085,
+          "DTD_CLS": 0.0003937879302338457,
+          "MNIST_CLS": 0.0006236478935067158,
+          "DTD_patch": 0.0011091421870966186,
+          "MNIST_patch": 0.0006759544054907335
+        },
+        "design_shape": [
+          6400,
+          3073
+        ],
+        "cls_design_rows": 128,
+        "cls_design_rank": 128,
+        "fixed_scalar_coefficients": 0,
+        "continuous_B_only_bound_exact_for_coefficient_support": true,
+        "block_output_replay_max_error": 1.618086895360804e-06,
+        "qr_min_to_max_diagonal": 0.011545787440501384,
+        "numpy_sampled_normal_residual": 7.086320258320037e-17,
+        "numpy_sampled_span_max_error": 2.334799020786704e-13
+      }
+    },
+    "checkpoint_sha256": {
+      "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+      "DTD/finetuned.pt": "482e5636cdb4d521376211fdeda0417f73aafab9551d366690bba3e5c0ce0f38",
+      "head_DTD.pt": "19df72206780cac2d269a2847cbd81dceb3859c6f91a722c49427c42a0b829bf"
+    },
+    "image_tensor_sha256": "0c84e78605b437c6194b91982d702fb122ae1e9f2243f61c7b25dd8d32e4529b",
+    "seconds": 8.876826094463468,
+    "frozen_model_forwards": 448,
+    "new_model_checkpoints": 0,
+    "coefficient_training_steps": 0,
+    "defense_updates": 0,
+    "source_sha256": "bb28bc51f80aac869a79ed8614b4468dba6e7203bcc1601ceed638edb490e84f",
+    "relative_MSE_reduction": {
+      "Retained": {
+        "all_tokens": 0.7323805918408883,
+        "DTD_CLS": 0.93672369585388
+      },
+      "Removed": {
+        "all_tokens": 0.8829436114868516,
+        "DTD_CLS": 0.9838603510294389
+      }
+    }
+  },
+  "coefficient_kernel": {
+    "path": "external/ProDistill/Vision/merge_models.py",
+    "sha256": "c51c896ab8be332c0b885db0edccfc624dc695558942be23015a7f2fd86a4afd",
+    "paper": "https://arxiv.org/html/2502.12706",
+    "formula": "For each scalar w, w0 + sum of unrestricted coefficients times expert deltas. Each B or bias scalar has a nonzero delta in at least one expert for both cases."
+  },
+  "raw_archive": {
+    "hosts": [
+      "21516",
+      "55548"
+    ],
+    "files": 4,
+    "bytes": 15862,
+    "manifest": "outputs/dtd_final_b_fit_20261105_manifest.json",
+    "manifest_sha256": "5738b804789d318e9ad77d317900b1f0a2fb605726b2094f5f533db7623fa76f",
+    "all_sha256_equal": true
+  },
+  "decision": "Under the observed hidden designs, the large finite-run loss gap disappears at the conditional affine optima on the original fit set. This locates remaining fit headroom within the original continuous coefficient family, and does not identify Adam schedule as a sole cause or establish held-out accuracy."
 }
