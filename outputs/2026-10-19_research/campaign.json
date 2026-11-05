@@ -1,23 +1,20 @@
 {
-  "updated_utc": "2026-11-05T10:51:33.351108+00:00",
-  "status": "running_full_evaluation",
+  "updated_utc": "2026-11-05T11:02:59.852866+00:00",
+  "status": "evaluating_fixed_candidates",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "pid": 25731,
-      "output": "outputs/residual_margin_full_20261105",
-      "utc": "2026-11-05T10:50:59.909112+00:00",
-      "source_commit": "700b2b8b8efa6a6181afce55f3959256f0a61b01",
-      "timeout_seconds": 1200,
+      "pid": 26406,
+      "output": "outputs/residual_margin_prodistill_20261105",
+      "protocol": "results/data_free_compensation/residual_margin_prodistill.json",
       "host": "21516",
-      "status": "running_full_evaluation",
-      "protocol": "results/data_free_compensation/residual_margin_full.json"
+      "status": "launched"
     }
   ],
-  "next_action": "Finish and verify the fixed full MNIST/SVHN paired evaluation. Check standalone and both ordinary AGA scopes before interpreting the real B-reset comparison.",
+  "next_action": "Verify the matched ProDistill output and run the frozen public-base versus SVHN context diagnosis. The current margin fit is not promoted.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -773,15 +770,17 @@
     ]
   },
   "residual_margin_full": {
-    "record": "results/data_free_compensation/residual_margin_full.json",
-    "status": "running_full_evaluation",
-    "launch": {
-      "pid": 25731,
-      "output": "outputs/residual_margin_full_20261105",
-      "utc": "2026-11-05T10:50:59.909112+00:00",
-      "source_commit": "700b2b8b8efa6a6181afce55f3959256f0a61b01",
-      "timeout_seconds": 1200,
-      "host": "21516"
-    }
+    "status": "completed_full_paired_evaluation",
+    "raw_archive": {
+      "hosts": [
+        "21516",
+        "55548"
+      ],
+      "directory": "outputs/residual_margin_full_20261105",
+      "scores_sha256": "56f2358cce74ab6c910fe808c13b63472e9869cf353b20ad0a5b3a0f797e852e",
+      "result_sha256": "421b3a40567efd94743bcfac30e7380ce25dfab9a745266c047ab3b4200e9c62"
+    },
+    "finding": "Direct B reset suppressed MNIST from 99.36% to 9.77%; AGA then B reset still reaches 98.96%. Native 99.56% and partner trade-off retained.",
+    "record": "results/data_free_compensation/residual_margin_full.json"
   }
 }
