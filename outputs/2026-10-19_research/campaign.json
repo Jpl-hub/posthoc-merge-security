@@ -1,26 +1,12 @@
 {
-  "updated_utc": "2026-11-05T16:14:03.058033+00:00",
-  "status": "running_public_gain_fixed_evaluation",
+  "updated_utc": "2026-11-05T16:27:05.365447+00:00",
+  "status": "public_gain_closed_sign_recovery",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "21516",
-      "timeout_pid": 49351,
-      "source_commit": "489e5a8",
-      "construction": "results/data_free_compensation/readout_public_gain_20261106/construction.json",
-      "output": "outputs/readout_public_gain_20261106",
-      "log": "outputs/readout_public_gain_20261106/run.log",
-      "status": "running_fixed_evaluation",
-      "sha256": "57b219dd0243c8500faf485d64c517caa0dd82aadcce5aea5117af03a0155fd5",
-      "target": "MNIST",
-      "partner": "SVHN",
-      "real_construction_images": 0
-    }
-  ],
-  "next_action": "Finish the fixed ProDistill, TA/AGA and public B replacement tests before deciding whether the public gain rule advances.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Current public-gain and simple readout rescaling fail the sign-recovery check. To advance a method, demonstrate loss of discriminative features at the frozen recovery settings while preserving standalone predictions.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -882,15 +868,20 @@
   },
   "public_gain_followup": {
     "host": "21516",
-    "timeout_pid": 49351,
+    "timeout_pid": null,
     "source_commit": "489e5a8",
     "construction": "results/data_free_compensation/readout_public_gain_20261106/construction.json",
     "output": "outputs/readout_public_gain_20261106",
     "log": "outputs/readout_public_gain_20261106/run.log",
-    "status": "running_fixed_evaluation",
+    "status": "completed_closed",
     "sha256": "57b219dd0243c8500faf485d64c517caa0dd82aadcce5aea5117af03a0155fd5",
     "target": "MNIST",
     "partner": "SVHN",
-    "real_construction_images": 0
+    "real_construction_images": 0,
+    "result": "results/data_free_compensation/readout_public_gain_20261106/result.json",
+    "native_percent": 99.57,
+    "prodistill_percent": 0.0,
+    "prodistill_negated_percent": 99.31,
+    "sign_check": "results/comparison/readout_sign_recovery.json"
   }
 }
