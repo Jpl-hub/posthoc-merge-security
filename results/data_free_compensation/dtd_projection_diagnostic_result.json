@@ -489,5 +489,62 @@
       "path": "outputs/dtd_projection_review_20261105/classification_error.py",
       "sha256": "2ccee06ef3f01ac4efa2271198238c4ec860dbf9da072a7a6033fa2bea234968"
     }
+  },
+  "task_partition_protocol": {
+    "registered_utc": "2026-11-05T06:48:10.690980+00:00",
+    "output": "outputs/dtd_projection_review_20261105/task_partition",
+    "question": "Which part of the frozen A change produces a task-function change that the existing B compensates? Is the same pattern present in all three frozen controls, rather than explaining selective DTD recovery by parameter energy alone?",
+    "tasks": {
+      "MNIST": {
+        "point": {
+          "path": "outputs/finite_projection_ablation_20261103/MNIST/point/point.pt",
+          "sha256": "288cabb5edb25c7e736116d13892f75d5fb6b5021b7fe72dfbee9598d7d1008c"
+        },
+        "source": {
+          "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+          "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+        }
+      },
+      "SVHN": {
+        "point": {
+          "path": "outputs/finite_projection_ablation_20261103/SVHN/point/point.pt",
+          "sha256": "403fac19d0cd2e2cff88e382344eadacac9a4df688aff768dcea0856d72523ab"
+        },
+        "source": {
+          "path": "outputs/native_ellipse_classification_SVHN_20261026/source/source.pt",
+          "sha256": "b6c0aedbfbf45a3421d63deee926de0bccca5bec61b2ebbc94c4f53613aa8a4c"
+        }
+      },
+      "DTD": {
+        "point": {
+          "path": "outputs/finite_projection_ablation_20261103/DTD/point/point.pt",
+          "sha256": "f54a7c73c34582346e872aa3d16ebefaea34b003608dce888b731565a2b239e8"
+        },
+        "source": {
+          "path": "outputs/native_ellipse_classification_DTD_20261026/source/source.pt",
+          "sha256": "f503e4503bed1d65cb3c155662f3eb9552077b1de07aaf37e442439cbfc5d48c"
+        }
+      }
+    },
+    "rank": 32,
+    "partition": "For dA=Ap-A and task-SVD projectors Pu=UU^T,Pv=VV^T, complement=(I-Pu)dA(I-Pv), task=dA-complement. These are parameter-direction probes, not a certified functional task/nullspace split.",
+    "bias_rule": "The published center residual ap-a+dA*beta is assigned to the task component; complement preactivation is dA_complement*(x-beta). Their sum equals the actual frozen full preactivation change. No bias chosen from results.",
+    "conditions": "A original/task component/complement component/full, each with original or existing published B and output bias. Eight fixed cached-response conditions per task; no B refit or saved counterfactual checkpoint.",
+    "budget": {
+      "cached_synthetic_views": 5360,
+      "conditions_per_task": 8,
+      "new_network_image_forwards": 0,
+      "parameter_updates": 0,
+      "new_defense_releases": 0,
+      "new_AGA_calls": 0
+    },
+    "scope": "Existing synthetic native caches only. No real task/partner/test data or attack-support examples; no optimization, natural-task claim or replacement of any published point. Standard orthogonal projections and finite nonlinear decomposition are not a new defense.",
+    "validation": "Exact preactivation decomposition; original cached score check; independent NumPy complete LN/MLP/readout on fixed indices0,1,7,31,last for all conditions.",
+    "source_sha256": {
+      "outputs/dtd_projection_review_20261105/task_partition.py": "203b3cd0b3412490e45ca9e58b73e6b01e8636798d21b1f316f2c5cbc53e8f7f",
+      "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+      "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+      "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a"
+    }
   }
 }
