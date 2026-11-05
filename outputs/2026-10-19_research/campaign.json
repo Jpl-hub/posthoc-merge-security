@@ -1,12 +1,25 @@
 {
-  "updated_utc": "2026-11-05T12:03:57.673336+00:00",
-  "status": "completed_fixed_core_evaluation",
+  "updated_utc": "2026-11-05T15:09:56.734442+00:00",
+  "status": "running_fixed_method_followup",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Use the frozen ABReadout point as the main fixed defense result. Keep ProDistill as the explicit recovery limitation; do not start another tuning branch.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "timeout_pid": 35209,
+      "worker_shell_pid": 35210,
+      "log": "outputs/readout_channels_dtd_20261105/followup.log",
+      "source_commit": "dcd2a43",
+      "tasks": [
+        "same_rule_DTD_readout_native_TA_AGA_and_B_reset",
+        "Defense1_three_task_B_reset"
+      ],
+      "status": "running_serial_evaluation_and_replay"
+    }
+  ],
+  "next_action": "Finish the registered DTD readout and three-task Defense1 B+b replacement comparisons, verify complete scores, then report task-specific results. Do not claim SVHN-as-target readout validation or general public replacement resistance.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -789,12 +802,22 @@
     "svhn_AGA_B_reset_percent": 1.05,
     "real_construction_images": 0,
     "new_defense_updates": 0,
-    "maximum_replay_error": 1.9073486328125e-05
+    "maximum_replay_error": 1.9073486328125e-05,
+    "protected_target": "MNIST",
+    "evaluation_partner": "SVHN"
   },
   "residual_margin_prodistill": {
     "record": "results/data_free_compensation/residual_margin_prodistill.json",
     "status": "completed_partial_candidate",
     "mnist_full_percent": 99.19,
     "svhn_full_percent": 95.97034419176399
+  },
+  "fixed_followup": {
+    "protocols": [
+      "results/data_free_compensation/readout_channels_dtd_20261105/protocol.json",
+      "results/phase3/bias_weight_only/attacks/b_reset_protocol.json"
+    ],
+    "status": "running",
+    "note": "Readout transfer does not repair the existing DTD A/B standalone loss. B replacement differs from Defense1 known final-bias cleanup."
   }
 }

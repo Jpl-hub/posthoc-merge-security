@@ -18,16 +18,16 @@
   "compute": {
     "primary_GPU": "NVIDIA GeForce RTX 4090 D",
     "primary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "ssh_control_socket": "/tmp/posthoc_4090_21516_v2.sock",
+    "ssh_control_socket": "/tmp/posthoc_4090_current.sock",
     "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_dtd.sock",
     "secondary_role": "CPU archive and current-source backup; no GPU workloads",
-    "verified_utc": "2026-11-05T12:03:57.673336+00:00",
+    "verified_utc": "2026-11-05T15:09:56.734442+00:00",
     "primary_available_GiB": 14.79,
     "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
     "primary_endpoint": "connect.cqa1.seetacloud.com:21516",
@@ -39,7 +39,7 @@
       "socket": "/tmp/posthoc_4090_17897.sock",
       "role": "CPU evidence archive; joint/soft source models and all raw scores retained."
     },
-    "queued_jobs": 0
+    "queued_jobs": 4
   },
   "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
   "established_methods": {
@@ -110,6 +110,7 @@
     "report_entry": "experiment/report.py --defense-comparison",
     "core_sources": [
       "experiment/defense2.py",
+      "experiment/readout_channels.py",
       "_impl/defenses.py"
     ],
     "raw_evidence": "Retained servers;lightweight results and source references in Git",
@@ -143,12 +144,25 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-05T12:03:57.673336+00:00",
-  "status": "completed_fixed_core_evaluation",
+  "updated_utc": "2026-11-05T15:09:56.734442+00:00",
+  "status": "running_fixed_method_followup",
   "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Use the frozen ABReadout point as the main fixed defense result. Keep ProDistill as the explicit recovery limitation; do not start another tuning branch.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "timeout_pid": 35209,
+      "worker_shell_pid": 35210,
+      "log": "outputs/readout_channels_dtd_20261105/followup.log",
+      "source_commit": "dcd2a43",
+      "tasks": [
+        "same_rule_DTD_readout_native_TA_AGA_and_B_reset",
+        "Defense1_three_task_B_reset"
+      ],
+      "status": "running_serial_evaluation_and_replay"
+    }
+  ],
+  "next_action": "Finish the registered DTD readout and three-task Defense1 B+b replacement comparisons, verify complete scores, then report task-specific results. Do not claim SVHN-as-target readout validation or general public replacement resistance.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -467,12 +481,22 @@
     "svhn_AGA_B_reset_percent": 1.05,
     "real_construction_images": 0,
     "new_defense_updates": 0,
-    "maximum_replay_error": 1.9073486328125e-05
+    "maximum_replay_error": 1.9073486328125e-05,
+    "protected_target": "MNIST",
+    "evaluation_partner": "SVHN"
   },
   "residual_margin_prodistill": {
     "record": "results/data_free_compensation/residual_margin_prodistill.json",
     "status": "completed_partial_candidate",
     "mnist_full_percent": 99.19,
     "svhn_full_percent": 95.97034419176399
+  },
+  "fixed_followup": {
+    "protocols": [
+      "results/data_free_compensation/readout_channels_dtd_20261105/protocol.json",
+      "results/phase3/bias_weight_only/attacks/b_reset_protocol.json"
+    ],
+    "status": "running",
+    "note": "Readout transfer does not repair the existing DTD A/B standalone loss. B replacement differs from Defense1 known final-bias cleanup."
   }
 }

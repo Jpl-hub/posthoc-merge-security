@@ -2,7 +2,7 @@
 
 研究 CLIP ViT-B/32 专家的训练后参数保护：单独使用时保持任务能力，未经授权融合及 AGA 攻击后降低受保护任务准确率。专家不重新训练。
 
-当前主线为防御一和冻结的数值防御二。防御一由权重构造偏置噪声；防御二不使用真实构造图片：使用冻结专家、公开基座、任务 SVD 和固定分类头，研究任务功能保持与跨模块补偿。当前用于主结果的是已经冻结的 ABReadout 版本；早期 A/B 版本只作历史对照。生成输入只用于构造，真实图像只用于冻结后的评价。
+当前主线为防御一和数值防御二。防御一由权重构造偏置噪声；防御二使用冻结专家、公开基座、任务 SVD、固定分类头和合成输入，研究任务功能保持与跨模块补偿。三任务 A/B 版本与加入读出补偿的版本分别报告，不能混用两者的实验结果。真实图像只用于冻结后的评价。
 
 ## 从哪里看代码
 
@@ -10,14 +10,15 @@
 
 | 内容 | 文件 | 看什么 |
 |---|---|---|
-| **数值防御二** | [experiment/defense2.py](experiment/defense2.py) | A 的任务 SVD 约束、B 与偏置补偿；冻结主结果见 [ABReadout 评价](results/data_free_compensation/readout_b_reset_result.json) |
+| **数值防御二** | [experiment/defense2.py](experiment/defense2.py) | A 的任务 SVD 约束、B 与偏置补偿 |
+| 防御二读出补充 | [experiment/readout_channels.py](experiment/readout_channels.py) | 最终 LayerNorm 与投影的配套修改；[MNIST 固定结果](results/data_free_compensation/readout_channels/summary.md) |
 | 防御一 | [_impl/defenses.py](_impl/defenses.py) | `construct_bias`：视觉投影核空间中的偏置扰动 |
 | AGA 与公开恢复 | [_impl/attacks.py](_impl/attacks.py) | 作者 AGA 调用、公开模块替换和权重匹配 |
 | 融合 | [_impl/merge.py](_impl/merge.py) | TA、TIES、DARE |
 | 实验评价 | [experiment/main_table.py](experiment/main_table.py)、[_impl/evaluate.py](_impl/evaluate.py) | 固定发布、目标与伙伴评价 |
 | 最新对比结果 | [results/comparison](results/comparison) | 防御一、二与PaRaMS的攻击、伙伴和八专家结果；MD / TeX |
 
-防御二的构造入口仍由同一文件维护，固定输入及参数见 `configs/defense2_inputs.json`。当前主结果是已冻结的 ABReadout 发布参数，协议和分数见 [固定协议](results/data_free_compensation/readout_b_reset.json) 及 [完整结果](results/data_free_compensation/readout_b_reset_result.json)。已有发布直接用于评价，无需重新构造；早期有限分类版本仍保留作历史对照。
+防御二 A/B 的三任务固定配置见 `configs/defense2_inputs.json` 和[有限分类协议](results/data_free_compensation/finite_classification.json)。读出补偿使用独立入口的 `--protocol` 参数，构造规则不变。已完成的[公开 B 替换评价](results/data_free_compensation/readout_b_reset_result.json)保护 MNIST，SVHN 是融合伙伴，并非已经验证 SVHN 作为保护任务。该补充只检查末层 MLP 的 B 及偏置替换，不能概括成抵抗所有公开参数替换。已有发布直接用于评价，无需重新构造。
 
 互补视图、逐类均值两项试验已结束，未替换主方法，其分支已从活动入口移除。执行源码保留于 Git `a973133` 和两台服务器的原始结果，分别见 [视图对照](results/comparison/defense2_native_views.md) 与 [均值对照](results/comparison/defense2_native_means.md)。旧实验应检出其执行版本，不能用当前源码冒充复现。
 
