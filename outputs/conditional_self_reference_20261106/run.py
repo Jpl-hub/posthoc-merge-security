@@ -12,6 +12,7 @@ parser.add_argument('--source-result',help='Evaluate one already completed, sour
 args=parser.parse_args()
 path=Path(args.protocol)
 spec=json.loads(path.read_text());root=Path(spec['output']);py=sys.executable
+root.mkdir(parents=True,exist_ok=True)
 def read(p):return json.loads(Path(p).read_text())
 def run(*args):
     print('RUN',*args,flush=True)
