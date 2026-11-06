@@ -1,6 +1,6 @@
 {
   "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
-  "updated_utc": "2026-11-06T15:57:11.091404+00:00",
+  "updated_utc": "2026-11-06T16:29:55.458791+00:00",
   "status": "nbp_readout_analysis_verified_eight_extension_running",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
@@ -124,7 +124,7 @@
     "source_fingerprints_checked": 40,
     "source_fingerprint_mismatches": 0
   },
-  "next_action": "Finish the existing eight-expert batch, then its successful completion unlocks the fixed NBP component/amplitude controls. Summarize full verified results and update figures/tables. Remaining original three-direction dataset columns, EuroSAT split and compatible baselines remain explicit gaps.",
+  "next_action": "Complete the running four-direction eight-expert batch, then fixed component/amplitude controls, then only Cars/SUN397 columns for the original three directions. All GPU stages serial and each gated on the previous successful validation. Review compatible training-time baselines and finish full seven-dataset tables/figures; EuroSAT split remains unverified.",
   "historical_research": {
     "snapshot_commit": "58af9194172df6c0c8b97f999884993765da973b",
     "Defense2": "Development stopped. Do not restart closed candidates; retain frozen releases, scores and failure evidence.",
@@ -182,7 +182,19 @@
       "log": "outputs/nbp_eight_extension_20261106/job.log",
       "input_hashes_verified": 33,
       "new_defense_weights": 0,
-      "expert_training_updates": 0
+      "expert_training_updates": 0,
+      "partial_observation": {
+        "utc": "2026-11-06T16:29:55.458791+00:00",
+        "full_rows_observed": 86,
+        "expected_full_rows": 168,
+        "target_accuracy_percent": {
+          "SUN397_TA": 0.2518891687657431,
+          "SUN397_AGA_target_TA": 0.2518891687657431,
+          "Cars_TA": 0.5471956224350205,
+          "Cars_AGA_target_TA": 0.5471956224350205
+        },
+        "complete_batch_validated": false
+      }
     },
     "nbp_readout_analysis": {
       "host": "17897",
@@ -213,6 +225,36 @@
       "new_proposed_methods": 0,
       "new_AGA_calls": 0,
       "new_construction_images": 0
+    },
+    "nbp_eight_original_columns": {
+      "host": "17897",
+      "timeout_pid": 43538,
+      "status": "queued_after_successful_ablation",
+      "preregistration_commit": "997da94",
+      "protocol": "results/phase3/bias_weight_only/eight_expert/original_columns_protocol.json",
+      "log": "outputs/nbp_eight_original_columns_20261107/job.log",
+      "targets": [
+        "MNIST",
+        "SVHN",
+        "DTD"
+      ],
+      "new_evaluation_columns": [
+        "Cars",
+        "SUN397"
+      ],
+      "planned_rows_per_stage": 24,
+      "fixed_original_model_hashes": 12,
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0,
+      "new_expert_updates": 0,
+      "selective_input_transfer": {
+        "source_host": "21516",
+        "target_host": "17897",
+        "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+        "bytes": 453856254,
+        "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+        "verified_same_as_historical_reference": true
+      }
     }
   },
   "manuscript": {

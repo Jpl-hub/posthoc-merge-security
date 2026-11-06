@@ -797,3 +797,7 @@ EuroSAT再核TaskArithmetic作者Issue1与原eurosat.py：代码读取现成trai
 同日补充：从已经固定的七份偏置发布和真实融合参数计算最终层分类间隔下界，共42组读出。公开基座插值7/7通过；实际两专家和八专家各5/7通过。条件成立时，在实数运算中，无论之前的块如何变化，固定最终增益、偏置、投影与分类头都会预测同一类。该结论可解释AGA、固定B替换和固定ProDistill中保持这些参数不变的情形，不覆盖改变最终读出的清理。SUN397、Cars的实际合并下界为负，只能记为充分条件未成立；不能据此否定其低准确率实测。独立NumPy公式复算最大差1.339e-9，无新增图像或防御参数。记录与源见results/phase3/bias_weight_only/readout_analysis.json及experiment/analyze_bias.py。
 
 对照PaRaMS图3、MergeGuard表4—5和Trap²的尺度/成本实验后，后续补充收敛为方向、零空间约束、幅度及成本四个问题。固定MNIST六个新消融控制已在b905fd9预登记后构造，同范数随机零空间与普通随机方向、主方向相对幅度0.125/0.25/0.5/2，另复用主幅度1和无保护零幅度。全部控制评价，不择优替换主发布。GPU评价等当前八专家完整验证成功后串行执行，没有新增攻击或融合算法。
+
+11月7日继续核对基线工程：Trap²的[完整参数训练入口](https://github.com/ml-postech/Trap2/blob/main/training_scripts/8vision_training_full_trap2.py)123—169行，以训练前参数为锚点生成缩放副本，并最小化正常分类损失减去缩放后分类损失；33—38行按验证集保存参数。247—291行从公开HF CLIP初始化，不是对既有专家直接施加无数据变换。其[数据配置](https://github.com/ml-postech/Trap2/blob/main/configs/8vision_train_full.py)和[README](https://github.com/ml-postech/Trap2#dataset-preparation)对Cars、MNIST、SVHN、GTSRB使用固定索引从官方测试集另划验证集；本项目主结果使用完整原测试集。完整参数训练README示例显式lambda_reg=.005，脚本默认.01，后续复现需显式记录，不把两者混用。以上确认了可学习的机制和验证选择方式，尚未运行Trap²同条件训练，不把其论文分数填入本项目对比。
+
+同日读取[Merge-Lock作者仓库](https://github.com/hetailang/Merge-Lock)，仍只有README和Coming Soon说明；不宣称完成其官方代码复现。原三保护方向只补Cars/SUN397两列的24条记录已预登记997da94，并锁定原12份完整模型参数指纹。缺少的DTD原AGA缓存从21516按原SHA取回17897，没有重新求解AGA。

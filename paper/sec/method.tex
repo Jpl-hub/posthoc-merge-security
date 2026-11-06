@@ -49,6 +49,14 @@ If expert $e$ is protected, its bias perturbation enters with coefficient $\lamb
 \end{equation}
 The difference is independent of the input because the modification occurs after hidden-feature normalization. The identity $u^{\mathsf T}P_e=0$ does not imply $u^{\mathsf T}P_m=0$. This algebraic distinction motivates the construction; it does not guarantee damage for arbitrary partners or nonlinear fusion rules.
 
+For $n$ experts with the same coefficient $\lambda$, the exposure can also be written as
+\begin{equation}
+ \Delta t_m=\lambda\tau\left[(1-n\lambda)u^{\mathsf T}P_0
+ +\lambda\sum_{i\neq e}u^{\mathsf T}P_i\right].
+ \label{eq:partners}
+\end{equation}
+Thus the actual partner projections determine whether a direction chosen using the public base remains harmful. For two experts at $\lambda=0.5$, the base term cancels and the offset is $\tau u^{\mathsf T}P_{\mathrm{partner}}/4$. In particular, a partner projection with the same left nullspace produces no offset. This gives a concrete limit on partner-independent protection.
+
 \subsection{Choosing a direction without images}
 We use a public-base interpolation with fixed coefficient $\lambda=0.5$ to select a direction. This interpolation uses the protected expert and the public base, without a partner expert. Denote its final parameters by $\widetilde P,\widetilde\gamma,\widetilde b$. Let $W$ contain the fixed class vectors as rows and define the centered classifier $W_c=(I-\mathbf{1}\mathbf{1}^{\mathsf T}/C)W$.
 
