@@ -12,6 +12,7 @@
 | ProDistill | MNIST、SVHN、DTD；每任务64张训练图，逐层拟合，最终 LayerNorm 和投影固定 | 按最终实验范围补齐缺项 |
 | 其他防御基线 | 官方 PaRaMS 同条件结果 | 重新核对 MergeGuard、MergeLock 的公开实现与本项目兼容性 |
 | 其他融合方式 | 已有历史 TA、TIES、DARE 等结果 | 先核对防御发布和协议，只复用与当前主方法一致的结果 |
+| 机制分析 | 42组最终层参数的界；两专家、八专家各5/7个任务满足常数分类充分条件 | 六个已固定的方向、幅度控制等待当前八专家作业完成后评价 |
 
 七个保护任务的两专家结果，不等于七个保护方向的八专家结果。八个专家参与融合，也不等于八个数据集都已评价。EuroSAT 的原专家测试划分仍未核实，不列八任务平均数。
 
@@ -24,6 +25,7 @@
 | 八专家，三个保护方向、五个评价集 | [结果](../phase3/bias_weight_only/eight_expert/comparison.md) | [表格](../phase3/bias_weight_only/eight_expert/comparison.tex) |
 | 公开 B 替换 | [结果](defense1_B_replacement.md) | [表格](defense1_B_replacement.tex) |
 | 固定 ProDistill 同条件比较 | [结果](feature_distillation.md) | [表格](feature_distillation.tex) |
+| 新补 SUN397/MNIST 的 TIES、DARE+TA | [结果](../../paper/tables/fusion.md) | [表格](../../paper/tables/fusion.tex) |
 | 已知位置的最终偏置清理 | [结果](../phase3/bias_weight_only/attacks/projection.md) | [表格](../phase3/bias_weight_only/attacks/projection.tex) |
 | 输出校正 | [结果](../phase3/bias_weight_only/attacks/calibration.md) | [表格](../phase3/bias_weight_only/attacks/calibration.tex) |
 
@@ -38,6 +40,7 @@
 - 公开替换和蒸馏的原论文、处理位置和预算见 [攻击清单](../attack_generalization_20261028/attack_inventory.md)。ProDistill 本身是融合算法，本项目用其固定流程作恢复评价。
 - 表格布局参考 MergeBarrier，防御比较参考 PaRaMS、MergeGuard、MergeLock 等同类工作。不同架构、任务或权限下的论文数字不直接填入本项目表格。
 - 模型、原始分数、失败日志和执行源保留在服务器，轻量记录注明原路径和哈希。当前工程说明见 [engineering.md](../../docs/engineering.md)。
+- 当前文稿的表格、矢量机制图及数据图见 [paper](../../paper/README.md)。对近期原论文的实验形式与现有缺口的逐项对应也在该目录说明中。
 
 ## 历史对照
 

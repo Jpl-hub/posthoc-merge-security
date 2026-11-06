@@ -1,7 +1,7 @@
 {
   "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
-  "updated_utc": "2026-11-06T12:44:52.756563+00:00",
-  "status": "defense1_only_after_supervisor_discussion",
+  "updated_utc": "2026-11-06T15:57:11.091404+00:00",
+  "status": "nbp_readout_analysis_verified_eight_extension_running",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
     "date": "2026-11-06",
@@ -35,7 +35,8 @@
     "entry": "experiment.construct --method bias",
     "implementation": "_impl.defenses.construct_bias",
     "status": "current_only_method",
-    "prediction_preservation_scope": "The three original protected tasks. Additional Cars/SUN397 have small observed finite-precision changes."
+    "prediction_preservation_scope": "The three original protected tasks. Additional Cars/SUN397 have small observed finite-precision changes.",
+    "working_name": "Nullspace Bias Perturbation (NBP); novelty check in progress"
   },
   "evaluation_scope": {
     "architecture": "CLIP ViT-B/32",
@@ -80,12 +81,12 @@
     "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "queued_jobs": 0,
-    "primary_available_GiB": 28,
+    "primary_available_GiB": 24,
     "verified_utc": "2026-11-06T12:44:52.756563+00:00",
     "ssh_access": "Windows OpenSSH password authentication verified; no credentials stored.",
-    "primary_workspace_status": "Connected. RTX4090 idle, no active experiment process. Remote checkout8cba128, newer commits held in posthoc-paper-20261106 branch.",
+    "primary_workspace_status": "17897 is the active engineering/GPU host. SUN397 TIES/DARE batch verified; missing eight-expert directions running. Source Git readback is recorded in latest_github_sync_receipt.json.",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "secondary_role": "Historical CPU archive only; current GPU work is on17897.",
     "previous_primary": {
@@ -93,7 +94,7 @@
       "role": "GPU-less evidence archive; frozen raw outputs retained."
     }
   },
-  "active_GPU_jobs": 0,
+  "active_GPU_jobs": 1,
   "engineering": {
     "core_sources": [
       "experiment/construct.py",
@@ -109,7 +110,13 @@
     "results_index": "results/comparison/README.md",
     "unique_weights_scores_failures_deleted": 0,
     "state_history_commit": "58af9194172df6c0c8b97f999884993765da973b",
-    "cleanup_status": "Documentation and active-state scope simplified. Cache deletion rejected by automatic approval; no files deleted."
+    "cleanup_status": "Documentation and active-state scope simplified. Cache deletion rejected by automatic approval; no files deleted.",
+    "latest_retirement": {
+      "path": "experiment/task_loss.py",
+      "archive": "outputs/retained_17897_source/task_loss_8f5777328c15.py",
+      "sha256": "8f5777328c15a523f3ecfcc80177d92084eee584ed354f5a6436d038edf16c9d",
+      "exact_bytes_preserved": true
+    }
   },
   "latest_completed": {
     "defense1_additional_native": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
@@ -117,7 +124,7 @@
     "source_fingerprints_checked": 40,
     "source_fingerprint_mismatches": 0
   },
-  "next_action": "Confirm Defense1 experiment matrix from existing result fingerprints. Prioritize missing protected directions in eight-expert evaluation and compatible defense baselines; do not repeat completed pairs or introduce another Defense2 candidate.",
+  "next_action": "Finish the existing eight-expert batch, then its successful completion unlocks the fixed NBP component/amplitude controls. Summarize full verified results and update figures/tables. Remaining original three-direction dataset columns, EuroSAT split and compatible baselines remain explicit gaps.",
   "historical_research": {
     "snapshot_commit": "58af9194172df6c0c8b97f999884993765da973b",
     "Defense2": "Development stopped. Do not restart closed candidates; retain frozen releases, scores and failure evidence.",
@@ -130,5 +137,97 @@
     "status": "Current local/server changes pending verified GitHub upload."
   },
   "automatic_continuation": false,
-  "automation_status": "13-35 deleted; do not recreate."
+  "automation_status": "13-35 deleted; do not recreate.",
+  "research_jobs": {
+    "nbp_fusion": {
+      "host": "17897",
+      "protocol": "results/phase3/bias_weight_only/fusion_methods/protocol.json",
+      "preregistration_commit": "272ce93",
+      "log": "outputs/nbp_fusion_20261106/job.log",
+      "status": "completed_independently_verified",
+      "models": [
+        "Unprotected",
+        "PaRaMS_SUN397",
+        "Defense1_SUN397"
+      ],
+      "mergers": [
+        "TIES",
+        "DARE+TA"
+      ],
+      "scopes": [
+        "None",
+        "Protected expert"
+      ],
+      "source_updates": 0,
+      "new_defense_weights": 0,
+      "full_rows": 27,
+      "original_context_score_replays": 432,
+      "maximum_score_error": 0.0
+    },
+    "nbp_eight_extension": {
+      "host": "17897",
+      "pid": 17980,
+      "protocol": "results/phase3/bias_weight_only/eight_expert/extension_protocol.json",
+      "preregistration_commit": "8b000d0",
+      "status": "full_running_pilot_passed",
+      "targets": [
+        "SUN397",
+        "Cars",
+        "RESISC45",
+        "GTSRB"
+      ],
+      "evaluated_datasets": 7,
+      "participating_experts": 8,
+      "planned_full_rows": 168,
+      "log": "outputs/nbp_eight_extension_20261106/job.log",
+      "input_hashes_verified": 33,
+      "new_defense_weights": 0,
+      "expert_training_updates": 0
+    },
+    "nbp_readout_analysis": {
+      "host": "17897",
+      "status": "completed_independent_numpy_formula_check",
+      "source": "experiment/analyze_bias.py",
+      "result": "results/phase3/bias_weight_only/readout_analysis.json",
+      "readouts": 42,
+      "protected_proxy_certified": 7,
+      "protected_actual_two_expert_certified": 5,
+      "protected_actual_eight_expert_certified": 5,
+      "maximum_numpy_formula_difference": 1.3390035746851936e-09,
+      "new_images": 0,
+      "new_defense_weights": 0,
+      "claim_scope": "Sufficient constant-class condition in real arithmetic of stored FP32 final-layer tensors. Negative bound is inconclusive; not a guarantee for floating-point errors or changed final readouts."
+    },
+    "nbp_ablation": {
+      "host": "17897",
+      "timeout_pid": 37140,
+      "status": "six_controls_frozen_gpu_queue_waiting_for_eight_extension",
+      "preregistration_commit": "b905fd9",
+      "protocol": "results/phase3/bias_weight_only/ablation_protocol.json",
+      "freeze": "results/phase3/bias_weight_only/ablation_freeze.json",
+      "log": "outputs/nbp_ablation_20261106/job.log",
+      "target": "MNIST",
+      "main_publication_unchanged": true,
+      "planned_pilot_and_full_rows_each": 40,
+      "new_control_weights": 6,
+      "new_proposed_methods": 0,
+      "new_AGA_calls": 0,
+      "new_construction_images": 0
+    }
+  },
+  "manuscript": {
+    "root": "paper",
+    "main": "paper/main.tex",
+    "scope": "NBP only",
+    "stage": "first_draft_not_submission_ready",
+    "style": "Unmodified official CVPR2027 cvpr.sty and bibliography style. T1 font encoding for local Tectonic.",
+    "tables": "One two-column main table and three single-column tables generated from real results.",
+    "novelty": "Working name and specific-construction novelty remain provisional. PaRaMS,MergeGuard,Trap2 and NSmark were compared by mechanism. No first-ever claim.",
+    "LLM_statement": "Remind the user before final submission; wording to be agreed then.",
+    "overleaf_project": "Existing imported template, earlier source synchronized through browser UI. New fixed-readout section/figure is local; online synchronization has not yet been verified after the tool environment switched.",
+    "local_pdf": "paper/build/main.pdf",
+    "body_pages": 6,
+    "reference_pages": 1,
+    "figures": "One editable vector mechanism figure and one vector plot from the 42 fixed-readout analyses."
+  }
 }

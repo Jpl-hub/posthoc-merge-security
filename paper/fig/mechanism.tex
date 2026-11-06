@@ -1,0 +1,24 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[font=\footnotesize,>=Latex,
+ node distance=5mm,
+ box/.style={draw,rounded corners=1pt,align=center,minimum height=8mm,inner sep=3pt},
+ arr/.style={->,line width=.55pt}]
+\node[anchor=west] at (-.15,2.8) {\textbf{Standalone expert}};
+\node[box] (ln) at (.65,2.15) {Final LN\\$b_e+\tau u$};
+\node[box,right=9mm of ln] (proj) {$P_e$};
+\node[box,right=9mm of proj] (out) {Same\\embedding};
+\draw[arr] (ln)--(proj);
+\draw[arr] (proj)--(out);
+\node[below=2mm of proj,align=center] {$u^{\mathsf T}P_e=0$};
+\node[anchor=west] at (-.15,.8) {\textbf{Merged model}};
+\node[box] (mln) at (.65,.15) {Merged LN\\$b_m+\lambda_e\tau u$};
+\node[box,right=9mm of mln] (mproj) {$P_m$};
+\node[box,right=9mm of mproj] (mout) {Changed\\embedding};
+\draw[arr] (mln)--(mproj);
+\draw[arr] (mproj)--(mout);
+\node[below=2mm of mproj,align=center] {$\Delta t_m=\lambda_e\tau u^{\mathsf T}P_m$};
+\end{tikzpicture}
+\caption{The bias perturbation vanishes under the expert's own projection. Merging changes the projection and can expose a constant feature offset. The actual classification effect is measured for each fusion rule and partner. This is a structural illustration.}
+\label{fig:mechanism}
+\end{figure}

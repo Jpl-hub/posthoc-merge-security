@@ -782,3 +782,18 @@ EuroSAT再核TaskArithmetic作者Issue1与原eurosat.py：代码读取现成trai
 因此本轮不新增温度、原型损失或旋转优化器，也不重启上述已结束点。后续候选必须先说明如何改变现有块特征学习问题、为何还能保持原任务，再使用原合法构造输入检查；这是一项构造解释要求，不是另设数值验收阈值。本轮新增防御、训练、真实图像和GPU实验均为0。主实验已有结果与剩余方法问题分开记录。
 
 11月4日晚续查：DATA的SSRN原稿入口仍未取得正文；对准确题名的官方GitHub仓库搜索无返回，后续查询触发限流，未继续请求。类别感知论文仍只有出版社可读部分，不能写成“没有源码”，只能写“未核实”。另查到[Teacher Scrambling的NeurIPS2025 Lock-LLM工作坊原文](https://openreview.net/pdf?id=g9vFg3O8YY)：它明确假设教师权重不可再训练，表示蒸馏列为后续工作；不是已解决本项目可修改权重、块特征恢复的证据。上述补查没有产生新防御、训练或攻击入口。
+
+
+### 2026年11月6日：主线收敛与名称、机制核对
+
+按当日录音确认，后续集中完善原权重构造的末层偏置方法。文稿暂用 Nullspace Bias Perturbation（NBP，零空间偏置扰动），历史 Defense1 文件标识不改。精确名称检索未见同名直接条目，但检索未命中不构成全球不存在的证明；暂不使用“首次”或“无人做过”。
+
+重新逐段对照 PaRaMS 正式论文第4—5页及固定官方实现，其主体为 MLP 重排与注意力缩放，保持独立功能的目标相同，具体修改位置与公式不同。MergeGuard 正式论文第3—5页使用正则训练和掩码任务向量减法；Trap² 第3—4页优化名义与非名义尺度下的任务损失。当前方法只改最终 LayerNorm 偏置，在原视觉投影左核内构造向量，以公开基座插值的分类差和 LayerNorm 范数界计算方向、幅度。零空间投影、SVD和伪逆都是已有数学工具，不单列为原创。
+
+另查 NSmark 原论文及官方入口。其利用输出矩阵零空间的不变量进行水印嵌入与验证，属于相邻模型知识产权研究，需要引用并区分，不因任务不同就忽略。当前未找到相同的“最终归一化偏置处于自身视觉投影左核、融合改变投影后显现”这一具体发布构造。该结论仅覆盖本轮已核论文和公开检索，不作穷尽断言。
+
+来源：[PaRaMS正式论文](https://openaccess.thecvf.com/content/ICCV2025/papers/Junhao_Disrupting_Model_Merging_A_Parameter-Level_Defense_Without_Sacrificing_Accuracy_ICCV_2025_paper.pdf)、[MergeGuard正式论文](https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf)、[Trap²正式论文](https://proceedings.mlr.press/v306/jang26e.html)、[NSmark原文](https://arxiv.org/html/2410.13907v1)、[NSmark作者入口](https://github.com/dongdongzhaoUP/NSmark/blob/main/nsmark_watermarking.py)。
+
+同日补充：从已经固定的七份偏置发布和真实融合参数计算最终层分类间隔下界，共42组读出。公开基座插值7/7通过；实际两专家和八专家各5/7通过。条件成立时，在实数运算中，无论之前的块如何变化，固定最终增益、偏置、投影与分类头都会预测同一类。该结论可解释AGA、固定B替换和固定ProDistill中保持这些参数不变的情形，不覆盖改变最终读出的清理。SUN397、Cars的实际合并下界为负，只能记为充分条件未成立；不能据此否定其低准确率实测。独立NumPy公式复算最大差1.339e-9，无新增图像或防御参数。记录与源见results/phase3/bias_weight_only/readout_analysis.json及experiment/analyze_bias.py。
+
+对照PaRaMS图3、MergeGuard表4—5和Trap²的尺度/成本实验后，后续补充收敛为方向、零空间约束、幅度及成本四个问题。固定MNIST六个新消融控制已在b905fd9预登记后构造，同范数随机零空间与普通随机方向、主方向相对幅度0.125/0.25/0.5/2，另复用主幅度1和无保护零幅度。全部控制评价，不择优替换主发布。GPU评价等当前八专家完整验证成功后串行执行，没有新增攻击或融合算法。

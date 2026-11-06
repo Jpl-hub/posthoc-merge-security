@@ -1,0 +1,34 @@
+% CVPR 2027 review manuscript. Official cvpr.sty is kept unchanged.
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[review]{cvpr}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,multirow,graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+\def\confName{CVPR}
+\def\confYear{2027}
+\newcommand{\method}{NBP}
+\newcommand{\R}{\mathbb{R}}
+\newtheorem{proposition}{Proposition}
+\title{Nullspace Bias Perturbation for Post-hoc Model Merge Protection}
+\author{Anonymous authors}
+\begin{document}
+\maketitle
+\input{sec/abstract}
+\input{sec/introduction}
+\input{tables/main}
+\input{sec/related_work}
+\input{sec/method}
+\input{sec/experiments}
+\section{Conclusion}
+Nullspace Bias Perturbation modifies one final LayerNorm bias without training or construction images. The original projection removes the perturbation, whereas parameter merging can expose it. The evaluated merging and recovery procedures show substantial degradation of protected-task accuracy with little standalone loss. Recovery that directly changes the final readout remains a separate limitation.
+\clearpage
+% The required LLM Usage Statement will be finalized with the authors before submission.
+{\small
+\bibliographystyle{ieeenat_fullname}
+\bibliography{main}
+}
+\end{document}

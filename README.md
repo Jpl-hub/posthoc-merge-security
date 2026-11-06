@@ -1,6 +1,6 @@
 # Post-hoc model merge protection
 
-研究冻结 CLIP 专家的发布后处理。目标是保持独立任务能力，并降低未经授权融合得到的目标任务准确率。当前集中完善防御一。构造只读模型权重和固定分类头，不用真实图片或合成图片，不训练专家。
+研究冻结 CLIP 专家的发布后处理。目标是保持独立任务能力，并降低未经授权融合得到的目标任务准确率。当前方法暂称零空间偏置扰动（NBP），对应历史记录中的防御一。构造只读模型权重和固定分类头，不用真实图片或合成图片，不训练专家。
 
 防御一只在最终 LayerNorm 的偏置上加入扰动。扰动位于原视觉投影的左零空间，在原专家中被投影消去；融合后投影改变，扰动可能影响分类。方向和幅度由目标专家、公开基座及固定分类头计算。公开基座条件下的界与真实多专家融合结果分别报告。
 
@@ -15,6 +15,7 @@
 | 原作者 AGA、公开恢复和额外数据蒸馏 | [experiment/recover.py](experiment/recover.py) · [experiment/distill.py](experiment/distill.py) |
 | TA、TIES、DARE 融合 | [_impl/merge.py](_impl/merge.py) |
 | 论文表格生成 | [experiment/report.py](experiment/report.py) · [_impl/report.py](_impl/report.py) |
+| CVPR 英文初稿与当前文稿表格 | [paper/main.tex](paper/main.tex) · [paper/README.md](paper/README.md) · [paper/make_tables.py](paper/make_tables.py) |
 
 `_impl/` 放公共实现，`experiment/` 放入口，`configs/` 放固定输入，`results/` 放结果及来源，`notes/` 放推导和研究记录。服务器的 `outputs/` 保存模型、逐图分数及执行源码。历史研究可从[归档索引](results/engineering_refactor/snapshot.json)查回。
 

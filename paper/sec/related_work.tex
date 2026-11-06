@@ -1,0 +1,12 @@
+\section{Related Work}
+\paragraph{Model merging.}
+Task Arithmetic combines task vectors relative to a shared initialization~\cite{ilharco2023task}. TIES removes small updates and resolves sign conflicts~\cite{yadav2023ties}, while DARE applies randomized dropping and rescaling~\cite{yu2024dare}. ProDistill progressively fits element-wise merging coefficients using layer outputs~\cite{xu2025prodistill}. We distinguish these fusion rules from recovery operations applied before or after merging.
+
+\paragraph{Protection against merging.}
+PaRaMS uses MLP permutation and attention scaling~\cite{wei2025params}. MergeBarrier changes FFN computation and transforms attention parameters~\cite{li2025mergebarrier}. MergeGuard combines regularized training with task-vector perturbation~\cite{chen2026mergeguard}. Trap$^2$ trains updates to be accurate at their nominal scale and inaccurate at other scales~\cite{jang2026trap2}. Our construction instead changes a final normalization bias in the kernel of the expert's output projection. Its preservation argument does not require training or representative inputs.
+
+\paragraph{Alignment and recovery.}
+AGA estimates alignment to a public pretrained reference~\cite{guo2026aga}. Recovery need not reconstruct the original weights if it can recover the desired function. Public-module substitution and distillation therefore address different conditions from alignment alone. We identify the modified modules, data access, and optimization variables for each reported procedure. ProDistill remains a model-merging algorithm in this comparison; its fixed layer-wise fitting procedure is used as a recovery check.
+
+\paragraph{Nullspace invariance.}
+Adding a vector in a linear map's kernel leaves its output unchanged. This is a standard linear-algebra identity. Nullspaces have also been used for model watermark verification, including output-space invariants in NSmark~\cite{zhao2024nsmark}. Such a shared mathematical tool does not by itself establish a new protection mechanism. The distinction studied here is a frozen-parameter bias update that is invisible under the expert's own projection and becomes visible when that projection is merged. We make no claim to have introduced nullspace projection itself.
