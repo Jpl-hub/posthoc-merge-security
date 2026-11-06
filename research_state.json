@@ -1,6 +1,6 @@
 {
   "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
-  "updated_utc": "2026-11-06T17:15:02.087230+00:00",
+  "updated_utc": "2026-11-06T17:56:23.690006+00:00",
   "status": "nbp_readout_analysis_verified_eight_extension_running",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
@@ -36,7 +36,8 @@
     "implementation": "_impl.defenses.construct_bias",
     "status": "current_only_method",
     "prediction_preservation_scope": "The three original protected tasks. Additional Cars/SUN397 have small observed finite-precision changes.",
-    "working_name": "Nullspace Bias Perturbation (NBP); novelty check in progress"
+    "working_name": "Nullspace Bias Perturbation (NBP); novelty check in progress",
+    "revision_policy": "One current NBP method. Small changes may be considered when supported by source-weight analysis and matched complete evaluation; do not maintain competing main-method versions. The currently evaluated seven releases are unchanged."
   },
   "evaluation_scope": {
     "architecture": "CLIP ViT-B/32",
@@ -134,7 +135,7 @@
   "github_sync": {
     "receipt": "outputs/latest_github_sync_receipt.json",
     "last_verified_remote_commit": "296384b25bd3354602ccd32a909436d680e7c30c",
-    "status": "Current local/server changes pending verified GitHub upload."
+    "status": "GitHub HTTPS is reachable with the existing local system proxy; authenticated origin/main readback verified. Current push and final readback are pending."
   },
   "automatic_continuation": false,
   "automation_status": "13-35 deleted; do not recreate.",
@@ -272,7 +273,7 @@
     "local_pdf": "paper/build/main.pdf",
     "body_pages": 6,
     "reference_pages": 1,
-    "figures": "One editable vector mechanism figure and one vector plot from the 42 fixed-readout analyses."
+    "figures": "One editable vector method diagram with construction, standalone and merging panels; one vector plot from42 frozen readout analyses. Both rendered and checked locally."
   },
   "literature_review": {
     "updated_utc": "2026-11-06T17:10:28.681065+00:00",

@@ -1,24 +1,52 @@
 \begin{figure}[!t]
 \centering
-\begin{tikzpicture}[font=\footnotesize,>=Latex,
- node distance=5mm,
- box/.style={draw,rounded corners=1pt,align=center,minimum height=8mm,inner sep=3pt},
- arr/.style={->,line width=.55pt}]
-\node[anchor=west] at (-.15,2.8) {\textbf{Standalone expert}};
-\node[box] (ln) at (.65,2.15) {Final LN\\$b_e+\tau u$};
-\node[box,right=9mm of ln] (proj) {$P_e$};
-\node[box,right=9mm of proj] (out) {Same\\embedding};
+\begin{tikzpicture}[font=\fontsize{8}{9.5}\selectfont,>=Latex,
+ box/.style={draw=black!65,rounded corners=1.5pt,align=center,
+             minimum height=9mm,inner sep=3pt,line width=.45pt},
+ arr/.style={->,line width=.6pt},
+ note/.style={font=\fontsize{8}{9.5}\selectfont,align=center}]
+\definecolor{nbpblue}{HTML}{25639C}
+\definecolor{nbporange}{HTML}{B55524}
+
+\node[anchor=west,font=\bfseries\fontsize{8}{9.5}\selectfont]
+ at (0,6.4) {(a) Weight-only construction};
+\node[box,text width=2.05cm,fill=black!3] (weights) at (1.2,5.7)
+ {Frozen weights\\$P_e,\theta_0,W$};
+\node[box,text width=2.15cm] (construction) at (4.05,5.7)
+ {Direction $u$\\Magnitude $\tau$};
+\node[box,text width=1.8cm,draw=nbpblue,fill=nbpblue!7] (bias) at (6.95,5.7)
+ {Bias only\\$\delta b=\tau u$};
+\draw[arr] (weights)--(construction);
+\draw[arr] (construction)--(bias);
+\node[note,text width=8cm,text=black!75] at (4.05,4.8)
+ {No images or gradient updates};
+
+\node[anchor=west,font=\bfseries\fontsize{8}{9.5}\selectfont]
+ at (0,4.15) {(b) Standalone expert};
+\node[box,text width=2.05cm,draw=nbpblue,fill=nbpblue!7] (ln) at (1.2,3.5)
+ {Final LayerNorm\\$b_e+\delta b$};
+\node[box,text width=1.35cm] (proj) at (4.05,3.5)
+ {Projection\\$P_e$};
+\node[box,text width=1.8cm] (out) at (6.95,3.5)
+ {Unchanged\\embedding\\{\fontsize{7}{8}\selectfont(exact arithmetic)}};
 \draw[arr] (ln)--(proj);
 \draw[arr] (proj)--(out);
-\node[below=2mm of proj,align=center] {$u^{\mathsf T}P_e=0$};
-\node[anchor=west] at (-.15,.8) {\textbf{Merged model}};
-\node[box] (mln) at (.65,.15) {Merged LN\\$b_m+\lambda_e\tau u$};
-\node[box,right=9mm of mln] (mproj) {$P_m$};
-\node[box,right=9mm of mproj] (mout) {Changed\\embedding};
+\node[note,text=nbpblue] at (4.05,2.8)
+ {Added contribution: $\delta b^{\mathsf T}P_e=0$};
+
+\node[anchor=west,font=\bfseries\fontsize{8}{9.5}\selectfont]
+ at (0,2.1) {(c) Merged model};
+\node[box,text width=2.05cm,draw=nbpblue,fill=nbpblue!7] (mln) at (1.2,1.45)
+ {Final LayerNorm\\$b_m+\lambda_e\delta b$};
+\node[box,text width=1.35cm,draw=nbporange,fill=nbporange!7] (mproj) at (4.05,1.45)
+ {Projection\\$P_m$};
+\node[box,text width=1.8cm,draw=nbporange,fill=nbporange!7] (mout) at (6.95,1.45)
+ {Predictions\\may change};
 \draw[arr] (mln)--(mproj);
 \draw[arr] (mproj)--(mout);
-\node[below=2mm of mproj,align=center] {$\Delta t_m=\lambda_e\tau u^{\mathsf T}P_m$};
+\node[note,text=nbporange] at (4.05,.75)
+ {Added contribution: $\Delta t_m=\lambda_e\delta b^{\mathsf T}P_m$};
 \end{tikzpicture}
-\caption{The bias perturbation vanishes under the expert's own projection. Merging changes the projection and can expose a constant feature offset. The actual classification effect is measured for each fusion rule and partner. This is a structural illustration.}
+\caption{NBP construction and use. Only the final LayerNorm bias is modified. The added vector vanishes under the expert's own projection, while merging can expose a constant feature offset. Blue marks the bias update; orange marks the merged projection and its possible effect. Classification changes depend on the actual partner and fusion rule.}
 \label{fig:mechanism}
 \end{figure}

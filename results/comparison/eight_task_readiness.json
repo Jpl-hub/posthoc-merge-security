@@ -1,5 +1,5 @@
 {
-  "scope": "Read-only prerequisite inventory, not a completed eight-target experiment or a new hash audit.",
+  "scope": "Current NBP prerequisites and completed standalone/two-expert scope. Eight participating experts do not imply eight completed protected-task evaluations.",
   "rows": [
     {
       "task": "SUN397",
@@ -8,8 +8,7 @@
       "head_present": true,
       "head_bytes": 816103,
       "validated_test_size": 19850,
-      "defense2_source_registered": false,
-      "protected_task_in_current_main": false,
+      "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
       "defense1_standalone_change_pp": -0.010075566750629723,
@@ -23,8 +22,7 @@
       "head_present": true,
       "head_bytes": 403687,
       "validated_test_size": 8041,
-      "defense2_source_registered": false,
-      "protected_task_in_current_main": false,
+      "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
       "defense1_standalone_change_pp": -0.02487252829250093,
@@ -38,8 +36,7 @@
       "head_present": true,
       "head_bytes": 93735,
       "validated_test_size": 6300,
-      "defense2_source_registered": false,
-      "protected_task_in_current_main": false,
+      "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
       "defense1_standalone_change_pp": 0.0,
@@ -53,7 +50,6 @@
       "head_present": true,
       "head_bytes": 21927,
       "validated_test_size": null,
-      "defense2_source_registered": false,
       "protected_task_in_current_main": false,
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": false,
@@ -66,7 +62,6 @@
       "head_present": true,
       "head_bytes": 21927,
       "validated_test_size": 26032,
-      "defense2_source_registered": true,
       "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
@@ -79,8 +74,7 @@
       "head_present": true,
       "head_bytes": 89639,
       "validated_test_size": 12630,
-      "defense2_source_registered": false,
-      "protected_task_in_current_main": false,
+      "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
       "defense1_standalone_change_pp": 0.0,
@@ -94,7 +88,6 @@
       "head_present": true,
       "head_bytes": 21927,
       "validated_test_size": 10000,
-      "defense2_source_registered": true,
       "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
@@ -107,14 +100,13 @@
       "head_present": true,
       "head_bytes": 97831,
       "validated_test_size": 1880,
-      "defense2_source_registered": true,
       "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
       "defense1_pair_TA_AGA_evaluated": true
     }
   ],
-  "missing": "Five Defense2 task-specific construction sources and full protected-target evaluations;EuroSAT dataset and original split verification.",
+  "missing": "EuroSAT original test split remains unverified. The four-direction eight-expert extension and the original-three-direction Cars/SUN397 columns still require completed full-batch validation.",
   "defense1_native_extension": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
   "defense1_pair_extension": "results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json",
   "defense1_analytic_readout_check": {
@@ -128,6 +120,9 @@
     },
     "partner_cells_with_positive_bound": 5,
     "server_result": "outputs/bias_eight_remaining_20261106/eight_readout_bound.json",
-    "sha256": "dc437dddd6ce47438880beb60dae04ef08751a3988d2899bbf33cc7c739ca50e"
-  }
+    "sha256": "dc437dddd6ce47438880beb60dae04ef08751a3988d2899bbf33cc7c739ca50e",
+    "historical_scope": "Earlier five-direction weight-only analysis, retained for provenance; current seven-task analysis is in results/phase3/bias_weight_only/readout_analysis.json."
+  },
+  "original_EuroSAT_split_source": "https://github.com/mlfoundations/task_vectors/issues/1",
+  "EuroSAT_split_finding": "Author specifies random21600/2700/2700 folders without the original checkpoint-matched file list or seed. Previously downloaded third-party2700-image split is not sufficient provenance; do not relabel it as the original test set."
 }

@@ -44,4 +44,11 @@ For the five certified tasks, modifying only earlier blocks cannot restore class
 
 \subsection{Scope and limitations}
 \label{sec:limitations}
-The projection is unchanged in the released expert. A method-specific attacker can therefore project its published final bias onto the column space of the published projection. This preserves the expert's own embedding while removing the added kernel component. Our measured cleanup recovers the matching unprotected predictions. Output calibration and hard-label student training also recover accuracy in separate checks. These findings limit the protection claim to the stated procedures; low AGA, final-MLP-replacement, or fixed ProDistill accuracy is not a general white-box security guarantee.
+The projection is unchanged in the released expert. A method-specific attacker can therefore project its published final bias onto the column space of the published projection. For full-column-rank $P_e$, define $\Pi_e=P_e(P_e^{\mathsf T}P_e)^{-1}P_e^{\mathsf T}$. Since $\Pi_e u=0$ and $\Pi_e P_e=P_e$,
+\begin{equation}
+ \begin{aligned}
+ \Pi_e(b_e+\tau u)&=\Pi_e b_e,\\
+ (\Pi_e b_e)^{\mathsf T}P_e&=b_e^{\mathsf T}P_e.
+ \end{aligned}
+\end{equation}
+Thus cleanup preserves the expert's embedding and removes the added component for any magnitude or direction within the stated kernel. Changing only those choices cannot eliminate this recovery route. Our measured cleanup recovers the matching unprotected predictions. Output calibration and hard-label student training also recover accuracy in separate checks. These findings limit the protection claim to the stated procedures; low AGA, final-MLP-replacement, or fixed ProDistill accuracy is not a general white-box security guarantee.
