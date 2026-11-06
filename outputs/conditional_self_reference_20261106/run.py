@@ -1,11 +1,14 @@
 """One source-gated MNIST reference-context control, with fixed evaluation."""
 import json
+import argparse
 import subprocess
 import sys
 from pathlib import Path
 from _impl.io import digest,save_json
 
-path=Path('results/data_free_compensation/conditional_compensation/self_reference_protocol.json')
+parser=argparse.ArgumentParser()
+parser.add_argument('--protocol',default='results/data_free_compensation/conditional_compensation/self_reference_protocol.json')
+path=Path(parser.parse_args().protocol)
 spec=json.loads(path.read_text());root=Path(spec['output']);py=sys.executable
 def read(p):return json.loads(Path(p).read_text())
 def run(*args):
@@ -33,6 +36,35 @@ run('-m','experiment.recover','--target','MNIST','--method','aga','--aligned-ref
     '--protocol',rp,'--publication',ref['path'],'--sha256',ref['sha256'],'--output',root/'MNIST/AGA')
 a=root/'MNIST/AGA/edits.pt'
 entry=dict(target='MNIST',release=ref,AGA_edits=dict(path=str(a),sha256=digest(a)))
+# Check the actual attack on the original synthetic views before any real data.
+import torch
+import torch.nn.functional as F
+from _impl.models import checked_models,apply
+from _impl.merge import merge
+source_spec=read('configs/defense2_inputs.json')['MNIST']
+raw=torch.load(Path(source_spec['root'])/'source/source.pt',map_location='cpu',weights_only=False)
+base,expert,head,_=checked_models('MNIST')
+clean_aligned=apply(expert,source_spec['clean_AGA'],full=True)
+attacked=apply(clean_aligned,entry['AGA_edits'])
+model=merge(base,attacked,base,.5).cuda().eval();head.cuda()
+scores=[];norm=expert.val_preprocess.transforms[-1]
+with torch.no_grad():
+    for pixels in raw['final'].split(8):
+        x=F.interpolate(pixels,(224,224),mode='bilinear',align_corners=False)
+        x=torch.cat([torch.roll(x,s,(2,3)) for s in [(0,0),(7,0),(-7,0),(0,7),(0,-7)]])
+        x=(x-x.new_tensor(norm.mean)[None,:,None,None])/x.new_tensor(norm.std)[None,:,None,None]
+        scores.append(head(model(x.cuda())).cpu())
+logits=torch.cat(scores);labels=raw['cache']['native']['scores'].argmax(1)
+actual_matches=int(logits.argmax(1).eq(labels).sum())
+expected_matches=s['source_counts']['recovered/TA/raw']
+torch.save(dict(logits=logits,teacher_class=labels),root/'actual_AGA_source_scores.pt')
+save_json(root/'actual_AGA_source_check.json',dict(actual_matches=actual_matches,construction_matches=expected_matches,n=len(labels),
+    raw_sha256=digest(root/'actual_AGA_source_scores.pt'),passed=actual_matches==expected_matches))
+del model,head,base,expert,attacked,clean_aligned,raw,scores
+torch.cuda.empty_cache()
+if actual_matches!=expected_matches:
+    status('stopped_actual_AGA_source_mismatch',actual=actual_matches,expected=expected_matches)
+    sys.exit(2)
 for mode in ['evaluation','b_reset']:
     cfg=pin(read(previous/(mode+'.json')))
     cfg.update(output=str(root/mode),defenses={'Conditional':entry},
