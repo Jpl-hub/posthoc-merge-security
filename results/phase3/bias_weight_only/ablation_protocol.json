@@ -1,0 +1,38 @@
+{
+  "status": "fixed_before_execution",
+  "target": "MNIST",
+  "output": "outputs/nbp_ablation_20261106",
+  "publication": {
+    "path": "outputs/bias_weight_only_20261025/point.pt",
+    "sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0"
+  },
+  "relative_amplitudes": [
+    0.125,
+    0.25,
+    0.5,
+    2.0
+  ],
+  "random_seed": 20261106,
+  "svd_tolerance": 1e-10,
+  "evaluation_template": "results/phase3/bias_weight_only/eight_expert/extension_evaluation.json",
+  "original_evaluation": "results/phase3/bias_weight_only/evaluation_protocol.json",
+  "cached_scores": {
+    "path": "outputs/nbp_readout_analysis_20261106/previous_mnist_scores.pt",
+    "sha256": "36ba1cc41f144841d3d5f4cb987f4d6dedd8ccde208ed02a7bb039e633e96b83"
+  },
+  "source_sha256": {
+    "experiment/bias_ablation.py": "655ced8b44f68964751e55b9add82b96e3563f3439b729619de1d68b9fc11953"
+  },
+  "input_sha256": {
+    "results/phase3/bias_weight_only/eight_expert/extension_evaluation.json": "8fd6e9ac9c51158e80b6607fc764ef7f4082e402f9a0f8f9ac13bf93a17ef0de",
+    "results/phase3/bias_weight_only/evaluation_protocol.json": "2bc86f7382ff5c17ddb1f36d98ef65007381bb2df07f0584a279b030fa8e79d6"
+  },
+  "scope": "Six diagnostic controls, not new proposed defenses. Main NBP and unprotected cells reuse matching recorded scores with original-context replay. Native MNIST plus TA0.5 target/partner and AGA-target-only. Every fixed control is evaluated even if standalone utility fails. No coefficient, seed, direction, data or point selection from results.",
+  "questions": [
+    "Same-norm random ambient bias isolates the projection-kernel constraint.",
+    "Same-norm random kernel bias isolates class-directed direction selection.",
+    "Relative amplitude .125,.25,.5,1,2 to the published NBP; zero uses the unprotected model."
+  ],
+  "construction_access": "Frozen target and public classifier/weights only; no images or partner-driven selection.",
+  "queue": "CPU construction now. GPU evaluation follows successful completion of the existing eight-expert full batch; no concurrent GPU experiment."
+}
