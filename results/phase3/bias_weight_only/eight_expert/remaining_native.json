@@ -1,0 +1,181 @@
+{
+  "experiment": "Standalone retention of four remaining available Defense1 targets",
+  "output": "outputs/bias_eight_remaining_20261106/native",
+  "tasks": {
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "SUN397": {
+      "classes": 397,
+      "test_n": 19850
+    },
+    "Cars": {
+      "classes": 196,
+      "test_n": 8041
+    },
+    "RESISC45": {
+      "classes": 45,
+      "test_n": 6300
+    },
+    "GTSRB": {
+      "classes": 43,
+      "test_n": 12630
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [],
+  "TIES": {
+    "repository": "https://github.com/prateeky2806/ties-merging",
+    "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+    "path": "external/ties-merging/src/utils/merge_utils.py",
+    "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+    "topk_percent": 20,
+    "coefficient": 1,
+    "resolve_method": "mass",
+    "merge_func": "dis-mean",
+    "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+  },
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "task_budget": 0.5,
+  "utility_seed": null,
+  "utility_n": null,
+  "probe_rank": 32,
+  "test_status": "Complete historically exposed officialMNIST/SVHN benchmarks;not blind;no selection or parameter feedback",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": "Zero real/synthetic construction images. Same projection-kernel noise direction and fixedseed20261014; amplitude from the LayerNorm norm bound with fixed multiplier2. No optimizer or classifier input calibration.",
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "Defense1_SUN397": {
+      "target": "SUN397",
+      "release": {
+        "path": "outputs/bias_eight_remaining_20261106/SUN397/release.pt",
+        "sha256": "aa3a15353c57c12bcd75b67a4a89152d05f8b25b790f21728a0dd1184d826221"
+      }
+    },
+    "Defense1_Cars": {
+      "target": "Cars",
+      "release": {
+        "path": "outputs/bias_eight_remaining_20261106/Cars/release.pt",
+        "sha256": "d0f4674618e63030163caf8ffe23cd1211c6848595ef68eb16c164717ce92562"
+      }
+    },
+    "Defense1_RESISC45": {
+      "target": "RESISC45",
+      "release": {
+        "path": "outputs/bias_eight_remaining_20261106/RESISC45/release.pt",
+        "sha256": "e67da0adec8556457d756d5859be9f23c03287fb470ebddfde5c948eea7d0384"
+      }
+    },
+    "Defense1_GTSRB": {
+      "target": "GTSRB",
+      "release": {
+        "path": "outputs/bias_eight_remaining_20261106/GTSRB/release.pt",
+        "sha256": "fb06115a79974b07c2329f408741f566dcd07d2309e05f48b0070f1e90648cc8"
+      }
+    }
+  },
+  "cases": [
+    {
+      "target": "SUN397",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense1_SUN397"
+      ]
+    },
+    {
+      "target": "Cars",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense1_Cars"
+      ]
+    },
+    {
+      "target": "RESISC45",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense1_RESISC45"
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "partner": "MNIST",
+      "defenses": [
+        "Defense1_GTSRB"
+      ]
+    }
+  ],
+  "legacy": {},
+  "source_sha256": {
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/evaluate.py": "27fe1983128391cd9dd4dcfcb19a3b18570dbd8d5204f27049877c0dbdcab579",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/report.py": "b4af7d3bce4277785e377413b0f0801b1aa769218a5d54d9ddeae9cc70aca02d",
+    "_impl/subspace.py": "9506e8cd68ec9d9fbe9de2940dcd5ffb1fd9040e913ce80cbe5652afde62370c",
+    "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/__init__.py": "8a8a15dbf8460a54d226190ca572f7a2289f74aa2fb02f8dd48e2472448a6769",
+    "experiment/construct.py": "874b038ee46f9560550f87ac5a5f50c27e523f863a7b3a060ae0a64bc35a4cba",
+    "experiment/eight_task.py": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "experiment/native.py": "03961334d30f3c477e9e5a3c731137bb42e7b4a6413d47ea16372e43ec3967f1",
+    "experiment/recover.py": "a6770bb3f99fc9a05e69ae8e2c3df48480be9370878e04d73096234a9d57641f",
+    "experiment/report.py": "0ac5a0c4e0b511cd3b0edc9512cbdeb0f3e606cc6daf760178cdd5cd30bff8d8",
+    "results/phase3/bias_weight_only/protocol.json": "912e9f0506bc0171fc004975c9c1162c54c1e864777b7cdfbab5ef6d0694251d"
+  },
+  "original_batch_context_replays": true,
+  "parameter_budget_scope": "Noise amplitude from weights only, no fitted norm cap; standalone strictR0.00233007 and0prediction changes. Not a D0.5 numerical-method comparison.",
+  "native_evaluation": "Complete nativealreadyfinished,source/pointfixedbeforethat measurement. Reuse exact nativebefore/after arrays and originalAGApartner/baselines bySHA;do not repeatnative.",
+  "frozen_point_before_images": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0",
+  "AGA_transport": "Only final LN bias differs. Official fb61429 attention wrapper reads/writes attention parameters only, MLP wrapper reads/writes MLP A/a/B only; original matching inputs are unchanged. Thus original-AGA release equals clean original-AGA plus the same final bias. Verify byte equality of clean expert/cleanAGA final bias before reuse;0newAGA calls.",
+  "config_failure": {
+    "original_protocol_sha256": "3f3a87fe5193d44e1f0696baf555a744bbe009ba99b24487cc3b40737cf5325f",
+    "reason": "Inherited references to a retired constructor and unrelated descriptive fields. Entry stopped in check_files before model evaluation; scientific choices unchanged.",
+    "evaluated_images": 0,
+    "archive": "outputs/bias_weight_only_20261025/evaluation_config_failure"
+  },
+  "attack_scopes": [
+    "None"
+  ],
+  "scope": "Complete standalone only; no fusion or recovery in this batch. Four already frozen weight-only releases, matched original experts. EuroSAT publication exists but dataset/original split missing, so not evaluated. All prior three standalone results reused.",
+  "registered_utc": "2026-11-06T06:53:23.602556+00:00",
+  "queue_budget": {
+    "after_timeout_pid": 66418,
+    "require_stage": "completed_no_automatic_expansion",
+    "deadline_utc": "2026-11-06T08:26:20+00:00",
+    "maximum_gpu_seconds": 600,
+    "start_only_if_seconds_remaining_at_least": 600,
+    "new_models": 0,
+    "new_defense_updates": 0
+  }
+}
