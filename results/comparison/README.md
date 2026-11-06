@@ -2,7 +2,7 @@
 
 截至 2026 年 11 月 6 日，**已选主实验和两项代表性恢复均有完整结果，两种防御的结论还未全部成立。** 当前主表使用防御一的权重偏置版和 11 月 2 日冻结的防御二 A/B 版。加入读出补偿的三任务结果是独立对照。公开增益抵消版已经关闭，结果留在失败记录。
 
-11 月 6 日两次 A/B 探索均保留了独立准确率和 AGA 下的保护，公开替换和 ProDistill 仍恢复至 99% 以上。 [输入覆盖试验](../data_free_compensation/task_inputs_defense_summary.md) · [双恢复条件试验](../data_free_compensation/recovery_conditions_summary.md)
+11 月 6 日最新 A/B 试验的 MNIST 独立准确率为 99.55%，AGA 仅处理目标后为 1.36%。公开替换 B 和 ProDistill 分别恢复到 99.28% 和 99.38%。该试验未进入主表。 [完整核验结果](../data_free_compensation/recovery_inputs_result.json)
 
 ## 论文主表与边界
 

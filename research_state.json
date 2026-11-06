@@ -151,24 +151,20 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-06T06:53:23.602556+00:00",
-  "status": "recovery_input_and_task_constraint_correction_running",
+  "updated_utc": "2026-11-06T07:36:05.769624+00:00",
+  "status": "recovery_input_correction_closed_defense1_standalone_running",
   "active_focus": "One A/B functional compensation experiment addressing both public B replacement and coefficient recovery.",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
       "host": "21516",
-      "timeout_pid": 66418,
+      "timeout_pid": 69875,
       "status": "running",
-      "stage": "A_B_construction",
-      "protocol": "results/data_free_compensation/recovery_inputs_protocol.json",
-      "output": "outputs/recovery_compensation_20261106",
-      "log": "outputs/recovery_compensation_20261106/job.log",
-      "source_commit": "6c1b6527d7cb8e4d04505424d874eb6fd28f7370",
-      "automatic_expansion": false
+      "output": "outputs/bias_eight_remaining_20261106/native",
+      "protocol": "results/phase3/bias_weight_only/eight_expert/remaining_native.json"
     }
   ],
-  "next_action": "Finish the one fixed corrected A/B point and full existing evaluation within the current two-hour window. In parallel, CPU-prepare missing five unchanged-formula Defense1 publications; no new defense design or candidate sweep.",
+  "next_action": "Complete and verify the four remaining available Defense1 standalone tests within the fixed priority window. Canonical Defense2 still needs a mechanism that resists the fixed public replacement and real-image coefficient recovery. EuroSAT original split and the full protected-task extension remain pending.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -794,21 +790,37 @@
   },
   "recovery_inputs": {
     "host": "21516",
-    "timeout_pid": 66418,
-    "status": "running",
-    "stage": "A_B_construction",
+    "timeout_pid": null,
+    "status": "completed_not_promoted_recovery_unsolved",
+    "stage": "completed",
     "protocol": "results/data_free_compensation/recovery_inputs_protocol.json",
     "output": "outputs/recovery_compensation_20261106",
     "log": "outputs/recovery_compensation_20261106/job.log",
     "source_commit": "6c1b6527d7cb8e4d04505424d874eb6fd28f7370",
-    "automatic_expansion": false
+    "automatic_expansion": false,
+    "record": "results/data_free_compensation/recovery_inputs_result.json",
+    "full_rows": 32,
+    "original_batch_replays": 576,
+    "publication": {
+      "path": "outputs/recovery_compensation_20261106/fit/JointRecovery/point.pt",
+      "sha256": "b0c5e2f429a4bb5e004f6482ac050f26addcd06cba5033bc80cd7ac04c3285e0"
+    },
+    "MNIST": {
+      "native": 99.55,
+      "TA": 25.22,
+      "AGA_target": 1.36,
+      "AGA_both": 0.92,
+      "B_after_AGA": 99.28,
+      "ProDistill": 99.38
+    }
   },
   "defense1_remaining_targets": {
     "protocol": "results/phase3/bias_weight_only/eight_expert/remaining_targets.json",
-    "status": "five_publications_frozen_evaluation_pending",
+    "status": "standalone_queue_running",
     "record": "results/phase3/bias_weight_only/eight_expert/remaining_construction.json",
     "native_protocol": "results/phase3/bias_weight_only/eight_expert/remaining_native.json",
     "new_releases": 5,
-    "new_image_forwards": 0
+    "new_image_forwards": 0,
+    "timeout_pid": 69875
   }
 }
