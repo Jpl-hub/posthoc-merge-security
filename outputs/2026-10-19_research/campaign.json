@@ -1,12 +1,24 @@
 {
-  "updated_utc": "2026-11-06T04:34:49.143094+00:00",
-  "status": "task_inputs_complete_fixed_AB_run_prepared",
+  "updated_utc": "2026-11-06T04:35:44.797134+00:00",
+  "status": "task_inputs_fixed_AB_job_running",
   "active_focus": "One fixed A/B run with discriminative synthetic inputs; current main release unchanged.",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Launch the registered one-point A/B job on21516; all final native, AGA, B replacement and ProDistill results must be reported. No parameter sweep or automatic expansion.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "timeout_pid": 55868,
+      "status": "running",
+      "stage": "synthetic_recovery_prefix",
+      "output": "outputs/task_inputs_20261106",
+      "log": "outputs/task_inputs_20261106/job.log",
+      "source_commit": "f03788ef5",
+      "protocol": "results/data_free_compensation/task_inputs_defense_protocol.json",
+      "automatic_expansion": false
+    }
+  ],
+  "next_action": "Let the fixed one-point job finish. Recheck actual process/status and retrieve complete results on the next user check; no automation, no parameter search, no new task.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -1004,12 +1016,11 @@
   },
   "finite_compensation": {
     "record": "results/data_free_compensation/compensation_result.json",
-    "defense_updates": 0,
-    "new_models": 0,
+    "defense_updates": 5,
+    "new_models": 1,
     "gradient_check_passed": false,
     "independent_AD_relative_error": 4.1294427576530534e-15,
     "independent_AD_check_passed": true,
-    "accepted_steps_at_last_check": 1,
     "new_frozen_models": 1,
     "accepted_steps": 5,
     "publication_sha256": "2f67269d8fdf50046a33662f23a26929e707d71d28bf8a9cffd59da589dd17cd",
@@ -1038,7 +1049,14 @@
     "real_images": 0
   },
   "task_inputs_defense": {
+    "host": "21516",
+    "timeout_pid": 55868,
+    "status": "running",
+    "stage": "synthetic_recovery_prefix",
+    "output": "outputs/task_inputs_20261106",
+    "log": "outputs/task_inputs_20261106/job.log",
+    "source_commit": "f03788ef5",
     "protocol": "results/data_free_compensation/task_inputs_defense_protocol.json",
-    "status": "prepared_not_started"
+    "automatic_expansion": false
   }
 }
