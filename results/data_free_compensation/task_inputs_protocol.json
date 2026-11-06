@@ -1,0 +1,42 @@
+{
+  "output": "outputs/task_inputs_20261106/source",
+  "registered_utc": "2026-11-06T04:16:58.456312+00:00",
+  "initial_source": {
+    "path": "outputs/native_ellipse_classification_20261026/source/source.pt",
+    "sha256": "33670dd56845f33a21193c2afd95e7161d6db4bccf2a4a7665cf32153a5b2db5"
+  },
+  "competition": 0.2,
+  "source": {
+    "views": [
+      [
+        0,
+        0
+      ],
+      [
+        7,
+        0
+      ],
+      [
+        -7,
+        0
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        -7
+      ]
+    ]
+  },
+  "generator_sha256": "9f4457725a01e8d63c03c323b16c33c277560c8efe54c77ad9f7bb2f71d4b1b1",
+  "scope": "Input preparation only. Same160 initial noise tensors,128 pixel steps,batch8,Adam.05,32px and5views,three clean CE references. Add only the official AdaptiveDeepInversion competition expression against the frozen public base; T3 and coefficient.2 from the author. No protected model,partner,real images,new classifier or defense updates. All160 images retained; no seed/weight/step search. No automatic new defense release.",
+  "evidence": "Existing synthetic public/expert agreement716/800,775/800,3604/3760; completed natural-test agreement4816/10000,8274/26032,873/1880. These indicate source coverage differences, not a proof of future defense gain.",
+  "author_sources": {
+    "code": "https://raw.githubusercontent.com/NVlabs/DeepInversion/master/deepinversion.py",
+    "readme": "https://raw.githubusercontent.com/NVlabs/DeepInversion/master/README.md",
+    "paper": "https://arxiv.org/abs/1912.08795"
+  },
+  "adaptation": "This reuses the official competition formula, including independent clamps and KL orientation. It is not the complete DeepInversion ImageNet implementation: CLIP has no BatchNorm moments, and the existing input schedule and clean reference models are retained. Generator pixels alone are optimized. Standard inversion is not a defense innovation."
+}
