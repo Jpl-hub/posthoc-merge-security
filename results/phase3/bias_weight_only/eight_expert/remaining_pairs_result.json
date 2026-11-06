@@ -3,9 +3,10 @@
   "planned": [
     "RESISC45",
     "Cars",
-    "GTSRB"
+    "GTSRB",
+    "SUN397"
   ],
-  "completed_tasks": 3,
+  "completed_tasks": 4,
   "eight_expert_scope": false,
   "records": [
     {
@@ -670,6 +671,230 @@
           "paired_accuracy_delta_95ci_pp": [
             -64.31761020773655,
             -62.42238979226345
+          ]
+        }
+      ]
+    },
+    {
+      "target": "SUN397",
+      "partner": "MNIST",
+      "protocol": {
+        "path": "outputs/bias_eight_remaining_20261106/pair_comparison_sun397/same_gpu_protocol.json",
+        "sha256": "f488ad674a5233977e8a2efa9709b404f4e2b25e46b316a097538e39beba2e57"
+      },
+      "run": {
+        "path": "/root/autodl-tmp/posthoc-merge-security/outputs/bias_eight_remaining_20261106/resume_sun397_same_gpu.py",
+        "sha256": "a3224273f3114df36f4e609ad44cc2cab867804d9bfd7896a6c8e003f348e23a"
+      },
+      "raw_scores": {
+        "path": "outputs/bias_eight_remaining_20261106/pair_comparison_sun397/same_gpu/full/00_SUN397_MNIST/artifacts/predictions.pt",
+        "sha256": "740c024b7a8c726bb9d454839bc963d29172f665a964b3d426a3fafac7624f8e"
+      },
+      "verification": {
+        "path": "outputs/bias_eight_remaining_20261106/pair_comparison_sun397/same_gpu/full/00_SUN397_MNIST/independent_validation.json",
+        "sha256": "7a346db870da9098736bdaeb8c7fe2f4a794673bb7b8da963a8a94ce60103dbe",
+        "replays": 240
+      },
+      "results": {
+        "path": "outputs/bias_eight_remaining_20261106/pair_comparison_sun397/same_gpu/full/00_SUN397_MNIST/results.json",
+        "sha256": "438b85f1cc84503f5b1dbf084949529aa3ea6687d9cdec8621fb126c99e14605"
+      },
+      "imported_rows": 12,
+      "new_rows": 3,
+      "rows": [
+        {
+          "defense": "Unprotected",
+          "merger": "Standalone",
+          "attack_scope": "None",
+          "dataset": "SUN397",
+          "correct": 14944,
+          "n": 19850,
+          "accuracy_percent": 75.28463476070529,
+          "paired_accuracy_delta_95ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "defense": "Unprotected",
+          "merger": "TA",
+          "attack_scope": "None",
+          "dataset": "SUN397",
+          "correct": 14276,
+          "n": 19850,
+          "accuracy_percent": 71.91939546599497,
+          "paired_accuracy_delta_95ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "defense": "Unprotected",
+          "merger": "TA",
+          "attack_scope": "None",
+          "dataset": "MNIST",
+          "correct": 9946,
+          "n": 10000,
+          "accuracy_percent": 99.46,
+          "paired_accuracy_delta_95ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "defense": "Unprotected",
+          "merger": "TA",
+          "attack_scope": "Protected expert",
+          "dataset": "SUN397",
+          "correct": 14208,
+          "n": 19850,
+          "accuracy_percent": 71.57682619647355,
+          "paired_accuracy_delta_95ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "defense": "Unprotected",
+          "merger": "TA",
+          "attack_scope": "Protected expert",
+          "dataset": "MNIST",
+          "correct": 9947,
+          "n": 10000,
+          "accuracy_percent": 99.47,
+          "paired_accuracy_delta_95ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "defense": "PaRaMS_SUN397",
+          "merger": "Standalone",
+          "attack_scope": "None",
+          "dataset": "SUN397",
+          "correct": 14944,
+          "n": 19850,
+          "accuracy_percent": 75.28463476070529,
+          "paired_accuracy_delta_95ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "defense": "PaRaMS_SUN397",
+          "merger": "TA",
+          "attack_scope": "None",
+          "dataset": "SUN397",
+          "correct": 60,
+          "n": 19850,
+          "accuracy_percent": 0.3022670025188917,
+          "paired_accuracy_delta_95ci_pp": [
+            -72.2460611033312,
+            -70.98819582362093
+          ]
+        },
+        {
+          "defense": "PaRaMS_SUN397",
+          "merger": "TA",
+          "attack_scope": "None",
+          "dataset": "MNIST",
+          "correct": 892,
+          "n": 10000,
+          "accuracy_percent": 8.92,
+          "paired_accuracy_delta_95ci_pp": [
+            -91.11765002804427,
+            -89.96234997195573
+          ]
+        },
+        {
+          "defense": "PaRaMS_SUN397",
+          "merger": "TA",
+          "attack_scope": "Protected expert",
+          "dataset": "SUN397",
+          "correct": 14208,
+          "n": 19850,
+          "accuracy_percent": 71.57682619647355,
+          "paired_accuracy_delta_95ci_pp": [
+            -0.01396437483629642,
+            0.01396437483629642
+          ]
+        },
+        {
+          "defense": "PaRaMS_SUN397",
+          "merger": "TA",
+          "attack_scope": "Protected expert",
+          "dataset": "MNIST",
+          "correct": 9947,
+          "n": 10000,
+          "accuracy_percent": 99.47,
+          "paired_accuracy_delta_95ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "defense": "Defense1_SUN397",
+          "merger": "Standalone",
+          "attack_scope": "None",
+          "dataset": "SUN397",
+          "correct": 14942,
+          "n": 19850,
+          "accuracy_percent": 75.27455919395466,
+          "paired_accuracy_delta_95ci_pp": [
+            -0.029823677581859515,
+            0.009672544080600065
+          ]
+        },
+        {
+          "defense": "Defense1_SUN397",
+          "merger": "TA",
+          "attack_scope": "None",
+          "dataset": "SUN397",
+          "correct": 50,
+          "n": 19850,
+          "accuracy_percent": 0.2518891687657431,
+          "paired_accuracy_delta_95ci_pp": [
+            -72.29594820255886,
+            -71.03906439189959
+          ]
+        },
+        {
+          "defense": "Defense1_SUN397",
+          "merger": "TA",
+          "attack_scope": "None",
+          "dataset": "MNIST",
+          "correct": 1028,
+          "n": 10000,
+          "accuracy_percent": 10.28,
+          "paired_accuracy_delta_95ci_pp": [
+            -89.79577270515865,
+            -88.56422729484134
+          ]
+        },
+        {
+          "defense": "Defense1_SUN397",
+          "merger": "TA",
+          "attack_scope": "Protected expert",
+          "dataset": "SUN397",
+          "correct": 50,
+          "n": 19850,
+          "accuracy_percent": 0.2518891687657431,
+          "paired_accuracy_delta_95ci_pp": [
+            -71.95579730238023,
+            -70.69407675303539
+          ]
+        },
+        {
+          "defense": "Defense1_SUN397",
+          "merger": "TA",
+          "attack_scope": "Protected expert",
+          "dataset": "MNIST",
+          "correct": 1028,
+          "n": 10000,
+          "accuracy_percent": 10.28,
+          "paired_accuracy_delta_95ci_pp": [
+            -89.80490367642182,
+            -88.57509632357818
           ]
         }
       ]
