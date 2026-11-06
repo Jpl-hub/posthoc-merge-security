@@ -151,24 +151,12 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-06T06:12:18.339612+00:00",
-  "status": "recovery_conditions_fixed_AB_running",
+  "updated_utc": "2026-11-06T06:43:53.827259+00:00",
+  "status": "recovery_conditions_closed_recovery_input_correction_prepared",
   "active_focus": "One A/B functional compensation experiment addressing both public B replacement and coefficient recovery.",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "21516",
-      "timeout_pid": 61874,
-      "status": "running",
-      "stage": "A_B_construction",
-      "protocol": "results/data_free_compensation/recovery_conditions_protocol.json",
-      "output": "outputs/task_inputs_20261106/recovery_conditions",
-      "log": "outputs/task_inputs_20261106/recovery_conditions/job.log",
-      "source_commit": "5288caf0bd40c727172759868f0f5756abffc9e6",
-      "automatic_expansion": false
-    }
-  ],
-  "next_action": "Finish this one final A/B point against both fixed recovery conditions; then execute the existing full native/TA/authorAGA/B-reset/ProDistill queue. Retrieve complete results in about60-90minutes. No parameter sweep or automatic cross-task expansion.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Launch the one registered A/B correction using separate synthetic roles and soft task-SVD penalty. Complete its fixed full evaluation by the current two-hour window where possible; report all failures. No additional optimizer or candidate search.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -766,13 +754,34 @@
   },
   "recovery_conditions": {
     "host": "21516",
-    "timeout_pid": 61874,
-    "status": "running",
+    "timeout_pid": null,
+    "status": "completed_not_promoted_recovery_unsolved",
     "stage": "A_B_construction",
     "protocol": "results/data_free_compensation/recovery_conditions_protocol.json",
     "output": "outputs/task_inputs_20261106/recovery_conditions",
     "log": "outputs/task_inputs_20261106/recovery_conditions/job.log",
     "source_commit": "5288caf0bd40c727172759868f0f5756abffc9e6",
-    "automatic_expansion": false
+    "automatic_expansion": false,
+    "record": "results/data_free_compensation/recovery_conditions_result.json",
+    "MNIST": {
+      "native": 99.57,
+      "TA": 25.07,
+      "AGA_target": 1.88,
+      "AGA_both": 0.92,
+      "B_after_AGA": 99.28,
+      "ProDistill": 99.39
+    },
+    "full_rows": 32,
+    "original_batch_replays": 576
+  },
+  "priority_window": {
+    "start_utc": "2026-11-06T06:26:20+00:00",
+    "end_utc": "2026-11-06T08:26:20+00:00",
+    "user_request": "Focus all work on the existing defenses, primary papers and actual code; seek a substantive result and complete necessary evaluation. No automation or new versions. Report failures truthfully.",
+    "success_not_guaranteed": true
+  },
+  "recovery_inputs": {
+    "protocol": "results/data_free_compensation/recovery_inputs_protocol.json",
+    "status": "prepared_not_started"
   }
 }

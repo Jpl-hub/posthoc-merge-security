@@ -105,14 +105,24 @@ def train(cfg, case, out, anchor, experts, own, peer, env, *, feature_teacher=No
         raw = torch.load(ref["path"], map_location="cpu", weights_only=False)
         selected = ref["indices"]
         assert len(selected) == len(set(selected)) == 64
-        pixels = raw["final"][selected].cuda()
-        assert pixels.shape == (64, 3, 32, 32) and bool(((pixels >= 0) & (pixels <= 1)).all())
+        pixels = raw["final"][selected]
+        partner_ref = case.get("synthetic_partner_source")
+        if partner_ref:
+            assert digest(partner_ref["path"]) == partner_ref["sha256"]
+            partner_raw = torch.load(partner_ref["path"], map_location="cpu", weights_only=False)
+            partner_ids = partner_ref["indices"]
+            assert len(partner_ids) == len(set(partner_ids)) == 64
+            partner_pixels = partner_raw[partner_ref["key"]][partner_ids]
+            del partner_raw
+        else:
+            partner_ids, partner_pixels = selected, pixels
+        pixels = torch.cat((pixels, partner_pixels)).cuda()
+        assert pixels.shape == (128, 3, 32, 32) and bool(((pixels >= 0) & (pixels <= 1)).all())
         norm = own.val_preprocess.transforms[-1]
         mean = torch.tensor(norm.mean, device="cuda")[None, :, None, None]
         std = torch.tensor(norm.std, device="cuda")[None, :, None, None]
         images = (F.interpolate(pixels, (224, 224), mode="bilinear", align_corners=False) - mean) / std
-        images = torch.cat([images, images])
-        ids = {t: selected for t in tasks}
+        ids = dict(zip(tasks, [selected, partner_ids]))
         del raw, pixels
     else:
         data = {t: dataset(t, "data", experts[t].val_preprocess, True) for t in tasks}
@@ -228,6 +238,7 @@ def train(cfg, case, out, anchor, experts, own, peer, env, *, feature_teacher=No
             selection_from_test=False,
             image_tensor_sha256=image_sha,
             synthetic_source=case.get("synthetic_source"),
+            synthetic_partner_source=case.get("synthetic_partner_source"),
         ),
     )
     return merged

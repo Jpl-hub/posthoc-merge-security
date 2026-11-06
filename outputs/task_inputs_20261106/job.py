@@ -38,7 +38,8 @@ if 'recovered_model' not in fit:
     prefix.mkdir(exist_ok=False)
     recovery = cfg['synthetic_recovery']
     train(recovery, dict(target='MNIST', partner='public_base',
-                        synthetic_source=fit['synthetic_source']), prefix, base,
+                        synthetic_source=fit['synthetic_source'],
+                        synthetic_partner_source=fit.get('synthetic_partner_source')), prefix, base,
           {'MNIST': own, 'public_base': base}, own, base, author(recovery))
     fit['recovered_model'] = dict(path=str(prefix / 'model.pt'), sha256=digest(prefix / 'model.pt'))
     del base, original, head, own

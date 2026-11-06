@@ -40,12 +40,19 @@ def main():
         for name in ('native','direct','recovered'):
             raw['cache'][name]={k:torch.cat((old['cache'][name][k],v)) for k,v in raw['cache'][name].items()}
         del old
-    pixels = raw['final'][cfg['synthetic_source']['indices']].cuda().double()
+    ref = cfg['synthetic_partner_source']
+    check_files({ref['path']: ref['sha256']})
+    other = torch.load(ref['path'], map_location='cpu', weights_only=False)
+    pixels = torch.cat((raw['final'][cfg['synthetic_source']['indices']],
+                        other[ref['key']][ref['indices']])).cuda().double()
+    del other
     norm = original.val_preprocess.transforms[-1]
     images = F.interpolate(pixels.float(), (224, 224), mode='bilinear', align_corners=False)
     images = (images - images.new_tensor(norm.mean)[None, :, None, None]) / images.new_tensor(norm.std)[None, :, None, None]
     recovered = copy.deepcopy(original)
     recovered.load_state_dict(torch.load(cfg['recovered_model']['path'], map_location='cpu', weights_only=False))
+    official_scores = []
+    head.cuda()
 
     def inputs(model):
         rows = []
@@ -54,15 +61,17 @@ def main():
         with torch.no_grad():
             model.cuda()
             for x in images.split(16):
-                model(x)
+                features = model(x)
+                if model is recovered:
+                    official_scores.append(head(features).detach().cpu())
             model.cpu()
         hook.remove()
         return torch.cat(rows, 1).cuda().double()
 
-    xm, xt, xb = inputs(recovered), inputs(parent), inputs(base)
+    xm, xt, xb = inputs(recovered), inputs(parent)[:, :64], inputs(base)[:, 64:]
     with torch.no_grad():
         original.cuda(); head.cuda()
-        labels = torch.cat([head(original(x)).argmax(1) for x in images.split(16)])
+        labels = torch.cat([head(original(x)).argmax(1) for x in images[:64].split(16)])
         original.cpu(); head.cpu()
     block = copy.deepcopy(base.model.visual.transformer.resblocks[11]).cuda().double().eval()
     names = tuple(dict(block.named_parameters()))
@@ -96,10 +105,10 @@ def main():
     def inner_loss(alpha, delta, target):
         w = tuple(b + a * d for b, a, d in zip(anchor, alpha, delta))
         student = call(w, xm)
-        return (student - target).square().sum() + (student - public_target).square().sum()
+        return (student[:, :64] - target).square().sum() + (student[:, 64:] - public_target).square().sum()
 
     def recovery_scores(p):
-        return head(attack_ln(call(p, xm)[0]) @ attack_proj)
+        return head(attack_ln(call(p, xm[:, :64])[0]) @ attack_proj)
 
     def margin(scores, teacher_class):
         true = scores.gather(1, teacher_class[:, None]).flatten()
@@ -141,6 +150,17 @@ def main():
         fixed = class_scores(initial)
         fixed['native'] = native['scores']  # Original expert, not current release.
         fixed = {k: v.detach() for k, v in fixed.items()}
+    protected_recovery = recovered_forward(initial)
+    clean_recovery = recovered_forward(clean)
+    initial_check = dict(
+        target_images=64, public_images=64, real_images=0, defense_updates=0,
+        official_fp32_target_matches=int(torch.cat(official_scores)[:64].argmax(1).eq(labels.cpu()).sum()),
+        simulated_fp64_target_matches=int(recovery_scores(protected_recovery).argmax(1).eq(labels).sum()),
+        unprotected_fp64_target_matches=int(recovery_scores(clean_recovery).argmax(1).eq(labels).sum()),
+        scope='Fixed initial source comparison; no selection or parameter changes from these results.')
+    save_json(out / 'initial_recovery_check.json', initial_check)
+    print('INITIAL_RECOVERY', initial_check, flush=True)
+    del protected_recovery, clean_recovery, official_scores
     releases = {}
     for name, strength in cfg['conditions'].items():
         folder = out / name
@@ -149,10 +169,6 @@ def main():
 
         def effective():
             a, b, bias = variables
-            d = a - initial[iA]
-            d = d - U @ (U.T @ d)
-            d = d - (d @ V) @ V.T
-            a = initial[iA] + d
             d = a - clean[iA]
             a = clean[iA] + d * (cfg['A_limit'] * clean[iA].norm() / d.norm().clamp_min(1e-30)).clamp(max=1)
             d = b - clean[iB]
@@ -175,7 +191,10 @@ def main():
             scores = class_scores(p)
             native_kl = kl(scores['native'], fixed['native'])
             public_kl = torch.stack([kl(scores[k], fixed[k]) for k in contexts]).mean()
-            retain = native_kl + public_kl
+            delta_A = p[iA] - clean[iA]
+            task_change = ((U.T @ delta_A).square().sum() / (U.T @ (clean[iA]-anchor[iA])).square().sum()
+                           + (delta_A @ V).square().sum() / ((clean[iA]-anchor[iA]) @ V).square().sum())
+            retain = native_kl + public_kl + task_change
             retain.backward(retain_graph=bool(strength))
             assert strength == 1.0
             recovered = recovered_forward(p)
@@ -195,7 +214,8 @@ def main():
             # The shared recovery derivative kernel has independent forward/reverse validation.
             # Actual finite objectives are recomputed by the library line search.
             records.append(dict(evaluation=len(records)+1, objective=objective, native_KL=float(native_kl.detach()),
-                                public_KL=float(public_kl.detach()), recovered_margin=recovered_margin,
+                                public_KL=float(public_kl.detach()), task_change=float(task_change.detach()),
+                                recovered_margin=recovered_margin,
                                 B_reset_margin=float(replacement_margin.detach()), active=active,
                                 seconds=time.monotonic()-start))
             save_json(folder/'progress.json', records)
