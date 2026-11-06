@@ -151,12 +151,24 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-06T06:10:07.293170+00:00",
-  "status": "input_coverage_closed_recovery_conditions_prepared",
+  "updated_utc": "2026-11-06T06:12:18.339612+00:00",
+  "status": "recovery_conditions_fixed_AB_running",
   "active_focus": "One A/B functional compensation experiment addressing both public B replacement and coefficient recovery.",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Launch the registered recovery-conditions point from original679ca. Reuse the exact synthetic prefix and existing full evaluation queue; no source or parameter sweep.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "timeout_pid": 61874,
+      "status": "running",
+      "stage": "A_B_construction",
+      "protocol": "results/data_free_compensation/recovery_conditions_protocol.json",
+      "output": "outputs/task_inputs_20261106/recovery_conditions",
+      "log": "outputs/task_inputs_20261106/recovery_conditions/job.log",
+      "source_commit": "5288caf0bd40c727172759868f0f5756abffc9e6",
+      "automatic_expansion": false
+    }
+  ],
+  "next_action": "Finish this one final A/B point against both fixed recovery conditions; then execute the existing full native/TA/authorAGA/B-reset/ProDistill queue. Retrieve complete results in about60-90minutes. No parameter sweep or automatic cross-task expansion.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -681,7 +693,7 @@
     "start_utc": "2026-11-06T05:00:07+00:00",
     "end_utc": "2026-11-06T07:00:07+00:00",
     "automatic_continuation": false,
-    "note": "User authorized the existing background run and completion checks during a two-hour nap. No app automation or new experiment sweep."
+    "note": "User has returned and authorized continued work; no automation."
   },
   "recovery_trace": {
     "record": "results/data_free_compensation/recovery_trace_result.json",
@@ -753,7 +765,14 @@
     "original_batch_replays": 576
   },
   "recovery_conditions": {
+    "host": "21516",
+    "timeout_pid": 61874,
+    "status": "running",
+    "stage": "A_B_construction",
     "protocol": "results/data_free_compensation/recovery_conditions_protocol.json",
-    "status": "prepared_not_started"
+    "output": "outputs/task_inputs_20261106/recovery_conditions",
+    "log": "outputs/task_inputs_20261106/recovery_conditions/job.log",
+    "source_commit": "5288caf0bd40c727172759868f0f5756abffc9e6",
+    "automatic_expansion": false
   }
 }
