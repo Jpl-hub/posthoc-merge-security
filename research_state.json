@@ -141,23 +141,30 @@
       "archive": "outputs/recovery_soft_fixed_context_20261105/source.py",
       "sha256": "1316096ce7ca3b1c5789393f75821f977162fdc7a0e936eeddae809d4cabf59a",
       "unique_models_or_scores_deleted": 0
+    },
+    "cleanup_20261106": {
+      "retired_execution_files": 7,
+      "removed_lines": 1026,
+      "restore_commit": "b65db931cdb5ef57901ddad899e9415471cd81b4",
+      "archive": "/root/posthoc_evaluation_cache/closed_sources_20261106",
+      "unique_models_or_scores_deleted": 0
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-06T03:40:12.228884+00:00",
-  "status": "single_compensation_full_evaluation_running",
-  "active_focus": "同一A/B已完成5步更新，800个合成判断保持，合成恢复63/64；修复评价目录错误后继续同一权重的完整评价。尚不称防御改善。",
+  "updated_utc": "2026-11-06T04:22:17.789233+00:00",
+  "status": "compensation_closed_input_coverage_check_running",
+  "active_focus": "唯一补偿点完整结果未解决B替换/蒸馏，已关闭不采用。发现合成输入与公开基座的共识远高于真实测试；正在按已发表ADI机制仅准备输入，不新增防御版本。",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
       "host": "21516",
-      "pid": 51205,
-      "protocol": "results/data_free_compensation/compensation_evaluation.json",
-      "output": "outputs/compensation_20261106/comparison",
-      "stage": "actual_AGA_source_then_full_evaluation"
+      "pid": 55215,
+      "protocol": "results/data_free_compensation/task_inputs_protocol.json",
+      "output": "outputs/task_inputs_20261106",
+      "stage": "input_generation_only"
     }
   ],
-  "next_action": "Read complete MNIST target and SVHN partner rows, actualAGA, matched public B reset and fixedProDistill. Keep the single frozen SHA2f67269d; no new construction or cross-task expansion based only on source.",
+  "next_action": "Inspect the single input-preparation result. No automatic defense release or parameter search. Keep current main A/B and all completed tables unchanged.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -708,6 +715,18 @@
     "publication_sha256": "2f67269d8fdf50046a33662f23a26929e707d71d28bf8a9cffd59da589dd17cd",
     "source_native_matches": 800,
     "source_distilled_matches": 63,
-    "evaluation_directory_fix": true
-  }
+    "evaluation_directory_fix": true,
+    "status": "completed_closed_not_promoted",
+    "MNIST": {
+      "native": 99.58,
+      "TA": 26.5,
+      "AGA_target": 17.71,
+      "AGA_both": 16.96,
+      "B_after_AGA": 99.29,
+      "ProDistill": 99.17
+    },
+    "full_rows": 32,
+    "context_score_replays": 576
+  },
+  "source_coverage_record": "results/data_free_compensation/source_coverage.json"
 }
