@@ -23,7 +23,7 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_archive.sock",
     "secondary_role": "Historical CPU archive only; authoritative engineering and all new GPU experiments are on21516",
@@ -144,20 +144,12 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-06T02:18:06.694379+00:00",
-  "status": "corrected_current_matching_MNIST_running",
-  "active_focus": "A每次变化后重算实际作者匹配；同一起点重做一次MNIST，先核对实际AGA合成输入再读真实图片。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "21516",
-      "pid": 44471,
-      "protocol": "results/data_free_compensation/conditional_compensation/current_matching_protocol.json",
-      "output": "outputs/conditional_current_matching_20261106",
-      "stage": "source_construction"
-    }
-  ],
-  "next_action": "Inspect one corrected MNIST result. No automatic cross-task or eight-expert expansion. Keep original inputs, ranges and optimization budget; do not warm-start from failed evaluated points.",
+  "updated_utc": "2026-11-06T02:39:55.563452+00:00",
+  "status": "corrected_matching_completed_closed",
+  "active_focus": "当前A匹配修正已完成：独立99.70，TA79.23，AGA目标80.05，公开B替换24.84，ProDistill99.45；不采用、不扩任务。",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "This conditional-refit branch is closed. Study the existing main A/B recovery mechanism before any new candidate; do not restart this point with different strength, seed, solver or source inputs. Current main release remains unchanged.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -658,5 +650,24 @@
     "n": 800,
     "changed_matching_units": 1863
   },
-  "current_matching_verification": "results/data_free_compensation/conditional_compensation/current_matching_check_result.json"
+  "current_matching_verification": "results/data_free_compensation/conditional_compensation/current_matching_check_result.json",
+  "conditional_current_matching": {
+    "status": "completed_closed_not_promoted",
+    "record": "results/data_free_compensation/conditional_compensation/current_matching_result.json",
+    "MNIST": {
+      "native": 99.7,
+      "TA": 79.23,
+      "AGA_target": 80.05,
+      "AGA_both": 76.85,
+      "B_replacement_after_AGA": 24.84,
+      "ProDistill": 99.45
+    },
+    "actual_AGA_source_count": 1,
+    "construction_source_count": 1,
+    "source_n": 800,
+    "full_rows": 32,
+    "original_batch_replays": 576,
+    "real_construction_images": 0,
+    "new_production_modules": 0
+  }
 }

@@ -11,3 +11,20 @@ DTD & 78.99 & 35.21 & 39.47 & 39.89 & 17.39 & 72.66 \\
 \bottomrule
 \end{tabular}
 \end{table*}
+
+\begin{table}[t]
+\centering\small
+\caption{Closed MNIST implementation correction: complete-test accuracy (\%). Current AGA matching was recomputed during construction; the main defense is unchanged.}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Setting & Accuracy \\
+\midrule
+Standalone & 99.70 \\
+TA & 79.23 \\
+AGA, target & 80.05 \\
+AGA, both & 76.85 \\
+AGA, target + public B replacement & 24.84 \\
+ProDistill & 99.45 \\
+\bottomrule
+\end{tabular}
+\end{table}
