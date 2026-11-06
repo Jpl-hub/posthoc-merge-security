@@ -107,6 +107,7 @@ def main():
     labels=native['scores'].argmax(1)
     scale=float(A.norm())
     variable=torch.zeros_like(A,requires_grad=True)
+    matching_calls=0
 
     def parameters(v):
         d=Ap-A+scale*v
@@ -116,8 +117,14 @@ def main():
         return aa,bb
 
     def compute(v,details=False):
+        nonlocal matching_calls
         aa,bb=parameters(v)
         r=fit(aa,bb,populations,R0,ridge)
+        # A is now variable: the unchanged author solver must see current A
+        # at every finite objective evaluation, including line-search trials.
+        with torch.no_grad():
+            order=author['solve_permutation'](aa.float().cpu(),A0.float().cpu()).cuda()
+        matching_calls+=1
         h=act(F.linear(xn,aa,bb))
         score=classify(native['prefix']+F.linear(h,r[:,:-1],r[:,-1]),rn)
         kl=F.kl_div(score.log_softmax(1),target,reduction='batchmean')
@@ -131,8 +138,8 @@ def main():
             row=cache[name]
             Ar,ar,Br,br=(A,a,B,b) if name.startswith('task_') else (A0,a0,B0,b0)
             readout=rn if name.startswith('task_') else rp
-            # Parent order is fixed in this source proxy. Actual author AGA
-            # is rerun on the frozen final model during evaluation.
+            # Attention and all other blocks are fixed. Their clean AGA
+            # prefixes remain reusable; only this MLP order must be recomputed.
             if name.endswith('recovered'):
                 ax,bx=aa[order],bb[order]
                 rr=r[:,:-1][:,order]
@@ -157,12 +164,12 @@ def main():
             return r,dict(loss=float(loss),native_KL=float(kl),native_error=float(error),native_limit=tau,
                           task_probe=float(probe),B_relative=float(radius),
                           native_matches=int(score.argmax(1).eq(labels).sum()),native_n=len(labels),
-                          source_counts=public_counts)
+                          source_counts=public_counts,matching_calls=matching_calls,
+                          matching='current_A_author_solver')
         return loss
 
     from _impl.attacks import load_author
     author,_=load_author(Path('external/secure-merge-attack/utils_attack_B32.py'))
-    order=author['solve_permutation'](Ap.float().cpu(),A0.float().cpu()).cuda()
     calls=0
     trace=[]
     solver=torch.optim.LBFGS([variable],lr=1,max_iter=cfg['iterations'],max_eval=cfg['evaluations'],
