@@ -1,12 +1,24 @@
 {
-  "updated_utc": "2026-11-06T06:43:53.827259+00:00",
-  "status": "recovery_conditions_closed_recovery_input_correction_prepared",
+  "updated_utc": "2026-11-06T06:47:25.424558+00:00",
+  "status": "recovery_input_and_task_constraint_correction_running",
   "active_focus": "One A/B functional compensation experiment addressing both public B replacement and coefficient recovery.",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Launch the one registered A/B correction using separate synthetic roles and soft task-SVD penalty. Complete its fixed full evaluation by the current two-hour window where possible; report all failures. No additional optimizer or candidate search.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "timeout_pid": 66418,
+      "status": "running",
+      "stage": "A_B_construction",
+      "protocol": "results/data_free_compensation/recovery_inputs_protocol.json",
+      "output": "outputs/recovery_compensation_20261106",
+      "log": "outputs/recovery_compensation_20261106/job.log",
+      "source_commit": "6c1b6527d7cb8e4d04505424d874eb6fd28f7370",
+      "automatic_expansion": false
+    }
+  ],
+  "next_action": "Finish the one fixed corrected A/B point and full existing evaluation within the current two-hour window. In parallel, CPU-prepare missing five unchanged-formula Defense1 publications; no new defense design or candidate sweep.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -1089,7 +1101,18 @@
     "success_not_guaranteed": true
   },
   "recovery_inputs": {
+    "host": "21516",
+    "timeout_pid": 66418,
+    "status": "running",
+    "stage": "A_B_construction",
     "protocol": "results/data_free_compensation/recovery_inputs_protocol.json",
+    "output": "outputs/recovery_compensation_20261106",
+    "log": "outputs/recovery_compensation_20261106/job.log",
+    "source_commit": "6c1b6527d7cb8e4d04505424d874eb6fd28f7370",
+    "automatic_expansion": false
+  },
+  "defense1_remaining_targets": {
+    "protocol": "results/phase3/bias_weight_only/eight_expert/remaining_targets.json",
     "status": "prepared_not_started"
   }
 }

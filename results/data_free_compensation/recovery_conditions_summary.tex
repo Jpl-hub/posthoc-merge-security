@@ -1,0 +1,13 @@
+\begin{table*}[t]
+\centering\small
+\caption{Fixed recovery-condition experiment. MNIST accuracy (\%).}
+\begin{tabular}{lrrrrrr}
+\toprule
+Method & Standalone & TA & AGA target & AGA both & AGA + B reset & ProDistill \\
+\midrule
+Unprotected & 99.69 & 99.37 & 99.30 & 99.32 & 99.29 & 99.45 \\
+Recovery-condition test & 99.57 & 25.07 & 1.88 & 0.92 & 99.28 & 99.39 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+% Fixed MNIST/SVHN pair; full tests. TA0.5. Extra-data recovery is evaluated only after the final point is frozen.

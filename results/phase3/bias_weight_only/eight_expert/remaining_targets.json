@@ -1,0 +1,36 @@
+{
+  "output": "outputs/bias_eight_remaining_20261106",
+  "registered_utc": "2026-11-06T06:47:25.424558+00:00",
+  "targets": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "EuroSAT",
+    "GTSRB"
+  ],
+  "bias": {
+    "noise_seed": 20261014,
+    "numerical_relative_tolerance": 1e-10,
+    "proxy_beta": 0.5,
+    "bias_safety": 2.0
+  },
+  "entry": "_impl.defenses.construct_bias",
+  "source_sha256": {
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  },
+  "scope": "Only the missing five fixed Defense1 publications are prepared on CPU. Same existing formula,seed,numerical tolerance,proxy coefficient and safety multiplier. Frozen own/base/head only; no real or synthetic images,optimization,partner or scores. This is preparation for eight protected targets, not completed standalone/fusion evaluation.",
+  "selection": "One point per target under the existing rule; preserve and stop on any implementation/nonfinite failure. No direction,class,seed,scale or tolerance retry.",
+  "reuse": "The three previously evaluated Defense1 releases remain unchanged; do not reconstruct them.",
+  "budget": {
+    "new_releases": 5,
+    "image_forwards": 0,
+    "expert_updates": 0,
+    "optimization_steps": 0,
+    "maximum_seconds": 600
+  }
+}
