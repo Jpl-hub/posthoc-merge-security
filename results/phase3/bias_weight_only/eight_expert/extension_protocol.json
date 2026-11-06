@@ -1,0 +1,95 @@
+{
+  "coefficient": 0.2,
+  "task_order": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "EuroSAT",
+    "SVHN",
+    "GTSRB",
+    "MNIST",
+    "DTD"
+  ],
+  "evaluate": [
+    "MNIST",
+    "SVHN",
+    "DTD",
+    "RESISC45",
+    "Cars",
+    "GTSRB",
+    "SUN397"
+  ],
+  "score_tolerance": 0.0005,
+  "author_TaskVector": {
+    "path": "external/secure-merge-attack/task_vectors.py",
+    "sha256": "9d95bdb8b9fef2a4457e47b28ea3e1ccc188f30ded8c4c1ec1fe1e55cfded4af",
+    "git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea"
+  },
+  "scopes": [
+    "None",
+    "Protected expert"
+  ],
+  "experiment": "Frozen NBP and official PaRaMS, four missing protected directions in eight-expert TA",
+  "output": "outputs/nbp_eight_extension_20261106",
+  "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+  "cases": [
+    {
+      "target": "SUN397",
+      "defenses": [
+        "PaRaMS_SUN397",
+        "Defense1_SUN397"
+      ]
+    },
+    {
+      "target": "Cars",
+      "defenses": [
+        "PaRaMS_Cars",
+        "Defense1_Cars"
+      ]
+    },
+    {
+      "target": "RESISC45",
+      "defenses": [
+        "PaRaMS_RESISC45",
+        "Defense1_RESISC45"
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "defenses": [
+        "PaRaMS_GTSRB",
+        "Defense1_GTSRB"
+      ]
+    }
+  ],
+  "new_AGA_calls": 0,
+  "new_defense_weights": 0,
+  "expert_training_updates": 0,
+  "registered_utc": "2026-11-06T14:13:59.807080+00:00",
+  "test_sizes": {
+    "MNIST": 10000,
+    "SVHN": 26032,
+    "DTD": 1880,
+    "RESISC45": 6300,
+    "Cars": 8041,
+    "GTSRB": 12630,
+    "SUN397": 19850
+  },
+  "finite_budget": {
+    "wall_limit_seconds": 3600,
+    "new_fused_models": 6,
+    "new_full_production_image_forwards": 341052,
+    "planned_rows_each_stage": 60,
+    "new_AGA_calls": 0,
+    "new_defense_points": 0
+  },
+  "inputs": {
+    "evaluation": {
+      "path": "results/phase3/bias_weight_only/eight_expert/extension_evaluation.json",
+      "sha256": "8fd6e9ac9c51158e80b6607fc764ef7f4082e402f9a0f8f9ac13bf93a17ef0de"
+    }
+  },
+  "scope_limit": "Eight experts participate, seven complete test sets. Four newly evaluated protected directions. Existing publications and cached original AGA only; no reconstruction or parameter selection. EuroSAT participates as an expert but its test score is not claimed.",
+  "maximum_seconds": 21600
+}
