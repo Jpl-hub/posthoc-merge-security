@@ -1,0 +1,39 @@
+{
+  "output": "outputs/compensation_20261106",
+  "parent_source": "outputs/recovery_soft_fixed_context_20261105/source.py",
+  "parent_protocol": "results/data_free_compensation/recovery_soft_fixed_context_protocol.json",
+  "parent_source_sha256": "1316096ce7ca3b1c5789393f75821f977162fdc7a0e936eeddae809d4cabf59a",
+  "task_contexts": "outputs/conditional_current_matching_20261106/MNIST/point/task_contexts.pt",
+  "steps": 20,
+  "step": 0.05,
+  "backtracking": 8,
+  "A_limit": 2.0,
+  "B_limit": 4.0,
+  "gradient_step": 1e-05,
+  "gradient_tolerance": 0.02,
+  "maximum_construction_seconds": 3600,
+  "registered_utc": "2026-11-06T03:08:46.598755+00:00",
+  "no_new_exploration_after_utc": "2026-11-06T04:47:44+00:00",
+  "hypothesis": "Keep the main release B displacement from the conditional teacher fit, rather than discard it at every A change. For G(A)=L(A)L(A)^T and Rstar(A)=T(A)G(A)^-1, fix C=(Rparent-Rstar(Aparent))L(Aparent) and set R(A)=Rstar(A)+C L(A)^-1. Then the full two-population ridge error is fmin(A)+||C||F^2 exactly. This permits finite coupled changes without resetting B to the clean teacher fit. It does not guarantee task classification or recovery resistance.",
+  "objective": "Increase the worse of post100-step synthetic ProDistill and actual-current-order public B-reset classification margins, under original native reconstruction bound, all800 original native decisions and no worsening of original public/self TA/AGA counts. Same main679ca starting point and original fixed synthetic inputs; never either evaluated failed conditional point. A increments remain outside both32 task-SVD probes. Bias compensates the original LN2 mean.",
+  "gradient_check": "At the starting point compare the full recovery-and-compensation directional derivative with centered difference1e-5 using original2% tolerance. Also compare direct reconstruction error and the completed-square identity, including ridge, before updates. Stop on disagreement; no new epsilon, rank, budget, source or optimizer search.",
+  "selection": "One final accepted point only. If all64 synthetic recovery decisions remain recovered or source constraints fail, stop source-only. If source eligible, freeze once before complete standalone/TA0.5/actualAGA target+both, public B reset and fixed ProDistill. Real images and partner weights never enter this construction.",
+  "novelty": "Conditional ridge, Cholesky whitening, exact reverse Adam and projected line search are standard tools. This tests a finite numerical-compensation mechanism, not a new optimizer or an established defense.",
+  "references": {
+    "VarPro": "https://www.cs.umd.edu/users/oleary/software/varpro.pdf",
+    "TAR": "https://arxiv.org/html/2408.00761v4",
+    "ProDistill": "https://github.com/JingXuTHU/Scalable_Model_Merging_with_Progressive_Layerwise_Distillation/tree/c773fcaead79cf25b5654b2e3fe233450da4e387/Vision"
+  },
+  "real_construction_images": 0,
+  "expert_updates": 0,
+  "sources": {
+    "outputs/compensation_20261106/run.py": "db2718311a5cf4241afa763635dfdcb8ba33d4a814f3366471ebf00ac87cfee3",
+    "results/data_free_compensation/synthetic_recovery/differentiate.py": "96a21e2f38187cee519ca504d7e8b128645b2a5fa37275ec83a7180cbf07e8a4",
+    "results/data_free_compensation/recovery_soft_fixed_context_protocol.json": "8f40c1e7865776a3f654df1fef072b0c0edccf6c26552b0df5422cd030e67b49",
+    "configs/defense2_inputs.json": "894209da2c9cdca0dc6bbd674a407e2970865d847f2346a78e8f09a93b68a722",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c"
+  },
+  "task_contexts_sha256": "a82eaafd49f397bd6b3664fe58a78bb7907b675d482a332900c46a2cc36681fd",
+  "ranges": "Same independently declared A<=2/B<=4 matrix ranges; a is fixed by LN2 mean compensation and b is included in the conditional augmented matrix. Report all four actual relative changes. Not the historical logical-matrix-and-bias D0.5 comparison."
+}
