@@ -1,20 +1,20 @@
 {
-  "updated_utc": "2026-11-06T03:17:40.087521+00:00",
-  "status": "finite_compensation_derivative_diagnosis_running",
-  "active_focus": "新补偿公式复现通过，但恢复后导数核对未通过；零防御更新。独立正向/反向自动微分与同一步长对照正在核原因。",
+  "updated_utc": "2026-11-06T03:24:41.177582+00:00",
+  "status": "finite_compensation_construction_running",
+  "active_focus": "独立正向/反向导数核对一致；保留原差分失败记录后继续同一A/B有限补偿构造，尚无新完整准确率。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
       "host": "21516",
-      "pid": 50095,
-      "protocol": "results/data_free_compensation/compensation_derivative_diagnosis.json",
-      "output": "outputs/compensation_20261106/diagnosis",
-      "stage": "read_only_derivative_diagnosis"
+      "pid": 50558,
+      "protocol": "results/data_free_compensation/compensation_protocol.json",
+      "output": "outputs/compensation_20261106/construction",
+      "stage": "source_construction"
     }
   ],
-  "next_action": "Inspect the independent derivative diagnosis. No new defense candidate or updated accuracy exists. Keep original failed finite-difference record; do not resume or tune a model until the computation is understood.",
+  "next_action": "Inspect one final source point; if eligible, freeze its four tensors and run complete MNIST/SVHN evaluation with actualAGA, public B replacement and fixed ProDistill. No alternative inputs, strengths, source points or automatic cross-task expansion.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -1014,6 +1014,8 @@
     "record": "results/data_free_compensation/compensation_result.json",
     "defense_updates": 0,
     "new_models": 0,
-    "gradient_check_passed": false
+    "gradient_check_passed": false,
+    "independent_AD_relative_error": 4.1294427576530534e-15,
+    "independent_AD_check_passed": true
   }
 }
