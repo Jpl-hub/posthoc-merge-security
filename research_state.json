@@ -23,7 +23,7 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
+    "active_GPU_jobs": 1,
     "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
     "secondary_ssh_control_socket": "/tmp/posthoc_3090_archive.sock",
     "secondary_role": "Historical CPU archive only; authoritative engineering and all new GPU experiments are on21516",
@@ -144,12 +144,20 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-06T02:39:55.563452+00:00",
-  "status": "corrected_matching_completed_closed",
-  "active_focus": "当前A匹配修正已完成：独立99.70，TA79.23，AGA目标80.05，公开B替换24.84，ProDistill99.45；不采用、不扩任务。",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "This conditional-refit branch is closed. Study the existing main A/B recovery mechanism before any new candidate; do not restart this point with different strength, seed, solver or source inputs. Current main release remains unchanged.",
+  "updated_utc": "2026-11-06T03:17:40.087521+00:00",
+  "status": "finite_compensation_derivative_diagnosis_running",
+  "active_focus": "新补偿公式复现通过，但恢复后导数核对未通过；零防御更新。独立正向/反向自动微分与同一步长对照正在核原因。",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "pid": 50095,
+      "protocol": "results/data_free_compensation/compensation_derivative_diagnosis.json",
+      "output": "outputs/compensation_20261106/diagnosis",
+      "stage": "read_only_derivative_diagnosis"
+    }
+  ],
+  "next_action": "Inspect the independent derivative diagnosis. No new defense candidate or updated accuracy exists. Keep original failed finite-difference record; do not resume or tune a model until the computation is understood.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -669,5 +677,28 @@
     "original_batch_replays": 576,
     "real_construction_images": 0,
     "new_production_modules": 0
+  },
+  "sleep_authorization": {
+    "start_utc": "2026-11-06T02:47:44+00:00",
+    "end_utc": "2026-11-06T04:47:44+00:00",
+    "automatic_continuation": false,
+    "note": "User has returned to ask status; ongoing job continues, no automation."
+  },
+  "recovery_trace": {
+    "record": "results/data_free_compensation/recovery_trace_result.json",
+    "new_defense_updates": 0,
+    "replay_maximum_weight_error": 0.0,
+    "attack_MNIST_teacher_matches": {
+      "10_steps": 63,
+      "25_steps": 64,
+      "n": 64
+    },
+    "full_benchmark_evaluations": 0
+  },
+  "finite_compensation": {
+    "record": "results/data_free_compensation/compensation_result.json",
+    "defense_updates": 0,
+    "new_models": 0,
+    "gradient_check_passed": false
   }
 }

@@ -248,5 +248,23 @@
   "attack_images": 128,
   "real_defense_construction_images": 0,
   "source_sha256": "fe587bd905a464fb6abde937dd8857e9d9361f1d1f06201636a2bcc96c2556c8",
-  "scores_sha256": "74837c18a407aa7fc07e31a3b2e3c2ed6ac3179d18d4d62a2aa2344a43a7e08b"
+  "scores_sha256": "74837c18a407aa7fc07e31a3b2e3c2ed6ac3179d18d4d62a2aa2344a43a7e08b",
+  "weight_analysis": {
+    "records": {
+      "mlp.c_fc.weight": {
+        "update_to_defense_ratio": 0.40078121429255037,
+        "cosine_to_inverse_defense": 0.021896848371026793,
+        "remaining_vs_clean_initial_ratio": 1.069146337397844
+      },
+      "mlp.c_proj.weight": {
+        "update_to_defense_ratio": 0.21094573155615823,
+        "cosine_to_inverse_defense": 0.35799054957578896,
+        "remaining_vs_clean_initial_ratio": 0.9452327464285583
+      }
+    },
+    "benchmark_images": 0,
+    "new_training_steps": 0,
+    "note": "Weights of the already finished trace only; labels and classification results are unchanged. Recovery is functional, not necessarily an inverse of the defender parameter change."
+  },
+  "readout": "Teacher-decision agreement on the fixed attack calibration images, not complete-test accuracy. The MainAB and Replay source models were not modified."
 }
