@@ -144,21 +144,20 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-05T21:56:57.805537+00:00",
-  "status": "overnight_conditional_compensation_running",
-  "active_focus": "一个固定防御二试验：A有限改变后每次重求B补偿，再完整评价恢复与融合。",
+  "updated_utc": "2026-11-06T01:13:55.677368+00:00",
+  "status": "conditional_self_reference_control_running",
+  "active_focus": "先核对并恢复遗漏的自身专家参照；只做一个有源条件门控的MNIST对照。",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "protocol": "results/data_free_compensation/conditional_compensation/protocol.json",
-      "output": "outputs/overnight_20261106",
-      "status": "running",
       "host": "21516",
-      "pid": 2187,
-      "log": "outputs/overnight_20261106/run.log"
+      "pid": 39145,
+      "protocol": "results/data_free_compensation/conditional_compensation/self_reference_protocol.json",
+      "output": "outputs/conditional_self_reference_20261106",
+      "status": "running"
     }
   ],
-  "next_action": "Run the registered single candidate on21516; freeze all three tasks before real-image evaluation. Complete existing centered readout eight-expert evaluation independently. No heartbeat.",
+  "next_action": "Finish one source-gated MNIST self-reference control, then inspect its measured outcome before any expansion. Earlier candidate closed; residual supplemental job stopped and partial results preserved.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -631,5 +630,17 @@
       "21516",
       "55548"
     ]
+  },
+  "conditional_compensation": {
+    "status": "completed_candidate_closed_no_improvement",
+    "record": "results/data_free_compensation/conditional_compensation/result.json",
+    "table": "results/data_free_compensation/conditional_compensation/summary.md",
+    "source_context_matches": {
+      "public_base": 18,
+      "actual_partner": 792,
+      "n": 800
+    },
+    "supplement_rows": 68,
+    "supplement_complete": false
   }
 }

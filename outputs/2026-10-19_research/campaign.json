@@ -1,12 +1,20 @@
 {
-  "updated_utc": "2026-11-05T18:16:27.853472+00:00",
-  "status": "centered_readout_transfer_completed",
-  "active_focus": "防御二：保持原生分类并优化恢复后的保护效果；按论文依据与研究问题安排必要实验。",
+  "updated_utc": "2026-11-06T01:13:55.677368+00:00",
+  "status": "conditional_self_reference_control_running",
+  "active_focus": "先核对并恢复遗漏的自身专家参照；只做一个有源条件门控的MNIST对照。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Keep one A/B release as the paper main method. If Defense2 continues, register one candidate that survives public B replacement, pass a data-free source check first, then run the complete three-task evaluation. Otherwise write the paper with the measured recovery weakness.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "pid": 39145,
+      "protocol": "results/data_free_compensation/conditional_compensation/self_reference_protocol.json",
+      "output": "outputs/conditional_self_reference_20261106",
+      "status": "running"
+    }
+  ],
+  "next_action": "Finish one source-gated MNIST self-reference control, then inspect its measured outcome before any expansion. Earlier candidate closed; residual supplemental job stopped and partial results preserved.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -937,5 +945,17 @@
       "21516",
       "55548"
     ]
+  },
+  "conditional_compensation": {
+    "status": "completed_candidate_closed_no_improvement",
+    "record": "results/data_free_compensation/conditional_compensation/result.json",
+    "table": "results/data_free_compensation/conditional_compensation/summary.md",
+    "source_context_matches": {
+      "public_base": 18,
+      "actual_partner": 792,
+      "n": 800
+    },
+    "supplement_rows": 68,
+    "supplement_complete": false
   }
 }
