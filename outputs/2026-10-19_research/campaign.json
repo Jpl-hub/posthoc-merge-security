@@ -1,6 +1,6 @@
 {
-  "updated_utc": "2026-11-06T07:36:05.769624+00:00",
-  "status": "recovery_input_correction_closed_defense1_standalone_running",
+  "updated_utc": "2026-11-06T07:50:42.978649+00:00",
+  "status": "four_additional_defense1_native_verified_two_target_pair_extension_running",
   "active_focus": "One A/B functional compensation experiment addressing both public B replacement and coefficient recovery.",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
@@ -8,13 +8,19 @@
   "research_jobs": [
     {
       "host": "21516",
-      "timeout_pid": 69875,
+      "timeout_pid": 75222,
       "status": "running",
-      "output": "outputs/bias_eight_remaining_20261106/native",
-      "protocol": "results/phase3/bias_weight_only/eight_expert/remaining_native.json"
+      "stage": "same_methods_new_target_pairs",
+      "output": "outputs/bias_eight_remaining_20261106/pair_comparison",
+      "targets": [
+        "RESISC45",
+        "Cars"
+      ],
+      "partner": "MNIST",
+      "deadline_utc": "2026-11-06T08:26:20+00:00"
     }
   ],
-  "next_action": "Complete and verify the four remaining available Defense1 standalone tests within the fixed priority window. Canonical Defense2 still needs a mechanism that resists the fixed public replacement and real-image coefficient recovery. EuroSAT original split and the full protected-task extension remain pending.",
+  "next_action": "Finish the two available additional Defense1 comparisons with the same paired TA and target-only AGA. Preserve any verified subset at the fixed cutoff. Full eight-target results and both recovery conditions for Defense2 remain open.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -1124,11 +1130,27 @@
   },
   "defense1_remaining_targets": {
     "protocol": "results/phase3/bias_weight_only/eight_expert/remaining_targets.json",
-    "status": "standalone_queue_running",
+    "status": "four_standalone_tests_completed_verified",
     "record": "results/phase3/bias_weight_only/eight_expert/remaining_construction.json",
     "native_protocol": "results/phase3/bias_weight_only/eight_expert/remaining_native.json",
     "new_releases": 5,
     "new_image_forwards": 0,
-    "timeout_pid": 69875
+    "timeout_pid": null,
+    "native_record": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
+    "standalone_tasks": 4,
+    "standalone_replays": 128
+  },
+  "defense1_pair_extension": {
+    "host": "21516",
+    "timeout_pid": 75222,
+    "status": "running",
+    "stage": "same_methods_new_target_pairs",
+    "output": "outputs/bias_eight_remaining_20261106/pair_comparison",
+    "targets": [
+      "RESISC45",
+      "Cars"
+    ],
+    "partner": "MNIST",
+    "deadline_utc": "2026-11-06T08:26:20+00:00"
   }
 }

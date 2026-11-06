@@ -64,7 +64,7 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 | 蒸馏恢复 | `experiment.distill --prodistill` 每任务用 64 张无标签训练图，逐层更新融合系数，每层 100 步。完整测试集报告目标和伙伴。 | 三个保护任务已测。防御二仍可恢复，防御一的结果受固定读出条件限制。 |
 | 消融和成本 | 比较 A 单独改、B 单独改、联合改、同范数扰动及去掉任务 SVD 投影，沿用主表评价。记录构造时间、参数改动量和数据用量。 | 当前 A/B 三任务已有结果。若更换主方法，消融和成本随最终发布更新。 |
 
-防御一已按原权重公式冻结其余五个任务的发布。SUN397、Cars、RESISC45、GTSRB 的独立测试已排在当前 GPU 作业之后。EuroSAT 的检查点、分类头和防御一发布均已齐备，原专家测试文件清单仍待确认。第三方的 2700 张图已有归档，不能直接填入原划分的结果列。 [构造记录](../phase3/bias_weight_only/eight_expert/remaining_construction.json) · [独立测试协议](../phase3/bias_weight_only/eight_expert/remaining_native.json) · [原作者划分说明](https://github.com/mlfoundations/task_vectors/issues/1)
+防御一已按原权重公式冻结其余五个任务的发布。SUN397、Cars、RESISC45、GTSRB 的独立测试已复核。RESISC45 和 GTSRB 逐图一致，SUN397 和 Cars 分别下降约 0.01 和 0.02 个百分点。 [四项独立测试结果](../phase3/bias_weight_only/eight_expert/remaining_native_result.json)EuroSAT 的检查点、分类头和防御一发布均已齐备，原专家测试文件清单仍待确认。第三方的 2700 张图已有归档，不能直接填入原划分的结果列。 [构造记录](../phase3/bias_weight_only/eight_expert/remaining_construction.json) · [独立测试协议](../phase3/bias_weight_only/eight_expert/remaining_native.json) · [原作者划分说明](https://github.com/mlfoundations/task_vectors/issues/1)
 
 防御二先核实当前试验的独立能力和两项恢复结果。方法定稿后，补 SUN397、Cars、RESISC45、EuroSAT、GTSRB 作为保护对象的固定构造与评价，并补相应的无保护和 PaRaMS 行。同一权重、数据和处理条件的结果按指纹复用。扩展表单列任务，原划分未核实的项留空。
 
