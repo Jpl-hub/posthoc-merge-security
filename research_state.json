@@ -1,7 +1,7 @@
 {
   "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
-  "updated_utc": "2026-11-06T17:56:23.690006+00:00",
-  "status": "nbp_readout_analysis_verified_eight_extension_running",
+  "updated_utc": "2026-11-06T18:25:18.933217+00:00",
+  "status": "eight_extension_verified_ablation_replay_failed_night_closeout",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
     "date": "2026-11-06",
@@ -65,7 +65,18 @@
         "GTSRB",
         "RESISC45"
       ],
-      "record": "results/phase3/bias_weight_only/eight_expert/summary.json"
+      "record": "results/phase3/bias_weight_only/eight_expert/summary.json",
+      "target_table": "paper/tables/main.md",
+      "completed_target_diagonals": [
+        "SUN397",
+        "Cars",
+        "RESISC45",
+        "SVHN",
+        "GTSRB",
+        "MNIST",
+        "DTD"
+      ],
+      "additional_four_directions": "results/phase3/bias_weight_only/eight_expert/extension/summary.md"
     },
     "selected_recovery_protected_tasks": [
       "MNIST",
@@ -82,8 +93,8 @@
     "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
-    "active_GPU_jobs": 1,
-    "queued_jobs": 2,
+    "active_GPU_jobs": 0,
+    "queued_jobs": 0,
     "primary_available_GiB": 24,
     "verified_utc": "2026-11-06T12:44:52.756563+00:00",
     "ssh_access": "Windows OpenSSH password authentication verified; no credentials stored.",
@@ -95,7 +106,7 @@
       "role": "GPU-less evidence archive; frozen raw outputs retained."
     }
   },
-  "active_GPU_jobs": 1,
+  "active_GPU_jobs": 0,
   "engineering": {
     "core_sources": [
       "experiment/construct.py",
@@ -123,9 +134,10 @@
     "defense1_additional_native": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
     "defense1_additional_pairs": "results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json",
     "source_fingerprints_checked": 40,
-    "source_fingerprint_mismatches": 0
+    "source_fingerprint_mismatches": 0,
+    "eight_extension": "results/phase3/bias_weight_only/eight_expert/extension/summary.md"
   },
-  "next_action": "Complete the running four-direction eight-expert batch, then fixed component/amplitude controls, then only Cars/SUN397 columns for the original three directions. All GPU stages serial and each gated on the previous successful validation. Review compatible training-time baselines and finish full seven-dataset tables/figures; EuroSAT split remains unverified.",
+  "next_action": "Night closeout at user request. Do not start further jobs. On the next manual continuation, inspect the fixed ablation full replay discrepancy before deciding a correction; retain all thresholds, frozen releases, source caches and failure logs. The seven-task eight-expert target table is complete; original-three Cars/SUN397 columns remain pending.",
   "historical_research": {
     "snapshot_commit": "58af9194172df6c0c8b97f999884993765da973b",
     "Defense2": "Development stopped. Do not restart closed candidates; retain frozen releases, scores and failure evidence.",
@@ -135,7 +147,7 @@
   "github_sync": {
     "receipt": "outputs/latest_github_sync_receipt.json",
     "last_verified_remote_commit": "296384b25bd3354602ccd32a909436d680e7c30c",
-    "status": "GitHub HTTPS is reachable with the existing local system proxy; authenticated origin/main readback verified. Current push and final readback are pending."
+    "status": "GitHub connectivity restored. Use outputs/latest_github_sync_receipt.json for exact verified remote/local/server commits."
   },
   "automatic_continuation": false,
   "automation_status": "13-35 deleted; do not recreate.",
@@ -170,7 +182,7 @@
       "pid": 17980,
       "protocol": "results/phase3/bias_weight_only/eight_expert/extension_protocol.json",
       "preregistration_commit": "8b000d0",
-      "status": "full_running_pilot_passed",
+      "status": "completed_independently_verified",
       "targets": [
         "SUN397",
         "Cars",
@@ -184,20 +196,11 @@
       "input_hashes_verified": 33,
       "new_defense_weights": 0,
       "expert_training_updates": 0,
-      "partial_observation": {
-        "utc": "2026-11-06T17:15:02.087230+00:00",
-        "full_rows_observed": 127,
-        "expected_full_rows": 168,
-        "target_accuracy_percent": {
-          "SUN397_TA": 0.2518891687657431,
-          "SUN397_AGA_target_TA": 0.2518891687657431,
-          "Cars_TA": 0.5471956224350205,
-          "Cars_AGA_target_TA": 0.5471956224350205,
-          "RESISC45_TA": 2.4444444444444446,
-          "RESISC45_AGA_target_TA": 2.4444444444444446
-        },
-        "complete_batch_validated": false
-      }
+      "record": "results/phase3/bias_weight_only/eight_expert/extension/summary.md",
+      "full_rows": 168,
+      "original_context_score_replays": 2688,
+      "maximum_score_error": 0.0,
+      "maximum_independent_log10_p_difference": 1.3642420526593924e-11
     },
     "nbp_readout_analysis": {
       "host": "17897",
@@ -216,7 +219,7 @@
     "nbp_ablation": {
       "host": "17897",
       "timeout_pid": 37140,
-      "status": "six_controls_frozen_gpu_queue_waiting_for_eight_extension",
+      "status": "stopped_full_verification_failed_after_pilot_passed",
       "preregistration_commit": "b905fd9",
       "protocol": "results/phase3/bias_weight_only/ablation_protocol.json",
       "freeze": "results/phase3/bias_weight_only/ablation_freeze.json",
@@ -227,12 +230,19 @@
       "new_control_weights": 6,
       "new_proposed_methods": 0,
       "new_AGA_calls": 0,
-      "new_construction_images": 0
+      "new_construction_images": 0,
+      "failure": {
+        "key": "NBP/Standalone/None/MNIST",
+        "maximum_score_error": 0.00058746337890625,
+        "original_tolerance": 0.0005,
+        "threshold_changed": false,
+        "record": "results/phase3/bias_weight_only/ablation_failure.json"
+      }
     },
     "nbp_eight_original_columns": {
       "host": "17897",
       "timeout_pid": 43538,
-      "status": "queued_after_successful_ablation",
+      "status": "not_started_previous_stage_validation_failed",
       "preregistration_commit": "997da94",
       "protocol": "results/phase3/bias_weight_only/eight_expert/original_columns_protocol.json",
       "log": "outputs/nbp_eight_original_columns_20261107/job.log",
@@ -264,9 +274,9 @@
     "root": "paper",
     "main": "paper/main.tex",
     "scope": "NBP only",
-    "stage": "first_draft_not_submission_ready",
+    "stage": "first_draft_main_eight_target_table_updated_not_submission_ready",
     "style": "Unmodified official CVPR2027 cvpr.sty and bibliography style. T1 font encoding for local Tectonic.",
-    "tables": "One two-column main table and three single-column tables generated from real results.",
+    "tables": "One main table with standalone, two-expert and eight-expert target accuracy for seven tasks, plus three single-column comparison tables; matching MD/TeX and source hashes.",
     "novelty": "Working name and specific-construction novelty remain provisional. PaRaMS,MergeGuard,Trap2 and NSmark were compared by mechanism. No first-ever claim.",
     "LLM_statement": "Remind the user before final submission; wording to be agreed then.",
     "overleaf_project": "Existing imported template, earlier source synchronized through browser UI. New fixed-readout section/figure is local; online synchronization has not yet been verified after the tool environment switched.",

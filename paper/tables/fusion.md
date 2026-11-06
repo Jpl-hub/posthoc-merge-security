@@ -1,7 +1,7 @@
-Additional fusion rules on the fixed SUN397/MNIST pair (\%). TIES retains 20\% of entries with scale 1. DARE+TA uses drop rate 0.2, seed 42, and TA coefficient 0.5. AGA processes the protected expert. Both complete test sets and matching controls are reported.
+Additional fusion rules on the fixed SUN397/MNIST pair (%). TIES retains 20% of entries with scale 1. DARE+TA uses drop rate 0.2, seed 42, and TA coefficient 0.5. AGA processes the protected expert. Both complete test sets and matching controls are reported.
 
 | Fusion / recovery | Defense | SUN397 | MNIST |
-| --- | --- | --- | --- |
+| --- | --- | ---: | ---: |
 | TIES | None | 74.27 | 99.60 |
 | TIES | PaRaMS | 0.29 | 8.92 |
 | TIES | NBP | 0.25 | 10.28 |

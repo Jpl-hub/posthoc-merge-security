@@ -17,6 +17,53 @@ rows = tables["paper_main"]["rows"] + tables["defense1_additional_pairs"]["rows"
 values = {(row[0].split("/")[0], row[1]): row[2:] for row in rows if row[1] in methods}
 
 
+eight = {}
+
+
+def add_eight(target, method, scope, task, n, correct, parameter_sha):
+    if task != target:
+        return
+    method = "Defense 1" if method.startswith("Defense1") else "PaRaMS" if method.startswith("PaRaMS") else method
+    key = target, method, scope
+    value = n, correct, parameter_sha
+    assert key not in eight or eight[key] == value, key
+    eight[key] = value
+
+
+for path, field in [("results/phase3/bias_weight_only/eight_expert/summary.json", "paired_summary"),
+                    ("results/params_reference/eight_expert/summary.json", "independent_statistics")]:
+    summary = json.loads((ROOT / path).read_text())
+    assert summary["status"] == "completed_independently_verified"
+    for row in summary[field]:
+        target, name, scope, task = row["key"].split("/")
+        add_eight(target, name, scope, task, row["n"], row["correct"],
+                  summary["parameters"]["/".join((target, name, scope))])
+
+extension = ROOT / "results/phase3/bias_weight_only/eight_expert/extension"
+execution = json.loads((extension / "execution.json").read_text())
+assert execution["status"] == "completed_independently_verified"
+for name in ["results.json", "validation.json", "independent_statistics.json"]:
+    path = extension / name
+    expected = execution["files_sha256"]["outputs/nbp_eight_extension_20261106/full/" + name]
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == expected
+    source["input_sha256"][str(path.relative_to(ROOT))] = expected
+path = extension / "execution.json"
+source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+validation = json.loads((extension / "validation.json").read_text())
+statistics = json.loads((extension / "independent_statistics.json").read_text())
+extension_rows = json.loads((extension / "results.json").read_text())
+assert validation["status"] == statistics["status"] == "passed"
+assert validation["rows"] == statistics["rows"] == len(extension_rows) == 168
+assert validation["raw_sha256"] == statistics["raw_sha256"] == execution["raw_sha256"]
+recount = {r["key"]: r for r in statistics["independent_statistics"]}
+for row in extension_rows:
+    key = "/".join(row[k] for k in ["target", "defense", "attack_scope", "dataset"])
+    assert (row["n"], row["correct"]) == (recount[key]["n"], recount[key]["correct"])
+    add_eight(row["target"], row["defense"], row["attack_scope"], row["dataset"],
+              row["n"], row["correct"], row["model_parameter_sha256"])
+assert len(eight) == len(tasks) * len(methods) * 2
+
+
 def write_table(name, caption, label, headers, groups, wide=False):
     env = "table*" if wide else "table"
     columns = len(headers)
@@ -26,8 +73,10 @@ def write_table(name, caption, label, headers, groups, wide=False):
              r"\setlength{\tabcolsep}{4pt}", rf"\caption{{{caption}}}",
              rf"\label{{{label}}}", r"\begin{tabular}{" + spec + "}",
              r"\toprule", " & ".join(headers) + r" \\", r"\midrule"]
-    md = [caption, "", "| " + " | ".join(headers) + " |",
-          "| " + " | ".join(["---"] * columns) + " |"]
+    md_caption = caption.replace(r"\%", "%").replace(r"Table~\ref{tab:main}", "the main table")
+    md = [md_caption, "", "| " + " | ".join(headers) + " |",
+          "| " + " | ".join(["---"] * (2 if grouped else 1)
+                              + ["---:"] * (columns - (2 if grouped else 1))) + " |"]
     for group_id, (group, records) in enumerate(groups):
         if group_id:
             lines.append(r"\midrule")
@@ -41,11 +90,18 @@ def write_table(name, caption, label, headers, groups, wide=False):
 
 
 groups = []
-for setting, index in [("Standalone", 0), ("TA", 1), ("AGA + TA", 2)]:
+for setting, index in [("Standalone", 0), ("2-expert TA", 1), ("2-expert AGA", 2)]:
     records = [[display[method]] + [values[task, method][index].split(" / ")[0]
                for task in tasks] for method in methods]
     groups.append((setting, records))
-write_table("main", "Seven protected tasks in two-expert merging. Standalone accuracy should remain high; lower merged protected-task accuracy indicates stronger protection. TA uses coefficient 0.5. AGA processes the protected expert, including in each matching unprotected control. MNIST pairs with SVHN; other targets pair with MNIST. All values are complete-test accuracy (\\%).",
+for setting, scope in [("8-expert TA", "None"), ("8-expert AGA", "Protected expert")]:
+    records = []
+    for method in methods:
+        cells = [f"{100 * eight[task, method, scope][1] / eight[task, method, scope][0]:.2f}"
+                 for task in tasks]
+        records.append([display[method]] + cells)
+    groups.append((setting, records))
+write_table("main", "Standalone and protected-task accuracy (\\%) for seven tasks. Standalone accuracy should remain high; lower merged accuracy indicates stronger protection. TA uses coefficient 0.5 for two experts and 0.2 for eight experts. AGA processes the protected expert before TA, including in each matching control. Two-expert companions are SVHN for MNIST and MNIST otherwise. Eight-expert merging protects one expert at a time; EuroSAT participates without a reported test score or eight-task average.",
             "tab:main", ["Setting", "Defense"] + tasks, groups, wide=True)
 
 records = [[task] + [values[task, method][2].split(" / ")[1] for method in methods]
@@ -88,4 +144,7 @@ for merger in ["TIES", "DARE+TA"]:
         groups.append((merger + (" + AGA" if scope != "None" else ""), records))
 write_table("fusion", "Additional fusion rules on the fixed SUN397/MNIST pair (\\%). TIES retains 20\\% of entries with scale 1. DARE+TA uses drop rate 0.2, seed 42, and TA coefficient 0.5. AGA processes the protected expert. Both complete test sets and matching controls are reported.",
             "tab:fusion", ["Fusion / recovery", "Defense", "SUN397", "MNIST"], groups)
-print("Generated four manuscript tables from verified existing and newly completed results.")
+(OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
+    "eight_expert_protected_task_cells": len(eight),
+    "tables": ["main", "partners", "recovery", "fusion"]}, indent=2) + "\n")
+print("Generated four manuscript tables, including42 verified eight-expert target cells.")
