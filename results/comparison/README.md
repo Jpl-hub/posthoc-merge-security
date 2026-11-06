@@ -2,7 +2,7 @@
 
 截至 2026 年 11 月 6 日，**已选主实验和两项代表性恢复均有完整结果，两种防御的结论还未全部成立。** 当前主表使用防御一的权重偏置版和 11 月 2 日冻结的防御二 A/B 版。加入读出补偿的三任务结果是独立对照。公开增益抵消版已经关闭，结果留在失败记录。
 
-11月6日新合成输入的固定A/B试验也已完成：MNIST独立99.47%，TA23.47%，AGA仅目标/双方为1.34/0.76%，AGA后公开B替换99.28%，ProDistill99.37%。完整32行、576次原批上下文分数重放通过，未采用为主方法。[MD表](../data_free_compensation/task_inputs_defense_summary.md) · [TeX表](../data_free_compensation/task_inputs_defense_summary.tex)。换B后，两组合成输入仍全部保持原判断，说明本次蒸馏目标没有同时解决公开替换；接下来沿用A/B求解入口，把两个恢复条件一并纳入目标，不增加融合算法或按测试分数挑选发布。
+11 月 6 日两次 A/B 探索均保留了独立准确率和 AGA 下的保护，公开替换和 ProDistill 仍恢复至 99% 以上。 [输入覆盖试验](../data_free_compensation/task_inputs_defense_summary.md) · [双恢复条件试验](../data_free_compensation/recovery_conditions_summary.md)
 
 ## 论文主表与边界
 
@@ -47,24 +47,28 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 |---|---|
 | [PaRaMS，ICCV 2025，表 1](https://arxiv.org/html/2503.07661v1#S5) · [官方代码](https://github.com/ISCT-W/PaRaMS) | 正文同一行并列独立准确率、融合后的目标和伙伴结果。无保护、基线及两种防御用本文固定的同条件数据。 |
 | [MergeGuard，CVPR 2026，§6–7](https://openaccess.thecvf.com/content/CVPR2026/html/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.html) | 将正常使用、融合和适应恢复分开交代。本文额外做了 ProDistill，单列其图片和训练预算。 |
+| [MergeBarrier，AAAI 2026，§4.1、表 2 和表 4](https://arxiv.org/html/2511.10712v2#S4) | 用公开基座替换改写过的层，测替换后还有多少保护效果。论文同时改写 FFN 并变换 Attention。本项目固定替换最后一层 MLP 的 B 和偏置，检查剩余 A 的作用。 |
 | [Trap²，ICML 2026，表 5 与附录表 14](https://arxiv.org/html/2601.21898v2#S6.SS4) · [官方全参数评价入口](https://github.com/ml-postech/Trap2/blob/ef65a26590d92fe07955c5621c08bb315484ff29/eval_scripts/8vision_pertask_linearsearch_full.py) | 正文和补充分别回答主要设置与更强恢复。仓库沿用固定配置、冻结发布、评价入口分离的结构。本文的两专家 ProDistill 使用每任务 64 张训练图，结果按目标和伙伴列出。 |
 
 方法图画独立使用时如何补偿，以及融合后补偿为何失配。准确率用表报告。系数曲线用同一冻结发布和同一对照的实测点绘制，曲线上的测试结果用于解释机制。
 
-## 八任务补齐安排
+## 实验怎么跑
 
-当前只有MNIST、SVHN、DTD轮流作为保护对象。其余五项是SUN397、Cars、RESISC45、EuroSAT、GTSRB。八份原专家及八份分类头现均在21516上；它们的存在不代表已完成防御构造或保护评价。七项测试数据及原划分已有完整评价，EuroSAT数据和原始划分仍需准备。逐项状态见[eight_task_readiness.json](eight_task_readiness.json)。
+对比实验固定同一组专家、融合系数、测试划分和攻击预算，只换防御方法。完整实验检查同一发布的独立使用、普通融合、恢复后的融合以及机制消融。所有恢复操作都用同一权限处理无保护对照，融合模型同时评价保护任务和伙伴。
 
-- 先完成正在执行的A/B双恢复条件试验，按完整结果决定是否采用。
-- 同时准备其余五任务的固定构造输入、清洁恢复参照和数据配置；防御构造仍不用真实图片，测试图片只用于评价。
-- 最终方法确定后，让八个任务逐一作为保护对象；每次保护一个，其他七个保持无保护。同一八专家融合同时报告保护目标及其余任务结果，并配无保护和同条件基线。
-- 统一补齐最终方法的AGA、公开替换、蒸馏、消融和成本；已经同权重同设置完成的单元直接复用。EuroSAT原划分确认前，不填写该列或计算八任务平均。
+| 实验 | 做法和评价入口 | 当前覆盖 |
+|---|---|---|
+| 两专家主对比 | 无保护、PaRaMS、防御一、防御二用同一对专家。`experiment.main_table` 跑独立、TA 0.5，以及 AGA 后的 TA。正文用同一行列出目标和伙伴。 | 三个保护任务及各自伙伴均已完成。 |
+| 八专家主对比 | 每轮只保护一个专家，其余七个保持原样。`experiment.eight_task` 用 TA 0.2，分别测直接融合和仅对目标做 AGA。表格每列一个测试集。 | 三个保护任务、七个完整测试集。 |
+| 公开替换 | 按已知位置用公开基座替换参数，再按原 TA 系数融合。`experiment.main_table` 用 `public_replacement` 配置。防御一的最终偏置清理单列。 | 三个保护任务已测。防御二的 B 替换仍能恢复。 |
+| 蒸馏恢复 | `experiment.distill --prodistill` 每任务用 64 张无标签训练图，逐层更新融合系数，每层 100 步。完整测试集报告目标和伙伴。 | 三个保护任务已测。防御二仍可恢复，防御一的结果受固定读出条件限制。 |
+| 消融和成本 | 比较 A 单独改、B 单独改、联合改、同范数扰动及去掉任务 SVD 投影，沿用主表评价。记录构造时间、参数改动量和数据用量。 | 当前 A/B 三任务已有结果。若更换主方法，消融和成本随最终发布更新。 |
 
-## 接下来按这个顺序
+防御一已按原权重公式冻结其余五个任务的发布。SUN397、Cars、RESISC45、GTSRB 的独立测试已排在当前 GPU 作业之后。EuroSAT 的检查点、分类头和防御一发布均已齐备，原专家测试文件清单仍待确认。第三方的 2700 张图已有归档，不能直接填入原划分的结果列。 [构造记录](../phase3/bias_weight_only/eight_expert/remaining_construction.json) · [独立测试协议](../phase3/bias_weight_only/eight_expert/remaining_native.json) · [原作者划分说明](https://github.com/mlfoundations/task_vectors/issues/1)
 
-1. **先把主方法定清楚。** 正文使用 A/B 防御二。另一个补偿对照只在 A/B 之后改最后的 LayerNorm 和投影，三任务的固定 ProDistill 结果为 MNIST 10.32%、SVHN 15.94%、DTD 2.13%；公开 B 替换仍能恢复，因此它放在补充表里。
-2. **把两种防御的结论写到各自证据为止。** 防御一保留原版 AGA 和固定 ProDistill 的正结果。如果投稿主张包括知道最终偏置位置的攻击，当前只改核空间偏置的机制可以被投影直接清理，需要解决结构问题。防御二的主对比使用同一冻结发布，读出补偿、取反及投影消融单列。
-3. **如果继续改防御二，只登记一个候选。** 候选必须在公开 B 被替换后仍保留中间层的非线性作用；先做无图片的源检查，检查通过后才跑三任务、TA、AGA、公开替换和 ProDistill。检查失败就停止增加版本，直接按当前结果整理论文。已有结果按指纹复用，当前 GitHub 同步状态以本地 `outputs/latest_github_sync_receipt.json` 为准。
+防御二先核实当前试验的独立能力和两项恢复结果。方法定稿后，补 SUN397、Cars、RESISC45、EuroSAT、GTSRB 作为保护对象的固定构造与评价，并补相应的无保护和 PaRaMS 行。同一权重、数据和处理条件的结果按指纹复用。扩展表单列任务，原划分未核实的项留空。
+
+投稿使用 CVPR 2027 author kit 的双栏审稿格式。正文限八页，含图表。LLM 使用声明放在正文之后、参考文献之前。 [官方模板](https://github.com/cvpr-org/author-kit/releases/tag/CVPR2027-v1) · [作者指南](https://cvpr.thecvf.com/Conferences/2027/AuthorGuidelines)
 
 ## 补充与历史证据
 
