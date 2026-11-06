@@ -62,6 +62,30 @@ def main():
     with torch.no_grad():
         yu = torch.cat([F.linear(act(F.linear(x, A, a)), B, b) for x in xu.split(256)])
     cache = {name:{k:to(v) for k,v in row.items()} for name,row in raw['cache'].items()}
+    contexts=['direct','recovered']
+    if cfg.get('task_reference',False):
+        # This reference uses the same target expert, never a future partner.
+        from _impl.models import apply
+        from _impl.merge import merge
+        aligned=apply(expert,raw_spec['clean_AGA'],full=True)
+        reference=merge(base,aligned,expert,.5).cuda().eval()
+        captured=dict(x=[],prefix=[])
+        block=reference.model.visual.transformer.resblocks[11]
+        hooks=[block.mlp.c_fc.register_forward_pre_hook(lambda m,a:captured['x'].append(a[0][0].detach().cpu())),
+               block.ln_2.register_forward_pre_hook(lambda m,a:captured['prefix'].append(a[0][0].detach().cpu()))]
+        norm=expert.val_preprocess.transforms[-1]
+        with torch.no_grad():
+            for pixels in raw['final'].split(8):
+                x=F.interpolate(pixels,(224,224),mode='bilinear',align_corners=False)
+                x=torch.cat([torch.roll(x,s,(2,3)) for s in [(0,0),(7,0),(-7,0),(0,7),(0,-7)]])
+                x=(x-x.new_tensor(norm.mean)[None,:,None,None])/x.new_tensor(norm.std)[None,:,None,None]
+                reference(x.cuda())
+        for hook in hooks:hook.remove()
+        cache['task_direct']=cache['native']
+        cache['task_recovered']={k:to(torch.cat(v)) for k,v in captured.items()}
+        contexts+=['task_direct','task_recovered']
+        torch.save({k:{f:v.cpu() for f,v in cache[k].items()} for k in contexts if k.startswith('task_')},out/'task_contexts.pt')
+        del reference,aligned,block,captured
     native = cache['native']
     xn, yn = native['x'], native['final'] - native['prefix']
     populations = []
@@ -103,17 +127,19 @@ def main():
                 error=error+s*(F.linear(act(F.linear(xx,aa,bb)),r[:,:-1],r[:,-1])-yy).square().sum()
         responses=[]
         public_counts={}
-        for name in ('direct','recovered'):
+        for name in contexts:
             row=cache[name]
+            Ar,ar,Br,br=(A,a,B,b) if name.startswith('task_') else (A0,a0,B0,b0)
+            readout=rn if name.startswith('task_') else rp
             # Parent order is fixed in this source proxy. Actual author AGA
             # is rerun on the frozen final model during evaluation.
-            if name=='recovered':
+            if name.endswith('recovered'):
                 ax,bx=aa[order],bb[order]
                 rr=r[:,:-1][:,order]
             else: ax,bx,rr=aa,bb,r[:,:-1]
-            hh=act(F.linear(row['x'],(ax+A0)/2,(bx+a0)/2))
-            for mode,ro,bo in [('B_reset',B0,b0),('TA',(rr+B0)/2,(r[:,-1]+b0)/2)]:
-                z=classify(row['prefix']+F.linear(hh,ro,bo),rp)
+            hh=act(F.linear(row['x'],(ax+Ar)/2,(bx+ar)/2))
+            for mode,ro,bo in [('B_reset',(B0+Br)/2,(b0+br)/2),('TA',(rr+Br)/2,(r[:,-1]+br)/2)]:
+                z=classify(row['prefix']+F.linear(hh,ro,bo),readout)
                 logprior=torch.logsumexp(z.log_softmax(1),0)-torch.log(z.new_tensor(len(z)))
                 for processing,zz in [('raw',z),('calibrated',z-logprior)]:
                     own=zz.gather(1,labels[:,None]).flatten()
