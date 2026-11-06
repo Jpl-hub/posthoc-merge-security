@@ -1,887 +1,134 @@
 {
-  "objective": "Frozen-expert post-hoc parameter protection: retain standalone task function while reducing protected-task performance after unauthorized merging and original AGA recovery.",
+  "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
+  "updated_utc": "2026-11-06T12:44:52.756563+00:00",
+  "status": "defense1_only_after_supervisor_discussion",
+  "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
+  "teacher_guidance": {
+    "date": "2026-11-06",
+    "source": "User-supplied meeting transcript, checked against the classmate summary; recording transcription is imperfect.",
+    "decision": "Concentrate ongoing work on Defense1. Retain Defense2 as historical evidence without new trials.",
+    "deliverables": [
+      "Write the Defense1 construction and preservation argument while experiments run.",
+      "Complete selected protected tasks and eight-expert evaluation; distinguish participating experts, protected directions, and evaluated datasets.",
+      "Compare fusion methods and compatible defense baselines using same-condition results.",
+      "Separate AGA, known-module replacement, and fixed ProDistill settings; include method origins and limited visualizations."
+    ],
+    "interpretation_limit": "No unambiguous new mathematical update was dictated in the transcript. Task-specific constraints and public-base decoupling need an explicit formula before changing the existing construction.",
+    "classmate_summary": "Useful secondary reference, not an independent instruction or evidence that all attacks are blocked."
+  },
+  "construction_access": "Frozen target expert, public base and fixed classifier only. Zero real or synthetic construction images, expert-training updates and optimizer steps.",
   "protocol": {
-    "historical_D_and_R": "Historical D.5 and R.5 controls retained; neither is a universal cutoff for future methods.",
-    "native_condition": "Report complete standalone accuracy loss and paired changes together with fusion protection; no universal .5pp veto. Historical .5pp flags unchanged.",
-    "experts_frozen": true,
-    "real_construction_images": 0,
-    "no_partner_test_witness_for_construction_selection_or_repair": true,
-    "no_closed_point_parameter_seed_rank_layer_retries": true,
-    "original_AGA_and_other_processing": "OriginalAGA raw,outputcalibration,knownmodule recovery separate;mergers notcountedasattacks.",
-    "merge_success_criterion": "Standalone protected-expert utility preserved; unauthorized merge target/partner accuracy both reported. No merged-partner-preservation constraint. Extra-data and known-location attacks separate."
+    "native_condition": "Report complete standalone accuracy and paired prediction changes.",
+    "no_partner_test_or_exposed_confirmation_for_construction": true,
+    "attack_scope": "AGA, known final-MLP-B replacement and fixed ProDistill are separate conditions. ProDistill is a merger used for recovery evaluation.",
+    "reuse": "Reuse only matching release, weights, dataset, preprocessing and processing configuration; preserve original source hashes."
   },
-  "construction_access": "Frozen target/public weights and taskSVD. New declared class-informed branch also uses the fixed target classifier and classIDs,zero real construction images. Old head-free protocols retained. No partners,real training/test/exposedconfirmation or witness-based construction/selection/repair.",
-  "data_free_requirement": "Both defenses must construct from frozen weights and permitted synthetic inputs only. Defense1 now needs neither real nor synthetic images. Real held-out images are used only after release freezing for evaluation; historical image-calibrated records remain data-assisted.",
-  "writing_and_research_focus": "先讲核心方法、整体算法流程和真实效果。适用条件简短交代，过程核验与历史细节留索引，避免防御性写作及外围补丁挤占核心工作。",
-  "automatic_continuation": false,
-  "automation_status": "13-35 deleted;do not recreate",
-  "compute": {
-    "primary_GPU": "NVIDIA GeForce RTX 4090",
-    "primary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "ssh_control_socket": "/tmp/posthoc_4090_17897.sock",
-    "python": "/root/autodl-tmp/posthoc-env/bin/python",
-    "torch": "2.3.0+cu121",
-    "numpy": "1.26.4",
-    "GPU_memory_MiB": 24564,
-    "active_GPU_jobs": 0,
-    "secondary_root": "/root/autodl-tmp/posthoc-merge-security",
-    "secondary_ssh_control_socket": "/tmp/posthoc_3090_archive.sock",
-    "secondary_role": "Historical CPU archive only; authoritative engineering and all new GPU experiments are on21516",
-    "verified_utc": "2026-11-06T11:03:40.119866+00:00",
-    "primary_available_GiB": 30,
-    "ssh_access": "Current WSL OpenSSH multiplexed connection; credentials never stored",
-    "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
-    "primary_workspace_status": "Four Defense1 additional target pairs verified, SUN397 finished on 17897.",
-    "primary_source_checkout": "/root/autodl-tmp/posthoc-merge-security",
-    "secondary_endpoint": "region-41.seetacloud.com:55548",
-    "previous_primary": {
-      "endpoint": "connect.cqa1.seetacloud.com:21516",
-      "role": "GPU-less evidence archive; frozen raw outputs retained."
-    },
-    "queued_jobs": 0
-  },
-  "teacher_screenshots_last_read_directory": "/mnt/c/Users/J/Downloads/截图",
-  "established_methods": {
-    "Defense1": {
-      "record": "results/phase3/bias_weight_only/other_tasks/summary.md",
-      "standalone_accuracy_percent": [
-        99.69,
-        97.46081745543947,
-        79.41489361702128
-      ],
-      "native_predictions_unchanged": true,
-      "limitation": "Fixed64-noise output calibration recovers nearly clean merged accuracy;known-location projection separate."
-    },
-    "Defense2_earlier": {
-      "record": "results/data_free_compensation/population_compensation_result.json",
-      "attack_table": "results/comparison/attacks.md",
-      "standalone_accuracy_percent": [
-        99.61,
-        96.98063921327596,
-        76.11702127659575
-      ]
-    },
-    "Defense2_updated": {
-      "record": "results/data_free_compensation/finite_classification_result.json",
-      "standalone_accuracy_percent": [
-        99.57,
-        96.66180086047942,
-        76.32978723404256
-      ],
-      "two_expert_AGA_then_calibration_percent": [
-        10.76,
-        6.987553779963122,
-        5.0
-      ],
-      "eight_expert_AGA_then_calibration_percent": [
-        22.99,
-        17.159649661954518,
-        28.45744680851064
-      ],
-      "limitation": "Single-side deletions and matched Gaussian controls establish an interaction of A and B for the current fixed releases. DTD standalone loss3.085pp; no general SVD gain. Known replacement and data-assisted distillation can recover."
-    }
+  "current_method": {
+    "record": "results/phase3/bias_weight_only/other_tasks/summary.md",
+    "standalone_accuracy_percent": [
+      99.69,
+      97.46081745543947,
+      79.41489361702128
+    ],
+    "native_predictions_unchanged": true,
+    "limitation": "Fixed64-noise output calibration recovers nearly clean merged accuracy;known-location projection separate.",
+    "entry": "experiment.construct --method bias",
+    "implementation": "_impl.defenses.construct_bias",
+    "status": "current_only_method",
+    "prediction_preservation_scope": "The three original protected tasks. Additional Cars/SUN397 have small observed finite-precision changes."
   },
   "evaluation_scope": {
     "architecture": "CLIP ViT-B/32",
-    "protected_tasks": [
-      "MNIST",
-      "SVHN",
-      "DTD"
-    ],
     "participating_experts": 8,
-    "complete_evaluated_datasets": [
+    "two_expert_protected_tasks": [
       "MNIST",
       "SVHN",
       "DTD",
-      "GTSRB",
       "RESISC45",
       "Cars",
+      "GTSRB",
       "SUN397"
     ],
-    "EuroSAT": "Original expert split unverified;no8-task mean",
-    "attack_inventory": "results/attack_generalization_20261028/attack_inventory.md",
-    "matching_versions": "One current Defense2 release is used in the paper tables; earlier records remain only in Git history and raw evidence.",
-    "tables": "results/comparison/README.md"
-  },
-  "engineering": {
-    "new_production_modules": 0,
-    "new_frameworks": 0,
-    "report_entry": "experiment/report.py --defense-comparison",
-    "core_sources": [
-      "experiment/defense2.py",
-      "experiment/readout_channels.py",
-      "_impl/defenses.py"
-    ],
-    "raw_evidence": "Retained servers;lightweight results and source references in Git",
-    "unique_models_scores_failures_deleted": 0,
-    "state_compaction": "Current run and established methods only; completed historical batches retained in Git74ab0bb and result files.",
-    "retired_optional_lines": 43,
-    "retired_source_commit": "a973133",
-    "active_defense2_matches_commit": "be57bec",
-    "cleanup_20261104": {
-      "retired_scripts": 7,
-      "removed_lines": 591,
-      "source_commit": "a17a754",
-      "rebuildable_cache_files": 53,
-      "cache_bytes": 427104,
-      "unique_models_or_scores_deleted": 0
-    },
-    "latest_transfer": {
-      "from_host": "17897",
-      "to_host": "21516",
-      "files": 49,
-      "bytes": 23312161,
-      "all_sha256_equal": true,
-      "heavy_failed_weights": "Retained17897, not duplicated on activeGPU. Original parent/source/checkpoints present21516 and hashes checked."
-    },
-    "latest_cleanup": {
-      "path": "experiment/recovery_task.py",
-      "source_commit": "f21cb24e600a401c217b489404ef46fa4fa16f40",
-      "archive": "outputs/recovery_soft_fixed_context_20261105/source.py",
-      "sha256": "1316096ce7ca3b1c5789393f75821f977162fdc7a0e936eeddae809d4cabf59a",
-      "unique_models_or_scores_deleted": 0
-    },
-    "cleanup_20261106": {
-      "retired_execution_files": 7,
-      "removed_lines": 1026,
-      "restore_commit": "b65db931cdb5ef57901ddad899e9415471cd81b4",
-      "archive": "/root/posthoc_evaluation_cache/closed_sources_20261106",
-      "unique_models_or_scores_deleted": 0
-    }
-  },
-  "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-06T11:03:40.119866+00:00",
-  "status": "frozen_residual_bias_recovery_mechanism_verified",
-  "active_focus": "Find a defense change that survives B replacement and last-block coefficient fitting.",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Evaluate B replacement first on a fixed candidate that retains standalone accuracy. Compare the same ProDistill initialization and recovered model, including the final block as a separate intervention.",
-  "closed_history": {
-    "full_state_commit": "74ab0bb",
-    "index": "results/comparison/README.md",
-    "rule": "原模型、逐图分数、失败证据及执行源码保留；不按测试结果重启已关闭点。",
-    "current_result_index": "results/data_free_compensation/summary.md",
-    "latest_full_state_commit": "3ac59e19d96c9bce7e28685282c791fd847b8839",
-    "completed_recovery_batches": {
-      "joint_task_loss": "results/data_free_compensation/joint_task_loss_result.json",
-      "soft_task_loss": "results/data_free_compensation/soft_task_loss_result.json",
-      "line_search_task": "results/data_free_compensation/line_search_task_result.json",
-      "recovery_soft": "results/data_free_compensation/recovery_soft_input_failure.json",
-      "recovery_soft_fixed_context": "results/data_free_compensation/recovery_soft_fixed_context_result.json"
-    }
-  },
-  "github_sync": {
-    "status": "Local and retained-server updates pending GitHub. HTTPS readback connection refused.",
-    "last_verified_remote_commit": "296384b25bd3354602ccd32a909436d680e7c30c",
-    "receipt": "outputs/latest_github_sync_receipt.json"
-  },
-  "literature_review": {
-    "updated_utc": "2026-11-06T10:20:59.264505+00:00",
-    "sources": [
-      "Trap2 official paper/repository",
-      "PaRaMS paper",
-      "MergeBarrier paper",
-      "SOPHON paper/official repository",
-      "TAR paper",
-      "MergeGuard CVPR 2026 official paper",
-      "AGA and ARF ECCV 2026 paper and AGA code",
-      "ACL 2026 Trace Rewriting paper and student training code"
-    ],
-    "finding": "Recovery permissions differ across papers; no common anti-distillation guarantee.",
-    "comparison_index": "results/comparison/README.md"
-  },
-  "dtd_projection_diagnosis": {
-    "status": "completed_read_only_diagnosis_no_new_defense",
-    "record": "results/data_free_compensation/dtd_projection_diagnostic_result.json",
-    "real_construction_images": 0,
-    "new_models": 0,
-    "new_updates": 0,
-    "support_DTD_correct": {
-      "Retained": 64,
-      "Removed": 47,
-      "Removed_original_readout": 48
-    },
-    "full_DTD_ProDistill_percent": {
-      "Retained": 66.70212765957447,
-      "Removed": 20.53191489361702
-    },
-    "complete_test_rerun": false,
-    "raw_hosts": [
-      "21516",
-      "55548"
-    ],
-    "fixed_readout_teacher_correct": {
-      "Retained": 64,
-      "Removed": 64
-    },
-    "Removed_fit_classification_errors": 17,
-    "new_image_forwards_in_extension": 0
-  },
-  "teacher_screenshots_latest_read": "/mnt/c/Users/J/AppData/Local/Temp/codex-clipboard-0a7bc758-270f-4b32-925b-c942e2c2367f.png",
-  "task_direction_decomposition": {
-    "status": "completed_read_only",
-    "record": "results/data_free_compensation/dtd_projection_diagnostic_result.json",
-    "section": "task_partition_result",
-    "tasks": [
-      "MNIST",
-      "SVHN",
-      "DTD"
-    ],
-    "cached_views": 5360,
-    "independent_rows": 24,
-    "seconds": 10.347284115850925,
-    "new_models": 0,
-    "parameter_updates": 0,
-    "image_forwards": 0,
-    "finding": "Both parameter-direction components participate in the existing source-function compensation for all three controls; this alone does not explain DTD-specific lower recovery."
-  },
-  "recovery_gradient_scope": {
-    "status": "stopped_at_registered_derivative_check_inconclusive",
-    "record": "results/data_free_compensation/recovery_gradient_scope.json",
-    "source_commit": "f965bdd23019b7ab48f534f4716d1d50ff5dffa7",
-    "host": "21516",
-    "timeout_pid": null,
-    "worker_pid": null,
-    "output": "outputs/recovery_direction_20261105",
-    "seconds": 102.74329402856529,
-    "defense_updates": 0,
-    "new_defense_releases": 0,
-    "real_images": 0,
-    "coefficient_trajectory_steps": 300,
-    "coefficient_reverse_replays": 100,
-    "full_scope_compared": false
-  },
-  "finite_recovery_compensation": {
-    "status": "completed_source_only_no_eligible_candidate",
-    "record": "results/data_free_compensation/finite_recovery_compensation.json",
-    "source_commit": "12a8b67724188b7efc2abb841afeecf5e5490e41",
-    "host": "21516",
-    "output": "outputs/finite_recovery_compensation_20261105",
-    "seconds": 304.0175341349095,
-    "accepted_steps": {
-      "Projected": 3,
-      "Joint": 0
-    },
-    "standalone_source_matches": [
-      800,
-      800
-    ],
-    "distillation_source_matches": [
-      64,
-      64
-    ],
-    "replacement_source_matches": [
-      800,
-      800
-    ],
-    "actual_full_evaluation": false,
-    "raw_archive_hosts": [
-      "21516",
-      "55548"
-    ],
-    "real_construction_images": 0
-  },
-  "dtd_final_b_fit": {
-    "record": "results/data_free_compensation/dtd_final_b_fit.json",
-    "source_commit": "a83e2d1d684d830f0452f5cc49ff724f8c51e7be",
-    "status": "completed_fixed_fit_diagnosis",
-    "observed_all_token_MSE": [
-      0.0033543327921791025,
-      0.007559362627233416
-    ],
-    "minimum_all_token_MSE": [
-      0.0008976845566116717,
-      0.0008848716886052085
-    ],
-    "seconds": 8.876826094463468,
-    "new_model_checkpoints": 0,
-    "active_GPU_jobs": 0
-  },
-  "dtd_b_fit_transfer": {
-    "status": "completed_full_paired_evaluation",
-    "record": "results/data_free_compensation/dtd_b_fit_transfer.json",
-    "source_commit": "fbdc5365253e67482038d0ca881d94cc3bb5ef2a",
-    "host": "21516",
-    "output": "outputs/dtd_b_fit_transfer_20261105",
-    "DTD_test_correct": {
-      "Retained": [
-        1254,
-        1142
-      ],
-      "Removed": [
-        386,
-        1243
-      ]
-    },
-    "MNIST_test_correct": {
-      "Retained": [
-        9951,
-        9952
-      ],
-      "Removed": [
-        9947,
-        9951
-      ]
-    },
-    "replay_count": 128,
-    "maximum_replay_error": 1.52587890625e-05,
-    "raw_archive_hosts": [
-      "21516",
-      "55548"
-    ],
-    "new_defense_updates": 0
-  },
-  "dtd_adam_radius": {
-    "record": "results/data_free_compensation/dtd_adam_radius.json",
-    "status": "completed_read_only_weight_audit",
-    "host": "21516",
-    "coordinate_radius": 1.6054554514053763,
-    "fitted_B_outside_percent": {
-      "Retained": 61.44561767578125,
-      "Removed": 48.33641052246094
-    },
-    "image_forwards": 0,
-    "training_steps": 0,
-    "new_models": 0
-  },
-  "ln2_shift_reset": {
-    "record": "results/data_free_compensation/ln2_shift_reset.json",
-    "source_commit": "5fb34d875377837412b4fee7a0ee0f5310d7f99f",
-    "status": "completed_source_only_closed",
-    "host": "21516",
-    "source_views": 800,
-    "real_images": 0,
-    "seconds": 6.149429524317384,
-    "final_counts": {
-      "direct_B_reset": 800,
-      "direct": 0,
-      "recovered_B_reset": 800,
-      "recovered": 0,
-      "native": 800
-    },
-    "raw_archive_hosts": [
-      "21516",
-      "55548"
-    ]
-  },
-  "b_reset_residual": {
-    "record": "results/data_free_compensation/b_reset_residual.json",
-    "source_commit": "44ad7d2ef459ec733106dbce396a77837f725b82",
-    "status": "completed_cached_residual_diagnosis",
-    "source_views": 5360,
-    "contexts": 2,
-    "raw_archive_hosts": [
-      "21516",
-      "55548"
-    ],
-    "residual_only_matches": 10720,
-    "full_B_reset_matches": 10720,
-    "image_forwards": 0,
-    "new_parameters": 0
-  },
-  "residual_class_fit": {
-    "record": "results/data_free_compensation/residual_class_fit.json",
-    "source_commit": "bff664772bf8a3bac13e845f24f92a04ab6ab8e4",
-    "status": "completed_source_only_closed",
-    "source_fit_views": 400,
-    "heldout_views": 400,
-    "counts": {
-      "parent": {
-        "native": 400,
-        "TA": 0,
-        "TA_B_reset": 400
-      },
-      "edited": {
-        "native": 400,
-        "TA": 40,
-        "TA_B_reset": 211
-      }
-    },
-    "real_images": 0,
-    "full_AGA_calls": 0,
-    "raw_archive_hosts": [
-      "21516",
-      "55548"
-    ]
-  },
-  "residual_dual_fit": {
-    "record": "results/data_free_compensation/residual_dual_fit.json",
-    "source_commit": "6a8ae76ff61e94c204a7494dd4608bd604f1952f",
-    "status": "completed_source_only_closed",
-    "heldout_views": 400,
-    "counts": {
-      "parent": {
-        "native": 400,
-        "TA": 0,
-        "TA_B_reset": 400,
-        "AGA": 0,
-        "AGA_B_reset": 400
-      },
-      "edited": {
-        "native": 400,
-        "TA": 0,
-        "TA_B_reset": 211,
-        "AGA": 0,
-        "AGA_B_reset": 400
-      }
-    },
-    "real_images": 0,
-    "full_AGA_calls": 2,
-    "raw_archive_hosts": [
-      "21516",
-      "55548"
-    ]
-  },
-  "residual_alignment_cross": {
-    "record": "results/data_free_compensation/residual_alignment_cross.json",
-    "source_commit": "d7bb97037ac77bf1c6f3bab43a469d7e39e29380",
-    "status": "completed_fixed_diagnosis",
-    "views": 400,
-    "aligned_context_counts": {
-      "none": 400,
-      "direct_O": 135,
-      "aligned_O": 400,
-      "direct_residual_transferred": 22
-    },
-    "real_images": 0,
-    "new_models": 0,
-    "raw_archive_hosts": [
-      "21516",
-      "55548"
-    ]
-  },
-  "residual_margin_full": {
-    "status": "completed_partial_candidate",
-    "raw_archive": {
-      "hosts": [
-        "21516",
-        "55548"
-      ],
-      "directory": "outputs/residual_margin_full_20261105",
-      "scores_sha256": "56f2358cce74ab6c910fe808c13b63472e9869cf353b20ad0a5b3a0f797e852e",
-      "result_sha256": "421b3a40567efd94743bcfac30e7380ce25dfab9a745266c047ab3b4200e9c62"
-    },
-    "finding": "Direct B reset suppressed MNIST from 99.36% to 9.77%; AGA then B reset still reaches 98.96%. Native 99.56% and partner trade-off retained.",
-    "record": "results/data_free_compensation/residual_margin_full.json"
-  },
-  "readout_b_reset": {
-    "record": "results/data_free_compensation/readout_b_reset_result.json",
-    "protocol": "results/data_free_compensation/readout_b_reset.json",
-    "status": "completed_fixed_existing_point",
-    "mnist_standalone_percent": 99.57,
-    "mnist_TA_percent": 0.07,
-    "mnist_AGA_target_percent": 0.08,
-    "mnist_AGA_both_percent": 0.09,
-    "mnist_TA_B_reset_percent": 0.05,
-    "mnist_AGA_B_reset_percent": 0.07,
-    "svhn_TA_B_reset_percent": 0.88,
-    "svhn_AGA_B_reset_percent": 1.05,
-    "real_construction_images": 0,
-    "new_defense_updates": 0,
-    "maximum_replay_error": 1.9073486328125e-05,
-    "protected_target": "MNIST",
-    "evaluation_partner": "SVHN"
-  },
-  "residual_margin_prodistill": {
-    "record": "results/data_free_compensation/residual_margin_prodistill.json",
-    "status": "completed_partial_candidate",
-    "mnist_full_percent": 99.19,
-    "svhn_full_percent": 95.97034419176399
-  },
-  "fixed_followup": {
-    "protocols": [
-      "results/data_free_compensation/readout_channels_dtd_20261105/protocol.json",
-      "results/phase3/bias_weight_only/attacks/b_reset_protocol.json"
-    ],
-    "status": "completed_independently_verified",
-    "note": "Readout transfer does not repair the existing DTD A/B standalone loss. B replacement differs from Defense1 known final-bias cleanup.",
-    "record": "results/comparison/readout_dtd_and_bias_replacement.json",
-    "full_rows": 84,
-    "original_batch_score_replays": 2688,
-    "archive": {
-      "hosts": [
-        "21516",
-        "55548"
-      ],
-      "files": 68,
-      "all_sha256_equal": true,
-      "manifest": "outputs/readout_dtd_bias_followup_20261105.sha256",
-      "sha256": "f1fb7ee7da40f0eae18fa2c06c8387fe3e2df8c8d071aa505dd68ec9fed83bb2"
-    }
-  },
-  "readout_transfer": {
-    "status": "completed_independently_verified",
-    "host": "21516",
-    "timeout_pid": null,
-    "construction_protocol": "results/data_free_compensation/readout_channels_transfer_20261105/construction.json",
-    "log": "outputs/readout_channels_transfer_20261105/run.log",
-    "scope": "SVHN as protected target and MNIST as partner; frozen transfer, matched B reset, and fixed ProDistill on SVHN and DTD.",
-    "record": "results/comparison/readout_svhn_distillation.json",
-    "full_rows": 50,
-    "original_batch_score_replays": 1600,
-    "archive": {
-      "hosts": [
-        "21516",
-        "55548"
-      ],
-      "files": 94,
-      "all_sha256_equal": true,
-      "manifest": "outputs/readout_transfer_20261105.sha256",
-      "sha256": "4dd3b7971116841f78a262d150ee0da78cf427a18a4ea84de31f65a7c5cf0c64",
-      "four_distilled_models": "21516:outputs/readout_channels_transfer_20261105/prodistill",
-      "distilled_model_manifest": "outputs/readout_channels_transfer_20261105/distillation_models.sha256"
-    },
-    "first_attempt_preserved": true,
-    "target_accuracy": {
-      "tasks": [
+    "two_expert_comparison": "Same-condition unprotected and PaRaMS controls available.",
+    "current_defense1_eight_expert_table": {
+      "protected_tasks": [
         "MNIST",
         "SVHN",
         "DTD"
       ],
-      "standalone": [
-        99.57,
-        96.66,
-        76.33
+      "complete_datasets": [
+        "MNIST",
+        "SVHN",
+        "DTD",
+        "GTSRB",
+        "RESISC45"
       ],
-      "AGA_then_B_reset": [
-        0.07,
-        0.45,
-        0.59
-      ],
-      "ProDistill": [
-        98.63,
-        83.45,
-        30.85
-      ]
+      "record": "results/phase3/bias_weight_only/eight_expert/summary.json"
+    },
+    "selected_recovery_protected_tasks": [
+      "MNIST",
+      "SVHN",
+      "DTD"
+    ],
+    "EuroSAT": "Original expert test split unverified; do not report an eight-task average.",
+    "remaining_scope": "Confirm additional archived rows before launching missing eight-expert protected directions and recovery cells."
+  },
+  "compute": {
+    "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
+    "primary_GPU": "NVIDIA GeForce RTX 4090",
+    "primary_root": "/root/autodl-tmp/posthoc-merge-security",
+    "python": "/root/autodl-tmp/posthoc-env/bin/python",
+    "torch": "2.3.0+cu121",
+    "numpy": "1.26.4",
+    "active_GPU_jobs": 0,
+    "queued_jobs": 0,
+    "primary_available_GiB": 28,
+    "verified_utc": "2026-11-06T12:44:52.756563+00:00",
+    "ssh_access": "Windows OpenSSH password authentication verified; no credentials stored.",
+    "primary_workspace_status": "Connected. RTX4090 idle, no active experiment process. Remote checkout8cba128, newer commits held in posthoc-paper-20261106 branch.",
+    "secondary_endpoint": "region-41.seetacloud.com:55548",
+    "secondary_role": "Historical CPU archive only; current GPU work is on17897.",
+    "previous_primary": {
+      "endpoint": "connect.cqa1.seetacloud.com:21516",
+      "role": "GPU-less evidence archive; frozen raw outputs retained."
     }
   },
-  "public_gain_followup": {
-    "host": "21516",
-    "timeout_pid": null,
-    "source_commit": "489e5a8",
-    "construction": "results/data_free_compensation/readout_public_gain_20261106/construction.json",
-    "output": "outputs/readout_public_gain_20261106",
-    "log": "outputs/readout_public_gain_20261106/run.log",
-    "status": "completed_closed",
-    "sha256": "57b219dd0243c8500faf485d64c517caa0dd82aadcce5aea5117af03a0155fd5",
-    "target": "MNIST",
-    "partner": "SVHN",
-    "real_construction_images": 0,
-    "result": "results/data_free_compensation/readout_public_gain_20261106/result.json",
-    "native_percent": 99.57,
-    "prodistill_percent": 0.0,
-    "prodistill_negated_percent": 99.31,
-    "sign_check": "results/comparison/readout_sign_recovery.json"
-  },
-  "paper_status": {
-    "entry": "results/comparison/README.md",
-    "selected_benchmarks_completed": true,
-    "main_TA_AGA_supports_both_defenses": true,
-    "all_selected_recovery_claims_supported": false,
-    "main_releases": [
-      "Defense 1 weight-only bias",
-      "Defense 2 frozen November 2 A/B"
+  "active_GPU_jobs": 0,
+  "engineering": {
+    "core_sources": [
+      "experiment/construct.py",
+      "_impl/defenses.py"
     ],
-    "readout": "separate comparison with raw and sign-reversed scores",
-    "verified_table_extension": "results/comparison/defense1_additional_pairs.tex",
-    "defense2_recovery_figure": "results/comparison/defense2_recovery.pdf",
-    "figure_uses": "Current frozen A/B results for MNIST, SVHN and DTD.",
-    "figure_finalization": "Method schematic and final experimental scope still pending."
-  },
-  "centered_readout": {
-    "status": "completed_independently_verified",
-    "jobs": [],
-    "protocols": "results/data_free_compensation/centered_readout_20261106",
-    "MNIST_prodistill_percent": 10.32,
-    "MNIST_prodistill_negated_percent": 10.09,
-    "MNIST_prodistill_calibrated_percent": 0.01,
-    "MNIST_prodistill_negated_and_calibrated_percent": 21.58,
-    "summary": "results/data_free_compensation/centered_readout_20261106/summary.json",
-    "tasks": {
-      "MNIST": {
-        "standalone": 99.57,
-        "TA": 9.74,
-        "AGA_target": 9.74,
-        "AGA_both": 9.74,
-        "B_reset_AGA_target": 53.73,
-        "ProDistill": 10.32,
-        "ProDistill_fixed_sign": 10.09,
-        "ProDistill_calibrated": 0.01,
-        "ProDistill_fixed_sign_calibrated": 21.58
-      },
-      "SVHN": {
-        "standalone": 96.66,
-        "TA": 15.94,
-        "AGA_target": 15.94,
-        "AGA_both": 15.94,
-        "B_reset_AGA_target": 0.66,
-        "ProDistill": 15.94,
-        "ProDistill_fixed_sign": 6.127074370006146,
-        "ProDistill_calibrated": 0.19207129686539642,
-        "ProDistill_fixed_sign_calibrated": 56.72633681622618
-      },
-      "DTD": {
-        "standalone": 76.33,
-        "TA": 4.15,
-        "AGA_target": 2.18,
-        "AGA_both": 2.18,
-        "B_reset_AGA_target": 17.93,
-        "ProDistill": 2.13,
-        "ProDistill_fixed_sign": 2.127659574468085,
-        "ProDistill_calibrated": 0.425531914893617,
-        "ProDistill_fixed_sign_calibrated": 13.457446808510639
-      }
-    },
-    "archive_hosts": [
-      "21516",
-      "55548"
-    ]
-  },
-  "conditional_compensation": {
-    "status": "completed_candidate_closed_no_improvement",
-    "record": "results/data_free_compensation/conditional_compensation/result.json",
-    "table": "results/data_free_compensation/conditional_compensation/summary.md",
-    "source_context_matches": {
-      "public_base": 18,
-      "actual_partner": 792,
-      "n": 800
-    },
-    "supplement_rows": 68,
-    "supplement_complete": false
-  },
-  "conditional_self_reference": {
-    "status": "completed_closed_no_recovery_protection",
-    "record": "results/data_free_compensation/conditional_compensation/self_reference_result.json",
-    "MNIST": {
-      "native": 99.7,
-      "TA": 91.67,
-      "AGA_target": 99.02,
-      "B_replacement_after_AGA": 97.86,
-      "ProDistill": 99.47
-    },
-    "fixed_order_matches": 1,
-    "actual_order_matches": 426,
-    "n": 800,
-    "changed_matching_units": 1863
-  },
-  "current_matching_verification": "results/data_free_compensation/conditional_compensation/current_matching_check_result.json",
-  "conditional_current_matching": {
-    "status": "completed_closed_not_promoted",
-    "record": "results/data_free_compensation/conditional_compensation/current_matching_result.json",
-    "MNIST": {
-      "native": 99.7,
-      "TA": 79.23,
-      "AGA_target": 80.05,
-      "AGA_both": 76.85,
-      "B_replacement_after_AGA": 24.84,
-      "ProDistill": 99.45
-    },
-    "actual_AGA_source_count": 1,
-    "construction_source_count": 1,
-    "source_n": 800,
-    "full_rows": 32,
-    "original_batch_replays": 576,
-    "real_construction_images": 0,
-    "new_production_modules": 0
-  },
-  "sleep_authorization": {
-    "start_utc": "2026-11-06T05:00:07+00:00",
-    "end_utc": "2026-11-06T07:00:07+00:00",
-    "automatic_continuation": false,
-    "note": "User has returned and authorized continued work; no automation."
-  },
-  "recovery_trace": {
-    "record": "results/data_free_compensation/recovery_trace_result.json",
-    "new_defense_updates": 0,
-    "replay_maximum_weight_error": 0.0,
-    "attack_MNIST_teacher_matches": {
-      "10_steps": 63,
-      "25_steps": 64,
-      "n": 64
-    },
-    "full_benchmark_evaluations": 0
-  },
-  "finite_compensation": {
-    "record": "results/data_free_compensation/compensation_result.json",
-    "defense_updates": 5,
-    "new_models": 1,
-    "gradient_check_passed": false,
-    "independent_AD_relative_error": 4.1294427576530534e-15,
-    "independent_AD_check_passed": true,
-    "new_frozen_models": 1,
-    "accepted_steps": 5,
-    "publication_sha256": "2f67269d8fdf50046a33662f23a26929e707d71d28bf8a9cffd59da589dd17cd",
-    "source_native_matches": 800,
-    "source_distilled_matches": 63,
-    "evaluation_directory_fix": true,
-    "status": "completed_closed_not_promoted",
-    "MNIST": {
-      "native": 99.58,
-      "TA": 26.5,
-      "AGA_target": 17.71,
-      "AGA_both": 16.96,
-      "B_after_AGA": 99.29,
-      "ProDistill": 99.17
-    },
-    "full_rows": 32,
-    "context_score_replays": 576
-  },
-  "source_coverage_record": "results/data_free_compensation/source_coverage.json",
-  "task_inputs": {
-    "record": "results/data_free_compensation/task_inputs_result.json",
-    "status": "completed",
-    "expert_correct": 800,
-    "public_expert_agreement": 41,
-    "n": 800,
-    "real_images": 0
-  },
-  "task_inputs_defense": {
-    "host": "21516",
-    "timeout_pid": null,
-    "status": "completed_not_promoted_recovery_unsolved",
-    "stage": "completed",
-    "output": "outputs/task_inputs_20261106",
-    "log": "outputs/task_inputs_20261106/job.log",
-    "source_commit": "f03788ef5",
-    "protocol": "results/data_free_compensation/task_inputs_defense_protocol.json",
-    "automatic_expansion": false,
-    "synthetic_prefix_completed": true,
-    "synthetic_prefix_model_sha256": "2ee1ba49735b39689d9df6ad8178cb49f5b1360fc317596e559ccfc3b0cec29c",
-    "record": "results/data_free_compensation/task_inputs_defense_result.json",
-    "MNIST": {
-      "native": 99.47,
-      "TA": 23.47,
-      "AGA_target": 1.34,
-      "AGA_both": 0.76,
-      "B_after_AGA": 99.28,
-      "ProDistill": 99.37
-    },
-    "full_rows": 32,
-    "original_batch_replays": 576
-  },
-  "recovery_conditions": {
-    "host": "21516",
-    "timeout_pid": null,
-    "status": "completed_not_promoted_recovery_unsolved",
-    "stage": "A_B_construction",
-    "protocol": "results/data_free_compensation/recovery_conditions_protocol.json",
-    "output": "outputs/task_inputs_20261106/recovery_conditions",
-    "log": "outputs/task_inputs_20261106/recovery_conditions/job.log",
-    "source_commit": "5288caf0bd40c727172759868f0f5756abffc9e6",
-    "automatic_expansion": false,
-    "record": "results/data_free_compensation/recovery_conditions_result.json",
-    "MNIST": {
-      "native": 99.57,
-      "TA": 25.07,
-      "AGA_target": 1.88,
-      "AGA_both": 0.92,
-      "B_after_AGA": 99.28,
-      "ProDistill": 99.39
-    },
-    "full_rows": 32,
-    "original_batch_replays": 576
-  },
-  "priority_window": {
-    "start_utc": "2026-11-06T08:29:27+00:00",
-    "end_utc": "2026-11-06T09:29:27+00:00",
-    "user_request": "At most one additional hour to complete the existing work. Extend Defense1 to the last available target and report verified results and remaining gaps.",
-    "success_not_guaranteed": true
-  },
-  "recovery_inputs": {
-    "host": "21516",
-    "timeout_pid": null,
-    "status": "completed_not_promoted_recovery_unsolved",
-    "stage": "completed",
-    "protocol": "results/data_free_compensation/recovery_inputs_protocol.json",
-    "output": "outputs/recovery_compensation_20261106",
-    "log": "outputs/recovery_compensation_20261106/job.log",
-    "source_commit": "6c1b6527d7cb8e4d04505424d874eb6fd28f7370",
-    "automatic_expansion": false,
-    "record": "results/data_free_compensation/recovery_inputs_result.json",
-    "full_rows": 32,
-    "original_batch_replays": 576,
-    "publication": {
-      "path": "outputs/recovery_compensation_20261106/fit/JointRecovery/point.pt",
-      "sha256": "b0c5e2f429a4bb5e004f6482ac050f26addcd06cba5033bc80cd7ac04c3285e0"
-    },
-    "MNIST": {
-      "native": 99.55,
-      "TA": 25.22,
-      "AGA_target": 1.36,
-      "AGA_both": 0.92,
-      "B_after_AGA": 99.28,
-      "ProDistill": 99.38
-    }
-  },
-  "defense1_remaining_targets": {
-    "protocol": "results/phase3/bias_weight_only/eight_expert/remaining_targets.json",
-    "status": "four_standalone_tests_completed_verified",
-    "record": "results/phase3/bias_weight_only/eight_expert/remaining_construction.json",
-    "native_protocol": "results/phase3/bias_weight_only/eight_expert/remaining_native.json",
-    "new_releases": 5,
-    "new_image_forwards": 0,
-    "timeout_pid": null,
-    "native_record": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
-    "standalone_tasks": 4,
-    "standalone_replays": 128
-  },
-  "defense1_pair_extension": {
-    "host": "21516",
-    "timeout_pid": null,
-    "status": "four_target_pairs_completed_verified",
-    "stage": "same_methods_new_target_pairs",
-    "output": "outputs/bias_eight_remaining_20261106/pair_comparison",
-    "targets": [
-      "RESISC45",
-      "Cars",
-      "GTSRB",
-      "SUN397"
+    "evaluation_entries": [
+      "experiment/native.py",
+      "experiment/main_table.py",
+      "experiment/eight_task.py",
+      "experiment/recover.py",
+      "experiment/distill.py"
     ],
-    "partner": "MNIST",
-    "deadline_utc": "2026-11-06T08:26:20+00:00",
-    "record": "results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json",
-    "full_rows": 60,
-    "original_batch_replays": 960,
-    "additional_target_host": "17897"
+    "results_index": "results/comparison/README.md",
+    "unique_weights_scores_failures_deleted": 0,
+    "state_history_commit": "58af9194172df6c0c8b97f999884993765da973b",
+    "cleanup_status": "Documentation and active-state scope simplified. Cache deletion rejected by automatic approval; no files deleted."
   },
-  "defense1_sun397_pair": {
-    "host": "17897",
-    "timeout_pid": null,
-    "status": "completed_verified",
-    "stage": "completed",
-    "output": "outputs/bias_eight_remaining_20261106/pair_comparison_sun397",
-    "log": "outputs/bias_eight_remaining_20261106/resume_sun397_same_gpu.log",
-    "target": "SUN397",
-    "partner": "MNIST",
-    "evaluation_commit": "8cba12867972597d1b8081dc83c688fc1e5097b4",
-    "previous_host": "21516",
-    "previous_timeout_pid": 80634,
-    "previous_full_rows_reused": 13,
-    "remaining_full_rows": 2,
-    "original_deadline_utc": "2026-11-06T09:29:27+00:00",
-    "failed_replay": {
-      "row": "Defense1_SUN397/Standalone/None/SUN397",
-      "score_error": 0.014338970184326172,
-      "tolerance_relaxed": false
-    },
-    "first_pass_rows": 15,
-    "additional_rows_to_evaluate": 3,
-    "preserved_rows": 12,
-    "full_rows": 15,
-    "original_batch_replays": 240,
-    "maximum_score_error": 2.5272369384765625e-05,
-    "record": "results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json"
+  "latest_completed": {
+    "defense1_additional_native": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
+    "defense1_additional_pairs": "results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json",
+    "source_fingerprints_checked": 40,
+    "source_fingerprint_mismatches": 0
   },
-  "residual_bias_recovery_mechanism": {
-    "record": "results/data_free_compensation/residual_bias/recovery_mechanism.json",
-    "host": "17897",
-    "output": "outputs/residual_bias_cancellation_20261106",
-    "full_rows": 18,
-    "original_batch_replays": 96,
-    "trained_last_block_only_MNIST": 96.64,
-    "trained_prefix_only_MNIST": 27.53,
-    "real_construction_images": 0,
-    "defense_updates": 0,
-    "coefficient_updates": 0
-  }
+  "next_action": "Confirm Defense1 experiment matrix from existing result fingerprints. Prioritize missing protected directions in eight-expert evaluation and compatible defense baselines; do not repeat completed pairs or introduce another Defense2 candidate.",
+  "historical_research": {
+    "snapshot_commit": "58af9194172df6c0c8b97f999884993765da973b",
+    "Defense2": "Development stopped. Do not restart closed candidates; retain frozen releases, scores and failure evidence.",
+    "research_notes": "notes/phase2_coupling.md",
+    "prior_results": "results/data_free_compensation/finite_classification_result.json"
+  },
+  "github_sync": {
+    "receipt": "outputs/latest_github_sync_receipt.json",
+    "last_verified_remote_commit": "296384b25bd3354602ccd32a909436d680e7c30c",
+    "status": "Current local/server changes pending verified GitHub upload."
+  },
+  "automatic_continuation": false,
+  "automation_status": "13-35 deleted; do not recreate."
 }

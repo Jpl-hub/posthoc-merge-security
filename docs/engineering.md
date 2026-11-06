@@ -15,7 +15,9 @@
 
 模型、数据、认证信息不进入Git。当前代码只有一套加载和评价实现；具体实验选择放在协议文件，不再复制入口。
 
-防御一入口是 `experiment.construct --method bias`，构造只读权重。防御二入口是 `experiment.defense2`，三个任务共用相同实现，固定合成输入由 `configs/defense2_inputs.json` 指定。当前主方法的协议、结果与成本入口见[论文实验与结果索引](../results/comparison/README.md)。真实图片用于冻结后的评价和单列的数据辅助恢复。
+当前主方法是防御一，入口为 `experiment.construct --method bias`，实现为 `_impl.defenses.construct_bias`。构造只读目标专家、公开基座和固定分类头，不用真实或合成图片。协议、结果与成本见[实验与结果索引](../results/comparison/README.md)。真实图片用于冻结后的评价和单列的数据辅助恢复。
+
+11月6日讨论后停止新增防御二试验。`experiment.defense2`、`experiment.readout_channels` 及其固定配置暂留作历史复现入口，已有模型、原始分数和失败记录保留。它们不属于防御一的构造流程，也不作为后续实验队列。
 
 互补视图与逐类均值两项试验未带来整体改善，已移除43行试验分支，主构造恢复为Git `be57bec` 中的同一计算。试验源码可从 `a973133:experiment/defense2.py` 取回，原始权重与逐图分数在21516、41558两份SHA一致的归档中。历史配置及源码指纹保留原值。
 

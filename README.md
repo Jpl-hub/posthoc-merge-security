@@ -1,16 +1,16 @@
 # Post-hoc model merge protection
 
-研究冻结 CLIP 专家的发布后处理。目标是尽量保持独立任务能力，并降低未经授权融合得到的目标任务准确率。防御一的构造只读权重。防御二使用冻结权重、任务向量 SVD、固定分类头和合成输入。两者都不使用真实训练图构造防御。
+研究冻结 CLIP 专家的发布后处理。目标是保持独立任务能力，并降低未经授权融合得到的目标任务准确率。当前集中完善防御一。构造只读模型权重和固定分类头，不用真实图片或合成图片，不训练专家。
 
-**从[论文实验与结果索引](results/comparison/README.md)开始。** 这里区分当前主方法、补充对照和投稿前仍需解决的问题，并提供对应的 Markdown、TeX 和原始证据入口。
+防御一只在最终 LayerNorm 的偏置上加入扰动。扰动位于原视觉投影的左零空间，在原专家中被投影消去；融合后投影改变，扰动可能影响分类。方向和幅度由目标专家、公开基座及固定分类头计算。公开基座条件下的界与真实多专家融合结果分别报告。
+
+**先看[防御一结果](results/phase3/bias_weight_only/other_tasks/summary.md)和[实验完成情况](results/comparison/README.md)。** 11月6日讨论后，后续工作集中在防御一的完整评价、其他防御基线、方法说明和必要消融。防御二停止新增试验，已有代码和结果保留为历史对照。
 
 ## 核心代码
 
 | 内容 | 入口 |
 |---|---|
 | 防御一，构造视觉投影核空间的偏置扰动 | [experiment/construct.py](experiment/construct.py) 的 `--method bias` · [_impl/defenses.py](_impl/defenses.py) 的 `construct_bias` |
-| 防御二，末层 MLP 的任务 SVD 约束与 A/B 补偿 | [experiment/defense2.py](experiment/defense2.py) · [构造配置](configs/defense2_inputs.json) · [固定协议](results/data_free_compensation/finite_classification.json) |
-| 防御二的读出补偿对照 | [experiment/readout_channels.py](experiment/readout_channels.py) · [结果](results/comparison/defense2_readout.md) |
 | 两专家评价、独立评价和八专家融合 | [experiment/main_table.py](experiment/main_table.py) · [experiment/native.py](experiment/native.py) · [experiment/eight_task.py](experiment/eight_task.py) |
 | 原作者 AGA、公开恢复和额外数据蒸馏 | [experiment/recover.py](experiment/recover.py) · [experiment/distill.py](experiment/distill.py) |
 | TA、TIES、DARE 融合 | [_impl/merge.py](_impl/merge.py) |
