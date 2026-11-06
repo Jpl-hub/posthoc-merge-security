@@ -8,7 +8,9 @@ from _impl.io import digest,save_json
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--protocol',default='results/data_free_compensation/conditional_compensation/self_reference_protocol.json')
-path=Path(parser.parse_args().protocol)
+parser.add_argument('--source-result',help='Evaluate one already completed, source-eligible point')
+args=parser.parse_args()
+path=Path(args.protocol)
 spec=json.loads(path.read_text());root=Path(spec['output']);py=sys.executable
 def read(p):return json.loads(Path(p).read_text())
 def run(*args):
@@ -18,15 +20,20 @@ def pin(cfg):
     cfg['source_sha256']={p:digest(p) for p in cfg['source_sha256']}
     return cfg
 def status(stage,**kw):save_json(root/'status.json',dict(stage=stage,**kw))
-status('source_derivative_check')
-run('outputs/overnight_20261106/construct.py','--protocol',path,'--task','MNIST','--check-only')
-status('source_construction')
-run('outputs/overnight_20261106/construct.py','--protocol',path,'--task','MNIST')
-result=read(root/'MNIST/point/result.json');s=result['source'];initial=result['initial']
-eligible=result['source_checks_passed'] and s['native_matches']>=initial['native_matches'] and all(
-    value<initial['source_counts'][key] for key,value in s['source_counts'].items())
+if args.source_result:
+    result=read(args.source_result)
+    eligible=result['eligible']
+    s=dict(source_counts={'recovered/TA/raw':result['counts']['recovered/TA']})
+else:
+    status('source_derivative_check')
+    run('outputs/overnight_20261106/construct.py','--protocol',path,'--task','MNIST','--check-only')
+    status('source_construction')
+    run('outputs/overnight_20261106/construct.py','--protocol',path,'--task','MNIST')
+    result=read(root/'MNIST/point/result.json');s=result['source'];initial=result['initial']
+    eligible=result['source_checks_passed'] and s['native_matches']>=initial['native_matches'] and all(
+        value<initial['source_counts'][key] for key,value in s['source_counts'].items())
 if not eligible:
-    status('closed_at_source',eligible=False,source=s,initial=initial)
+    status('closed_at_source',eligible=False,source=s)
     print('SOURCE_NOT_ELIGIBLE',s,flush=True)
     sys.exit(0)
 status('frozen_before_real_images',publication=result['publication'])
