@@ -1,20 +1,20 @@
 {
-  "updated_utc": "2026-11-06T03:24:41.177582+00:00",
-  "status": "finite_compensation_construction_running",
-  "active_focus": "独立正向/反向导数核对一致；保留原差分失败记录后继续同一A/B有限补偿构造，尚无新完整准确率。",
+  "updated_utc": "2026-11-06T03:40:12.228884+00:00",
+  "status": "single_compensation_full_evaluation_running",
+  "active_focus": "同一A/B已完成5步更新，800个合成判断保持，合成恢复63/64；修复评价目录错误后继续同一权重的完整评价。尚不称防御改善。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
       "host": "21516",
-      "pid": 50558,
-      "protocol": "results/data_free_compensation/compensation_protocol.json",
-      "output": "outputs/compensation_20261106/construction",
-      "stage": "source_construction"
+      "pid": 51205,
+      "protocol": "results/data_free_compensation/compensation_evaluation.json",
+      "output": "outputs/compensation_20261106/comparison",
+      "stage": "actual_AGA_source_then_full_evaluation"
     }
   ],
-  "next_action": "Inspect one final source point; if eligible, freeze its four tensors and run complete MNIST/SVHN evaluation with actualAGA, public B replacement and fixed ProDistill. No alternative inputs, strengths, source points or automatic cross-task expansion.",
+  "next_action": "Read complete MNIST target and SVHN partner rows, actualAGA, matched public B reset and fixedProDistill. Keep the single frozen SHA2f67269d; no new construction or cross-task expansion based only on source.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -1016,6 +1016,13 @@
     "new_models": 0,
     "gradient_check_passed": false,
     "independent_AD_relative_error": 4.1294427576530534e-15,
-    "independent_AD_check_passed": true
+    "independent_AD_check_passed": true,
+    "accepted_steps_at_last_check": 1,
+    "new_frozen_models": 1,
+    "accepted_steps": 5,
+    "publication_sha256": "2f67269d8fdf50046a33662f23a26929e707d71d28bf8a9cffd59da589dd17cd",
+    "source_native_matches": 800,
+    "source_distilled_matches": 63,
+    "evaluation_directory_fix": true
   }
 }

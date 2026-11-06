@@ -1,5 +1,5 @@
 {
-  "status": "stopped_at_registered_derivative_check_no_updates",
+  "status": "source_completed_waiting_full_evaluation",
   "protocol": "results/data_free_compensation/compensation_protocol.json",
   "source_commit": "02a9ad21a",
   "output": "outputs/compensation_20261106",
@@ -7,14 +7,139 @@
   "initial_quadratic_identity_error": 5.5788706987414116e-14,
   "initial_native_error": 0.4010839185890407,
   "original_native_error_limit": 1.2644836124713486,
-  "gradient_check": {
+  "defense_updates": 5,
+  "new_defense_models": 1,
+  "real_construction_images": 0,
+  "interpretation": "One final source-eligible point: all800 native decisions remain, fixed synthetic recovery63/64 instead of64/64. This small source improvement is not a complete-task or robustness result. The evaluation-only missing-directory failure was fixed; original queue log retained and same publication continues.",
+  "original_derivative_check": {
     "analytic": 425.72730634642693,
     "finite": 370.81975014117137,
     "relative_error": 0.12867129754447998,
     "passed": false
   },
-  "defense_updates": 0,
-  "new_defense_models": 0,
-  "real_construction_images": 0,
-  "interpretation": "The finite compensation identity reproduces the original point, but the original derivative gate did not pass. This is not a negative real-task defense result. An independent forward/reverse derivative diagnosis is now running at the identical point, inputs, objective and epsilon; it does not resume construction or relax thresholds."
+  "construction": {
+    "status": "source_completed",
+    "eligible": true,
+    "publication": {
+      "path": "outputs/compensation_20261106/construction/point.pt",
+      "sha256": "2f67269d8fdf50046a33662f23a26929e707d71d28bf8a9cffd59da589dd17cd"
+    },
+    "initial": {
+      "error": 0.4010839185890407,
+      "counts": {
+        "native": 800,
+        "direct/TA": 0,
+        "direct/B_reset": 800,
+        "recovered/TA": 0,
+        "recovered/B_reset": 800,
+        "task_direct/TA": 0,
+        "task_direct/B_reset": 800,
+        "task_recovered/TA": 0,
+        "task_recovered/B_reset": 800
+      },
+      "objectives": [
+        -5.623119247604604,
+        -5.315859605969415
+      ],
+      "reconstruction_error": 1.826663820203578e-14,
+      "quadratic_identity_error": 5.5788706987414116e-14
+    },
+    "trace": [
+      {
+        "step": 1,
+        "active": "distillation",
+        "accepted": true,
+        "backtracks": 1,
+        "objectives": [
+          -3.6708447285895835,
+          -5.326008021162549
+        ],
+        "seconds": 119.99238899536431
+      },
+      {
+        "step": 2,
+        "active": "B_reset",
+        "accepted": true,
+        "backtracks": 2,
+        "objectives": [
+          -3.6320859919389483,
+          -4.8247362788785395
+        ],
+        "seconds": 146.9019555207342
+      },
+      {
+        "step": 3,
+        "active": "B_reset",
+        "accepted": true,
+        "backtracks": 3,
+        "objectives": [
+          -3.6825379701374548,
+          -4.682956072782573
+        ],
+        "seconds": 176.7826925944537
+      },
+      {
+        "step": 4,
+        "active": "B_reset",
+        "accepted": true,
+        "backtracks": 4,
+        "objectives": [
+          -3.6920581650192426,
+          -4.599826058374866
+        ],
+        "seconds": 209.4704602677375
+      },
+      {
+        "step": 5,
+        "active": "B_reset",
+        "accepted": true,
+        "backtracks": 7,
+        "objectives": [
+          -3.6874911251710447,
+          -4.581978069049917
+        ],
+        "seconds": 250.87533442676067
+      },
+      {
+        "step": 6,
+        "active": "B_reset",
+        "accepted": false,
+        "backtracks": 7,
+        "objectives": [
+          -3.6874911251710447,
+          -4.581978069049917
+        ],
+        "seconds": 274.6660237517208
+      }
+    ],
+    "counts": {
+      "native": 800,
+      "direct/TA": 0,
+      "direct/B_reset": 800,
+      "recovered/TA": 0,
+      "recovered/B_reset": 800,
+      "task_direct/TA": 0,
+      "task_direct/B_reset": 800,
+      "task_recovered/TA": 0,
+      "task_recovered/B_reset": 800,
+      "distilled": 63
+    },
+    "error": 0.4010547631094415,
+    "limit": 1.2644836124713486,
+    "seconds": 291.9690623320639,
+    "cost": {
+      "coefficient_forward_steps": 800,
+      "coefficient_reverse_steps": 100
+    },
+    "relative_edits": {
+      "mlp.c_fc.weight": 1.0962717076878696,
+      "mlp.c_fc.bias": 1.0233327786104969,
+      "mlp.c_proj.weight": 2.795244462703543,
+      "mlp.c_proj.bias": 1.269318238463836
+    },
+    "real_construction_images": 0,
+    "expert_updates": 0,
+    "source_sha256": "fefc331957f386b9011d9a422705fc8e58b864fa386b20eb378090cc1cf82957"
+  },
+  "expert_updates": 0
 }
