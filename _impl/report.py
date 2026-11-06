@@ -5,7 +5,7 @@ import json
 import math
 from pathlib import Path
 
-def defense_comparison(directory):
+def defense_comparison(directory, figure=False):
     """Join current, already evaluated defenses; no model loading or new experiments."""
     out = Path(directory)
     out.mkdir(parents=True, exist_ok=True)
@@ -490,6 +490,25 @@ def defense_comparison(directory):
           "Standalone accuracy refers to the target expert. Each merged cell gives target / partner accuracy. "
           "TA uses coefficient 0.5. AGA processes the target before merging, with the same procedure for the "
           "unprotected control. Defense 2 uses the frozen A/B release. All entries use complete test sets.", "llrrr")
+
+    additional = read("results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json")
+    assert additional["status"] == "completed_verified"
+    extra_rows = []
+    for record in additional["records"]:
+        task, partner = record["target"], record["partner"]
+        for key, label in [("Unprotected", "Unprotected"), (f"PaRaMS_{task}", "PaRaMS"),
+                           (f"Defense1_{task}", "Defense 1")]:
+            rows = [r for r in record["rows"] if r["defense"] == key]
+            native = accuracy(one(rows, merger="Standalone", attack_scope="None", dataset=task))
+            fused = [" / ".join(accuracy(one(rows, merger="TA", attack_scope=scope, dataset=dataset))
+                                for dataset in (task, partner)) for scope in ("None", "Protected expert")]
+            extra_rows.append([f"{task}/{partner}", label, native] + fused)
+    write("defense1_additional_pairs", "Defense 1 on additional expert pairs",
+          tables["paper_main"]["headers"], extra_rows,
+          "All entries use complete test sets. Standalone reports target accuracy. Each merged cell gives "
+          "target / partner accuracy. TA uses coefficient 0.5. AGA processes the target before merging, "
+          "including for the unprotected control.", "llrrr")
+
     for row in distilled:
         if row[1] == "Defense 2":
             row[2], row[4] = [accuracy(one(updated["prodistill"]["rows"], target=row[0],
@@ -695,6 +714,31 @@ def defense_comparison(directory):
 
     (out / "sources.json").write_text(json.dumps(dict(input_sha256=sources, eight_expert_rows=selected,
         tables=tables, new_evaluations=0, report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()), indent=2) + "\n")
+    if figure:
+        _recovery_figure(out, readout_rows)
+
+
+def _recovery_figure(out, readout_rows):
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    labels = ["Standalone", "TA", "AGA + TA", "AGA + B replacement + TA", "ProDistill"]
+    colors = ["#4D4D4D", "#3079A6", "#3079A6", "#C96931", "#C96931"]
+    with plt.rc_context({"font.size": 8, "pdf.fonttype": 42}):
+        fig, axes = plt.subplots(1, 3, figsize=(7, 2.3), sharey=True, layout="constrained")
+        targets = (r for r in readout_rows if r[0] == r[1] and r[2] == "A/B")
+        for ax, row in zip(axes, targets, strict=True):
+            values = [float(row[i].split(" / ")[0]) for i in (3, 4, 5, 8, 9)]
+            bars = ax.barh(labels, values, height=0.64, color=colors)
+            ax.bar_label(bars, fmt="%.2f", padding=2, fontsize=7)
+            ax.set(title=row[0], xlim=(0, 122), xticks=[0, 50, 100], xlabel="Accuracy (%)")
+            ax.spines[["top", "right", "left"]].set_visible(False)
+            ax.tick_params(axis="y", length=0)
+        axes[0].invert_yaxis()
+        fig.savefig(out / "defense2_recovery.pdf", bbox_inches="tight")
+        plt.close(fig)
 
 
 def attack_comparison(directory):

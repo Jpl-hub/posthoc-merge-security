@@ -778,5 +778,37 @@
       "validation_sha256": "0e2edfa9a6dac6e6abae7b986572bda55759d2c5c9fda0e481934c86741311cb"
     }
   },
-  "interpretation": "The fixed publication retains standalone accuracy and degrades TA/AGA; both representative recovery conditions still restore MNIST. The 1600 synthetic B-reset decisions and all 64 synthetic distillation decisions were preserved after recovery. Reported separately from the canonical Defense 2 and from other task results."
+  "interpretation": "The fixed publication retains standalone accuracy and degrades TA/AGA; both representative recovery conditions still restore MNIST. The 1600 synthetic B-reset decisions and all 64 synthetic distillation decisions were preserved after recovery. Reported separately from the canonical Defense 2 and from other task results.",
+  "mechanism_check": {
+    "parent": {
+      "path": "outputs/finite_classification_20261102/MNIST/point/point.pt",
+      "sha256": "679ca452188453ded93f7c5ddcae0b60c3dd592d550d431964d5fcd4852d17d1"
+    },
+    "publication": {
+      "path": "outputs/recovery_compensation_20261106/fit/JointRecovery/point.pt",
+      "sha256": "b0c5e2f429a4bb5e004f6482ac050f26addcd06cba5033bc80cd7ac04c3285e0"
+    },
+    "relative_update_from_parent": {
+      "model.visual.transformer.resblocks.11.mlp.c_fc.weight": 0.0010409801346258718,
+      "model.visual.transformer.resblocks.11.mlp.c_fc.bias": 0.004221904814263823,
+      "model.visual.transformer.resblocks.11.mlp.c_proj.weight": 2.972605855055614e-06,
+      "model.visual.transformer.resblocks.11.mlp.c_proj.bias": 2.7838278731721147e-06
+    },
+    "source_margins_first_last": [
+      {
+        "recovered_margin": -6.832113855632453,
+        "B_reset_margin": -5.206841518585795
+      },
+      {
+        "recovered_margin": -5.205847877258279,
+        "B_reset_margin": -5.205847712477048
+      }
+    ],
+    "new_images": 0,
+    "new_weights": 0,
+    "source_file": {
+      "path": "outputs/recovery_compensation_20261106/mechanism_check.json",
+      "sha256": "3c2d780c8dde32a2efe28e62a2675e27d7b22cef9e95a8111a572e9767502584"
+    }
+  }
 }

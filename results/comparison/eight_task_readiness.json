@@ -13,7 +13,8 @@
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
       "defense1_standalone_change_pp": -0.010075566750629723,
-      "defense1_standalone_changed_predictions": 4
+      "defense1_standalone_changed_predictions": 4,
+      "defense1_pair_TA_AGA_evaluated": false
     },
     {
       "task": "Cars",
@@ -27,7 +28,8 @@
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
       "defense1_standalone_change_pp": -0.02487252829250093,
-      "defense1_standalone_changed_predictions": 8
+      "defense1_standalone_changed_predictions": 8,
+      "defense1_pair_TA_AGA_evaluated": true
     },
     {
       "task": "RESISC45",
@@ -41,7 +43,8 @@
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
       "defense1_standalone_change_pp": 0.0,
-      "defense1_standalone_changed_predictions": 0
+      "defense1_standalone_changed_predictions": 0,
+      "defense1_pair_TA_AGA_evaluated": true
     },
     {
       "task": "EuroSAT",
@@ -53,7 +56,8 @@
       "defense2_source_registered": false,
       "protected_task_in_current_main": false,
       "defense1_publication_frozen": true,
-      "defense1_standalone_evaluated": false
+      "defense1_standalone_evaluated": false,
+      "defense1_pair_TA_AGA_evaluated": false
     },
     {
       "task": "SVHN",
@@ -65,7 +69,8 @@
       "defense2_source_registered": true,
       "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
-      "defense1_standalone_evaluated": true
+      "defense1_standalone_evaluated": true,
+      "defense1_pair_TA_AGA_evaluated": true
     },
     {
       "task": "GTSRB",
@@ -79,7 +84,8 @@
       "defense1_publication_frozen": true,
       "defense1_standalone_evaluated": true,
       "defense1_standalone_change_pp": 0.0,
-      "defense1_standalone_changed_predictions": 0
+      "defense1_standalone_changed_predictions": 0,
+      "defense1_pair_TA_AGA_evaluated": true
     },
     {
       "task": "MNIST",
@@ -91,7 +97,8 @@
       "defense2_source_registered": true,
       "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
-      "defense1_standalone_evaluated": true
+      "defense1_standalone_evaluated": true,
+      "defense1_pair_TA_AGA_evaluated": true
     },
     {
       "task": "DTD",
@@ -103,9 +110,24 @@
       "defense2_source_registered": true,
       "protected_task_in_current_main": true,
       "defense1_publication_frozen": true,
-      "defense1_standalone_evaluated": true
+      "defense1_standalone_evaluated": true,
+      "defense1_pair_TA_AGA_evaluated": true
     }
   ],
   "missing": "Five Defense2 task-specific construction sources and full protected-target evaluations;EuroSAT dataset and original split verification.",
-  "defense1_native_extension": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json"
+  "defense1_native_extension": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
+  "defense1_pair_extension": "results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json",
+  "defense1_analytic_readout_check": {
+    "scope": "Real arithmetic over the fixed FP32 TA readout tensors, using the LayerNorm centered input norm bound. No test images, no claims about FP32 score replay.",
+    "target_lower_bounds": {
+      "SUN397": -755.4510945497525,
+      "Cars": -577.4238217165628,
+      "RESISC45": 159.93307705872758,
+      "EuroSAT": 110.25903931494747,
+      "GTSRB": 64.02104517165537
+    },
+    "partner_cells_with_positive_bound": 5,
+    "server_result": "outputs/bias_eight_remaining_20261106/eight_readout_bound.json",
+    "sha256": "dc437dddd6ce47438880beb60dae04ef08751a3988d2899bbf33cc7c739ca50e"
+  }
 }

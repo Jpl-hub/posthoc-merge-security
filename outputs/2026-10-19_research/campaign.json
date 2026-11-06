@@ -1,26 +1,37 @@
 {
-  "updated_utc": "2026-11-06T07:50:42.978649+00:00",
-  "status": "four_additional_defense1_native_verified_two_target_pair_extension_running",
-  "active_focus": "One A/B functional compensation experiment addressing both public B replacement and coefficient recovery.",
+  "updated_utc": "2026-11-06T10:20:59.264505+00:00",
+  "status": "sun397_cross_gpu_replay_correction_running",
+  "active_focus": "Verify the additional Defense1 comparisons and report both recovery limits of the current Defense2.",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
   "active_GPU_jobs": 1,
   "research_jobs": [
     {
-      "host": "21516",
-      "timeout_pid": 75222,
+      "host": "17897",
+      "timeout_pid": 5483,
       "status": "running",
-      "stage": "same_methods_new_target_pairs",
-      "output": "outputs/bias_eight_remaining_20261106/pair_comparison",
-      "targets": [
-        "RESISC45",
-        "Cars"
-      ],
+      "stage": "reevaluate_three_imported_defense1_rows_on_17897",
+      "output": "outputs/bias_eight_remaining_20261106/pair_comparison_sun397",
+      "log": "outputs/bias_eight_remaining_20261106/resume_sun397_same_gpu.log",
+      "target": "SUN397",
       "partner": "MNIST",
-      "deadline_utc": "2026-11-06T08:26:20+00:00"
+      "evaluation_commit": "8cba12867972597d1b8081dc83c688fc1e5097b4",
+      "previous_host": "21516",
+      "previous_timeout_pid": 80634,
+      "previous_full_rows_reused": 13,
+      "remaining_full_rows": 2,
+      "original_deadline_utc": "2026-11-06T09:29:27+00:00",
+      "failed_replay": {
+        "row": "Defense1_SUN397/Standalone/None/SUN397",
+        "score_error": 0.014338970184326172,
+        "tolerance_relaxed": false
+      },
+      "first_pass_rows": 15,
+      "additional_rows_to_evaluate": 3,
+      "preserved_rows": 12
     }
   ],
-  "next_action": "Finish the two available additional Defense1 comparisons with the same paired TA and target-only AGA. Preserve any verified subset at the fixed cutoff. Full eight-target results and both recovery conditions for Defense2 remain open.",
+  "next_action": "Recompute three Defense1 rows imported across GPUs, keep twelve frozen rows, and run full independent replay at the original tolerance.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -907,7 +918,11 @@
       "Defense 1 weight-only bias",
       "Defense 2 frozen November 2 A/B"
     ],
-    "readout": "separate comparison with raw and sign-reversed scores"
+    "readout": "separate comparison with raw and sign-reversed scores",
+    "verified_table_extension": "results/comparison/defense1_additional_pairs.tex",
+    "defense2_recovery_figure": "results/comparison/defense2_recovery.pdf",
+    "figure_uses": "Current frozen A/B results for MNIST, SVHN and DTD.",
+    "figure_finalization": "Method schematic and final experimental scope still pending."
   },
   "centered_readout": {
     "status": "completed_independently_verified",
@@ -1097,9 +1112,9 @@
     "original_batch_replays": 576
   },
   "priority_window": {
-    "start_utc": "2026-11-06T06:26:20+00:00",
-    "end_utc": "2026-11-06T08:26:20+00:00",
-    "user_request": "Focus all work on the existing defenses, primary papers and actual code; seek a substantive result and complete necessary evaluation. No automation or new versions. Report failures truthfully.",
+    "start_utc": "2026-11-06T08:29:27+00:00",
+    "end_utc": "2026-11-06T09:29:27+00:00",
+    "user_request": "At most one additional hour to complete the existing work. Extend Defense1 to the last available target and report verified results and remaining gaps.",
     "success_not_guaranteed": true
   },
   "recovery_inputs": {
@@ -1142,15 +1157,43 @@
   },
   "defense1_pair_extension": {
     "host": "21516",
-    "timeout_pid": 75222,
-    "status": "running",
+    "timeout_pid": null,
+    "status": "three_target_pairs_completed_verified",
     "stage": "same_methods_new_target_pairs",
     "output": "outputs/bias_eight_remaining_20261106/pair_comparison",
     "targets": [
       "RESISC45",
-      "Cars"
+      "Cars",
+      "GTSRB"
     ],
     "partner": "MNIST",
-    "deadline_utc": "2026-11-06T08:26:20+00:00"
+    "deadline_utc": "2026-11-06T08:26:20+00:00",
+    "record": "results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json",
+    "full_rows": 45,
+    "original_batch_replays": 720
+  },
+  "defense1_sun397_pair": {
+    "host": "17897",
+    "timeout_pid": 5483,
+    "status": "running",
+    "stage": "reevaluate_three_imported_defense1_rows_on_17897",
+    "output": "outputs/bias_eight_remaining_20261106/pair_comparison_sun397",
+    "log": "outputs/bias_eight_remaining_20261106/resume_sun397_same_gpu.log",
+    "target": "SUN397",
+    "partner": "MNIST",
+    "evaluation_commit": "8cba12867972597d1b8081dc83c688fc1e5097b4",
+    "previous_host": "21516",
+    "previous_timeout_pid": 80634,
+    "previous_full_rows_reused": 13,
+    "remaining_full_rows": 2,
+    "original_deadline_utc": "2026-11-06T09:29:27+00:00",
+    "failed_replay": {
+      "row": "Defense1_SUN397/Standalone/None/SUN397",
+      "score_error": 0.014338970184326172,
+      "tolerance_relaxed": false
+    },
+    "first_pass_rows": 15,
+    "additional_rows_to_evaluate": 3,
+    "preserved_rows": 12
   }
 }

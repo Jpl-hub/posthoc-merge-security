@@ -29,6 +29,7 @@
     "results/data_free_compensation/projection_eight/calibration.json": "256883bc726e579660cc7e300a7d4033efa2d24107c1f0222e442e96067eaa92",
     "results/data_free_compensation/projection_eight/paired.json": "795515a0f663e7925f7d5444b0a0bb75352d09cb634256dfdda1df7dacafd657",
     "results/data_free_compensation/hard_label/result.json": "f114b630682419f32a368e91aecd368cd7bef92809f7d34b4fcce78895e14790",
+    "results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json": "6bef13f7ece0741c7174d29440a58520c19a48ac7179200d5c767f25630b1b3b",
     "results/data_free_compensation/finite_components_result.json": "276c78d011c569568f1009d417f198ca12785f5ab715ef6fcfd21c8216e242fd",
     "results/data_free_compensation/native_view_response_result.json": "21c30f93cbd1ca633999e65aa89b2f2842efa2501fc52b6659617d39fff74960",
     "results/data_free_compensation/native_class_means_result.json": "05a9954b2a8ef08912b8d670253768f5e63815719238651a172e8f8936285eb5",
@@ -4283,6 +4284,81 @@
       ],
       "note": "Standalone accuracy refers to the target expert. Each merged cell gives target / partner accuracy. TA uses coefficient 0.5. AGA processes the target before merging, with the same procedure for the unprotected control. Defense 2 uses the frozen A/B release. All entries use complete test sets."
     },
+    "defense1_additional_pairs": {
+      "headers": [
+        "Target / partner",
+        "Defense",
+        "Standalone",
+        "TA",
+        "AGA + TA"
+      ],
+      "rows": [
+        [
+          "RESISC45/MNIST",
+          "Unprotected",
+          "96.11",
+          "91.08 / 99.43",
+          "90.38 / 99.41"
+        ],
+        [
+          "RESISC45/MNIST",
+          "PaRaMS",
+          "96.11",
+          "2.57 / 8.92",
+          "90.37 / 99.41"
+        ],
+        [
+          "RESISC45/MNIST",
+          "Defense 1",
+          "96.11",
+          "2.44 / 27.60",
+          "2.44 / 27.56"
+        ],
+        [
+          "Cars/MNIST",
+          "Unprotected",
+          "77.66",
+          "73.17 / 99.41",
+          "72.53 / 99.41"
+        ],
+        [
+          "Cars/MNIST",
+          "PaRaMS",
+          "77.66",
+          "0.72 / 8.92",
+          "72.53 / 99.41"
+        ],
+        [
+          "Cars/MNIST",
+          "Defense 1",
+          "77.64",
+          "0.55 / 10.10",
+          "0.55 / 10.10"
+        ],
+        [
+          "GTSRB/MNIST",
+          "Unprotected",
+          "98.73",
+          "93.25 / 99.12",
+          "92.22 / 99.17"
+        ],
+        [
+          "GTSRB/MNIST",
+          "PaRaMS",
+          "98.73",
+          "2.79 / 8.92",
+          "92.22 / 99.17"
+        ],
+        [
+          "GTSRB/MNIST",
+          "Defense 1",
+          "98.73",
+          "1.19 / 35.83",
+          "1.19 / 35.80"
+        ]
+      ],
+      "note": "All entries use complete test sets. Standalone reports target accuracy. Each merged cell gives target / partner accuracy. TA uses coefficient 0.5. AGA processes the target before merging, including for the unprotected control."
+    },
     "prodistill_components": {
       "headers": [
         "Target",
@@ -5442,5 +5518,5 @@
     }
   },
   "new_evaluations": 0,
-  "report_source_sha256": "b4af7d3bce4277785e377413b0f0801b1aa769218a5d54d9ddeae9cc70aca02d"
+  "report_source_sha256": "b18e139f8fd930d947a1a5157216e60e0e08c883e8fa81435ee426093544742d"
 }

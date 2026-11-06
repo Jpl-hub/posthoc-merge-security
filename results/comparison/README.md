@@ -27,6 +27,7 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 | 用途 | Markdown / TeX |
 |---|---|
 | 两专家正文主表 | [独立、目标与伙伴](paper_main.md) · [TeX](paper_main.tex) |
+| 防御一扩展的两专家对比 | [独立、目标与伙伴](defense1_additional_pairs.md) · [TeX](defense1_additional_pairs.tex) |
 | 输出校正、匹配及硬标签蒸馏的逐项结果 | [目标](attacks.md) · [TeX](attacks.tex) · [伙伴](partners.md) · [TeX](partners.tex) |
 | 当前发布在八专家下的 TA、AGA 和输出校正 | [三个目标](eight_calibration_target.md) · [TeX](eight_calibration_target.tex) · [七个测试集](eight_calibration.md) · [TeX](eight_calibration.tex) |
 | 防御二八专家主表 | [结果](defense2_eight_versions.md) · [TeX](defense2_eight_versions.tex) |
@@ -49,8 +50,10 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 | [MergeGuard，CVPR 2026，§6–7](https://openaccess.thecvf.com/content/CVPR2026/html/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.html) | 将正常使用、融合和适应恢复分开交代。本文额外做了 ProDistill，单列其图片和训练预算。 |
 | [MergeBarrier，AAAI 2026，§4.1、表 2 和表 4](https://arxiv.org/html/2511.10712v2#S4) | 用公开基座替换改写过的层，测替换后还有多少保护效果。论文同时改写 FFN 并变换 Attention。本项目固定替换最后一层 MLP 的 B 和偏置，检查剩余 A 的作用。 |
 | [Trap²，ICML 2026，表 5 与附录表 14](https://arxiv.org/html/2601.21898v2#S6.SS4) · [官方全参数评价入口](https://github.com/ml-postech/Trap2/blob/ef65a26590d92fe07955c5621c08bb315484ff29/eval_scripts/8vision_pertask_linearsearch_full.py) | 正文和补充分别回答主要设置与更强恢复。仓库沿用固定配置、冻结发布、评价入口分离的结构。本文的两专家 ProDistill 使用每任务 64 张训练图，结果按目标和伙伴列出。 |
+| [AGA 与 ARF，ECCV 2026，§5、表 6](https://arxiv.org/html/2606.30360v1#S5) · [官方 AGA 代码](https://github.com/krumpguo/secure-merge-attack) | 参考八个保护对象的评价覆盖。ARF 在有标签微调时增加注意力权重与基座的距离，之后做可逆变换。本文已用原作者 AGA，尚未复现 ARF 的训练。 |
+| [Trace Rewriting，ACL 2026](https://aclanthology.org/2026.acl-long.519/) · [官方蒸馏脚本](https://github.com/xhOwenMa/trace-rewriting/blob/main/src/distill.py) | 同一个学生训练入口可切换原始和改写后的文本，比较时保持其他设置一致。本文沿用匹配对照的做法。该论文研究文本输出蒸馏，本文的 ProDistill 拟合内部特征与融合系数。 |
 
-方法图画独立使用时如何补偿，以及融合后补偿为何失配。准确率用表报告。系数曲线用同一冻结发布和同一对照的实测点绘制，曲线上的测试结果用于解释机制。
+当前防御二的独立、TA、AGA 和两项恢复准确率已画成[矢量结果图](defense2_recovery.pdf)。另需完成方法图，说明独立使用时如何补偿，以及融合后补偿为何失配。
 
 ## 实验怎么跑
 
@@ -64,7 +67,9 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 | 蒸馏恢复 | `experiment.distill --prodistill` 每任务用 64 张无标签训练图，逐层更新融合系数，每层 100 步。完整测试集报告目标和伙伴。 | 三个保护任务已测。防御二仍可恢复，防御一的结果受固定读出条件限制。 |
 | 消融和成本 | 比较 A 单独改、B 单独改、联合改、同范数扰动及去掉任务 SVD 投影，沿用主表评价。记录构造时间、参数改动量和数据用量。 | 当前 A/B 三任务已有结果。若更换主方法，消融和成本随最终发布更新。 |
 
-防御一已按原权重公式冻结其余五个任务的发布。SUN397、Cars、RESISC45、GTSRB 的独立测试已复核。RESISC45 和 GTSRB 逐图一致，SUN397 和 Cars 分别下降约 0.01 和 0.02 个百分点。 [四项独立测试结果](../phase3/bias_weight_only/eight_expert/remaining_native_result.json)EuroSAT 的检查点、分类头和防御一发布均已齐备，原专家测试文件清单仍待确认。第三方的 2700 张图已有归档，不能直接填入原划分的结果列。 [构造记录](../phase3/bias_weight_only/eight_expert/remaining_construction.json) · [独立测试协议](../phase3/bias_weight_only/eight_expert/remaining_native.json) · [原作者划分说明](https://github.com/mlfoundations/task_vectors/issues/1)
+防御一已按原权重公式冻结其余五个任务的发布。SUN397、Cars、RESISC45、GTSRB 的独立测试已复核。RESISC45 和 GTSRB 逐图一致，SUN397 和 Cars 分别下降约 0.01 和 0.02 个百分点。扩展的两专家实验使用 MNIST 作为伙伴，对照无保护和 PaRaMS。 [独立测试](../phase3/bias_weight_only/eight_expert/remaining_native_result.json) · [两专家结果](defense1_additional_pairs.md)
+
+EuroSAT 的检查点、分类头和防御一发布均已齐备，原专家测试文件清单仍待确认。第三方的 2700 张图已有归档，使用该划分的结果需单独报告。 [构造记录](../phase3/bias_weight_only/eight_expert/remaining_construction.json) · [独立测试协议](../phase3/bias_weight_only/eight_expert/remaining_native.json) · [原作者划分说明](https://github.com/mlfoundations/task_vectors/issues/1)
 
 防御二先核实当前试验的独立能力和两项恢复结果。方法定稿后，补 SUN397、Cars、RESISC45、EuroSAT、GTSRB 作为保护对象的固定构造与评价，并补相应的无保护和 PaRaMS 行。同一权重、数据和处理条件的结果按指纹复用。扩展表单列任务，原划分未核实的项留空。
 
@@ -80,5 +85,5 @@ A/B 删项与同范数随机扰动支持联合补偿的作用。移除 A 的任�
 从仓库根目录把当前 Markdown 和 TeX 重建到临时目录：
 
 ```bash
-python -m experiment.report --defense-comparison --output /tmp/posthoc-paper-tables
+python -m experiment.report --defense-comparison --figure --output /tmp/posthoc-paper-tables
 ```

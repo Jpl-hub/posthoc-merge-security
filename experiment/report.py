@@ -11,10 +11,11 @@ def main():
     p.add_argument("--output", default="/tmp/posthoc-paper-tables")
     p.add_argument("--attack-directory", help="Collect one fixed attack campaign")
     p.add_argument("--defense-comparison", action="store_true", help="Current defenses and PaRaMS, using completed results")
+    p.add_argument("--figure", action="store_true", help="Render the recovery figure with --defense-comparison")
     a = p.parse_args()
     require_root()
     if a.defense_comparison:
-        defense_comparison(a.output)
+        defense_comparison(a.output, figure=a.figure)
     elif a.attack_directory:
         attack_comparison(a.attack_directory)
     else:
