@@ -1,20 +1,12 @@
 {
-  "updated_utc": "2026-11-06T01:13:55.677368+00:00",
-  "status": "conditional_self_reference_control_running",
-  "active_focus": "先核对并恢复遗漏的自身专家参照；只做一个有源条件门控的MNIST对照。",
+  "updated_utc": "2026-11-06T02:09:08.561522+00:00",
+  "status": "conditional_self_reference_closed_proxy_mismatch_identified",
+  "active_focus": "先纠正A改变后仍使用固定AGA顺序的构造检查；真实完整评价有效，本次试验关闭。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "21516",
-      "pid": 39145,
-      "protocol": "results/data_free_compensation/conditional_compensation/self_reference_protocol.json",
-      "output": "outputs/conditional_self_reference_20261106",
-      "status": "running"
-    }
-  ],
-  "next_action": "Finish one source-gated MNIST self-reference control, then inspect its measured outcome before any expansion. Earlier candidate closed; residual supplemental job stopped and partial results preserved.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Correct the construction matching context to use current A, and verify it against the actual frozen author-AGA forward on the same synthetic inputs before any new optimization or real-image evaluation. No repeated closed-point expansion.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -957,5 +949,20 @@
     },
     "supplement_rows": 68,
     "supplement_complete": false
+  },
+  "conditional_self_reference": {
+    "status": "completed_closed_no_recovery_protection",
+    "record": "results/data_free_compensation/conditional_compensation/self_reference_result.json",
+    "MNIST": {
+      "native": 99.7,
+      "TA": 91.67,
+      "AGA_target": 99.02,
+      "B_replacement_after_AGA": 97.86,
+      "ProDistill": 99.47
+    },
+    "fixed_order_matches": 1,
+    "actual_order_matches": 426,
+    "n": 800,
+    "changed_matching_units": 1863
   }
 }

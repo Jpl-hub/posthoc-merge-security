@@ -17,9 +17,11 @@ from _impl.models import apply, checked_models, initialize, load_checkpoint
 def main():
     args=argparse.ArgumentParser()
     args.add_argument('--task',required=True)
-    task=args.parse_args().task
+    args.add_argument('--root',default='outputs/overnight_20261106')
+    options=args.parse_args()
+    task=options.task
     initialize()
-    root=Path('outputs/overnight_20261106')
+    root=Path(options.root)
     out=root/task/'diagnosis'
     out.mkdir(exist_ok=False)
     spec=json.loads(Path('configs/defense2_inputs.json').read_text())[task]
@@ -29,6 +31,10 @@ def main():
     base,expert,head,_=checked_models(task)
     ref=json.loads((root/task/'point/result.json').read_text())['publication']
     own=apply(expert,ref)
+    aligned=apply(expert,spec['clean_AGA'],full=True)
+    attack_path=root/task/'AGA/edits.pt'
+    attack_info=json.loads((attack_path.parent/'execution.json').read_text())
+    attacked=apply(aligned,dict(path=str(attack_path),sha256=attack_info['output_sha256']))
     partner=load_checkpoint(('SVHN' if task=='MNIST' else 'MNIST')+'/finetuned.pt')
     norm=expert.val_preprocess.transforms[-1]
     images=[]
@@ -42,8 +48,10 @@ def main():
     for name,model in [('native',expert),('candidate',own),
                        ('public_clean',merge(base,expert,base,.5)),
                        ('public_candidate',merge(base,own,base,.5)),
+                       ('public_actual_AGA',merge(base,attacked,base,.5)),
                        ('partner_clean',merge(base,expert,partner,.5)),
-                       ('partner_candidate',merge(base,own,partner,.5))]:
+                       ('partner_candidate',merge(base,own,partner,.5)),
+                       ('partner_actual_AGA',merge(base,attacked,partner,.5))]:
         model.cuda().eval()
         scores[name]=torch.cat([head(model(x.cuda())).cpu() for x in images])
         model.cpu()
