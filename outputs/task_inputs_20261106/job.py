@@ -25,24 +25,24 @@ def run(*args):
     subprocess.run([sys.executable, '-u', *map(str, args)], check=True, timeout=5400)
 
 
-status('synthetic_recovery_prefix')
 import torch
-from _impl.models import apply, checked_models, initialize
-from _impl.prodistill import author, train
-
-initialize()
 fit = cfg['fit']
-base, original, head, _ = checked_models('MNIST')
-own = apply(original, fit['parent'])
-prefix = root / 'recovery_prefix'
-prefix.mkdir(exist_ok=False)
-recovery = cfg['synthetic_recovery']
-train(recovery, dict(target='MNIST', partner='public_base',
-                    synthetic_source=fit['synthetic_source']), prefix, base,
-      {'MNIST': own, 'public_base': base}, own, base, author(recovery))
-fit['recovered_model'] = dict(path=str(prefix / 'model.pt'), sha256=digest(prefix / 'model.pt'))
+if 'recovered_model' not in fit:
+    from _impl.models import apply, checked_models, initialize
+    from _impl.prodistill import author, train
+    status('synthetic_recovery_prefix')
+    initialize()
+    base, original, head, _ = checked_models('MNIST')
+    own = apply(original, fit['parent'])
+    prefix = root / 'recovery_prefix'
+    prefix.mkdir(exist_ok=False)
+    recovery = cfg['synthetic_recovery']
+    train(recovery, dict(target='MNIST', partner='public_base',
+                        synthetic_source=fit['synthetic_source']), prefix, base,
+          {'MNIST': own, 'public_base': base}, own, base, author(recovery))
+    fit['recovered_model'] = dict(path=str(prefix / 'model.pt'), sha256=digest(prefix / 'model.pt'))
+    del base, original, head, own
 save_json(root / 'construction.json', fit)
-del base, original, head, own
 gc.collect()
 torch.cuda.empty_cache()
 

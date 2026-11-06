@@ -2,6 +2,8 @@
 
 截至 2026 年 11 月 6 日，**已选主实验和两项代表性恢复均有完整结果，两种防御的结论还未全部成立。** 当前主表使用防御一的权重偏置版和 11 月 2 日冻结的防御二 A/B 版。加入读出补偿的三任务结果是独立对照。公开增益抵消版已经关闭，结果留在失败记录。
 
+11月6日新合成输入的固定A/B试验也已完成：MNIST独立99.47%，TA23.47%，AGA仅目标/双方为1.34/0.76%，AGA后公开B替换99.28%，ProDistill99.37%。完整32行、576次原批上下文分数重放通过，未采用为主方法。[MD表](../data_free_compensation/task_inputs_defense_summary.md) · [TeX表](../data_free_compensation/task_inputs_defense_summary.tex)。换B后，两组合成输入仍全部保持原判断，说明本次蒸馏目标没有同时解决公开替换；接下来沿用A/B求解入口，把两个恢复条件一并纳入目标，不增加融合算法或按测试分数挑选发布。
+
 ## 论文主表与边界
 
 目标任务为 MNIST、SVHN、DTD，主骨干为 CLIP ViT-B/32。两专家 TA 系数 0.5，原作者 AGA 后再融合。防御与匹配无保护、官方 PaRaMS 在同条件下比较。目标和伙伴都列准确率。带位置知识的公开替换与使用额外图片的 ProDistill 分开报告，具体权限见[攻击清单与原论文](../attack_generalization_20261028/attack_inventory.md)。

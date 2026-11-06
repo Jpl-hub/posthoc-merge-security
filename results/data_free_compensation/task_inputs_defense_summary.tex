@@ -1,0 +1,13 @@
+\begin{table*}[t]
+\centering\small
+\caption{Fixed synthetic input experiment. MNIST accuracy (\%).}
+\begin{tabular}{lrrrrrr}
+\toprule
+Method & Standalone & TA & AGA target & AGA both & AGA + B reset & ProDistill \\
+\midrule
+Unprotected & 99.69 & 99.37 & 99.30 & 99.32 & 99.29 & 99.45 \\
+Input coverage test & 99.47 & 23.47 & 1.34 & 0.76 & 99.28 & 99.37 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+% TA coefficient0.5. FullMNIST andSVHN test sets. Construction uses no real images. Known B+b reset and extra-data ProDistill are separate recovery settings. The experimental point is not adopted.

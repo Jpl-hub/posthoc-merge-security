@@ -1,11 +1,10 @@
-"""Fixed comparison of soft function retention and post-distillation entropy.
+"""One fixed A/B compensation point against coefficient recovery and B reset.
 
-Uses the existing exact derivative of the author's 100-step coefficient fit.
-This is a bounded adaptation of a known recovery-aware objective, not TAR.
+Uses the existing derivative of the author's 100-step coefficient fit.
+The target expert and public base remain frozen.
 """
 import argparse
 import copy
-import math
 import time
 from pathlib import Path
 
@@ -102,9 +101,13 @@ def main():
     def recovery_scores(p):
         return head(attack_ln(call(p, xm)[0]) @ attack_proj)
 
+    def margin(scores, teacher_class):
+        true = scores.gather(1, teacher_class[:, None]).flatten()
+        other = scores.scatter(1, teacher_class[:, None], -torch.inf).amax(1)
+        return (other - true).clamp_max(0).mean()
+
     def measure(p):
-        logp = recovery_scores(p).log_softmax(1)
-        return (-(logp.exp() * logp).sum(1).mean(),)
+        return (margin(recovery_scores(p), labels),)
 
     def class_scores(p):
         current_order=attack['solve_permutation'](p[iA].detach().float().cpu(),anchor[iA].float().cpu()).cuda()
@@ -117,6 +120,9 @@ def main():
             z = act(F.linear(row['x'], (a + anchor[iA]) / 2, (aa + anchor[ia]) / 2))
             hidden = row['prefix'] + F.linear(z, (b + anchor[iB]) / 2, (p[ib] + anchor[ib]) / 2)
             result[name] = head(public_ln(hidden) @ public_proj)
+            if name == 'recovered':
+                hidden = row['prefix'] + F.linear(z, anchor[iB], anchor[ib])
+                result['B_reset'] = head(public_ln(hidden) @ public_proj)
         return result
 
     def recovered_forward(p):
@@ -171,18 +177,26 @@ def main():
             public_kl = torch.stack([kl(scores[k], fixed[k]) for k in contexts]).mean()
             retain = native_kl + public_kl
             retain.backward(retain_graph=bool(strength))
-            entropy = 0.
-            if strength:
-                entropy, gradient, _ = recover_gradient(inner_loss, measure, anchor,
+            assert strength == 1.0
+            recovered = recovered_forward(p)
+            recovered_margin = float(measure(recovered)[0].detach())
+            replacement_margin = margin(scores['B_reset'], fixed['native'].argmax(1))
+            active = 'distillation' if recovered_margin <= float(replacement_margin.detach()) else 'B_reset'
+            if active == 'distillation':
+                value, gradient, _ = recover_gradient(inner_loss, measure, anchor,
                     tuple(v.detach() for v in p), lambda w: call(w, xt))
+                assert abs(value-recovered_margin) < 1e-5 * (1+abs(value))
                 changing = (iA, ia, iB, ib)
                 torch.autograd.backward(tuple(p[i] for i in changing), tuple(-strength * gradient[i] for i in changing))
-            objective = float(retain.detach()) + strength * (math.log(head.weight.shape[0]) - entropy)
+            else:
+                (-strength * replacement_margin).backward()
+            objective = float(retain.detach()) - strength * min(recovered_margin, float(replacement_margin.detach()))
             assert all(v.grad is not None and torch.isfinite(v.grad).all() for v in variables)
             # The shared recovery derivative kernel has independent forward/reverse validation.
             # Actual finite objectives are recomputed by the library line search.
             records.append(dict(evaluation=len(records)+1, objective=objective, native_KL=float(native_kl.detach()),
-                                public_KL=float(public_kl.detach()), recovered_entropy=entropy if strength else None,
+                                public_KL=float(public_kl.detach()), recovered_margin=recovered_margin,
+                                B_reset_margin=float(replacement_margin.detach()), active=active,
                                 seconds=time.monotonic()-start))
             save_json(folder/'progress.json', records)
             print(name, records[-1], flush=True)
@@ -207,6 +221,7 @@ def main():
                       native_n=len(fixed['native']),recovery_n=len(labels),
                       relative_edits={names[i]:float((rounded[i]-clean[i]).norm()/clean[i].norm()) for i in (iA,ia,iB,ib)},
                       native_matches=int((scores['native'].argmax(1)==fixed['native'].argmax(1).cpu()).sum()),
+                      B_reset_matches=int((scores['B_reset'].argmax(1)==fixed['native'].argmax(1).cpu()).sum()),
                       recovery_matches=int((scores['distilled'].argmax(1)==labels.cpu()).sum()),
                       A_relative=float((rounded[iA]-clean[iA]).norm()/clean[iA].norm()),
                       B_relative=float((rounded[iB]-clean[iB]).norm()/clean[iB].norm()),
