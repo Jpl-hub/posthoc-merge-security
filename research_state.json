@@ -151,20 +151,12 @@
     }
   },
   "delivery_preference": "先做实验并在本对话反馈结果，用户决定何时对外沟通。",
-  "updated_utc": "2026-11-06T04:22:17.789233+00:00",
-  "status": "compensation_closed_input_coverage_check_running",
-  "active_focus": "唯一补偿点完整结果未解决B替换/蒸馏，已关闭不采用。发现合成输入与公开基座的共识远高于真实测试；正在按已发表ADI机制仅准备输入，不新增防御版本。",
-  "active_GPU_jobs": 1,
-  "research_jobs": [
-    {
-      "host": "21516",
-      "pid": 55215,
-      "protocol": "results/data_free_compensation/task_inputs_protocol.json",
-      "output": "outputs/task_inputs_20261106",
-      "stage": "input_generation_only"
-    }
-  ],
-  "next_action": "Inspect the single input-preparation result. No automatic defense release or parameter search. Keep current main A/B and all completed tables unchanged.",
+  "updated_utc": "2026-11-06T04:34:49.143094+00:00",
+  "status": "task_inputs_complete_fixed_AB_run_prepared",
+  "active_focus": "One fixed A/B run with discriminative synthetic inputs; current main release unchanged.",
+  "active_GPU_jobs": 0,
+  "research_jobs": [],
+  "next_action": "Launch the registered one-point A/B job on21516; all final native, AGA, B replacement and ProDistill results must be reported. No parameter sweep or automatic expansion.",
   "closed_history": {
     "full_state_commit": "74ab0bb",
     "index": "results/comparison/README.md",
@@ -728,5 +720,17 @@
     "full_rows": 32,
     "context_score_replays": 576
   },
-  "source_coverage_record": "results/data_free_compensation/source_coverage.json"
+  "source_coverage_record": "results/data_free_compensation/source_coverage.json",
+  "task_inputs": {
+    "record": "results/data_free_compensation/task_inputs_result.json",
+    "status": "completed",
+    "expert_correct": 800,
+    "public_expert_agreement": 41,
+    "n": 800,
+    "real_images": 0
+  },
+  "task_inputs_defense": {
+    "protocol": "results/data_free_compensation/task_inputs_defense_protocol.json",
+    "status": "prepared_not_started"
+  }
 }
