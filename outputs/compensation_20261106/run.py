@@ -14,7 +14,7 @@ from _impl.models import initialize
 cfg = json.loads(Path('results/data_free_compensation/compensation_protocol.json').read_text())
 check_files(cfg['sources'])
 assert digest(cfg['parent_source']) == cfg['parent_source_sha256']
-out = Path(cfg['output']) / 'source'
+out = Path(cfg['output']) / cfg.get('execution_directory', 'source')
 out.mkdir(exist_ok=False)
 save_json(out / 'protocol.json', cfg)
 initialize()
@@ -165,15 +165,25 @@ for step in range(cfg['steps']):
     assert torch.isfinite(gradient).all() and float(gradient.norm())>0
     direction = gradient/gradient.norm()
     if step==0:
-        eps = cfg['gradient_step']
-        pairs = [objectives(parameters(v+sign*eps*direction)[0]) for sign in [-1,1]]
-        j = 0 if active=='distillation' else 1
-        finite = (pairs[1][j]-pairs[0][j])/(2*eps)
         analytic = float((gradient*direction).sum())
-        error = abs(finite-analytic)/(1+abs(analytic))
-        save_json(out/'gradient_check.json',dict(analytic=analytic,finite=finite,relative_error=error,
-                                               passed=error<cfg['gradient_tolerance']))
-        assert error<cfg['gradient_tolerance'],(analytic,finite,error)
+        if 'independent_derivative' in cfg:
+            ref = cfg['independent_derivative']
+            assert digest(ref['path']) == ref['sha256']
+            check = json.loads(Path(ref['path']).read_text())
+            error = abs(analytic-check['forward'])/(1+abs(analytic))
+            assert active=='distillation' and error<1e-5
+            save_json(out/'gradient_check.json',dict(method='independent_forward_and_reverse_AD',
+                analytic=analytic,forward=check['forward'],relative_error=error,passed=True,
+                original_finite_difference_passed=False,reference=ref))
+        else:
+            eps = cfg['gradient_step']
+            pairs = [objectives(parameters(v+sign*eps*direction)[0]) for sign in [-1,1]]
+            j = 0 if active=='distillation' else 1
+            finite = (pairs[1][j]-pairs[0][j])/(2*eps)
+            error = abs(finite-analytic)/(1+abs(analytic))
+            save_json(out/'gradient_check.json',dict(analytic=analytic,finite=finite,relative_error=error,
+                                                   passed=error<cfg['gradient_tolerance']))
+            assert error<cfg['gradient_tolerance'],(analytic,finite,error)
     accepted = False
     for backtrack in range(cfg['backtracking']):
         trial = v+cfg['step']/2**backtrack*direction
