@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-06T04:35:44.797134+00:00",
+  "updated_utc": "2026-11-06T05:01:43.655793+00:00",
   "status": "task_inputs_fixed_AB_job_running",
   "active_focus": "One fixed A/B run with discriminative synthetic inputs; current main release unchanged.",
   "automatic_continuation": false,
@@ -10,15 +10,17 @@
       "host": "21516",
       "timeout_pid": 55868,
       "status": "running",
-      "stage": "synthetic_recovery_prefix",
+      "stage": "A_B_construction",
       "output": "outputs/task_inputs_20261106",
       "log": "outputs/task_inputs_20261106/job.log",
       "source_commit": "f03788ef5",
       "protocol": "results/data_free_compensation/task_inputs_defense_protocol.json",
-      "automatic_expansion": false
+      "automatic_expansion": false,
+      "synthetic_prefix_completed": true,
+      "synthetic_prefix_model_sha256": "2ee1ba49735b39689d9df6ad8178cb49f5b1360fc317596e559ccfc3b0cec29c"
     }
   ],
-  "next_action": "Let the fixed one-point job finish. Recheck actual process/status and retrieve complete results on the next user check; no automation, no parameter search, no new task.",
+  "next_action": "The existing background job continues one final A/B point, then full MNIST/SVHN native,TA,authorAGA both scopes,matched B replacement and fixed ProDistill with existing independent verifiers. Retrieve and summarize all outcomes at the next user check. No new candidate, app automation, or automatic expansion.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -998,10 +1000,10 @@
     "new_production_modules": 0
   },
   "sleep_authorization": {
-    "start_utc": "2026-11-06T02:47:44+00:00",
-    "end_utc": "2026-11-06T04:47:44+00:00",
+    "start_utc": "2026-11-06T05:00:07+00:00",
+    "end_utc": "2026-11-06T07:00:07+00:00",
     "automatic_continuation": false,
-    "note": "User has returned to ask status; ongoing job continues, no automation."
+    "note": "User authorized the existing background run and completion checks during a two-hour nap. No app automation or new experiment sweep."
   },
   "recovery_trace": {
     "record": "results/data_free_compensation/recovery_trace_result.json",
@@ -1052,11 +1054,13 @@
     "host": "21516",
     "timeout_pid": 55868,
     "status": "running",
-    "stage": "synthetic_recovery_prefix",
+    "stage": "A_B_construction",
     "output": "outputs/task_inputs_20261106",
     "log": "outputs/task_inputs_20261106/job.log",
     "source_commit": "f03788ef5",
     "protocol": "results/data_free_compensation/task_inputs_defense_protocol.json",
-    "automatic_expansion": false
+    "automatic_expansion": false,
+    "synthetic_prefix_completed": true,
+    "synthetic_prefix_model_sha256": "2ee1ba49735b39689d9df6ad8178cb49f5b1360fc317596e559ccfc3b0cec29c"
   }
 }
