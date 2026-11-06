@@ -1,12 +1,20 @@
 {
-  "updated_utc": "2026-11-06T02:09:08.561522+00:00",
-  "status": "conditional_self_reference_closed_proxy_mismatch_identified",
-  "active_focus": "先纠正A改变后仍使用固定AGA顺序的构造检查；真实完整评价有效，本次试验关闭。",
+  "updated_utc": "2026-11-06T02:18:06.694379+00:00",
+  "status": "corrected_current_matching_MNIST_running",
+  "active_focus": "A每次变化后重算实际作者匹配；同一起点重做一次MNIST，先核对实际AGA合成输入再读真实图片。",
   "automatic_continuation": false,
   "automation_status": "13-35 deleted;do not recreate",
-  "active_GPU_jobs": 0,
-  "research_jobs": [],
-  "next_action": "Correct the construction matching context to use current A, and verify it against the actual frozen author-AGA forward on the same synthetic inputs before any new optimization or real-image evaluation. No repeated closed-point expansion.",
+  "active_GPU_jobs": 1,
+  "research_jobs": [
+    {
+      "host": "21516",
+      "pid": 44471,
+      "protocol": "results/data_free_compensation/conditional_compensation/current_matching_protocol.json",
+      "output": "outputs/conditional_current_matching_20261106",
+      "stage": "source_construction"
+    }
+  ],
+  "next_action": "Inspect one corrected MNIST result. No automatic cross-task or eight-expert expansion. Keep original inputs, ranges and optimization budget; do not warm-start from failed evaluated points.",
   "latest_completed_batch": {
     "name": "combined_bias_ab",
     "record": "results/comparison/combined_bias_ab/result.json",
@@ -964,5 +972,6 @@
     "actual_order_matches": 426,
     "n": 800,
     "changed_matching_units": 1863
-  }
+  },
+  "current_matching_verification": "results/data_free_compensation/conditional_compensation/current_matching_check_result.json"
 }
