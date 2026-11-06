@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-06T16:29:55.458791+00:00",
+  "updated_utc": "2026-11-06T17:15:02.098084+00:00",
   "status": "nbp_readout_analysis_verified_eight_extension_running",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
@@ -62,14 +62,16 @@
       "new_defense_weights": 0,
       "expert_training_updates": 0,
       "partial_observation": {
-        "utc": "2026-11-06T16:29:55.458791+00:00",
-        "full_rows_observed": 86,
+        "utc": "2026-11-06T17:15:02.098084+00:00",
+        "full_rows_observed": 127,
         "expected_full_rows": 168,
         "target_accuracy_percent": {
           "SUN397_TA": 0.2518891687657431,
           "SUN397_AGA_target_TA": 0.2518891687657431,
           "Cars_TA": 0.5471956224350205,
-          "Cars_AGA_target_TA": 0.5471956224350205
+          "Cars_AGA_target_TA": 0.5471956224350205,
+          "RESISC45_TA": 2.4444444444444446,
+          "RESISC45_AGA_target_TA": 2.4444444444444446
         },
         "complete_batch_validated": false
       }
@@ -218,5 +220,13 @@
     "body_pages": 6,
     "reference_pages": 1,
     "figures": "One editable vector mechanism figure and one vector plot from the 42 fixed-readout analyses."
+  },
+  "literature_review": {
+    "updated_utc": "2026-11-06T17:10:28.681065+00:00",
+    "record": "notes/phase3_attack_review.md",
+    "latest_work": "PaRaMS supplement and pinned default implementation cross-check; ACL2026 Trace Rewriting body/appendix and selected pinned code paths; CALA method/experiments and selected appendices; ModelPirate threat model/method.",
+    "read_depth": "Screened official records, partial reading and body/appendix/code review are explicitly distinguished. No claim that every listed paper was fully read or reproduced.",
+    "trace_rewriting_code_commit": "a2afa048f6967badf9d4894c912469547eafd452",
+    "changes_to_experiments": "No new GPU jobs, defense releases, optimizers or attacks. Partner diversity, fusion coefficients and same-hardware costs remain specific evidence gaps."
   }
 }

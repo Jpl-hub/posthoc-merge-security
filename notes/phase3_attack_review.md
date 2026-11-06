@@ -801,3 +801,33 @@ EuroSAT再核TaskArithmetic作者Issue1与原eurosat.py：代码读取现成trai
 11月7日继续核对基线工程：Trap²的[完整参数训练入口](https://github.com/ml-postech/Trap2/blob/main/training_scripts/8vision_training_full_trap2.py)123—169行，以训练前参数为锚点生成缩放副本，并最小化正常分类损失减去缩放后分类损失；33—38行按验证集保存参数。247—291行从公开HF CLIP初始化，不是对既有专家直接施加无数据变换。其[数据配置](https://github.com/ml-postech/Trap2/blob/main/configs/8vision_train_full.py)和[README](https://github.com/ml-postech/Trap2#dataset-preparation)对Cars、MNIST、SVHN、GTSRB使用固定索引从官方测试集另划验证集；本项目主结果使用完整原测试集。完整参数训练README示例显式lambda_reg=.005，脚本默认.01，后续复现需显式记录，不把两者混用。以上确认了可学习的机制和验证选择方式，尚未运行Trap²同条件训练，不把其论文分数填入本项目对比。
 
 同日读取[Merge-Lock作者仓库](https://github.com/hetailang/Merge-Lock)，仍只有README和Coming Soon说明；不宣称完成其官方代码复现。原三保护方向只补Cars/SUN397两列的24条记录已预登记997da94，并锁定原12份完整模型参数指纹。缺少的DTD原AGA缓存从21516按原SHA取回17897，没有重新求解AGA。
+
+### 11月7日：补读2026年工作，并把正文、附录与实现分开核对
+
+阅读范围继续扩大，但不把检索到的文章都称为精读。直接相关的方法优先读公式、附录和实现；相邻方向先查清发布方式、攻击者拿到什么以及作者实际测了什么。以下是截至本轮的阅读范围，不代表已复现全部方法。
+
+| 论文 | 已核实的出处 | 当前读到哪里 |
+| --- | --- | --- |
+| PaRaMS | ICCV 2025 | 正文、8页补充材料、官方默认实现及本项目适配相互核对。 |
+| MergeBarrier | AAAI 2026 | 已核正文§3—4及相关实现记录；真实训练输入、结构改变和公开替换设置见此前记录。 |
+| MergeGuard | CVPR 2026 | 已核方法、实验和§7恢复定义；未核实可直接复现的作者代码。 |
+| Trap² | ICML 2026 | 已核主要方法、主表和有关成本/恢复的附录；读取作者完整参数训练入口与配置。 |
+| Merge-Lock | arXiv:2509.01548 | 已核对称变换机制；作者仓库仍只有README，正式录用信息未独立核实。 |
+| Sensitivity as a Shield | OpenReview条目 | PDF仍返回浏览器验证页。保持“未读全文”，不从摘要补造机制。 |
+| [Trace Rewriting](https://aclanthology.org/2026.acl-long.519/) | ACL 2026 | 本轮读正文及附录A—E；另查固定作者提交中的生成、学生训练和提示词评分路径。未运行。 |
+| [CALA](https://arxiv.org/abs/2610.31046) | 2026年10月22日预印本 | 本轮读方法、主实验及附录B/C/D相关部分；尚未取得核实的公开代码，未独立核实正式录用信息。 |
+| [Partial Merging / ModelPirate](https://proceedings.mlr.press/v306/wu26u.html) | ICML 2026 | 本轮读问题、攻击者知识与方法§2—3；后续实验和代码尚未细读。 |
+| [Antidistillation Fingerprinting](https://proceedings.mlr.press/v306/xu26y.html) | ICML 2026 | 核实正式页面和研究目标，正文、附录和代码待读。其目标为检测蒸馏来源。 |
+| [Deep Ignorance](https://proceedings.iclr.cc/paper_files/paper/2026/hash/3bf80b34f731313b8292f4578e820c90-Abstract-Conference.html) | ICLR 2026 | 核实正式页面；正文和代码待读。其预训练数据过滤条件与本项目不同。 |
+
+**PaRaMS补充材料带来的具体检查。** 附录H.1测2—7个参与模型，H.2另测TA融合系数0.3—0.8，H.3删除两个方法组件，H.4报告同硬件构造/恢复耗时，J给出完整任务配对表。这些回答不同问题。我们已有七个保护任务各自的固定伙伴，以及八专家评价；它们尚不等于跨伙伴的完整配对实验。当前排队的是扰动幅度与方向消融，也不能替代融合系数实验。下一轮应先查已有缓存，确定少量缺失且会影响结论的条件，避免重复整批评价。
+
+官方实现固定为[4159a9a8](https://github.com/ISCT-W/PaRaMS/blob/4159a9a8bf253088694154d944f4583db8eca60e/src/PaRaMS/PaRaMS_algorithm.py)。默认入口579—594行的缩放范围是[0.05,20]、均匀采样、对角缩放；240—255行Q与V复用同一组缩放因子，附录算法则分别采样。两者的逆向补偿均保持功能，但不是完全相同的随机构造。本项目保留已经固定的作者默认实现，不在生产作业中改成另一种“论文版本”。附录H.4的KD耗时基于特定硬件、50个epoch，不能移作本项目耗时，更不能用它回避已经测出的低成本偏置清理。
+
+**新补读论文能借鉴什么。** Trace Rewriting先保持教师答案可用，再比较同条件学生训练的结果；附录E.2.2另测只用最终答案训练。它的保护依赖服务提供方重写返回文本，攻击者没有教师权重。CALA同样只向攻击者返回文本，训练残差输出模块，并比较相近教师准确率下的学生效果。这两篇有助于安排保持能力、恢复与普通随机扰动的匹配对照，不能直接证明公开权重后的参数保护。CALA还把推理开销、多个运行和适应性筛选分别报告；当前已读部分没有提供适用于本项目的无数据参数构造。
+
+Trace Rewriting作者提交固定为[a2afa048](https://github.com/xhOwenMa/trace-rewriting/tree/a2afa048f6967badf9d4894c912469547eafd452)。本轮保存并检查两个配置、`src/distill.py`、`src/generate.py`、`optimize/score_candidates.py`，共46875字节，原文与SHA留`outputs/2026-11-07_paper_sources/trace-rewriting/source.json`。配置中的LoRA rank128、4个epoch、学习率5e-4与附录相符；当前生成入口149—177行使用重写模型做答案强制生成，最大1024 token，而附录E.1描述最多32 token。后续若复现必须先明确对应版本，不能把运行作者当前入口直接说成严格复现原表。未执行这些外部脚本，未据此断言实现错误。
+
+ModelPirate把私有层留在本地，只共享前部参数，§3.2逐项说明额外可见的数据、结构和参数。它提醒我们把信息条件写成清楚的表，但本项目已经公开完整权重，不能凭空把最终层设为私有。ADFP与Deep Ignorance仍处于筛选阶段，不加入已完成基线表，也不计入精读完成数量。
+
+本轮补下PaRaMS附录、ModelPirate、Trace Rewriting和CALA原始PDF；下载目录的来源、SHA和阅读索引同步更新。没有新增防御版本、优化器或恢复方法。当前GPU继续既定八专家评价，随后按登记顺序完成消融与缺失两列；阅读所得用于修正实验安排与表述，尚未完成的实验不填数字。
