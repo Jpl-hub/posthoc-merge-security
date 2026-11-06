@@ -22,6 +22,7 @@ torch.backends.cuda.enable_flash_sdp(False)
 torch.backends.cuda.enable_mem_efficient_sdp(False)
 torch.backends.cuda.enable_math_sdp(True)
 start = time.monotonic()
+cost = dict(coefficient_forward_steps=0, coefficient_reverse_steps=0)
 tree = ast.parse(Path(cfg['parent_source']).read_text())
 main = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'main')
 def assigns(node, name):
@@ -127,6 +128,7 @@ def margin(scores, reference):
 
 
 def objectives(p):
+    cost['coefficient_forward_steps'] += 100
     w = env['recovered_forward'](p)
     return (float(margin(env['recovery_scores'](w),env['labels'])),
             float(margin(source_scores(p)['recovered/B_reset'],labels)))
@@ -154,6 +156,8 @@ for step in range(cfg['steps']):
         measure = lambda w:(margin(env['recovery_scores'](w),env['labels']),)
         value, gp, _ = env['recover_gradient'](env['inner_loss'],measure,anchor,
                                                tuple(t.detach() for t in p),lambda q:env['call'](q,env['xt']))
+        cost['coefficient_forward_steps'] += 100
+        cost['coefficient_reverse_steps'] += 100
         gradient, = torch.autograd.grad([p[i] for i in (iA,ia,iB,ib)],variable,
                                         grad_outputs=[gp[i] for i in (iA,ia,iB,ib)])
         active = 'distillation'
@@ -212,6 +216,7 @@ with torch.no_grad():
     scores = source_scores(p)
     with torch.enable_grad():
         w = env['recovered_forward'](p)
+    cost['coefficient_forward_steps'] += 100
     scores['distilled'] = env['recovery_scores'](w)
     counts = {k:int(s.argmax(1).eq(env['labels'] if k=='distilled' else labels).sum()) for k,s in scores.items()}
     error = float(actual_error(p))
@@ -227,5 +232,6 @@ with torch.no_grad():
                     recovery_labels=env['labels'].cpu()),out/'scores.pt')
 save_json(out/'result.json',dict(status='source_completed',eligible=eligible,publication=publication,
           initial=initial,trace=trace,counts=counts,error=error,limit=tau,seconds=time.monotonic()-start,
+          cost=cost,relative_edits={env['names'][i]:float((p[i]-clean[i]).norm()/clean[i].norm()) for i in (iA,ia,iB,ib)},
           real_construction_images=0,expert_updates=0,source_sha256=digest(__file__)))
 print('SOURCE_COMPLETED',eligible,counts,flush=True)
