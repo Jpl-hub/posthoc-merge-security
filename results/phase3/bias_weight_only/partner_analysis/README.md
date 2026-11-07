@@ -21,3 +21,7 @@
 新增组合的完整计数、逐类和配对记录见 [completed/](completed/)。原始逐图分数保留在17897服务器 `outputs/nbp_partner_pairs_20261107/full/`；源码与输入指纹在每组 `execution.json` 中。`evaluation_protocol.json` 为执行前设置，`loader_change.json` 记录第3组完成后将读图并行数从2改到8的同像素核对。
 
 `results.json` 是另一个只读参数分析：42个双专家条件与7个八专家条件、保护/无保护共98份最终读出。它与本目录的完整图像评价分开报告。
+
+## Complete pair matrix and prediction counts
+
+[All42 pairs](pair_matrix.md) report the target accuracy for each individual companion. [Prediction diagnostics](prediction_diagnostics.json) reuse complete prediction counts for the35 newly evaluated pairs, with unprotected controls. Under direct TA,30 of35 protected readouts have positive margin bounds and predict their certified class on every image. The five uncertified readouts still have dominant-class fractions from73.47% to100%; a negative bound is inconclusive. These counts are not inferred from accuracy or plotted as new forward passes.
