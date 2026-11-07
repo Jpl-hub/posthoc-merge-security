@@ -1,26 +1,22 @@
-"""Rebuild the paper tables without model loading or new experiments."""
+"""Reproduce NBP tables and figures from the recorded evaluation counts."""
 
 import argparse
+from pathlib import Path
 
-from _impl.report import attack_comparison, defense_comparison, paper_tables
+from _impl.report import tables
 from cfg import require_root
 
-
 def main():
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--output", default="/tmp/posthoc-paper-tables")
-    p.add_argument("--attack-directory", help="Collect one fixed attack campaign")
-    p.add_argument("--defense-comparison", action="store_true", help="Current defenses and PaRaMS, using completed results")
-    p.add_argument("--figure", action="store_true", help="Render the recovery figure with --defense-comparison")
-    a = p.parse_args()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", default="outputs/nbp_tables")
+    parser.add_argument("--figure", action="store_true", help="Also render result figures")
+    parser.add_argument("--defense-comparison", action="store_true", help=argparse.SUPPRESS)
+    args = parser.parse_args()
     require_root()
-    if a.defense_comparison:
-        defense_comparison(a.output, figure=a.figure)
-    elif a.attack_directory:
-        attack_comparison(a.attack_directory)
-    else:
-        paper_tables(None, a.output)
-
+    tables(args.output)
+    if args.figure:
+        from _impl.figures import figures
+        figures(Path(args.output) / "fig", Path(args.output) / "sources.json")
 
 if __name__ == "__main__":
     main()

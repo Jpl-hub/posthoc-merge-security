@@ -93,7 +93,7 @@ def direction_analysis(output):
                     largest_offset_class=winner, positive_gaps=valid,
                     minimum_unit_direction_gap=float(gaps.min()/direction.norm()),
                     sufficient_update_norm=magnitude,
-                    fit_residual=float((scores[index]-desired[:, index]).norm()) if method=="Least_squares" else None,
+                    fit_residual=float((h.T@coefficients[:, index]-desired[:, index]).norm()) if method=="Least_squares" else None,
                     cosine_between_directions=float(torch.nn.functional.cosine_similarity(
                         directions["Least_squares"][:, index], directions["Class_projection"][:, index], dim=0))))
         head_norm = weights.norm(dim=1)
