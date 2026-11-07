@@ -9,3 +9,5 @@
 实验记录在 `results/phase3/bias_weight_only/`，B/16 在 `results/backbone_b16/`。七个保护方向的 TIES 与 DARE 对照已核验并进入正文均值表，逐任务表在 `tables/fusion_tasks.tex` 和同名 Markdown 中。原始计数导出在 `results/phase3/bias_weight_only/fusion_methods/extension/comparison.csv`。等权八专家与原系数0.2的三任务对照也已入表。当前伙伴为固定配对，融合系数和完整八任务覆盖仍需分别核对。
 
 PaRaMS 主文和附录、MergeGuard、Trap² 等原论文及作者实现的阅读记录见 `notes/phase3_attack_review.md`。不同模型、数据划分与训练权限的论文数值保留在原文中，稿件的定量对照使用本项目匹配条件。
+
+正文使用方法原理图、七任务融合结果图和幅度曲线。读出下界图、预测频数图和逐任务融合表随源文件保留，便于后续补充材料使用。
