@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-07T09:44:04.275323+00:00",
+  "updated_utc": "2026-11-07T11:06:43.217148+00:00",
   "status": "fusion_and_equal_weight_results_verified_partner_grid_running",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
@@ -203,21 +203,28 @@
     },
     "nbp_partner_grid": {
       "host": "17897",
-      "timeout_pid": 32361,
-      "status": "running",
+      "timeout_pid": 38938,
+      "status": "running_after_verified_loader_parallelism_change",
       "protocol": "results/phase3/bias_weight_only/partner_analysis/evaluation_protocol.json",
       "preregistration_commit": "7ab41d3f",
-      "log": "outputs/nbp_partner_pairs_20261107/job.log",
+      "log": "outputs/nbp_partner_pairs_20261107/resume_workers8.log",
       "cases": 35,
       "planned_rows_per_stage": 350,
-      "wall_limit_seconds": 18000,
+      "wall_limit_seconds": 21600,
       "new_AGA_calls": 0,
       "new_defense_weights": 0,
       "completed_first_full_pair": "SUN397/Cars, 10 rows,160 score replays, max score error0",
-      "first_full_production_seconds": 1214.2432260289788
+      "first_full_production_seconds": 1214.2432260289788,
+      "completed_pairs": 5,
+      "active_protocol": "results/phase3/bias_weight_only/partner_analysis/loader8_protocol.json",
+      "data_loader_workers": 8,
+      "loader_change": "results/phase3/bias_weight_only/partner_analysis/loader_change.json",
+      "runtime_source_commit": "65226f97f3e166f03d840dd046e9b669074c48a5",
+      "resume_after_verified_case": 3,
+      "retired_original_controller": "32362 terminated only after original full case3 and its replay verification completed. Original timeout32361 exited; existing results preserved."
     }
   },
-  "next_action": "Continue remaining partner pairs and inspect the full42 directed pairs before updating the matrix. Record results from completed rows; finish scope, baseline and numerical-condition gaps. The latest Overleaf source upload remains blocked at Chrome connection.",
+  "next_action": "Continue remaining partner pairs under workers8, verify each completed pair, then export the42 directed pairs. Latest results and source are preserved locally and on17897; check the exact GitHub sync receipt.",
   "current_state": "research_state.json",
   "latest_completed_batch": {
     "defense1_additional_native": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
