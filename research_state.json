@@ -1,6 +1,6 @@
 {
   "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
-  "updated_utc": "2026-11-07T11:06:43.217148+00:00",
+  "updated_utc": "2026-11-07T13:19:54.368870+00:00",
   "status": "fusion_and_equal_weight_results_verified_partner_grid_running",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
@@ -102,9 +102,9 @@
     "numpy": "1.26.4",
     "active_GPU_jobs": 1,
     "queued_jobs": 0,
-    "primary_available_GiB": 21,
-    "verified_utc": "2026-11-07T04:26:03.766796+00:00",
-    "ssh_access": "Windows OpenSSH password authentication verified; no credentials stored.",
+    "primary_available_GiB": 19,
+    "verified_utc": "2026-11-07T13:19:54.368870+00:00",
+    "ssh_access": "WSL OpenSSH control socket verified; no credentials stored.",
     "primary_workspace_status": "All seven fixed-pair TIES/DARE comparisons and equal-weight eight-expert check verified. Remaining35 directed partner pairs running.",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "secondary_role": "Historical CPU archive only; current GPU work is on17897.",
@@ -153,8 +153,8 @@
   },
   "github_sync": {
     "receipt": "outputs/latest_github_sync_receipt.json",
-    "last_verified_remote_commit": "57b3c4033d34a6dc7fa00e5f4c1f7c7c36f071ef",
-    "status": "Latest results and revision are local and on17897; GitHub TLS connection failed. Exact last verified remote commit is in the receipt."
+    "last_verified_remote_commit": "6121d5164c9132e42bf83ae14b9d49fea8af2131",
+    "status": "Prior batch source and results verified on GitHub. Current partner-pair results archived locally; next sync pending."
   },
   "automatic_continuation": false,
   "automation_status": "13-35 deleted; do not recreate.",
@@ -357,13 +357,17 @@
       "new_defense_weights": 0,
       "completed_first_full_pair": "SUN397/Cars, 10 rows,160 score replays, max score error0",
       "first_full_production_seconds": 1214.2432260289788,
-      "completed_pairs": 5,
+      "completed_pairs": 31,
       "active_protocol": "results/phase3/bias_weight_only/partner_analysis/loader8_protocol.json",
       "data_loader_workers": 8,
       "loader_change": "results/phase3/bias_weight_only/partner_analysis/loader_change.json",
       "runtime_source_commit": "65226f97f3e166f03d840dd046e9b669074c48a5",
       "resume_after_verified_case": 3,
-      "retired_original_controller": "32362 terminated only after original full case3 and its replay verification completed. Original timeout32361 exited; existing results preserved."
+      "retired_original_controller": "32362 terminated only after original full case3 and its replay verification completed. Original timeout32361 exited; existing results preserved.",
+      "completed_full_rows": 310,
+      "score_replays": 4960,
+      "maximum_score_error": 0.0,
+      "local_result_archive": "results/phase3/bias_weight_only/partner_analysis/completed"
     }
   },
   "manuscript": {
@@ -375,11 +379,12 @@
     "tables": "Seven-task main results, companion accuracy, recovery, seven-task fusion averages with taskwise source table, ablation, equal-weight, B16 and public projection.",
     "novelty": "Working name and specific-construction novelty remain provisional. PaRaMS,MergeGuard,Trap2 and NSmark were compared by mechanism. No first-ever claim.",
     "LLM_statement": "Remind the user before final submission; wording to be agreed then.",
-    "overleaf_project": "https://www.overleaf.com/project/6aeddbff7be7a8c71fcd68d8 — prior revision verified. The latest Chrome CDP connection timed out before upload.",
+    "overleaf_project": "https://www.overleaf.com/project/6aeddbff7be7a8c71fcd68d8 — latest23 source files read back and8-page compiled PDF visually checked.",
     "local_pdf": "paper/build/main.pdf",
     "body_pages": 7,
     "reference_pages": 1,
-    "figures": "Three main figures: vector method schematic, seven-task/three-fusion matrix, magnitude controls. Prediction frequencies and readout bounds retained as additional source figures."
+    "figures": "Three main figures: vector method schematic, seven-task/three-fusion matrix, magnitude controls. Prediction frequencies and readout bounds retained as additional source figures.",
+    "overleaf_verified_utc": "2026-11-07T13:19:16.968557+00:00"
   },
   "literature_review": {
     "updated_utc": "2026-11-06T17:10:28.681065+00:00",
