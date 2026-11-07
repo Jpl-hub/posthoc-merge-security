@@ -1,52 +1,42 @@
-\begin{figure}[!t]
+\begin{figure*}[!t]
 \centering
-\begin{tikzpicture}[font=\fontsize{8}{9.5}\selectfont,>=Latex,
- box/.style={draw=black!65,rounded corners=1.5pt,align=center,
-             minimum height=9mm,inner sep=3pt,line width=.45pt},
- arr/.style={->,line width=.6pt},
- note/.style={font=\fontsize{8}{9.5}\selectfont,align=center}]
+\begin{tikzpicture}[x=1cm,y=1cm,>=Latex,
+ font=\fontsize{9}{11.5}\selectfont,
+ arr/.style={->,line width=.75pt},
+ block/.style={draw=black!65,rounded corners=1pt,align=center,inner sep=5pt,minimum height=9mm},
+ lab/.style={align=center}]
 \definecolor{nbpblue}{HTML}{25639C}
 \definecolor{nbporange}{HTML}{B55524}
-
-\node[anchor=west,font=\bfseries\fontsize{8}{9.5}\selectfont]
- at (0,6.4) {(a) Weight-only construction};
-\node[box,text width=2.05cm,fill=black!3] (weights) at (1.2,5.7)
- {Frozen weights\\$P_e,\theta_0,W$};
-\node[box,text width=2.15cm] (construction) at (4.05,5.7)
- {Direction $u$\\Magnitude $\tau$};
-\node[box,text width=1.8cm,draw=nbpblue,fill=nbpblue!7] (bias) at (6.95,5.7)
- {Bias only\\$\delta b=\tau u$};
-\draw[arr] (weights)--(construction);
-\draw[arr] (construction)--(bias);
-\node[note,text width=8cm,text=black!75] at (4.05,4.8)
- {No images or gradient updates};
-
-\node[anchor=west,font=\bfseries\fontsize{8}{9.5}\selectfont]
- at (0,4.15) {(b) Standalone expert};
-\node[box,text width=2.05cm,draw=nbpblue,fill=nbpblue!7] (ln) at (1.2,3.5)
+% Geometric sketch: a line represents the kernel in this low-dimensional illustration.
+\node[anchor=west,font=\bfseries] at (0,3.65) {(a) Construct one bias update};
+\fill[nbpblue!9] (.35,.95)--(2.35,.55)--(3.45,1.45)--(1.45,1.85)--cycle;
+\draw[black!45,line width=.5pt] (.35,.95)--(2.35,.55)--(3.45,1.45)--(1.45,1.85)--cycle;
+\draw[arr,nbpblue,line width=1.3pt] (1.9,1.2)--(1.9,2.85)
+ node[above] {$\delta b=\tau u$};
+\draw[densely dashed,black!50] (1.9,1.2)--(1.9,.45);
+\node[lab] at (2.3,.1) {$\operatorname{col}(P_e)$};
+\node[lab,text=nbpblue,anchor=west] at (2.2,2.35) {$u\in\ker(P_e^{\mathsf T})$};
+\node[lab] at (2.1,-.55) {$P_e:\ 768\to512$\\256-dimensional left nullspace};
+\node[lab] at (2.1,-1.25) {No images or gradient training};
+\draw[black!20] (4.55,-1.55)--(4.55,3.35);
+% Same released bias in two environments.
+\node[anchor=west,font=\bfseries] at (4.9,3.65) {(b) The same release, two projections};
+\node[block,fill=nbpblue!7,draw=nbpblue] (bias) at (6,1.35)
  {Final LayerNorm\\$b_e+\delta b$};
-\node[box,text width=1.35cm] (proj) at (4.05,3.5)
- {Projection\\$P_e$};
-\node[box,text width=1.8cm] (out) at (6.95,3.5)
- {Unchanged\\embedding\\{\fontsize{7}{8}\selectfont(exact arithmetic)}};
-\draw[arr] (ln)--(proj);
-\draw[arr] (proj)--(out);
-\node[note,text=nbpblue] at (4.05,2.8)
- {Added contribution: $\delta b^{\mathsf T}P_e=0$};
-
-\node[anchor=west,font=\bfseries\fontsize{8}{9.5}\selectfont]
- at (0,2.1) {(c) Merged model};
-\node[box,text width=2.05cm,draw=nbpblue,fill=nbpblue!7] (mln) at (1.2,1.45)
- {Final LayerNorm\\$b_m+\lambda_e\delta b$};
-\node[box,text width=1.35cm,draw=nbporange,fill=nbporange!7] (mproj) at (4.05,1.45)
- {Projection\\$P_m$};
-\node[box,text width=1.8cm,draw=nbporange,fill=nbporange!7] (mout) at (6.95,1.45)
- {Predictions\\may change};
-\draw[arr] (mln)--(mproj);
-\draw[arr] (mproj)--(mout);
-\node[note,text=nbporange] at (4.05,.75)
- {Added contribution: $\Delta t_m=\lambda_e\delta b^{\mathsf T}P_m$};
+\node[block] (pe) at (9.25,2.65) {Expert projection\\$P_e$};
+\node[block,fill=nbporange!7,draw=nbporange] (pm) at (9.25,.05)
+ {Merged projection\\$P_m$};
+\draw[arr] (bias.north) |- (pe.west);
+\draw[arr] (bias.south) |- (pm.west);
+\node[lab,anchor=west,text=nbpblue] at (11.25,2.65)
+ {$\delta b^{\mathsf T}P_e=0$\\Same standalone embedding};
+\node[lab,anchor=west,text=nbporange] at (11.25,.05)
+ {$\Delta t_m=\lambda_e\delta b^{\mathsf T}P_m$\\Constant offset across inputs};
+\draw[arr] (pe.east)--(11.1,2.65);
+\draw[arr] (pm.east)--(11.1,.05);
+\node[lab,anchor=west,text=black!75] at (5,-1.23)
+ {Only the final LayerNorm bias changes.};
 \end{tikzpicture}
-\caption{NBP construction and use. Only the final LayerNorm bias is modified. The added vector vanishes under the expert's own projection, while merging can expose a constant feature offset. Blue marks the bias update; orange marks the merged projection and its possible effect. Classification changes depend on the actual partner and fusion rule.}
+\caption{\textbf{Nullspace Bias Perturbation.} (a) The added bias is orthogonal to the expert projection's column space; the drawing is a low-dimensional schematic. Its direction uses class contrasts, and its magnitude follows a LayerNorm feature bound. (b) The original projection removes this update exactly in real arithmetic. Parameter merging changes the projection and can expose a constant feature offset. A sufficiently large class margin then forces a constant prediction (\cref{eq:actualbound}).}
 \label{fig:mechanism}
-\end{figure}
+\end{figure*}

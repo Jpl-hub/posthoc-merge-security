@@ -19,12 +19,13 @@
 \maketitle
 \input{sec/abstract}
 \input{sec/introduction}
+\input{fig/mechanism}
 \input{tables/main}
 \input{sec/related_work}
 \input{sec/method}
 \input{sec/experiments}
 \section{Conclusion}
-Nullspace Bias Perturbation modifies one final LayerNorm bias without training or construction images. The original projection removes the perturbation, whereas parameter merging can expose it. The evaluated merging and recovery procedures show substantial degradation of protected-task accuracy with little standalone loss. Recovery that directly changes the final readout remains a separate limitation.
+A function-preserving bias update can become a constant feature offset when its projection is merged. NBP realizes this effect without construction images or gradient training. Its fixed-readout bound explains when block-level recovery cannot restore predictions, and public bias projection removes the perturbation directly.
 \clearpage
 % The required LLM Usage Statement will be finalized with the authors before submission.
 {\small

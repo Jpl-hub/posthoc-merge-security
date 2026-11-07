@@ -1,0 +1,7 @@
+TA accuracy after public final-bias projection (%). Columns give target (T) and companion (C) accuracy. Both releases receive the same cleanup before TA at 0.5. Their full prediction vectors are identical in these experiments.
+
+| Target | None T | None C | NBP T | NBP C |
+| --- | ---: | ---: | ---: | ---: |
+| MNIST | 99.37 | 92.50 | 99.37 | 92.50 |
+| SVHN | 92.50 | 99.37 | 92.50 | 99.37 |
+| DTD | 69.26 | 99.45 | 69.26 | 99.45 |

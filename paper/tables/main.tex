@@ -2,31 +2,31 @@
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\caption{Standalone and protected-task accuracy (\%) for seven tasks. Standalone accuracy should remain high; lower merged accuracy indicates stronger protection. TA uses coefficient 0.5 for two experts and 0.2 for eight experts. AGA processes the protected expert before TA, including in each matching control. Two-expert companions are SVHN for MNIST and MNIST otherwise. Eight-expert merging protects one expert at a time; EuroSAT participates without a reported test score or eight-task average.}
+\caption{Standalone and protected-task accuracy (\%) with matched checkpoints and processing. Bold scores mark the lowest merged accuracy per setting. TA coefficients are 0.5 for two experts and 0.2 for eight experts. Avg. is the unweighted mean of the seven displayed task scores. Companions are SVHN for MNIST and MNIST otherwise. EuroSAT participates in eight-expert merging.}
 \label{tab:main}
-\begin{tabular}{llrrrrrrr}
+\begin{tabular}{llrrrrrrrr}
 \toprule
-Setting & Defense & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD \\
+Setting & Defense & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD & Avg. \\
 \midrule
-\multirow{3}{*}{Standalone} & None & 75.28 & 77.66 & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 \\
- & PaRaMS & 75.28 & 77.66 & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 \\
- & NBP & 75.27 & 77.64 & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 \\
+\multirow{3}{*}{Standalone} & None & 75.28 & 77.66 & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 & 89.19 \\
+ & PaRaMS & 75.28 & 77.66 & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 & 89.19 \\
+ & \textbf{NBP} & 75.27 & 77.64 & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 & 89.19 \\
 \midrule
-\multirow{3}{*}{2-expert TA} & None & 71.92 & 73.17 & 91.08 & 92.50 & 93.25 & 99.37 & 69.31 \\
- & PaRaMS & 0.30 & 0.72 & 2.57 & 9.09 & 2.79 & 8.92 & 2.07 \\
- & NBP & 0.25 & 0.55 & 2.44 & 6.70 & 1.19 & 9.80 & 2.13 \\
+\multirow{3}{*}{2-expert TA} & None & 71.92 & 73.17 & 91.08 & 92.50 & 93.25 & 99.37 & 69.31 & 84.37 \\
+ & PaRaMS & 0.30 & 0.72 & 2.57 & 9.09 & 2.79 & \textbf{8.92} & \textbf{2.07} & 3.78 \\
+ & \textbf{NBP} & \textbf{0.25} & \textbf{0.55} & \textbf{2.44} & \textbf{6.70} & \textbf{1.19} & 9.80 & 2.13 & \textbf{3.29} \\
 \midrule
-\multirow{3}{*}{2-expert AGA} & None & 71.58 & 72.53 & 90.38 & 91.56 & 92.22 & 99.30 & 68.40 \\
- & PaRaMS & 71.58 & 72.53 & 90.37 & 91.56 & 92.22 & 99.30 & 68.35 \\
- & NBP & 0.25 & 0.55 & 2.44 & 6.70 & 1.19 & 9.80 & 2.13 \\
+\multirow{3}{*}{2-expert AGA + TA} & None & 71.58 & 72.53 & 90.38 & 91.56 & 92.22 & 99.30 & 68.40 & 83.71 \\
+ & PaRaMS & 71.58 & 72.53 & 90.37 & 91.56 & 92.22 & 99.30 & 68.35 & 83.70 \\
+ & \textbf{NBP} & \textbf{0.25} & \textbf{0.55} & \textbf{2.44} & \textbf{6.70} & \textbf{1.19} & \textbf{9.80} & \textbf{2.13} & \textbf{3.29} \\
 \midrule
-\multirow{3}{*}{8-expert TA} & None & 63.76 & 62.06 & 72.00 & 74.42 & 65.08 & 94.00 & 52.18 \\
- & PaRaMS & 0.28 & 0.55 & 2.70 & 9.71 & 1.77 & 9.82 & 2.13 \\
- & NBP & 0.25 & 0.55 & 2.44 & 6.70 & 1.19 & 9.80 & 2.13 \\
+\multirow{3}{*}{8-expert TA} & None & 63.76 & 62.06 & 72.00 & 74.42 & 65.08 & 94.00 & 52.18 & 69.07 \\
+ & PaRaMS & 0.28 & \textbf{0.55} & 2.70 & 9.71 & 1.77 & 9.82 & \textbf{2.13} & 3.85 \\
+ & \textbf{NBP} & \textbf{0.25} & \textbf{0.55} & \textbf{2.44} & \textbf{6.70} & \textbf{1.19} & \textbf{9.80} & \textbf{2.13} & \textbf{3.29} \\
 \midrule
-\multirow{3}{*}{8-expert AGA} & None & 63.56 & 61.61 & 71.46 & 72.53 & 63.29 & 93.23 & 51.38 \\
- & PaRaMS & 63.56 & 61.61 & 71.46 & 72.53 & 63.29 & 93.23 & 51.38 \\
- & NBP & 0.25 & 0.55 & 2.44 & 6.70 & 1.19 & 9.80 & 2.13 \\
+\multirow{3}{*}{8-expert AGA + TA} & None & 63.56 & 61.61 & 71.46 & 72.53 & 63.29 & 93.23 & 51.38 & 68.15 \\
+ & PaRaMS & 63.56 & 61.61 & 71.46 & 72.53 & 63.29 & 93.23 & 51.38 & 68.15 \\
+ & \textbf{NBP} & \textbf{0.25} & \textbf{0.55} & \textbf{2.44} & \textbf{6.70} & \textbf{1.19} & \textbf{9.80} & \textbf{2.13} & \textbf{3.29} \\
 \bottomrule
 \end{tabular}
 \end{table*}

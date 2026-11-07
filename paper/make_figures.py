@@ -40,7 +40,7 @@ ax.axhline(0, color="black", linewidth=.7)
 ax.set(xticks=x, xticklabels=["SUN", "Cars", "R45", "SVHN", "GTSRB", "MNIST", "DTD"],
        ylabel="Minimum class-margin lower bound", ylim=(-900, 1200))
 ax.tick_params(axis="x", labelsize=7)
-ax.legend(frameon=False, fontsize=7, loc="upper right", ncols=1)
+ax.legend(frameon=False, fontsize=7, loc="upper right")
 out = ROOT / "paper/fig/readout_bound.pdf"
 fig.savefig(out, bbox_inches="tight", metadata={"Creator": "Matplotlib", "Title": "Fixed-readout margin bounds"})
 plt.close(fig)
@@ -72,3 +72,20 @@ out = ROOT / "paper/fig/amplitude.pdf"
 fig.savefig(out, bbox_inches="tight", metadata={"Creator": "Matplotlib", "Title": "Fixed NBP amplitude controls"})
 plt.close(fig)
 print("Wrote", out.relative_to(ROOT), "from verified fixed-amplitude controls.")
+
+# Plot actual class counts from the matched AGA merge, without embedding sampling.
+fig, axes = plt.subplots(2, 1, figsize=(3.4, 2.25), sharex=True, layout="constrained")
+classes = np.arange(10)
+for ax, name, label, color in zip(axes, ["Unprotected", "NBP"],
+        ["Unprotected", "NBP"], ["#25639c", "#b55524"]):
+    row = scores[name, "TA", "Protected expert", "MNIST"]
+    counts = np.asarray(row["predicted_class_counts"])
+    assert counts.sum() == row["n"]
+    ax.bar(classes, 100 * counts / row["n"], width=.65, color=color)
+    ax.set(ylim=(0, 106), yticks=[0, 50, 100])
+    ax.text(.98, .82, label, ha="right", transform=ax.transAxes, weight="bold")
+    ax.grid(axis="y", alpha=.18)
+axes[-1].set(xticks=classes, xlabel="Predicted digit")
+fig.supylabel("Predictions (%)", fontsize=8)
+fig.savefig(ROOT / "paper/fig/predictions.pdf", metadata={"Title": "MNIST predictions after AGA and TA"})
+plt.close(fig)

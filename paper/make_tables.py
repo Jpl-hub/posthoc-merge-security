@@ -80,9 +80,15 @@ def write_table(name, caption, label, headers, groups, wide=False):
     for group_id, (group, records) in enumerate(groups):
         if group_id:
             lines.append(r"\midrule")
+        best = None
+        if name == "main" and group != "Standalone":
+            best = [min(column, key=float) for column in zip(*(row[1:] for row in records))]
         for i, record in enumerate(records):
             prefix = rf"\multirow{{{len(records)}}}{{*}}{{{group}}}" if i == 0 else ""
-            lines.append(" & ".join(([prefix] if grouped else []) + record) + r" \\")
+            highlighted = [record[0] == "NBP"] + [best is not None and value == best[j]
+                for j, value in enumerate(record[1:])]
+            tex_record = [rf"\textbf{{{v}}}" if bold else v for v, bold in zip(record, highlighted)]
+            lines.append(" & ".join(([prefix] if grouped else []) + tex_record) + r" \\")
             md.append("| " + " | ".join(([group] if grouped else []) + record) + " |")
     lines += [r"\bottomrule", r"\end{tabular}", rf"\end{{{env}}}"]
     (OUT / f"{name}.tex").write_text("\n".join(lines) + "\n")
@@ -90,19 +96,23 @@ def write_table(name, caption, label, headers, groups, wide=False):
 
 
 groups = []
-for setting, index in [("Standalone", 0), ("2-expert TA", 1), ("2-expert AGA", 2)]:
+for setting, index in [("Standalone", 0), ("2-expert TA", 1), ("2-expert AGA + TA", 2)]:
     records = [[display[method]] + [values[task, method][index].split(" / ")[0]
                for task in tasks] for method in methods]
     groups.append((setting, records))
-for setting, scope in [("8-expert TA", "None"), ("8-expert AGA", "Protected expert")]:
+for setting, scope in [("8-expert TA", "None"), ("8-expert AGA + TA", "Protected expert")]:
     records = []
     for method in methods:
         cells = [f"{100 * eight[task, method, scope][1] / eight[task, method, scope][0]:.2f}"
                  for task in tasks]
         records.append([display[method]] + cells)
     groups.append((setting, records))
-write_table("main", "Standalone and protected-task accuracy (\\%) for seven tasks. Standalone accuracy should remain high; lower merged accuracy indicates stronger protection. TA uses coefficient 0.5 for two experts and 0.2 for eight experts. AGA processes the protected expert before TA, including in each matching control. Two-expert companions are SVHN for MNIST and MNIST otherwise. Eight-expert merging protects one expert at a time; EuroSAT participates without a reported test score or eight-task average.",
-            "tab:main", ["Setting", "Defense"] + tasks, groups, wide=True)
+# Report the task macro-average from the displayed accuracies.
+for _, records in groups:
+    for record in records:
+        record.append(f"{sum(float(v) for v in record[1:]) / len(tasks):.2f}")
+write_table("main", "Standalone and protected-task accuracy (\\%) with matched checkpoints and processing. Bold scores mark the lowest merged accuracy per setting. TA coefficients are 0.5 for two experts and 0.2 for eight experts. Avg. is the unweighted mean of the seven displayed task scores. Companions are SVHN for MNIST and MNIST otherwise. EuroSAT participates in eight-expert merging.",
+            "tab:main", ["Setting", "Defense"] + tasks + ["Avg."], groups, wide=True)
 
 records = [[task] + [values[task, method][2].split(" / ")[1] for method in methods]
            for task in tasks]
@@ -167,7 +177,35 @@ for name, label in [("Unprotected", "None"), ("NBP", "NBP"),
     records.append([label] + cells)
 write_table("ablation", "Direction controls on MNIST (\\%). The three perturbations have the same update norm. The random nullspace direction is projected into the original visual-projection kernel; the unconstrained random direction uses the same sampled vector before projection. All controls use the same MNIST/SVHN pair and TA coefficient 0.5.",
             "tab:ablation", ["Update", "Standalone", "TA", "AGA + TA"], [("", records)])
+# Reuse completed B/16 and public-bias cleanup records; no new evaluation.
+b16_path = ROOT / "results/backbone_b16/summary.json"
+b16 = json.loads(b16_path.read_text())
+assert b16["status"] == "completed_independently_verified"
+by_key = {(r["target"], r["key"]): r for r in b16["full_rows"]}
+groups = []
+for setting, merger, scope in [("Standalone", "Standalone", "None"),
+        ("TA", "TA", "None"), ("AGA + TA", "TA", "Protected expert")]:
+    records = []
+    for label in ["None", "NBP"]:
+        cells = []
+        for t in small_tasks:
+            name = "Unprotected" if label == "None" else "Defense1_" + t
+            r = by_key[t, "/".join((name, merger, scope, t))]
+            cells.append(f"{100*r['correct']/r['n']:.2f}")
+        records.append([label] + cells)
+    groups.append((setting, records))
+write_table("backbone", "CLIP ViT-B/16 protected-task accuracy (\\%). The same NBP construction is applied to three experts. Two-expert TA uses coefficient 0.5; AGA processes the protected expert before merging.",
+    "tab:backbone", ["Setting", "Defense"] + small_tasks, groups)
+cleanup_path = ROOT / "results/phase3/bias_weight_only/attacks/projection.json"
+cleanup = json.loads(cleanup_path.read_text())
+assert cleanup["status"] == "completed_independently_verified"
+assert cleanup["matched_prediction_differences"] == 0
+records = [[r[0]] + r[3:7] for r in cleanup["table_cells"]]
+write_table("cleanup", "TA accuracy after public final-bias projection (\\%). Columns give target (T) and companion (C) accuracy. Both releases receive the same cleanup before TA at 0.5. Their full prediction vectors are identical in these experiments.",
+    "tab:cleanup", ["Target", "None T", "None C", "NBP T", "NBP C"], [("",records)])
+for path in [b16_path, cleanup_path]:
+    source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
 (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
     "eight_expert_protected_task_cells": len(eight),
-    "tables": ["main", "partners", "recovery", "fusion", "ablation"]}, indent=2) + "\n")
-print("Generated five manuscript tables, including42 verified eight-expert target cells.")
+    "tables": ["main", "partners", "recovery", "fusion", "ablation", "backbone", "cleanup"]}, indent=2) + "\n")
+print("Generated seven manuscript tables from recorded results.")

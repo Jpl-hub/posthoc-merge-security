@@ -3,22 +3,27 @@
 \subsection{Setting and notation}
 Let $\theta_0$ be a public pretrained checkpoint and $\theta_e$ a fine-tuned expert. The defender publishes a modified checkpoint $\theta_e'$ and seeks to retain standalone utility while reducing protected-task utility after parameter merging. Construction uses only $\theta_0$, $\theta_e$, and a fixed task classifier. The defender does not inspect a partner checkpoint or task images.
 
-The attacker has the released checkpoint and the public base. We evaluate a specified family of fusion and recovery procedures, each with its own parameter and data access. These experiments do not imply resistance to every operation available to a white-box attacker. In particular, a method-specific projection of the final bias can remove the perturbation, as discussed in \cref{sec:limitations}.
+The downstream user has the released checkpoint and the public base. We test direct merging and published recovery procedures, and separately examine a method-specific readout cleanup. Our objective is to disrupt unauthorized merging; it does not require preserving companion-task accuracy in the merged model. The released expert must retain its standalone function.
 
 Write the final visual embedding of the expert as
 \begin{equation}
  t_e(x)=[z_e(x)\operatorname{diag}(\gamma_e)+b_e^{\mathsf T}]P_e,
  \label{eq:embedding}
 \end{equation}
-where $P_e\in\R^{d\times p}$, $b_e,\gamma_e\in\R^d$, and $z_e$ is the row of centered, variance-normalized hidden features before the learned LayerNorm affine transformation. For the evaluated ViT-B/32 encoders, $d=768$, $p=512$, and $P_e$ has full column rank. With the usual positive LayerNorm epsilon,
+Here $P_e\in\R^{d\times p}$ is the visual projection. Hidden features $z_e\in\R^{1\times d}$ and embeddings $t_e\in\R^{1\times p}$ are row vectors; $b_e,\gamma_e\in\R^d$ are column vectors. The features $z_e$ are centered and variance-normalized before the learned LayerNorm affine transformation. For the evaluated ViT-B/32 and ViT-B/16 encoders, $d=768$, $p=512$, and $P_e$ has full column rank. With the usual positive LayerNorm epsilon,
 \begin{equation}
- z_e\mathbf{1}=0,\qquad \|z_e\|_2\leq\sqrt d.
+ z_e\mathbf{1}_d=0,\qquad \|z_e\|_2\leq\sqrt d.
  \label{eq:lnbound}
 \end{equation}
-Classification uses normalized $t_e$ and fixed class vectors $w_j\in\R^p$. A common positive normalization and logit scale do not change the predicted class. The evaluated classifier biases are zero.
+The classifier uses fixed class vectors $w_j\in\R^p$, zero class biases and a shared positive scale $\eta$:
+\begin{equation}
+ s_j(x)=\eta\,\frac{t_e(x)w_j}{\|t_e(x)\|_2}.
+ \label{eq:cosine}
+\end{equation}
+For nonzero embeddings, class comparisons therefore depend only on the signs of $t_e(x)(w_k-w_j)$.
 
 \subsection{Preserving the standalone encoder}
-Let $N_e\in\R^{d\times(d-p)}$ be an orthonormal basis of $\ker(P_e^{\mathsf T})$. Choose $u=N_ea$ and publish
+Let $N_e\in\R^{d\times(d-p)}$ be an orthonormal basis of $\ker(P_e^{\mathsf T})$. As shown in \cref{fig:mechanism}, choose $u=N_ea$ and publish
 \begin{equation}
  b_e'=b_e+\tau u,\qquad \tau>0,
  \label{eq:bias}
@@ -32,9 +37,7 @@ If $P_e^{\mathsf T}u=0$, then the modification in \cref{eq:bias} preserves the v
 The LayerNorm input, mean, variance, gain, and visual projection are unchanged. Hence the embedding difference is $\tau u^{\mathsf T}P_e=0$.
 \end{proof}
 
-This is preservation of the complete visual embedding rather than of selected training predictions. An SVD provides the nullspace basis. Finite-precision storage need not preserve the zero product exactly, so the evaluated release is materialized in FP32 and tested without changing its direction or magnitude in response to test results.
-
-\input{fig/mechanism}
+The identity applies to every input and any fixed head on the visual embedding. A nonzero construction requires a nontrivial left nullspace; a full-row-rank projection with $d\le p$ does not provide one. We use an SVD to compute the basis and store the released bias in FP32. This leaves the architecture and inference cost unchanged. Large bias values can increase cancellation error in floating point, which we assess on the full standalone test sets.
 
 \subsection{Why merging can expose the perturbation}
 For Task Arithmetic with coefficients $\lambda_i$, the merged checkpoint is
@@ -47,18 +50,26 @@ If expert $e$ is protected, its bias perturbation enters with coefficient $\lamb
  \Delta t_m(x)=\lambda_e\tau u^{\mathsf T}P_m.
  \label{eq:exposure}
 \end{equation}
-The difference is independent of the input because the modification occurs after hidden-feature normalization. The identity $u^{\mathsf T}P_e=0$ does not imply $u^{\mathsf T}P_m=0$. This algebraic distinction motivates the construction; it does not guarantee damage for arbitrary partners or nonlinear fusion rules.
-
-For $n$ experts with the same coefficient $\lambda$, the exposure can also be written as
+The offset is constant across inputs because it is added after hidden-feature normalization. To separate the available public information from the unknown partners, write $\Delta P_i=P_i-P_0$. Using $u^{\mathsf T}P_e=0$ gives
 \begin{equation}
- \Delta t_m=\lambda\tau\left[(1-n\lambda)u^{\mathsf T}P_0
- +\lambda\sum_{i\neq e}u^{\mathsf T}P_i\right].
- \label{eq:partners}
+\begin{aligned}
+ u^{\mathsf T}P_m
+ &=u^{\mathsf T}\widetilde P(\lambda_e)+u^{\mathsf T}E,\\
+ \widetilde P(\lambda_e)&=(1-\lambda_e)P_0+\lambda_eP_e,\\
+ E&=\sum_{i\ne e}\lambda_i\Delta P_i.
+\end{aligned}
+\label{eq:partners}
 \end{equation}
-Thus the actual partner projections determine whether a direction chosen using the public base remains harmful. For two experts at $\lambda=0.5$, the base term cancels and the offset is $\tau u^{\mathsf T}P_{\mathrm{partner}}/4$. In particular, a partner projection with the same left nullspace produces no offset. This gives a concrete limit on partner-independent protection.
+The first term is available before release. The second describes the contribution of the partners' task updates. This exact decomposition motivates using the public-base interpolation to choose the perturbation. It does not assume that $E$ is small. For a class contrast $v=w_k-w_j$, the discrepancy satisfies
+\begin{equation}
+ |u^{\mathsf T}(P_m-\widetilde P)v|
+ \leq \|u\|_2\|Ev\|_2.
+ \label{eq:partnererror}
+\end{equation}
+Thus a positive proxy offset remains positive whenever its gap exceeds this error, although a constant prediction also requires the full feature bound below. For two experts at coefficient $0.5$, the offset reduces to $\tau u^{\mathsf T}P_{\mathrm{partner}}/4$. A partner with the same left nullspace exposes no perturbation. We evaluate partner models rather than assuming a universal transfer guarantee.
 
 \subsection{Choosing a direction without images}
-We use a public-base interpolation with fixed coefficient $\lambda=0.5$ to select a direction. This interpolation uses the protected expert and the public base, without a partner expert. Denote its final parameters by $\widetilde P,\widetilde\gamma,\widetilde b$. Let $W$ contain the fixed class vectors as rows and define the centered classifier $W_c=(I-\mathbf{1}\mathbf{1}^{\mathsf T}/C)W$.
+We use a public-base interpolation with fixed coefficient $\lambda=0.5$ to select a direction. This interpolation uses the protected expert and the public base, without a partner expert. Denote its final parameters by $\widetilde P,\widetilde\gamma,\widetilde b$. Let $W$ contain the fixed class vectors as rows and define the centered classifier $W_c=(I_C-\mathbf{1}_C\mathbf{1}_C^{\mathsf T}/C)W$.
 
 Compute the thin SVD
 \begin{equation}
@@ -69,18 +80,18 @@ A fixed seed selects a class index before evaluation. Its centered one-hot vecto
  a=U\Sigma^{\dagger}V^{\mathsf T}g,\qquad u=N_ea.
  \label{eq:direction}
 \end{equation}
-This solves a least-squares class-offset problem inside the expert's exact projection kernel. It does not fit any input examples. We determine the largest resulting class offset, with index $k$, and require positive gaps
+This is the minimum-norm least-squares solution $a=(H^{\mathsf T})^\dagger g$; $u$ is not separately normalized. It fits class offsets using weights alone. We determine the largest resulting class offset, with index $k$, and require positive gaps
 \begin{equation}
  \delta_{kj}=u^{\mathsf T}\widetilde P(w_k-w_j)>0
  \quad\text{for all }j\neq k.
 \end{equation}
-Failure of this condition is reported; the construction does not search class indices to obtain a favorable test result.
+The construction is defined for directions satisfying this condition. All seven B/32 releases satisfy it at the fixed class draw; the condition is not automatic for an arbitrary classifier.
 
 \subsection{Choosing a magnitude from a feature bound}
 For each competitor $j$, define
 \begin{equation}
  q_{kj}=\widetilde P(w_k-w_j),\quad
- C_d=I-\mathbf{1}\mathbf{1}^{\mathsf T}/d.
+ C_d=I_d-\mathbf{1}_d\mathbf{1}_d^{\mathsf T}/d.
 \end{equation}
 The class-$k$ margin numerator of the protected public-base interpolation is
 \begin{equation}
@@ -105,7 +116,7 @@ then class $k$ has a strictly positive margin over every competitor for every no
 Substitution of the lower bound into \cref{eq:margin} makes each pairwise margin positive. The common feature normalization does not alter their signs.
 \end{proof}
 
-The evaluated construction uses twice the nonnegative bound and verifies the margin after FP32 materialization. It uses a fixed relative singular-value tolerance of $10^{-10}$ and seed 20261014. All seven experts use this same rule. The argument concerns the stated interpolation and fixed classifier. Actual partner models, eight-expert fusion, and recovery procedures require separate measurements.
+We set the magnitude to twice the bound and check the positive margins after FP32 materialization. This uses the same rule for every task, with no image-based fitting. The interpolation coefficient is fixed at $0.5$ for construction, including releases later evaluated in eight-expert merging.
 
 \subsection{Analyzing a fixed merged model}
 The same feature bound can be applied to the actual merged parameters after publication. For a candidate class $k$, let $q_{kj}=P_m(w_k-w_j)$ and compute
@@ -116,7 +127,4 @@ The same feature bound can be applied to the actual merged parameters after publ
 \end{equation}
 If $\min_{j\neq k}L_{kj}>0$, the model predicts class $k$ for every normalized hidden state in exact arithmetic. The proof follows the same centered-feature bound as \cref{eq:margin}. This conclusion holds after arbitrary changes to preceding blocks, provided the final gain, bias, projection, and classifier stay fixed. It does not cover recovery that changes those final parameters. A negative lower bound is inconclusive.
 
-This is a post-publication analysis of fixed models. Actual partner weights are used here to explain completed experiments, and do not enter construction or parameter selection. The bound is computed in FP64 from the stored FP32 tensors; it is not a certificate for all floating-point execution errors.
-
-\subsection{Cost and numerical behavior}
-The only released change is one $d$-dimensional bias. SVD and matrix products operate on frozen weights, and there are no image forwards or gradient updates during construction. The model architecture, inference graph, and parameter count remain unchanged. Large bias values can amplify floating-point cancellation error even when the exact-arithmetic identity holds. We therefore report complete standalone accuracy and paired prediction changes, rather than describing FP32 outputs as exactly equal by algebra alone.
+We apply this test to the stored merged readouts after release. Partner weights enter this analysis, but not the construction. The bound concerns real-arithmetic evaluation of those stored tensors.
