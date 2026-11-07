@@ -1,0 +1,368 @@
+{
+  "experiment": "Complete six missing fixed TIES and DARE+TA task-pair comparisons with matched None, PaRaMS and NBP",
+  "output": "outputs/nbp_fusion_extension_20261107",
+  "tasks": {
+    "SUN397": {
+      "classes": 397,
+      "test_n": 19850
+    },
+    "Cars": {
+      "classes": 196,
+      "test_n": 8041
+    },
+    "RESISC45": {
+      "classes": 45,
+      "test_n": 6300
+    },
+    "GTSRB": {
+      "classes": 43,
+      "test_n": 12630
+    },
+    "MNIST": {
+      "classes": 10,
+      "test_n": 10000
+    },
+    "DTD": {
+      "classes": 47,
+      "test_n": 1880
+    },
+    "SVHN": {
+      "classes": 10,
+      "test_n": 26032
+    }
+  },
+  "TA_coefficient": 0.5,
+  "mergers": [
+    "TIES",
+    "DARE+TA"
+  ],
+  "TIES": {
+    "repository": "https://github.com/prateeky2806/ties-merging",
+    "commit": "44e7891fc84f3de7e4caa52664cd864ca3715e91",
+    "path": "external/ties-merging/src/utils/merge_utils.py",
+    "sha256": "8254578774972384be6acca82fd51f65cca165f14d150f208e6456a21ada6014",
+    "topk_percent": 20,
+    "coefficient": 1,
+    "resolve_method": "mass",
+    "merge_func": "dis-mean",
+    "selection": "Fixed before results. Official pure functions, global flattening. Not a reproduction of the papers coefficient sweep or optimal table."
+  },
+  "pilot_n": 64,
+  "replay_n": 16,
+  "score_tolerance": 0.0005,
+  "test_status": "Historically evaluated complete test sets; no construction feedback.",
+  "comparison": "Every merger/scope gets its own unprotected control. Over-budget references explicitly separated.",
+  "defense_optimization": "Zero real/synthetic construction images. Same projection-kernel noise direction and fixedseed20261014; amplitude from the LayerNorm norm bound with fixed multiplier2. No optimizer or classifier input calibration.",
+  "attacker_data": false,
+  "attack_gradient_steps": 0,
+  "AGA_references": {
+    "SUN397": {
+      "path": "/root/posthoc_evaluation_cache/bias_remaining_sun397_20261106/SUN397_clean_AGA.pt",
+      "sha256": "ab9ef9b09d055f13a5e9954fa7e8711e00ec08e5812b4b380a6f2185ab5becb1"
+    },
+    "Cars": {
+      "path": "/root/posthoc_evaluation_cache/bias_remaining_pairs_20261106/Cars_clean_AGA.pt",
+      "sha256": "f0063974d149d378342acd65c8e350aa9821c6c43d0b6c8013a3042b7b68bfe6"
+    },
+    "RESISC45": {
+      "path": "/root/posthoc_evaluation_cache/bias_remaining_pairs_20261106/RESISC45_clean_AGA.pt",
+      "sha256": "76428b3f1cd966dd7c55f9396db2d3653072fb8be19b784b6800d2f08592d9a1"
+    },
+    "GTSRB": {
+      "path": "/root/posthoc_evaluation_cache/bias_remaining_gtsrb_20261106/GTSRB_clean_AGA.pt",
+      "sha256": "38df4a12e86884bcd4ad85fe46910591acd904ea3f0cd13783f8ceee5fce45c1"
+    },
+    "MNIST": {
+      "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+      "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "SVHN": {
+      "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+      "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+      "validation": "outputs/feature_noise/independent_validation.json"
+    },
+    "DTD": {
+      "path": "outputs/feature_noise_dtd/artifacts/partner_AGA.pt",
+      "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
+      "validation": "outputs/feature_noise_dtd/independent_validation.json"
+    }
+  },
+  "AGA": {
+    "repository": "https://github.com/krumpguo/secure-merge-attack",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+    "file": "utils_attack_B32.py",
+    "sha256": "4600479e44ad8c99fd1bff616664567c047c1940fddcd02b9213ed139fe7a778",
+    "raw_sha256": "56e1af692c816059ff999dcbc773cefa9cdac86616f03ba454976ae5662a51de",
+    "sha256_scope": "UTF-8 text with universal newline normalization, as existing author loader"
+  },
+  "defenses": {
+    "PaRaMS_SUN397": {
+      "target": "SUN397",
+      "release": {
+        "path": "/root/posthoc_evaluation_cache/bias_remaining_sun397_20261106/SUN397_PaRaMS.pt",
+        "sha256": "1131f4188b2ba821f28867c917e9ff055c3952a15a91bf786b171cd0244c9325"
+      },
+      "AGA_edits": {
+        "path": "/root/posthoc_evaluation_cache/bias_remaining_sun397_20261106/SUN397_PaRaMS_AGA.pt",
+        "sha256": "3ea87c212bb92e32e218a0c7225c3d0f008c0d1e5bcb91e19b46d1d6eeae8213"
+      }
+    },
+    "Defense1_SUN397": {
+      "target": "SUN397",
+      "release": {
+        "path": "outputs/bias_eight_remaining_20261106/SUN397/release.pt",
+        "sha256": "aa3a15353c57c12bcd75b67a4a89152d05f8b25b790f21728a0dd1184d826221"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_eight_remaining_20261106/SUN397/release.pt",
+        "sha256": "aa3a15353c57c12bcd75b67a4a89152d05f8b25b790f21728a0dd1184d826221"
+      }
+    },
+    "PaRaMS_Cars": {
+      "target": "Cars",
+      "release": {
+        "path": "/root/posthoc_evaluation_cache/bias_remaining_pairs_20261106/Cars_PaRaMS.pt",
+        "sha256": "37fb19d0e1498d715189d7780ff9a4f827cca51e5cfcc099e411e2b765128412"
+      },
+      "AGA_edits": {
+        "path": "/root/posthoc_evaluation_cache/bias_remaining_pairs_20261106/Cars_PaRaMS_AGA.pt",
+        "sha256": "1fbfef40a5cd7e4d9f5fcc3d81b89c8fdf6a43ce77d9465a48a3c971ef35beea"
+      }
+    },
+    "Defense1_Cars": {
+      "target": "Cars",
+      "release": {
+        "path": "outputs/bias_eight_remaining_20261106/Cars/release.pt",
+        "sha256": "d0f4674618e63030163caf8ffe23cd1211c6848595ef68eb16c164717ce92562"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_eight_remaining_20261106/Cars/release.pt",
+        "sha256": "d0f4674618e63030163caf8ffe23cd1211c6848595ef68eb16c164717ce92562"
+      }
+    },
+    "PaRaMS_RESISC45": {
+      "target": "RESISC45",
+      "release": {
+        "path": "/root/posthoc_evaluation_cache/bias_remaining_pairs_20261106/RESISC45_PaRaMS.pt",
+        "sha256": "7011a52b98d4b59f32f5e239a245eaa4547a75a9f953bba728f4d97d4f578ed8"
+      },
+      "AGA_edits": {
+        "path": "/root/posthoc_evaluation_cache/bias_remaining_pairs_20261106/RESISC45_PaRaMS_AGA.pt",
+        "sha256": "e88047d968a140d2c78eefeaefb9a7c712170f3aefdf9ff1856873afab925b0e"
+      }
+    },
+    "Defense1_RESISC45": {
+      "target": "RESISC45",
+      "release": {
+        "path": "outputs/bias_eight_remaining_20261106/RESISC45/release.pt",
+        "sha256": "e67da0adec8556457d756d5859be9f23c03287fb470ebddfde5c948eea7d0384"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_eight_remaining_20261106/RESISC45/release.pt",
+        "sha256": "e67da0adec8556457d756d5859be9f23c03287fb470ebddfde5c948eea7d0384"
+      }
+    },
+    "PaRaMS_GTSRB": {
+      "target": "GTSRB",
+      "release": {
+        "path": "/root/posthoc_evaluation_cache/bias_remaining_gtsrb_20261106/GTSRB_PaRaMS.pt",
+        "sha256": "2a6c6f94d3d8d73492ddc03f868e85b4672b50323b53baba014f55c147fdde44"
+      },
+      "AGA_edits": {
+        "path": "/root/posthoc_evaluation_cache/bias_remaining_gtsrb_20261106/GTSRB_PaRaMS_AGA.pt",
+        "sha256": "8601c472ff3a50ef4dfdb464e98ffc0aad2b958ef171fe09288314e3bab49a85"
+      }
+    },
+    "Defense1_GTSRB": {
+      "target": "GTSRB",
+      "release": {
+        "path": "outputs/bias_eight_remaining_20261106/GTSRB/release.pt",
+        "sha256": "fb06115a79974b07c2329f408741f566dcd07d2309e05f48b0070f1e90648cc8"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_eight_remaining_20261106/GTSRB/release.pt",
+        "sha256": "fb06115a79974b07c2329f408741f566dcd07d2309e05f48b0070f1e90648cc8"
+      }
+    },
+    "PaRaMS_SVHN": {
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/phase2_params_other_tasks_20261022/native/SVHN/release.pt",
+        "sha256": "e8ef5b1784c8c77cb0efb88d18633203e213982cb1f099bdc03987e2ed44db9a"
+      },
+      "AGA_edits": {
+        "path": "outputs/phase2_params_other_tasks_20261022/native/SVHN/AGA_edits.pt",
+        "sha256": "a5907b9cba77d06c0d63ae2248c1871686b9c5f0a6416409a161d537745b67ff"
+      }
+    },
+    "PaRaMS_DTD": {
+      "target": "DTD",
+      "release": {
+        "path": "outputs/phase2_params_other_tasks_20261022/native/DTD/release.pt",
+        "sha256": "27da7f2fcb2b010261aa75c9e12b56abdb2f1260acc76e9e163fc27f0ca81270"
+      },
+      "AGA_edits": {
+        "path": "outputs/phase2_params_other_tasks_20261022/native/DTD/AGA_edits.pt",
+        "sha256": "fdba7aa377a6bb52bf86072b0b954f269d4856894b8811d254d929d12294aa87"
+      }
+    },
+    "Defense1_MNIST": {
+      "label": "Defense1",
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/bias_weight_only_20261025/point.pt",
+        "sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_weight_only_20261025/point.pt",
+        "sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0"
+      },
+      "budget_status": "One weight-only analytic amplitude, no fitted parameter cap or data calibration. Historical D.5 numerical-method comparison is separate.",
+      "function_status": "Complete MNIST99.69 before/after,0changed,strictR0.00233007."
+    },
+    "Defense1_SVHN": {
+      "target": "SVHN",
+      "release": {
+        "path": "outputs/bias_weight_only_20261029/SVHN/construction/release.pt",
+        "sha256": "b69746723d049316865f30b8d9eca86825f9b58852170bb56e991c421afff8ee"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_weight_only_20261029/SVHN/construction/release.pt",
+        "sha256": "b69746723d049316865f30b8d9eca86825f9b58852170bb56e991c421afff8ee"
+      }
+    },
+    "Defense1_DTD": {
+      "target": "DTD",
+      "release": {
+        "path": "outputs/bias_weight_only_20261029/DTD/construction/release.pt",
+        "sha256": "9e6b71ea676e71a033392c707c9228d434b4ef2541f82b258d99d0ab23f9010f"
+      },
+      "AGA_edits": {
+        "path": "outputs/bias_weight_only_20261029/DTD/construction/release.pt",
+        "sha256": "9e6b71ea676e71a033392c707c9228d434b4ef2541f82b258d99d0ab23f9010f"
+      }
+    },
+    "PaRaMS_MNIST": {
+      "target": "MNIST",
+      "release": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/PaRaMS.pt",
+        "sha256": "5a7bca84cc9a40528f16676b617ef06823197b5ce2242e132fd3f5d18413b706"
+      },
+      "AGA_edits": {
+        "path": "outputs/phase2_params_default_20261016/artifacts/AGA_release_edits.pt",
+        "sha256": "a441587682b6ef5794a3ed7018d9b221ca403b54fa33489b525a4362e9ccbf3b"
+      }
+    }
+  },
+  "cases": [
+    {
+      "target": "MNIST",
+      "partner": "SVHN",
+      "defenses": [
+        "PaRaMS_MNIST",
+        "Defense1_MNIST"
+      ],
+      "seed": 42
+    },
+    {
+      "target": "SVHN",
+      "partner": "MNIST",
+      "defenses": [
+        "PaRaMS_SVHN",
+        "Defense1_SVHN"
+      ],
+      "seed": 42
+    },
+    {
+      "target": "DTD",
+      "partner": "MNIST",
+      "defenses": [
+        "PaRaMS_DTD",
+        "Defense1_DTD"
+      ],
+      "seed": 42
+    },
+    {
+      "target": "Cars",
+      "partner": "MNIST",
+      "defenses": [
+        "PaRaMS_Cars",
+        "Defense1_Cars"
+      ],
+      "seed": 42
+    },
+    {
+      "target": "RESISC45",
+      "partner": "MNIST",
+      "defenses": [
+        "PaRaMS_RESISC45",
+        "Defense1_RESISC45"
+      ],
+      "seed": 42
+    },
+    {
+      "target": "GTSRB",
+      "partner": "MNIST",
+      "defenses": [
+        "PaRaMS_GTSRB",
+        "Defense1_GTSRB"
+      ],
+      "seed": 42
+    }
+  ],
+  "legacy": {},
+  "source_sha256": {
+    "cfg.py": "58470b0ab331963af7ca130ed979805e104363fe850493a0dac03bb94da5989a",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "experiment/main_table.py": "9b5368a18e1858ac0b57cf04e24b84081324d7ebc402d158fc3d0f8451dc85d5",
+    "_impl/attacks.py": "23eb0f3ab4956abdfc2a41c5976a400f763a38e92ca81cead6d8b19f7681fd1c",
+    "_impl/baselines.py": "c45fa0ecf5e67c4a045fd7ef71dad1c074ab15defe04bc2c91419bdf803cefc6",
+    "_impl/data.py": "4a9ff9339007e538d71844b55f91ee4f5e1a0df2f057a3f09daa6f4a401d315f",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/evaluate.py": "27fe1983128391cd9dd4dcfcb19a3b18570dbd8d5204f27049877c0dbdcab579",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/metrics.py": "8c2e47df0fd7c87d63b804a6848117228380599bc3fe597971f2a6ff65651ec3",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/__init__.py": "7bd99dd2483c2ecda557d5c826398c8c936afc15581d1de799ee15a743f92b77"
+  },
+  "original_batch_context_replays": true,
+  "native_evaluation": "Evaluator includes three standalone reference rows per case; report existing primary standalone results, retain these as within-run checks.",
+  "AGA_transport": "Only final LN bias differs. Official fb61429 attention wrapper reads/writes attention parameters only, MLP wrapper reads/writes MLP A/a/B only; original matching inputs are unchanged. Thus original-AGA release equals clean original-AGA plus the same final bias. Verify byte equality of clean expert/cleanAGA final bias before reuse;0newAGA calls.",
+  "attack_scopes": [
+    "None",
+    "Protected expert"
+  ],
+  "scope": "Six missing task directions. Existing SUN397 result reused in report; same frozen publications, author kernels, mask seed42 and merger settings. No new defense, AGA solve, tuning or optimization. Full target and companion sets for every setting.",
+  "registered_utc": "2026-11-07T06:32:55.184325+00:00",
+  "DARE": {
+    "repository": "https://github.com/yule-BUAA/MergeLM",
+    "commit": "6d49ad96fd69c92013654b837041b868aa806564",
+    "path": "external/MergeLM/model_merging_methods/mask_weights_utils.py",
+    "sha256": "244900c53b932d6e64c595878cbfc604a81c6d4ff335dfc511b2544d043b8fcf",
+    "git_blob": "4d403cb2ad9d80273e257ca38dae3e236e3545bb",
+    "drop_rate": 0.2,
+    "seed": 42,
+    "all_seeds": [
+      42
+    ],
+    "mask_strategy": "random",
+    "weight_format": "delta_weight",
+    "use_rescale": true,
+    "mask_apply_method": "task_arithmetic",
+    "parameter_order": "Native imageencoder named_parameters; expert1 then expert2; every parameter including biases; external classifier excluded.",
+    "CPU_torch_version": "2.3.0+cu121",
+    "scope": "Official unchanged scalar/tensor mask kernel, native CLIP weight adapter, fixed task_arithmetic(.5); not the original LM/GLUE benchmark table.",
+    "selection": "One fixed seed42,drop.2 from prior author-kernel protocol. No accuracy selection; not a multi-seed stability claim.",
+    "recovery_claim": "DARE is a merger component, not a new recovery attack. AGA cached exactly as before."
+  },
+  "new_expert_training_updates": 0,
+  "budget": {
+    "cases": 6,
+    "rows_per_stage": 162,
+    "new_defense_weights": 0,
+    "new_AGA_calls": 0,
+    "wall_limit_seconds": 21600
+  }
+}
