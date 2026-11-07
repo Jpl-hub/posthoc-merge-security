@@ -1,51 +1,41 @@
-\begin{figure*}[!t]
+\begin{figure}[!t]
 \centering
 \begin{tikzpicture}[x=1cm,y=1cm,>=Latex,
- font=\fontsize{9}{11}\selectfont,
- arr/.style={->,line width=.9pt},
- lab/.style={align=center}]
+ font=\fontsize{8}{9.5}\selectfont,
+ arr/.style={->,line width=.8pt},lab/.style={align=center}]
 \definecolor{nbpblue}{HTML}{25639C}
 \definecolor{nbporange}{HTML}{B55524}
-\node[anchor=west,font=\bfseries] at (0,3.65) {(a) Choose a hidden bias direction};
-\node[anchor=west,font=\bfseries] at (5.6,3.65) {(b) Standalone encoder};
-\node[anchor=west,font=\bfseries] at (11.2,3.65) {(c) After parameter merging};
-\draw[black!15] (5.25,-1)--(5.25,3.25);
-\draw[black!15] (10.85,-1)--(10.85,3.25);
-% The plane and normal illustrate the column space and its orthogonal complement.
-\fill[nbpblue!8] (.6,1.05)--(2.6,.6)--(4,1.65)--(2,2.1)--cycle;
-\draw[black!40] (.6,1.05)--(2.6,.6)--(4,1.65)--(2,2.1)--cycle;
-\draw[arr,nbpblue,line width=1.4pt] (2.3,1.35)--(2.3,3.0)
- node[above] {$\delta b=\tau u$};
-\draw[black!35,densely dashed] (2.3,1.35)--(2.3,.55);
-\node[lab,anchor=west,text=nbpblue] at (2.55,2.65) {$u\in\ker(P_e^{\mathsf T})$};
-\node[lab] at (2.4,.2) {$\operatorname{col}(P_e)$};
-\node[lab,text=black!75] at (2.5,-.5)
- {Direction and magnitude from $P_e,P_0,W$\\Publish $b'_e=b_e+\delta b$};
-% Points on the two circles are schematic normalized embeddings, not sampled data.
-\draw[black!35] (8,1.6) circle (1.05);
-\fill[black!60] (8,1.6) circle (.035);
+\node[anchor=west,font=\bfseries] at (0,5.15) {(a) Construct a bias update from weights};
+\fill[nbpblue!8] (.1,3.4)--(1.65,3.05)--(2.8,3.8)--(1.25,4.15)--cycle;
+\draw[black!40] (.1,3.4)--(1.65,3.05)--(2.8,3.8)--(1.25,4.15)--cycle;
+\draw[arr,nbpblue,line width=1.2pt] (1.4,3.6)--(1.4,4.5)
+ node[above right] {$\delta b=\tau u$};
+\draw[black!35,densely dashed] (1.4,3.6)--(1.4,3.08);
+\node[lab] at (1.4,2.82) {$\operatorname{col}(P_e)$};
+\node[lab,anchor=west] at (3.2,4.1) {$u\in\ker(P_e^{\mathsf T})$};
+\node[lab,anchor=west] at (3.2,3.58) {Choose $u,\tau$ from $P_e,P_0,W$};
+\node[lab,anchor=west,text=nbpblue] at (3.2,3.06) {Publish $b'_e=b_e+\delta b$};
+\draw[black!15] (0,2.5)--(7.75,2.5);
+\node[font=\bfseries] at (1.55,2.18) {(b) Standalone};
+\node[font=\bfseries] at (6.1,2.18) {(c) After merging};
+\draw[black!35] (1.55,1.12) circle (.72);
 \foreach \angle in {20,85,155}{
- \draw[arr,nbpblue] (8,1.6)--({8+1.05*cos(\angle)},{1.6+1.05*sin(\angle)});
- \fill[nbpblue] ({8+1.05*cos(\angle)},{1.6+1.05*sin(\angle)}) circle (.055);
+ \draw[arr,nbpblue] (1.55,1.12)--({1.55+.72*cos(\angle)},{1.12+.72*sin(\angle)});
+ \fill[nbpblue] ({1.55+.72*cos(\angle)},{1.12+.72*sin(\angle)}) circle (.035);
 }
-\node[lab,text=black!75] at (8,2.95) {Each input retains its embedding};
-\node[lab,text=nbpblue] at (8,.05) {$\delta b^{\mathsf T}P_e=0$};
-\node[lab] at (8,-.65) {$t'_e(x)=t_e(x)$};
-\draw[arr,black!55] (9.65,1.6)--(11.6,1.6)
- node[midway,above,font=\fontsize{8}{9.5}\selectfont] {Merge weights};
-\draw[black!35] (13.8,1.6) circle (1.05);
-\fill[nbporange!12] (13.8,1.6)--({13.8+1.05*cos(0)},{1.6+1.05*sin(0)})
- arc[start angle=0,end angle=40,radius=1.05]--cycle;
+\draw[arr,black!55] (2.65,1.12)--(4.65,1.12)
+ node[midway,above,font=\fontsize{7}{8}\selectfont] {Merge weights};
+\draw[black!35] (6.1,1.12) circle (.72);
 \foreach \angle in {10,20,30}{
- \draw[arr,nbporange] (13.8,1.6)--({13.8+1.05*cos(\angle)},{1.6+1.05*sin(\angle)});
- \fill[nbporange] ({13.8+1.05*cos(\angle)},{1.6+1.05*sin(\angle)}) circle (.055);
+ \draw[arr,nbporange] (6.1,1.12)--({6.1+.72*cos(\angle)},{1.12+.72*sin(\angle)});
+ \fill[nbporange] ({6.1+.72*cos(\angle)},{1.12+.72*sin(\angle)}) circle (.035);
 }
-\node[lab,text=black!75] at (13.8,2.95) {A shared offset changes class scores};
-\node[lab,anchor=west,text=nbporange] at (14.95,2.03) {Class $k$};
-\node[lab,text=nbporange] at (13.8,.05)
- {$\Delta t_m=\lambda_e\delta b^{\mathsf T}P_m$};
-\node[lab] at (13.8,-.65) {Constant class when the margin bound holds};
+\node[lab,text=nbporange,anchor=west] at (6.9,1.5) {$k$};
+\node[lab,text=nbpblue] at (1.55,0) {$\delta b^{\mathsf T}P_e=0$};
+\node[lab] at (1.55,-.48) {Embedding unchanged};
+\node[lab,text=nbporange] at (6.1,0) {$\Delta t_m=\lambda_e\delta b^{\mathsf T}P_m$};
+\node[lab] at (6.1,-.48) {Class $k$ if the bound holds};
 \end{tikzpicture}
-\caption{\textbf{Nullspace Bias Perturbation.} (a) A single bias update lies in the left nullspace of the expert's visual projection. (b) The original projection removes this update, preserving every visual embedding in real arithmetic. (c) A merged projection can expose an input-independent offset. Under the sufficient condition in \cref{eq:actualbound}, all inputs receive the same predicted class. The geometry and arrows illustrate the mechanism schematically.}
+\caption{\textbf{Nullspace Bias Perturbation.} The original projection removes the bias update, preserving each embedding in exact arithmetic. Merging changes that projection and can expose a shared offset. If \cref{eq:actualbound} is positive, all inputs receive class $k$. The arrows are schematic, not sampled embeddings.}
 \label{fig:mechanism}
-\end{figure*}
+\end{figure}

@@ -1,6 +1,6 @@
 {
-  "updated_utc": "2026-11-07T13:19:54.368870+00:00",
-  "status": "fusion_and_equal_weight_results_verified_partner_grid_running",
+  "updated_utc": "2026-11-07T14:44:42.399153+00:00",
+  "status": "partner_grid_completed_manuscript_revision_syncing",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
     "date": "2026-11-06",
@@ -15,7 +15,7 @@
     "interpretation_limit": "No unambiguous new mathematical update was dictated in the transcript. Task-specific constraints and public-base decoupling need an explicit formula before changing the existing construction.",
     "classmate_summary": "Useful secondary reference, not an independent instruction or evidence that all attacks are blocked."
   },
-  "active_GPU_jobs": 1,
+  "active_GPU_jobs": 0,
   "research_jobs": {
     "nbp_fusion": {
       "host": "17897",
@@ -204,7 +204,7 @@
     "nbp_partner_grid": {
       "host": "17897",
       "timeout_pid": 38938,
-      "status": "running_after_verified_loader_parallelism_change",
+      "status": "completed_independently_verified",
       "protocol": "results/phase3/bias_weight_only/partner_analysis/evaluation_protocol.json",
       "preregistration_commit": "7ab41d3f",
       "log": "outputs/nbp_partner_pairs_20261107/resume_workers8.log",
@@ -215,20 +215,45 @@
       "new_defense_weights": 0,
       "completed_first_full_pair": "SUN397/Cars, 10 rows,160 score replays, max score error0",
       "first_full_production_seconds": 1214.2432260289788,
-      "completed_pairs": 31,
+      "completed_pairs": 35,
       "active_protocol": "results/phase3/bias_weight_only/partner_analysis/loader8_protocol.json",
       "data_loader_workers": 8,
       "loader_change": "results/phase3/bias_weight_only/partner_analysis/loader_change.json",
       "runtime_source_commit": "65226f97f3e166f03d840dd046e9b669074c48a5",
       "resume_after_verified_case": 3,
       "retired_original_controller": "32362 terminated only after original full case3 and its replay verification completed. Original timeout32361 exited; existing results preserved.",
-      "completed_full_rows": 310,
-      "score_replays": 4960,
+      "completed_full_rows": 350,
+      "score_replays": 5600,
       "maximum_score_error": 0.0,
-      "local_result_archive": "results/phase3/bias_weight_only/partner_analysis/completed"
+      "local_result_archive": "results/phase3/bias_weight_only/partner_analysis/completed",
+      "total_directed_pairs": 42,
+      "combined_merged_dataset_rows": 336,
+      "record": "results/phase3/bias_weight_only/partner_analysis/README.md",
+      "csv": "results/phase3/bias_weight_only/partner_analysis/comparison.csv"
+    },
+    "nbp_ablation_extension": {
+      "status": "registered_before_execution",
+      "host": "17897",
+      "targets": [
+        "SVHN",
+        "DTD"
+      ],
+      "controls_per_target": [
+        "Random_null",
+        "Ambient"
+      ],
+      "same_original_NBP_releases": true,
+      "construction_images": 0,
+      "new_defense_methods": 0,
+      "planned_full_rows": 40,
+      "planned_full_score_replays": 640,
+      "construction_cost_invocations": 6,
+      "protocol_directory": "results/phase3/bias_weight_only/ablation/extension",
+      "log": "outputs/nbp_ablation_extension_20261107/job.log",
+      "wall_limit_seconds": 7200
     }
   },
-  "next_action": "Continue remaining partner pairs under workers8, verify each completed pair, then export the42 directed pairs. Latest results and source are preserved locally and on17897; check the exact GitHub sync receipt.",
+  "next_action": "Run the fixed SVHN/DTD component controls and same-host construction timings, then add complete results to the same manuscript and synchronize/read back.",
   "current_state": "research_state.json",
   "latest_completed_batch": {
     "defense1_additional_native": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
@@ -251,16 +276,22 @@
     "two_expert_comparison": "Same-condition unprotected and PaRaMS controls available.",
     "current_defense1_eight_expert_table": {
       "protected_tasks": [
-        "MNIST",
+        "SUN397",
+        "Cars",
+        "RESISC45",
         "SVHN",
+        "GTSRB",
+        "MNIST",
         "DTD"
       ],
       "complete_datasets": [
-        "MNIST",
+        "SUN397",
+        "Cars",
+        "RESISC45",
         "SVHN",
-        "DTD",
         "GTSRB",
-        "RESISC45"
+        "MNIST",
+        "DTD"
       ],
       "record": "results/phase3/bias_weight_only/eight_expert/summary.json",
       "target_table": "paper/tables/main.md",
@@ -273,7 +304,8 @@
         "MNIST",
         "DTD"
       ],
-      "additional_four_directions": "results/phase3/bias_weight_only/eight_expert/extension/summary.md"
+      "additional_four_directions": "results/phase3/bias_weight_only/eight_expert/extension/summary.md",
+      "NBP_and_unprotected_cross_task_scope": "Seven protected directions, each evaluated on all seven validated test datasets."
     },
     "selected_recovery_protected_tasks": [
       "MNIST",
@@ -281,7 +313,7 @@
       "DTD"
     ],
     "EuroSAT": "Original expert test split unverified; do not report an eight-task average.",
-    "remaining_scope": "Confirm additional archived rows before launching missing eight-expert protected directions and recovery cells."
+    "remaining_scope": "EuroSAT checkpoint test split remains unverified. Additional data-trained baselines, multi-task mechanism controls and matched-hardware construction costs are not completed in this batch."
   },
   "historical_state_commit": "58af9194172df6c0c8b97f999884993765da973b",
   "engineering": {
@@ -312,16 +344,16 @@
     "root": "paper",
     "main": "paper/main.tex",
     "scope": "NBP only",
-    "stage": "updated_with_seven_pair_fusion_and_equal_weight_results",
+    "stage": "single_column_figures_and_complete42_pair_results",
     "style": "Unmodified official CVPR2027 cvpr.sty and bibliography style. T1 font encoding for local Tectonic.",
-    "tables": "Seven-task main results, companion accuracy, recovery, seven-task fusion averages with taskwise source table, ablation, equal-weight, B16 and public projection.",
+    "tables": "Seven-task main comparison; all42 directed partner pairs; specified recovery; seven-task fusion means; direction control; equal-weight eight-expert; B16; final-bias cleanup.",
     "novelty": "Working name and specific-construction novelty remain provisional. PaRaMS,MergeGuard,Trap2 and NSmark were compared by mechanism. No first-ever claim.",
     "LLM_statement": "Remind the user before final submission; wording to be agreed then.",
     "overleaf_project": "https://www.overleaf.com/project/6aeddbff7be7a8c71fcd68d8 — latest23 source files read back and8-page compiled PDF visually checked.",
     "local_pdf": "paper/build/main.pdf",
     "body_pages": 7,
     "reference_pages": 1,
-    "figures": "Three main figures: vector method schematic, seven-task/three-fusion matrix, magnitude controls. Prediction frequencies and readout bounds retained as additional source figures.",
+    "figures": "Three single-column figures: method schematic, taskwise fusion dot plot, magnitude controls. One full-width main-results table.",
     "overleaf_verified_utc": "2026-11-07T13:19:16.968557+00:00"
   },
   "literature_review": {
@@ -333,7 +365,7 @@
     "changes_to_experiments": "No new GPU jobs, defense releases, optimizers or attacks. Partner diversity, fusion coefficients and same-hardware costs remain specific evidence gaps."
   },
   "current_method_revision_policy": "One current NBP method. Small changes may be considered when supported by source-weight analysis and matched complete evaluation; do not maintain competing main-method versions. The currently evaluated seven releases are unchanged.",
-  "current_status": "latest_overleaf_verified_partner_grid_running",
+  "current_status": "partner_grid_completed_manuscript_revision_syncing",
   "nbp_20261107_resume": {
     "original_columns_timeout_pid": 2565,
     "status": "24 full rows independently verified,384 exact score replays",

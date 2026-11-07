@@ -74,7 +74,8 @@ def write_table(name, caption, label, headers, groups, wide=False):
              rf"\label{{{label}}}", r"\begin{tabular}{" + spec + "}",
              r"\toprule", " & ".join(headers) + r" \\", r"\midrule"]
     md_caption = caption.replace(r"\%", "%").replace(r"Table~\ref{tab:main}", "the main table").replace(r"Table~\ref{tab:fusion}", "the fusion summary table")
-    md = [md_caption, "", "| " + " | ".join(headers) + " |",
+    md_headers = [h.replace("$_t$", " (target)").replace("$_c$", " (companion)") for h in headers]
+    md = [md_caption, "", "| " + " | ".join(md_headers) + " |",
           "| " + " | ".join(["---"] * (2 if grouped else 1)
                               + ["---:"] * (columns - (2 if grouped else 1))) + " |"]
     for group_id, (group, records) in enumerate(groups):
@@ -114,11 +115,72 @@ for _, records in groups:
 write_table("main", "Standalone and protected-task accuracy (\\%) with matched checkpoints and processing. Bold scores mark the lowest merged accuracy per setting. TA coefficients are 0.5 for two experts and 0.2 for eight experts. Avg. is the unweighted mean of the seven displayed task scores. Companions are SVHN for MNIST and MNIST otherwise. EuroSAT participates in eight-expert merging.",
             "tab:main", ["Setting", "Defense"] + tasks + ["Avg."], groups, wide=True)
 
-records = [[task] + [values[task, method][2].split(" / ")[1] for method in methods]
-           for task in tasks]
-# A single-column table: the first column identifies the protected task.
-write_table("partners", "Companion-task accuracy after AGA and TA (\\%). Companions are fixed as in Table~\\ref{tab:main}. NBP can impair other participating tasks as well as the protected task.",
-            "tab:partners", ["Target", "None", "PaRaMS", "NBP"], [("", records)])
+# Complete directed partner pairs: 35 new pairs plus the seven fixed pairs.
+pair_root = ROOT / "results/phase3/bias_weight_only/partner_analysis"
+pair_rows = []
+for folder in sorted((pair_root / "completed").iterdir()):
+    if not folder.is_dir():
+        continue
+    measured = json.loads((folder / "results.json").read_text())
+    audit = json.loads((folder / "independent_validation.json").read_text())
+    execution = json.loads((folder / "execution.json").read_text())
+    assert audit["status"] == "passed" and audit["rows"] == len(measured) == 10
+    assert audit["raw_sha256"] == execution["predictions_sha256"]
+    for name in ["results.json", "independent_validation.json", "execution.json"]:
+        path = folder / name
+        source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    pair_rows.extend(r for r in measured if r["merger"] == "TA")
+assert len(pair_rows) == 35 * 8
+fixed_path = ROOT / "results/phase3/bias_weight_only/eight_expert/remaining_pairs_result.json"
+fixed = json.loads(fixed_path.read_text())
+assert fixed["status"] == "completed_verified" and fixed["completed_tasks"] == 4
+for record in fixed["records"]:
+    for row in record["rows"]:
+        if row["merger"] == "TA" and not row["defense"].startswith("PaRaMS"):
+            pair_rows.append(dict(row, target=record["target"], partner=record["partner"]))
+original_path = ROOT / "results/phase3/bias_weight_only/other_tasks/results.json"
+original = json.loads(original_path.read_text())
+for role, field in [("target", "combined_target_table"), ("companion", "combined_partner_table")]:
+    for row in original[field]:
+        dataset = row["target"] if role == "target" else row["partner"]
+        for scope, index in [("None", 1 if role == "target" else 0),
+                             ("Protected expert", 2 if role == "target" else 1)]:
+            correct, n = row["counts"][index]
+            pair_rows.append(dict(target=row["target"], partner=row["partner"], dataset=dataset,
+                defense=row["method"], merger="TA", attack_scope=scope, n=n, correct=correct))
+for path in [fixed_path, original_path]:
+    source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+pair_lookup = {}
+for row in pair_rows:
+    method = "None" if row["defense"] == "Unprotected" else "NBP"
+    key = row["target"], row["partner"], method, row["attack_scope"], row["dataset"]
+    assert key not in pair_lookup, key
+    pair_lookup[key] = row
+assert len(pair_lookup) == 42 * 8
+records = []
+pair_summary = []
+for task in tasks:
+    companions = [t for t in tasks if t != task]
+    groups = []
+    for role in ["target", "companion"]:
+        for method in ["None", "NBP"]:
+            scores = [100 * pair_lookup[task, c, method, "Protected expert", task if role == "target" else c]["correct"]
+                / pair_lookup[task, c, method, "Protected expert", task if role == "target" else c]["n"] for c in companions]
+            groups.append(sum(scores) / len(scores))
+            pair_summary.append(dict(target=task, role=role, defense=method, partners=len(scores),
+                mean_accuracy_percent=groups[-1], minimum_accuracy_percent=min(scores), maximum_accuracy_percent=max(scores)))
+    records.append([task]+[f"{v:.2f}" for v in groups])
+write_table("partners", "Accuracy after AGA and TA across all 42 directed pairs (\\%). Each row averages the six other validated tasks as companions. Subscripts t and c denote the protected target and companion; U is the unprotected control. The same seven NBP releases are used throughout.",
+    "tab:partners", ["Task", r"U$_t$", r"NBP$_t$", r"U$_c$", r"NBP$_c$"], [("", records)])
+# Export all counts, including the direct-TA condition, without rounding the source.
+import csv
+with (pair_root / "comparison.csv").open("w", newline="") as handle:
+    writer = csv.writer(handle, lineterminator="\n")
+    writer.writerow(["target", "partner", "defense", "attack_scope", "dataset", "n", "correct", "accuracy_percent"])
+    for key, row in sorted(pair_lookup.items()):
+        writer.writerow(list(key)+[row["n"], row["correct"], 100*row["correct"]/row["n"]])
+(pair_root / "accuracy_summary.json").write_text(json.dumps(dict(directed_pairs=42, comparison_rows=len(pair_lookup),
+    additional_complete_evaluation_rows=350, additional_score_replays=5600, rows=pair_summary), indent=2)+"\n")
 
 small_tasks = ["MNIST", "SVHN", "DTD"]
 replacement = tables["defense1_B_replacement"]["rows"]

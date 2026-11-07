@@ -3,7 +3,7 @@
 \subsection{Setup}
 We evaluate frozen CLIP ViT-B/32 experts~\cite{radford2021clip} on MNIST, SVHN, DTD, RESISC45, Cars, GTSRB, and SUN397. Complete test sets contain 10,000, 26,032, 1,880, 6,300, 8,041, 12,630, and 19,850 images, respectively. DTD uses the official test1 split. The eight-expert pool additionally contains EuroSAT; all reported task averages use the seven listed test sets.
 
-Each two-expert experiment protects one expert and uses a fixed companion expert. MNIST uses SVHN as its companion; the other six use MNIST. Task Arithmetic uses coefficient 0.5 for each update. We compare unprotected experts, the official PaRaMS implementation with its fixed defaults, and \method. For AGA, the same author implementation processes the protected expert and the matching unprotected control before merging. It does not update the original expert through training.
+The main comparison protects one expert at a time and uses a fixed companion: SVHN for MNIST, and MNIST for the other six tasks. A second experiment tests each protected release with all six other tasks, giving 42 directed pairs. Task Arithmetic uses coefficient 0.5 for each update. We compare unprotected experts, the official PaRaMS implementation with its fixed defaults, and \method. For AGA, the same author implementation processes the protected expert and the matching unprotected control before merging. It does not update the original expert through training.
 
 Construction uses FP64 SVD with relative singular-value tolerance $10^{-10}$, a fixed random seed and the magnitude multiplier 2. Released parameters and inference use FP32. Every method uses the same checkpoints, classification heads and preprocessing. We report complete-test accuracy in percent, including companion-task accuracy. Among the procedures in \cref{tab:recovery}, only ProDistill uses training images. NBP construction uses none.
 
@@ -12,9 +12,11 @@ Construction uses FP64 SVD with relative singular-value tolerance $10^{-10}$, a 
 
 Direct merging with PaRaMS or \method{} gives low target accuracy. AGA restores PaRaMS close to the unprotected control, while \method{} remains between 0.25\% and 9.80\%. AGA aligns attention and MLP parameters and leaves the final normalization bias fixed.
 
-The loss of accuracy can be traced to a change in the prediction distribution. On MNIST, the protected AGA merge predicts digit 0 for all 10,000 examples, so its accuracy equals the test frequency of that digit, 9.80\%. The effect extends to the companion task: its mean accuracy across the seven pairs falls from 98.44\% to 15.72\% after AGA and TA (\cref{tab:partners}).
+The prediction distribution explains the MNIST result. On MNIST, the protected AGA merge predicts digit 0 for all 10,000 examples, so its accuracy equals the test frequency of that digit, 9.80\%. The effect also extends to companion tasks.
 
 \input{tables/partners}
+\paragraph{All directed task pairs.}
+The seven releases are each merged with the six other validated experts, without changing the construction. Across these 42 pairs, AGA+TA target accuracy averages 84.81\% without protection and 3.30\% with NBP (\cref{tab:partners}). Protected-target accuracy ranges from 0.25\% to 9.80\%; no tested companion restores it near the matching control. Companion accuracy falls from 85.55\% to 5.72\% on average. These results establish transfer across the evaluated partners, rather than selective removal of only the protected task.
 
 
 \subsection{Specified recovery procedures}
@@ -29,14 +31,14 @@ We use the fixed author ProDistill kernel~\cite{xu2025prodistill}. The attacker 
 \input{tables/fusion}
 \Cref{tab:fusion} evaluates all seven fixed pairs with TIES and DARE+TA. TIES retains the global top 20\% of updates and uses scale 1. DARE drops 20\% with seed 42 before TA at 0.5. Both use author kernels through the CLIP adapter. After AGA, mean target accuracy is 86.28\% for unprotected TIES and 4.71\% for NBP; the corresponding DARE+TA scores are 83.70\% and 5.10\%. PaRaMS recovers close to the unprotected controls.
 
-The per-task results vary with the fusion rule (\cref{fig:fusion-tasks}). After AGA, NBP gives 15.44\% on SVHN with TIES and 20.34\% on MNIST with DARE+TA, compared with 6.70\% and 9.80\% under TA. Thus additional fusion rules preserve a substantial performance gap while changing the degree of disruption.
+The results also vary by task and fusion rule (\cref{fig:fusion-tasks}). After AGA, NBP gives 15.44\% on SVHN with TIES and 20.34\% on MNIST with DARE+TA, compared with 6.70\% and 9.80\% under TA. Both remain well below their matching unprotected controls.
 
-\begin{figure*}[!t]
+\begin{figure}[!t]
 \centering
-\includegraphics[width=.96\textwidth]{fig/fusion_tasks.pdf}
-\caption{\textbf{AGA followed by three fusion rules.} Every cell is the protected-task accuracy on the complete test set for one fixed pair. All panels share the same color scale. NBP reduces accuracy across the three rules, with higher residual accuracy for SVHN/TIES and MNIST/DARE+TA than for TA.}
+\includegraphics[width=\linewidth]{fig/fusion_tasks.pdf}
+\caption{NBP accuracy after AGA and merging on seven complete test sets. The fixed companions are those in \cref{tab:main}. SVHN/TIES and MNIST/DARE+TA retain more accuracy than under TA; the macro-averages in \cref{tab:fusion} do not show these differences.}
 \label{fig:fusion-tasks}
-\end{figure*}
+\end{figure}
 
 \subsection{Direction and magnitude}
 \input{tables/ablation}
@@ -60,7 +62,7 @@ The per-task results vary with the fusion rule (\cref{fig:fusion-tasks}). After 
 
 We apply the fixed-readout condition to seven releases and their matching unprotected readouts in three settings, for 42 readouts in total. All seven protected public-base interpolations satisfy the bound. Five of seven actual two-expert models and five of seven actual eight-expert models also satisfy it. No matching unprotected model satisfies this sufficient condition. SUN397 and Cars do not satisfy it for the actual merges, despite their low measured accuracy; the sufficient bound does not describe every failure.
 
-For the five certified tasks, modifying only earlier blocks cannot restore classification while keeping the stated readout fixed. This explains the measured failure of block-only alignment, final-MLP replacement, and the fixed ProDistill adaptation where applicable. It does not explain resistance to final-bias cleanup, which changes a parameter in the condition.
+For the five certified tasks, modifying only earlier blocks cannot restore classification while keeping the stated readout fixed. This accounts for the failure of the evaluated block-only procedures on those tasks. Final-bias cleanup changes a parameter in the condition and is examined separately below.
 
 \subsection{A second vision backbone}
 \input{tables/backbone}
@@ -79,4 +81,4 @@ The preceding recovery procedures leave the final LayerNorm bias fixed. A method
 \end{equation}
 This removes the added perturbation and preserves the standalone embedding, without data or the original expert. It need not recover the original bias itself. In the three-task experiment (\cref{tab:cleanup}), applying this operation to both NBP and its unprotected control gives identical merged predictions. No choice of magnitude or direction within the same kernel prevents this operation.
 
-NBP therefore disrupts the evaluated merging and block-recovery procedures, but does not provide protection against arbitrary readout modification. Output calibration and student training in our additional recovery checks also restore accuracy. These outcomes distinguish the measured effect from a general white-box security claim.
+NBP disrupts the evaluated merging and block-recovery procedures. It does not withstand arbitrary readout modification: final-bias projection, output calibration, and student training can restore accuracy. Protection therefore depends on the recovery procedure, rather than on the attacker reconstructing the original weights.

@@ -54,15 +54,16 @@ def construct(cfg):
     evaluation.update(tasks=original["tasks"], AGA_references=original["AGA_references"],
         output=str(out / "evaluation"), mergers=["TA"], TA_coefficient=0.5,
         attack_scopes=["None", "Protected expert"], defenses=specs,
-        cases=[{"target": cfg["target"], "partner": "SVHN", "defenses": list(specs)}])
+        cases=[{"target": cfg["target"], "partner": cfg.get("partner", "SVHN"), "defenses": list(specs)}])
     evaluation["source_sha256"].update(cfg["source_sha256"])
     legacy = {}
-    for name, old_name in [("Unprotected", "Unprotected"), ("NBP", "Defense1")]:
+    for name, old_name in ([("Unprotected", "Unprotected"), ("NBP", "Defense1")]
+                           if "cached_scores" in cfg else []):
         legacy["MNIST_SVHN/" + name] = {
             stage: {**cfg["cached_scores"], "key_template": old_name + "/" + key_template}
             for stage, key_template in [("standalone", "Standalone/None/{task}"),
                 ("direct", "TA/None/{task}"), ("AGA_target_only", "TA/Protected expert/{task}")]}
-    evaluation["legacy"] = legacy
+    evaluation["legacy"] = cfg.get("legacy", legacy)
     save_json(out / "evaluation.json", evaluation)
     save_json(out / "freeze.json", {"controls": records,
         "evaluation_sha256": digest(out / "evaluation.json"),
@@ -87,7 +88,9 @@ def main():
     assert digest(out / "evaluation.json") == freeze["evaluation_sha256"]
     for pilot in [True, False]:
         run(str(out / "evaluation.json"), 0, pilot)
-        verify(out / "evaluation" / ("pilot" if pilot else "full") / "00_MNIST_SVHN")
+        case = json.loads((out / "evaluation.json").read_text())["cases"][0]
+        verify(out / "evaluation" / ("pilot" if pilot else "full")
+               / f"00_{case['target']}_{case['partner']}")
 
 
 if __name__ == "__main__":

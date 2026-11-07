@@ -1,7 +1,7 @@
 {
   "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
-  "updated_utc": "2026-11-07T13:19:54.368870+00:00",
-  "status": "fusion_and_equal_weight_results_verified_partner_grid_running",
+  "updated_utc": "2026-11-07T14:44:42.399153+00:00",
+  "status": "partner_grid_completed_manuscript_revision_syncing",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
     "date": "2026-11-06",
@@ -91,7 +91,7 @@
       "DTD"
     ],
     "EuroSAT": "Original expert test split unverified; do not report an eight-task average.",
-    "remaining_scope": "Complete the remaining35 directed partner pairs. EuroSAT split provenance, broader baselines, multi-task mechanism controls and construction cost remain to be resolved."
+    "remaining_scope": "EuroSAT checkpoint test split remains unverified. Additional data-trained baselines, multi-task mechanism controls and matched-hardware construction costs are not completed in this batch."
   },
   "compute": {
     "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
@@ -100,12 +100,12 @@
     "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
-    "active_GPU_jobs": 1,
+    "active_GPU_jobs": 0,
     "queued_jobs": 0,
     "primary_available_GiB": 19,
-    "verified_utc": "2026-11-07T13:19:54.368870+00:00",
+    "verified_utc": "2026-11-07T14:38:32.613349+00:00",
     "ssh_access": "WSL OpenSSH control socket verified; no credentials stored.",
-    "primary_workspace_status": "All seven fixed-pair TIES/DARE comparisons and equal-weight eight-expert check verified. Remaining35 directed partner pairs running.",
+    "primary_workspace_status": "All35 additional partner pairs completed and independently verified; all42 directed combinations summarized. No active GPU job.",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "secondary_role": "Historical CPU archive only; current GPU work is on17897.",
     "previous_primary": {
@@ -113,7 +113,7 @@
       "role": "GPU-less evidence archive; frozen raw outputs retained."
     }
   },
-  "active_GPU_jobs": 1,
+  "active_GPU_jobs": 0,
   "engineering": {
     "core_sources": [
       "experiment/construct.py",
@@ -144,7 +144,7 @@
     "source_fingerprint_mismatches": 0,
     "eight_extension": "results/phase3/bias_weight_only/eight_expert/extension/summary.md"
   },
-  "next_action": "Continue remaining partner pairs under workers8, verify each completed pair, then export the42 directed pairs. Latest results and source are preserved locally and on17897; check the exact GitHub sync receipt.",
+  "next_action": "Run the fixed SVHN/DTD component controls and same-host construction timings, then add complete results to the same manuscript and synchronize/read back.",
   "historical_research": {
     "snapshot_commit": "58af9194172df6c0c8b97f999884993765da973b",
     "Defense2": "Development stopped. Do not restart closed candidates; retain frozen releases, scores and failure evidence.",
@@ -346,7 +346,7 @@
     "nbp_partner_grid": {
       "host": "17897",
       "timeout_pid": 38938,
-      "status": "running_after_verified_loader_parallelism_change",
+      "status": "completed_independently_verified",
       "protocol": "results/phase3/bias_weight_only/partner_analysis/evaluation_protocol.json",
       "preregistration_commit": "7ab41d3f",
       "log": "outputs/nbp_partner_pairs_20261107/resume_workers8.log",
@@ -357,33 +357,58 @@
       "new_defense_weights": 0,
       "completed_first_full_pair": "SUN397/Cars, 10 rows,160 score replays, max score error0",
       "first_full_production_seconds": 1214.2432260289788,
-      "completed_pairs": 31,
+      "completed_pairs": 35,
       "active_protocol": "results/phase3/bias_weight_only/partner_analysis/loader8_protocol.json",
       "data_loader_workers": 8,
       "loader_change": "results/phase3/bias_weight_only/partner_analysis/loader_change.json",
       "runtime_source_commit": "65226f97f3e166f03d840dd046e9b669074c48a5",
       "resume_after_verified_case": 3,
       "retired_original_controller": "32362 terminated only after original full case3 and its replay verification completed. Original timeout32361 exited; existing results preserved.",
-      "completed_full_rows": 310,
-      "score_replays": 4960,
+      "completed_full_rows": 350,
+      "score_replays": 5600,
       "maximum_score_error": 0.0,
-      "local_result_archive": "results/phase3/bias_weight_only/partner_analysis/completed"
+      "local_result_archive": "results/phase3/bias_weight_only/partner_analysis/completed",
+      "total_directed_pairs": 42,
+      "combined_merged_dataset_rows": 336,
+      "record": "results/phase3/bias_weight_only/partner_analysis/README.md",
+      "csv": "results/phase3/bias_weight_only/partner_analysis/comparison.csv"
+    },
+    "nbp_ablation_extension": {
+      "status": "registered_before_execution",
+      "host": "17897",
+      "targets": [
+        "SVHN",
+        "DTD"
+      ],
+      "controls_per_target": [
+        "Random_null",
+        "Ambient"
+      ],
+      "same_original_NBP_releases": true,
+      "construction_images": 0,
+      "new_defense_methods": 0,
+      "planned_full_rows": 40,
+      "planned_full_score_replays": 640,
+      "construction_cost_invocations": 6,
+      "protocol_directory": "results/phase3/bias_weight_only/ablation/extension",
+      "log": "outputs/nbp_ablation_extension_20261107/job.log",
+      "wall_limit_seconds": 7200
     }
   },
   "manuscript": {
     "root": "paper",
     "main": "paper/main.tex",
     "scope": "NBP only",
-    "stage": "updated_with_seven_pair_fusion_and_equal_weight_results",
+    "stage": "single_column_figures_and_complete42_pair_results",
     "style": "Unmodified official CVPR2027 cvpr.sty and bibliography style. T1 font encoding for local Tectonic.",
-    "tables": "Seven-task main results, companion accuracy, recovery, seven-task fusion averages with taskwise source table, ablation, equal-weight, B16 and public projection.",
+    "tables": "Seven-task main comparison; all42 directed partner pairs; specified recovery; seven-task fusion means; direction control; equal-weight eight-expert; B16; final-bias cleanup.",
     "novelty": "Working name and specific-construction novelty remain provisional. PaRaMS,MergeGuard,Trap2 and NSmark were compared by mechanism. No first-ever claim.",
     "LLM_statement": "Remind the user before final submission; wording to be agreed then.",
     "overleaf_project": "https://www.overleaf.com/project/6aeddbff7be7a8c71fcd68d8 — latest23 source files read back and8-page compiled PDF visually checked.",
     "local_pdf": "paper/build/main.pdf",
     "body_pages": 7,
     "reference_pages": 1,
-    "figures": "Three main figures: vector method schematic, seven-task/three-fusion matrix, magnitude controls. Prediction frequencies and readout bounds retained as additional source figures.",
+    "figures": "Three single-column figures: method schematic, taskwise fusion dot plot, magnitude controls. One full-width main-results table.",
     "overleaf_verified_utc": "2026-11-07T13:19:16.968557+00:00"
   },
   "literature_review": {

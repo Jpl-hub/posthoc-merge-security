@@ -1,11 +1,11 @@
-Companion-task accuracy after AGA and TA (%). Companions are fixed as in the main table. NBP can impair other participating tasks as well as the protected task.
+Accuracy after AGA and TA across all 42 directed pairs (%). Each row averages the six other validated tasks as companions. Subscripts t and c denote the protected target and companion; U is the unprotected control. The same seven NBP releases are used throughout.
 
-| Target | None | PaRaMS | NBP |
-| --- | ---: | ---: | ---: |
-| SUN397 | 99.47 | 99.47 | 10.28 |
-| Cars | 99.41 | 99.41 | 10.10 |
-| RESISC45 | 99.41 | 99.41 | 27.56 |
-| SVHN | 99.39 | 99.39 | 9.80 |
-| GTSRB | 99.17 | 99.17 | 35.80 |
-| MNIST | 92.78 | 92.79 | 6.70 |
-| DTD | 99.45 | 99.45 | 9.80 |
+| Task | U (target) | NBP (target) | U (companion) | NBP (companion) |
+| --- | ---: | ---: | ---: | ---: |
+| SUN397 | 71.94 | 0.34 | 88.38 | 4.28 |
+| Cars | 72.58 | 0.51 | 88.34 | 4.27 |
+| RESISC45 | 91.19 | 2.44 | 84.26 | 8.17 |
+| SVHN | 93.65 | 6.70 | 83.50 | 5.31 |
+| GTSRB | 94.95 | 1.19 | 83.70 | 9.37 |
+| MNIST | 99.30 | 9.80 | 82.12 | 2.80 |
+| DTD | 70.07 | 2.13 | 88.52 | 5.86 |
