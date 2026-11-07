@@ -243,16 +243,34 @@ for name in ["results.json", "independent_validation.json", "execution.json", "p
     path = ablation_root / name
     source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
 ablation_lookup = {(r["defense"], r["merger"], r["attack_scope"], r["dataset"]): r for r in ablation_rows}
-records = []
-for name, label in [("Unprotected", "None"), ("NBP", "NBP"),
-                    ("Random_null", "Random nullspace"), ("Ambient", "Random direction")]:
-    cells = []
-    for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
-        row = ablation_lookup[name, merger, scope, "MNIST"]
-        cells.append(f"{100 * row['correct'] / row['n']:.2f}")
-    records.append([label] + cells)
-write_table("ablation", "Direction controls on MNIST (\\%). The three perturbations have the same update norm. The random nullspace direction is projected into the original visual-projection kernel; the unconstrained random direction uses the same sampled vector before projection. All controls use the same MNIST/SVHN pair and TA coefficient 0.5.",
-            "tab:ablation", ["Update", "Standalone", "TA", "AGA + TA"], [("", records)])
+groups = []
+ablation_targets = [("MNIST", ablation_rows)]
+for task in ["SVHN", "DTD"]:
+    folder = ablation_root / "extension" / task
+    if not (folder / "independent_validation.json").exists():
+        continue
+    extra = json.loads((folder / "results.json").read_text())
+    checked = json.loads((folder / "independent_validation.json").read_text())
+    execution = json.loads((folder / "execution.json").read_text())
+    assert checked["status"] == "passed" and checked["rows"] == len(extra) == 20
+    assert checked["raw_sha256"] == execution["predictions_sha256"]
+    ablation_targets.append((task, extra))
+    for name in ["results.json", "independent_validation.json", "execution.json", "freeze.json"]:
+        path = folder / name
+        source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+for task, measured in ablation_targets:
+    lookup = {(r["defense"], r["merger"], r["attack_scope"], r["dataset"]): r for r in measured}
+    records = []
+    for name, label in [("Unprotected", "None"), ("NBP", "NBP"),
+                        ("Random_null", "Random nullspace"), ("Ambient", "Random direction")]:
+        cells = []
+        for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
+            row = lookup[name, merger, scope, task]
+            cells.append(f"{100*row['correct']/row['n']:.2f}")
+        records.append([label] + cells)
+    groups.append((task, records))
+write_table("ablation", "Equal-norm direction controls (\\%). Within each task, NBP and the two random controls have the same update norm before FP32 storage. Random nullspace projects a fixed random vector into the expert projection kernel. Random direction uses that vector before projection. Companions and TA coefficient 0.5 match the main table.",
+            "tab:ablation", ["Task", "Update", "Standalone", "TA", "AGA+TA"], groups)
 # Reuse completed B/16 and public-bias cleanup records; no new evaluation.
 b16_path = ROOT / "results/backbone_b16/summary.json"
 b16 = json.loads(b16_path.read_text())
@@ -308,7 +326,24 @@ write_table("equal_weight", "Eight-expert accuracy after AGA and TA (\\%). Coeff
 for name in ["results.json", "validation.json", "independent_statistics.json"]:
     path = equal_root / name
     source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+# Same-host construction timings are separate from model utility tests.
+cost_root = ablation_root / "extension" / "cost"
+cost_files = [cost_root / f"{task}_{method}.json" for task in small_tasks for method in ["bias", "params"]]
+exported_tables = ["main", "partners", "recovery", "fusion", "fusion_tasks", "ablation", "backbone", "cleanup", "equal_weight"]
+if all(p.exists() for p in cost_files):
+    cost = {}
+    for path in cost_files:
+        row = json.loads(path.read_text())
+        assert row["construction_device"] == "cpu" and row["repetitions"] == 1
+        assert row["images"] == row["expert_updates"] == row["new_publication_files"] == 0
+        cost[row["target"], row["method"]] = row
+        source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    records = [[task]+[f"{cost[task, method]['kernel_seconds']:.2f}" for method in ["bias", "params"]]
+               for task in small_tasks]
+    write_table("cost", "Construction time (seconds), one call per method/task on the same CPU host. The timer excludes checkpoint loading, correctness checks and serialization.",
+        "tab:cost", ["Task", "NBP", "PaRaMS"], [("", records)])
+    exported_tables.append("cost")
 (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
     "eight_expert_protected_task_cells": len(eight),
-    "tables": ["main", "partners", "recovery", "fusion", "fusion_tasks", "ablation", "backbone", "cleanup", "equal_weight"]}, indent=2) + "\n")
-print("Generated nine manuscript table files from recorded results.")
+    "tables": exported_tables}, indent=2) + "\n")
+print(f"Generated {len(exported_tables)} manuscript table files from recorded results.")

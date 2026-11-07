@@ -42,7 +42,9 @@ The results also vary by task and fusion rule (\cref{fig:fusion-tasks}). After A
 
 \subsection{Direction and magnitude}
 \input{tables/ablation}
-\Cref{tab:ablation} compares three perturbations of the same norm on MNIST. The random direction in the projection nullspace preserves standalone accuracy but gives 63.74\% after AGA and TA, compared with 9.80\% for NBP. The unconstrained random direction reduces standalone accuracy to 9.74\%. At this matched norm, the nullspace constraint preserves utility, while the class-directed solution causes a larger merged accuracy drop than the random nullspace control.
+\Cref{tab:ablation} tests equal-norm directions on three tasks. The unconstrained random direction reduces standalone accuracy to 9.74\%, 6.38\%, and 2.13\% on MNIST, SVHN, and DTD. Projecting the same random vector into the expert's nullspace preserves standalone accuracy on all three tasks.
+
+The choice within that nullspace matters on MNIST and SVHN. After AGA and TA, random-nullspace accuracy is 63.74\% and 59.22\%, compared with 9.80\% and 6.70\% for NBP. DTD is different: both nullspace directions give 2.13\%. These controls separate the utility preserved by the nullspace constraint from the task-dependent benefit of the class-directed solution.
 
 \begin{figure}[!t]
 \centering
@@ -63,6 +65,10 @@ The results also vary by task and fusion rule (\cref{fig:fusion-tasks}). After A
 We apply the fixed-readout condition to seven releases and their matching unprotected readouts in three settings, for 42 readouts in total. All seven protected public-base interpolations satisfy the bound. Five of seven actual two-expert models and five of seven actual eight-expert models also satisfy it. No matching unprotected model satisfies this sufficient condition. SUN397 and Cars do not satisfy it for the actual merges, despite their low measured accuracy; the sufficient bound does not describe every failure.
 
 For the five certified tasks, modifying only earlier blocks cannot restore classification while keeping the stated readout fixed. This accounts for the failure of the evaluated block-only procedures on those tasks. Final-bias cleanup changes a parameter in the condition and is examined separately below.
+
+\subsection{Construction cost}
+\input{tables/cost}
+NBP takes 0.82--0.86 seconds on the Xeon Platinum 8470Q host (\cref{tab:cost}). It changes 768 FP32 values in one tensor, or 3\,KiB of raw update data; PaRaMS changes 84,999,168 values in 72 tensors. PyTorch uses four CPU threads and PaRaMS its default CPU JAX runtime. First import/JIT costs are included when incurred. Both retain the original inference architecture.
 
 \subsection{A second vision backbone}
 \input{tables/backbone}

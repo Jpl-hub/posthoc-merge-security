@@ -1,6 +1,6 @@
 {
-  "updated_utc": "2026-11-07T14:44:42.399153+00:00",
-  "status": "partner_grid_completed_manuscript_revision_syncing",
+  "updated_utc": "2026-11-07T15:21:17.882725+00:00",
+  "status": "registered_batches_complete_manuscript_ready_for_peer_review",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
     "date": "2026-11-06",
@@ -232,7 +232,7 @@
       "csv": "results/phase3/bias_weight_only/partner_analysis/comparison.csv"
     },
     "nbp_ablation_extension": {
-      "status": "registered_before_execution",
+      "status": "completed_independently_verified",
       "host": "17897",
       "targets": [
         "SVHN",
@@ -250,10 +250,30 @@
       "construction_cost_invocations": 6,
       "protocol_directory": "results/phase3/bias_weight_only/ablation/extension",
       "log": "outputs/nbp_ablation_extension_20261107/job.log",
-      "wall_limit_seconds": 7200
+      "wall_limit_seconds": 7200,
+      "timeout_pid": 88375,
+      "preregistration_commit": "faf193ded1dc3037730e43de1029e32108dade94",
+      "source_sha256": "8648bbc096ef61d786a2ff1feee5418a6ca4b2ac17837460bbe426a3a02dc340",
+      "main_publication_changed": false,
+      "completed_full_rows": 40,
+      "completed_full_score_replays": 640,
+      "maximum_score_error": 0.0,
+      "cost_completed_invocations": 6,
+      "cost_NBP_seconds": [
+        0.8302019312977791,
+        0.8229479417204857,
+        0.8647773861885071
+      ],
+      "cost_PaRaMS_seconds": [
+        187.70100769400597,
+        182.0114785656333,
+        179.5675780698657
+      ],
+      "cost_CPU": "Intel Xeon Platinum8470Q",
+      "cost_interpretation": "One invocation per method/task;PyTorch4CPUthreads,JAXdefaultCPUbackend;loading,verification and serialization excluded;no new publication files."
     }
   },
-  "next_action": "Run the fixed SVHN/DTD component controls and same-host construction timings, then add complete results to the same manuscript and synchronize/read back.",
+  "next_action": "Present this revised draft for peer feedback. No active experiment. Final submission still requires author review,complete venue checks and agreement on the required LLM Usage Statement.",
   "current_state": "research_state.json",
   "latest_completed_batch": {
     "defense1_additional_native": "results/phase3/bias_weight_only/eight_expert/remaining_native_result.json",
@@ -336,7 +356,7 @@
   "github_sync": {
     "receipt": "outputs/latest_github_sync_receipt.json",
     "last_verified_remote_commit": "6121d5164c9132e42bf83ae14b9d49fea8af2131",
-    "status": "Prior batch source and results verified on GitHub. Current partner-pair results archived locally; next sync pending."
+    "status": "Current revision is local and on17897;latest GitHub push has TLS/connection failures. See exact receipt;do not claim uploaded."
   },
   "automatic_continuation": false,
   "automation_status": "13-35 deleted; do not recreate.",
@@ -344,17 +364,19 @@
     "root": "paper",
     "main": "paper/main.tex",
     "scope": "NBP only",
-    "stage": "single_column_figures_and_complete42_pair_results",
+    "stage": "revised_draft_ready_for_two_classmates_review",
     "style": "Unmodified official CVPR2027 cvpr.sty and bibliography style. T1 font encoding for local Tectonic.",
     "tables": "Seven-task main comparison; all42 directed partner pairs; specified recovery; seven-task fusion means; direction control; equal-weight eight-expert; B16; final-bias cleanup.",
     "novelty": "Working name and specific-construction novelty remain provisional. PaRaMS,MergeGuard,Trap2 and NSmark were compared by mechanism. No first-ever claim.",
     "LLM_statement": "Remind the user before final submission; wording to be agreed then.",
-    "overleaf_project": "https://www.overleaf.com/project/6aeddbff7be7a8c71fcd68d8 — latest23 source files read back and8-page compiled PDF visually checked.",
+    "overleaf_project": "https://www.overleaf.com/project/6aeddbff7be7a8c71fcd68d8 — final24 sources read back;8-page PDF with3 single-column figures and9 tables checked.",
     "local_pdf": "paper/build/main.pdf",
     "body_pages": 7,
     "reference_pages": 1,
     "figures": "Three single-column figures: method schematic, taskwise fusion dot plot, magnitude controls. One full-width main-results table.",
-    "overleaf_verified_utc": "2026-11-07T13:19:16.968557+00:00"
+    "overleaf_verified_utc": "2026-11-07T15:20:53.049474+00:00",
+    "main_figures": 3,
+    "main_tables": 9
   },
   "literature_review": {
     "updated_utc": "2026-11-06T17:10:28.681065+00:00",
@@ -365,7 +387,7 @@
     "changes_to_experiments": "No new GPU jobs, defense releases, optimizers or attacks. Partner diversity, fusion coefficients and same-hardware costs remain specific evidence gaps."
   },
   "current_method_revision_policy": "One current NBP method. Small changes may be considered when supported by source-weight analysis and matched complete evaluation; do not maintain competing main-method versions. The currently evaluated seven releases are unchanged.",
-  "current_status": "partner_grid_completed_manuscript_revision_syncing",
+  "current_status": "registered_batches_complete_manuscript_ready_for_peer_review",
   "nbp_20261107_resume": {
     "original_columns_timeout_pid": 2565,
     "status": "24 full rows independently verified,384 exact score replays",
@@ -376,5 +398,6 @@
     "score_tolerance": 0.0005,
     "overleaf": "17 source files read back;8-page compiled PDF checked",
     "active_GPU_jobs": 0
-  }
+  },
+  "active_CPU_jobs": 0
 }
