@@ -1,0 +1,75 @@
+{
+  "coefficient": 0.125,
+  "task_order": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "EuroSAT",
+    "SVHN",
+    "GTSRB",
+    "MNIST",
+    "DTD"
+  ],
+  "evaluate": [
+    "MNIST",
+    "SVHN",
+    "DTD"
+  ],
+  "score_tolerance": 0.0005,
+  "author_TaskVector": {
+    "path": "external/secure-merge-attack/task_vectors.py",
+    "sha256": "9d95bdb8b9fef2a4457e47b28ea3e1ccc188f30ded8c4c1ec1fe1e55cfded4af",
+    "git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea"
+  },
+  "scopes": [
+    "None",
+    "Protected expert"
+  ],
+  "experiment": "Eight-expert arithmetic mean with frozen NBP: coefficient-only comparison with the completed TA 0.2 condition",
+  "output": "outputs/nbp_eight_equal_20261107",
+  "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+  "cases": [
+    {
+      "target": "MNIST",
+      "defenses": [
+        "Defense1_MNIST"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defenses": [
+        "Defense1_SVHN"
+      ]
+    },
+    {
+      "target": "DTD",
+      "defenses": [
+        "Defense1_DTD"
+      ]
+    }
+  ],
+  "new_AGA_calls": 0,
+  "new_defense_weights": 0,
+  "expert_training_updates": 0,
+  "registered_utc": "2026-11-07T07:09:39.291889+00:00",
+  "test_sizes": {
+    "MNIST": 10000,
+    "SVHN": 26032,
+    "DTD": 1880
+  },
+  "finite_budget": {
+    "wall_limit_seconds": 7200,
+    "planned_rows_each_stage": 36,
+    "new_AGA_calls": 0,
+    "new_defense_points": 0
+  },
+  "inputs": {
+    "evaluation": {
+      "path": "results/phase3/bias_weight_only/fusion_methods/extension_protocol.json",
+      "sha256": "2c926f1cce7f9d77e1a3fdf4f7692b7a4d444d306984abb5158c419c34b78efd"
+    }
+  },
+  "scope_limit": "Eight original experts participate. Evaluate the same three original protected directions and their full MNIST, SVHN, DTD test sets. Compare the same frozen NBP releases and clean controls with the recorded coefficient 0.2. No coefficient scan or changed weights.",
+  "maximum_seconds": 7200
+}
