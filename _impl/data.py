@@ -1,6 +1,7 @@
 """Official data splits and independently parsed labels."""
 
 import csv
+import os
 import struct
 from pathlib import Path
 
@@ -38,7 +39,8 @@ def dataset(task, root, transform, training=False):
 def make_loader(dataset, indices=None, batch_size=128):
     if indices is not None:
         dataset = Subset(dataset, indices)
-    return DataLoader(dataset, batch_size=batch_size, num_workers=2, pin_memory=True)
+    workers = int(os.environ.get("POSTHOC_DATA_WORKERS", "2"))
+    return DataLoader(dataset, batch_size=batch_size, num_workers=workers, pin_memory=True)
 
 
 def official_labels(task, training=False):
