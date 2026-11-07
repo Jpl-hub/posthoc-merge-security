@@ -1,4 +1,4 @@
-"""Draw the fixed-readout bound from the recorded, image-free analysis."""
+"""Draw manuscript figures from the recorded NBP results."""
 
 import hashlib
 import json
@@ -88,4 +88,39 @@ for ax, name, label, color in zip(axes, ["Unprotected", "NBP"],
 axes[-1].set(xticks=classes, xlabel="Predicted digit")
 fig.supylabel("Predictions (%)", fontsize=8)
 fig.savefig(ROOT / "paper/fig/predictions.pdf", metadata={"Title": "MNIST predictions after AGA and TA"})
+plt.close(fig)
+
+# Same-scale task matrices expose variation across fusion rules and defenses.
+manifest = json.loads((ROOT / "paper/tables/sources.json").read_text())
+for relative, expected in manifest["input_sha256"].items():
+    assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == expected
+comparison = json.loads((ROOT / "results/comparison/sources.json").read_text())
+ta_rows = comparison["tables"]["paper_main"]["rows"] + comparison["tables"]["defense1_additional_pairs"]["rows"]
+ta = {(r[0].split("/")[0], r[1]): float(r[4].split(" / ")[0]) for r in ta_rows}
+fusion_root = ROOT / "results/phase3/bias_weight_only/fusion_methods"
+fusion = []
+for folder in [fusion_root] + [fusion_root / "extension" / task for task in tasks if task != "SUN397"]:
+    fusion.extend(json.loads((folder / "results.json").read_text()))
+fused = {(r["target"], r["defense"], r["merger"]): 100*r["correct"]/r["n"]
+         for r in fusion if r["dataset"] == r["target"] and r["attack_scope"] == "Protected expert"}
+fig, axes = plt.subplots(1, 3, figsize=(6.8, 2.9), sharey=True, layout="constrained")
+for ax, method, label in zip(axes, ["Unprotected", "PaRaMS", "Defense 1"], ["Unprotected", "PaRaMS", "NBP"]):
+    matrix = []
+    for task in tasks:
+        name = "Unprotected" if method == "Unprotected" else ("PaRaMS_" if method == "PaRaMS" else "Defense1_") + task
+        matrix.append([ta[task, method], fused[task, name, "TIES"], fused[task, name, "DARE+TA"]])
+    matrix = np.array(matrix)
+    picture = ax.imshow(matrix, vmin=0, vmax=100, cmap="Blues", aspect="auto")
+    for i, j in np.ndindex(matrix.shape):
+        ax.text(j, i, f"{matrix[i,j]:.2f}", ha="center", va="center",
+                color="white" if matrix[i,j] > 55 else "#202020", fontsize=8)
+    ax.set(title=label, xticks=range(3), xticklabels=["TA", "TIES", "DARE+TA"],
+           yticks=range(7), yticklabels=["SUN397", "Cars", "RESISC45", "SVHN", "GTSRB", "MNIST", "DTD"])
+    ax.tick_params(length=0, axis="both", labelsize=8, pad=5)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+bar = fig.colorbar(picture, ax=axes, shrink=.9, pad=.025, ticks=[0, 25, 50, 75, 100])
+bar.ax.set_ylabel("Protected-task accuracy (%)", fontsize=8)
+bar.outline.set_visible(False)
+fig.savefig(ROOT / "paper/fig/fusion_tasks.pdf", metadata={"Title": "Seven-task fusion accuracy after AGA"})
 plt.close(fig)

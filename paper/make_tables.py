@@ -73,7 +73,7 @@ def write_table(name, caption, label, headers, groups, wide=False):
              r"\setlength{\tabcolsep}{4pt}", rf"\caption{{{caption}}}",
              rf"\label{{{label}}}", r"\begin{tabular}{" + spec + "}",
              r"\toprule", " & ".join(headers) + r" \\", r"\midrule"]
-    md_caption = caption.replace(r"\%", "%").replace(r"Table~\ref{tab:main}", "the main table")
+    md_caption = caption.replace(r"\%", "%").replace(r"Table~\ref{tab:main}", "the main table").replace(r"Table~\ref{tab:fusion}", "the fusion summary table")
     md = [md_caption, "", "| " + " | ".join(headers) + " |",
           "| " + " | ".join(["---"] * (2 if grouped else 1)
                               + ["---:"] * (columns - (2 if grouped else 1))) + " |"]
@@ -133,27 +133,41 @@ write_table("recovery", "Protected-task accuracy after the specified recovery pr
             "tab:recovery", ["Procedure", "Defense"] + small_tasks, groups)
 
 fusion_root = ROOT / "results/phase3/bias_weight_only/fusion_methods"
-fusion_rows = json.loads((fusion_root / "results.json").read_text())
-audit = json.loads((fusion_root / "independent_validation.json").read_text())
-execution = json.loads((fusion_root / "execution.json").read_text())
-assert audit["status"] == "passed" and audit["rows"] == len(fusion_rows) == 27
-assert audit["raw_sha256"] == execution["predictions_sha256"]
-lookup = {(r["merger"], r["attack_scope"], r["defense"], r["dataset"]): r for r in fusion_rows}
-groups = []
+fusion_rows = []
+for folder in [fusion_root] + [fusion_root / "extension" / task for task in tasks if task != "SUN397"]:
+    rows = json.loads((folder / "results.json").read_text())
+    audit = json.loads((folder / "independent_validation.json").read_text())
+    execution = json.loads((folder / "execution.json").read_text())
+    assert audit["status"] == "passed" and audit["rows"] == len(rows) == 27
+    assert audit["raw_sha256"] == execution["predictions_sha256"]
+    for name in ["results.json", "independent_validation.json", "execution.json"]:
+        path = folder / name
+        source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    fusion_rows.extend(rows)
+lookup = {(r["target"], r["merger"], r["attack_scope"], r["defense"], r["dataset"]): r for r in fusion_rows}
+assert len(lookup) == 189
+groups, details = [], []
 for merger in ["TIES", "DARE+TA"]:
     for scope in ["None", "Protected expert"]:
-        records = []
-        for method, label in [("Unprotected", "None"), ("PaRaMS_SUN397", "PaRaMS"),
-                              ("Defense1_SUN397", "NBP")]:
-            cells = []
-            for task in ["SUN397", "MNIST"]:
-                row = lookup[merger, scope, method, task]
-                assert sum(c["correct"] for c in row["per_class"]) == row["correct"]
-                cells.append(f"{100 * row['correct'] / row['n']:.2f}")
-            records.append([label] + cells)
-        groups.append((merger + (" + AGA" if scope != "None" else ""), records))
-write_table("fusion", "Additional fusion rules on the fixed SUN397/MNIST pair (\\%). TIES retains 20\\% of entries with scale 1. DARE+TA uses drop rate 0.2, seed 42, and TA coefficient 0.5. AGA processes the protected expert. Both complete test sets and matching controls are reported.",
-            "tab:fusion", ["Fusion / recovery", "Defense", "SUN397", "MNIST"], groups)
+        records, target_records = [], []
+        for method, label in [("Unprotected", "None"), ("PaRaMS_", "PaRaMS"), ("Defense1_", "NBP")]:
+            target_scores, partner_scores = [], []
+            for task in tasks:
+                name = method if method == "Unprotected" else method + task
+                for dataset, scores in [(task, target_scores), ("SVHN" if task == "MNIST" else "MNIST", partner_scores)]:
+                    row = lookup[task, merger, scope, name, dataset]
+                    assert sum(c["correct"] for c in row["per_class"]) == row["correct"]
+                    scores.append(100 * row["correct"] / row["n"])
+            records.append([label, f"{sum(target_scores)/len(tasks):.2f}", f"{sum(partner_scores)/len(tasks):.2f}"])
+            target_records.append([label] + [f"{v:.2f}" for v in target_scores])
+        setting = ("AGA + " if scope != "None" else "") + merger
+        groups.append((setting, records))
+        details.append((setting, target_records))
+write_table("fusion", "Seven-task macro-average accuracy (\\%) for additional fusion rules. Target and companion accuracies are averaged across the same seven fixed pairs as Table~\\ref{tab:main}. TIES retains 20\\%; DARE drops 20\\% with seed 42, followed by TA at 0.5. AGA processes the protected expert before fusion.",
+            "tab:fusion", ["Procedure", "Defense", "Target", "Companion"], groups)
+write_table("fusion_tasks", "Complete protected-task accuracy (\\%) for TIES and DARE+TA. Same frozen checkpoints, fixed pairs and settings as Table~\\ref{tab:fusion}.",
+            "tab:fusion-tasks", ["Procedure", "Defense"] + tasks, details, wide=True)
+
 
 ablation_root = ROOT / "results/phase3/bias_weight_only/ablation"
 ablation_rows = json.loads((ablation_root / "results.json").read_text())
@@ -205,7 +219,34 @@ write_table("cleanup", "TA accuracy after public final-bias projection (\\%). Co
     "tab:cleanup", ["Target", "None T", "None C", "NBP T", "NBP C"], [("",records)])
 for path in [b16_path, cleanup_path]:
     source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+equal_root = ROOT / "results/phase3/bias_weight_only/eight_expert/equal_weight"
+equal_rows = json.loads((equal_root / "results.json").read_text())
+equal_validation = json.loads((equal_root / "validation.json").read_text())
+equal_statistics = json.loads((equal_root / "independent_statistics.json").read_text())
+assert equal_validation["status"] == equal_statistics["status"] == "passed"
+assert equal_validation["rows"] == equal_statistics["rows"] == len(equal_rows) == 36
+assert equal_validation["raw_sha256"] == equal_statistics["raw_sha256"]
+equal = {(r["target"], r["defense"], r["attack_scope"]): r for r in equal_rows if r["target"] == r["dataset"]}
+groups = []
+for coefficient in [0.125, 0.2]:
+    records = []
+    for label, method in [("None", "Unprotected"), ("NBP", "Defense 1")]:
+        cells = []
+        for task in small_tasks:
+            if coefficient == 0.125:
+                row = equal[task, "Unprotected" if method == "Unprotected" else "Defense1_"+task, "Protected expert"]
+                n, correct = row["n"], row["correct"]
+            else:
+                n, correct, _ = eight[task, method, "Protected expert"]
+            cells.append(f"{100*correct/n:.2f}")
+        records.append([label]+cells)
+    groups.append((str(coefficient), records))
+write_table("equal_weight", "Eight-expert accuracy after AGA and TA (\\%). Coefficient 0.125 is the arithmetic mean of eight checkpoints. Coefficient 0.2 uses the same publications and clean AGA references as the main experiment. The protection is constructed once at proxy coefficient 0.5.",
+    "tab:equal-weight", ["Coefficient", "Defense"] + small_tasks, groups)
+for name in ["results.json", "validation.json", "independent_statistics.json"]:
+    path = equal_root / name
+    source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
 (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
     "eight_expert_protected_task_cells": len(eight),
-    "tables": ["main", "partners", "recovery", "fusion", "ablation", "backbone", "cleanup"]}, indent=2) + "\n")
-print("Generated seven manuscript tables from recorded results.")
+    "tables": ["main", "partners", "recovery", "fusion", "fusion_tasks", "ablation", "backbone", "cleanup", "equal_weight"]}, indent=2) + "\n")
+print("Generated nine manuscript table files from recorded results.")

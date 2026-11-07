@@ -1,0 +1,18 @@
+\begin{table}[!t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Eight-expert accuracy after AGA and TA (\%). Coefficient 0.125 is the arithmetic mean of eight checkpoints. Coefficient 0.2 uses the same publications and clean AGA references as the main experiment. The protection is constructed once at proxy coefficient 0.5.}
+\label{tab:equal-weight}
+\begin{tabular}{llrrr}
+\toprule
+Coefficient & Defense & MNIST & SVHN & DTD \\
+\midrule
+\multirow{2}{*}{0.125} & None & 86.71 & 62.75 & 49.95 \\
+ & \textbf{NBP} & 9.80 & 6.70 & 2.13 \\
+\midrule
+\multirow{2}{*}{0.2} & None & 93.23 & 72.53 & 51.38 \\
+ & \textbf{NBP} & 9.80 & 6.70 & 2.13 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -8,7 +8,7 @@ Each two-expert experiment protects one expert and uses a fixed companion expert
 Construction uses FP64 SVD with relative singular-value tolerance $10^{-10}$, a fixed random seed and the magnitude multiplier 2. Released parameters and inference use FP32. Every method uses the same checkpoints, classification heads and preprocessing. We report complete-test accuracy in percent, including companion-task accuracy. Among the procedures in \cref{tab:recovery}, only ProDistill uses training images. NBP construction uses none.
 
 \subsection{Standalone utility and two-expert merging}
-\Cref{tab:main} reports the seven protected tasks. After AGA and two-expert TA, mean target accuracy falls from 83.71\% to 3.29\% with \method{}. Five tasks retain every evaluated prediction. Cars has eight changed predictions and two net losses among 8,041 examples. SUN397 has four changed predictions and two net losses among 19,850 examples. The maximum standalone decrease is 0.025 percentage points.
+\Cref{tab:main} reports the seven protected tasks. After AGA and two-expert TA, mean target accuracy falls from 83.71\% to 3.29\% with \method{}. Five tasks retain every evaluated prediction. Cars has eight changed predictions and two net losses among 8,041 examples. SUN397 has four changed predictions and two net losses among 19,850 examples. The maximum standalone decrease is 0.025 percentage points. Stored FP32 bias updates have Euclidean norms between $1.12\times10^4$ and $9.34\times10^5$. Their residual projected norms, $\|\delta b^{\mathsf T}P_e\|_2$, range from $8.26\times10^{-5}$ to $6.35\times10^{-3}$, which motivates measuring the released model directly.
 
 Direct merging with PaRaMS or \method{} gives low target accuracy. AGA restores PaRaMS close to the unprotected control, while \method{} remains between 0.25\% and 9.80\%. AGA aligns attention and MLP parameters and leaves the final normalization bias fixed.
 
@@ -32,7 +32,16 @@ We use the fixed author ProDistill kernel~\cite{xu2025prodistill}. The attacker 
 
 \subsection{Other fusion rules}
 \input{tables/fusion}
-\Cref{tab:fusion} evaluates the same frozen SUN397 releases with TIES and DARE+TA. TIES uses global top-20\% trimming and scale 1; DARE drops 20\% of task-update entries with fixed seed 42 before TA at 0.5. We use unchanged author kernels through the existing CLIP adapter. The settings are shared by all three defenses and are not selected from their test scores. With or without AGA, \method{} yields 50 correct SUN397 predictions out of 19,850, or 0.25\%. Companion MNIST accuracy is 10.28\%.
+\Cref{tab:fusion} evaluates all seven fixed pairs with TIES and DARE+TA. TIES retains the global top 20\% of updates and uses scale 1. DARE drops 20\% with seed 42 before TA at 0.5. Both use author kernels through the CLIP adapter. After AGA, mean target accuracy is 86.28\% for unprotected TIES and 4.71\% for NBP; the corresponding DARE+TA scores are 83.70\% and 5.10\%. PaRaMS recovers close to the unprotected controls.
+
+The per-task results vary with the fusion rule (\cref{fig:fusion-tasks}). After AGA, NBP gives 15.44\% on SVHN with TIES and 20.34\% on MNIST with DARE+TA, compared with 6.70\% and 9.80\% under TA. Thus additional fusion rules preserve a substantial performance gap while changing the degree of disruption.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=.96\textwidth]{fig/fusion_tasks.pdf}
+\caption{\textbf{AGA followed by three fusion rules.} Every cell is the protected-task accuracy on the complete test set for one fixed pair. All panels share the same color scale. NBP reduces accuracy across the three rules, with higher residual accuracy for SVHN/TIES and MNIST/DARE+TA than for TA.}
+\label{fig:fusion-tasks}
+\end{figure*}
 
 \subsection{Direction and magnitude}
 \input{tables/ablation}
@@ -47,9 +56,10 @@ We use the fixed author ProDistill kernel~\cite{xu2025prodistill}. The attacker 
 \Cref{fig:amplitude} varies only the update magnitude. At 0.125 of the NBP magnitude, MNIST accuracy after AGA and TA is 98.71\%; at 0.25 it is 45.88\%. The standalone predictions remain unchanged throughout the evaluated range.
 
 \subsection{Multiple experts}
-\Cref{tab:main} also reports eight-expert merging with TA coefficient 0.2, protecting one of the seven evaluated tasks at a time. All eight source experts participate in the author-specified order, including EuroSAT. After AGA, \method{} retains protected-task accuracies of 9.80\%, 6.70\%, and 2.13\% on MNIST, SVHN, and DTD, respectively; the corresponding scores are 2.44\%, 0.55\%, 1.19\%, and 0.25\% on RESISC45, Cars, GTSRB, and SUN397. AGA restores PaRaMS close to the matching unprotected result.
+\Cref{tab:main} reports eight-expert TA at coefficient 0.2, protecting one expert at a time. NBP and its unprotected controls are each evaluated on all seven test sets. AGA restores PaRaMS close to the unprotected scores, while NBP remains between 0.25\% and 9.80\%. This coefficient gives the public base weight $1-8(0.2)=-0.6$ when TA is expanded as a weighted checkpoint sum.
 
-For each protected direction, we evaluate NBP and its unprotected control on all seven validated test sets. Thus the reported target-task entries are accompanied by a complete cross-task evaluation for these two methods. The coefficient $0.2$ multiplies each task update and gives the public base a coefficient of $1-8(0.2)=-0.6$ when written as a weighted sum of checkpoints.
+\input{tables/equal_weight}
+\Cref{tab:equal-weight} compares the original three protected tasks at coefficient 0.2 with an equal average of eight checkpoints, $\lambda=1/8$. With the same releases, NBP retains target accuracies of 9.80\%, 6.70\%, and 2.13\% after AGA. The corresponding unprotected accuracies are 86.71\%, 62.75\%, and 49.95\%. These results show that the measured effect also occurs at equal weighting.
 
 \subsection{Fixed-readout analysis}
 \begin{figure}[!t]

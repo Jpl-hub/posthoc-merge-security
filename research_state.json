@@ -1,7 +1,7 @@
 {
   "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
-  "updated_utc": "2026-11-07T06:53:16.839242+00:00",
-  "status": "revised_manuscript_with_fusion_extension_running",
+  "updated_utc": "2026-11-07T09:36:16.397938+00:00",
+  "status": "fusion_and_equal_weight_results_verified_partner_grid_running",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
     "date": "2026-11-06",
@@ -91,7 +91,7 @@
       "DTD"
     ],
     "EuroSAT": "Original expert test split unverified; do not report an eight-task average.",
-    "remaining_scope": "Finish six additional TIES/DARE pairs and verify both target and companion results. Check EuroSAT split provenance, equal-weight eight-expert TA and partner coverage separately."
+    "remaining_scope": "Complete the remaining35 directed partner pairs. EuroSAT split provenance, broader baselines, multi-task mechanism controls and construction cost remain to be resolved."
   },
   "compute": {
     "primary_endpoint": "connect.cqa1.seetacloud.com:17897",
@@ -101,11 +101,11 @@
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
     "active_GPU_jobs": 1,
-    "queued_jobs": 1,
-    "primary_available_GiB": 23,
+    "queued_jobs": 0,
+    "primary_available_GiB": 21,
     "verified_utc": "2026-11-07T04:26:03.766796+00:00",
     "ssh_access": "Windows OpenSSH password authentication verified; no credentials stored.",
-    "primary_workspace_status": "Three new TIES/DARE task directions running, followed by three more with the recovered PaRaMS publication files.",
+    "primary_workspace_status": "All seven fixed-pair TIES/DARE comparisons and equal-weight eight-expert check verified. Remaining35 directed partner pairs running.",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "secondary_role": "Historical CPU archive only; current GPU work is on17897.",
     "previous_primary": {
@@ -144,7 +144,7 @@
     "source_fingerprint_mismatches": 0,
     "eight_extension": "results/phase3/bias_weight_only/eight_expert/extension/summary.md"
   },
-  "next_action": "Read finished fusion rows and validation, export the seven fixed-pair TIES/DARE table and update the manuscript. Retry Overleaf after its Chrome connection is available.",
+  "next_action": "Continue remaining partner pairs and inspect the full42 directed pairs before updating the matrix. Record results from completed rows; finish scope, baseline and numerical-condition gaps. The latest Overleaf source upload remains blocked at Chrome connection.",
   "historical_research": {
     "snapshot_commit": "58af9194172df6c0c8b97f999884993765da973b",
     "Defense2": "Development stopped. Do not restart closed candidates; retain frozen releases, scores and failure evidence.",
@@ -294,7 +294,7 @@
     },
     "nbp_fusion_extension": {
       "host": "17897",
-      "status": "running",
+      "status": "completed_independently_verified",
       "pid": 13911,
       "protocol": "results/phase3/bias_weight_only/fusion_methods/extension_protocol.json",
       "preregistration_commit": "8b1ce58d",
@@ -306,11 +306,14 @@
       "rows_per_stage": 81,
       "log": "outputs/nbp_fusion_extension_20261107/job.log",
       "new_defense_weights": 0,
-      "new_AGA_calls": 0
+      "new_AGA_calls": 0,
+      "full_rows": 81,
+      "score_replays": 1296,
+      "maximum_score_error": 0.0
     },
     "nbp_fusion_completion": {
       "host": "17897",
-      "status": "queued_after_extension_verification",
+      "status": "completed_independently_verified",
       "pid": 15357,
       "protocol": "results/phase3/bias_weight_only/fusion_methods/completion_protocol.json",
       "preregistration_commit": "afe4e76f",
@@ -324,23 +327,52 @@
       "archived_publication_hashes_verified": 3,
       "new_defense_weights": 0,
       "planned_AGA_calls": 3,
-      "queue_timeout_including_wait_seconds": 21600
+      "queue_timeout_including_wait_seconds": 21600,
+      "full_rows": 81,
+      "score_replays": 1296,
+      "maximum_score_error": 0.0
+    },
+    "nbp_equal_weight": {
+      "status": "completed_independently_verified",
+      "protocol": "results/phase3/bias_weight_only/eight_expert/equal_weight_protocol.json",
+      "record": "results/phase3/bias_weight_only/eight_expert/equal_weight",
+      "full_rows": 36,
+      "score_replays": 576,
+      "maximum_score_error": 0.0,
+      "independent_log10_p_max_error": 1.1823431123048067e-11,
+      "new_defense_weights": 0,
+      "new_AGA_calls": 0
+    },
+    "nbp_partner_grid": {
+      "host": "17897",
+      "timeout_pid": 32361,
+      "status": "running",
+      "protocol": "results/phase3/bias_weight_only/partner_analysis/evaluation_protocol.json",
+      "preregistration_commit": "7ab41d3f",
+      "log": "outputs/nbp_partner_pairs_20261107/job.log",
+      "cases": 35,
+      "planned_rows_per_stage": 350,
+      "wall_limit_seconds": 18000,
+      "new_AGA_calls": 0,
+      "new_defense_weights": 0,
+      "completed_first_full_pair": "SUN397/Cars, 10 rows,160 score replays, max score error0",
+      "first_full_production_seconds": 1214.2432260289788
     }
   },
   "manuscript": {
     "root": "paper",
     "main": "paper/main.tex",
     "scope": "NBP only",
-    "stage": "revised_after_two_reviews",
+    "stage": "updated_with_seven_pair_fusion_and_equal_weight_results",
     "style": "Unmodified official CVPR2027 cvpr.sty and bibliography style. T1 font encoding for local Tectonic.",
-    "tables": "One seven-task main table and six single-column tables, including B/16 and public bias projection.",
+    "tables": "Seven-task main results, companion accuracy, recovery, seven-task fusion averages with taskwise source table, ablation, equal-weight, B16 and public projection.",
     "novelty": "Working name and specific-construction novelty remain provisional. PaRaMS,MergeGuard,Trap2 and NSmark were compared by mechanism. No first-ever claim.",
     "LLM_statement": "Remind the user before final submission; wording to be agreed then.",
     "overleaf_project": "https://www.overleaf.com/project/6aeddbff7be7a8c71fcd68d8 — prior revision verified. The latest Chrome CDP connection timed out before upload.",
     "local_pdf": "paper/build/main.pdf",
-    "body_pages": 7,
+    "body_pages": 8,
     "reference_pages": 1,
-    "figures": "Vector method diagram, full MNIST prediction frequencies, magnitude controls, and fixed-readout bounds."
+    "figures": "Three-panel vector mechanism, seven-task/three-fusion comparison matrix, full prediction frequencies, magnitude controls and readout bounds."
   },
   "literature_review": {
     "updated_utc": "2026-11-06T17:10:28.681065+00:00",

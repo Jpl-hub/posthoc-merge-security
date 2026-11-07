@@ -1,16 +1,16 @@
-Additional fusion rules on the fixed SUN397/MNIST pair (%). TIES retains 20% of entries with scale 1. DARE+TA uses drop rate 0.2, seed 42, and TA coefficient 0.5. AGA processes the protected expert. Both complete test sets and matching controls are reported.
+Seven-task macro-average accuracy (%) for additional fusion rules. Target and companion accuracies are averaged across the same seven fixed pairs as the main table. TIES retains 20%; DARE drops 20% with seed 42, followed by TA at 0.5. AGA processes the protected expert before fusion.
 
-| Fusion / recovery | Defense | SUN397 | MNIST |
+| Procedure | Defense | Target | Companion |
 | --- | --- | ---: | ---: |
-| TIES | None | 74.27 | 99.60 |
-| TIES | PaRaMS | 0.29 | 8.92 |
-| TIES | NBP | 0.25 | 10.28 |
-| TIES + AGA | None | 74.03 | 99.60 |
-| TIES + AGA | PaRaMS | 74.03 | 99.60 |
-| TIES + AGA | NBP | 0.25 | 10.28 |
-| DARE+TA | None | 71.87 | 99.45 |
-| DARE+TA | PaRaMS | 0.25 | 9.57 |
-| DARE+TA | NBP | 0.25 | 10.28 |
-| DARE+TA + AGA | None | 71.53 | 99.45 |
-| DARE+TA + AGA | PaRaMS | 71.53 | 99.45 |
-| DARE+TA + AGA | NBP | 0.25 | 10.28 |
+| TIES | None | 86.78 | 98.81 |
+| TIES | PaRaMS | 3.73 | 8.95 |
+| TIES | NBP | 4.81 | 11.13 |
+| AGA + TIES | None | 86.28 | 98.88 |
+| AGA + TIES | PaRaMS | 86.28 | 98.88 |
+| AGA + TIES | NBP | 4.71 | 10.96 |
+| DARE+TA | None | 84.37 | 98.40 |
+| DARE+TA | PaRaMS | 3.35 | 9.24 |
+| DARE+TA | NBP | 5.13 | 11.64 |
+| AGA + DARE+TA | None | 83.70 | 98.43 |
+| AGA + DARE+TA | PaRaMS | 83.70 | 98.43 |
+| AGA + DARE+TA | NBP | 5.10 | 11.62 |
