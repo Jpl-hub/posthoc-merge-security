@@ -45,3 +45,30 @@ out = ROOT / "paper/fig/readout_bound.pdf"
 fig.savefig(out, bbox_inches="tight", metadata={"Creator": "Matplotlib", "Title": "Fixed-readout margin bounds"})
 plt.close(fig)
 print("Wrote", out.relative_to(ROOT), "from 42 recorded readouts; no model execution.")
+
+ablation_root = ROOT / "results/phase3/bias_weight_only/ablation"
+ablation = json.loads((ablation_root / "results.json").read_text())
+validation = json.loads((ablation_root / "independent_validation.json").read_text())
+assert validation["status"] == "passed" and validation["rows"] == len(ablation) == 40
+scores = {(r["defense"], r["merger"], r["attack_scope"], r["dataset"]): r for r in ablation}
+amplitudes = [.125, .25, .5, 1., 2.]
+names = ["Scale_0.125", "Scale_0.25", "Scale_0.5", "NBP", "Scale_2"]
+fig, ax = plt.subplots(figsize=(3.35, 2.25), layout="constrained")
+for merger, scope, label, color, marker, style in [
+    ("Standalone", "None", "Standalone", "#333333", "s", "-"),
+    ("TA", "None", "TA", "#25639c", "o", "-"),
+    ("TA", "Protected expert", "AGA + TA", "#b55524", "^", "--"),
+]:
+    accuracy = [100 * scores[n, merger, scope, "MNIST"]["correct"]
+                / scores[n, merger, scope, "MNIST"]["n"] for n in names]
+    ax.plot(amplitudes, accuracy, label=label, color=color, marker=marker,
+            linestyle=style, linewidth=1, markersize=4)
+ax.set_xscale("log", base=2)
+ax.set(xticks=amplitudes, xticklabels=["0.125", "0.25", "0.5", "1", "2"],
+       xlabel="Perturbation magnitude / NBP magnitude",
+       ylabel="MNIST accuracy (%)", ylim=(0, 105), yticks=[0, 25, 50, 75, 100])
+ax.legend(frameon=False, fontsize=7, loc="center right")
+out = ROOT / "paper/fig/amplitude.pdf"
+fig.savefig(out, bbox_inches="tight", metadata={"Creator": "Matplotlib", "Title": "Fixed NBP amplitude controls"})
+plt.close(fig)
+print("Wrote", out.relative_to(ROOT), "from verified fixed-amplitude controls.")

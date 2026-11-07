@@ -144,7 +144,30 @@ for merger in ["TIES", "DARE+TA"]:
         groups.append((merger + (" + AGA" if scope != "None" else ""), records))
 write_table("fusion", "Additional fusion rules on the fixed SUN397/MNIST pair (\\%). TIES retains 20\\% of entries with scale 1. DARE+TA uses drop rate 0.2, seed 42, and TA coefficient 0.5. AGA processes the protected expert. Both complete test sets and matching controls are reported.",
             "tab:fusion", ["Fusion / recovery", "Defense", "SUN397", "MNIST"], groups)
+
+ablation_root = ROOT / "results/phase3/bias_weight_only/ablation"
+ablation_rows = json.loads((ablation_root / "results.json").read_text())
+ablation_audit = json.loads((ablation_root / "independent_validation.json").read_text())
+ablation_execution = json.loads((ablation_root / "execution.json").read_text())
+ablation_protocol = json.loads((ablation_root / "protocol.json").read_text())
+assert ablation_audit["status"] == "passed" and ablation_audit["rows"] == len(ablation_rows) == 40
+assert ablation_audit["raw_sha256"] == ablation_execution["predictions_sha256"]
+assert ablation_execution["evaluated_parameter_sha256"] == ablation_protocol["recheck"]["expected_parameter_sha256"]
+for name in ["results.json", "independent_validation.json", "execution.json", "protocol.json"]:
+    path = ablation_root / name
+    source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+ablation_lookup = {(r["defense"], r["merger"], r["attack_scope"], r["dataset"]): r for r in ablation_rows}
+records = []
+for name, label in [("Unprotected", "None"), ("NBP", "NBP"),
+                    ("Random_null", "Random nullspace"), ("Ambient", "Random direction")]:
+    cells = []
+    for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
+        row = ablation_lookup[name, merger, scope, "MNIST"]
+        cells.append(f"{100 * row['correct'] / row['n']:.2f}")
+    records.append([label] + cells)
+write_table("ablation", "Direction controls on MNIST (\\%). The three perturbations have the same update norm. The random nullspace direction is projected into the original visual-projection kernel; the unconstrained random direction uses the same sampled vector before projection. All controls use the same MNIST/SVHN pair and TA coefficient 0.5.",
+            "tab:ablation", ["Update", "Standalone", "TA", "AGA + TA"], [("", records)])
 (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
     "eight_expert_protected_task_cells": len(eight),
-    "tables": ["main", "partners", "recovery", "fusion"]}, indent=2) + "\n")
-print("Generated four manuscript tables, including42 verified eight-expert target cells.")
+    "tables": ["main", "partners", "recovery", "fusion", "ablation"]}, indent=2) + "\n")
+print("Generated five manuscript tables, including42 verified eight-expert target cells.")

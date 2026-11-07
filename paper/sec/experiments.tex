@@ -28,10 +28,22 @@ We use the fixed author ProDistill kernel~\cite{xu2025prodistill}. The attacker 
 \input{tables/fusion}
 \Cref{tab:fusion} evaluates the same frozen SUN397 releases with TIES and DARE+TA. TIES uses global top-20\% trimming and scale 1; DARE drops 20\% of task-update entries with fixed seed 42 before TA at 0.5. We use unchanged author kernels through the existing CLIP adapter. The settings are shared by all three defenses and are not selected from their test scores. With or without AGA, \method{} yields 50 correct SUN397 predictions out of 19,850, or 0.25\%. Companion MNIST accuracy is 10.28\%. This is one fixed pair and DARE mask, rather than an across-task or across-seed robustness average. Independent verification replays 432 selected score vectors in their original 128-image contexts with zero maximum discrepancy.
 
+\subsection{Direction and magnitude}
+\input{tables/ablation}
+\Cref{tab:ablation} compares three perturbations of the same norm on MNIST. The random direction in the projection nullspace preserves standalone accuracy but gives 63.74\% after AGA and TA, compared with 9.80\% for NBP. The unconstrained random direction reduces standalone accuracy to 9.74\%. This fixed control supports the roles of both the nullspace constraint and the chosen direction; it is one task pair and one random seed.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{fig/amplitude.pdf}
+\caption{Magnitude controls on the frozen MNIST perturbation, with SVHN as the companion. The horizontal axis rescales the published NBP update. Standalone accuracy is 99.69\% at all five magnitudes. Smaller updates at 0.125 and 0.25 retain substantial merged accuracy, while 0.5, 1, and 2 give 9.80\%. The released update corresponds to magnitude 1.}
+\label{fig:amplitude}
+\end{figure}
+\Cref{fig:amplitude} varies only the update magnitude. At 0.125 of the NBP magnitude, MNIST accuracy after AGA and TA is 98.71\%; at 0.25 it is 45.88\%. The standalone predictions remain unchanged throughout the evaluated range.
+
 \subsection{Multiple experts}
 \Cref{tab:main} also reports eight-expert merging with TA coefficient 0.2, protecting one of the seven evaluated tasks at a time. All eight source experts participate in the author-specified order, including EuroSAT. After AGA, \method{} retains protected-task accuracies of 9.80\%, 6.70\%, and 2.13\% on MNIST, SVHN, and DTD, respectively; the corresponding scores are 2.44\%, 0.55\%, 1.19\%, and 0.25\% on RESISC45, Cars, GTSRB, and SUN397. AGA restores PaRaMS close to the matching unprotected result.
 
-The four additional protected directions contribute 168 complete-test records across seven datasets. Their 2,688 selected score vectors reproduce exactly in the original 128-image batch contexts. A separate NumPy recount checks the complete indices, per-class counts, paired intervals, and exact McNemar values. Cross-task reporting for the original three directions currently covers five datasets; their target-task entries in \cref{tab:main} are complete. EuroSAT's original test split remains unverified, so we do not report its score or an eight-task average.
+For each protected direction, we evaluate NBP and its unprotected control on all seven validated test sets. Thus the reported target-task entries are accompanied by a complete cross-task evaluation for these two methods. EuroSAT's original test split remains unverified, so we do not report its score or an eight-task average.
 
 \subsection{Fixed-readout analysis}
 \begin{figure}[!t]

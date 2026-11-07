@@ -1,7 +1,7 @@
 {
   "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
-  "updated_utc": "2026-11-07T03:17:07.459694+00:00",
-  "status": "missing_columns_full_running_ablation_recheck_waiting",
+  "updated_utc": "2026-11-07T04:34:28.503736+00:00",
+  "status": "fixed_batches_verified_overleaf_synced",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
     "date": "2026-11-06",
@@ -54,16 +54,22 @@
     "two_expert_comparison": "Same-condition unprotected and PaRaMS controls available.",
     "current_defense1_eight_expert_table": {
       "protected_tasks": [
-        "MNIST",
+        "SUN397",
+        "Cars",
+        "RESISC45",
         "SVHN",
+        "GTSRB",
+        "MNIST",
         "DTD"
       ],
       "complete_datasets": [
-        "MNIST",
+        "SUN397",
+        "Cars",
+        "RESISC45",
         "SVHN",
-        "DTD",
         "GTSRB",
-        "RESISC45"
+        "MNIST",
+        "DTD"
       ],
       "record": "results/phase3/bias_weight_only/eight_expert/summary.json",
       "target_table": "paper/tables/main.md",
@@ -76,7 +82,8 @@
         "MNIST",
         "DTD"
       ],
-      "additional_four_directions": "results/phase3/bias_weight_only/eight_expert/extension/summary.md"
+      "additional_four_directions": "results/phase3/bias_weight_only/eight_expert/extension/summary.md",
+      "NBP_and_unprotected_cross_task_scope": "Seven protected directions, each evaluated on all seven validated test datasets."
     },
     "selected_recovery_protected_tasks": [
       "MNIST",
@@ -93,12 +100,12 @@
     "python": "/root/autodl-tmp/posthoc-env/bin/python",
     "torch": "2.3.0+cu121",
     "numpy": "1.26.4",
-    "active_GPU_jobs": 1,
-    "queued_jobs": 1,
+    "active_GPU_jobs": 0,
+    "queued_jobs": 0,
     "primary_available_GiB": 23,
-    "verified_utc": "2026-11-07T03:17:07.459694+00:00",
+    "verified_utc": "2026-11-07T04:26:03.766796+00:00",
     "ssh_access": "Windows OpenSSH password authentication verified; no credentials stored.",
-    "primary_workspace_status": "17897 full missing-column evaluation is active. Same-condition ablation replay waits for its verified completion.",
+    "primary_workspace_status": "Registered missing-column and same-model ablation batches completed and verified. Manuscript export and online readback in progress.",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "secondary_role": "Historical CPU archive only; current GPU work is on17897.",
     "previous_primary": {
@@ -106,7 +113,7 @@
       "role": "GPU-less evidence archive; frozen raw outputs retained."
     }
   },
-  "active_GPU_jobs": 1,
+  "active_GPU_jobs": 0,
   "engineering": {
     "core_sources": [
       "experiment/construct.py",
@@ -137,7 +144,7 @@
     "source_fingerprint_mismatches": 0,
     "eight_extension": "results/phase3/bias_weight_only/eight_expert/extension/summary.md"
   },
-  "next_action": "Complete24 missing columns on17897, then the registered cache-free replay of the same fixed40 ablation conditions. Compare model parameter hashes and use the original score tolerance. Connect to the user-approved existing Chrome session for Overleaf synchronization.",
+  "next_action": "Resolve EuroSAT original test split provenance and review the remaining partner-diversity, fusion-coefficient and same-hardware cost gaps before scheduling another finite experiment.",
   "historical_research": {
     "snapshot_commit": "58af9194172df6c0c8b97f999884993765da973b",
     "Defense2": "Development stopped. Do not restart closed candidates; retain frozen releases, scores and failure evidence.",
@@ -146,7 +153,7 @@
   },
   "github_sync": {
     "receipt": "outputs/latest_github_sync_receipt.json",
-    "last_verified_remote_commit": "dacd3ac12f29cf432b2ba20b8e8c23178ff29107",
+    "last_verified_remote_commit": "57b3c4033d34a6dc7fa00e5f4c1f7c7c36f071ef",
     "status": "GitHub connectivity restored. Use outputs/latest_github_sync_receipt.json for exact verified remote/local/server commits."
   },
   "automatic_continuation": false,
@@ -219,7 +226,7 @@
     "nbp_ablation": {
       "host": "17897",
       "timeout_pid": 4379,
-      "status": "same_models_fresh_score_recheck_waiting",
+      "status": "completed_same_models_fresh_score_verified",
       "preregistration_commit": "b905fd9",
       "protocol": "results/phase3/bias_weight_only/ablation_protocol.json",
       "freeze": "results/phase3/bias_weight_only/ablation_freeze.json",
@@ -239,12 +246,21 @@
         "record": "results/phase3/bias_weight_only/ablation_failure.json"
       },
       "recheck_protocol": "results/phase3/bias_weight_only/ablation_replay_recheck.json",
-      "recheck_queue_log": "outputs/nbp_ablation_20261106/replay_recheck_queue.log"
+      "recheck_queue_log": "outputs/nbp_ablation_20261106/replay_recheck_queue.log",
+      "pilot_rows_verified": 40,
+      "pilot_score_replays": 640,
+      "pilot_maximum_score_error": 0.0,
+      "pilot_parameter_hashes_equal_original": 24,
+      "record": "results/phase3/bias_weight_only/ablation/summary.md",
+      "full_rows": 40,
+      "full_score_replays": 640,
+      "maximum_context_score_error": 0.0,
+      "parameter_hashes_equal_original": 24
     },
     "nbp_eight_original_columns": {
       "host": "17897",
       "timeout_pid": 2565,
-      "status": "full_running_pilot_passed",
+      "status": "completed_independently_verified",
       "preregistration_commit": "997da94",
       "protocol": "results/phase3/bias_weight_only/eight_expert/original_columns_protocol.json",
       "log": "outputs/nbp_eight_original_columns_20261107/job.log",
@@ -270,23 +286,27 @@
         "sha256": "a3665c4fa07a4d98bd3f49a2cb53fd4af503324e03bbc00f6b7c77d4ac7fa484",
         "verified_same_as_historical_reference": true
       },
-      "resume_reason": "Scheduling dependency on ablation removed. Frozen models and all evaluation parameters retained; previous eight-extension batch independently verified."
+      "resume_reason": "Scheduling dependency on ablation removed. Frozen models and all evaluation parameters retained; previous eight-extension batch independently verified.",
+      "record": "results/phase3/bias_weight_only/eight_expert/original_columns/summary.md",
+      "full_rows": 24,
+      "original_context_score_replays": 384,
+      "maximum_context_score_error": 0.0
     }
   },
   "manuscript": {
     "root": "paper",
     "main": "paper/main.tex",
     "scope": "NBP only",
-    "stage": "first_draft_main_eight_target_table_updated_not_submission_ready",
+    "stage": "draft_with_verified_eight_expert_columns_and_direction_amplitude_controls",
     "style": "Unmodified official CVPR2027 cvpr.sty and bibliography style. T1 font encoding for local Tectonic.",
-    "tables": "One main table with standalone, two-expert and eight-expert target accuracy for seven tasks, plus three single-column comparison tables; matching MD/TeX and source hashes.",
+    "tables": "One wide main table and four single-column comparison/control tables; matching MD/TeX exports and source hashes.",
     "novelty": "Working name and specific-construction novelty remain provisional. PaRaMS,MergeGuard,Trap2 and NSmark were compared by mechanism. No first-ever claim.",
     "LLM_statement": "Remind the user before final submission; wording to be agreed then.",
-    "overleaf_project": "User enabled Chrome remote debugging and signed in. Existing-session browser connection still pending; latest local sources have not yet been verified online.",
+    "overleaf_project": "https://www.overleaf.com/project/6aeddbff7be7a8c71fcd68d8 —17 source files downloaded and compared, text line endings normalized. Compiled8-page PDF downloaded and visually checked.",
     "local_pdf": "paper/build/main.pdf",
-    "body_pages": 6,
+    "body_pages": 7,
     "reference_pages": 1,
-    "figures": "One editable vector method diagram with construction, standalone and merging panels; one vector plot from42 frozen readout analyses. Both rendered and checked locally."
+    "figures": "Editable three-panel method diagram, fixed-readout bound plot and verified magnitude-control plot."
   },
   "literature_review": {
     "updated_utc": "2026-11-06T17:10:28.681065+00:00",

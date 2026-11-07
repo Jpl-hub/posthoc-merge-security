@@ -1,0 +1,81 @@
+{
+  "coefficient": 0.2,
+  "task_order": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "EuroSAT",
+    "SVHN",
+    "GTSRB",
+    "MNIST",
+    "DTD"
+  ],
+  "evaluate": [
+    "Cars",
+    "SUN397"
+  ],
+  "score_tolerance": 0.0005,
+  "author_TaskVector": {
+    "path": "external/secure-merge-attack/task_vectors.py",
+    "sha256": "9d95bdb8b9fef2a4457e47b28ea3e1ccc188f30ded8c4c1ec1fe1e55cfded4af",
+    "git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea"
+  },
+  "scopes": [
+    "None",
+    "Protected expert"
+  ],
+  "experiment": "Two missing dataset columns for the original three frozen NBP protected directions",
+  "output": "outputs/nbp_eight_original_columns_20261107",
+  "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+  "cases": [
+    {
+      "target": "MNIST",
+      "defenses": [
+        "Defense1_MNIST"
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defenses": [
+        "Defense1_SVHN"
+      ]
+    },
+    {
+      "target": "DTD",
+      "defenses": [
+        "Defense1_DTD"
+      ]
+    }
+  ],
+  "new_AGA_calls": 0,
+  "new_defense_weights": 0,
+  "expert_training_updates": 0,
+  "registered_utc": "2026-11-06T14:13:59.807080+00:00",
+  "test_sizes": {
+    "Cars": 8041,
+    "SUN397": 19850
+  },
+  "finite_budget": {
+    "wall_limit_seconds": 3600,
+    "new_fused_models": 6,
+    "new_full_production_image_forwards": 341052,
+    "planned_rows_each_stage": 60,
+    "new_AGA_calls": 0,
+    "new_defense_points": 0
+  },
+  "inputs": {
+    "evaluation": {
+      "path": "results/phase3/bias_weight_only/eight_expert/original_columns_evaluation.json",
+      "sha256": "1dcf2a46f73c3c480f36482b8a53b20bbebba0f92620f23522f18a6d53660f0d"
+    }
+  },
+  "scope_limit": "Eight experts participate, seven complete test sets. Four newly evaluated protected directions. Existing publications and cached original AGA only; no reconstruction or parameter selection. EuroSAT participates as an expert but its test score is not claimed.",
+  "maximum_seconds": 21600,
+  "model_reference": {
+    "path": "results/phase3/bias_weight_only/eight_expert/original_model_parameters.json",
+    "sha256": "008e81d4c974af71f2dcf3d29510649ed8e84c1415b71b724b19d15f0d343026"
+  },
+  "planned_rows_per_stage": 24,
+  "scope": "Only missing Cars/SUN397 columns. Every merged parameter hash must equal the completed original five-dataset experiment. No rerun of those five columns; no new defense or attack."
+}
