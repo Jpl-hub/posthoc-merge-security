@@ -1,7 +1,7 @@
 {
   "objective": "Data-free post-hoc protection of frozen CLIP experts. Preserve standalone utility and reduce protected-task accuracy after unauthorized merging.",
-  "updated_utc": "2026-11-07T03:07:16.321140+00:00",
-  "status": "resumed_columns_and_ablation_diagnosis",
+  "updated_utc": "2026-11-07T03:17:07.459694+00:00",
+  "status": "missing_columns_full_running_ablation_recheck_waiting",
   "active_focus": "Complete the weight-only final-LayerNorm-bias defense, its method description, comparable baselines, and missing multi-expert evaluations. Defense2 development stopped.",
   "teacher_guidance": {
     "date": "2026-11-06",
@@ -95,10 +95,10 @@
     "numpy": "1.26.4",
     "active_GPU_jobs": 1,
     "queued_jobs": 1,
-    "primary_available_GiB": 24,
-    "verified_utc": "2026-11-06T12:44:52.756563+00:00",
+    "primary_available_GiB": 23,
+    "verified_utc": "2026-11-07T03:17:07.459694+00:00",
     "ssh_access": "Windows OpenSSH password authentication verified; no credentials stored.",
-    "primary_workspace_status": "17897 is the active engineering/GPU host. SUN397 TIES/DARE batch verified; missing eight-expert directions running. Source Git readback is recorded in latest_github_sync_receipt.json.",
+    "primary_workspace_status": "17897 full missing-column evaluation is active. Same-condition ablation replay waits for its verified completion.",
     "secondary_endpoint": "region-41.seetacloud.com:55548",
     "secondary_role": "Historical CPU archive only; current GPU work is on17897.",
     "previous_primary": {
@@ -146,7 +146,7 @@
   },
   "github_sync": {
     "receipt": "outputs/latest_github_sync_receipt.json",
-    "last_verified_remote_commit": "296384b25bd3354602ccd32a909436d680e7c30c",
+    "last_verified_remote_commit": "dacd3ac12f29cf432b2ba20b8e8c23178ff29107",
     "status": "GitHub connectivity restored. Use outputs/latest_github_sync_receipt.json for exact verified remote/local/server commits."
   },
   "automatic_continuation": false,
@@ -218,8 +218,8 @@
     },
     "nbp_ablation": {
       "host": "17897",
-      "timeout_pid": 37140,
-      "status": "same_models_fresh_score_recheck_queued",
+      "timeout_pid": 4379,
+      "status": "same_models_fresh_score_recheck_waiting",
       "preregistration_commit": "b905fd9",
       "protocol": "results/phase3/bias_weight_only/ablation_protocol.json",
       "freeze": "results/phase3/bias_weight_only/ablation_freeze.json",
@@ -238,12 +238,13 @@
         "threshold_changed": false,
         "record": "results/phase3/bias_weight_only/ablation_failure.json"
       },
-      "recheck_protocol": "results/phase3/bias_weight_only/ablation_replay_recheck.json"
+      "recheck_protocol": "results/phase3/bias_weight_only/ablation_replay_recheck.json",
+      "recheck_queue_log": "outputs/nbp_ablation_20261106/replay_recheck_queue.log"
     },
     "nbp_eight_original_columns": {
       "host": "17897",
       "timeout_pid": 2565,
-      "status": "pilot_running_same_frozen_protocol",
+      "status": "full_running_pilot_passed",
       "preregistration_commit": "997da94",
       "protocol": "results/phase3/bias_weight_only/eight_expert/original_columns_protocol.json",
       "log": "outputs/nbp_eight_original_columns_20261107/job.log",
@@ -281,7 +282,7 @@
     "tables": "One main table with standalone, two-expert and eight-expert target accuracy for seven tasks, plus three single-column comparison tables; matching MD/TeX and source hashes.",
     "novelty": "Working name and specific-construction novelty remain provisional. PaRaMS,MergeGuard,Trap2 and NSmark were compared by mechanism. No first-ever claim.",
     "LLM_statement": "Remind the user before final submission; wording to be agreed then.",
-    "overleaf_project": "Existing imported template, earlier source synchronized through browser UI. New fixed-readout section/figure is local; online synchronization has not yet been verified after the tool environment switched.",
+    "overleaf_project": "User enabled Chrome remote debugging and signed in. Existing-session browser connection still pending; latest local sources have not yet been verified online.",
     "local_pdf": "paper/build/main.pdf",
     "body_pages": 6,
     "reference_pages": 1,
