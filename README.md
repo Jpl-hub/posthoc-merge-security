@@ -15,9 +15,8 @@
 | 原作者 AGA、公开恢复和额外数据蒸馏 | [experiment/recover.py](experiment/recover.py) · [experiment/distill.py](experiment/distill.py) |
 | TA、TIES、DARE 融合 | [_impl/merge.py](_impl/merge.py) |
 | 论文表格生成 | [experiment/report.py](experiment/report.py) · [_impl/report.py](_impl/report.py) |
-| CVPR 英文初稿与当前文稿表格 | [paper/main.tex](paper/main.tex) · [paper/README.md](paper/README.md) · [paper/make_tables.py](paper/make_tables.py) |
 
-`_impl/` 放公共实现，`experiment/` 放入口，`configs/` 放固定输入，`results/` 放结果及来源，`notes/` 放推导和研究记录。服务器的 `outputs/` 保存模型、逐图分数及执行源码。历史研究可从[归档索引](results/engineering_refactor/snapshot.json)查回。
+`_impl/` 放公共实现，`experiment/` 放入口，`configs/` 放固定输入，`results/` 放结果及来源。模型、逐图分数和执行源码留在实验机器的 `outputs/`。论文、写作材料及内部研究记录不随代码发布。历史实验可从[归档索引](results/engineering_refactor/snapshot.json)查回。
 
 ## 复现
 

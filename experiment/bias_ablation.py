@@ -16,7 +16,7 @@ from cfg import require_root
 def construct(cfg):
     initialize()
     torch.set_num_threads(2)
-    _, expert, _, _ = checked_models(cfg["target"])
+    anchor, expert, head, _ = checked_models(cfg["target"])
     key = "model.visual.ln_post.bias"
     bias = expert.state_dict()[key].double()
     ref = cfg["publication"]
@@ -33,10 +33,27 @@ def construct(cfg):
                          generator=torch.Generator().manual_seed(cfg["random_seed"]))
     random_null = null @ (null.T @ random)
     controls = {f"Scale_{scale:g}": scale * delta for scale in cfg["relative_amplitudes"]}
-    controls["Random_null"] = random_null / random_null.norm() * delta.norm()
-    controls["Ambient"] = random / random.norm() * delta.norm()
+    if "random_seeds" in cfg:
+        for seed in cfg["random_seeds"]:
+            sample = torch.randn(768, dtype=torch.double,
+                generator=torch.Generator().manual_seed(seed))
+            projected = null @ (null.T @ sample)
+            controls[f"Random_null_{seed}"] = projected / projected.norm() * delta.norm()
+    else:
+        controls["Random_null"] = random_null / random_null.norm() * delta.norm()
+    if cfg.get("ambient_control", True):
+        controls["Ambient"] = random / random.norm() * delta.norm()
+    if "class_contrast_seed" in cfg:
+        weights = head.weight.double()
+        requested = int(torch.randint(len(weights), (1,), generator=
+            torch.Generator().manual_seed(cfg["class_contrast_seed"])))
+        proxy = (anchor.model.visual.proj.double() + projection) / 2
+        contrast = weights[requested] - weights.mean(0)
+        projected = null @ (null.T @ (proxy @ contrast))
+        controls["Projected_contrast"] = projected / projected.norm() * delta.norm()
     out = new_output(cfg["output"], cfg)
-    specs = {"NBP": {"target": cfg["target"], "release": ref, "AGA_edits": ref}}
+    specs = ({"NBP": {"target": cfg["target"], "release": ref, "AGA_edits": ref}}
+             if cfg.get("include_nbp", True) else {})
     records = []
     for name, update in controls.items():
         changed = (bias + update).float()
