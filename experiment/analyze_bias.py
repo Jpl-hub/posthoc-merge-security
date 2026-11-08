@@ -31,6 +31,46 @@ def combine(base, models, coefficient):
 
 
 @torch.no_grad()
+def projected_bias_gain(output):
+    """Bound the public-proxy effect of bias noise retained by P-column cleanup.
+
+    If v=delta_bias^T P and delta_bias lies in col(P), then its two-way
+    TA0.5 offset is v (I + P^dagger P0)/4. No images or head are used.
+    """
+    out = new_output(output, {"source_sha256": digest(__file__),
+        "scope": "Raw embedding operator norm for public-base TA0.5 only. "
+                 "Not classification accuracy or a bound for unknown partners.",
+        "device": "cuda", "dtype": "float64", "maximum_relative_formula_error": 1e-9})
+    base = load_checkpoint("zeroshot.pt")
+    p0 = readout(base)["projection"].double().cuda()
+    del base
+    rows = []
+    for task in ["SUN397", "Cars", "RESISC45", "SVHN", "GTSRB", "MNIST", "DTD"]:
+        name = f"{task}/finetuned.pt"
+        expert = load_checkpoint(name)
+        p = readout(expert)["projection"].double().cuda()
+        del expert
+        u, singular, vh = torch.linalg.svd(p, full_matrices=False)
+        assert torch.all(singular > singular[0]*1e-10)
+        relative = vh.T @ ((u.T @ p0) / singular[:, None])
+        q, r = np.linalg.qr(p.cpu().numpy(), mode="reduced")
+        independent = np.linalg.solve(r, q.T @ p0.cpu().numpy())
+        error = float(np.linalg.norm(relative.cpu().numpy()-independent) / np.linalg.norm(independent))
+        assert error < 1e-9, (task, error)
+        transfer = .25*(torch.eye(p.shape[1], dtype=torch.double, device="cuda")+relative)
+        values = torch.linalg.svdvals(transfer)
+        rows.append(dict(task=task, checkpoint_sha256=digest(CHECKPOINTS/name),
+            base_sha256=digest(CHECKPOINTS/"zeroshot.pt"),
+            maximum_proxy_to_native_embedding_offset_ratio=float(values[0]),
+            minimum_proxy_to_native_embedding_offset_ratio=float(values[-1]),
+            independent_numpy_relative_error=error))
+        save_json(out / "results.json", {"records": rows, "completed": len(rows) == 7,
+            "real_image_forwards": 0, "synthetic_image_forwards": 0,
+            "expert_updates": 0, "new_defense_weights": 0})
+        print(task, float(values[0]), error, flush=True)
+
+
+@torch.no_grad()
 def tail_equivalence(output):
     """Check affine tail equivalence with a fixed prefix, not a new defense.
 
@@ -200,10 +240,14 @@ def main():
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--directions", action="store_true", help="Analyze every class choice and storage rounding")
     mode.add_argument("--tail-equivalence", action="store_true", help="Check the affine final readout with a fixed prefix")
+    mode.add_argument("--projection-gain", action="store_true", help="Bound bias offsets retained by projection cleanup")
     args = parser.parse_args()
     require_root()
     initialize()
     torch.set_num_threads(2)
+    if args.projection_gain:
+        projected_bias_gain(args.output)
+        return
     if args.tail_equivalence:
         tail_equivalence(args.output)
         return
