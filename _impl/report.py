@@ -234,10 +234,10 @@ def tables(output):
         fusion_rows.extend(rows)
     lookup = {(r["target"], r["merger"], r["attack_scope"], r["defense"], r["dataset"]): r for r in fusion_rows}
     assert len(lookup) == 189
-    groups, details = [], []
+    groups, details, companion_details = [], [], []
     for merger in ["TIES", "DARE+TA"]:
         for scope in ["None", "Protected expert"]:
-            records, target_records = [], []
+            records, target_records, companion_records = [], [], []
             for method, label in [("Unprotected", "None"), ("PaRaMS_", "PaRaMS"), ("Defense1_", "NBP")]:
                 target_scores, partner_scores = [], []
                 for task in tasks:
@@ -248,13 +248,17 @@ def tables(output):
                         scores.append(100 * row["correct"] / row["n"])
                 records.append([label, f"{sum(target_scores)/len(tasks):.2f}", f"{sum(partner_scores)/len(tasks):.2f}"])
                 target_records.append([label] + [f"{v:.2f}" for v in target_scores])
+                companion_records.append([label] + [f"{v:.2f}" for v in partner_scores])
             setting = ("AGA + " if scope != "None" else "") + merger
             groups.append((setting, records))
             details.append((setting, target_records))
+            companion_details.append((setting, companion_records))
     write_table("fusion", "Seven-task macro-average accuracy (\\%) for additional fusion rules. Target and companion accuracies are averaged across the same seven fixed pairs as Table~\\ref{tab:main}. TIES retains 20\\%; DARE drops 20\\% with seed 42, followed by TA at 0.5. AGA processes the protected expert before fusion.",
                 "tab:fusion", ["Procedure", "Defense", "Target", "Companion"], groups)
     write_table("fusion_tasks", "Complete protected-task accuracy (\\%) for TIES and DARE+TA. Same fixed pairs as the main comparison. TIES keeps 20\\%; DARE drops 20\\% with seed 42 before TA0.5.",
                 "tab:fusion-tasks", ["Procedure", "Defense"] + tasks, details, wide=True)
+    write_table("fusion_companions", "Complete companion-task accuracy (\\%) for TIES and DARE+TA. Column names identify the protected expert. Its companion is SVHN for MNIST and MNIST otherwise. Same frozen models and settings as the protected-task table.",
+        "tab:fusion-companions", ["Procedure", "Defense"]+tasks, companion_details, wide=True)
 
 
     ablation_root = ROOT / "results/phase3/bias_weight_only/ablation"
@@ -430,7 +434,7 @@ def tables(output):
     # Same-host construction timings are separate from model utility tests.
     cost_root = ablation_root / "extension" / "cost"
     cost_files = [cost_root / f"{task}_{method}.json" for task in small_tasks for method in ["bias", "params"]]
-    exported_tables = ["main", "partners", "pair_target", "pair_companion", "recovery", "fusion", "fusion_tasks", "ablation", "class_projection", "precision", "backbone", "cleanup", "equal_weight"]
+    exported_tables = ["main", "partners", "pair_target", "pair_companion", "recovery", "fusion", "fusion_tasks", "fusion_companions", "ablation", "class_projection", "precision", "backbone", "cleanup", "equal_weight"]
     if bound_available:
         exported_tables.append("projection_bound")
     if all(p.exists() for p in cost_files):
