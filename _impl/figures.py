@@ -75,7 +75,7 @@ def figures(output, table_sources):
     fused = {(r["target"], r["merger"], r["defense"]): 100*r["correct"]/r["n"]
              for r in fusion if r["dataset"] == r["target"] and r["attack_scope"] == "Protected expert"}
     fig, axes = plt.subplots(1, 3, figsize=(3.35, 2.8), sharey=True)
-    fig.subplots_adjust(left=.22, right=.985, bottom=.23, top=.87, wspace=.30)
+    fig.subplots_adjust(left=.22, right=.95, bottom=.23, top=.87, wspace=.30)
     y = np.arange(len(tasks))
     for ax, merger in zip(axes, ["TA", "TIES", "DARE+TA"]):
         own = [ta[t, "Defense 1"] if merger == "TA" else fused[t, merger, "Defense1_"+t] for t in tasks]
