@@ -106,6 +106,7 @@ def setup(cfg):
 def run(protocol, case_index, pilot):
     cfg = json.loads(Path(protocol).read_text())
     case = cfg["cases"][case_index]
+    cfg["TA_coefficient"] = case.get("TA_coefficient", cfg["TA_coefficient"])
     if "DARE" in cfg:
         cfg["DARE"]["seed"] = case["seed"]
     out = (
@@ -119,14 +120,18 @@ def run(protocol, case_index, pilot):
     start = time.monotonic()
     anchor, originals, heads, aligned, ties = setup(cfg)
     target, partner = case["target"], case["partner"]
-    data = {t: dataset(t, "data", originals[t].val_preprocess) for t in (target, partner)}
-    assert all(len(data[t]) == cfg["tasks"][t]["test_n"] for t in data)
+    training = cfg.get("data_split", "test") == "train"
+    data = {t: dataset(t, "data", originals[t].val_preprocess, training=training) for t in (target, partner)}
+    assert all(len(data[t]) == cfg["tasks"][t]["train_n" if training else "test_n"] for t in data)
     indices = {
         t: np.linspace(0, len(d) - 1, cfg["pilot_n"], dtype=int).tolist()
         if pilot
         else list(range(len(d)))
         for t, d in data.items()
     }
+    if "evaluation_indices" in cfg:
+        assert not pilot
+        indices = {t: cfg["evaluation_indices"][t] for t in data}
     rows, raw, baseline = [], {}, {}
     fingerprints = {}
     loaded_legacy = {}
@@ -173,7 +178,7 @@ def run(protocol, case_index, pilot):
                 logit_sink=logits.append,
             )
             scores, y = torch.cat(logits), torch.cat([r[1] for r in sink])
-        expected = official_labels(task)[indices[task]]
+        expected = official_labels(task, training=training)[indices[task]]
         np.testing.assert_array_equal(y.numpy(), expected)
         assert (
             scores.shape == (len(expected), cfg["tasks"][task]["classes"])
@@ -273,8 +278,10 @@ def verify(output):
     )
     anchor, experts, heads, aligned, ties = setup(cfg)
     case = cfg["cases"][meta["case_index"]]
+    cfg["TA_coefficient"] = case.get("TA_coefficient", cfg["TA_coefficient"])
     target, partner = case["target"], case["partner"]
-    data = {t: dataset(t, "data", experts[t].val_preprocess) for t in (target, partner)}
+    training = cfg.get("data_split", "test") == "train"
+    data = {t: dataset(t, "data", experts[t].val_preprocess, training=training) for t in (target, partner)}
     raw = torch.load(out / "artifacts/predictions.pt", map_location="cpu", weights_only=False)
     rows = json.loads((out / "results.json").read_text())
     batch = 128
@@ -303,7 +310,7 @@ def verify(output):
                 key = "/".join((name, method, scope, task))
                 score = raw[key]
                 logits = score["logits"].numpy()
-                y = official_labels(task)[score["indices"]]
+                y = official_labels(task, training=training)[score["indices"]]
                 pred = logits.argmax(1)
                 np.testing.assert_array_equal(y, score["target"].numpy())
                 assert np.isfinite(logits).all()

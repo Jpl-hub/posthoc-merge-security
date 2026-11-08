@@ -1,0 +1,30 @@
+{
+  "status": "fixed_before_data_evaluation",
+  "deadline_utc": "2026-11-08T06:21:42Z",
+  "access": "Attacker uses256 labelled examples from the official training split per task, with deterministic evaluation preprocessing. These examples are not held out from the original expert training. The full test splits are disjoint and are not used for selection. No images enter NBP construction.",
+  "calibration_n": 256,
+  "calibration_seed": 20261108,
+  "coefficient_grid": [
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0
+  ],
+  "primary_selection": "Maximum unweighted mean of target and companion calibration accuracies.",
+  "secondary_selection": "Maximum target calibration accuracy from the same fixed grid.",
+  "tie_break": "Minimum distance to0.5, then smaller coefficient.",
+  "defenses": [
+    "Unprotected",
+    "PaRaMS",
+    "NBP"
+  ],
+  "scope": "AGA target-only then two-expert TA, shared coefficient for both task updates. Not an unrestricted attacker optimum. No boundary expansion.",
+  "execution": "Freeze calibration indices and file hashes before any calibration forward; run all30 settings and verify each. Freeze selected test protocol from calibration only; run only selected settings plus matching unprotected controls. Preserve all failures, no protection tuning or class reselection.",
+  "aligned_cache": "The three missing PaRaMS AGA edit files are regenerated once with the pinned author kernel and frozen clean alignment references, without images; exact new references are frozen before calibration. This is preparation for this new protocol, not a claim that the missing old serialized files were reused."
+}
