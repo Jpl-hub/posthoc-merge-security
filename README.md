@@ -6,7 +6,7 @@ The results concern specified merging and recovery procedures. Public projection
 
 ## Reproduce the result tables and figures
 
-From the repository root, with Python3.12 and the packages in [requirements.txt](requirements.txt):
+From the repository root, with Python 3.12 and the packages in [requirements.txt](requirements.txt):
 
 ```bash
 python -m experiment.report --output outputs/nbp_tables --figure

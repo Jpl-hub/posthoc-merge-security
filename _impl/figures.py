@@ -75,7 +75,7 @@ def figures(output, table_sources):
     fused = {(r["target"], r["merger"], r["defense"]): 100*r["correct"]/r["n"]
              for r in fusion if r["dataset"] == r["target"] and r["attack_scope"] == "Protected expert"}
     fig, axes = plt.subplots(1, 3, figsize=(3.35, 2.8), sharey=True)
-    fig.subplots_adjust(left=.22, right=.985, bottom=.23, top=.87, wspace=.12)
+    fig.subplots_adjust(left=.22, right=.985, bottom=.23, top=.87, wspace=.30)
     y = np.arange(len(tasks))
     for ax, merger in zip(axes, ["TA", "TIES", "DARE+TA"]):
         own = [ta[t, "Defense 1"] if merger == "TA" else fused[t, merger, "Defense1_"+t] for t in tasks]
@@ -84,7 +84,7 @@ def figures(output, table_sources):
             ax.plot([left, right], [i]*2, color="#cccccc", linewidth=.8)
         ax.scatter(clean, y, marker="o", s=20, edgecolors="#596F83", facecolors="white", zorder=3, label="Unprotected")
         ax.scatter(own, y, marker="o", s=20, color="#B95335", zorder=3, label="NBP")
-        ax.set(title=merger, yticks=y, yticklabels=tasks, xlim=(-7,107), xticks=[0,50,100], ylim=(len(tasks)-.5,-.5))
+        ax.set(title=merger, yticks=y, yticklabels=tasks, xlim=(-7,107), xticks=[0,100], ylim=(len(tasks)-.5,-.5))
         ax.tick_params(axis="y", length=0)
         ax.grid(axis="x", color="#eeeeee", linewidth=.6, zorder=0)
     fig.legend(*axes[0].get_legend_handles_labels(), frameon=False, fontsize=9,
@@ -112,9 +112,9 @@ def figures(output, table_sources):
                    color=color, marker=marker, s=22, label=label, alpha=.8, linewidths=.5)
     ax.axvline(0, color="black", linewidth=.8, linestyle="--")
     ax.set(xlabel="Minimum margin lower bound", ylabel="Largest predicted class (%)",
-           xlim=(min(bounds)*1.12,max(bounds)*1.08), ylim=(-2, 115), yticks=[0,25,50,75,100])
-    ax.text(.02,.97,"Nonpositive:\ninconclusive",transform=ax.transAxes,ha="left",va="top",fontsize=8)
-    ax.text(.98,.97,"Positive:\nconstant class",transform=ax.transAxes,ha="right",va="top",fontsize=8)
+           xlim=(min(bounds)*1.12,max(bounds)*1.08), ylim=(-2, 107), yticks=[0,25,50,75,100])
+    ax.text(.02,1.03,"Nonpositive:\ninconclusive",transform=ax.transAxes,ha="left",va="bottom",fontsize=8)
+    ax.text(.98,1.03,"Positive:\nconstant class",transform=ax.transAxes,ha="right",va="bottom",fontsize=8)
     ax.legend(frameon=False, fontsize=9, loc="lower right")
     fig.savefig(OUT / "readout_predictions.pdf", metadata={"Title": "Fixed-readout bound and observed class concentration"})
     plt.close(fig)

@@ -1,4 +1,4 @@
-Complete protected-task accuracy (%) for TIES and DARE+TA. Same frozen checkpoints, fixed pairs and settings as the fusion summary table.
+Complete protected-task accuracy (%) for TIES and DARE+TA. Same fixed pairs as the main comparison. TIES keeps 20%; DARE drops 20% with seed 42 before TA0.5.
 
 | Procedure | Defense | SUN397 | Cars | RESISC45 | SVHN | GTSRB | MNIST | DTD |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |

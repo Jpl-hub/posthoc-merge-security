@@ -1,4 +1,4 @@
-Protected-target accuracy after AGA and TA0.5 for all42 directed pairs (%). Each cell is unprotected / NBP. Rows select the protected expert; columns select its companion. The diagonal is not evaluated.
+Protected-target accuracy after AGA and TA0.5 for all 42 directed pairs (%). Each cell is unprotected / NBP. Rows select the protected expert; columns select its companion. The diagonal is not evaluated.
 
 | Protected expert | SUN397 | Cars | RESISC45 | SVHN | GTSRB | MNIST | DTD |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |

@@ -1,0 +1,24 @@
+\begin{table}[!t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Complete-test accuracy after labelled coefficient selection (\%). Each method separately maximizes the mean target/companion accuracy on the same 256 training examples per task, using TA coefficients 0.1--1.0 in steps of 0.1. Coefficients are frozen before test evaluation. AGA processes the protected expert first; both task updates use the selected coefficient.}
+\label{tab:coefficient-selection}
+\begin{tabular}{llrrr}
+\toprule
+Task & Defense & $\lambda$ & Target & Companion \\
+\midrule
+\multirow{3}{*}{MNIST} & None & 0.6 & 99.36 & 93.24 \\
+ & PaRaMS & 0.6 & 99.36 & 93.24 \\
+ & \textbf{NBP} & 0.7 & 11.35 & 19.59 \\
+\midrule
+\multirow{3}{*}{SVHN} & None & 0.6 & 91.98 & 99.42 \\
+ & PaRaMS & 0.6 & 91.98 & 99.42 \\
+ & \textbf{NBP} & 0.7 & 68.21 & 87.44 \\
+\midrule
+\multirow{3}{*}{DTD} & None & 0.7 & 71.12 & 99.69 \\
+ & PaRaMS & 0.7 & 71.12 & 99.69 \\
+ & \textbf{NBP} & 0.2 & 2.13 & 29.49 \\
+\bottomrule
+\end{tabular}
+\end{table}

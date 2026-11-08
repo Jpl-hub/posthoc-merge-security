@@ -1,0 +1,11 @@
+Class projection at its own analytic magnitude. Ratio is the update norm divided by the frozen NBP norm. Changed counts standalone prediction differences from the original expert. Target accuracy is after AGA+TA0.5 with the main fixed companion. Every direction uses the same original class and twice its own public-base sufficient bound; no image-based magnitude search is used.
+
+| Task | Ratio | Changed | Native | AGA+TA |
+| --- | ---: | ---: | ---: | ---: |
+| SUN397 | 0.0693 | 0 | 75.28 | 0.25 |
+| Cars | 0.0182 | 0 | 77.66 | 0.47 |
+| RESISC45 | 0.3128 | 0 | 96.11 | 2.44 |
+| SVHN | 1.2411 | 0 | 97.46 | 6.70 |
+| GTSRB | 0.9854 | 0 | 98.73 | 1.19 |
+| MNIST | 0.5376 | 0 | 99.69 | 9.80 |
+| DTD | 0.4669 | 0 | 79.41 | 2.13 |

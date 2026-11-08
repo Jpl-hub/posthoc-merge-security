@@ -69,17 +69,17 @@ def tables(output):
     assert len(eight) == len(tasks) * len(methods) * 2
 
 
-    def write_table(name, caption, label, headers, groups, wide=False):
+    def write_table(name, caption, label, headers, groups, wide=False, tabcolsep=4):
         env = "table*" if wide else "table"
         columns = len(headers)
         grouped = any(group for group, _ in groups)
         spec = "ll" + "r" * (columns - 2) if grouped else "l" + "r" * (columns - 1)
         lines = [rf"\begin{{{env}}}[!t]", r"\centering", r"\small",
-                 r"\setlength{\tabcolsep}{4pt}", rf"\caption{{{caption}}}",
+                 rf"\setlength{{\tabcolsep}}{{{tabcolsep}pt}}", rf"\caption{{{caption}}}",
                  rf"\label{{{label}}}", r"\begin{tabular}{" + spec + "}",
                  r"\toprule", " & ".join(headers) + r" \\", r"\midrule"]
         md_caption = caption.replace(r"\%", "%").replace(r"Table~\ref{tab:main}", "the main table").replace(r"Table~\ref{tab:fusion}", "the fusion summary table")
-        md_headers = [h.replace("$_t$", " (target)").replace("$_c$", " (companion)") for h in headers]
+        md_headers = [h.replace(r"$\lambda$", "Coeff.").replace(r"\shortstack{", "").replace("}", "").replace(r"\\", " ").replace("$_t$", " (target)").replace("$_c$", " (companion)") for h in headers]
         md = [md_caption, "", "| " + " | ".join(md_headers) + " |",
               "| " + " | ".join(["---"] * (2 if grouped else 1)
                                   + ["---:"] * (columns - (2 if grouped else 1))) + " |"]
@@ -174,7 +174,7 @@ def tables(output):
                 scores = [pair_lookup[task, companion, m, "Protected expert", dataset] for m in ["None", "NBP"]]
                 cells.append(" / ".join(f"{100*r['correct']/r['n']:.2f}" for r in scores))
             records.append([task] + cells)
-        write_table("pair_"+role, title+" accuracy after AGA and TA0.5 for all42 directed pairs (\\%). Each cell is unprotected / NBP. Rows select the protected expert; columns select its companion. The diagonal is not evaluated.",
+        write_table("pair_"+role, title+" accuracy after AGA and TA0.5 for all 42 directed pairs (\\%). Each cell is unprotected / NBP. Rows select the protected expert; columns select its companion. The diagonal is not evaluated.",
             "tab:pair-"+role, ["Protected expert"]+tasks, [("",records)], wide=True)
     records = []
     pair_summary = []
@@ -253,7 +253,7 @@ def tables(output):
             details.append((setting, target_records))
     write_table("fusion", "Seven-task macro-average accuracy (\\%) for additional fusion rules. Target and companion accuracies are averaged across the same seven fixed pairs as Table~\\ref{tab:main}. TIES retains 20\\%; DARE drops 20\\% with seed 42, followed by TA at 0.5. AGA processes the protected expert before fusion.",
                 "tab:fusion", ["Procedure", "Defense", "Target", "Companion"], groups)
-    write_table("fusion_tasks", "Complete protected-task accuracy (\\%) for TIES and DARE+TA. Same frozen checkpoints, fixed pairs and settings as Table~\\ref{tab:fusion}.",
+    write_table("fusion_tasks", "Complete protected-task accuracy (\\%) for TIES and DARE+TA. Same fixed pairs as the main comparison. TIES keeps 20\\%; DARE drops 20\\% with seed 42 before TA0.5.",
                 "tab:fusion-tasks", ["Procedure", "Defense"] + tasks, details, wide=True)
 
 
@@ -335,7 +335,31 @@ def tables(output):
         records.append([task, main_values[task,"Defense 1"][0].split(" / ")[0],cells[0],
                         main_values[task,"Defense 1"][2].split(" / ")[0],cells[1]])
     write_table("class_projection", "Fixed class projection and NBP on all seven tasks (\\%). The same preselected class and NBP update norm are used. Native columns evaluate each released expert; merged columns use AGA and TA0.5 with the main fixed companions. No class or direction is selected using images.",
-        "tab:class-projection", ["Task","NBP native","Proj. native","NBP merged","Proj. merged"], [("",records)])
+        "tab:class-projection", ["Task",r"\shortstack{NBP\\native}",r"\shortstack{Proj.\\native}",r"\shortstack{NBP\\merged}",r"\shortstack{Proj.\\merged}"], [("",records)])
+    bound_root = ablation_root / "direction_controls/bound_amplitude"
+    bound_available = (bound_root / "summary.json").exists()
+    if bound_available:
+        summary = json.loads((bound_root / "summary.json").read_text())
+        assert summary["status"] == "completed_verified" and summary["full_rows"] == 70
+        records = []
+        for task in tasks:
+            folder = bound_root / task
+            measured = json.loads((folder / "results.json").read_text())
+            check = json.loads((folder / "independent_validation.json").read_text())
+            freeze = json.loads((folder / "freeze.json").read_text())
+            assert check["status"] == "passed" and check["rows"] == len(measured) == 10
+            own = [r for r in measured if r["defense"] == "Projected_contrast" and r["dataset"] == task]
+            native = next(r for r in own if r["merger"] == "Standalone")
+            merged = next(r for r in own if r["attack_scope"] == "Protected expert")
+            previous = json.loads((ablation_root / "direction_controls" / (task if task in small_tasks else "extension/"+task) / "freeze.json").read_text())
+            original_norm = next(r["actual_delta_norm"] for r in previous["controls"] if r["name"] == "Projected_contrast")
+            ratio = freeze["controls"][0]["actual_delta_norm"] / original_norm
+            records.append([task,f"{ratio:.4f}",str(native["changed_predictions"]),f"{100*native['correct']/native['n']:.2f}",f"{100*merged['correct']/merged['n']:.2f}"])
+            for filename in ["results.json", "independent_validation.json", "execution.json", "freeze.json", "evaluation.json"]:
+                p = folder / filename
+                source["input_sha256"][str(p.relative_to(ROOT))] = hashlib.sha256(p.read_bytes()).hexdigest()
+        write_table("projection_bound", "Class projection at its own analytic magnitude. Ratio is the update norm divided by the frozen NBP norm. Changed counts standalone prediction differences from the original expert. Target accuracy is after AGA+TA0.5 with the main fixed companion. Every direction uses the same original class and twice its own public-base sufficient bound; no image-based magnitude search is used.",
+            "tab:projection-bound", ["Task","Ratio","Changed","Native","AGA+TA"], [("",records)])
     geometry_path = ablation_root / "direction_controls/weight_analysis/results.json"
     geometry = json.loads(geometry_path.read_text())
     assert len(geometry["rows"]) == 1496 and geometry["new_publications"] == 0
@@ -347,7 +371,7 @@ def tables(output):
         rounding = [f"{precision[task,dtype]['rounding_only_embedding_residual']:.2g}" if precision[task,dtype]["finite_bias"] else "Overflow" for dtype in ["FP32","FP16","BF16"]]
         records.append([task, str(row["classes"]), str(row["class_map_rank"]), f"{row['frozen_update_norm']:.2g}"]+rounding)
     write_table("precision", "Weight geometry and rounding-only embedding residuals. C is the class count and rank is the retained rank of H. Norm is the released update norm. Each residual is computed after rounding both biases and the expert projection to the specified storage type, followed by FP64 multiplication. These are not low-precision inference accuracies. Cars has nonfinite released FP16 bias values.",
-        "tab:precision", ["Task","C","Rank","Norm","FP32","FP16","BF16"], [("",records)])
+        "tab:precision", ["Task","C","Rank","Norm","FP32","FP16","BF16"], [("",records)], tabcolsep=3)
     # Reuse completed B/16 and public-bias cleanup records; no new evaluation.
     b16_path = ROOT / "results/backbone_b16/summary.json"
     b16 = json.loads(b16_path.read_text())
@@ -407,6 +431,8 @@ def tables(output):
     cost_root = ablation_root / "extension" / "cost"
     cost_files = [cost_root / f"{task}_{method}.json" for task in small_tasks for method in ["bias", "params"]]
     exported_tables = ["main", "partners", "pair_target", "pair_companion", "recovery", "fusion", "fusion_tasks", "ablation", "class_projection", "precision", "backbone", "cleanup", "equal_weight"]
+    if bound_available:
+        exported_tables.append("projection_bound")
     if all(p.exists() for p in cost_files):
         cost = {}
         for path in cost_files:
@@ -420,6 +446,47 @@ def tables(output):
         write_table("cost", "Construction time (seconds), one call per method/task on the same CPU host. The timer excludes checkpoint loading, correctness checks and serialization.",
             "tab:cost", ["Task", "NBP", "PaRaMS"], [("", records)])
         exported_tables.append("cost")
+    selection_root = ROOT / "results/phase3/bias_weight_only/coefficient_selection"
+    selection_path = selection_root / "summary.json"
+    if selection_path.exists():
+        selection = json.loads(selection_path.read_text())
+        checked = json.loads((selection_root / "selection_validation.json").read_text())
+        assert selection["status"] == "completed_verified" and checked["status"] == "passed"
+        assert checked["selection_rows"] == len(selection["choices"]) == 18
+        test_protocol = json.loads((selection_root / "selected_test_protocol.json").read_text())
+        test_rows = {}
+        for i, case in enumerate(test_protocol["cases"]):
+            folder = selection_root / "test/full" / f"{i:02d}_{case['target']}_{case['partner']}"
+            measured = json.loads((folder / "results.json").read_text())
+            validation = json.loads((folder / "independent_validation.json").read_text())
+            assert validation["status"] == "passed" and validation["rows"] == len(measured)
+            for r in measured:
+                if r["merger"] == "TA":
+                    test_rows[case["target"],case["TA_coefficient"],r["defense"],r["dataset"]] = r
+            for filename in ["results.json", "independent_validation.json", "execution.json"]:
+                p = folder / filename
+                source["input_sha256"][str(p.relative_to(ROOT))] = hashlib.sha256(p.read_bytes()).hexdigest()
+        for r in selection["choices"]:
+            companion = "SVHN" if r["task"] == "MNIST" else "MNIST"
+            for dataset, field in [(r["task"],"test_target_accuracy"),(companion,"test_companion_accuracy")]:
+                measured = test_rows[r["task"],r["coefficient"],r["defense"],dataset]
+                assert abs(r[field]-100*measured["correct"]/measured["n"]) < 1e-10
+        for filename in ["summary.json", "selection_validation.json", "selected.json", "selected_test_protocol.json", "selection_freeze.json", "calibration_counts.csv", "calibration_validation.json", "selection_rule.json"]:
+            p = selection_root / filename
+            source["input_sha256"][str(p.relative_to(ROOT))] = hashlib.sha256(p.read_bytes()).hexdigest()
+        for objective, suffix in [("mean", ""), ("target", "_target")]:
+            groups = []
+            for task in small_tasks:
+                records = []
+                for method, label in [("Unprotected", "None"), ("PaRaMS_"+task, "PaRaMS"), ("NBP_"+task,"NBP")]:
+                    r = next(r for r in selection["choices"] if r["task"] == task and r["defense"] == method and r["objective"] == objective)
+                    records.append([label, f"{r['coefficient']:.1f}", f"{r['test_target_accuracy']:.2f}", f"{r['test_companion_accuracy']:.2f}"])
+                groups.append((task, records))
+            name = "coefficient_selection"+suffix
+            criterion = "the mean target/companion" if objective == "mean" else "target"
+            write_table(name, "Complete-test accuracy after labelled coefficient selection (\\%). Each method separately maximizes "+criterion+" accuracy on the same 256 training examples per task, using TA coefficients 0.1--1.0 in steps of 0.1. Coefficients are frozen before test evaluation. AGA processes the protected expert first; both task updates use the selected coefficient.",
+                "tab:"+name.replace("_","-"), ["Task","Defense",r"$\lambda$","Target","Companion"], groups)
+            exported_tables.append(name)
     (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
         "eight_expert_protected_task_cells": len(eight),
         "tables": exported_tables}, indent=2) + "\n")

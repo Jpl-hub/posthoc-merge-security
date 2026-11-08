@@ -16,7 +16,6 @@ from _impl.attacks import public_mlp_matching, public_mlp_replace, public_patch_
 from _impl.defenses import residual_permutation
 from _impl.io import digest, new_output, save_json
 from _impl.metrics import logical_parameter_distance, paired_logp, task_change
-from _impl.subspace import greedy_task_pairs
 
 FROZEN_BODIES = json.loads(Path("results/engineering_refactor/snapshot.json").read_text())[
     "extracted_function_body_sha256"
@@ -55,7 +54,6 @@ def test_evaluator_loads_aga_only_when_requested(monkeypatch, tmp_path, scopes):
     "old_path,new_module,names",
     [
         ("experiments/aga_coordinate_audit.py", "_impl.defenses", ["residual_permutation"]),
-        ("experiments/aga_coordinate_audit.py", "_impl.subspace", ["greedy_task_pairs"]),
         ("experiments/mechanisms.py", "_impl.attacks", ["load_author"]),
         ("experiments/clip_benchmark.py", "_impl.attacks", ["author_recover"]),
         ("experiments/clip_benchmark.py", "_impl.merge", ["merge"]),
@@ -221,58 +219,6 @@ def test_joint_mlp_matching_restores_known_permutation_and_transformer_output():
     assert all(torch.equal(v, recovered[k]) for k, v in state.items())
     assert len(detail) == 2
     assert all(d["objective_after"] >= d["objective_before"] for d in detail)
-
-
-@pytest.mark.parametrize("penalty", [0.0, 2.0])
-def test_greedy_matches_exhaustive_finite_swap_costs(penalty):
-    g = torch.Generator().manual_seed(24)
-    d = 6
-    read = torch.randn(9, d, generator=g, dtype=torch.float64)
-    rv = torch.linalg.qr(torch.randn(d, 2, generator=g, dtype=torch.float64)).Q
-    write = torch.randn(d, 7, generator=g, dtype=torch.float64)
-    wv = torch.linalg.qr(torch.randn(7, 2, generator=g, dtype=torch.float64)).Q
-    gram = read.T @ read / read.square().sum()
-    sub = rv @ rv.T
-
-    def distances(a):
-        return a.diag()[:, None] + a.diag()[None, :] - 2 * a
-
-    total = distances(gram) + distances(write @ write.T / write.square().sum())
-    quadratic = distances(gram) * distances(sub) + 2 * distances(
-        (write @ wv) @ (write @ wv).T / write.square().sum()
-    )
-    order, trace = greedy_task_pairs(total, quadratic, gram[None], sub[None], penalty, 1e-10)
-
-    def objective(o):
-        dr = read[:, o] - read
-        dw = write[o] - write
-        t = float(
-            dr.square().sum() / read.square().sum() + dw.square().sum() / write.square().sum()
-        )
-        inside = float(
-            (dr @ rv).square().sum() / read.square().sum()
-            + (dw @ wv).square().sum() / write.square().sum()
-        )
-        return t - penalty * inside
-
-    actual = torch.arange(d)
-    free = set(range(d))
-    for step in trace:
-        pairs = [(i, j) for i in sorted(free) for j in sorted(free) if i < j]
-        gains = []
-        for i, j in pairs:
-            candidate = actual.clone()
-            candidate[i] = j
-            candidate[j] = i
-            gains.append(objective(candidate) - objective(actual))
-        chosen = pairs[int(np.argmax(gains))]
-        assert chosen == (step["i"], step["j"])
-        i, j = chosen
-        actual[i] = j
-        actual[j] = i
-        free -= {i, j}
-        assert abs(objective(actual) - step["objective"]) < 1e-12
-    assert torch.equal(order, actual)
 
 
 def test_logical_qkv_distance_and_zero_bias():
