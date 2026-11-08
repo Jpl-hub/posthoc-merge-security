@@ -1,53 +1,39 @@
-# 工程与复现
+# Setup and reproduction
 
-所有命令从仓库根目录执行。当前算法、实验入口、固定配置及结果分开存放；历史资产在工程目录之外归档，不作为当前算法入口。
+Run all commands from the repository root. The tested GPU environment uses Python3.12, PyTorch2.3.0+cu121 and NumPy1.26.4. Install `requirements.txt` and, for constructing the PaRaMS reference, `requirements-params.txt`.
 
-## 当前代码
+## Inputs
 
-| 职责 | 位置 |
-|---|---|
-| 共同路径 | `cfg.py` |
-| 模型、数据、融合、攻击及统计 | `_impl/` |
-| 构造、评价和生成表格 | `experiment/` |
-| 固定模型和作者源码版本 | `configs/` |
-| 结果、MD/TeX表格和来源 | `results/` |
-| 模型、原始分数及执行快照 | 实验机器上的 `checkpoints/`、`data/`、`outputs/` |
+Place the pinned author implementation at `external/secure-merge-attack`, the CLIP checkpoints and classification heads at `checkpoints/ViT-B-32` or `checkpoints/ViT-B-16`, and datasets at `data/`. Exact author revisions, checkpoint identifiers, sizes and SHA256 values are in `configs/sources.json` and the two checkpoint manifests. `POSTHOC_BACKBONE=ViT-B-16` selects the second backbone; B/32 is the default.
 
-模型、数据、认证信息不进入Git。当前代码只有一套加载和评价实现；具体实验选择放在协议文件，不再复制入口。
+The checkpoints come from the Task Arithmetic release. Their image encoders use OpenAI-pretrained CLIP through OpenCLIP. The fixed heads contain normalized, template-averaged class-name text embeddings scaled by the pretrained logit scale; they are not fitted linear probes. The same head is used for all methods on a task. NBP does not train either the encoder or the head.
 
-当前主方法是防御一，入口为 `experiment.construct --method bias`，实现为 `_impl.defenses.construct_bias`。构造只读目标专家、公开基座和固定分类头，不用真实或合成图片。协议、结果与成本见[实验与结果索引](../results/comparison/README.md)。真实图片用于冻结后的评价和单列的数据辅助恢复。
+`_impl/data.py` defines the evaluated splits and independently reads their labels. Inference uses each checkpoint's stored validation preprocessing. DTD uses partition1. EuroSAT participates in eight-expert merging, but its original expert train/test membership could not be recovered; the reported task average therefore covers seven validated test sets.
 
-11月6日讨论后停止新增防御二试验。`experiment.defense2`、`experiment.readout_channels` 及其固定配置暂留作历史复现入口，已有模型、原始分数和失败记录保留。它们不属于防御一的构造流程，也不作为后续实验队列。
-
-互补视图与逐类均值两项试验未带来整体改善，已移除43行试验分支，主构造恢复为Git `be57bec` 中的同一计算。试验源码可从 `a973133:experiment/defense2.py` 取回，原始权重与逐图分数在21516、41558两份SHA一致的归档中。历史配置及源码指纹保留原值。
-
-`experiment.main_table` 负责固定模型评价，`experiment.native` 检查独立任务，`experiment.eight_task` 负责八专家融合。AGA和公开恢复在 `experiment.recover`，数据辅助蒸馏在 `experiment.distill`。TA、TIES和DARE是融合算法。
-
-## 执行与检查
-
-在仓库根目录安装 `requirements.txt`，作者仓库必须使用 `configs/sources.json` 中固定的提交。检查点逐文件SHA见 `configs/checkpoints.json`。完整PaRaMS的额外依赖见 `requirements-params.txt`。
-
-先读对应结果的协议和执行版本，再运行入口。旧结果中的源码指纹属于当时版本，不应改成当前代码的指纹；已有输出不覆盖。主评价的 `--verify` 使用原128张批上下文、独立标签和固定误差限。
+## Commands
 
 ```bash
+python -m experiment.construct --help
 python -m experiment.main_table --help
 python -m experiment.native --help
 python -m experiment.eight_task --help
-python -m experiment.report --defense-comparison --output /tmp/posthoc-paper-tables
-pytest -q
+python -m experiment.recover --help
+python -m experiment.distill --help
+python -m experiment.report --output outputs/nbp_tables --figure
+python -m pytest -q
 ```
 
-表格从同一份结果生成MD和TeX。新4090上的25项现有测试已通过，覆盖算法等价性、恢复输入边界、权重噪声构造和既有论文表格。完整科研评价仍以各批原始分数、逐类结果和执行记录为准。
+The construction entry's `--method bias` calls `_impl.defenses.construct_bias`. It reads frozen weights and a fixed classifier, computes a projection kernel, selects the class direction and obtains the update norm from a LayerNorm bound. It uses zero construction images and zero optimizer steps.
 
-## 历史记录
+Each model batch specifies its own source and weight hashes, split, task order, coefficient and recovery scope. Use the recorded execution version to reproduce a historical batch; do not replace its fingerprints with those of newer code. The evaluator's `--verify` recounts complete labels and per-class/paired outcomes, then replays selected scores in their original128-image batch context. A pilot is an implementation check, not a replacement for a complete test set.
 
-已结束的探索不保留为当前算法入口。移除路径、原SHA和Git版本见 `results/engineering_refactor/retired.json`、`snapshot.json`、`validation.json`；旧清理和迁移详情保存在这些记录及本文件的Git历史中。唯一模型、原始分数和失败证据保留在归档，缓存只在核实重复或可再生后清理。
+`experiment.report` only reads frozen records. Generated tables and figures go to the requested output directory, separate from input records. The default output is ignored by Git.
 
-11月4日移除7个已结束实验的一次性脚本，共591行：旧校正、匹配准备、对照准备、偏置跨任务驱动及两份特征均值检查脚本。当前入口没有导入这些文件；原源码可从本地 `a17a754` 或GitHub `b92a6e5` 的原路径取回，历史协议中的源码指纹保持原值。蒸馏导数检查仍供当前研究使用；没有将它加入主方法入口。
+## Historical records
+
+Stopped numerical-compensation experiments and their report code are available at commit `f1d7e496` and earlier. The active repository exposes the NBP method, matched baselines and their evidence. Unique model and raw-score files are not deleted by this source cleanup. Removed internal metadata on the prior compute host was preserved in its system-disk archive before updating that host.
 
 ```bash
-git show <执行提交>:<原路径>
-git archive <执行提交> | tar -x -C <空目录>
+git show <execution-commit>:<source-path>
+git archive <execution-commit> | tar -x -C <empty-directory>
 ```
-
-GitHub发布对应关系见 `results/engineering_refactor/publication.json`，最近同步情况见本地 `outputs/latest_github_sync_receipt.json`。本地提交不等于已上传。

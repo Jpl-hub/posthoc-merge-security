@@ -74,21 +74,22 @@ def figures(output, table_sources):
         fusion.extend(json.loads((folder / "results.json").read_text()))
     fused = {(r["target"], r["merger"], r["defense"]): 100*r["correct"]/r["n"]
              for r in fusion if r["dataset"] == r["target"] and r["attack_scope"] == "Protected expert"}
-    fig, ax = plt.subplots(figsize=(3.35, 3.1), layout="constrained")
+    fig, axes = plt.subplots(1, 3, figsize=(3.35, 2.8), sharey=True)
+    fig.subplots_adjust(left=.22, right=.985, bottom=.23, top=.87, wspace=.12)
     y = np.arange(len(tasks))
-    for offset, merger, marker, color in [(-.19, "TA", "o", "#25639c"),
-            (0, "TIES", "s", "#b55524"), (.19, "DARE+TA", "^", "#5b7b42")]:
+    for ax, merger in zip(axes, ["TA", "TIES", "DARE+TA"]):
         own = [ta[t, "Defense 1"] if merger == "TA" else fused[t, merger, "Defense1_"+t] for t in tasks]
         clean = [ta[t, "Unprotected"] if merger == "TA" else fused[t, merger, "Unprotected"] for t in tasks]
         for i, (left, right) in enumerate(zip(own, clean)):
-            ax.plot([left, right], [i+offset]*2, color=color, alpha=.35, linewidth=.7)
-        ax.scatter(clean, y+offset, marker=marker, s=22, edgecolors=color, facecolors="white", zorder=3)
-        ax.scatter(own, y+offset, marker=marker, s=22, color=color, label=merger, zorder=3)
-    ax.set(yticks=y, yticklabels=tasks, xlabel="Target accuracy after AGA (%)",
-           xlim=(-2, 104), xticks=[0,25,50,75,100], ylim=(len(tasks)-.5,-1.05))
-    ax.tick_params(axis="y", length=0)
-    ax.grid(axis="x", color="#e6e6e6", linewidth=.6, zorder=0)
-    ax.legend(frameon=False, fontsize=9, ncol=3, loc="upper left", columnspacing=.5, handletextpad=.2)
+            ax.plot([left, right], [i]*2, color="#cccccc", linewidth=.8)
+        ax.scatter(clean, y, marker="o", s=20, edgecolors="#596F83", facecolors="white", zorder=3, label="Unprotected")
+        ax.scatter(own, y, marker="o", s=20, color="#B95335", zorder=3, label="NBP")
+        ax.set(title=merger, yticks=y, yticklabels=tasks, xlim=(-7,107), xticks=[0,50,100], ylim=(len(tasks)-.5,-.5))
+        ax.tick_params(axis="y", length=0)
+        ax.grid(axis="x", color="#eeeeee", linewidth=.6, zorder=0)
+    fig.legend(*axes[0].get_legend_handles_labels(), frameon=False, fontsize=9,
+               ncol=2, loc="lower center", bbox_to_anchor=(.55,-.015), columnspacing=1, handletextpad=.3)
+    fig.supxlabel("Target accuracy after AGA + fusion (%)", x=.59, y=.105, fontsize=9)
     fig.savefig(OUT / "fusion_tasks.pdf", metadata={"Title": "Matched target accuracy after AGA and fusion"})
     plt.close(fig)
     print("Wrote paired fusion comparison from recorded complete-test results.")
@@ -101,15 +102,19 @@ def figures(output, table_sources):
     rows = [r for r in diagnostic["rows"] if r["attack_scope"] == "None"]
     assert len(rows) == 70
     fig, ax = plt.subplots(figsize=(3.35, 2.65), layout="constrained")
-    for method, label, color, marker in [("None", "Unprotected", "#777777", "o"),
-            ("NBP", "NBP", "#25639c", "^")]:
+    bounds = [r["minimum_margin_lower_bound"] for r in rows]
+    ax.axvspan(0, max(bounds)*1.08, color="#B95335", alpha=.055, zorder=0)
+    for method, label, color, marker in [("None", "Unprotected", "#596F83", "o"),
+            ("NBP", "NBP", "#B95335", "^")]:
         selected = [r for r in rows if r["method"] == method]
         ax.scatter([r["minimum_margin_lower_bound"] for r in selected],
                    [100*r["dominant_fraction"] for r in selected],
                    color=color, marker=marker, s=22, label=label, alpha=.8, linewidths=.5)
     ax.axvline(0, color="black", linewidth=.8, linestyle="--")
     ax.set(xlabel="Minimum margin lower bound", ylabel="Largest predicted class (%)",
-           ylim=(-2, 107), yticks=[0,25,50,75,100])
+           xlim=(min(bounds)*1.12,max(bounds)*1.08), ylim=(-2, 115), yticks=[0,25,50,75,100])
+    ax.text(.02,.97,"Nonpositive:\ninconclusive",transform=ax.transAxes,ha="left",va="top",fontsize=8)
+    ax.text(.98,.97,"Positive:\nconstant class",transform=ax.transAxes,ha="right",va="top",fontsize=8)
     ax.legend(frameon=False, fontsize=9, loc="lower right")
     fig.savefig(OUT / "readout_predictions.pdf", metadata={"Title": "Fixed-readout bound and observed class concentration"})
     plt.close(fig)

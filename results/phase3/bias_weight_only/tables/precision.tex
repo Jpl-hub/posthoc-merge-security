@@ -1,0 +1,20 @@
+\begin{table}[!t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Weight geometry and rounding-only embedding residuals. C is the class count and rank is the retained rank of H. Norm is the released update norm. Each residual is computed after rounding both biases and the expert projection to the specified storage type, followed by FP64 multiplication. These are not low-precision inference accuracies. Cars has nonfinite released FP16 bias values.}
+\label{tab:precision}
+\begin{tabular}{lrrrrrr}
+\toprule
+Task & C & Rank & Norm & FP32 & FP16 & BF16 \\
+\midrule
+SUN397 & 397 & 256 & 2.8e+05 & 0.0022 & 24 & 2e+02 \\
+Cars & 196 & 195 & 9.3e+05 & 0.0063 & Overflow & 6.3e+02 \\
+RESISC45 & 45 & 44 & 3.5e+04 & 0.00026 & 3 & 24 \\
+SVHN & 10 & 9 & 1.1e+04 & 8.3e-05 & 0.95 & 7.9 \\
+GTSRB & 43 & 42 & 4.3e+04 & 0.00032 & 3.6 & 29 \\
+MNIST & 10 & 9 & 1.3e+04 & 9.3e-05 & 1 & 8.8 \\
+DTD & 47 & 46 & 2.6e+04 & 0.00021 & 2.2 & 18 \\
+\bottomrule
+\end{tabular}
+\end{table}

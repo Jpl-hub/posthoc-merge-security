@@ -19,7 +19,7 @@ def tables(output):
     methods = ["Unprotected", "PaRaMS", "Defense 1"]
     display = {"Unprotected": "None", "PaRaMS": "PaRaMS", "Defense 1": "NBP"}
     rows = tables["paper_main"]["rows"] + tables["defense1_additional_pairs"]["rows"]
-    values = {(row[0].split("/")[0], row[1]): row[2:] for row in rows if row[1] in methods}
+    main_values = {(row[0].split("/")[0], row[1]): row[2:] for row in rows if row[1] in methods}
 
 
     eight = {}
@@ -103,7 +103,7 @@ def tables(output):
 
     groups = []
     for setting, index in [("Standalone", 0), ("2-expert TA", 1), ("2-expert AGA + TA", 2)]:
-        records = [[display[method]] + [values[task, method][index].split(" / ")[0]
+        records = [[display[method]] + [main_values[task, method][index].split(" / ")[0]
                    for task in tasks] for method in methods]
         groups.append((setting, records))
     for setting, scope in [("8-expert TA", "None"), ("8-expert AGA + TA", "Protected expert")]:
@@ -162,6 +162,20 @@ def tables(output):
         assert key not in pair_lookup, key
         pair_lookup[key] = row
     assert len(pair_lookup) == 42 * 8
+    for role, title in [("target", "Protected-target"), ("companion", "Companion-task")]:
+        records = []
+        for task in tasks:
+            cells = []
+            for companion in tasks:
+                if companion == task:
+                    cells.append("--")
+                    continue
+                dataset = task if role == "target" else companion
+                scores = [pair_lookup[task, companion, m, "Protected expert", dataset] for m in ["None", "NBP"]]
+                cells.append(" / ".join(f"{100*r['correct']/r['n']:.2f}" for r in scores))
+            records.append([task] + cells)
+        write_table("pair_"+role, title+" accuracy after AGA and TA0.5 for all42 directed pairs (\\%). Each cell is unprotected / NBP. Rows select the protected expert; columns select its companion. The diagonal is not evaluated.",
+            "tab:pair-"+role, ["Protected expert"]+tasks, [("",records)], wide=True)
     records = []
     pair_summary = []
     for task in tasks:
@@ -307,6 +321,33 @@ def tables(output):
         groups.append((task, records))
     write_table("ablation", "Same-norm direction controls (\\%). Random null reports the mean and sample standard deviation over five fixed seeds after AGA; all five have the displayed native accuracy. Class projection uses the same preselected class as NBP, projected directly into the nullspace without the multi-class least-squares solve. All controls use the frozen NBP update norm; companions and TA0.5 match the main table.",
                 "tab:ablation", ["Task", "Update", "Native", "AGA+TA"], groups)
+    records = []
+    for task in tasks:
+        folder = ablation_root / "direction_controls" / (task if task in small_tasks else "extension/"+task)
+        measured = json.loads((folder / "results.json").read_text())
+        checked = json.loads((folder / "independent_validation.json").read_text())
+        assert checked["status"] == "passed" and checked["rows"] == len(measured)
+        for filename in ["results.json", "independent_validation.json", "execution.json", "freeze.json"]:
+            path = folder / filename
+            source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+        selected = {(r["merger"],r["attack_scope"]):r for r in measured if r["defense"] == "Projected_contrast" and r["dataset"] == task}
+        cells = [f"{100*selected[k]['correct']/selected[k]['n']:.2f}" for k in [("Standalone","None"),("TA","Protected expert")]]
+        records.append([task, main_values[task,"Defense 1"][0].split(" / ")[0],cells[0],
+                        main_values[task,"Defense 1"][2].split(" / ")[0],cells[1]])
+    write_table("class_projection", "Fixed class projection and NBP on all seven tasks (\\%). The same preselected class and NBP update norm are used. Native columns evaluate each released expert; merged columns use AGA and TA0.5 with the main fixed companions. No class or direction is selected using images.",
+        "tab:class-projection", ["Task","NBP native","Proj. native","NBP merged","Proj. merged"], [("",records)])
+    geometry_path = ablation_root / "direction_controls/weight_analysis/results.json"
+    geometry = json.loads(geometry_path.read_text())
+    assert len(geometry["rows"]) == 1496 and geometry["new_publications"] == 0
+    source["input_sha256"][str(geometry_path.relative_to(ROOT))] = hashlib.sha256(geometry_path.read_bytes()).hexdigest()
+    records = []
+    precision = {(r["task"],r["storage_dtype"]):r for r in geometry["precision"]}
+    for row in geometry["tasks"]:
+        task = row["task"]
+        rounding = [f"{precision[task,dtype]['rounding_only_embedding_residual']:.2g}" if precision[task,dtype]["finite_bias"] else "Overflow" for dtype in ["FP32","FP16","BF16"]]
+        records.append([task, str(row["classes"]), str(row["class_map_rank"]), f"{row['frozen_update_norm']:.2g}"]+rounding)
+    write_table("precision", "Weight geometry and rounding-only embedding residuals. C is the class count and rank is the retained rank of H. Norm is the released update norm. Each residual is computed after rounding both biases and the expert projection to the specified storage type, followed by FP64 multiplication. These are not low-precision inference accuracies. Cars has nonfinite released FP16 bias values.",
+        "tab:precision", ["Task","C","Rank","Norm","FP32","FP16","BF16"], [("",records)])
     # Reuse completed B/16 and public-bias cleanup records; no new evaluation.
     b16_path = ROOT / "results/backbone_b16/summary.json"
     b16 = json.loads(b16_path.read_text())
@@ -365,7 +406,7 @@ def tables(output):
     # Same-host construction timings are separate from model utility tests.
     cost_root = ablation_root / "extension" / "cost"
     cost_files = [cost_root / f"{task}_{method}.json" for task in small_tasks for method in ["bias", "params"]]
-    exported_tables = ["main", "partners", "recovery", "fusion", "fusion_tasks", "ablation", "backbone", "cleanup", "equal_weight"]
+    exported_tables = ["main", "partners", "pair_target", "pair_companion", "recovery", "fusion", "fusion_tasks", "ablation", "class_projection", "precision", "backbone", "cleanup", "equal_weight"]
     if all(p.exists() for p in cost_files):
         cost = {}
         for path in cost_files:
