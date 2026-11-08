@@ -1,4 +1,4 @@
-Fixed class projection and NBP on all seven tasks (%). The same preselected class and NBP update norm are used. Native columns evaluate each released expert; merged columns use AGA and TA0.5 with the main fixed companions. No class or direction is selected using images.
+Fixed class projection and NBP on all seven tasks (%). The same preselected class and NBP update norm are used. Standalone columns evaluate each released expert; merged columns use AGA and TA0.5 with the main fixed companions. No class or direction is selected using images.
 
 | Task | NBP native | Proj. native | NBP merged | Proj. merged |
 | --- | ---: | ---: | ---: | ---: |

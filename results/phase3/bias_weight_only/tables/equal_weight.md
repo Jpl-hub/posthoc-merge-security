@@ -1,4 +1,4 @@
-Eight-expert accuracy after AGA and TA (%). Coefficient 0.125 is the arithmetic mean of eight checkpoints. Coefficient 0.2 uses the same publications and clean AGA references as the main experiment. The protection is constructed once at proxy coefficient 0.5.
+Eight-expert accuracy after AGA and TA (%). Coefficient 0.125 is the arithmetic mean of eight checkpoints. Coefficient 0.2 uses the same protected checkpoints and matched unprotected AGA controls as the main experiment. The protection is constructed once at proxy coefficient 0.5.
 
 | Coefficient | Defense | MNIST | SVHN | DTD |
 | --- | --- | ---: | ---: | ---: |

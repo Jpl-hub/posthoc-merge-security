@@ -206,7 +206,7 @@ def tables(output):
     reset = {(r[0], r[2]): r[5] for r in replacement if r[0] == r[1]}
     distill = {(r[0], r[1]): r[2] for r in tables["feature_distillation"]["rows"]}
     groups = [
-        ("B reset", [[display[m]] + [reset[t, m] for t in small_tasks]
+        ("MLP reset", [[display[m]] + [reset[t, m] for t in small_tasks]
                      for m in ["Unprotected", "Defense 1"]]),
         ("ProDistill", [[display[m]] + [distill[t, m] for t in small_tasks] for m in methods]),
     ]
@@ -217,7 +217,7 @@ def tables(output):
     groups.append(("Bias projection", [[label] + [cleanup_scores[t][index] for t in small_tasks]
         for label, index in [("None", 3), ("NBP", 5)]]))
     source["input_sha256"][str(cleanup_path.relative_to(ROOT))] = hashlib.sha256(cleanup_path.read_bytes()).hexdigest()
-    write_table("recovery", "Target accuracy after recovery (\\%). B reset replaces the final MLP output weight and bias after AGA, then applies TA. ProDistill fits block coefficients; final LayerNorm and projection are fixed. Bias projection modifies the final normalization bias before TA. Each unprotected control receives the same operation. NBP and control have identical predictions after bias projection.",
+    write_table("recovery", "Target accuracy after recovery (\\%). MLP reset replaces the final MLP output weight and bias after AGA, then applies TA. ProDistill fits block coefficients; final LayerNorm and projection are fixed. Bias projection modifies the final normalization bias before TA. Each unprotected control receives the same operation. NBP and control have identical predictions after bias projection.",
                 "tab:recovery", ["Procedure", "Defense"] + small_tasks, groups)
 
     fusion_root = ROOT / "results/phase3/bias_weight_only/fusion_methods"
@@ -323,8 +323,8 @@ def tables(output):
                     cells.append(f"{100*row['correct']/row['n']:.2f}")
             records.append([label] + cells)
         groups.append((task, records))
-    write_table("ablation", "Same-norm direction controls (\\%). Random null reports the mean and sample standard deviation over five fixed seeds after AGA; all five have the displayed native accuracy. Class projection uses the same preselected class as NBP, projected directly into the nullspace without the multi-class least-squares solve. All controls use the frozen NBP update norm; companions and TA0.5 match the main table.",
-                "tab:ablation", ["Task", "Update", "Native", "AGA+TA"], groups)
+    write_table("ablation", "Same-norm direction controls (\\%). Random null reports the mean and sample standard deviation over five fixed seeds after AGA; all five have the displayed standalone accuracy. Class projection uses the same preselected class as NBP, projected directly into the nullspace without the multi-class least-squares solve. All controls use the frozen NBP update norm; companions and TA0.5 match the main table.",
+                "tab:ablation", ["Task", "Update", "Standalone", "AGA+TA"], groups)
     records = []
     for task in tasks:
         folder = ablation_root / "direction_controls" / (task if task in small_tasks else "extension/"+task)
@@ -338,7 +338,7 @@ def tables(output):
         cells = [f"{100*selected[k]['correct']/selected[k]['n']:.2f}" for k in [("Standalone","None"),("TA","Protected expert")]]
         records.append([task, main_values[task,"Defense 1"][0].split(" / ")[0],cells[0],
                         main_values[task,"Defense 1"][2].split(" / ")[0],cells[1]])
-    write_table("class_projection", "Fixed class projection and NBP on all seven tasks (\\%). The same preselected class and NBP update norm are used. Native columns evaluate each released expert; merged columns use AGA and TA0.5 with the main fixed companions. No class or direction is selected using images.",
+    write_table("class_projection", "Fixed class projection and NBP on all seven tasks (\\%). The same preselected class and NBP update norm are used. Standalone columns evaluate each released expert; merged columns use AGA and TA0.5 with the main fixed companions. No class or direction is selected using images.",
         "tab:class-projection", ["Task",r"\shortstack{NBP\\native}",r"\shortstack{Proj.\\native}",r"\shortstack{NBP\\merged}",r"\shortstack{Proj.\\merged}"], [("",records)])
     bound_root = ablation_root / "direction_controls/bound_amplitude"
     bound_available = (bound_root / "summary.json").exists()
@@ -363,7 +363,7 @@ def tables(output):
                 p = folder / filename
                 source["input_sha256"][str(p.relative_to(ROOT))] = hashlib.sha256(p.read_bytes()).hexdigest()
         write_table("projection_bound", "Class projection at its own analytic magnitude. Ratio is the update norm divided by the frozen NBP norm. Changed counts standalone prediction differences from the original expert. Target accuracy is after AGA+TA0.5 with the main fixed companion. Every direction uses the same original class and twice its own public-base sufficient bound; no image-based magnitude search is used.",
-            "tab:projection-bound", ["Task","Ratio","Changed","Native","AGA+TA"], [("",records)])
+            "tab:projection-bound", ["Task","Ratio","Changed","Standalone","AGA+TA"], [("",records)])
     geometry_path = ablation_root / "direction_controls/weight_analysis/results.json"
     geometry = json.loads(geometry_path.read_text())
     assert len(geometry["rows"]) == 1496 and geometry["new_publications"] == 0
@@ -426,7 +426,7 @@ def tables(output):
                 cells.append(f"{100*correct/n:.2f}")
             records.append([label]+cells)
         groups.append((str(coefficient), records))
-    write_table("equal_weight", "Eight-expert accuracy after AGA and TA (\\%). Coefficient 0.125 is the arithmetic mean of eight checkpoints. Coefficient 0.2 uses the same publications and clean AGA references as the main experiment. The protection is constructed once at proxy coefficient 0.5.",
+    write_table("equal_weight", "Eight-expert accuracy after AGA and TA (\\%). Coefficient 0.125 is the arithmetic mean of eight checkpoints. Coefficient 0.2 uses the same protected checkpoints and matched unprotected AGA controls as the main experiment. The protection is constructed once at proxy coefficient 0.5.",
         "tab:equal-weight", ["Coefficient", "Defense"] + small_tasks, groups)
     for name in ["results.json", "validation.json", "independent_statistics.json"]:
         path = equal_root / name
@@ -488,7 +488,7 @@ def tables(output):
                 groups.append((task, records))
             name = "coefficient_selection"+suffix
             criterion = "the mean target/companion" if objective == "mean" else "target"
-            write_table(name, "Complete-test accuracy after labelled coefficient selection (\\%). Each method separately maximizes "+criterion+" accuracy on the same 256 training examples per task, using TA coefficients 0.1--1.0 in steps of 0.1. Coefficients are frozen before test evaluation. AGA processes the protected expert first; both task updates use the selected coefficient.",
+            write_table(name, "Complete-test accuracy after labeled coefficient selection (\\%). Each method separately maximizes "+criterion+" accuracy on the same 256 training examples per task, using TA coefficients 0.1--1.0 in steps of 0.1. Coefficients are frozen before test evaluation. AGA processes the protected expert first; both task updates use the selected coefficient.",
                 "tab:"+name.replace("_","-"), ["Task","Defense",r"$\lambda$","Target","Companion"], groups)
             exported_tables.append(name)
     (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],

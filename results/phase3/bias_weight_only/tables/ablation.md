@@ -1,6 +1,6 @@
-Same-norm direction controls (%). Random null reports the mean and sample standard deviation over five fixed seeds after AGA; all five have the displayed native accuracy. Class projection uses the same preselected class as NBP, projected directly into the nullspace without the multi-class least-squares solve. All controls use the frozen NBP update norm; companions and TA0.5 match the main table.
+Same-norm direction controls (%). Random null reports the mean and sample standard deviation over five fixed seeds after AGA; all five have the displayed standalone accuracy. Class projection uses the same preselected class as NBP, projected directly into the nullspace without the multi-class least-squares solve. All controls use the frozen NBP update norm; companions and TA0.5 match the main table.
 
-| Task | Update | Native | AGA+TA |
+| Task | Update | Standalone | AGA+TA |
 | --- | --- | ---: | ---: |
 | MNIST | None | 99.69 | 99.30 |
 | MNIST | NBP | 99.69 | 9.80 |
