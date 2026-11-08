@@ -66,7 +66,7 @@ def figures(output, table_sources):
     plt.close(fig)
     print("Wrote", out, "from verified fixed-amplitude controls.")
 
-    # A single-column dot plot exposes taskwise differences hidden by macro-averages.
+    # Per-task paired markers retain all matched controls without connecting categories.
     manifest = json.loads((Path(table_sources)).read_text())
     for relative, expected in manifest["input_sha256"].items():
         assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == expected
@@ -81,8 +81,8 @@ def figures(output, table_sources):
         fusion.extend(json.loads((folder / "results.json").read_text()))
     fused = {(r["target"], r["merger"], r["defense"]): 100*r["correct"]/r["n"]
              for r in fusion if r["dataset"] == r["target"] and r["attack_scope"] == "Protected expert"}
-    fig, axes = plt.subplots(3, 1, figsize=(3.25, 3.4), sharex=True, sharey=True)
-    fig.subplots_adjust(left=.16, right=.98, bottom=.18, top=.88, hspace=.18)
+    fig, axes = plt.subplots(3, 1, figsize=(3.25, 3.75), sharex=True, sharey=True)
+    fig.subplots_adjust(left=.16, right=.98, bottom=.15, top=.85, hspace=.44)
     x = np.arange(len(tasks))
     for ax, merger in zip(axes, ["TA", "TIES", "DARE+TA"]):
         for offset, method, label, color, marker, face in [
@@ -95,18 +95,14 @@ def figures(output, table_sources):
                             "PaRaMS_"+t if method == "PaRaMS" else method] for t in tasks]
             ax.scatter(x+offset, values, marker=marker, s=22, color=color,
                        facecolors=face, linewidths=.8, label=label, zorder=3)
-            if method == "Defense 1" and merger in ["TIES", "DARE+TA"]:
-                task = "SVHN" if merger == "TIES" else "MNIST"
-                i = tasks.index(task)
-                ax.annotate(f"{values[i]:.2f}", (x[i]+offset, values[i]),
-                            xytext=(0, 7), textcoords="offset points", ha="center", color=protected)
-        ax.set(ylim=(-5, 112), yticks=[0, 50, 100], xlim=(-.55, len(tasks)-.45))
-        ax.text(.015, .45, merger, transform=ax.transAxes, fontsize=9)
+        ax.set(ylim=(-5, 105), yticks=[0, 50, 100], xlim=(-.55, len(tasks)-.45))
+        ax.set_title(merger, loc="left", pad=2)
         ax.grid(axis="y", color="#eeeeee", linewidth=.6, zorder=0)
         ax.tick_params(axis="x", length=0)
-    axes[-1].set_xticks(x, tasks, rotation=45, ha="right")
-    fig.legend(*axes[0].get_legend_handles_labels(), frameon=False, fontsize=9,
-               ncol=3, loc="upper center", bbox_to_anchor=(.53,1), columnspacing=.8, handletextpad=.3)
+    axes[-1].set_xticks(x, ["SUN", "Cars", "RESISC", "SVHN", "GTSRB", "MNIST", "DTD"],
+                       rotation=45, ha="right")
+    fig.legend(*axes[0].get_legend_handles_labels(), frameon=False, fontsize=8.5,
+               ncol=3, loc="upper center", bbox_to_anchor=(.53,1), columnspacing=.6, handletextpad=.3)
     fig.supylabel("Target accuracy after AGA + fusion (%)", x=.005, fontsize=8.5)
     fig.savefig(OUT / "fusion_tasks.pdf", metadata={"Title": "Matched target accuracy after AGA and fusion"})
     plt.close(fig)
@@ -119,33 +115,34 @@ def figures(output, table_sources):
         assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == expected
     rows = [r for r in diagnostic["rows"] if r["attack_scope"] == "None"]
     assert len(rows) == 70
-    fig, ax = plt.subplots(figsize=(3.25, 2.65), layout="constrained")
-    bounds = [r["minimum_margin_lower_bound"] for r in rows]
-    ax.axvspan(0, max(bounds)*1.15, color="#777777", alpha=.06, zorder=0)
-    for method, label, color, marker in [("None", "Unprotected", control, "o"),
-            ("NBP", "NBP", protected, "^")]:
-        selected = [r for r in rows if r["method"] == method]
-        ax.scatter([r["minimum_margin_lower_bound"] for r in selected],
-                   [100*r["dominant_fraction"] for r in selected],
-                   edgecolors=color, facecolors="white" if method == "None" else color,
-                   marker=marker, s=22, label=label, alpha=.85, linewidths=.7)
-    ax.axvline(0, color="black", linewidth=.8, linestyle="--")
-    ax.set_xscale("symlog", linthresh=50)
-    ax.set(xlabel="Minimum margin lower bound (symlog)", ylabel="Dominant-class predictions (%)",
-           xlim=(min(bounds)*1.25,max(bounds)*1.4), ylim=(-2, 112), yticks=[0,25,50,75,100],
-           xticks=[-1000,-100,0,100,1000], xticklabels=["−1000","−100","0","100","1000"])
     own = [r for r in rows if r["method"] == "NBP"]
-    certified = sum(r["minimum_margin_lower_bound"] > 0 for r in own)
-    assert certified == 30 and len(own) == 35
-    ax.text(.03,.83,"Bound ≤ 0:\ninconclusive",transform=ax.transAxes,ha="left",va="top",multialignment="left")
-    ax.text(.97,.83,"Bound > 0:\n30 / 35 NBP pairs",transform=ax.transAxes,ha="right",va="top",multialignment="right")
-    weakest = min(own, key=lambda r:r["dominant_fraction"])
-    ax.annotate(f"{weakest['target']} / {weakest['partner']}\n{100*weakest['dominant_fraction']:.2f}%",
-                (weakest["minimum_margin_lower_bound"], 100*weakest["dominant_fraction"]),
-                xytext=(5,-27), textcoords="offset points", fontsize=8.5,
-                arrowprops=dict(arrowstyle="-",color="#777777",lw=.6))
-    ax.legend(frameon=False, loc="lower right")
-    fig.savefig(OUT / "readout_predictions.pdf", metadata={"Title": "Fixed-readout bound and observed class concentration"})
+    groups = [
+        [r for r in own if r["minimum_margin_lower_bound"] > 0],
+        [r for r in own if r["minimum_margin_lower_bound"] <= 0],
+        [r for r in rows if r["method"] == "None"],
+    ]
+    single = np.array([sum(r["dominant_fraction"] == 1 for r in group) for group in groups])
+    multiple = np.array([len(group) for group in groups]) - single
+    assert [len(g) for g in groups] == [30, 5, 35] and single.tolist() == [30, 3, 0]
+    fig, ax = plt.subplots(figsize=(3.25, 2.15))
+    fig.subplots_adjust(left=.39, right=.98, bottom=.24, top=.75)
+    y = np.arange(3)
+    ax.barh(y, single, height=.52, color=protected, label="One predicted class")
+    ax.barh(y, multiple, left=single, height=.52, color="#D8D8D8", edgecolor="#777777",
+            linewidth=.5, hatch="///", label="Multiple predicted classes")
+    for i, (a, b) in enumerate(zip(single, multiple)):
+        if a:
+            ax.text(a/2, i, str(a), ha="center", va="center", color="white")
+        if b:
+            ax.text(a+b/2, i, str(b), ha="center", va="center", color="black")
+    ax.set(yticks=y, yticklabels=["NBP: bound > 0", "NBP: bound ≤ 0", "Unprotected"],
+           xlim=(0, 36), xticks=[0, 10, 20, 30], xlabel="Number of task pairs")
+    ax.invert_yaxis()
+    ax.tick_params(axis="y", length=0)
+    ax.spines["left"].set_visible(False)
+    fig.legend(*ax.get_legend_handles_labels(), frameon=False, ncol=1,
+               loc="upper center", bbox_to_anchor=(.5, 1.02), handlelength=1.5)
+    fig.savefig(OUT / "readout_predictions.pdf", metadata={"Title": "Readout condition and observed prediction counts"})
     plt.close(fig)
     print("Wrote observed prediction concentration for all35 additional pairs; no image forwards.")
 
@@ -162,37 +159,28 @@ def figures(output, table_sources):
     assert len(curve) == 180 and all(int(r["n"]) == 256 for r in calibration)
     choices = json.loads((selection_root / "selected.json").read_text())
     grid = json.loads((selection_root / "selection_rule.json").read_text())["coefficient_grid"]
-    fig, axes = plt.subplots(3, 1, figsize=(3.25, 4.35), sharex=True, sharey=True)
-    fig.subplots_adjust(left=.17, right=.98, bottom=.12, top=.80, hspace=.43)
+    fig, axes = plt.subplots(3, 1, figsize=(3.25, 4.15), sharex=True, sharey=True)
+    fig.subplots_adjust(left=.17, right=.98, bottom=.12, top=.78, hspace=.43)
     for ax, task in zip(axes, ["MNIST", "SVHN", "DTD"]):
         partner = next(r["partner"] for r in calibration if r["target"] == task)
-        for method, label, color, marker in [("Unprotected", "Unprotected", control, "o"),
-                ("PaRaMS_"+task, "PaRaMS", baseline, "s"),
-                ("NBP_"+task, "NBP", protected, "^")]:
-            for dataset, style in [(task, "-"), (partner, "--")]:
-                values = [curve[task, method, dataset, a] for a in grid]
-                ax.plot(grid, values, color=color, linestyle=style, linewidth=.85,
-                        marker=marker if dataset == task else None, markersize=3,
-                        markerfacecolor="white", markeredgewidth=.65,
-                        label=label if dataset == task else None)
-            selected = next(r for r in choices if r["task"] == task
-                            and r["defense"] == method and r["objective"] == "mean")
-            ax.scatter(selected["coefficient"], selected["target_accuracy"],
-                       marker="*", s=50, color=color, edgecolors="white", linewidths=.35, zorder=5)
+        for method, dataset, label, color, style, marker in [
+                ("Unprotected", task, "Unprotected target", control, "-", "o"),
+                ("NBP_"+task, task, "NBP target", protected, "-", "^"),
+                ("NBP_"+task, partner, "NBP companion", baseline, "--", None)]:
+            values = [curve[task, method, dataset, a] for a in grid]
+            ax.plot(grid, values, color=color, linestyle=style, linewidth=1,
+                    marker=marker, markersize=3, markerfacecolor="white",
+                    markeredgewidth=.65, label=label)
+        selected = next(r for r in choices if r["task"] == task
+                        and r["defense"] == "NBP_"+task and r["objective"] == "mean")
+        ax.scatter(selected["coefficient"], selected["target_accuracy"],
+                   marker="*", s=65, color=protected, edgecolors="white", linewidths=.4, zorder=5)
         ax.set(ylim=(-5, 105), yticks=[0, 50, 100], xlim=(.075, 1.025))
         ax.set_title(task, loc="left", fontsize=9, pad=3)
         ax.grid(axis="y", color="#eeeeee", linewidth=.6)
     axes[-1].set(xticks=[.1, .3, .5, .7, 1.], xlabel=r"Shared TA coefficient $\lambda$")
-    handles, labels = axes[0].get_legend_handles_labels()
-    from matplotlib.lines import Line2D
-    fig.legend(handles, labels, ncol=3, frameon=False, loc="upper center",
-               bbox_to_anchor=(.54, 1), columnspacing=.7, handlelength=1.6, handletextpad=.35)
-    styles = [Line2D([], [], color=control, label="Target", linewidth=.9),
-                Line2D([], [], color=control, linestyle="--", label="Companion", linewidth=.9),
-                Line2D([], [], color=control, marker="*", linestyle="None", label="Selected", markersize=7)]
-    fig.legend(styles, ["Target", "Companion", "Selected"], ncol=3, frameon=False,
-               loc="upper center", bbox_to_anchor=(.54, .94), columnspacing=.7,
-               handlelength=1.6, handletextpad=.35)
+    fig.legend(*axes[0].get_legend_handles_labels(), ncol=1, frameon=False, loc="upper center",
+               bbox_to_anchor=(.54, 1), handlelength=2, handletextpad=.6)
     fig.supylabel("Calibration accuracy (%)", x=.005, fontsize=8.5)
     fig.savefig(OUT / "coefficient_calibration.pdf", metadata={"Title": "Complete labelled calibration curves; 256 images per task"})
     plt.close(fig)
