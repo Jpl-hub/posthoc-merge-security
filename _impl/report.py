@@ -69,10 +69,10 @@ def tables(output):
     assert len(eight) == len(tasks) * len(methods) * 2
 
 
-    def write_table(name, caption, label, headers, groups, wide=False, tabcolsep=4):
+    def write_table(name, caption, label, headers, groups, wide=False, tabcolsep=4, section_headers=False):
         env = "table*" if wide else "table"
         columns = len(headers)
-        grouped = any(group for group, _ in groups)
+        grouped = any(group for group, _ in groups) and not section_headers
         spec = "ll" + "r" * (columns - 2) if grouped else "l" + "r" * (columns - 1)
         lines = [rf"\begin{{{env}}}[!t]", r"\centering", r"\small",
                  rf"\setlength{{\tabcolsep}}{{{tabcolsep}pt}}", rf"\caption{{{caption}}}",
@@ -86,6 +86,9 @@ def tables(output):
         for group_id, (group, records) in enumerate(groups):
             if group_id:
                 lines.append(r"\midrule")
+            if section_headers:
+                lines.append(rf"\multicolumn{{{columns}}}{{l}}{{{group}}}" + r" \\")
+                md.append("| **" + group + "** |" + " |" * (columns - 1))
             best = None
             if name == "main" and group != "Standalone":
                 best = [min(column, key=float) for column in zip(*(row[1:] for row in records))]
@@ -163,19 +166,24 @@ def tables(output):
         pair_lookup[key] = row
     assert len(pair_lookup) == 42 * 8
     for role, title in [("target", "Protected-target"), ("companion", "Companion-task")]:
-        records = []
+        groups = []
         for task in tasks:
-            cells = []
-            for companion in tasks:
-                if companion == task:
-                    cells.append("--")
-                    continue
-                dataset = task if role == "target" else companion
-                scores = [pair_lookup[task, companion, m, "Protected expert", dataset] for m in ["None", "NBP"]]
-                cells.append(" / ".join(f"{100*r['correct']/r['n']:.2f}" for r in scores))
-            records.append([task] + cells)
-        write_table("pair_"+role, title+" accuracy after AGA and TA0.5 for all 42 directed pairs (\\%). Each cell is unprotected / NBP. Rows select the protected expert; columns select its companion. The diagonal is not evaluated.",
-            "tab:pair-"+role, ["Protected expert"]+tasks, [("",records)], wide=True)
+            records = []
+            for method in ["None", "NBP"]:
+                cells, values = [], []
+                for companion in tasks:
+                    if companion == task:
+                        cells.append("--")
+                        continue
+                    dataset = task if role == "target" else companion
+                    row = pair_lookup[task, companion, method, "Protected expert", dataset]
+                    value = 100*row["correct"]/row["n"]
+                    cells.append(f"{value:.2f}")
+                    values.append(value)
+                records.append([method]+cells+[f"{sum(values)/len(values):.2f}", f"{max(values):.2f}"])
+            groups.append((task, records))
+        write_table("pair_"+role, title+" accuracy after AGA and TA0.5 for all 42 directed pairs (\\%). Each protected expert has separate unprotected (None) and NBP rows. Columns select the companion; the diagonal is not evaluated. Mean and Max summarize its six companions; a larger NBP score means more retained merged capability.",
+            "tab:pair-"+role, ["Protected expert", "Defense"]+tasks+["Mean", "Max"], groups, wide=True, tabcolsep=3)
     records = []
     pair_summary = []
     for task in tasks:
@@ -217,8 +225,12 @@ def tables(output):
     groups.append(("Bias projection", [[label] + [cleanup_scores[t][index] for t in small_tasks]
         for label, index in [("None", 3), ("NBP", 5)]]))
     source["input_sha256"][str(cleanup_path.relative_to(ROOT))] = hashlib.sha256(cleanup_path.read_bytes()).hexdigest()
-    write_table("recovery", "Target accuracy after recovery (\\%). MLP reset replaces the final MLP output weight and bias after AGA, then applies TA. ProDistill fits block coefficients; final LayerNorm and projection are fixed. Bias projection modifies the final normalization bias before TA. Each unprotected control receives the same operation. NBP and control have identical predictions after bias projection.",
-                "tab:recovery", ["Procedure", "Defense"] + small_tasks, groups)
+    capabilities = {"MLP reset": "MLP reset: no images; final readout fixed",
+                    "ProDistill": "ProDistill: 64 images/task; final readout fixed",
+                    "Bias projection": "Bias projection: no images; final bias edited"}
+    groups = [(capabilities[group], records) for group, records in groups]
+    write_table("recovery", "Target accuracy after recovery (\\%). Group headings state image access and final-parameter edits. MLP replacement follows AGA; bias projection precedes TA. Controls receive the same operation. Bias projection gives identical NBP/control predictions.",
+                "tab:recovery", ["Defense"] + small_tasks, groups, section_headers=True)
 
     fusion_root = ROOT / "results/phase3/bias_weight_only/fusion_methods"
     fusion_rows = []

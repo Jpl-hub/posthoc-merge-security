@@ -2,21 +2,24 @@
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\caption{Target accuracy after recovery (\%). MLP reset replaces the final MLP output weight and bias after AGA, then applies TA. ProDistill fits block coefficients; final LayerNorm and projection are fixed. Bias projection modifies the final normalization bias before TA. Each unprotected control receives the same operation. NBP and control have identical predictions after bias projection.}
+\caption{Target accuracy after recovery (\%). Group headings state image access and final-parameter edits. MLP replacement follows AGA; bias projection precedes TA. Controls receive the same operation. Bias projection gives identical NBP/control predictions.}
 \label{tab:recovery}
-\begin{tabular}{llrrr}
+\begin{tabular}{lrrr}
 \toprule
-Procedure & Defense & MNIST & SVHN & DTD \\
+Defense & MNIST & SVHN & DTD \\
 \midrule
-\multirow{2}{*}{MLP reset} & None & 99.29 & 91.47 & 67.18 \\
- & \textbf{NBP} & 9.80 & 6.70 & 2.13 \\
+\multicolumn{4}{l}{MLP reset: no images; final readout fixed} \\
+None & 99.29 & 91.47 & 67.18 \\
+\textbf{NBP} & 9.80 & 6.70 & 2.13 \\
 \midrule
-\multirow{3}{*}{ProDistill} & None & 99.45 & 96.73 & 73.14 \\
- & PaRaMS & 89.27 & 66.22 & 7.29 \\
- & \textbf{NBP} & 9.80 & 6.70 & 2.13 \\
+\multicolumn{4}{l}{ProDistill: 64 images/task; final readout fixed} \\
+None & 99.45 & 96.73 & 73.14 \\
+PaRaMS & 89.27 & 66.22 & 7.29 \\
+\textbf{NBP} & 9.80 & 6.70 & 2.13 \\
 \midrule
-\multirow{2}{*}{Bias projection} & None & 99.37 & 92.50 & 69.26 \\
- & \textbf{NBP} & 99.37 & 92.50 & 69.26 \\
+\multicolumn{4}{l}{Bias projection: no images; final bias edited} \\
+None & 99.37 & 92.50 & 69.26 \\
+\textbf{NBP} & 99.37 & 92.50 & 69.26 \\
 \bottomrule
 \end{tabular}
 \end{table}

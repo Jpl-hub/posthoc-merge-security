@@ -1,11 +1,18 @@
-Protected-target accuracy after AGA and TA0.5 for all 42 directed pairs (%). Each cell is unprotected / NBP. Rows select the protected expert; columns select its companion. The diagonal is not evaluated.
+Protected-target accuracy after AGA and TA0.5 for all 42 directed pairs (%). Each protected expert has separate unprotected (None) and NBP rows. Columns select the companion; the diagonal is not evaluated. Mean and Max summarize its six companions; a larger NBP score means more retained merged capability.
 
-| Protected expert | SUN397 | Cars | RESISC45 | SVHN | GTSRB | MNIST | DTD |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| SUN397 | -- | 72.75 / 0.25 | 71.80 / 0.29 | 71.93 / 0.75 | 71.41 / 0.25 | 71.58 / 0.25 | 72.20 / 0.25 |
-| Cars | 72.98 / 0.51 | -- | 72.60 / 0.56 | 70.94 / 0.46 | 72.76 / 0.56 | 72.53 / 0.55 | 73.66 / 0.44 |
-| RESISC45 | 92.00 / 2.44 | 92.37 / 2.44 | -- | 90.29 / 2.44 | 90.40 / 2.44 | 90.38 / 2.44 | 91.71 / 2.44 |
-| SVHN | 94.61 / 6.70 | 94.31 / 6.70 | 93.30 / 6.70 | -- | 94.02 / 6.70 | 91.56 / 6.70 | 94.09 / 6.70 |
-| GTSRB | 96.14 / 1.19 | 96.49 / 1.19 | 94.25 / 1.19 | 94.17 / 1.19 | -- | 92.22 / 1.19 | 96.45 / 1.19 |
-| MNIST | 99.42 / 9.80 | 99.31 / 9.80 | 99.31 / 9.80 | 99.30 / 9.80 | 99.02 / 9.80 | -- | 99.43 / 9.80 |
-| DTD | 71.38 / 2.13 | 71.97 / 2.13 | 69.47 / 2.13 | 69.15 / 2.13 | 70.05 / 2.13 | 68.40 / 2.13 | -- |
+| Protected expert | Defense | SUN397 | Cars | RESISC45 | SVHN | GTSRB | MNIST | DTD | Mean | Max |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| SUN397 | None | -- | 72.75 | 71.80 | 71.93 | 71.41 | 71.58 | 72.20 | 71.94 | 72.75 |
+| SUN397 | NBP | -- | 0.25 | 0.29 | 0.75 | 0.25 | 0.25 | 0.25 | 0.34 | 0.75 |
+| Cars | None | 72.98 | -- | 72.60 | 70.94 | 72.76 | 72.53 | 73.66 | 72.58 | 73.66 |
+| Cars | NBP | 0.51 | -- | 0.56 | 0.46 | 0.56 | 0.55 | 0.44 | 0.51 | 0.56 |
+| RESISC45 | None | 92.00 | 92.37 | -- | 90.29 | 90.40 | 90.38 | 91.71 | 91.19 | 92.37 |
+| RESISC45 | NBP | 2.44 | 2.44 | -- | 2.44 | 2.44 | 2.44 | 2.44 | 2.44 | 2.44 |
+| SVHN | None | 94.61 | 94.31 | 93.30 | -- | 94.02 | 91.56 | 94.09 | 93.65 | 94.61 |
+| SVHN | NBP | 6.70 | 6.70 | 6.70 | -- | 6.70 | 6.70 | 6.70 | 6.70 | 6.70 |
+| GTSRB | None | 96.14 | 96.49 | 94.25 | 94.17 | -- | 92.22 | 96.45 | 94.95 | 96.49 |
+| GTSRB | NBP | 1.19 | 1.19 | 1.19 | 1.19 | -- | 1.19 | 1.19 | 1.19 | 1.19 |
+| MNIST | None | 99.42 | 99.31 | 99.31 | 99.30 | 99.02 | -- | 99.43 | 99.30 | 99.43 |
+| MNIST | NBP | 9.80 | 9.80 | 9.80 | 9.80 | 9.80 | -- | 9.80 | 9.80 | 9.80 |
+| DTD | None | 71.38 | 71.97 | 69.47 | 69.15 | 70.05 | 68.40 | -- | 70.07 | 71.97 |
+| DTD | NBP | 2.13 | 2.13 | 2.13 | 2.13 | 2.13 | 2.13 | -- | 2.13 | 2.13 |

@@ -1,20 +1,33 @@
 \begin{table*}[!t]
 \centering
 \small
-\setlength{\tabcolsep}{4pt}
-\caption{Companion-task accuracy after AGA and TA0.5 for all 42 directed pairs (\%). Each cell is unprotected / NBP. Rows select the protected expert; columns select its companion. The diagonal is not evaluated.}
+\setlength{\tabcolsep}{3pt}
+\caption{Companion-task accuracy after AGA and TA0.5 for all 42 directed pairs (\%). Each protected expert has separate unprotected (None) and NBP rows. Columns select the companion; the diagonal is not evaluated. Mean and Max summarize its six companions; a larger NBP score means more retained merged capability.}
 \label{tab:pair-companion}
-\begin{tabular}{lrrrrrrr}
+\begin{tabular}{llrrrrrrrrr}
 \toprule
-Protected expert & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD \\
+Protected expert & Defense & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD & Mean & Max \\
 \midrule
-SUN397 & -- & 73.93 / 0.50 & 92.56 / 4.57 & 95.68 / 7.76 & 96.70 / 0.48 & 99.47 / 10.28 & 71.97 / 2.13 \\
-Cars & 72.99 / 0.25 & -- & 92.79 / 2.29 & 95.39 / 7.76 & 96.91 / 3.09 & 99.41 / 10.10 & 72.55 / 2.13 \\
-RESISC45 & 72.29 / 1.31 & 73.54 / 0.53 & -- & 94.71 / 11.46 & 95.49 / 6.05 & 99.41 / 27.56 & 70.11 / 2.13 \\
-SVHN & 72.34 / 0.66 & 72.23 / 3.46 & 91.29 / 2.68 & -- & 95.00 / 13.11 & 99.39 / 9.80 & 70.74 / 2.13 \\
-GTSRB & 71.95 / 1.03 & 73.72 / 1.94 & 91.30 / 8.95 & 94.89 / 6.38 & -- & 99.17 / 35.80 & 71.17 / 2.13 \\
-MNIST & 72.01 / 1.64 & 73.34 / 1.50 & 91.38 / 2.68 & 92.78 / 6.70 & 93.81 / 2.14 & -- & 69.41 / 2.13 \\
-DTD & 72.61 / 1.97 & 74.33 / 0.55 & 92.46 / 2.06 & 95.44 / 6.70 & 96.79 / 14.07 & 99.45 / 9.80 & -- \\
+\multirow{2}{*}{SUN397} & None & -- & 73.93 & 92.56 & 95.68 & 96.70 & 99.47 & 71.97 & 88.38 & 99.47 \\
+ & \textbf{NBP} & -- & 0.50 & 4.57 & 7.76 & 0.48 & 10.28 & 2.13 & 4.28 & 10.28 \\
+\midrule
+\multirow{2}{*}{Cars} & None & 72.99 & -- & 92.79 & 95.39 & 96.91 & 99.41 & 72.55 & 88.34 & 99.41 \\
+ & \textbf{NBP} & 0.25 & -- & 2.29 & 7.76 & 3.09 & 10.10 & 2.13 & 4.27 & 10.10 \\
+\midrule
+\multirow{2}{*}{RESISC45} & None & 72.29 & 73.54 & -- & 94.71 & 95.49 & 99.41 & 70.11 & 84.26 & 99.41 \\
+ & \textbf{NBP} & 1.31 & 0.53 & -- & 11.46 & 6.05 & 27.56 & 2.13 & 8.17 & 27.56 \\
+\midrule
+\multirow{2}{*}{SVHN} & None & 72.34 & 72.23 & 91.29 & -- & 95.00 & 99.39 & 70.74 & 83.50 & 99.39 \\
+ & \textbf{NBP} & 0.66 & 3.46 & 2.68 & -- & 13.11 & 9.80 & 2.13 & 5.31 & 13.11 \\
+\midrule
+\multirow{2}{*}{GTSRB} & None & 71.95 & 73.72 & 91.30 & 94.89 & -- & 99.17 & 71.17 & 83.70 & 99.17 \\
+ & \textbf{NBP} & 1.03 & 1.94 & 8.95 & 6.38 & -- & 35.80 & 2.13 & 9.37 & 35.80 \\
+\midrule
+\multirow{2}{*}{MNIST} & None & 72.01 & 73.34 & 91.38 & 92.78 & 93.81 & -- & 69.41 & 82.12 & 93.81 \\
+ & \textbf{NBP} & 1.64 & 1.50 & 2.68 & 6.70 & 2.14 & -- & 2.13 & 2.80 & 6.70 \\
+\midrule
+\multirow{2}{*}{DTD} & None & 72.61 & 74.33 & 92.46 & 95.44 & 96.79 & 99.45 & -- & 88.52 & 99.45 \\
+ & \textbf{NBP} & 1.97 & 0.55 & 2.06 & 6.70 & 14.07 & 9.80 & -- & 5.86 & 14.07 \\
 \bottomrule
 \end{tabular}
 \end{table*}
