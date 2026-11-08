@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import math
 from pathlib import Path
 
 import torch
@@ -51,6 +52,23 @@ def construct(cfg):
         contrast = weights[requested] - weights.mean(0)
         projected = null @ (null.T @ (proxy @ contrast))
         controls["Projected_contrast"] = projected / projected.norm() * delta.norm()
+        if cfg.get("class_contrast_own_bound", False):
+            from _impl.defenses import parameters
+            from _impl.merge import merge
+            params = parameters(merge(anchor, expert, anchor, .5), head)
+            winner = int((projected @ params["projection"] @ weights.T).argmax())
+            rivals = torch.arange(len(weights)) != winner
+            q = params["projection"] @ (weights[winner] - weights[rivals]).T
+            gaps = projected @ q
+            assert torch.all(gaps > 1e-10)
+            normal = params["gamma"][:, None] * q
+            normal -= normal.mean(0, keepdim=True)
+            worst = math.sqrt(len(bias)) * normal.norm(dim=0)
+            magnitude = 2 * float(((worst - params["beta"] @ q).clamp_min(0) / (.5 * gaps)).max())
+            update = magnitude * projected
+            actual = (bias + update).float().double() - bias
+            assert torch.all((params["beta"] + .5 * actual) @ q - worst > 0)
+            controls["Projected_contrast"] = update
     out = new_output(cfg["output"], cfg)
     specs = ({"NBP": {"target": cfg["target"], "release": ref, "AGA_edits": ref}}
              if cfg.get("include_nbp", True) else {})
