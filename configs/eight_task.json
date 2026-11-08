@@ -11,6 +11,10 @@
     "DTD"
   ],
   "evaluate": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "GTSRB",
     "MNIST",
     "DTD",
     "SVHN"
@@ -22,66 +26,74 @@
     "git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
     "commit": "fb61429f5e6f3517102d506697a150ac26abbdea"
   },
-  "experiment": "Frozen task-SVD-directed releases in author-order eight-expert TA0.2; three datasets evaluated",
-  "output": "outputs/refactored/eight_task",
-  "source_sha256": "76a1683f45e9679879dad105e5f937ec774bf18d6b2fd9ca931696428c135730",
-  "inputs": {
-    "evaluation": {
-      "path": "configs/evaluate.json",
-      "sha256": "1aa7a1c0e5242d0bf68aaf389fbd783646f2fbf3eb1e617c0df6edd2569ece9c"
-    },
-    "author_entry": {
-      "path": "external/secure-merge-attack/main_task_arithmetic_attack_B32.py",
-      "sha256": "899a9f88264e3b72a630a5a5b459ce59d65903eeac62c2f64b5273478a0fb908"
-    }
-  },
+  "scopes": [
+    "None",
+    "Protected expert"
+  ],
+  "experiment": "Eight-expert Task Arithmetic with one NBP-protected expert; all seven validated datasets",
+  "output": "outputs/nbp_eight_task",
+  "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
   "cases": [
+    {
+      "target": "SUN397",
+      "defenses": [
+        "NBP_SUN397"
+      ]
+    },
+    {
+      "target": "Cars",
+      "defenses": [
+        "NBP_Cars"
+      ]
+    },
+    {
+      "target": "RESISC45",
+      "defenses": [
+        "NBP_RESISC45"
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "defenses": [
+        "NBP_GTSRB"
+      ]
+    },
     {
       "target": "MNIST",
       "defenses": [
-        "TaskDirected_MNIST"
+        "NBP_MNIST"
       ]
     },
     {
       "target": "DTD",
       "defenses": [
-        "TaskDirected_DTD"
+        "NBP_DTD"
       ]
     },
     {
       "target": "SVHN",
       "defenses": [
-        "TaskDirected_SVHN"
+        "NBP_SVHN"
       ]
     }
   ],
-  "scopes": [
-    "None",
-    "Protected expert"
-  ],
-  "defense_labels": {
-    "TaskDirected_MNIST": "Defense 2",
-    "TaskDirected_DTD": "Defense 2",
-    "TaskDirected_SVHN": "Defense 2"
-  },
-  "table_note": "Same frozen task-SVD-directed releases as the two-expert TA0.5 experiment; no reconstruction or selection from these scores. All three standalone gates already passed. Known-family global-coordinate recovery still applies. Historically exposed tests; no tuning. Eight experts participate but only MNIST,DTD,SVHN are evaluated; no eight-task average. No all-expert AGA run in this setting.",
-  "expert_training_updates": 0,
-  "new_defense_weights": 0,
   "new_AGA_calls": 0,
-  "mechanism_question": "At the public-base patch term, I+0.2(P-I) has eigenvalues1 and0.6 for paired involutions,whereas0.5 gives1 and0. This tests whether prior protection survives without that rank collapse in the fixed author eight-expert setting; it is not an isolated coefficient ablation or a classification guarantee.",
-  "fixed_after_results_policy": "Retain every case. No order/rank/objective/coefficient/seed or release changes; no new candidate. Native and two-expert evidence remain unchanged. Failure is reported rather than repaired.",
-  "scope_limitations": [
-    "Eight participating experts but only three full datasets evaluated; no eight-task average.",
-    "Protected-expert AGA follows original entry; eight-expert all-AGA not run.",
-    "Fixed native task checkpoints, not proven byte-identical to author paper files.",
-    "Current known-family recovery remains exact for the three releases; this experiment does not resolve it."
-  ],
-  "implementation_repair": {
-    "change": "Convert replay-context image count to a Python int before JSON serialization; no scientific changes.",
-    "first_public_preregistration": "a8c19f33873063e087bd50672fa525c8850314fb",
-    "first_local_preregistration": "6ebda9b2e797da6cd26aabdd24469b625918d20c",
-    "failure_evidence": "results/task_directed_pairing/eight_expert/serialization_failure.json",
-    "failed_pilot_retained": "outputs/task_directed_eight_task_20261022/pilot.serialization_failure",
-    "same_model_data_coefficients_thresholds": true
-  }
+  "new_defense_weights": 0,
+  "expert_training_updates": 0,
+  "test_sizes": {
+    "SUN397": 19850,
+    "Cars": 8041,
+    "RESISC45": 6300,
+    "GTSRB": 12630,
+    "MNIST": 10000,
+    "DTD": 1880,
+    "SVHN": 26032
+  },
+  "inputs": {
+    "evaluation": {
+      "path": "configs/evaluate.json",
+      "sha256": "6981f7ccd4b6b06bf1c36f34d39ec91711953bc472aeec5f4067f11a65df8686"
+    }
+  },
+  "table_note": "Eight participating experts; seven evaluated datasets. No EuroSAT test score or eight-task average. Frozen NBP releases and clean AGA references; no new construction."
 }

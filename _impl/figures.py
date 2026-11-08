@@ -95,7 +95,9 @@ def figures(output, table_sources):
                         for method in ["Unprotected", "Defense 1"]] for t in tasks])
     fig, ax = plt.subplots(figsize=(3.4, 3.25))
     fig.subplots_adjust(left=.24, right=.99, bottom=.28, top=.81)
-    cells = ax.imshow(values, cmap="Blues", vmin=0, vmax=100, aspect="auto")
+    cells = ax.pcolormesh(np.arange(7)-.5, np.arange(8)-.5, values,
+                          cmap="Blues", vmin=0, vmax=100, shading="flat", rasterized=False)
+    ax.set(xlim=(-.5, 5.5), ylim=(6.5, -.5))
     ax.set_xticks(np.arange(6), ["None", "NBP"]*3)
     ax.set_yticks(np.arange(7), tasks)
     ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False, length=0, pad=4)
@@ -117,6 +119,7 @@ def figures(output, table_sources):
     bar = fig.colorbar(cells, cax=cax, orientation="horizontal", ticks=[0, 50, 100])
     bar.set_label("Target accuracy after AGA + fusion (%)", fontsize=8.5, labelpad=3)
     bar.outline.set_visible(False)
+    bar.solids.set_rasterized(False)
     bar.ax.tick_params(length=2, labelsize=8)
     fig.savefig(OUT / "fusion_tasks.pdf", metadata={"Title": "Matched target accuracy after AGA and fusion"})
     plt.close(fig)
@@ -189,6 +192,10 @@ def figures(output, table_sources):
                         and r["defense"] == "NBP_"+task and r["objective"] == "mean")
         ax.scatter(selected["coefficient"], selected["target_accuracy"],
                    marker="*", s=65, color=protected, edgecolors="white", linewidths=.4, zorder=5)
+        if task == "SVHN":
+            ax.annotate(r"Selected $\lambda=0.7$", xy=(selected["coefficient"], selected["target_accuracy"]),
+                        xytext=(.12, 38), fontsize=8, color=control,
+                        arrowprops={"arrowstyle": "->", "color": "#777777", "linewidth": .6})
         ax.set(ylim=(-5, 105), yticks=[0, 50, 100], xlim=(.075, 1.025))
         ax.set_title(task, loc="left", fontsize=9, pad=3)
         ax.grid(axis="y", color="#eeeeee", linewidth=.6)
