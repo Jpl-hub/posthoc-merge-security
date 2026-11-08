@@ -1,6 +1,7 @@
 """Plot frozen NBP results with the same data used by the table exporter."""
 
 import hashlib
+import csv
 import json
 from pathlib import Path
 
@@ -86,7 +87,7 @@ def figures(output, table_sources):
     for ax, merger in zip(axes, ["TA", "TIES", "DARE+TA"]):
         for offset, method, label, color, marker, face in [
             (-.17, "Unprotected", "Unprotected", control, "o", "white"),
-            (0, "PaRaMS", "PaRaMS", baseline, "+", baseline),
+            (0, "PaRaMS", "PaRaMS", baseline, "s", "white"),
             (.17, "Defense 1", "NBP", protected, "^", protected),
         ]:
             values = [ta[t, method] if merger == "TA" else
@@ -147,3 +148,52 @@ def figures(output, table_sources):
     fig.savefig(OUT / "readout_predictions.pdf", metadata={"Title": "Fixed-readout bound and observed class concentration"})
     plt.close(fig)
     print("Wrote observed prediction concentration for all35 additional pairs; no image forwards.")
+
+    # All grid points are calibration measurements; never present them as test curves.
+    selection_root = ROOT / "results/phase3/bias_weight_only/coefficient_selection"
+    selection_check = json.loads((selection_root / "selection_validation.json").read_text())
+    assert selection_check["status"] == "passed" and selection_check["selection_rows"] == 18
+    with (selection_root / "calibration_counts.csv").open(newline="") as stream:
+        calibration = list(csv.DictReader(stream))
+    assert len(calibration) == 270
+    curve = {(r["target"], r["defense"], r["dataset"], float(r["coefficient"])):
+             100*int(r["correct"])/int(r["n"])
+             for r in calibration if r["merger"] == "TA"}
+    assert len(curve) == 180 and all(int(r["n"]) == 256 for r in calibration)
+    choices = json.loads((selection_root / "selected.json").read_text())
+    grid = json.loads((selection_root / "selection_rule.json").read_text())["coefficient_grid"]
+    fig, axes = plt.subplots(3, 1, figsize=(3.25, 4.35), sharex=True, sharey=True)
+    fig.subplots_adjust(left=.17, right=.98, bottom=.12, top=.80, hspace=.43)
+    for ax, task in zip(axes, ["MNIST", "SVHN", "DTD"]):
+        partner = next(r["partner"] for r in calibration if r["target"] == task)
+        for method, label, color, marker in [("Unprotected", "Unprotected", control, "o"),
+                ("PaRaMS_"+task, "PaRaMS", baseline, "s"),
+                ("NBP_"+task, "NBP", protected, "^")]:
+            for dataset, style in [(task, "-"), (partner, "--")]:
+                values = [curve[task, method, dataset, a] for a in grid]
+                ax.plot(grid, values, color=color, linestyle=style, linewidth=.85,
+                        marker=marker if dataset == task else None, markersize=3,
+                        markerfacecolor="white", markeredgewidth=.65,
+                        label=label if dataset == task else None)
+            selected = next(r for r in choices if r["task"] == task
+                            and r["defense"] == method and r["objective"] == "mean")
+            ax.scatter(selected["coefficient"], selected["target_accuracy"],
+                       marker="*", s=50, color=color, edgecolors="white", linewidths=.35, zorder=5)
+        ax.set(ylim=(-5, 105), yticks=[0, 50, 100], xlim=(.075, 1.025))
+        ax.set_title(task, loc="left", fontsize=9, pad=3)
+        ax.grid(axis="y", color="#eeeeee", linewidth=.6)
+    axes[-1].set(xticks=[.1, .3, .5, .7, 1.], xlabel=r"Shared TA coefficient $\lambda$")
+    handles, labels = axes[0].get_legend_handles_labels()
+    from matplotlib.lines import Line2D
+    fig.legend(handles, labels, ncol=3, frameon=False, loc="upper center",
+               bbox_to_anchor=(.54, 1), columnspacing=.7, handlelength=1.6, handletextpad=.35)
+    styles = [Line2D([], [], color=control, label="Target", linewidth=.9),
+                Line2D([], [], color=control, linestyle="--", label="Companion", linewidth=.9),
+                Line2D([], [], color=control, marker="*", linestyle="None", label="Selected", markersize=7)]
+    fig.legend(styles, ["Target", "Companion", "Selected"], ncol=3, frameon=False,
+               loc="upper center", bbox_to_anchor=(.54, .94), columnspacing=.7,
+               handlelength=1.6, handletextpad=.35)
+    fig.supylabel("Calibration accuracy (%)", x=.005, fontsize=8.5)
+    fig.savefig(OUT / "coefficient_calibration.pdf", metadata={"Title": "Complete labelled calibration curves; 256 images per task"})
+    plt.close(fig)
+    print("Wrote complete coefficient calibration curves from270 frozen rows; no new model evaluation.")

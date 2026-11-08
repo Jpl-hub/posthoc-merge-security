@@ -13,7 +13,7 @@ python -m experiment.report --output outputs/nbp_tables --figure
 python -m pytest -q
 ```
 
-This command needs no checkpoints, images or GPU. It reads frozen result counts, checks their input hashes, and exports Markdown, TeX, CSV and vector PDF figures. [Recorded table exports](results/phase3/bias_weight_only/tables/) are included for comparison. Manuscript sources and PDFs are maintained separately.
+This command needs no checkpoints, images or GPU. It reads frozen result counts, checks their input hashes, and exports Markdown, TeX, CSV and vector PDF figures. Coefficient curves show all recorded calibration points (256 training images per task); selected full-test results are reported separately. [Recorded table exports](results/phase3/bias_weight_only/tables/) are included for comparison. Manuscript sources and PDFs are maintained separately.
 
 ## Run model experiments
 
