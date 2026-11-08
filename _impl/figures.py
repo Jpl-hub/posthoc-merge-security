@@ -66,7 +66,7 @@ def figures(output, table_sources):
     plt.close(fig)
     print("Wrote", out, "from verified fixed-amplitude controls.")
 
-    # Per-task paired markers retain all matched controls without connecting categories.
+    # Per-task comparisons use the same complete-test results as the tables.
     manifest = json.loads((Path(table_sources)).read_text())
     for relative, expected in manifest["input_sha256"].items():
         assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == expected
@@ -81,32 +81,46 @@ def figures(output, table_sources):
         fusion.extend(json.loads((folder / "results.json").read_text()))
     fused = {(r["target"], r["merger"], r["defense"]): 100*r["correct"]/r["n"]
              for r in fusion if r["dataset"] == r["target"] and r["attack_scope"] == "Protected expert"}
-    fig, axes = plt.subplots(3, 1, figsize=(3.25, 3.75), sharex=True, sharey=True)
-    fig.subplots_adjust(left=.16, right=.98, bottom=.15, top=.85, hspace=.44)
-    x = np.arange(len(tasks))
-    for ax, merger in zip(axes, ["TA", "TIES", "DARE+TA"]):
-        for offset, method, label, color, marker, face in [
-            (-.17, "Unprotected", "Unprotected", control, "o", "white"),
-            (0, "PaRaMS", "PaRaMS", baseline, "s", "white"),
-            (.17, "Defense 1", "NBP", protected, "^", protected),
-        ]:
-            values = [ta[t, method] if merger == "TA" else
-                      fused[t, merger, "Defense1_"+t if method == "Defense 1" else
-                            "PaRaMS_"+t if method == "PaRaMS" else method] for t in tasks]
-            ax.scatter(x+offset, values, marker=marker, s=22, color=color,
-                       facecolors=face, linewidths=.8, label=label, zorder=3)
-        ax.set(ylim=(-5, 105), yticks=[0, 50, 100], xlim=(-.55, len(tasks)-.45))
-        ax.set_title(merger, loc="left", pad=2)
-        ax.grid(axis="y", color="#eeeeee", linewidth=.6, zorder=0)
-        ax.tick_params(axis="x", length=0)
-    axes[-1].set_xticks(x, ["SUN", "Cars", "RESISC", "SVHN", "GTSRB", "MNIST", "DTD"],
-                       rotation=45, ha="right")
-    fig.legend(*axes[0].get_legend_handles_labels(), frameon=False, fontsize=8.5,
-               ncol=3, loc="upper center", bbox_to_anchor=(.53,1), columnspacing=.6, handletextpad=.3)
-    fig.supylabel("Target accuracy after AGA + fusion (%)", x=.005, fontsize=8.5)
+    def fusion_score(task, merger, method):
+        if merger == "TA":
+            return ta[task, method]
+        name = "Defense1_"+task if method == "Defense 1" else "PaRaMS_"+task if method == "PaRaMS" else method
+        return fused[task, merger, name]
+
+    mergers = ["TA", "TIES", "DARE+TA"]
+    # PaRaMS is retained in the tables; its recovered scores overlap the control.
+    assert max(abs(fusion_score(t, m, "PaRaMS") - fusion_score(t, m, "Unprotected"))
+               for t in tasks for m in mergers) < .06
+    values = np.array([[fusion_score(t, m, method) for m in mergers
+                        for method in ["Unprotected", "Defense 1"]] for t in tasks])
+    fig, ax = plt.subplots(figsize=(3.4, 3.25))
+    fig.subplots_adjust(left=.24, right=.99, bottom=.28, top=.81)
+    cells = ax.imshow(values, cmap="Blues", vmin=0, vmax=100, aspect="auto")
+    ax.set_xticks(np.arange(6), ["None", "NBP"]*3)
+    ax.set_yticks(np.arange(7), tasks)
+    ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False, length=0, pad=4)
+    for i, merger in enumerate(mergers):
+        ax.text((2*i+1)/6, 1.18, merger, transform=ax.transAxes, ha="center", fontsize=9)
+    for y in range(7):
+        for x in range(6):
+            ax.text(x, y, f"{values[y,x]:.1f}", ha="center", va="center",
+                    color="white" if values[y,x] > 60 else "black", fontsize=8)
+    ax.set_xticks(np.arange(-.5, 6, 1), minor=True)
+    ax.set_yticks(np.arange(-.5, 7, 1), minor=True)
+    ax.grid(which="minor", color="white", linewidth=.65)
+    ax.tick_params(which="minor", length=0)
+    for x in [1.5, 3.5]:
+        ax.axvline(x, color="white", linewidth=3)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    cax = fig.add_axes([.32, .12, .58, .035])
+    bar = fig.colorbar(cells, cax=cax, orientation="horizontal", ticks=[0, 50, 100])
+    bar.set_label("Target accuracy after AGA + fusion (%)", fontsize=8.5, labelpad=3)
+    bar.outline.set_visible(False)
+    bar.ax.tick_params(length=2, labelsize=8)
     fig.savefig(OUT / "fusion_tasks.pdf", metadata={"Title": "Matched target accuracy after AGA and fusion"})
     plt.close(fig)
-    print("Wrote paired fusion comparison from recorded complete-test results.")
+    print("Wrote annotated fusion comparison from recorded complete-test results.")
 
     # Match all35 newly evaluated pairs to their fixed direct-TA readout certificate.
     diagnostic_path = ROOT / "results/phase3/bias_weight_only/partner_analysis/prediction_diagnostics.json"

@@ -69,19 +69,25 @@ def tables(output):
     assert len(eight) == len(tasks) * len(methods) * 2
 
 
-    def write_table(name, caption, label, headers, groups, wide=False, tabcolsep=4, section_headers=False):
+    def write_table(name, caption, label, headers, groups, wide=False, tabcolsep=4, section_headers=False, column_spec=None):
         env = "table*" if wide else "table"
         columns = len(headers)
         grouped = any(group for group, _ in groups) and not section_headers
-        spec = "ll" + "r" * (columns - 2) if grouped else "l" + "r" * (columns - 1)
+        spec = column_spec or ("ll" + "r" * (columns - 2) if grouped else "l" + "r" * (columns - 1))
         lines = [rf"\begin{{{env}}}[!t]", r"\centering", r"\small",
                  rf"\setlength{{\tabcolsep}}{{{tabcolsep}pt}}", rf"\caption{{{caption}}}",
                  rf"\label{{{label}}}", r"\begin{tabular}{" + spec + "}",
                  r"\toprule", " & ".join(headers) + r" \\", r"\midrule"]
         md_caption = caption.replace(r"\%", "%").replace(r"Table~\ref{tab:main}", "the main table").replace(r"Table~\ref{tab:fusion}", "the fusion summary table")
-        md_headers = [h.replace(r"$\lambda$", "Coeff.").replace(r"\shortstack{", "").replace("}", "").replace(r"\\", " ").replace("$_t$", " (target)").replace("$_c$", " (companion)") for h in headers]
+        md_headers = []
+        for h in headers:
+            if r"\shortstack{" in h:
+                h = h.replace(r"\shortstack{", "").replace("}", "")
+            md_headers.append(h.replace(r"$\lambda$", "Coeff.").replace(r"\\", " ")
+                              .replace("$_t$", " (target)").replace("$_c$", " (companion)"))
         md = [md_caption, "", "| " + " | ".join(md_headers) + " |",
-              "| " + " | ".join(["---"] * (2 if grouped else 1)
+              "| " + " | ".join(["---"] * columns if column_spec else
+                                  ["---"] * (2 if grouped else 1)
                                   + ["---:"] * (columns - (2 if grouped else 1))) + " |"]
         for group_id, (group, records) in enumerate(groups):
             if group_id:
@@ -231,6 +237,14 @@ def tables(output):
     groups = [(capabilities[group], records) for group, records in groups]
     write_table("recovery", "Target accuracy after recovery (\\%). Group headings state image access and final-parameter edits. MLP replacement follows AGA; bias projection precedes TA. Controls receive the same operation. Bias projection gives identical NBP/control predictions.",
                 "tab:recovery", ["Defense"] + small_tasks, groups, section_headers=True)
+    write_table("recovery_access", "Implemented recovery settings. All procedures can read the published weights. AGA and MLP replacement use the public base; coefficient fitting and selection use the public base and expert checkpoints. Bias projection needs only the published bias and projection. The changed parameters describe recovery itself; subsequent fusion also combines final normalization and projection parameters.",
+        "tab:recovery-access", ["Procedure", "Images/task", "Labels", "Changed parameters", "Budget"], [("", [
+            ["AGA", "0", "No", "Attention and MLP blocks", "One author recovery pass"],
+            ["MLP replacement", "0", "No", "Last MLP output matrix and bias", "One replacement after AGA"],
+            ["ProDistill", "64", "No", "Element-wise block coefficients", "100 steps/block"],
+            ["Coefficient selection", "256", "Yes", "Shared TA coefficient", "10 values, 0.1--1.0"],
+            ["Bias projection", "0", "No", "Final LayerNorm bias", "One least-squares solve"],
+        ])], wide=True, tabcolsep=3, column_spec="lllp{5.2cm}l")
 
     fusion_root = ROOT / "results/phase3/bias_weight_only/fusion_methods"
     fusion_rows = []
@@ -446,7 +460,7 @@ def tables(output):
     # Same-host construction timings are separate from model utility tests.
     cost_root = ablation_root / "extension" / "cost"
     cost_files = [cost_root / f"{task}_{method}.json" for task in small_tasks for method in ["bias", "params"]]
-    exported_tables = ["main", "partners", "pair_target", "pair_companion", "recovery", "fusion", "fusion_tasks", "fusion_companions", "ablation", "class_projection", "precision", "backbone", "cleanup", "equal_weight"]
+    exported_tables = ["main", "partners", "pair_target", "pair_companion", "recovery", "recovery_access", "fusion", "fusion_tasks", "fusion_companions", "ablation", "class_projection", "precision", "backbone", "cleanup", "equal_weight"]
     if bound_available:
         exported_tables.append("projection_bound")
     if all(p.exists() for p in cost_files):
@@ -503,6 +517,30 @@ def tables(output):
             write_table(name, "Complete-test accuracy after labeled coefficient selection (\\%). Each method separately maximizes "+criterion+" accuracy on the same 256 training examples per task, using TA coefficients 0.1--1.0 in steps of 0.1. Coefficients are frozen before test evaluation. AGA processes the protected expert first; both task updates use the selected coefficient.",
                 "tab:"+name.replace("_","-"), ["Task","Defense",r"$\lambda$","Target","Companion"], groups)
             exported_tables.append(name)
+        readout_path = selection_root / "readout_analysis.json"
+        readout = json.loads(readout_path.read_text())
+        assert readout["numpy_formula_check"]
+        old = json.loads(original_path.read_text())["new_batches"]["SVHN"]["evaluation"]["full"]["rows"]
+        fixed = next(r for r in old if r["defense"] == "Defense1" and r["merger"] == "TA"
+                     and r["attack_scope"] == "Protected expert" and r["dataset"] == "SVHN")
+        selected = next(r for r in selection["choices"] if r["task"] == "SVHN"
+                        and r["defense"] == "NBP_SVHN" and r["objective"] == "mean")
+        records = []
+        for coefficient, measured in [(0.5, fixed), (selected["coefficient"],
+                test_rows["SVHN", selected["coefficient"], "NBP_SVHN", "SVHN"])]:
+            r = next(r for r in readout["rows"] if r["task"] == "SVHN" and r["protected"]
+                     and r["coefficient"] == coefficient)
+            counts = measured["predicted_class_counts"]
+            assert sum(counts) == measured["n"] == 26032
+            dominant = max(range(len(counts)), key=counts.__getitem__)
+            records.append([f"{coefficient:.1f}", f"{r['embedding_shift_norm']:.2f}",
+                f"{r['minimum_margin_lower_bound']:.2f}", str(dominant),
+                f"{100*counts[dominant]/measured['n']:.2f}", f"{100*measured['correct']/measured['n']:.2f}"])
+        write_table("coefficient_readout", "SVHN after AGA and TA, using the same protected checkpoint and all 26,032 test images. Coefficient 0.7 is selected on training examples. $L_{\\min}$ is the minimum pairwise margin bound; Class and Share give the most frequent prediction and its percentage. Acc. is test accuracy (\\%).",
+            "tab:coefficient-readout", [r"$\lambda$", r"$\|\Delta t\|_2$", r"$L_{\min}$", "Class", "Share", "Acc."],
+            [("", records)], tabcolsep=3)
+        source["input_sha256"][str(readout_path.relative_to(ROOT))] = hashlib.sha256(readout_path.read_bytes()).hexdigest()
+        exported_tables.append("coefficient_readout")
     (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
         "eight_expert_protected_task_cells": len(eight),
         "tables": exported_tables}, indent=2) + "\n")

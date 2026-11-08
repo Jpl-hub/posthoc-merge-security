@@ -1,0 +1,6 @@
+SVHN after AGA and TA, using the same protected checkpoint and all 26,032 test images. Coefficient 0.7 is selected on training examples. $L_{\min}$ is the minimum pairwise margin bound; Class and Share give the most frequent prediction and its percentage. Acc. is test accuracy (%).
+
+| Coeff. | $\|\Delta t\|_2$ | $L_{\min}$ | Class | Share | Acc. |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 0.5 | 43.95 | 45.55 | 0 | 100.00 | 6.70 |
+| 0.7 | 67.05 | -165.86 | 9 | 23.99 | 68.21 |
