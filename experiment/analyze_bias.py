@@ -10,7 +10,7 @@ import torch
 
 from _impl.io import digest, new_output, save_json
 from _impl.models import initialize, load_checkpoint
-from cfg import require_root
+from cfg import CHECKPOINTS, require_root
 
 
 def readout(model):
@@ -28,6 +28,79 @@ def combine(base, models, coefficient):
             delta = delta + (model[key] - value)
         result[key] = value + coefficient * delta
     return result
+
+
+@torch.no_grad()
+def tail_equivalence(output):
+    """Check affine tail equivalence with a fixed prefix, not a new defense.
+
+    For centered normalized z, the embedding is z A + c with
+    A = C diag(gain) P and c = bias^T P. Equal A,c give the same
+    embedding for every such z. When A has full column rank, gain=1,
+    projection=A and bias=A(A^T A)^-1 c realize that same map.
+    """
+    paths = ["results/phase3/bias_weight_only/eight_expert/evaluation.json",
+             "results/phase3/bias_weight_only/eight_expert/extension_evaluation.json"]
+    specs = {k: v for p in paths for k, v in json.loads(Path(p).read_text())["defenses"].items()
+             if k.startswith("Defense1_")}
+    out = new_output(output, {"source_sha256": digest(__file__),
+        "input_protocol_sha256": {p: digest(p) for p in paths},
+        "scope": "Fixed prefix and exact preservation of the full final embedding for all centered normalized states. "
+                 "No image data, partner, head, new publication or accuracy measurement. "
+                 "This does not exclude approximate task-preserving changes or changes to earlier blocks.",
+        "dtype": "float64", "rank_relative_tolerance": 1e-10,
+        "device": "cuda", "maximum_relative_formula_error": 1e-9,
+        "probes": "16 fixed DCT hidden vectors, scales1e-3--1e3; algebra checks, not images"})
+    records = []
+    for task in ["SUN397", "Cars", "RESISC45", "SVHN", "GTSRB", "MNIST", "DTD"]:
+        name = f"{task}/finetuned.pt"
+        model = load_checkpoint(name)
+        original = {k: v.double().cuda() for k, v in readout(model).items()}
+        eps = model.model.visual.ln_post.eps
+        del model
+        gain, bias, projection = (original[k] for k in ["gain", "bias", "projection"])
+        a = gain[:, None] * projection
+        a = a - a.mean(0, keepdim=True)
+        u, singular, vh = torch.linalg.svd(a, full_matrices=False)
+        rank = int((singular > singular[0]*1e-10).sum())
+        assert rank == a.shape[1], (task, rank)
+        c = bias @ projection
+        canonical_bias = u @ ((vh @ c) / singular)
+        # Independent CPU QR solve, explicit centering matrix and native LayerNorm.
+        p_np, g_np, b_np = [v.cpu().numpy() for v in [projection, gain, bias]]
+        center = np.eye(len(g_np)) - np.ones((len(g_np), len(g_np)))/len(g_np)
+        a_np = center @ (g_np[:, None]*p_np)
+        q_np, r_np = np.linalg.qr(a_np, mode="reduced")
+        independent_bias = q_np @ np.linalg.solve(r_np.T, b_np @ p_np)
+        error = float(np.linalg.norm(independent_bias-canonical_bias.cpu().numpy()) /
+                      max(np.linalg.norm(independent_bias), 1e-15))
+        assert error < 1e-9, (task, error)
+        coordinate = torch.arange(len(gain), dtype=torch.double, device="cuda") + .5
+        frequencies = torch.arange(1, 17, dtype=torch.double, device="cuda")[:, None]
+        hidden = torch.cos(math.pi * frequencies * coordinate / len(gain))
+        hidden *= torch.logspace(-3, 3, 16, dtype=torch.double, device="cuda")[:, None]
+        native = torch.nn.functional.layer_norm(hidden, (len(gain),), gain, bias, eps) @ projection
+        folded = torch.nn.functional.layer_norm(hidden, (len(gain),), torch.ones_like(gain), canonical_bias, eps) @ a
+        feature_error = float((native-folded).norm()/native.norm())
+        assert feature_error < 1e-9, (task, feature_error)
+        ref = specs["Defense1_"+task]["release"]
+        assert digest(ref["path"]) == ref["sha256"]
+        edits = torch.load(ref["path"], map_location="cpu", weights_only=False)
+        assert list(edits) == ["model.visual.ln_post.bias"]
+        released_bias = edits["model.visual.ln_post.bias"].double().cuda()
+        canonical_released_bias = u @ ((vh @ (released_bias @ projection)) / singular)
+        record = dict(task=task, checkpoint_sha256=digest(CHECKPOINTS/name),
+            release_sha256=ref["sha256"], centered_map_rank=rank,
+            minimum_singular_value=float(singular[-1]), condition_number=float(singular[0]/singular[-1]),
+            independent_numpy_relative_error=error, hidden_vector_relative_embedding_error=feature_error,
+            original_update_norm=float((released_bias-bias).norm()),
+            folded_bias_difference_norm=float((canonical_released_bias-canonical_bias).norm()),
+            fp32_release_embedding_residual_norm=float(((released_bias-bias) @ projection).norm()))
+        records.append(record)
+        save_json(out / "results.json", {"records": records, "completed": len(records) == 7,
+            "real_image_forwards": 0, "synthetic_image_forwards": 0,
+            "expert_updates": 0, "new_defense_weights": 0})
+        print(task, rank, error, feature_error, flush=True)
 
 
 @torch.no_grad()
@@ -124,11 +197,16 @@ def direction_analysis(output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True)
-    parser.add_argument("--directions", action="store_true", help="Analyze every class choice and storage rounding")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--directions", action="store_true", help="Analyze every class choice and storage rounding")
+    mode.add_argument("--tail-equivalence", action="store_true", help="Check the affine final readout with a fixed prefix")
     args = parser.parse_args()
     require_root()
     initialize()
     torch.set_num_threads(2)
+    if args.tail_equivalence:
+        tail_equivalence(args.output)
+        return
     if args.directions:
         direction_analysis(args.output)
         return
