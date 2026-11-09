@@ -1,0 +1,114 @@
+{
+  "coefficient": 0.125,
+  "task_order": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "EuroSAT",
+    "SVHN",
+    "GTSRB",
+    "MNIST",
+    "DTD"
+  ],
+  "evaluate": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "GTSRB",
+    "MNIST",
+    "DTD",
+    "SVHN"
+  ],
+  "score_tolerance": 0.0005,
+  "author_TaskVector": {
+    "path": "external/secure-merge-attack/task_vectors.py",
+    "sha256": "9d95bdb8b9fef2a4457e47b28ea3e1ccc188f30ded8c4c1ec1fe1e55cfded4af",
+    "git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea"
+  },
+  "scopes": [
+    "None",
+    "Protected expert"
+  ],
+  "experiment": "Complete the four missing protected targets under equal averaging of eight experts; same original NBP releases and clean AGA references, all seven validated datasets",
+  "output": "outputs/nbp_eight_equal_extension_20261109",
+  "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+  "cases": [
+    {
+      "target": "SUN397",
+      "defenses": [
+        "NBP_SUN397"
+      ]
+    },
+    {
+      "target": "Cars",
+      "defenses": [
+        "NBP_Cars"
+      ]
+    },
+    {
+      "target": "RESISC45",
+      "defenses": [
+        "NBP_RESISC45"
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "defenses": [
+        "NBP_GTSRB"
+      ]
+    }
+  ],
+  "new_AGA_calls": 0,
+  "new_defense_weights": 0,
+  "expert_training_updates": 0,
+  "registered_utc": "2026-11-08T18:24:32.544385+00:00",
+  "test_sizes": {
+    "SUN397": 19850,
+    "Cars": 8041,
+    "RESISC45": 6300,
+    "GTSRB": 12630,
+    "MNIST": 10000,
+    "DTD": 1880,
+    "SVHN": 26032
+  },
+  "finite_budget": {
+    "wall_limit_seconds": 10800,
+    "planned_rows_each_stage": 112,
+    "new_AGA_calls": 0,
+    "new_defense_points": 0
+  },
+  "inputs": {
+    "evaluation": {
+      "path": "configs/evaluate.json",
+      "sha256": "6981f7ccd4b6b06bf1c36f34d39ec91711953bc472aeec5f4067f11a65df8686"
+    }
+  },
+  "scope_limit": "Extend existing equal-weight MNIST/SVHN/DTD results to SUN397/Cars/RESISC45/GTSRB. Freeze coefficient1/8, inputs and all directions before evaluation. Evaluate all seven datasets for each of the four protected targets. No new PaRaMS construction or EuroSAT test score. All outcomes retained; no method selection.",
+  "maximum_seconds": 10800,
+  "score_reference": {
+    "full": {
+      "scores": {
+        "path": "outputs/nbp_eight_equal_extension_20261109/full.interrupted/scores.pt",
+        "sha256": "21facf1c91cc1366910f2ffa49999cc4cd6c45679f77ce21165d1593ede99455"
+      },
+      "parameters": {
+        "path": "outputs/nbp_eight_equal_extension_20261109/full.interrupted/pre_evaluation.json",
+        "sha256": "567315caf2978ceabb6fc37023c52401053ce712b505900ca544d15698f7c083"
+      },
+      "validation": {
+        "path": "outputs/nbp_eight_equal_extension_20261109/full.interrupted/independent.json",
+        "sha256": "b668d0f6eb217f5795d3b0efa3fbc72ab46949fee1b39825070bebdb18e3d083"
+      }
+    }
+  },
+  "reuse_defenses": [
+    "Unprotected",
+    "NBP_SUN397"
+  ],
+  "execution_resume": {
+    "reason": "Process absent after eight persisted full-test rows; no traceback or cgroup OOM event. Cause not established.",
+    "initial_protocol_commit": "4d3bb942",
+    "unchanged": "same source, releases, coefficient, datasets, thresholds and pilot parameter hashes; only validated score reuse added"
+  }
+}

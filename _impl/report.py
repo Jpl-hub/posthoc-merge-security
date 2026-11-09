@@ -437,23 +437,44 @@ def tables(output):
     assert equal_validation["status"] == equal_statistics["status"] == "passed"
     assert equal_validation["rows"] == equal_statistics["rows"] == len(equal_rows) == 36
     assert equal_validation["raw_sha256"] == equal_statistics["raw_sha256"]
-    equal = {(r["target"], r["defense"], r["attack_scope"]): r for r in equal_rows if r["target"] == r["dataset"]}
-    groups = []
-    for coefficient in [0.125, 0.2]:
-        records = []
-        for label, method in [("None", "Unprotected"), ("NBP", "Defense 1")]:
-            cells = []
-            for task in small_tasks:
+    equal_extension = equal_root / "extension"
+    completed = json.loads((equal_extension / "execution.json").read_text())
+    assert completed["status"] == "completed_independently_verified"
+    for path in equal_extension.glob("*.json"):
+        expected = completed["files_sha256"].get("outputs/nbp_eight_equal_extension_20261109/full/" + path.name)
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        assert expected is None or actual == expected
+        source["input_sha256"][str(path.relative_to(ROOT))] = actual
+    extra = json.loads((equal_extension / "results.json").read_text())
+    verified = json.loads((equal_extension / "independent_statistics.json").read_text())
+    validation = json.loads((equal_extension / "validation.json").read_text())
+    assert verified["status"] == validation["status"] == "passed"
+    assert len(extra) == verified["rows"] == validation["rows"] == 112
+    assert verified["raw_sha256"] == validation["raw_sha256"] == completed["raw_sha256"]
+    recount = {r["key"]: r for r in verified["independent_statistics"]}
+    for row in extra:
+        key = "/".join(row[k] for k in ["target", "defense", "attack_scope", "dataset"])
+        assert (row["n"], row["correct"]) == (recount[key]["n"], recount[key]["correct"])
+    equal = {(r["target"], "Unprotected" if r["defense"] == "Unprotected" else "Defense 1", r["attack_scope"]): r
+             for r in equal_rows + extra if r["target"] == r["dataset"]}
+    assert len(equal) == len(tasks) * 4
+    records, values = [], []
+    for task in tasks:
+        cells = []
+        for coefficient in [0.125, 0.2]:
+            for method in ["Unprotected", "Defense 1"]:
                 if coefficient == 0.125:
-                    row = equal[task, "Unprotected" if method == "Unprotected" else "Defense1_"+task, "Protected expert"]
+                    row = equal[task, method, "Protected expert"]
                     n, correct = row["n"], row["correct"]
                 else:
                     n, correct, _ = eight[task, method, "Protected expert"]
-                cells.append(f"{100*correct/n:.2f}")
-            records.append([label]+cells)
-        groups.append((str(coefficient), records))
-    write_table("equal_weight", "Eight-expert accuracy after AGA and TA (\\%). Coefficient 0.125 is the arithmetic mean of eight checkpoints. Coefficient 0.2 uses the same protected checkpoints and matched unprotected AGA controls as the main experiment. The protection is constructed once at proxy coefficient 0.5.",
-        "tab:equal-weight", ["Coefficient", "Defense"] + small_tasks, groups)
+                cells.append(100 * correct / n)
+        records.append([task] + [f"{v:.2f}" for v in cells])
+        values.append(cells)
+    means = [sum(column) / len(tasks) for column in zip(*values)]
+    write_table("equal_weight", "Protected-task accuracy after AGA and eight-expert TA (\\%). U denotes the unprotected control; parentheses give the shared coefficient. At 1/8, the merge is the arithmetic mean of eight checkpoints. The same seven NBP releases are used at both coefficients. Mean weights tasks equally.",
+        "tab:equal-weight", ["Task", "U (1/8)", "NBP (1/8)", "U (0.2)", "NBP (0.2)"],
+        [("", records), ("", [["Mean"] + [f"{v:.2f}" for v in means]])], tabcolsep=3)
     for name in ["results.json", "validation.json", "independent_statistics.json"]:
         path = equal_root / name
         source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()

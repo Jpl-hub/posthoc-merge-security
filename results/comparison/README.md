@@ -7,6 +7,7 @@ Construction uses frozen weights and a fixed classifier, without images or exper
 | Standalone utility and seven protected directions | [Original three tasks](../phase3/bias_weight_only/other_tasks/summary.md), [remaining directions](../phase3/bias_weight_only/eight_expert/remaining_native_result.json) |
 | All 42 directed task pairs | [Full matrix and counts](../phase3/bias_weight_only/partner_analysis/README.md) |
 | Eight participating experts, seven evaluated datasets | [Main results](../phase3/bias_weight_only/eight_expert/summary.json), [additional directions](../phase3/bias_weight_only/eight_expert/extension/summary.md) |
+| Equal averaging of eight experts | [Seven-target comparison](../phase3/bias_weight_only/tables/equal_weight.md), [four-target extension and independent counts](../phase3/bias_weight_only/eight_expert/equal_weight/extension/); mean target accuracy after AGA: 64.34% unprotected, 3.30% NBP |
 | Other fusion rules | [TIES and DARE+TA](../phase3/bias_weight_only/fusion_methods/extension/summary.json) |
 | Direction and magnitude controls | [Original controls](../phase3/bias_weight_only/ablation/summary.md), [five fixed random draws and class projection](../phase3/bias_weight_only/ablation/direction_controls/README.md) |
 | Labelled coefficient selection | [Three tasks, fixed calibration grid](../phase3/bias_weight_only/coefficient_selection/README.md) |
