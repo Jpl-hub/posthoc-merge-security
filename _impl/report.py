@@ -92,10 +92,6 @@ def tables(output):
         for group_id, (group, records) in enumerate(groups):
             if group_id:
                 lines.append(r"\midrule")
-            if name == "training_baseline" and group_id % 3 == 0:
-                protocol = "Author Trap$^2$ training" if group_id == 0 else "Paper-based MergeGuard reproduction"
-                lines.append(r"\multicolumn{5}{l}{\textit{" + protocol + r"}} \\")
-                md.append("| **" + protocol + "** | | | | |")
             if section_headers:
                 lines.append(rf"\multicolumn{{{columns}}}{{l}}{{{group}}}" + r" \\")
                 md.append("| **" + group + "** |" + " |" * (columns - 1))
@@ -566,31 +562,44 @@ def tables(output):
             [("", records)], tabcolsep=3)
         source["input_sha256"][str(readout_path.relative_to(ROOT))] = hashlib.sha256(readout_path.read_bytes()).hexdigest()
         exported_tables.append("coefficient_readout")
-    training_groups = []
+    # All methods in one comparison; row blocks retain their distinct training controls.
+    comparison = [("Post-hoc protection of released experts; no construction images", [
+        [display[m]] + [main_values[t, m][i].split(" / ")[0]
+                        for t in small_tasks for i in range(3)] for m in methods])]
     for method, folder in [("Trap2", "trap2_baseline"), ("MergeGuard", "mergeguard_baseline")]:
         path = ROOT / "results/phase3" / folder / "summary.json"
         if not path.exists():
             continue
         training = json.loads(path.read_text())
         assert training["status"] == "completed_independently_verified"
-        for task in ["MNIST", "SVHN", "DTD"]:
-            records = []
-            for defense in ["Unprotected", method]:
-                title = "CE" if defense == "Unprotected" else (r"Trap$^2$" if defense == "Trap2" else "MergeGuard")
-                values = []
+        records = []
+        for defense in ["Unprotected", method]:
+            title = "CE control" if defense == "Unprotected" else (r"Trap$^2$" if defense == "Trap2" else "MergeGuard")
+            values = []
+            for task in small_tasks:
                 for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
                     row, = [r for r in training["rows"] if r["target"] == task
                             and r["defense"] == defense and r["role"] == "target"
                             and r["merger"] == merger and r["attack_scope"] == scope]
                     values.append(f"{100 * row['correct'] / row['n']:.2f}")
-                records.append([title] + values)
-            training_groups.append((task, records))
+            records.append([title] + values)
+        protocol = ("Training from the public base: author Trap$^2$ objective" if method == "Trap2"
+                    else "Continued training from released experts: MergeGuard")
+        comparison.append((protocol, records))
         source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
-    if training_groups:
-        write_table("training_baseline", "Training-based comparisons with a separate matched CE control for each method. Scores are full-test target accuracy (\\%); TA uses 0.5 and AGA aligns the target. Trap$^2$ uses author training code; MergeGuard is our paper-based B/32 reproduction. Training details and differences from Table~\\ref{tab:main} are stated in the text.",
-                    "tab:training-baseline", ["Task", "Training", "Alone", "TA", "AGA+TA"],
-                    training_groups, tabcolsep=3)
-        exported_tables.append("training_baseline")
+    caption = ("Defense comparison on CLIP ViT-B/32: full-test accuracy (\\%). S: standalone. TA uses coefficient 0.5; AGA aligns the protected expert. PaRaMS and NBP share released checkpoints; training methods have separate matched CE controls. MergeGuard is a paper-based implementation. Companions: SVHN for MNIST, MNIST otherwise.")
+    write_table("defense_comparison", caption, "tab:defense-comparison",
+        ["Defense"] + [t+" / "+metric for t in small_tasks for metric in ["S", "TA", "AGA+TA"]],
+        comparison, wide=True, section_headers=True, tabcolsep=5)
+    path = OUT / "defense_comparison.tex"
+    tex = path.read_text()
+    old = " & ".join(["Defense"] + [t+" / "+metric for t in small_tasks for metric in ["S", "TA", "AGA+TA"]])
+    new = (r"\multirow{2}{*}{Defense} & \multicolumn{3}{c}{MNIST} & \multicolumn{3}{c}{SVHN} & \multicolumn{3}{c}{DTD} \\" + "\n"
+           + r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}" + "\n"
+           + r" & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$")
+    assert old in tex
+    path.write_text(tex.replace(old,new))
+    exported_tables.append("defense_comparison")
     (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
         "eight_expert_protected_task_cells": len(eight),
         "tables": exported_tables}, indent=2) + "\n")

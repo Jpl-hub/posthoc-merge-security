@@ -1,0 +1,14 @@
+Defense comparison on CLIP ViT-B/32: full-test accuracy (%). S: standalone. TA uses coefficient 0.5; AGA aligns the protected expert. PaRaMS and NBP share released checkpoints; training methods have separate matched CE controls. MergeGuard is a paper-based implementation. Companions: SVHN for MNIST, MNIST otherwise.
+
+| Defense | MNIST / S | MNIST / TA | MNIST / AGA+TA | SVHN / S | SVHN / TA | SVHN / AGA+TA | DTD / S | DTD / TA | DTD / AGA+TA |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **Post-hoc protection of released experts; no construction images** | | | | | | | | | |
+| None | 99.69 | 99.37 | 99.30 | 97.46 | 92.50 | 91.56 | 79.41 | 69.31 | 68.40 |
+| PaRaMS | 99.69 | 8.92 | 99.30 | 97.46 | 9.09 | 91.56 | 79.41 | 2.07 | 68.35 |
+| NBP | 99.69 | 9.80 | 9.80 | 97.46 | 6.70 | 6.70 | 79.41 | 2.13 | 2.13 |
+| **Training from the public base: author Trap$^2$ objective** | | | | | | | | | |
+| CE control | 99.35 | 99.55 | 99.50 | 96.42 | 96.33 | 95.80 | 71.60 | 72.02 | 70.90 |
+| Trap$^2$ | 99.33 | 9.74 | 9.74 | 96.60 | 6.70 | 6.70 | 65.37 | 2.13 | 2.13 |
+| **Continued training from released experts: MergeGuard** | | | | | | | | | |
+| CE control | 99.63 | 99.45 | 99.41 | 97.25 | 93.70 | 92.84 | 79.68 | 69.95 | 69.04 |
+| MergeGuard | 99.60 | 99.22 | 99.24 | 96.80 | 90.63 | 88.54 | 74.20 | 65.80 | 65.90 |

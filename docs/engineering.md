@@ -102,3 +102,5 @@ python -m experiment.train_baseline --config configs/mergeguard_baseline.json --
 ```
 
 Use the same commands for SVHN and DTD. Do not treat these B/32 adaptations as the authors' published L/14 numbers. Completed counts are in `results/phase3/trap2_baseline/summary.json` and `results/phase3/mergeguard_baseline/summary.json`; both are included in the standard table exporter.
+
+The exported `defense_comparison` table puts the four defenses together while retaining their separate training controls. `results/phase3/mergeguard_baseline/stage_diagnosis.json` records the fixed-setting MNIST stage check: identical final tensors, independent mask reconstruction, and full-test stage scores. It does not replace the main comparison.
