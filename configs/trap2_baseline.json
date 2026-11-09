@@ -1,0 +1,46 @@
+{
+  "repository": "https://github.com/ml-postech/Trap2",
+  "commit": "ef65a26590d92fe07955c5621c08bb315484ff29",
+  "author_sources": {
+    "external/Trap2/utils.py": "464b86d04e9d8d42fbaffb023a388010d45fa00dd2439ea0f4a6e5b8fec42f5a",
+    "external/Trap2/training_scripts/8vision_training_full_trap2.py": "6fdf570e5286a525f5c274f8e60f42360f7150c72d90988297bc6a096fffc3ff"
+  },
+  "tasks": [
+    "DTD",
+    "MNIST",
+    "SVHN"
+  ],
+  "defenses": [
+    "Trap2",
+    "CE"
+  ],
+  "seed": 420,
+  "batch_size": 32,
+  "validation_fraction": 0.2,
+  "lambda_reg": 0.005,
+  "output": "outputs/trap2_baseline",
+  "training": {
+    "lr": 1e-05,
+    "wd": 0.0,
+    "warm_up": 500,
+    "max_steps": 100000,
+    "eval_freq": 2000,
+    "max_norm": 1.0,
+    "early_stopping_patience": 5,
+    "early_stopping_min_delta": 0.001,
+    "epochs": 1000,
+    "label_smoothing": 0.0,
+    "rand_alpha_min": 0.05,
+    "rand_alpha_max": 2.0,
+    "rand_alpha_weight": "inv"
+  },
+  "adaptation": [
+    "Native Task Arithmetic public base and fixed classifier; train visual encoder only, freeze visual projection as in author HF wrapper.",
+    "Native deterministic resize/center-crop preprocessing replaces the author HF processor.",
+    "DTD official validation split; MNIST/SVHN stratified 20% of training replaces the author validation subset drawn from official test.",
+    "Both author Val and Test training-log columns use validation data. No official test images during training.",
+    "Matched CE control uses the same author Trap2 loop with lambda_reg=0, including its optimizer and scheduler; this is not the separate author baseline script.",
+    "Best validation state selected once; no hyperparameter search; final full test, TA0.5 and AGA comparisons separate from same-checkpoint main table.",
+    "The author freezes the visual projection at the public base. This differs from the previously released Task Arithmetic experts; report newly trained Trap2/CE separately, without treating the original NBP scores as same-checkpoint comparisons."
+  ]
+}

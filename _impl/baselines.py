@@ -1,4 +1,4 @@
-"""Full official PaRaMS defaults, with independent tensor identity checks."""
+"""Pinned author protection implementations and native CLIP adapters."""
 
 import importlib.util
 import os
@@ -7,6 +7,48 @@ import sys
 import torch
 
 from .io import digest
+
+
+def trap2_training(source_files):
+    """Load the unchanged author training functions without unused HF/LoRA imports."""
+    import ast
+    from pathlib import Path
+    from types import SimpleNamespace
+
+    import numpy as np
+    from torch.cuda.amp import GradScaler, autocast
+    from torch.nn.utils.stateless import functional_call
+    from tqdm import tqdm
+
+    def save_model(model, path):
+        # Native visual state only; no LoRA adapter directory is required.
+        state = {k: v.detach().cpu() for k, v in model.state_dict().items()}
+        if not all(torch.isfinite(v).all() for v in state.values()):
+            raise ValueError("Non-finite trained baseline")
+        torch.save(state, path)
+
+    env = dict(torch=torch, np=np, Path=Path, tqdm=tqdm,
+               GradScaler=GradScaler, autocast=autocast,
+               CrossEntropyLoss=torch.nn.CrossEntropyLoss,
+               functional_call=functional_call, save_model=save_model,
+               wandb=SimpleNamespace(run=None))
+    names = {
+        "utils.py": {"assign_learning_rate", "_warmup_lr", "cosine_lr",
+                     "get_device", "evaluate_cliphead"},
+        "8vision_training_full_trap2.py": {
+            "EarlyStopper", "_save_best_performance", "_to_device",
+            "train_cliphead_full_trap2"},
+    }
+    for path, expected in source_files.items():
+        if digest(path) != expected:
+            raise ValueError(f"Trap2 source SHA256 mismatch: {path}")
+        tree = ast.parse(Path(path).read_text())
+        wanted = names[Path(path).name]
+        tree.body = [n for n in tree.body
+                     if isinstance(n, (ast.FunctionDef, ast.ClassDef)) and n.name in wanted]
+        assert {n.name for n in tree.body} == wanted
+        exec(compile(tree, path, "exec"), env)
+    return env
 
 
 def params_default(original, anchor, source, source_sha256):
