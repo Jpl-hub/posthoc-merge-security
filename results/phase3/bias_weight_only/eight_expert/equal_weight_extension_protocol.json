@@ -85,5 +85,30 @@
     }
   },
   "scope_limit": "Extend existing equal-weight MNIST/SVHN/DTD results to SUN397/Cars/RESISC45/GTSRB. Freeze coefficient1/8, inputs and all directions before evaluation. Evaluate all seven datasets for each of the four protected targets. No new PaRaMS construction or EuroSAT test score. All outcomes retained; no method selection.",
-  "maximum_seconds": 10800
+  "maximum_seconds": 10800,
+  "score_reference": {
+    "full": {
+      "scores": {
+        "path": "outputs/nbp_eight_equal_extension_20261109/full.interrupted/scores.pt",
+        "sha256": "21facf1c91cc1366910f2ffa49999cc4cd6c45679f77ce21165d1593ede99455"
+      },
+      "parameters": {
+        "path": "outputs/nbp_eight_equal_extension_20261109/full.interrupted/pre_evaluation.json",
+        "sha256": "567315caf2978ceabb6fc37023c52401053ce712b505900ca544d15698f7c083"
+      },
+      "validation": {
+        "path": "outputs/nbp_eight_equal_extension_20261109/full.interrupted/independent.json",
+        "sha256": "b668d0f6eb217f5795d3b0efa3fbc72ab46949fee1b39825070bebdb18e3d083"
+      }
+    }
+  },
+  "reuse_defenses": [
+    "Unprotected",
+    "NBP_SUN397"
+  ],
+  "execution_resume": {
+    "reason": "Process absent after eight persisted full-test rows; no traceback or cgroup OOM event. Cause not established.",
+    "initial_protocol_commit": "4d3bb942",
+    "unchanged": "same source, releases, coefficient, datasets, thresholds and pilot parameter hashes; only validated score reuse added"
+  }
 }
