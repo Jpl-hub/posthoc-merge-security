@@ -78,3 +78,17 @@ Path('outputs/evaluate.json').write_text(json.dumps(cfg, indent=2)+'\n')
 ```
 
 Then run `python -m experiment.main_table --protocol outputs/evaluate.json --case 0 --pilot` and its `--verify` check before the complete case. Cases 0--6 follow the ordered task list in the configuration. The source fingerprint in each historical result identifies the executed version; original raw-score hashes are not expected to match a fresh run on different hardware.
+
+## Additional training-based comparison
+
+Trap² uses the pinned official training functions listed in `configs/trap2_baseline.json`. Place that checkout at `external/Trap2`. This comparison trains new experts and is separate from NBP and PaRaMS on the previously released checkpoints.
+
+```bash
+python -m experiment.train_baseline --task DTD --defense Trap2
+python -m experiment.train_baseline --task DTD --defense CE
+python -m experiment.train_baseline --task DTD --evaluate
+```
+
+Repeat for MNIST and SVHN. The matched CE control uses the same training loop with zero protection penalty. Both use the native public base and fixed classifier; the visual projection stays frozen as in the author's HF implementation. DTD uses its official validation split. MNIST/SVHN validation comes from 20% of training data, so the full official test sets remain untouched during training. This differs from the author's test-derived validation split and is recorded in the protocol. The author's training-log column named `Test` receives the validation loader, not test images.
+
+The evaluator uses the best validation checkpoints, original fixed companions, TA at 0.5, and AGA applied to the target or both experts. It saves complete logits and uses the shared independent recount/replay. No new NBP checkpoint or NBP result is inferred from these runs.

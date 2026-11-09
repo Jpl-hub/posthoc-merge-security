@@ -84,10 +84,62 @@ def run(config, task, defense):
     ))
 
 
+@torch.no_grad()
+def evaluate_pair(config, task):
+    """Evaluate the two completed training runs through the shared TA/AGA code."""
+    import copy
+
+    from _impl.attacks import author_recover, load_author
+    from _impl.evaluate import run as evaluate, verify
+
+    initialize()
+    cfg = read_json(config)
+    folder = Path(cfg["output"]) / task
+    evaluation = read_json("configs/evaluate.json")
+    partner = "SVHN" if task == "MNIST" else "MNIST"
+    evaluation["tasks"] = {k: evaluation["tasks"][k] for k in [task, partner]}
+    evaluation["cases"] = [dict(target=task, partner=partner, defenses=["Trap2"])]
+    evaluation["defenses"] = {}
+    evaluation["attack_scopes"] = ["None", "Protected expert", "All experts"]
+    evaluation["output"] = str(folder / "evaluation")
+    evaluation["experiment"] = "Trap2 and matched newly trained CE control; original fixed companion"
+    evaluation["source_sha256"]["experiment/train_baseline.py"] = digest(__file__)
+    anchor = load_checkpoint("zeroshot.pt")
+    path = Path("external/secure-merge-attack") / evaluation["AGA"]["file"]
+    assert digest(path) == evaluation["AGA"]["raw_sha256"]
+    author, sha = load_author(path, True)
+    assert sha == evaluation["AGA"]["sha256"]
+    for defense, name in [("CE", "Unprotected"), ("Trap2", "Trap2")]:
+        run_dir = folder / defense
+        completed = read_json(run_dir / "completed.json")
+        assert digest(run_dir / "best.pt") == completed["checkpoint_sha256"]
+        model = copy.deepcopy(anchor)
+        state = torch.load(run_dir / "best.pt", map_location="cpu", weights_only=True)
+        model.model.visual.load_state_dict(state, strict=True)
+        release = run_dir / "release.pt"
+        torch.save({"model.visual." + k: v for k, v in state.items()}, release)
+        recovered = author_recover(model, anchor, author)
+        aligned = run_dir / "AGA.pt"
+        torch.save({k: v for k, v in recovered.state_dict().items()
+                    if not torch.equal(v, anchor.state_dict()[k])}, aligned)
+        evaluation["defenses"][name] = dict(
+            release=dict(path=str(release), sha256=digest(release), reference="public_base"),
+            AGA_edits=dict(path=str(aligned), sha256=digest(aligned), reference="public_base"),
+        )
+        del model, recovered
+    protocol = folder / "evaluation.json"
+    save_json(protocol, evaluation)
+    evaluate(protocol, 0, False)
+    verify(folder / "evaluation" / "full" / f"00_{task}_{partner}")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/trap2_baseline.json")
     parser.add_argument("--task", choices=["DTD", "MNIST", "SVHN"], required=True)
-    parser.add_argument("--defense", choices=["Trap2", "CE"], required=True)
+    parser.add_argument("--defense", choices=["Trap2", "CE"])
+    parser.add_argument("--evaluate", action="store_true")
     args = parser.parse_args()
-    run(args.config, args.task, args.defense)
+    if not args.evaluate and args.defense is None:
+        parser.error("Training requires --defense")
+    evaluate_pair(args.config, args.task) if args.evaluate else run(args.config, args.task, args.defense)
