@@ -31,6 +31,77 @@ def combine(base, models, coefficient):
 
 
 @torch.no_grad()
+def minimum_bias_norm(output):
+    """Bound the norm needed for the existing fixed-class proxy condition.
+
+    A convex quadratic program, not a new defense or a recovery guarantee.
+    Its nonnegative dual variables give a checkable lower bound on the optimum.
+    No optimized tensor is saved or evaluated on images.
+    """
+    from scipy.optimize import minimize, nnls
+
+    paths = ["results/phase3/bias_weight_only/eight_expert/evaluation.json",
+             "results/phase3/bias_weight_only/eight_expert/extension_evaluation.json"]
+    specs = {k: v for p in paths for k, v in json.loads(Path(p).read_text())["defenses"].items()
+             if k.startswith("Defense1_")}
+    out = new_output(output, {"source_sha256": digest(__file__),
+        "input_protocol_sha256": {p: digest(p) for p in paths},
+        "scope": "Same frozen class, public-base TA0.5, and safety2; norm analysis only. "
+                 "No images, partners, new release or accuracy claim.",
+        "solver": "SLSQP", "ftol": 1e-12, "maxiter": 1000,
+        "rank_relative_tolerance": 1e-10, "active_tolerance": 1e-7})
+    anchor = readout(load_checkpoint("zeroshot.pt"))
+    rows = []
+    for task in ["SUN397", "Cars", "RESISC45", "SVHN", "GTSRB", "MNIST", "DTD"]:
+        original = readout(load_checkpoint(f"{task}/finetuned.pt"))
+        head = load_checkpoint(f"head_{task}.pt")
+        weights = head.weight.double()
+        proxy = {k: v.double() for k, v in combine(anchor, [original, anchor], .5).items()}
+        projection = original["projection"].double().numpy()
+        u, singular, _ = np.linalg.svd(projection, full_matrices=True)
+        null = u[:, int((singular > singular[0]*1e-10).sum()):]
+        ref = specs["Defense1_"+task]["release"]
+        assert digest(ref["path"]) == ref["sha256"]
+        released = torch.load(ref["path"], map_location="cpu", weights_only=False)["model.visual.ln_post.bias"]
+        delta = released.double()-original["bias"].double()
+        winner = int((delta @ proxy["projection"] @ weights.T).argmax())
+        q = proxy["projection"] @ (weights[winner]-weights[torch.arange(len(weights)) != winner]).T
+        normal = proxy["gain"][:, None]*q
+        normal -= normal.mean(0, keepdim=True)
+        b = (2*(math.sqrt(len(projection))*normal.norm(dim=0)-proxy["bias"]@q).clamp_min(0)).numpy()
+        original_norm = float(delta.norm())
+        scale = np.maximum(b, 1e-12)
+        g = (.5*q.numpy().T@null)*original_norm/scale[:, None]
+        rhs = b/scale
+        x0 = null.T@delta.numpy()/original_norm
+        assert np.all(g@x0 > 0)
+        x0 *= max(1.0, float(np.max(rhs/(g@x0))))*(1+1e-8)
+        fit = minimize(lambda x: .5*x@x, x0, jac=lambda x: x, method="SLSQP",
+            constraints={"type": "ineq", "fun": lambda x: g@x-rhs, "jac": lambda x: g},
+            options={"ftol": 1e-12, "maxiter": 1000})
+        x, slack = fit.x, g@fit.x-rhs
+        active = slack <= 1e-7
+        multipliers, _ = nnls(g[active].T, x, maxiter=10000)
+        dual_vector = g[active].T@multipliers
+        lower = float(rhs[active]@multipliers-.5*(dual_vector@dual_vector))
+        upper = float(.5*(x@x))
+        gap = (upper-lower)/max(upper, 1e-30)
+        candidate = null@x*original_norm
+        row = dict(task=task, fixed_class=winner, original_update_norm=original_norm,
+            minimum_norm_estimate=float(np.linalg.norm(candidate)),
+            norm_ratio=float(np.linalg.norm(x)), solver_success=bool(fit.success),
+            solver_message=str(fit.message), iterations=int(fit.nit),
+            minimum_scaled_slack=float(slack.min()), relative_primal_dual_gap=gap,
+            certified_within_tolerance=bool(slack.min() >= -1e-8 and -1e-8 <= gap <= 1e-7),
+            native_kernel_relative_error=float(np.linalg.norm(candidate@projection)/np.linalg.norm(candidate)),
+            release_sha256=ref["sha256"])
+        rows.append(row)
+        save_json(out/"results.json", dict(records=rows, completed=len(rows)==7,
+            real_images=0, synthetic_images=0, new_publication_files=0, expert_updates=0))
+        print("MINIMUM_BIAS_NORM", task, row["norm_ratio"], gap, row["certified_within_tolerance"], flush=True)
+
+
+@torch.no_grad()
 def class_bias_gain(output):
     """Measure surviving bias effects on centered class-score numerators.
 
@@ -288,10 +359,14 @@ def main():
     mode.add_argument("--tail-equivalence", action="store_true", help="Check the affine final readout with a fixed prefix")
     mode.add_argument("--projection-gain", action="store_true", help="Bound bias offsets retained by projection cleanup")
     mode.add_argument("--class-gain", action="store_true", help="Measure surviving class-score offset amplification")
+    mode.add_argument("--minimum-norm", action="store_true", help="Bound the norm needed for the fixed-class proxy condition")
     args = parser.parse_args()
     require_root()
     initialize()
     torch.set_num_threads(2)
+    if args.minimum_norm:
+        minimum_bias_norm(args.output)
+        return
     if args.class_gain:
         class_bias_gain(args.output)
         return
