@@ -26,7 +26,7 @@ This command needs no checkpoints, images or GPU. It reads frozen result counts,
 | AGA and public-parameter recovery | [experiment/recover.py](experiment/recover.py) |
 | Layer-wise coefficient fitting | [experiment/distill.py](experiment/distill.py) |
 | Direction controls and weight analysis | [experiment/bias_ablation.py](experiment/bias_ablation.py), [experiment/analyze_bias.py](experiment/analyze_bias.py) |
-| Additional Trap²/CE training comparison | [experiment/train_baseline.py](experiment/train_baseline.py) |
+| Trap² and paper-based MergeGuard training comparisons | [experiment/train_baseline.py](experiment/train_baseline.py) |
 
 Use the fixed protocols linked in the [result index](results/comparison/README.md). Model and dataset setup is described in [docs/engineering.md](docs/engineering.md). Checkpoint sizes and hashes are in [configs/checkpoints.json](configs/checkpoints.json); author-code versions are in [configs/sources.json](configs/sources.json). The additional PaRaMS dependencies are in [requirements-params.txt](requirements-params.txt).
 

@@ -1,4 +1,4 @@
-"""Train Trap2 and a matched CE control with the pinned author training loop."""
+"""Train a configured protection baseline and its matched CE control."""
 
 import argparse
 import random
@@ -9,7 +9,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
 
-from _impl.baselines import trap2_training
+from _impl.baselines import trap2_training, mergeguard_training
 from _impl.data import dataset, official_labels
 from _impl.io import digest, new_output, read_json, save_json
 from _impl.models import initialize, load_checkpoint
@@ -21,14 +21,16 @@ def run(config, task, defense):
     initialize()
     cfg = read_json(config)
     settings = cfg["training"] | {"device": "cuda"}
-    settings["lambda_reg"] = cfg["lambda_reg"] if defense == "Trap2" else 0.0
+    settings["lambda_reg"] = cfg["lambda_reg"] if defense != "CE" else 0.0
+    method = cfg.get("method", "Trap2")
     seed = cfg["seed"]
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    author = trap2_training(cfg["author_sources"])
-    encoder = load_checkpoint("zeroshot.pt")
+    author = trap2_training(cfg["author_sources"]) if method == "Trap2" else None
+    initial = "zeroshot.pt" if method == "Trap2" else f"{task}/finetuned.pt"
+    encoder = load_checkpoint(initial)
     head = load_checkpoint(f"head_{task}.pt")
     train_data = dataset(task, str(DATA), encoder.val_preprocess, training=True)
     all_indices = np.arange(len(train_data))
@@ -54,6 +56,7 @@ def run(config, task, defense):
         "task": task, "defense": defense, "training": settings,
         "train_indices": train_indices.tolist(), "validation_indices": val_indices.tolist(),
         "base_sha256": digest(CHECKPOINTS / "zeroshot.pt"),
+        "initial_checkpoint_sha256": digest(CHECKPOINTS / initial),
         "head_sha256": digest(CHECKPOINTS / f"head_{task}.pt"),
         "driver_sha256": digest(__file__), "adapter_sha256": digest("_impl/baselines.py"),
     })
@@ -65,14 +68,19 @@ def run(config, task, defense):
                             num_workers=2, pin_memory=True)
     visual = encoder.model.visual
     visual.requires_grad_(True)
-    visual.proj.requires_grad_(False)  # Matches the author's HFCLIPVisionModel.
+    visual.proj.requires_grad_(method != "Trap2")
     vectors = head.weight.detach().float() / 100.0
     assert torch.allclose(vectors.norm(dim=1), torch.ones(len(vectors)), atol=1e-5)
     del head, encoder
     started = time.monotonic()
-    # Author loop logs a "Test" column; feed validation twice, never test images.
-    author["train_cliphead_full_trap2"](
-        visual, train_loader, val_loader, val_loader, vectors, settings, str(out / "best.pt"))
+    if method == "Trap2":
+        # Author loop logs a "Test" column; feed validation twice, never test images.
+        author["train_cliphead_full_trap2"](
+            visual, train_loader, val_loader, val_loader, vectors, settings, str(out / "best.pt"))
+    else:
+        base = load_checkpoint("zeroshot.pt").model.visual.state_dict()
+        mergeguard_training(visual, base, train_loader, val_loader, vectors,
+                            settings | {"epochs": cfg["epochs"][task]}, cfg, out, defense)
     assert (out / "best.pt").is_file()
     save_json(out / "completed.json", dict(
         task=task, defense=defense, training_seconds=time.monotonic() - started,
@@ -94,22 +102,24 @@ def evaluate_pair(config, task):
 
     initialize()
     cfg = read_json(config)
+    method = cfg.get("method", "Trap2")
     folder = Path(cfg["output"]) / task
     evaluation = read_json("configs/evaluate.json")
     partner = "SVHN" if task == "MNIST" else "MNIST"
     evaluation["tasks"] = {k: evaluation["tasks"][k] for k in [task, partner]}
-    evaluation["cases"] = [dict(target=task, partner=partner, defenses=["Trap2"])]
+    evaluation["cases"] = [dict(target=task, partner=partner, defenses=[method])]
     evaluation["defenses"] = {}
     evaluation["attack_scopes"] = ["None", "Protected expert", "All experts"]
     evaluation["output"] = str(folder / "evaluation")
-    evaluation["experiment"] = "Trap2 and matched newly trained CE control; original fixed companion"
+    evaluation["experiment"] = f"{method} and matched CE control; original fixed companion"
     evaluation["source_sha256"]["experiment/train_baseline.py"] = digest(__file__)
+    evaluation["source_sha256"]["_impl/baselines.py"] = digest("_impl/baselines.py")
     anchor = load_checkpoint("zeroshot.pt")
     path = Path("external/secure-merge-attack") / evaluation["AGA"]["file"]
     assert digest(path) == evaluation["AGA"]["raw_sha256"]
     author, sha = load_author(path, True)
     assert sha == evaluation["AGA"]["sha256"]
-    for defense, name in [("CE", "Unprotected"), ("Trap2", "Trap2")]:
+    for defense, name in [("CE", "Unprotected"), (method, method)]:
         run_dir = folder / defense
         completed = read_json(run_dir / "completed.json")
         assert digest(run_dir / "best.pt") == completed["checkpoint_sha256"]
@@ -137,7 +147,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/trap2_baseline.json")
     parser.add_argument("--task", choices=["DTD", "MNIST", "SVHN"], required=True)
-    parser.add_argument("--defense", choices=["Trap2", "CE"])
+    parser.add_argument("--defense", choices=["Trap2", "MergeGuard", "CE"])
     parser.add_argument("--evaluate", action="store_true")
     args = parser.parse_args()
     if not args.evaluate and args.defense is None:

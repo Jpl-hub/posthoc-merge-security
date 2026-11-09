@@ -92,3 +92,13 @@ python -m experiment.train_baseline --task DTD --evaluate
 Repeat for MNIST and SVHN. The matched CE control uses the same training loop with zero protection penalty. Both use the native public base and fixed classifier; the visual projection stays frozen as in the author's HF implementation. DTD uses its official validation split. MNIST/SVHN validation comes from 20% of training data, so the full official test sets remain untouched during training. This differs from the author's test-derived validation split and is recorded in the protocol. The author's training-log column named `Test` receives the validation loader, not test images.
 
 The evaluator uses the best validation checkpoints, original fixed companions, TA at 0.5, and AGA applied to the target or both experts. It saves complete logits and uses the shared independent recount/replay. No new NBP checkpoint or NBP result is inferred from these runs.
+
+MergeGuard is implemented from its CVPR paper, not an author release. The declared settings and implementation choices are in `configs/mergeguard_baseline.json`. Its CE control starts from the same fine-tuned expert; training and importance use training/validation images only. The stored `best.pt` is the final fixed-epoch model for this protocol.
+
+```bash
+python -m experiment.train_baseline --config configs/mergeguard_baseline.json --task MNIST --defense MergeGuard
+python -m experiment.train_baseline --config configs/mergeguard_baseline.json --task MNIST --defense CE
+python -m experiment.train_baseline --config configs/mergeguard_baseline.json --task MNIST --evaluate
+```
+
+Use the same commands for SVHN and DTD. Do not treat these B/32 adaptations as the authors' published L/14 numbers. Completed counts are in `results/phase3/trap2_baseline/summary.json` and `results/phase3/mergeguard_baseline/summary.json`; both are included in the standard table exporter.

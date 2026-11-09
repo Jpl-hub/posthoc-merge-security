@@ -116,3 +116,94 @@ def verify_edits(original, edits, seed=0):
         layers=12,
         all_state_tensors_checked=len(state),
     )
+
+
+def mergeguard_training(visual, base, train_loader, val_loader, vectors, settings, cfg, out, defense):
+    """Paper-defined CE+L2 and masked task-vector negation; choices are in config."""
+    import math
+    import time
+    import torch.nn.functional as F
+    from .io import save_json
+
+    visual = visual.cuda().float().train()
+    vectors = vectors.cuda().float()
+    params = list(visual.parameters())
+    optimizer = torch.optim.AdamW(params, lr=settings["lr"], weight_decay=0.0)
+    total = settings["epochs"] * len(train_loader)
+    started = time.monotonic()
+    for epoch in range(settings["epochs"]):
+        sums = [0., 0.]
+        for batch_index, (images, labels) in enumerate(train_loader):
+            step = epoch * len(train_loader) + batch_index
+            warm = settings["warm_up"]
+            fraction = ((step + 1) / warm if step < warm else
+                        .5 * (1 + math.cos(math.pi * (step - warm) / (total - warm))))
+            for group in optimizer.param_groups:
+                group["lr"] = settings["lr"] * fraction
+            optimizer.zero_grad(set_to_none=True)
+            logits = 100 * F.normalize(visual(images.cuda()), dim=-1) @ vectors.T
+            ce = F.cross_entropy(logits, labels.cuda())
+            # Eq.(2): sum of squared weights, not a mean or distance to the base.
+            l2 = sum(p.square().sum() for p in params) if settings["lambda_reg"] else ce.new_zeros(())
+            loss = ce + settings["lambda_reg"] * l2
+            if not torch.isfinite(loss):
+                raise ValueError("Non-finite MergeGuard training loss")
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(params, settings["max_norm"])
+            optimizer.step()
+            sums[0] += ce.item()
+            sums[1] += l2.item()
+        print(dict(defense=defense, epoch=epoch + 1, epochs=settings["epochs"],
+                   mean_ce=sums[0]/len(train_loader), mean_l2=sums[1]/len(train_loader),
+                   seconds=time.monotonic()-started), flush=True)
+    del optimizer
+    visual.requires_grad_(False).eval()
+
+    @torch.no_grad()
+    def accuracy():
+        correct = 0
+        for images, labels in val_loader:
+            logits = F.normalize(visual(images.cuda()), dim=-1) @ vectors.T
+            correct += (logits.argmax(-1).cpu() == labels).sum().item()
+        return correct / len(val_loader.dataset)
+
+    if defense == "MergeGuard":
+        before = accuracy()
+        stage1_norm = sum(p.square().sum().item() for p in params)
+        state = visual.state_dict()
+        groups = {}
+        for name in state:
+            parts = name.split('.')
+            group = '.'.join(parts[:3]) if name.startswith('transformer.resblocks.') else parts[0]
+            groups.setdefault(group, []).append(name)
+        importance = {}
+        for group, names in groups.items():
+            saved = {n: state[n].clone() for n in names}
+            for name in names:
+                state[name].zero_()
+            importance[group] = before - accuracy()
+            for name in names:
+                state[name].copy_(saved[name])
+        critical = sorted(groups, key=lambda k: (-importance[k], k))[
+            :math.ceil(cfg["critical_fraction"] * len(groups))]
+        names = [n for group in groups if group not in critical for n in groups[group]]
+        weights = torch.cat([state[n].abs().flatten() for n in names])
+        count = math.ceil(cfg["perturbed_fraction"] * weights.numel())
+        mask = torch.zeros_like(weights, dtype=torch.bool)
+        mask[torch.topk(weights, count, sorted=False).indices] = True
+        offset = 0
+        edited = 0
+        for name in names:
+            n = state[name].numel()
+            select = mask[offset:offset+n].reshape(state[name].shape)
+            original = state[name].clone()
+            state[name][select] -= cfg["beta"] * (state[name] - base[name].cuda())[select]
+            edited += (state[name] != original).sum().item()
+            offset += n
+        save_json(out / "mask.json", dict(
+            validation_before=before, validation_after=accuracy(),
+            groups=groups, accuracy_drops=importance, critical_groups=critical,
+            selected_coordinates=count, changed_coordinates=edited,
+            stage1_squared_norm=stage1_norm,
+            selection="Global top absolute stage1 weights outside critical groups"))
+    torch.save({k: v.cpu() for k, v in visual.state_dict().items()}, out / "best.pt")

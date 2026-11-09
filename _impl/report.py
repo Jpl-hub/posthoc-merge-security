@@ -92,6 +92,10 @@ def tables(output):
         for group_id, (group, records) in enumerate(groups):
             if group_id:
                 lines.append(r"\midrule")
+            if name == "training_baseline" and group_id % 3 == 0:
+                protocol = "Author Trap$^2$ training" if group_id == 0 else "Paper-based MergeGuard reproduction"
+                lines.append(r"\multicolumn{5}{l}{\textit{" + protocol + r"}} \\")
+                md.append("| **" + protocol + "** | | | | |")
             if section_headers:
                 lines.append(rf"\multicolumn{{{columns}}}{{l}}{{{group}}}" + r" \\")
                 md.append("| **" + group + "** |" + " |" * (columns - 1))
@@ -562,6 +566,31 @@ def tables(output):
             [("", records)], tabcolsep=3)
         source["input_sha256"][str(readout_path.relative_to(ROOT))] = hashlib.sha256(readout_path.read_bytes()).hexdigest()
         exported_tables.append("coefficient_readout")
+    training_groups = []
+    for method, folder in [("Trap2", "trap2_baseline"), ("MergeGuard", "mergeguard_baseline")]:
+        path = ROOT / "results/phase3" / folder / "summary.json"
+        if not path.exists():
+            continue
+        training = json.loads(path.read_text())
+        assert training["status"] == "completed_independently_verified"
+        for task in ["MNIST", "SVHN", "DTD"]:
+            records = []
+            for defense in ["Unprotected", method]:
+                title = "CE" if defense == "Unprotected" else (r"Trap$^2$" if defense == "Trap2" else "MergeGuard")
+                values = []
+                for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
+                    row, = [r for r in training["rows"] if r["target"] == task
+                            and r["defense"] == defense and r["role"] == "target"
+                            and r["merger"] == merger and r["attack_scope"] == scope]
+                    values.append(f"{100 * row['correct'] / row['n']:.2f}")
+                records.append([title] + values)
+            training_groups.append((task, records))
+        source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    if training_groups:
+        write_table("training_baseline", "Training-based comparisons with a separate matched CE control for each method. Scores are full-test target accuracy (\\%); TA uses 0.5 and AGA aligns the target. Trap$^2$ uses author training code; MergeGuard is our paper-based B/32 reproduction. Training details and differences from Table~\\ref{tab:main} are stated in the text.",
+                    "tab:training-baseline", ["Task", "Training", "Alone", "TA", "AGA+TA"],
+                    training_groups, tabcolsep=3)
+        exported_tables.append("training_baseline")
     (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
         "eight_expert_protected_task_cells": len(eight),
         "tables": exported_tables}, indent=2) + "\n")
