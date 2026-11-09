@@ -40,3 +40,27 @@ A bias increment in col(P) survives projection onto col(P), but changes the stan
 | DTD | 4.4261 | 1.529e-13 |
 
 These finite gains justify examining the utility trade-off of nonzero native offsets; they do not establish a successful improvement. The scalar ratio must not be reported as classification protection. The existing `--projection-gain` analysis uses only each target and the public base.
+
+## Class-relevant bias changes
+
+The embedding ratios above include directions that change no class decision. For a fixed zero-bias classifier, let `Wc = W - mean(W)` and `M = P Wc^T`. Replacing any final bias by its orthogonal projection onto col(M) preserves all centered class-score numerators. Feature normalization multiplies these numerators by a positive scalar, so the class decision is unchanged whenever the normalized embedding is defined. Unlike projection onto col(P), this operation also uses the published classifier. It need not preserve probabilities, the embedding, or tasks using other classifiers.
+
+For bias changes that survive this class-aware projection, write `M = U S V^T` using its nonzero singular values and `delta_bias = U S^-1 y`. Native centered class-score offsets have norm `||y||`. In the public-base TA0.5 proxy, the corresponding offset is
+
+```text
+y^T S^-1 U^T (P + P0) Wc^T / 4.
+```
+
+Its spectral norm is the largest possible proxy/native ratio within this surviving subspace. Both sides are unnormalized score numerators, not normalized logits or accuracies. This calculation uses no partner, images, chosen amplitude or new release.
+
+| Task | Rank of M | Maximum proxy/native class-offset ratio |
+| --- | ---: | ---: |
+| SUN397 | 396 | 1.0111 |
+| Cars | 195 | 0.7151 |
+| RESISC45 | 44 | 0.5123 |
+| SVHN | 9 | 0.5558 |
+| GTSRB | 42 | 0.6775 |
+| MNIST | 9 | 0.5404 |
+| DTD | 46 | 0.5078 |
+
+Independent NumPy pseudoinverse calculations agree within 2.84e-14 relative error. These values do not provide evidence for large class-offset amplification by changing only the surviving bias component. They do not rule out a task-margin-dependent utility trade-off or changes to the prefix. No image accuracy or new defense success is claimed. `class_gain.json` contains the measurements; reproduce with `python -m experiment.analyze_bias --class-gain --output outputs/class_gain`.

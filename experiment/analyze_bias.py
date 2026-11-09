@@ -31,6 +31,52 @@ def combine(base, models, coefficient):
 
 
 @torch.no_grad()
+def class_bias_gain(output):
+    """Measure surviving bias effects on centered class-score numerators.
+
+    M=P(W-mean(W))^T. Restricting delta_bias to col(M) excludes both
+    embedding-null and class-common changes removable without changing the
+    native class decision. This measures an offset ratio, not accuracy.
+    """
+    out = new_output(output, {"source_sha256": digest(__file__),
+        "scope": "Fixed public-base TA0.5; native class-score numerators, not normalized logits. "
+                 "No partner, images, amplitude selection or new release.",
+        "rank_relative_tolerance": 1e-10, "device": "cuda", "dtype": "float64"})
+    base = load_checkpoint("zeroshot.pt")
+    p0 = readout(base)["projection"].double().cuda()
+    del base
+    rows = []
+    for task in ["SUN397", "Cars", "RESISC45", "SVHN", "GTSRB", "MNIST", "DTD"]:
+        expert = load_checkpoint(f"{task}/finetuned.pt")
+        projection = readout(expert)["projection"].double().cuda()
+        del expert
+        head = load_checkpoint(f"head_{task}.pt")
+        assert head.bias is None or torch.count_nonzero(head.bias) == 0
+        weights = head.weight.double().cuda()
+        centered = (weights - weights.mean(0)).T
+        native = projection @ centered
+        proxy = .25 * (projection + p0) @ centered
+        u, singular, _ = torch.linalg.svd(native, full_matrices=False)
+        keep = singular > singular[0] * 1e-10
+        basis = u[:, keep]
+        transfer = (basis / singular[keep]).T @ proxy
+        maximum = float(torch.linalg.svdvals(transfer)[0])
+        independent = np.linalg.pinv(native.cpu().numpy(), rcond=1e-10) @ proxy.cpu().numpy()
+        numpy_maximum = float(np.linalg.svd(independent, compute_uv=False)[0])
+        error = abs(maximum-numpy_maximum) / max(numpy_maximum, 1e-15)
+        assert error < 1e-8, (task, error)
+        projector = basis @ basis.T
+        preservation_error = float((projector @ native-native).norm()/native.norm())
+        rows.append(dict(task=task, classes=len(weights), class_rank=int(keep.sum()),
+            maximum_proxy_to_native_class_offset_ratio=maximum,
+            independent_numpy_relative_error=error,
+            class_projection_preservation_error=preservation_error))
+        save_json(out/"results.json", dict(records=rows, completed=len(rows)==7,
+            real_images=0, synthetic_images=0, new_defense_weights=0, expert_updates=0))
+        print("CLASS_OFFSET_GAIN", task, maximum, error, flush=True)
+
+
+@torch.no_grad()
 def projected_bias_gain(output):
     """Bound the public-proxy effect of bias noise retained by P-column cleanup.
 
@@ -241,10 +287,14 @@ def main():
     mode.add_argument("--directions", action="store_true", help="Analyze every class choice and storage rounding")
     mode.add_argument("--tail-equivalence", action="store_true", help="Check the affine final readout with a fixed prefix")
     mode.add_argument("--projection-gain", action="store_true", help="Bound bias offsets retained by projection cleanup")
+    mode.add_argument("--class-gain", action="store_true", help="Measure surviving class-score offset amplification")
     args = parser.parse_args()
     require_root()
     initialize()
     torch.set_num_threads(2)
+    if args.class_gain:
+        class_bias_gain(args.output)
+        return
     if args.projection_gain:
         projected_bias_gain(args.output)
         return
