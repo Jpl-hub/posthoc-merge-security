@@ -1,4 +1,4 @@
-Complete-test accuracy after labeled coefficient selection (%). Each method separately maximizes target accuracy on the same 256 training examples per task, using TA coefficients 0.1--1.0 in steps of 0.1. Coefficients are frozen before test evaluation. AGA processes the protected expert first; both task updates use the selected coefficient.
+Test accuracy after coefficient selection (%). Selection maximizes target calibration accuracy; test scores do not guide selection.
 
 | Task | Defense | Coeff. | Target | Companion |
 | --- | --- | ---: | ---: | ---: |

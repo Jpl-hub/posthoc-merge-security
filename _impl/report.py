@@ -126,8 +126,7 @@ def tables(output):
     for _, records in groups:
         for record in records:
             record.append(f"{sum(float(v) for v in record[1:]) / len(tasks):.2f}")
-    write_table("main", "Standalone and protected-task accuracy (\\%) with matched checkpoints and processing. Bold scores mark the lowest merged accuracy per setting. TA coefficients are 0.5 for two experts and 0.2 for eight experts. Avg. is the unweighted mean of the seven displayed task scores. Companions are SVHN for MNIST and MNIST otherwise. EuroSAT participates in eight-expert merging.",
-                "tab:main", ["Setting", "Defense"] + tasks + ["Avg."], groups, wide=True)
+    main_groups = groups
 
     # Complete directed partner pairs: 35 new pairs plus the seven fixed pairs.
     pair_root = ROOT / "results/phase3/bias_weight_only/partner_analysis"
@@ -203,7 +202,7 @@ def tables(output):
                 pair_summary.append(dict(target=task, role=role, defense=method, partners=len(scores),
                     mean_accuracy_percent=groups[-1], minimum_accuracy_percent=min(scores), maximum_accuracy_percent=max(scores)))
         records.append([task]+[f"{v:.2f}" for v in groups])
-    write_table("partners", "Accuracy after AGA and TA across all 42 directed pairs (\\%). Each row averages the six other validated tasks as companions. Subscripts t and c denote the protected target and companion; U is the unprotected control. The same seven NBP releases are used throughout.",
+    write_table("partners", "AGA+TA accuracy across 42 task pairs (\\%), averaged over six companions per target. Subscripts t/c denote target/companion; U is the unprotected control.",
         "tab:partners", ["Task", r"U$_t$", r"NBP$_t$", r"U$_c$", r"NBP$_c$"], [("", records)])
     # Export all counts, including the direct-TA condition, without rounding the source.
     import csv
@@ -235,7 +234,7 @@ def tables(output):
                     "ProDistill": "ProDistill: 64 images/task; final readout fixed",
                     "Bias projection": "Bias projection: no images; final bias edited"}
     groups = [(capabilities[group], records) for group, records in groups]
-    write_table("recovery", "Target accuracy after recovery (\\%). Group headings state image access and final-parameter edits. MLP replacement follows AGA; bias projection precedes TA. Controls receive the same operation. Bias projection gives identical NBP/control predictions.",
+    write_table("recovery", "Target accuracy after recovery (\\%). Each method and its control receive the same operation; access is listed per group.",
                 "tab:recovery", ["Defense"] + small_tasks, groups, section_headers=True)
     write_table("recovery_access", "Implemented recovery settings. All procedures can read the published weights. AGA and MLP replacement use the public base; coefficient fitting and selection use the public base and expert checkpoints. Bias projection needs only the published bias and projection. The changed parameters describe recovery itself; subsequent fusion also combines final normalization and projection parameters.",
         "tab:recovery-access", ["Procedure", "Images/task", "Labels", "Changed parameters", "Budget"], [("", [
@@ -279,7 +278,7 @@ def tables(output):
             groups.append((setting, records))
             details.append((setting, target_records))
             companion_details.append((setting, companion_records))
-    write_table("fusion", "Seven-task macro-average accuracy (\\%) for additional fusion rules. Target and companion accuracies are averaged across the same seven fixed pairs as Table~\\ref{tab:main}. TIES retains 20\\%; DARE drops 20\\% with seed 42, followed by TA at 0.5. AGA processes the protected expert before fusion.",
+    write_table("fusion", "Seven-task macro-average accuracy (\\%) for additional fusion rules. Target and companion accuracies are averaged across the same seven fixed pairs as the main comparison. TIES retains 20\\%; DARE drops 20\\% with seed 42, followed by TA at 0.5. AGA processes the protected expert before fusion.",
                 "tab:fusion", ["Procedure", "Defense", "Target", "Companion"], groups)
     write_table("fusion_tasks", "Complete protected-task accuracy (\\%) for TIES and DARE+TA. Same fixed pairs as the main comparison. TIES keeps 20\\%; DARE drops 20\\% with seed 42 before TA0.5.",
                 "tab:fusion-tasks", ["Procedure", "Defense"] + tasks, details, wide=True)
@@ -349,7 +348,7 @@ def tables(output):
                     cells.append(f"{100*row['correct']/row['n']:.2f}")
             records.append([label] + cells)
         groups.append((task, records))
-    write_table("ablation", "Same-norm direction controls (\\%). Random null reports the mean and sample standard deviation over five fixed seeds after AGA; all five have the displayed standalone accuracy. Class projection uses the same preselected class as NBP, projected directly into the nullspace without the multi-class least-squares solve. All controls use the frozen NBP update norm; companions and TA0.5 match the main table.",
+    write_table("ablation", "Direction ablations at the NBP update norm (accuracy, \\%). Random null reports mean $\\pm$ sample standard deviation over five seeds; all have the displayed standalone accuracy.",
                 "tab:ablation", ["Task", "Update", "Standalone", "AGA+TA"], groups)
     records = []
     for task in tasks:
@@ -419,7 +418,7 @@ def tables(output):
                 cells.append(f"{100*r['correct']/r['n']:.2f}")
             records.append([label] + cells)
         groups.append((setting, records))
-    write_table("backbone", "CLIP ViT-B/16 protected-task accuracy (\\%). The same NBP construction is applied to three experts. Two-expert TA uses coefficient 0.5; AGA processes the protected expert before merging.",
+    write_table("backbone", "Transfer to ViT-B/16: standalone and target accuracy (\\%). TA uses 0.5; AGA aligns the protected expert.",
         "tab:backbone", ["Setting", "Defense"] + small_tasks, groups)
     cleanup_path = ROOT / "results/phase3/bias_weight_only/attacks/projection.json"
     cleanup = json.loads(cleanup_path.read_text())
@@ -481,7 +480,7 @@ def tables(output):
     # Same-host construction timings are separate from model utility tests.
     cost_root = ablation_root / "extension" / "cost"
     cost_files = [cost_root / f"{task}_{method}.json" for task in small_tasks for method in ["bias", "params"]]
-    exported_tables = ["main", "partners", "pair_target", "pair_companion", "recovery", "recovery_access", "fusion", "fusion_tasks", "fusion_companions", "ablation", "class_projection", "precision", "backbone", "cleanup", "equal_weight"]
+    exported_tables = [ "partners", "pair_target", "pair_companion", "recovery", "recovery_access", "fusion", "fusion_tasks", "fusion_companions", "ablation", "class_projection", "precision", "backbone", "cleanup", "equal_weight"]
     if bound_available:
         exported_tables.append("projection_bound")
     if all(p.exists() for p in cost_files):
@@ -535,7 +534,7 @@ def tables(output):
                 groups.append((task, records))
             name = "coefficient_selection"+suffix
             criterion = "the mean target/companion" if objective == "mean" else "target"
-            write_table(name, "Complete-test accuracy after labeled coefficient selection (\\%). Each method separately maximizes "+criterion+" accuracy on the same 256 training examples per task, using TA coefficients 0.1--1.0 in steps of 0.1. Coefficients are frozen before test evaluation. AGA processes the protected expert first; both task updates use the selected coefficient.",
+            write_table(name, "Test accuracy after coefficient selection (\\%). Selection maximizes "+criterion+" calibration accuracy; test scores do not guide selection.",
                 "tab:"+name.replace("_","-"), ["Task","Defense",r"$\lambda$","Target","Companion"], groups)
             exported_tables.append(name)
         readout_path = selection_root / "readout_analysis.json"
@@ -562,63 +561,33 @@ def tables(output):
             [("", records)], tabcolsep=3)
         source["input_sha256"][str(readout_path.relative_to(ROOT))] = hashlib.sha256(readout_path.read_bytes()).hexdigest()
         exported_tables.append("coefficient_readout")
-    # All methods in one comparison; row blocks retain their distinct training controls.
-    comparison = [("", [
-        [display[m]] + [main_values[t, m][i].split(" / ")[0]
-                        for t in small_tasks for i in range(3)] for m in methods])]
+    # One complete table; training baselines retain their matched CE controls.
+    comparison = [(setting, [row[:] for row in records]) for setting, records in main_groups]
     for method, folder in [("Trap2", "trap2_baseline"), ("MergeGuard", "mergeguard_baseline")]:
         path = ROOT / "results/phase3" / folder / "summary.json"
-        if not path.exists():
-            continue
         training = json.loads(path.read_text())
         assert training["status"] == "completed_independently_verified"
-        records = []
-        for defense in ["Unprotected", method]:
-            title = ((r"CE (Trap$^2$)" if method == "Trap2" else "CE (MergeGuard)")
-                     if defense == "Unprotected" else
-                     (r"Trap$^2$" if defense == "Trap2" else r"MergeGuard$^\dagger$"))
-            values = []
-            for task in small_tasks:
-                for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
-                    row, = [r for r in training["rows"] if r["target"] == task
-                            and r["defense"] == defense and r["role"] == "target"
-                            and r["merger"] == merger and r["attack_scope"] == scope]
-                    values.append(f"{100 * row['correct'] / row['n']:.2f}")
-            records.append([title] + values)
-        comparison.append(("", records))
+        for i, (merger, scope) in enumerate([
+                ("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]):
+            for defense in ["Unprotected", method]:
+                title = ((r"CE (Trap$^2$)" if method == "Trap2" else "CE (MergeGuard)")
+                         if defense == "Unprotected" else
+                         (r"Trap$^2$" if method == "Trap2" else r"MergeGuard$^\dagger$"))
+                values = []
+                for task in tasks:
+                    measured = [r for r in training["rows"] if r["target"] == task
+                                and r["defense"] == defense and r["role"] == "target"
+                                and r["merger"] == merger and r["attack_scope"] == scope]
+                    assert len(measured) <= 1
+                    values.append(f"{100 * measured[0]['correct'] / measured[0]['n']:.2f}"
+                                  if measured else "--")
+                comparison[i][1].append([title] + values + ["--"])
         source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
-    caption = ("Comparison with existing defenses on ViT-B/32 (accuracy, \\%). S: standalone; TA: two-expert merging at 0.5; AGA+TA: alignment followed by TA. PaRaMS and NBP use the same released experts. Each training method is paired with its own CE control. $^\\dagger$Our paper-based implementation; the published MergeGuard results use ViT-L/14.")
-    write_table("defense_comparison", caption, "tab:defense-comparison",
-        ["Defense"] + [t+" / "+metric for t in small_tasks for metric in ["S", "TA", "AGA+TA"]],
-        comparison, wide=True, tabcolsep=4.4)
-    path = OUT / "defense_comparison.tex"
-    tex = path.read_text()
-    old = " & ".join(["Defense"] + [t+" / "+metric for t in small_tasks for metric in ["S", "TA", "AGA+TA"]])
-    new = (r"\multirow{2}{*}{Defense} & \multicolumn{3}{c}{MNIST} & \multicolumn{3}{c}{SVHN} & \multicolumn{3}{c}{DTD} \\" + "\n"
-           + r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}" + "\n"
-           + r" & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$")
-    assert old in tex
-    path.write_text(tex.replace(old,new))
+    write_table("defense_comparison",
+        "Defense comparison on ViT-B/32 (accuracy, \\%). Higher is better standalone; lower after merging. Each training method has its own CE control. --: not evaluated. $^\\dagger$: paper-based MergeGuard implementation.",
+        "tab:defense-comparison", ["Setting", "Defense"] + tasks + ["Avg."],
+        comparison, wide=True, tabcolsep=3.8)
     exported_tables.append("defense_comparison")
-    # Main-text coverage summary; the full method-by-setting table remains available.
-    coverage = []
-    for task in tasks:
-        native = [float(main_values[task, m][0].split(" / ")[0]) for m in ("Unprotected", "Defense 1")]
-        pair = [main_values[task, m][2].split(" / ")[0] for m in ("Unprotected", "Defense 1")]
-        pool = [f"{100 * eight[task, m, 'Protected expert'][1] / eight[task, m, 'Protected expert'][0]:.2f}"
-                for m in ("Unprotected", "Defense 1")]
-        coverage.append([task, f"{native[1]-native[0]:+.2f}"] + pair + pool)
-    write_table("coverage", "Seven-task coverage after AGA+TA (accuracy, \\%). $\\Delta$S is NBP minus unprotected standalone accuracy in percentage points. Coefficients: 0.5 for two experts, 0.2 for eight. Full standalone and PaRaMS results are in the supplement.",
-                "tab:coverage", ["Task", r"$\Delta$S", "2 / None", "2 / NBP", "8 / None", "8 / NBP"],
-                [("", coverage)], tabcolsep=3)
-    path = OUT / "coverage.tex"
-    tex = path.read_text()
-    old = " & ".join(["Task", r"$\Delta$S", "2 / None", "2 / NBP", "8 / None", "8 / NBP"])
-    new = (r"\multirow{2}{*}{Task} & \multirow{2}{*}{$\Delta$S} & \multicolumn{2}{c}{2 experts} & \multicolumn{2}{c}{8 experts} \\" + "\n"
-           + r"\cmidrule(lr){3-4}\cmidrule(lr){5-6}" + "\n"
-           + r" & & None & NBP & None & NBP")
-    path.write_text(tex.replace(old, new))
-    exported_tables.append("coverage")
     (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
         "eight_expert_protected_task_cells": len(eight),
         "tables": exported_tables}, indent=2) + "\n")

@@ -1,4 +1,4 @@
-Same-norm direction controls (%). Random null reports the mean and sample standard deviation over five fixed seeds after AGA; all five have the displayed standalone accuracy. Class projection uses the same preselected class as NBP, projected directly into the nullspace without the multi-class least-squares solve. All controls use the frozen NBP update norm; companions and TA0.5 match the main table.
+Direction ablations at the NBP update norm (accuracy, %). Random null reports mean $\pm$ sample standard deviation over five seeds; all have the displayed standalone accuracy.
 
 | Task | Update | Standalone | AGA+TA |
 | --- | --- | ---: | ---: |

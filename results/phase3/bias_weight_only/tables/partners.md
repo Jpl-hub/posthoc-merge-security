@@ -1,4 +1,4 @@
-Accuracy after AGA and TA across all 42 directed pairs (%). Each row averages the six other validated tasks as companions. Subscripts t and c denote the protected target and companion; U is the unprotected control. The same seven NBP releases are used throughout.
+AGA+TA accuracy across 42 task pairs (%), averaged over six companions per target. Subscripts t/c denote target/companion; U is the unprotected control.
 
 | Task | U (target) | NBP (target) | U (companion) | NBP (companion) |
 | --- | ---: | ---: | ---: | ---: |

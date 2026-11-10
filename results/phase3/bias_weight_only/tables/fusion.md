@@ -1,4 +1,4 @@
-Seven-task macro-average accuracy (%) for additional fusion rules. Target and companion accuracies are averaged across the same seven fixed pairs as the main table. TIES retains 20%; DARE drops 20% with seed 42, followed by TA at 0.5. AGA processes the protected expert before fusion.
+Seven-task macro-average accuracy (%) for additional fusion rules. Target and companion accuracies are averaged across the same seven fixed pairs as the main comparison. TIES retains 20%; DARE drops 20% with seed 42, followed by TA at 0.5. AGA processes the protected expert before fusion.
 
 | Procedure | Defense | Target | Companion |
 | --- | --- | ---: | ---: |

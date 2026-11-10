@@ -1,4 +1,4 @@
-Target accuracy after recovery (%). Group headings state image access and final-parameter edits. MLP replacement follows AGA; bias projection precedes TA. Controls receive the same operation. Bias projection gives identical NBP/control predictions.
+Target accuracy after recovery (%). Each method and its control receive the same operation; access is listed per group.
 
 | Defense | MNIST | SVHN | DTD |
 | --- | ---: | ---: | ---: |
