@@ -8,6 +8,7 @@ from pathlib import Path
 import torch
 
 from _impl.evaluate import run, verify
+from _impl.defenses import construct_bias
 from _impl.io import check_files, digest, new_output, save_json
 from _impl.models import checked_models, initialize
 from cfg import require_root
@@ -34,6 +35,13 @@ def construct(cfg):
                          generator=torch.Generator().manual_seed(cfg["random_seed"]))
     random_null = null @ (null.T @ random)
     controls = {f"Scale_{scale:g}": scale * delta for scale in cfg["relative_amplitudes"]}
+    construction_details = {}
+    for seed in cfg.get("nbp_seeds", []):
+        edits, details = construct_bias(expert, anchor, head,
+            cfg["nbp_construction"] | {"noise_seed": seed})
+        name = f"NBP_seed_{seed}"
+        controls[name] = edits[key].double() - bias
+        construction_details[name] = details
     if "random_seeds" in cfg:
         for seed in cfg["random_seeds"]:
             sample = torch.randn(768, dtype=torch.double,
@@ -83,7 +91,8 @@ def construct(cfg):
         specs[name] = {"target": cfg["target"], "release": release, "AGA_edits": release}
         records.append({"name": name, "publication": release,
                         "actual_delta_norm": float(actual.norm()),
-                        "native_embedding_residual_norm": float((actual @ projection).norm())})
+                        "native_embedding_residual_norm": float((actual @ projection).norm()),
+                        "construction": construction_details.get(name)})
     evaluation = json.loads(Path(cfg["evaluation_template"]).read_text())
     original = json.loads(Path(cfg["original_evaluation"]).read_text())
     evaluation.update(tasks=original["tasks"], AGA_references=original["AGA_references"],
@@ -99,12 +108,26 @@ def construct(cfg):
             for stage, key_template in [("standalone", "Standalone/None/{task}"),
                 ("direct", "TA/None/{task}"), ("AGA_target_only", "TA/Protected expert/{task}")]}
     evaluation["legacy"] = cfg.get("legacy", legacy)
+    if "nbp_seeds" in cfg:
+        evaluation["tasks"] = {t: original["tasks"][t]
+            for t in (cfg["target"], cfg["partner"])}
     save_json(out / "evaluation.json", evaluation)
     save_json(out / "freeze.json", {"controls": records,
         "evaluation_sha256": digest(out / "evaluation.json"),
         "main_publication_unchanged": ref, "real_images": 0, "synthetic_images": 0,
         "optimizer_steps": 0, "expert_updates": 0})
     print("FROZEN_CONTROLS", len(records), flush=True)
+
+
+def evaluate(cfg):
+    out = Path(cfg["output"])
+    freeze = json.loads((out / "freeze.json").read_text())
+    assert digest(out / "evaluation.json") == freeze["evaluation_sha256"]
+    for pilot in [True, False]:
+        run(str(out / "evaluation.json"), 0, pilot)
+        case = json.loads((out / "evaluation.json").read_text())["cases"][0]
+        verify(out / "evaluation" / ("pilot" if pilot else "full")
+               / f"00_{case['target']}_{case['partner']}")
 
 
 def main():
@@ -115,17 +138,16 @@ def main():
     require_root()
     cfg = json.loads(Path(args.protocol).read_text())
     check_files(cfg["source_sha256"] | cfg["input_sha256"])
-    if not args.evaluate:
-        construct(cfg)
+    action = evaluate if args.evaluate else construct
+    if "targets" not in cfg:
+        action(cfg)
         return
-    out = Path(cfg["output"])
-    freeze = json.loads((out / "freeze.json").read_text())
-    assert digest(out / "evaluation.json") == freeze["evaluation_sha256"]
-    for pilot in [True, False]:
-        run(str(out / "evaluation.json"), 0, pilot)
-        case = json.loads((out / "evaluation.json").read_text())["cases"][0]
-        verify(out / "evaluation" / ("pilot" if pilot else "full")
-               / f"00_{case['target']}_{case['partner']}")
+    original = json.loads(Path(cfg["original_evaluation"]).read_text())
+    for target in cfg["targets"]:
+        case = next(c for c in original["cases"] if c["target"] == target)
+        action(cfg | {"target": target, "partner": case["partner"],
+            "publication": original["defenses"][f"NBP_{target}"]["release"],
+            "output": str(Path(cfg["output"]) / target)})
 
 
 if __name__ == "__main__":

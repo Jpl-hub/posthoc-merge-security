@@ -30,4 +30,13 @@ This command needs no checkpoints, images or GPU. It reads frozen result counts,
 
 Use the fixed protocols linked in the [result index](results/comparison/README.md). Model and dataset setup is described in [docs/engineering.md](docs/engineering.md). Checkpoint sizes and hashes are in [configs/checkpoints.json](configs/checkpoints.json); author-code versions are in [configs/sources.json](configs/sources.json). The additional PaRaMS dependencies are in [requirements-params.txt](requirements-params.txt).
 
+The class-choice stability check uses five fixed seeds on seven tasks. Construct all controls before evaluating them:
+
+```bash
+python -m experiment.bias_ablation --protocol configs/nbp_stability.json
+python -m experiment.bias_ablation --protocol configs/nbp_stability.json --evaluate
+```
+
+These controls use the same NBP rule and do not replace the main releases. Report all five draws, including any repeated class indices; they are not independent expert-training runs. The protocol reuses archived unprotected scores after checking file and model hashes. For a fresh run without those archives, set `legacy` to `{}` to evaluate the identical unprotected models.
+
 `_impl/` contains shared implementations, `experiment/` contains command-line entries, `configs/` pins inputs, and `results/` stores scientific records. Models, images and raw scores stay outside Git. Historical explorations are available in Git history; they are not current method variants. Old record keys such as `Defense1` are preserved to keep their original hashes and are displayed as NBP by the exporter.
