@@ -1,6 +1,6 @@
-Defense comparison on ViT-B/32 (accuracy, %). Higher is better standalone; lower after merging. Each training method has its own CE control. $^\dagger$: paper-based MergeGuard implementation.
+Defense comparison (accuracy, %). A--B: our ViT-B/32 experiments; C: published ViT-L/14 results (MergeGuard), Table 3, under its original protocol. Higher is better standalone (S); lower after merging.
 
-**A. Seven-task evaluation of released experts**
+**A. Seven-task evaluation of released experts (ViT-B/32)**
 
 | Setting | Defense | SUN397 | Cars | RESISC45 | SVHN | GTSRB | MNIST | DTD | Avg. |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -20,14 +20,23 @@ Defense comparison on ViT-B/32 (accuracy, %). Higher is better standalone; lower
 | 8-expert AGA + TA | PaRaMS | 63.56 | 61.61 | 71.46 | 72.53 | 63.29 | 93.23 | 51.38 | 68.15 |
 | 8-expert AGA + TA | NBP | 0.25 | 0.55 | 2.44 | 6.70 | 1.19 | 9.80 | 2.13 | 3.29 |
 
-**B. Three-task comparison with training-based defenses (two experts)**
+**B. Matched comparison with Trap² (ViT-B/32, two experts)**
 
 | Defense | MNIST / S | MNIST / TA | MNIST / AGA+TA | SVHN / S | SVHN / TA | SVHN / AGA+TA | DTD / S | DTD / TA | DTD / AGA+TA |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | None | 99.69 | 99.37 | 99.30 | 97.46 | 92.50 | 91.56 | 79.41 | 69.31 | 68.40 |
 | PaRaMS | 99.69 | 8.92 | 99.30 | 97.46 | 9.09 | 91.56 | 79.41 | 2.07 | 68.35 |
 | NBP | 99.69 | 9.80 | 9.80 | 97.46 | 6.70 | 6.70 | 79.41 | 2.13 | 2.13 |
-| CE (Trap$^2$) | 99.35 | 99.55 | 99.50 | 96.42 | 96.33 | 95.80 | 71.60 | 72.02 | 70.90 |
-| Trap$^2$ | 99.33 | 9.74 | 9.74 | 96.60 | 6.70 | 6.70 | 65.37 | 2.13 | 2.13 |
-| CE (MergeGuard) | 99.63 | 99.45 | 99.41 | 97.25 | 93.70 | 92.84 | 79.68 | 69.95 | 69.04 |
-| MergeGuard$^\dagger$ | 99.60 | 99.22 | 99.24 | 96.80 | 90.63 | 88.54 | 74.20 | 65.80 | 65.90 |
+| CE (Trap²) | 99.35 | 99.55 | 99.50 | 96.42 | 96.33 | 95.80 | 71.60 | 72.02 | 70.90 |
+| Trap² | 99.33 | 9.74 | 9.74 | 96.60 | 6.70 | 6.70 | 65.37 | 2.13 | 2.13 |
+
+**C. Published comparison from MergeGuard (ViT-L/14)**
+
+Source: [MergeGuard, Table 3](https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf). Original protocol; seven common tasks shown.
+
+| Setting | Defense | SUN397 | Cars | RESISC45 | SVHN | GTSRB | MNIST | DTD |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Standalone | PaRaMS | 82.32 | 92.39 | 97.37 | 98.11 | 99.24 | 99.69 | 84.15 |
+| Standalone | MergeGuard | 81.52 | 88.29 | 97.25 | 96.82 | 98.25 | 99.27 | 82.16 |
+| TA | PaRaMS | 56.77 | 38.61 | 67.86 | 71.95 | 52.25 | 96.02 | 48.72 |
+| TA | MergeGuard | 54.27 | 38.24 | 56.50 | 47.28 | 12.91 | 11.35 | 46.65 |

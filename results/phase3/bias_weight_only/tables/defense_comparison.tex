@@ -2,11 +2,11 @@
 \centering
 \small
 \setlength{\tabcolsep}{3.8pt}
-\caption{Defense comparison on ViT-B/32 (accuracy, \%). Higher is better standalone; lower after merging. Each training method has its own CE control. $^\dagger$: paper-based MergeGuard implementation.}
+\caption{Defense comparison (accuracy, \%). A--B: our ViT-B/32 experiments; C: published ViT-L/14 results~\cite{chen2026mergeguard}, Table~3, under its original protocol. Higher is better standalone (S); lower after merging.}
 \label{tab:defense-comparison}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrrrrrr@{}}
 \toprule
-\multicolumn{10}{l}{\textbf{A. Seven-task evaluation of released experts}} \\
+\multicolumn{10}{l}{\textbf{A. Seven-task evaluation of released experts (ViT-B/32)}} \\
 \midrule
 Setting & Defense & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD & Avg. \\
 \midrule
@@ -34,7 +34,7 @@ Setting & Defense & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD & Avg.
 \par\medskip
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrrrrr@{}}
 \toprule
-\multicolumn{10}{l}{\textbf{B. Three-task comparison with training-based defenses (two experts)}} \\
+\multicolumn{10}{l}{\textbf{B. Matched comparison with Trap$^2$ (ViT-B/32, two experts)}} \\
 \midrule
 \multirow{2}{*}{Defense} & \multicolumn{3}{c}{MNIST} & \multicolumn{3}{c}{SVHN} & \multicolumn{3}{c}{DTD} \\
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
@@ -46,9 +46,20 @@ PaRaMS & 99.69 & 8.92 & 99.30 & 97.46 & 9.09 & 91.56 & 79.41 & 2.07 & 68.35 \\
 \midrule
 CE (Trap$^2$) & 99.35 & 99.55 & 99.50 & 96.42 & 96.33 & 95.80 & 71.60 & 72.02 & 70.90 \\
 Trap$^2$ & 99.33 & 9.74 & 9.74 & 96.60 & 6.70 & 6.70 & 65.37 & 2.13 & 2.13 \\
+\bottomrule
+\end{tabular*}
+\par\medskip
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrrrrr@{}}
+\toprule
+\multicolumn{9}{l}{\textbf{C. Published comparison from MergeGuard (ViT-L/14)}} \\
 \midrule
-CE (MergeGuard) & 99.63 & 99.45 & 99.41 & 97.25 & 93.70 & 92.84 & 79.68 & 69.95 & 69.04 \\
-MergeGuard$^\dagger$ & 99.60 & 99.22 & 99.24 & 96.80 & 90.63 & 88.54 & 74.20 & 65.80 & 65.90 \\
+Setting & Defense & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD \\
+\midrule
+\multirow{2}{*}{Standalone} & PaRaMS & 82.32 & 92.39 & 97.37 & 98.11 & 99.24 & 99.69 & 84.15 \\
+ & MergeGuard & 81.52 & 88.29 & 97.25 & 96.82 & 98.25 & 99.27 & 82.16 \\
+\midrule
+\multirow{2}{*}{TA} & PaRaMS & 56.77 & 38.61 & 67.86 & 71.95 & 52.25 & 96.02 & 48.72 \\
+ & MergeGuard & 54.27 & 38.24 & 56.50 & 47.28 & 12.91 & 11.35 & 46.65 \\
 \bottomrule
 \end{tabular*}
 \end{table*}
