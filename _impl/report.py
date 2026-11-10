@@ -561,32 +561,58 @@ def tables(output):
             [("", records)], tabcolsep=3)
         source["input_sha256"][str(readout_path.relative_to(ROOT))] = hashlib.sha256(readout_path.read_bytes()).hexdigest()
         exported_tables.append("coefficient_readout")
-    # One complete table; training baselines retain their matched CE controls.
-    comparison = [(setting, [row[:] for row in records]) for setting, records in main_groups]
+    # One table with separate panels for seven-task coverage and training baselines.
+    training_groups = [("", [[display[m]] + [main_values[t, m][i].split(" / ")[0]
+                        for t in small_tasks for i in range(3)] for m in methods])]
     for method, folder in [("Trap2", "trap2_baseline"), ("MergeGuard", "mergeguard_baseline")]:
         path = ROOT / "results/phase3" / folder / "summary.json"
         training = json.loads(path.read_text())
         assert training["status"] == "completed_independently_verified"
-        for i, (merger, scope) in enumerate([
-                ("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]):
-            for defense in ["Unprotected", method]:
-                title = ((r"CE (Trap$^2$)" if method == "Trap2" else "CE (MergeGuard)")
-                         if defense == "Unprotected" else
-                         (r"Trap$^2$" if method == "Trap2" else r"MergeGuard$^\dagger$"))
-                values = []
-                for task in tasks:
-                    measured = [r for r in training["rows"] if r["target"] == task
+        records = []
+        for defense in ["Unprotected", method]:
+            title = ((r"CE (Trap$^2$)" if method == "Trap2" else "CE (MergeGuard)")
+                     if defense == "Unprotected" else
+                     (r"Trap$^2$" if method == "Trap2" else r"MergeGuard$^\dagger$"))
+            values = []
+            for task in small_tasks:
+                for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
+                    row, = [r for r in training["rows"] if r["target"] == task
                                 and r["defense"] == defense and r["role"] == "target"
                                 and r["merger"] == merger and r["attack_scope"] == scope]
-                    assert len(measured) <= 1
-                    values.append(f"{100 * measured[0]['correct'] / measured[0]['n']:.2f}"
-                                  if measured else "--")
-                comparison[i][1].append([title] + values + ["--"])
+                    values.append(f"{100 * row['correct'] / row['n']:.2f}")
+            records.append([title] + values)
+        training_groups.append(("", records))
         source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
     write_table("defense_comparison",
-        "Defense comparison on ViT-B/32 (accuracy, \\%). Higher is better standalone; lower after merging. Each training method has its own CE control. --: not evaluated. $^\\dagger$: paper-based MergeGuard implementation.",
+        "Defense comparison on ViT-B/32 (accuracy, \\%). Higher is better standalone; lower after merging. Each training method has its own CE control. $^\\dagger$: paper-based MergeGuard implementation.",
         "tab:defense-comparison", ["Setting", "Defense"] + tasks + ["Avg."],
-        comparison, wide=True, tabcolsep=3.8)
+        main_groups, wide=True, tabcolsep=3.8)
+    path = OUT / "defense_comparison.tex"
+    tex = path.read_text().replace(r"\begin{tabular}{llrrrrrrrr}",
+        r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrrrrrr@{}}")
+    tex = tex.replace(r"\end{tabular}", r"\end{tabular*}")
+    tex = tex.replace(r"\toprule", r"\toprule" + "\n" +
+        r"\multicolumn{10}{l}{\textbf{A. Seven-task evaluation of released experts}} \\" + "\n" + r"\midrule", 1)
+    panel = [r"\par\medskip", r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrrrrr@{}}", r"\toprule",
+        r"\multicolumn{10}{l}{\textbf{B. Three-task comparison with training-based defenses (two experts)}} \\",
+        r"\midrule", r"\multirow{2}{*}{Defense} & \multicolumn{3}{c}{MNIST} & \multicolumn{3}{c}{SVHN} & \multicolumn{3}{c}{DTD} \\",
+        r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}",
+        r" & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ \\",
+        r"\midrule"]
+    md_path = OUT / "defense_comparison.md"
+    md = md_path.read_text().replace("\n\n|", "\n\n**A. Seven-task evaluation of released experts**\n\n|", 1)
+    md += "\n**B. Three-task comparison with training-based defenses (two experts)**\n\n"
+    md += "| Defense | " + " | ".join(t+" / "+m for t in small_tasks for m in ["S", "TA", "AGA+TA"]) + " |\n"
+    md += "| --- | " + " | ".join(["---:"] * 9) + " |\n"
+    for i, (_, records) in enumerate(training_groups):
+        if i:
+            panel.append(r"\midrule")
+        for name, *values in records:
+            panel.append(" & ".join([r"\textbf{NBP}" if name == "NBP" else name] + values) + r" \\")
+            md += "| " + " | ".join([name] + values) + " |\n"
+    panel += [r"\bottomrule", r"\end{tabular*}"]
+    path.write_text(tex.replace(r"\end{table*}", "\n".join(panel) + "\n" + r"\end{table*}"))
+    md_path.write_text(md)
     exported_tables.append("defense_comparison")
     (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
         "eight_expert_protected_task_cells": len(eight),
