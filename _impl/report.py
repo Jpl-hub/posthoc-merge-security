@@ -563,7 +563,7 @@ def tables(output):
         source["input_sha256"][str(readout_path.relative_to(ROOT))] = hashlib.sha256(readout_path.read_bytes()).hexdigest()
         exported_tables.append("coefficient_readout")
     # All methods in one comparison; row blocks retain their distinct training controls.
-    comparison = [("Post-hoc protection of released experts; no construction images", [
+    comparison = [("", [
         [display[m]] + [main_values[t, m][i].split(" / ")[0]
                         for t in small_tasks for i in range(3)] for m in methods])]
     for method, folder in [("Trap2", "trap2_baseline"), ("MergeGuard", "mergeguard_baseline")]:
@@ -574,7 +574,9 @@ def tables(output):
         assert training["status"] == "completed_independently_verified"
         records = []
         for defense in ["Unprotected", method]:
-            title = "CE control" if defense == "Unprotected" else (r"Trap$^2$" if defense == "Trap2" else "MergeGuard")
+            title = ((r"CE (Trap$^2$)" if method == "Trap2" else "CE (MergeGuard)")
+                     if defense == "Unprotected" else
+                     (r"Trap$^2$" if defense == "Trap2" else r"MergeGuard$^\dagger$"))
             values = []
             for task in small_tasks:
                 for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
@@ -583,14 +585,12 @@ def tables(output):
                             and r["merger"] == merger and r["attack_scope"] == scope]
                     values.append(f"{100 * row['correct'] / row['n']:.2f}")
             records.append([title] + values)
-        protocol = ("Training from the public base: author Trap$^2$ objective" if method == "Trap2"
-                    else "Continued training from released experts: MergeGuard")
-        comparison.append((protocol, records))
+        comparison.append(("", records))
         source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
-    caption = ("Defense comparison on CLIP ViT-B/32: full-test accuracy (\\%). S: standalone. TA uses coefficient 0.5; AGA aligns the protected expert. PaRaMS and NBP share released checkpoints; training methods have separate matched CE controls. MergeGuard is a paper-based implementation. Companions: SVHN for MNIST, MNIST otherwise.")
+    caption = ("Comparison with existing defenses on ViT-B/32 (accuracy, \\%). S: standalone; TA: two-expert merging at 0.5; AGA+TA: alignment followed by TA. PaRaMS and NBP use the same released experts. Each training method is paired with its own CE control. $^\\dagger$Our paper-based implementation; the published MergeGuard results use ViT-L/14.")
     write_table("defense_comparison", caption, "tab:defense-comparison",
         ["Defense"] + [t+" / "+metric for t in small_tasks for metric in ["S", "TA", "AGA+TA"]],
-        comparison, wide=True, section_headers=True, tabcolsep=5)
+        comparison, wide=True, tabcolsep=4.4)
     path = OUT / "defense_comparison.tex"
     tex = path.read_text()
     old = " & ".join(["Defense"] + [t+" / "+metric for t in small_tasks for metric in ["S", "TA", "AGA+TA"]])
@@ -600,6 +600,25 @@ def tables(output):
     assert old in tex
     path.write_text(tex.replace(old,new))
     exported_tables.append("defense_comparison")
+    # Main-text coverage summary; the full method-by-setting table remains available.
+    coverage = []
+    for task in tasks:
+        native = [float(main_values[task, m][0].split(" / ")[0]) for m in ("Unprotected", "Defense 1")]
+        pair = [main_values[task, m][2].split(" / ")[0] for m in ("Unprotected", "Defense 1")]
+        pool = [f"{100 * eight[task, m, 'Protected expert'][1] / eight[task, m, 'Protected expert'][0]:.2f}"
+                for m in ("Unprotected", "Defense 1")]
+        coverage.append([task, f"{native[1]-native[0]:+.2f}"] + pair + pool)
+    write_table("coverage", "Seven-task coverage after AGA+TA (accuracy, \\%). $\\Delta$S is NBP minus unprotected standalone accuracy in percentage points. Coefficients: 0.5 for two experts, 0.2 for eight. Full standalone and PaRaMS results are in the supplement.",
+                "tab:coverage", ["Task", r"$\Delta$S", "2 / None", "2 / NBP", "8 / None", "8 / NBP"],
+                [("", coverage)], tabcolsep=3)
+    path = OUT / "coverage.tex"
+    tex = path.read_text()
+    old = " & ".join(["Task", r"$\Delta$S", "2 / None", "2 / NBP", "8 / None", "8 / NBP"])
+    new = (r"\multirow{2}{*}{Task} & \multirow{2}{*}{$\Delta$S} & \multicolumn{2}{c}{2 experts} & \multicolumn{2}{c}{8 experts} \\" + "\n"
+           + r"\cmidrule(lr){3-4}\cmidrule(lr){5-6}" + "\n"
+           + r" & & None & NBP & None & NBP")
+    path.write_text(tex.replace(old, new))
+    exported_tables.append("coverage")
     (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
         "eight_expert_protected_task_cells": len(eight),
         "tables": exported_tables}, indent=2) + "\n")

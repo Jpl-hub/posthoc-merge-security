@@ -1,0 +1,27 @@
+{
+  "review_date": "2026-11-10",
+  "paper": "https://openaccess.thecvf.com/content/CVPR2026/html/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.html",
+  "source_check": {
+    "author_page": "https://chengyi-chris.github.io/publications/",
+    "finding": "Page links the paper but no matching implementation was found. GitHub repository searches by exact title and author yielded no matching repository. CryptoAILab/MergeGuard is a different 2024 LLM watermarking project, not this CVPR2026 method."
+  },
+  "matched_formula": {
+    "loss": "CE + 0.01 * sum of squared visual parameters, Eq.(2)",
+    "negation": "stage1 - mask * (stage1 - public_base), beta=1, Eq.(4)"
+  },
+  "unresolved_author_details": [
+    "Optimizer, learning rate and schedule are not specified in the inspected paper/supplement.",
+    "Definition of a masked layer versus an entire Transformer block is not fully operationalized. Supplement describes layers as Transformer blocks; main paper says all visual parameters are eligible.",
+    "k is printed as 0.1 alongside percentage notation; the existing implementation uses a 0.1 fraction. No official code confirms the convention.",
+    "Exact target/companion pairing and merging coefficient selection are not fully recoverable from the published table."
+  ],
+  "established_difference": {
+    "published_backbone": "ViT-L/14",
+    "current_backbone": "ViT-B/32",
+    "current_training": "Explicit Task Arithmetic schedule; not an author-code reproduction",
+    "stage_diagnosis": "Weak direct TA already appears before AGA; prior stage replay is exact."
+  },
+  "next_check": "One MNIST/SVHN ViT-L/14 matched CE/protected comparison with the same explicit training protocol. This isolates the backbone difference; it does not resolve unknown author hyperparameters. Download original Task Arithmetic public checkpoints first.",
+  "new_accuracy_results": false,
+  "existing_results_changed": false
+}
