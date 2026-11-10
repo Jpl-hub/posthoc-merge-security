@@ -21,7 +21,12 @@
     "current_training": "Explicit Task Arithmetic schedule; not an author-code reproduction",
     "stage_diagnosis": "Weak direct TA already appears before AGA; prior stage replay is exact."
   },
-  "next_check": "One MNIST/SVHN ViT-L/14 matched CE/protected comparison with the same explicit training protocol. This isolates the backbone difference; it does not resolve unknown author hyperparameters. Download original Task Arithmetic public checkpoints first.",
-  "new_accuracy_results": false,
-  "existing_results_changed": false
+  "new_accuracy_results": true,
+  "existing_results_changed": false,
+  "completed_L14_check": {
+    "path": "results/phase3/mergeguard_baseline/l14_check.json",
+    "finding": "Protected standalone MNIST99.69% versus matched CE99.70%; direct TA99.33% versus99.54%. Weak merging protection persists in this L14 check. The backbone change alone does not resolve the discrepancy. Unknown author details remain unresolved.",
+    "rows": 6,
+    "replays": 96
+  }
 }
