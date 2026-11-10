@@ -582,7 +582,7 @@ def tables(output):
         training_groups.append(("", records))
         source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
     write_table("defense_comparison",
-        "Defense comparison (accuracy, \\%). A--B: our ViT-B/32 experiments; C: published ViT-L/14 results~\\cite{chen2026mergeguard}, Table~3, under its original protocol. Higher is better standalone (S); lower after merging.",
+        "Defense comparison (accuracy, \\%). A--B: our ViT-B/32 evaluation; Trap$^2$ and its CE control use separately trained experts. C: published ViT-L/14 results~\\cite{chen2026mergeguard}, Table~3, under the original protocol. Higher is better standalone (S); lower after merging.",
         "tab:defense-comparison", ["Setting", "Defense"] + tasks + ["Avg."],
         main_groups, wide=True, tabcolsep=3.8)
     path = OUT / "defense_comparison.tex"
@@ -592,14 +592,14 @@ def tables(output):
     tex = tex.replace(r"\toprule", r"\toprule" + "\n" +
         r"\multicolumn{10}{l}{\textbf{A. Seven-task evaluation of released experts (ViT-B/32)}} \\" + "\n" + r"\midrule", 1)
     panel = [r"\par\medskip", r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrrrrr@{}}", r"\toprule",
-        r"\multicolumn{10}{l}{\textbf{B. Matched comparison with Trap$^2$ (ViT-B/32, two experts)}} \\",
+        r"\multicolumn{10}{l}{\textbf{B. Three-task comparison with Trap$^2$ (ViT-B/32, two experts)}} \\",
         r"\midrule", r"\multirow{2}{*}{Defense} & \multicolumn{3}{c}{MNIST} & \multicolumn{3}{c}{SVHN} & \multicolumn{3}{c}{DTD} \\",
         r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}",
         r" & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ \\",
         r"\midrule"]
     md_path = OUT / "defense_comparison.md"
     md = md_path.read_text().replace("\n\n|", "\n\n**A. Seven-task evaluation of released experts (ViT-B/32)**\n\n|", 1)
-    md += "\n**B. Matched comparison with Trap$^2$ (ViT-B/32, two experts)**\n\n"
+    md += "\n**B. Three-task comparison with Trap$^2$ (ViT-B/32, two experts)**\n\n"
     md += "| Defense | " + " | ".join(t+" / "+m for t in small_tasks for m in ["S", "TA", "AGA+TA"]) + " |\n"
     md += "| --- | " + " | ".join(["---:"] * 9) + " |\n"
     for i, (_, records) in enumerate(training_groups):

@@ -1,4 +1,4 @@
-Defense comparison (accuracy, %). A--B: our ViT-B/32 experiments; C: published ViT-L/14 results (MergeGuard), Table 3, under its original protocol. Higher is better standalone (S); lower after merging.
+Defense comparison (accuracy, %). A--B: our ViT-B/32 evaluation; Trap² and its CE control use separately trained experts. C: published ViT-L/14 results (MergeGuard), Table 3, under the original protocol. Higher is better standalone (S); lower after merging.
 
 **A. Seven-task evaluation of released experts (ViT-B/32)**
 
@@ -20,7 +20,7 @@ Defense comparison (accuracy, %). A--B: our ViT-B/32 experiments; C: published V
 | 8-expert AGA + TA | PaRaMS | 63.56 | 61.61 | 71.46 | 72.53 | 63.29 | 93.23 | 51.38 | 68.15 |
 | 8-expert AGA + TA | NBP | 0.25 | 0.55 | 2.44 | 6.70 | 1.19 | 9.80 | 2.13 | 3.29 |
 
-**B. Matched comparison with Trap² (ViT-B/32, two experts)**
+**B. Three-task comparison with Trap² (ViT-B/32, two experts)**
 
 | Defense | MNIST / S | MNIST / TA | MNIST / AGA+TA | SVHN / S | SVHN / TA | SVHN / AGA+TA | DTD / S | DTD / TA | DTD / AGA+TA |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
