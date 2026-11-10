@@ -1,4 +1,4 @@
-Target accuracy (%): higher standalone (S), lower after merging. A--B: our B/32 tests; Trap²/CE use separately trained experts. TA coefficients are 0.5 (two experts) and 0.2 (eight). Avg. weights tasks equally. C: published L/14 results (MergeGuard), Table 3, with the original protocol.
+Standalone (S) and protected-task accuracies (%). A--B: our B/32 tests; Trap²/CE use separately trained experts. TA coefficients are 0.5 (two experts) and 0.2 (eight). Avg. weights tasks equally. C: published L/14 results (MergeGuard), Table 3, with the original protocol.
 
 **A. Seven-task evaluation of released experts (ViT-B/32)**
 

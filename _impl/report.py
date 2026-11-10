@@ -74,7 +74,8 @@ def tables(output):
         columns = len(headers)
         grouped = any(group for group, _ in groups) and not section_headers
         spec = column_spec or ("ll" + "r" * (columns - 2) if grouped else "l" + "r" * (columns - 1))
-        lines = [rf"\begin{{{env}}}[!t]", r"\centering", r"\small",
+        placement = "!t" if wide else "!htbp"
+        lines = [rf"\begin{{{env}}}[{placement}]", r"\centering", r"\small",
                  rf"\setlength{{\tabcolsep}}{{{tabcolsep}pt}}", rf"\caption{{{caption}}}",
                  rf"\label{{{label}}}", r"\begin{tabular}{" + spec + "}",
                  r"\toprule", " & ".join(headers) + r" \\", r"\midrule"]
@@ -630,7 +631,7 @@ def tables(output):
         training_groups.append(("", records))
         source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
     write_table("defense_comparison",
-        "Target accuracy (\\%): higher standalone (S), lower after merging. A--B: our B/32 tests; Trap$^2$/CE use separately trained experts. TA coefficients are 0.5 (two experts) and 0.2 (eight). Avg. weights tasks equally. C: published L/14 results~\\cite{chen2026mergeguard}, Table~3, with the original protocol.",
+        "Standalone (S) and protected-task accuracies (\\%). A--B: our B/32 tests; Trap$^2$/CE use separately trained experts. TA coefficients are 0.5 (two experts) and 0.2 (eight). Avg. weights tasks equally. C: published L/14 results~\\cite{chen2026mergeguard}, Table~3, with the original protocol.",
         "tab:defense-comparison", ["Setting", "Defense"] + tasks + ["Avg."],
         main_groups, wide=True, tabcolsep=3.8)
     path = OUT / "defense_comparison.tex"
