@@ -561,6 +561,54 @@ def tables(output):
             [("", records)], tabcolsep=3)
         source["input_sha256"][str(readout_path.relative_to(ROOT))] = hashlib.sha256(readout_path.read_bytes()).hexdigest()
         exported_tables.append("coefficient_readout")
+    # Same constructor, five preselected class draws; never select the best result.
+    stability_root = ROOT / "results/phase3/bias_weight_only/stability"
+    if stability_root.exists():
+        import statistics
+        records, detail, checks = [], [], []
+        for task in tasks:
+            folder = stability_root / task
+            measured = json.loads((folder / "results.json").read_text())
+            validation = json.loads((folder / "independent_validation.json").read_text())
+            execution = json.loads((folder / "execution.json").read_text())
+            freeze = json.loads((folder / "freeze.json").read_text())
+            assert validation["status"] == "passed" and validation["rows"] == len(measured) == 30
+            assert execution["completed"] and validation["raw_sha256"] == execution["predictions_sha256"]
+            checks.append(validation)
+            lookup = {(r["defense"], r["merger"], r["attack_scope"], r["dataset"]): r for r in measured}
+            acc = lambda r: 100 * r["correct"] / r["n"]
+            clean = lookup["Unprotected", "Standalone", "None", task]
+            values, losses = [], []
+            for seed in range(5):
+                name = f"NBP_seed_{seed}"
+                native = lookup[name, "Standalone", "None", task]
+                merged = lookup[name, "TA", "Protected expert", task]
+                peer = lookup[name, "TA", "Protected expert", merged["partner"]]
+                direct = lookup[name, "TA", "None", task]
+                control, = [c for c in freeze["controls"] if c["name"] == name]
+                values.append(acc(merged)); losses.append(acc(clean) - acc(native))
+                detail.append({"task": task, "seed": seed,
+                    "class_index": control["construction"]["requested_class"],
+                    "standalone": acc(native), "standalone_loss_pp": losses[-1],
+                    "TA": acc(direct), "AGA_TA": values[-1], "companion_AGA_TA": acc(peer),
+                    "predicted_classes": sum(n > 0 for n in merged["predicted_class_counts"]),
+                    "publication_sha256": control["publication"]["sha256"]})
+            records.append([task, f"{max(losses):.3f}",
+                f"{statistics.mean(values):.2f} $\\pm$ {statistics.stdev(values):.2f}",
+                f"{min(values):.2f}--{max(values):.2f}"])
+            for name in ["results.json", "execution.json", "independent_validation.json", "protocol.json", "freeze.json"]:
+                path = folder / name
+                source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+        write_table("class_stability", "Five fixed class draws per task. Maximum standalone loss (percentage points), and target accuracy after AGA+TA (\\%; mean $\\pm$ sample SD and range).",
+            "tab:class-stability", ["Task", "S loss", "AGA+TA", "Range"], [("", records)], tabcolsep=3)
+        (OUT / "class_stability.json").write_text(json.dumps({"scope": "Seeds0--4, same expert and constructor; all draws retained, not independent expert training. RESISC45 seeds1 and4 select the same class40.",
+            "rows": detail, "complete_dataset_rows": sum(c["rows"] for c in checks),
+            "score_replays": sum(c["full_image_prediction_replays"] for c in checks),
+            "maximum_score_error": max(c["maximum_score_error"] for c in checks)}, indent=2)+"\n")
+        for path in [stability_root / "construction_check.json", ROOT / "configs/nbp_stability.json"]:
+            source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+        exported_tables.append("class_stability")
+
     # Separate our matched experiments from published results on another backbone.
     training_groups = [("", [[display[m]] + [main_values[t, m][i].split(" / ")[0]
                         for t in small_tasks for i in range(3)] for m in methods])]
@@ -582,7 +630,7 @@ def tables(output):
         training_groups.append(("", records))
         source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
     write_table("defense_comparison",
-        "Defense comparison (accuracy, \\%). A--B: our ViT-B/32 evaluation; Trap$^2$ and its CE control use separately trained experts. C: published ViT-L/14 results~\\cite{chen2026mergeguard}, Table~3, under the original protocol. Higher is better standalone (S); lower after merging.",
+        "Target accuracy (\\%): higher standalone (S), lower after merging. A--B: our B/32 tests; Trap$^2$/CE use separately trained experts. TA coefficients are 0.5 (two experts) and 0.2 (eight). Avg. weights tasks equally. C: published L/14 results~\\cite{chen2026mergeguard}, Table~3, with the original protocol.",
         "tab:defense-comparison", ["Setting", "Defense"] + tasks + ["Avg."],
         main_groups, wide=True, tabcolsep=3.8)
     path = OUT / "defense_comparison.tex"

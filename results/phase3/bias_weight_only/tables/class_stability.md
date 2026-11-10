@@ -1,0 +1,11 @@
+Five fixed class draws per task. Maximum standalone loss (percentage points), and target accuracy after AGA+TA (%; mean $\pm$ sample SD and range).
+
+| Task | S loss | AGA+TA | Range |
+| --- | ---: | ---: | ---: |
+| SUN397 | 0.010 | 0.25 $\pm$ 0.00 | 0.25--0.25 |
+| Cars | 0.025 | 0.53 $\pm$ 0.07 | 0.45--0.65 |
+| RESISC45 | 0.000 | 2.12 $\pm$ 0.14 | 1.87--2.22 |
+| SVHN | 0.000 | 7.90 $\pm$ 1.47 | 6.38--9.69 |
+| GTSRB | 0.000 | 3.09 $\pm$ 1.94 | 0.48--5.70 |
+| MNIST | 0.000 | 15.89 $\pm$ 9.16 | 9.58--30.20 |
+| DTD | 0.000 | 2.13 $\pm$ 0.00 | 2.13--2.13 |

@@ -125,12 +125,12 @@ def figures(output, table_sources):
     plt.close(fig)
     print("Wrote annotated fusion comparison from recorded complete-test results.")
 
-    # Match all35 newly evaluated pairs to their fixed direct-TA readout certificate.
+    # AGA edits preceding blocks only, leaving the certified readout unchanged.
     diagnostic_path = ROOT / "results/phase3/bias_weight_only/partner_analysis/prediction_diagnostics.json"
     diagnostic = json.loads(diagnostic_path.read_text())
     for relative, expected in diagnostic["input_sha256"].items():
         assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == expected
-    rows = [r for r in diagnostic["rows"] if r["attack_scope"] == "None"]
+    rows = [r for r in diagnostic["rows"] if r["attack_scope"] == "Protected expert"]
     assert len(rows) == 70
     own = [r for r in rows if r["method"] == "NBP"]
     groups = [
@@ -138,6 +138,7 @@ def figures(output, table_sources):
         [r for r in own if r["minimum_margin_lower_bound"] <= 0],
         [r for r in rows if r["method"] == "None"],
     ]
+    assert all(r["predicted_class_counts"][r["certificate_class"]] == r["n"] for r in groups[0])
     single = np.array([sum(r["dominant_fraction"] == 1 for r in group) for group in groups])
     multiple = np.array([len(group) for group in groups]) - single
     assert [len(g) for g in groups] == [30, 5, 35] and single.tolist() == [30, 3, 0]
@@ -161,7 +162,7 @@ def figures(output, table_sources):
                loc="upper center", bbox_to_anchor=(.5, 1.02), handlelength=1.5)
     fig.savefig(OUT / "readout_predictions.pdf", metadata={"Title": "Readout condition and observed prediction counts"})
     plt.close(fig)
-    print("Wrote observed prediction concentration for all35 additional pairs; no image forwards.")
+    print("Wrote observed prediction concentration for all35 additional pairs; AGA+TA; no image forwards.")
 
     # All grid points are calibration measurements; never present them as test curves.
     selection_root = ROOT / "results/phase3/bias_weight_only/coefficient_selection"

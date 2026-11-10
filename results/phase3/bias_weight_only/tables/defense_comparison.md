@@ -1,4 +1,4 @@
-Defense comparison (accuracy, %). A--B: our ViT-B/32 evaluation; Trap² and its CE control use separately trained experts. C: published ViT-L/14 results (MergeGuard), Table 3, under the original protocol. Higher is better standalone (S); lower after merging.
+Target accuracy (%): higher standalone (S), lower after merging. A--B: our B/32 tests; Trap²/CE use separately trained experts. TA coefficients are 0.5 (two experts) and 0.2 (eight). Avg. weights tasks equally. C: published L/14 results (MergeGuard), Table 3, with the original protocol.
 
 **A. Seven-task evaluation of released experts (ViT-B/32)**
 
