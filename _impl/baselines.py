@@ -129,18 +129,23 @@ def mergeguard_training(visual, base, train_loader, val_loader, vectors, setting
     vectors = vectors.cuda().float()
     params = list(visual.parameters())
     optimizer = torch.optim.AdamW(params, lr=settings["lr"], weight_decay=0.0)
-    total = settings["epochs"] * len(train_loader)
+    accumulation = cfg.get("gradient_accumulation", 1)
+    steps_per_epoch = math.ceil(len(train_loader) / accumulation)
+    total = settings["epochs"] * steps_per_epoch
     started = time.monotonic()
     for epoch in range(settings["epochs"]):
         sums = [0., 0.]
         for batch_index, (images, labels) in enumerate(train_loader):
-            step = epoch * len(train_loader) + batch_index
+            step = epoch * steps_per_epoch + batch_index // accumulation
             warm = settings["warm_up"]
             fraction = ((step + 1) / warm if step < warm else
                         .5 * (1 + math.cos(math.pi * (step - warm) / (total - warm))))
             for group in optimizer.param_groups:
                 group["lr"] = settings["lr"] * fraction
-            optimizer.zero_grad(set_to_none=True)
+            if batch_index % accumulation == 0:
+                optimizer.zero_grad(set_to_none=True)
+                group_samples = min(accumulation * train_loader.batch_size,
+                                    len(train_loader.dataset) - batch_index * train_loader.batch_size)
             logits = 100 * F.normalize(visual(images.cuda()), dim=-1) @ vectors.T
             ce = F.cross_entropy(logits, labels.cuda())
             # Eq.(2): sum of squared weights, not a mean or distance to the base.
@@ -148,9 +153,15 @@ def mergeguard_training(visual, base, train_loader, val_loader, vectors, setting
             loss = ce + settings["lambda_reg"] * l2
             if not torch.isfinite(loss):
                 raise ValueError("Non-finite MergeGuard training loss")
+            if accumulation != 1:
+                loss = loss * len(labels) / group_samples
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(params, settings["max_norm"])
-            optimizer.step()
+            if (batch_index + 1) % accumulation == 0 or batch_index + 1 == len(train_loader):
+                torch.nn.utils.clip_grad_norm_(params, settings["max_norm"])
+                optimizer.step()
+                if accumulation > 1 and (step == 0 or (step + 1) % 100 == 0):
+                    print(dict(defense=defense, step=step + 1, total_steps=total,
+                               ce=ce.item(), seconds=time.monotonic()-started), flush=True)
             sums[0] += ce.item()
             sums[1] += l2.item()
         print(dict(defense=defense, epoch=epoch + 1, epochs=settings["epochs"],

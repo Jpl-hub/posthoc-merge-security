@@ -13,13 +13,15 @@ from _impl.baselines import trap2_training, mergeguard_training
 from _impl.data import dataset, official_labels
 from _impl.io import digest, new_output, read_json, save_json
 from _impl.models import initialize, load_checkpoint
-from cfg import CHECKPOINTS, DATA, require_root
+from cfg import BACKBONE, CHECKPOINTS, DATA, require_root
 
 
 def run(config, task, defense):
     require_root()
     initialize()
     cfg = read_json(config)
+    if cfg.get("backbone", "ViT-B-32") != BACKBONE:
+        raise ValueError("Training protocol and selected backbone differ")
     settings = cfg["training"] | {"device": "cuda"}
     settings["lambda_reg"] = cfg["lambda_reg"] if defense != "CE" else 0.0
     method = cfg.get("method", "Trap2")
@@ -88,7 +90,7 @@ def run(config, task, defense):
         peak_gpu_bytes=torch.cuda.max_memory_allocated(),
         training_examples=len(train_indices), validation_examples=len(val_indices),
         test_examples_used=0,
-        evaluation="Pending: best validation checkpoint must be evaluated in FP32.",
+        evaluation="Pending FP32 full-test evaluation; checkpoint selection is defined by the training protocol.",
     ))
 
 
@@ -102,6 +104,8 @@ def evaluate_pair(config, task):
 
     initialize()
     cfg = read_json(config)
+    if cfg.get("backbone", "ViT-B-32") != BACKBONE:
+        raise ValueError("Evaluation protocol and selected backbone differ")
     method = cfg.get("method", "Trap2")
     folder = Path(cfg["output"]) / task
     evaluation = read_json("configs/evaluate.json")
@@ -109,7 +113,11 @@ def evaluate_pair(config, task):
     evaluation["tasks"] = {k: evaluation["tasks"][k] for k in [task, partner]}
     evaluation["cases"] = [dict(target=task, partner=partner, defenses=[method])]
     evaluation["defenses"] = {}
-    evaluation["attack_scopes"] = ["None", "Protected expert", "All experts"]
+    evaluation["backbone"] = BACKBONE
+    evaluation["attack_scopes"] = cfg.get("attack_scopes", ["None", "Protected expert", "All experts"])
+    use_aga = any(s != "None" for s in evaluation["attack_scopes"])
+    if use_aga and BACKBONE == "ViT-L-14":
+        raise ValueError("This AGA adapter covers 12-layer B models, not ViT-L/14")
     evaluation["output"] = str(folder / "evaluation")
     evaluation["experiment"] = f"{method} and matched CE control; original fixed companion"
     evaluation["source_sha256"]["experiment/train_baseline.py"] = digest(__file__)
@@ -117,8 +125,9 @@ def evaluate_pair(config, task):
     anchor = load_checkpoint("zeroshot.pt")
     path = Path("external/secure-merge-attack") / evaluation["AGA"]["file"]
     assert digest(path) == evaluation["AGA"]["raw_sha256"]
-    author, sha = load_author(path, True)
-    assert sha == evaluation["AGA"]["sha256"]
+    if use_aga:
+        author, sha = load_author(path, True)
+        assert sha == evaluation["AGA"]["sha256"]
     for defense, name in [("CE", "Unprotected"), (method, method)]:
         run_dir = folder / defense
         completed = read_json(run_dir / "completed.json")
@@ -128,15 +137,18 @@ def evaluate_pair(config, task):
         model.model.visual.load_state_dict(state, strict=True)
         release = run_dir / "release.pt"
         torch.save({"model.visual." + k: v for k, v in state.items()}, release)
-        recovered = author_recover(model, anchor, author)
-        aligned = run_dir / "AGA.pt"
-        torch.save({k: v for k, v in recovered.state_dict().items()
-                    if not torch.equal(v, anchor.state_dict()[k])}, aligned)
         evaluation["defenses"][name] = dict(
             release=dict(path=str(release), sha256=digest(release), reference="public_base"),
-            AGA_edits=dict(path=str(aligned), sha256=digest(aligned), reference="public_base"),
         )
-        del model, recovered
+        if use_aga:
+            recovered = author_recover(model, anchor, author)
+            aligned = run_dir / "AGA.pt"
+            torch.save({k: v for k, v in recovered.state_dict().items()
+                        if not torch.equal(v, anchor.state_dict()[k])}, aligned)
+            evaluation["defenses"][name]["AGA_edits"] = dict(
+                path=str(aligned), sha256=digest(aligned), reference="public_base")
+            del recovered
+        del model
     protocol = folder / "evaluation.json"
     save_json(protocol, evaluation)
     evaluate(protocol, 0, False)

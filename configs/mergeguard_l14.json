@@ -1,0 +1,41 @@
+{
+  "method": "MergeGuard",
+  "output": "outputs/mergeguard_l14",
+  "seed": 420,
+  "batch_size": 8,
+  "validation_fraction": 0.2,
+  "lambda_reg": 0.01,
+  "critical_fraction": 0.1,
+  "perturbed_fraction": 0.1,
+  "beta": 1.0,
+  "epochs": {
+    "MNIST": 5
+  },
+  "training": {
+    "lr": 1e-05,
+    "warm_up": 500,
+    "max_norm": 1.0
+  },
+  "paper": "https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf",
+  "implementation": "Same explicit adaptation as B/32, on original Task Arithmetic ViT-L/14. Only MNIST with SVHN companion; tests the backbone explanation, not full author-protocol reproduction.",
+  "paper_defined": [
+    "Start from fine-tuned expert; CE + 0.01 * sum of squared trainable weights.",
+    "Mask layers, preserve most accuracy-critical 10%; subtract masked task vector with beta=1 on largest 10% weights outside protected layers."
+  ],
+  "implementation_choices": [
+    "Optimizer/lr/epochs/batch/split not fully specified in MergeGuard. Use AdamW, lr1e-5, batch128, cosine warmup500, clip1 and task-wise epochs from the Task Arithmetic implementation. Weight decay0 avoids duplicating the explicit L2.",
+    "All visual parameters train, including projection. Fixed text classifier. Both MergeGuard and CE start from the same released fine-tuned expert; CE uses lambda0 and no negation.",
+    "Deterministic expert validation preprocessing, FP32. Final fixed-epoch checkpoint, no early stopping or test selection. best.pt is a legacy filename and denotes final state here.",
+    "DTD official train/val; MNIST/SVHN stratified20% training holdout. Mask importance uses complete validation only, never test.",
+    "Groups are each Transformer block and each remaining top-level visual module/tensor. Masking zeros all group parameters; rank by validation accuracy drop, ties by group name; ceil for10% groups.",
+    "Magnitude ranking is global absolute stage1 parameter value over non-critical groups; exact ceil10% coordinates selected using torch.topk. These details are our specified interpretation, not an author-code claim.",
+    "No partner or test information in training or mask selection. No hyperparameter search; report standalone degradation even if severe.",
+    "Microbatches of8 with16-way gradient accumulation retain effective batch128 within one24GB GPU. Final partial batch is normalized by actual sample count.",
+    "Train CE and MergeGuard once with identical seed420; native and direct TA first. No change to originalB32 settings or scores."
+  ],
+  "gradient_accumulation": 16,
+  "backbone": "ViT-L-14",
+  "attack_scopes": [
+    "None"
+  ]
+}

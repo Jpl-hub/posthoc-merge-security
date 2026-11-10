@@ -22,6 +22,32 @@ FROZEN_BODIES = json.loads(Path("results/engineering_refactor/snapshot.json").re
 ]
 
 
+@pytest.mark.parametrize("regularization", [0., .01])
+def test_mergeguard_accumulation_matches_full_batches(monkeypatch, tmp_path, regularization):
+    """Include a short last batch, L2, clipping and the optimizer-step schedule."""
+    import copy
+    from torch.utils.data import DataLoader, TensorDataset
+    from _impl.baselines import mergeguard_training
+
+    monkeypatch.setattr(torch.nn.Module, "cuda", lambda self: self)
+    monkeypatch.setattr(torch.Tensor, "cuda", lambda self: self)
+    torch.manual_seed(12)
+    data = TensorDataset(torch.randn(7, 3), torch.tensor([0, 1, 0, 1, 1, 0, 1]))
+    initial = torch.nn.Linear(3, 4)
+    vectors = F.normalize(torch.randn(2, 4), dim=1)
+    settings = dict(lr=1e-3, epochs=2, warm_up=1, max_norm=.8, lambda_reg=regularization)
+    states = []
+    for batch, accumulation in [(6, 1), (2, 3)]:
+        out = tmp_path / str(batch)
+        out.mkdir()
+        loader = DataLoader(data, batch_size=batch, shuffle=False)
+        mergeguard_training(copy.deepcopy(initial), {}, loader, loader, vectors,
+                            settings, {"gradient_accumulation": accumulation}, out, "CE")
+        states.append(torch.load(out / "best.pt", weights_only=True))
+    for key in states[0]:
+        torch.testing.assert_close(states[0][key], states[1][key], rtol=1e-6, atol=1e-7)
+
+
 @pytest.mark.parametrize("scopes", [["None"], ["Protected expert"], None])
 def test_evaluator_loads_aga_only_when_requested(monkeypatch, tmp_path, scopes):
     from _impl import evaluate as evaluator

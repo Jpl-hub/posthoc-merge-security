@@ -7,11 +7,12 @@ from _impl.io import check_files, read_json
 
 ROOT = Path(__file__).resolve().parent
 BACKBONE = os.environ.get("POSTHOC_BACKBONE", "ViT-B-32")
-if BACKBONE not in {"ViT-B-32", "ViT-B-16"}:
+if BACKBONE not in {"ViT-B-32", "ViT-B-16", "ViT-L-14"}:
     raise ValueError(f"Unsupported backbone: {BACKBONE}")
 CHECKPOINTS = ROOT / "checkpoints" / BACKBONE
 CHECKPOINT_MANIFEST = ROOT / "configs" / (
-    "checkpoints.json" if BACKBONE == "ViT-B-32" else "checkpoints_vit_b16.json"
+    {"ViT-B-32": "checkpoints.json", "ViT-B-16": "checkpoints_vit_b16.json",
+     "ViT-L-14": "checkpoints_vit_l14.json"}[BACKBONE]
 )
 AUTHOR = ROOT / "external" / "secure-merge-attack"
 DATA = ROOT / "data"
