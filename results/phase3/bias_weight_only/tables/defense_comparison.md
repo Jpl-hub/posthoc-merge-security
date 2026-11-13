@@ -1,4 +1,4 @@
-Standalone (S ↑) and merged target (↓) accuracies (%). Bold/underline: best/second distinct displayed scores within matched groups; all-way ties are unmarked. A--B use B/32; B includes matched CE training controls. TA coefficients: 0.5 (two experts), 0.2 (eight). C reproduces published L/14 results, Table 3. Avg. weights tasks equally. MergeLock is a paper implementation.
+Standalone (S ↑) and merged target (↓) accuracies (%). Bold/underline: best/second distinct displayed scores within matched groups; tied scores share the same emphasis. A--B use B/32 with TA coefficients 0.5 (two experts) and 0.2 (eight); B includes matched CE training controls. C reports published L/14 results under the original protocol, Table 3. Avg. weights tasks equally. MergeLock is a paper implementation.
 
 **A. Seven-task evaluation of released experts (ViT-B/32)**
 

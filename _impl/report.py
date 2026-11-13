@@ -813,7 +813,7 @@ def tables(output):
         exported_tables.append("mergeguard_eight")
         source["input_sha256"][str(guard_path.relative_to(ROOT))] = hashlib.sha256(guard_path.read_bytes()).hexdigest()
     write_table("defense_comparison",
-        "Standalone (S $\\uparrow$) and merged target ($\\downarrow$) accuracies (\\%). Bold/underline: best/second distinct displayed scores within matched groups; all-way ties are unmarked. A--B use B/32; B includes matched CE training controls. TA coefficients: 0.5 (two experts), 0.2 (eight). C reproduces published L/14 results~\\cite{chen2026mergeguard}, Table~3. Avg. weights tasks equally. MergeLock is a paper implementation.",
+        "Standalone (S $\\uparrow$) and merged target ($\\downarrow$) accuracies (\\%). Bold/underline: best/second distinct displayed scores within matched groups; tied scores share the same emphasis. A--B use B/32 with TA coefficients 0.5 (two experts) and 0.2 (eight); B includes matched CE training controls. C reports published L/14 results under the original protocol~\\cite{chen2026mergeguard}, Table~3. Avg. weights tasks equally. MergeLock is a paper implementation.",
         "tab:defense-comparison", ["Setting", "Defense"] + tasks + ["Avg."],
         main_groups, wide=True, tabcolsep=3.8)
     path = OUT / "defense_comparison.tex"
