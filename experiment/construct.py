@@ -15,7 +15,7 @@ import time
 
 import torch
 
-from _impl.baselines import params_default, verify_edits
+from _impl.baselines import mergelock, params_default, verify_edits
 from _impl.defenses import construct_bias
 from _impl.io import check_files, digest, new_output, read_json, save_json
 from _impl.models import apply, checked_models, initialize
@@ -146,7 +146,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
         "--method",
-        choices=["bias", "params"],
+        choices=["bias", "params", "mergelock"],
         default="bias",
     )
     p.add_argument("--target", choices=["SUN397", "Cars", "RESISC45", "SVHN", "GTSRB", "MNIST", "DTD"], required=True)
@@ -184,6 +184,9 @@ def main():
     publication_reference = "expert"
     if a.method == "bias":
         edits, details = construct_bias(expert, anchor, head, cfg["bias"])
+        kernel_seconds = time.monotonic() - start
+    elif a.method == "mergelock":
+        edits, details = mergelock(expert, cfg["mergelock"])
         kernel_seconds = time.monotonic() - start
     else:
         c = cfg["params"]

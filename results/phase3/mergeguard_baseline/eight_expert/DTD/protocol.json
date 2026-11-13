@@ -1,0 +1,58 @@
+{
+  "coefficient": 0.2,
+  "task_order": [
+    "SUN397",
+    "Cars",
+    "RESISC45",
+    "EuroSAT",
+    "SVHN",
+    "GTSRB",
+    "MNIST",
+    "DTD"
+  ],
+  "evaluate": [
+    "DTD"
+  ],
+  "score_tolerance": 0.0005,
+  "author_TaskVector": {
+    "path": "external/secure-merge-attack/task_vectors.py",
+    "sha256": "9d95bdb8b9fef2a4457e47b28ea3e1ccc188f30ded8c4c1ec1fe1e55cfded4af",
+    "git_blob": "1578c59bfc11020349c9ab8e6dfb698aaf94ec28",
+    "commit": "fb61429f5e6f3517102d506697a150ac26abbdea"
+  },
+  "scopes": [
+    "None",
+    "Protected expert"
+  ],
+  "experiment": "Existing paper-based MergeGuard and matched CE, eight-expert extension",
+  "output": "outputs/mergeguard_eight/DTD",
+  "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+  "cases": [
+    {
+      "target": "DTD",
+      "defenses": [
+        "CE_DTD",
+        "MergeGuard_DTD"
+      ]
+    }
+  ],
+  "new_AGA_calls": 0,
+  "new_defense_weights": 0,
+  "expert_training_updates": 0,
+  "test_sizes": {
+    "SUN397": 19850,
+    "Cars": 8041,
+    "RESISC45": 6300,
+    "GTSRB": 12630,
+    "MNIST": 10000,
+    "DTD": 1880,
+    "SVHN": 26032
+  },
+  "inputs": {
+    "evaluation": {
+      "path": "outputs/mergeguard_eight/DTD_evaluation.json",
+      "sha256": "7380f685df86499e8418038dd4ffd0a261710d184e85e7c3edc9b71c31bf09e8"
+    }
+  },
+  "table_note": "Original published expert plus separately trained CE and paper-based MergeGuard. Eight participants; target-only evaluation per case. No new training or AGA."
+}

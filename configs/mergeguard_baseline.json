@@ -11,7 +11,11 @@
   "epochs": {
     "MNIST": 5,
     "SVHN": 4,
-    "DTD": 76
+    "DTD": 76,
+    "GTSRB": 11,
+    "Cars": 35,
+    "RESISC45": 15,
+    "SUN397": 14
   },
   "training": {
     "lr": 1e-05,
@@ -22,13 +26,13 @@
   "implementation": "Paper-based reproduction on ViT-B/32, not author code or published ViT-L/14 numbers.",
   "paper_defined": [
     "Start from fine-tuned expert; CE + 0.01 * sum of squared trainable weights.",
-    "Mask layers, preserve most accuracy-critical 10%; subtract masked task vector with beta=1 on largest 10% weights outside protected layers."
+    "Mask layers, preserve most accuracy-critical 10%; subtract masked task vector with beta=1 on 10% of weights outside protected layers."
   ],
   "implementation_choices": [
     "Optimizer/lr/epochs/batch/split not fully specified in MergeGuard. Use AdamW, lr1e-5, batch128, cosine warmup500, clip1 and task-wise epochs from the Task Arithmetic implementation. Weight decay0 avoids duplicating the explicit L2.",
     "All visual parameters train, including projection. Fixed text classifier. Both MergeGuard and CE start from the same released fine-tuned expert; CE uses lambda0 and no negation.",
     "Deterministic expert validation preprocessing, FP32. Final fixed-epoch checkpoint, no early stopping or test selection. best.pt is a legacy filename and denotes final state here.",
-    "DTD official train/val; MNIST/SVHN stratified20% training holdout. Mask importance uses complete validation only, never test.",
+    "DTD official train/val; other tasks use a stratified20% training holdout. Mask importance uses complete validation only, never test.",
     "Groups are each Transformer block and each remaining top-level visual module/tensor. Masking zeros all group parameters; rank by validation accuracy drop, ties by group name; ceil for10% groups.",
     "Magnitude ranking is global absolute stage1 parameter value over non-critical groups; exact ceil10% coordinates selected using torch.topk. These details are our specified interpretation, not an author-code claim.",
     "No partner or test information in training or mask selection. No hyperparameter search; report standalone degradation even if severe."

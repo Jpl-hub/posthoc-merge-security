@@ -31,7 +31,7 @@ Each model batch specifies its own source and weight hashes, split, task order, 
 
 ## Historical records
 
-Stopped numerical-compensation experiments and their report code are available at commit `f1d7e496` and earlier. The active repository exposes the NBP method, matched baselines and their evidence. Unique model and raw-score files are not deleted by this source cleanup. Removed internal metadata on the prior compute host was preserved in its system-disk archive before updating that host.
+Stopped numerical-compensation experiments and their report code are available at commit `f1d7e496` and earlier. The active repository exposes the NBP method, matched baselines and their evidence. Git stores code and curated results, not a backup of the ignored models, datasets or raw scores. An erroneous ignored-file cleanup on the primary host on 13 November removed some of those inputs and artifacts. Available archives are being restored and checked against recorded hashes; the latest ARF/MergeLock raw outputs have not yet been recovered. Their retained summaries must not be described as complete artifact recovery. Do not run `git clean` or delete ignored experiment directories.
 
 ```bash
 git show <execution-commit>:<source-path>
@@ -101,8 +101,10 @@ python -m experiment.train_baseline --config configs/mergeguard_baseline.json --
 python -m experiment.train_baseline --config configs/mergeguard_baseline.json --task MNIST --evaluate
 ```
 
-Use the same commands for SVHN and DTD. Do not treat these B/32 adaptations as the authors' published L/14 numbers. Completed counts are in `results/phase3/trap2_baseline/summary.json` and `results/phase3/mergeguard_baseline/summary.json`; both are included in the standard table exporter.
+Use the same commands for SVHN, DTD and GTSRB. Do not treat these B/32 adaptations as the authors' published L/14 numbers. Completed counts are in `results/phase3/trap2_baseline/summary.json` and `results/phase3/mergeguard_baseline/summary.json`; both are included in the standard table exporter.
 
-The exported `defense_comparison` table puts the four defenses together while retaining their separate training controls. `results/phase3/mergeguard_baseline/stage_diagnosis.json` records the fixed-setting MNIST stage check: identical final tensors, independent mask reconstruction, and full-test stage scores. It does not replace the main comparison.
+The exported `defense_comparison` table has three panels: seven-task released-expert comparisons, matched Trap²/CE training, and the published MergeGuard L/14 results. The separate `mergeguard_adaptation` and `mergeguard_eight` tables contain all four completed tasks and their matched CE controls. `results/phase3/mergeguard_baseline/stage_diagnosis.json` records the fixed-setting MNIST stage check: identical final tensors, independent mask reconstruction, and full-test stage scores. It does not replace the main comparison.
+
+The matched ARF adaptation, its equation/prose interpretation, results and commands are documented in `results/phase3/arf_baseline/README.md`. MNIST is complete; the DTD extension uses the same implementation and a matched CE control. This is not a seven-task comparison or an official-code reproduction. The configuration retains fixed task-wise epoch counts; each run stores its executed configuration and source hashes.
 
 The L/14 backbone check uses `configs/mergeguard_l14.json` and the original Task Arithmetic L/14 MNIST/SVHN checkpoints. Set `POSTHOC_BACKBONE=ViT-L-14` and use the same three commands above with this config. It trains MNIST only, with SVHN as the fixed evaluation companion. Microbatches of 8 accumulate to 128 examples per optimizer step; the final partial batch uses its actual sample count. This check evaluates standalone and direct TA, since the existing AGA adapter is for the 12-layer B models. It tests the backbone difference under the declared training settings, not a complete reproduction of unspecified author settings.

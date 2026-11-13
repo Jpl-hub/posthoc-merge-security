@@ -1,0 +1,20 @@
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{2.5pt}
+\caption{Eight-expert target accuracy (\%; lower is better protection). MergeGuard is our paper-based B/32 implementation; CE uses the same continuation schedule. None uses the original expert. TA coefficient: 0.2.}
+\label{tab:mergeguard-eight}
+\begin{tabular}{llrrrr}
+\toprule
+Setting & Defense & MNIST & SVHN & DTD & GTSRB \\
+\midrule
+\multirow{3}{*}{TA} & None & 94.00 & 74.42 & 52.18 & 65.08 \\
+ & CE & 95.14 & 76.07 & 52.55 & 73.26 \\
+ & MergeGuard~\cite{chen2026mergeguard} & 93.20 & 72.38 & 50.21 & 60.83 \\
+\midrule
+\multirow{3}{*}{AGA + TA} & None & 93.23 & 72.53 & 51.38 & 63.29 \\
+ & CE & 94.67 & 73.97 & 51.97 & 71.03 \\
+ & MergeGuard~\cite{chen2026mergeguard} & 92.31 & 69.33 & 50.59 & 62.01 \\
+\bottomrule
+\end{tabular}
+\end{table}

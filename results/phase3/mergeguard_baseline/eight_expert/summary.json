@@ -1,0 +1,4858 @@
+{
+  "status": "completed_independently_verified",
+  "scope": "Eight experts, coefficient0.2; four separately trained MergeGuard/CE targets, paper-based implementation",
+  "rows": [
+    {
+      "target": "MNIST",
+      "defense": "Unprotected",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 7.318931382149458,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "aa25eddc98d55fdb1e8c52f34e80616f6d766132bdfc1d25ea62bccf0cc5eb97",
+      "NumPy_weight_error": 0.0,
+      "n": 10000,
+      "correct": 9400,
+      "accuracy_percent": 94.0,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 9400,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 600,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 970,
+          "original_correct": 970
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1126,
+          "original_correct": 1126
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 871,
+          "original_correct": 871
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 965,
+          "original_correct": 965
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 940,
+          "original_correct": 940
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 881,
+          "original_correct": 881
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 819,
+          "original_correct": 819
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1004,
+          "original_correct": 1004
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 910,
+          "original_correct": 910
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 914,
+          "original_correct": 914
+        }
+      ]
+    },
+    {
+      "target": "MNIST",
+      "defense": "CE_MNIST",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 6.569381695240736,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "86b57a88acae3bfb7d19e906acc03dff12b0e995138be6a2fa075cbda878f4db",
+      "NumPy_weight_error": 0.0,
+      "n": 10000,
+      "correct": 9514,
+      "accuracy_percent": 95.14,
+      "changed_predictions": 184,
+      "paired": {
+        "both_correct": 9376,
+        "lost": 24,
+        "gained": 138,
+        "both_wrong": 462,
+        "loss_pp": -1.14,
+        "exact_mcnemar_p": 1.182276844628418e-20
+      },
+      "mcnemar_log10_p": -19.92728081616499,
+      "paired_accuracy_delta_95ci_pp": [
+        0.8915229593141956,
+        1.3884770406858045
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 972,
+          "original_correct": 970
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1126,
+          "original_correct": 1126
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 930,
+          "original_correct": 871
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 968,
+          "original_correct": 965
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 948,
+          "original_correct": 940
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 880,
+          "original_correct": 881
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 836,
+          "original_correct": 819
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1007,
+          "original_correct": 1004
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 915,
+          "original_correct": 910
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 932,
+          "original_correct": 914
+        }
+      ]
+    },
+    {
+      "target": "MNIST",
+      "defense": "MergeGuard_MNIST",
+      "attack_scope": "None",
+      "dataset": "MNIST",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 6.567891390994191,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "64407077d3a693b2d97353f8e734409e4c93d2be160f50e018df52066aa6caa0",
+      "NumPy_weight_error": 0.0,
+      "n": 10000,
+      "correct": 9320,
+      "accuracy_percent": 93.2,
+      "changed_predictions": 181,
+      "paired": {
+        "both_correct": 9284,
+        "lost": 116,
+        "gained": 36,
+        "both_wrong": 564,
+        "loss_pp": 0.8,
+        "exact_mcnemar_p": 5.2218359404348235e-11
+      },
+      "mcnemar_log10_p": -10.282176776956382,
+      "paired_accuracy_delta_95ci_pp": [
+        -1.0411478236005467,
+        -0.5588521763994534
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 965,
+          "original_correct": 970
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1123,
+          "original_correct": 1126
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 869,
+          "original_correct": 871
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 953,
+          "original_correct": 965
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 926,
+          "original_correct": 940
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 878,
+          "original_correct": 881
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 815,
+          "original_correct": 819
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1006,
+          "original_correct": 1004
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 884,
+          "original_correct": 910
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 901,
+          "original_correct": 914
+        }
+      ]
+    },
+    {
+      "target": "MNIST",
+      "defense": "Unprotected",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 6.48650449514389,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "d6490e4c5d7e2a22bba9afff976d2c4e10be1a94c50a1d64c2cc6b3e730d534d",
+      "NumPy_weight_error": 0.0,
+      "n": 10000,
+      "correct": 9323,
+      "accuracy_percent": 93.23,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 9323,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 677,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 967,
+          "original_correct": 967
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1126,
+          "original_correct": 1126
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 848,
+          "original_correct": 848
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 954,
+          "original_correct": 954
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 933,
+          "original_correct": 933
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 880,
+          "original_correct": 880
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 807,
+          "original_correct": 807
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1004,
+          "original_correct": 1004
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 905,
+          "original_correct": 905
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 899,
+          "original_correct": 899
+        }
+      ]
+    },
+    {
+      "target": "MNIST",
+      "defense": "CE_MNIST",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 6.583658477291465,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "1f1911ccb3aeead1210e4fa64ee476255fbab44183b22e2c4d2b3ad547f69349",
+      "NumPy_weight_error": 0.0,
+      "n": 10000,
+      "correct": 9467,
+      "accuracy_percent": 94.67,
+      "changed_predictions": 207,
+      "paired": {
+        "both_correct": 9302,
+        "lost": 21,
+        "gained": 165,
+        "both_wrong": 512,
+        "loss_pp": -1.44,
+        "exact_mcnemar_p": 6.452574681611916e-29
+      },
+      "mcnemar_log10_p": -28.190266960263497,
+      "paired_accuracy_delta_95ci_pp": [
+        1.1741725517422685,
+        1.7058274482577316
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 972,
+          "original_correct": 967
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1126,
+          "original_correct": 1126
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 911,
+          "original_correct": 848
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 965,
+          "original_correct": 954
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 945,
+          "original_correct": 933
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 880,
+          "original_correct": 880
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 823,
+          "original_correct": 807
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1006,
+          "original_correct": 1004
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 912,
+          "original_correct": 905
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 927,
+          "original_correct": 899
+        }
+      ]
+    },
+    {
+      "target": "MNIST",
+      "defense": "MergeGuard_MNIST",
+      "attack_scope": "Protected expert",
+      "dataset": "MNIST",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 6.3792883772403,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "9ec1ce3eb89b337661e16571c40c5cbfb9398565b5a7b6ef4da64844be1262c1",
+      "NumPy_weight_error": 0.0,
+      "n": 10000,
+      "correct": 9231,
+      "accuracy_percent": 92.31,
+      "changed_predictions": 229,
+      "paired": {
+        "both_correct": 9180,
+        "lost": 143,
+        "gained": 51,
+        "both_wrong": 626,
+        "loss_pp": 0.92,
+        "exact_mcnemar_p": 2.7214941252995276e-11
+      },
+      "mcnemar_log10_p": -10.565192598827155,
+      "paired_accuracy_delta_95ci_pp": [
+        -1.192413854102172,
+        -0.6475861458978278
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 980,
+          "correct": 966,
+          "original_correct": 967
+        },
+        {
+          "class_id": 1,
+          "n": 1135,
+          "correct": 1125,
+          "original_correct": 1126
+        },
+        {
+          "class_id": 2,
+          "n": 1032,
+          "correct": 834,
+          "original_correct": 848
+        },
+        {
+          "class_id": 3,
+          "n": 1010,
+          "correct": 947,
+          "original_correct": 954
+        },
+        {
+          "class_id": 4,
+          "n": 982,
+          "correct": 914,
+          "original_correct": 933
+        },
+        {
+          "class_id": 5,
+          "n": 892,
+          "correct": 877,
+          "original_correct": 880
+        },
+        {
+          "class_id": 6,
+          "n": 958,
+          "correct": 797,
+          "original_correct": 807
+        },
+        {
+          "class_id": 7,
+          "n": 1028,
+          "correct": 1005,
+          "original_correct": 1004
+        },
+        {
+          "class_id": 8,
+          "n": 974,
+          "correct": 876,
+          "original_correct": 905
+        },
+        {
+          "class_id": 9,
+          "n": 1009,
+          "correct": 890,
+          "original_correct": 899
+        }
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defense": "Unprotected",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 19.854751721024513,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "aa25eddc98d55fdb1e8c52f34e80616f6d766132bdfc1d25ea62bccf0cc5eb97",
+      "NumPy_weight_error": 0.0,
+      "n": 26032,
+      "correct": 19374,
+      "accuracy_percent": 74.4237861094038,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 19374,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 6658,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1520,
+          "original_correct": 1520
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4723,
+          "original_correct": 4723
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3345,
+          "original_correct": 3345
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 1440,
+          "original_correct": 1440
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 1541,
+          "original_correct": 1541
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 1992,
+          "original_correct": 1992
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1114,
+          "original_correct": 1114
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1469,
+          "original_correct": 1469
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1322,
+          "original_correct": 1322
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 908,
+          "original_correct": 908
+        }
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defense": "CE_SVHN",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 18.558338422328234,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "d01c702dd384b83e0b4911a5b11af51a2a6062b40c56635f349cdf90176008e0",
+      "NumPy_weight_error": 0.0,
+      "n": 26032,
+      "correct": 19803,
+      "accuracy_percent": 76.07175783650891,
+      "changed_predictions": 1186,
+      "paired": {
+        "both_correct": 19212,
+        "lost": 162,
+        "gained": 591,
+        "both_wrong": 6067,
+        "loss_pp": -1.6479717271051013,
+        "exact_mcnemar_p": 3.884370826998375e-58
+      },
+      "mcnemar_log10_p": -57.41067931624292,
+      "paired_accuracy_delta_95ci_pp": [
+        1.4423324951687992,
+        1.8536109590414032
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1546,
+          "original_correct": 1520
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4715,
+          "original_correct": 4723
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3436,
+          "original_correct": 3345
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 1546,
+          "original_correct": 1440
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 1571,
+          "original_correct": 1541
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 2013,
+          "original_correct": 1992
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1135,
+          "original_correct": 1114
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1533,
+          "original_correct": 1469
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1342,
+          "original_correct": 1322
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 966,
+          "original_correct": 908
+        }
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defense": "MergeGuard_SVHN",
+      "attack_scope": "None",
+      "dataset": "SVHN",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 19.804065465927124,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "7d94054791db4626646b36137635ce591d28432575a92cc2fafd41ca76196440",
+      "NumPy_weight_error": 0.0,
+      "n": 26032,
+      "correct": 18842,
+      "accuracy_percent": 72.38014751075599,
+      "changed_predictions": 1278,
+      "paired": {
+        "both_correct": 18672,
+        "lost": 702,
+        "gained": 170,
+        "both_wrong": 6488,
+        "loss_pp": 2.043638598647818,
+        "exact_mcnemar_p": 1.908709530615211e-77
+      },
+      "mcnemar_log10_p": -76.71926015796033,
+      "paired_accuracy_delta_95ci_pp": [
+        -2.264586913286722,
+        -1.8226902840089143
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1495,
+          "original_correct": 1520
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4599,
+          "original_correct": 4723
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3282,
+          "original_correct": 3345
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 1352,
+          "original_correct": 1440
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 1504,
+          "original_correct": 1541
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 1917,
+          "original_correct": 1992
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1059,
+          "original_correct": 1114
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1426,
+          "original_correct": 1469
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1300,
+          "original_correct": 1322
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 908,
+          "original_correct": 908
+        }
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defense": "Unprotected",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 19.061860291287303,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "b45d18adfedbdc743959a5796180f10117e15c64c63fbb86b2d9e7a3b7d9d7bc",
+      "NumPy_weight_error": 0.0,
+      "n": 26032,
+      "correct": 18880,
+      "accuracy_percent": 72.52612169637369,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 18880,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 7152,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1497,
+          "original_correct": 1497
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4703,
+          "original_correct": 4703
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3260,
+          "original_correct": 3260
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 1354,
+          "original_correct": 1354
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 1453,
+          "original_correct": 1453
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 1945,
+          "original_correct": 1945
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1064,
+          "original_correct": 1064
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1433,
+          "original_correct": 1433
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1299,
+          "original_correct": 1299
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 872,
+          "original_correct": 872
+        }
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defense": "CE_SVHN",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 18.86772377602756,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "c0b954dec0b008f5fe9af5674ea34d2cfce58d725351dc2f0f351fb207cf576c",
+      "NumPy_weight_error": 0.0,
+      "n": 26032,
+      "correct": 19256,
+      "accuracy_percent": 73.97049784880147,
+      "changed_predictions": 1239,
+      "paired": {
+        "both_correct": 18686,
+        "lost": 194,
+        "gained": 570,
+        "both_wrong": 6582,
+        "loss_pp": -1.4443761524277812,
+        "exact_mcnemar_p": 1.0355332668904922e-43
+      },
+      "mcnemar_log10_p": -42.98483594467503,
+      "paired_accuracy_delta_95ci_pp": [
+        1.2370020761588474,
+        1.6517502286967152
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1522,
+          "original_correct": 1497
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4686,
+          "original_correct": 4703
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3363,
+          "original_correct": 3260
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 1435,
+          "original_correct": 1354
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 1490,
+          "original_correct": 1453
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 1967,
+          "original_correct": 1945
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 1076,
+          "original_correct": 1064
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1472,
+          "original_correct": 1433
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1323,
+          "original_correct": 1299
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 922,
+          "original_correct": 872
+        }
+      ]
+    },
+    {
+      "target": "SVHN",
+      "defense": "MergeGuard_SVHN",
+      "attack_scope": "Protected expert",
+      "dataset": "SVHN",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 18.898782720789313,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "e6fd8c5e4ce90acdffbe57f52e57223cda4623fe1359f32870b9bbe2cef04f81",
+      "NumPy_weight_error": 0.0,
+      "n": 26032,
+      "correct": 18047,
+      "accuracy_percent": 69.3262138905962,
+      "changed_predictions": 1669,
+      "paired": {
+        "both_correct": 17917,
+        "lost": 963,
+        "gained": 130,
+        "both_wrong": 7022,
+        "loss_pp": 3.1999078057775048,
+        "exact_mcnemar_p": 1.192073950866524e-157
+      },
+      "mcnemar_log10_p": -156.92369680209816,
+      "paired_accuracy_delta_95ci_pp": [
+        -3.445777894921018,
+        -2.9540377166339917
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 1744,
+          "correct": 1496,
+          "original_correct": 1497
+        },
+        {
+          "class_id": 1,
+          "n": 5099,
+          "correct": 4604,
+          "original_correct": 4703
+        },
+        {
+          "class_id": 2,
+          "n": 4149,
+          "correct": 3126,
+          "original_correct": 3260
+        },
+        {
+          "class_id": 3,
+          "n": 2882,
+          "correct": 1233,
+          "original_correct": 1354
+        },
+        {
+          "class_id": 4,
+          "n": 2523,
+          "correct": 1383,
+          "original_correct": 1453
+        },
+        {
+          "class_id": 5,
+          "n": 2384,
+          "correct": 1813,
+          "original_correct": 1945
+        },
+        {
+          "class_id": 6,
+          "n": 1977,
+          "correct": 977,
+          "original_correct": 1064
+        },
+        {
+          "class_id": 7,
+          "n": 2019,
+          "correct": 1344,
+          "original_correct": 1433
+        },
+        {
+          "class_id": 8,
+          "n": 1660,
+          "correct": 1250,
+          "original_correct": 1299
+        },
+        {
+          "class_id": 9,
+          "n": 1595,
+          "correct": 821,
+          "original_correct": 872
+        }
+      ]
+    },
+    {
+      "target": "DTD",
+      "defense": "Unprotected",
+      "attack_scope": "None",
+      "dataset": "DTD",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 5.512029863893986,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "aa25eddc98d55fdb1e8c52f34e80616f6d766132bdfc1d25ea62bccf0cc5eb97",
+      "NumPy_weight_error": 0.0,
+      "n": 1880,
+      "correct": 981,
+      "accuracy_percent": 52.18085106382979,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 981,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 899,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "correct": 4,
+          "original_correct": 4
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "correct": 12,
+          "original_correct": 12
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "correct": 8,
+          "original_correct": 8
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 28
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 20
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "correct": 13,
+          "original_correct": 13
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 32
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 24
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "correct": 1,
+          "original_correct": 1
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "correct": 14,
+          "original_correct": 14
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 22
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "correct": 4,
+          "original_correct": 4
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "correct": 12,
+          "original_correct": 12
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "correct": 14,
+          "original_correct": 14
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "correct": 40,
+          "original_correct": 40
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 22
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 18
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 16
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 28
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "correct": 7,
+          "original_correct": 7
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 20
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 18
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "correct": 17,
+          "original_correct": 17
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "correct": 33,
+          "original_correct": 33
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 15
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 22
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "correct": 25,
+          "original_correct": 25
+        }
+      ]
+    },
+    {
+      "target": "DTD",
+      "defense": "CE_DTD",
+      "attack_scope": "None",
+      "dataset": "DTD",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 5.558690119534731,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "2539a12a5fe13e7fb1abeede502b6844f951406544cacb846cbeadda2572ac07",
+      "NumPy_weight_error": 0.0,
+      "n": 1880,
+      "correct": 988,
+      "accuracy_percent": 52.55319148936171,
+      "changed_predictions": 43,
+      "paired": {
+        "both_correct": 973,
+        "lost": 8,
+        "gained": 15,
+        "both_wrong": 884,
+        "loss_pp": -0.3723404255319149,
+        "exact_mcnemar_p": 0.21003961563110352
+      },
+      "mcnemar_log10_p": -0.677698785135711,
+      "paired_accuracy_delta_95ci_pp": [
+        -0.12750009683508925,
+        0.8721809478989191
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "correct": 2,
+          "original_correct": 4
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "correct": 12,
+          "original_correct": 12
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "correct": 8,
+          "original_correct": 8
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 28
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 20
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "correct": 12,
+          "original_correct": 13
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 32
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 24
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "correct": 1,
+          "original_correct": 1
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 14
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 22
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "correct": 4,
+          "original_correct": 4
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 27
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 26
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 12
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "correct": 14,
+          "original_correct": 14
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "correct": 40,
+          "original_correct": 40
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 27
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 29
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 22
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 18
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 16
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 26
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 28
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 7
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 20
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "correct": 30,
+          "original_correct": 29
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 18
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "correct": 17,
+          "original_correct": 17
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "correct": 33,
+          "original_correct": 33
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 15
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "correct": 21,
+          "original_correct": 22
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 25
+        }
+      ]
+    },
+    {
+      "target": "DTD",
+      "defense": "MergeGuard_DTD",
+      "attack_scope": "None",
+      "dataset": "DTD",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 5.512641459703445,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "b75aaea70f9d5903e6349158388586a59d8dcceaf4acbaa5a29e1f12af26e468",
+      "NumPy_weight_error": 0.0,
+      "n": 1880,
+      "correct": 944,
+      "accuracy_percent": 50.212765957446805,
+      "changed_predictions": 156,
+      "paired": {
+        "both_correct": 926,
+        "lost": 55,
+        "gained": 18,
+        "both_wrong": 881,
+        "loss_pp": 1.9680851063829787,
+        "exact_mcnemar_p": 1.6913617102985627e-05
+      },
+      "mcnemar_log10_p": -4.77176350536014,
+      "paired_accuracy_delta_95ci_pp": [
+        -2.8546248665793055,
+        -1.081545346186652
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "correct": 3,
+          "original_correct": 4
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "correct": 11,
+          "original_correct": 12
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 19
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "correct": 4,
+          "original_correct": 8
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 28
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 20
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 38
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "correct": 4,
+          "original_correct": 6
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 19
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "correct": 10,
+          "original_correct": 13
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 32
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 24
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "correct": 1,
+          "original_correct": 1
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 14
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 22
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "correct": 3,
+          "original_correct": 4
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "correct": 25,
+          "original_correct": 26
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "correct": 11,
+          "original_correct": 12
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "correct": 14,
+          "original_correct": 14
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "correct": 40,
+          "original_correct": 40
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "correct": 25,
+          "original_correct": 27
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "correct": 30,
+          "original_correct": 29
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "correct": 21,
+          "original_correct": 22
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 18
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 16
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 26
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 28
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "correct": 8,
+          "original_correct": 7
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 20
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "correct": 30,
+          "original_correct": 29
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 37
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 18
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "correct": 13,
+          "original_correct": 17
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 33
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "correct": 13,
+          "original_correct": 15
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "correct": 21,
+          "original_correct": 22
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "correct": 25,
+          "original_correct": 25
+        }
+      ]
+    },
+    {
+      "target": "DTD",
+      "defense": "Unprotected",
+      "attack_scope": "Protected expert",
+      "dataset": "DTD",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 5.595502881333232,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "dbe36fd58bfbf6981026e28514495fbaa30109c6d4c90483a2882fa04937aa8d",
+      "NumPy_weight_error": 0.0,
+      "n": 1880,
+      "correct": 966,
+      "accuracy_percent": 51.38297872340426,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 966,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 914,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "correct": 3,
+          "original_correct": 3
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "correct": 11,
+          "original_correct": 11
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "correct": 8,
+          "original_correct": 8
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 28
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "correct": 12,
+          "original_correct": 12
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 32
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "correct": 23,
+          "original_correct": 23
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "correct": 1,
+          "original_correct": 1
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "correct": 14,
+          "original_correct": 14
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "correct": 4,
+          "original_correct": 4
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "correct": 12,
+          "original_correct": 12
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "correct": 14,
+          "original_correct": 14
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "correct": 40,
+          "original_correct": 40
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 22
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 18
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 16
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 28
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 20
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 18
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "correct": 17,
+          "original_correct": 17
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "correct": 33,
+          "original_correct": 33
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "correct": 14,
+          "original_correct": 14
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "correct": 21,
+          "original_correct": 21
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 24
+        }
+      ]
+    },
+    {
+      "target": "DTD",
+      "defense": "CE_DTD",
+      "attack_scope": "Protected expert",
+      "dataset": "DTD",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 5.6062576323747635,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "1217626a2eae5eddb211bf20e9b67c6e454b08760dde49965bf4781103ff38a3",
+      "NumPy_weight_error": 0.0,
+      "n": 1880,
+      "correct": 977,
+      "accuracy_percent": 51.96808510638298,
+      "changed_predictions": 31,
+      "paired": {
+        "both_correct": 963,
+        "lost": 3,
+        "gained": 14,
+        "both_wrong": 900,
+        "loss_pp": -0.5851063829787234,
+        "exact_mcnemar_p": 0.012725830078125
+      },
+      "mcnemar_log10_p": -1.8953138799859603,
+      "paired_accuracy_delta_95ci_pp": [
+        0.155951022547331,
+        1.0142617434101158
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "correct": 2,
+          "original_correct": 3
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "correct": 11,
+          "original_correct": 11
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "correct": 8,
+          "original_correct": 8
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 28
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "correct": 11,
+          "original_correct": 12
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 32
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 23
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "correct": 1,
+          "original_correct": 1
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 14
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 19
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 27
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "correct": 4,
+          "original_correct": 4
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 26
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "correct": 13,
+          "original_correct": 12
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "correct": 14,
+          "original_correct": 14
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "correct": 40,
+          "original_correct": 40
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 29
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 22
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 18
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 16
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 26
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "correct": 28,
+          "original_correct": 28
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 20
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "correct": 30,
+          "original_correct": 29
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 18
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "correct": 17,
+          "original_correct": 17
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "correct": 33,
+          "original_correct": 33
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 14
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "correct": 21,
+          "original_correct": 21
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 24
+        }
+      ]
+    },
+    {
+      "target": "DTD",
+      "defense": "MergeGuard_DTD",
+      "attack_scope": "Protected expert",
+      "dataset": "DTD",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 5.467191439121962,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "d4540a85a5c6f1eb6a49de8384cc12e574590e46a96ffad45befcc5bfd0fcec7",
+      "NumPy_weight_error": 0.0,
+      "n": 1880,
+      "correct": 951,
+      "accuracy_percent": 50.58510638297873,
+      "changed_predictions": 178,
+      "paired": {
+        "both_correct": 915,
+        "lost": 51,
+        "gained": 36,
+        "both_wrong": 878,
+        "loss_pp": 0.7978723404255319,
+        "exact_mcnemar_p": 0.1329018851954619
+      },
+      "mcnemar_log10_p": -0.8764688586044509,
+      "paired_accuracy_delta_95ci_pp": [
+        -1.7698906831577481,
+        0.1741460023066842
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 40,
+          "correct": 3,
+          "original_correct": 3
+        },
+        {
+          "class_id": 1,
+          "n": 40,
+          "correct": 11,
+          "original_correct": 11
+        },
+        {
+          "class_id": 2,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 19
+        },
+        {
+          "class_id": 3,
+          "n": 40,
+          "correct": 35,
+          "original_correct": 35
+        },
+        {
+          "class_id": 4,
+          "n": 40,
+          "correct": 5,
+          "original_correct": 8
+        },
+        {
+          "class_id": 5,
+          "n": 40,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 6,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 7,
+          "n": 40,
+          "correct": 24,
+          "original_correct": 28
+        },
+        {
+          "class_id": 8,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 19
+        },
+        {
+          "class_id": 9,
+          "n": 40,
+          "correct": 36,
+          "original_correct": 38
+        },
+        {
+          "class_id": 10,
+          "n": 40,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 11,
+          "n": 40,
+          "correct": 21,
+          "original_correct": 19
+        },
+        {
+          "class_id": 12,
+          "n": 40,
+          "correct": 9,
+          "original_correct": 12
+        },
+        {
+          "class_id": 13,
+          "n": 40,
+          "correct": 32,
+          "original_correct": 32
+        },
+        {
+          "class_id": 14,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 23
+        },
+        {
+          "class_id": 15,
+          "n": 40,
+          "correct": 1,
+          "original_correct": 1
+        },
+        {
+          "class_id": 16,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 14
+        },
+        {
+          "class_id": 17,
+          "n": 40,
+          "correct": 19,
+          "original_correct": 19
+        },
+        {
+          "class_id": 18,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 19,
+          "n": 40,
+          "correct": 4,
+          "original_correct": 4
+        },
+        {
+          "class_id": 20,
+          "n": 40,
+          "correct": 29,
+          "original_correct": 26
+        },
+        {
+          "class_id": 21,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 22,
+          "n": 40,
+          "correct": 5,
+          "original_correct": 6
+        },
+        {
+          "class_id": 23,
+          "n": 40,
+          "correct": 25,
+          "original_correct": 26
+        },
+        {
+          "class_id": 24,
+          "n": 40,
+          "correct": 12,
+          "original_correct": 12
+        },
+        {
+          "class_id": 25,
+          "n": 40,
+          "correct": 13,
+          "original_correct": 14
+        },
+        {
+          "class_id": 26,
+          "n": 40,
+          "correct": 40,
+          "original_correct": 40
+        },
+        {
+          "class_id": 27,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 27
+        },
+        {
+          "class_id": 28,
+          "n": 40,
+          "correct": 0,
+          "original_correct": 0
+        },
+        {
+          "class_id": 29,
+          "n": 40,
+          "correct": 31,
+          "original_correct": 29
+        },
+        {
+          "class_id": 30,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 38
+        },
+        {
+          "class_id": 31,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 26
+        },
+        {
+          "class_id": 32,
+          "n": 40,
+          "correct": 22,
+          "original_correct": 22
+        },
+        {
+          "class_id": 33,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 18
+        },
+        {
+          "class_id": 34,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 16
+        },
+        {
+          "class_id": 35,
+          "n": 40,
+          "correct": 27,
+          "original_correct": 26
+        },
+        {
+          "class_id": 36,
+          "n": 40,
+          "correct": 26,
+          "original_correct": 28
+        },
+        {
+          "class_id": 37,
+          "n": 40,
+          "correct": 7,
+          "original_correct": 6
+        },
+        {
+          "class_id": 38,
+          "n": 40,
+          "correct": 18,
+          "original_correct": 20
+        },
+        {
+          "class_id": 39,
+          "n": 40,
+          "correct": 31,
+          "original_correct": 29
+        },
+        {
+          "class_id": 40,
+          "n": 40,
+          "correct": 37,
+          "original_correct": 37
+        },
+        {
+          "class_id": 41,
+          "n": 40,
+          "correct": 16,
+          "original_correct": 18
+        },
+        {
+          "class_id": 42,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 17
+        },
+        {
+          "class_id": 43,
+          "n": 40,
+          "correct": 33,
+          "original_correct": 33
+        },
+        {
+          "class_id": 44,
+          "n": 40,
+          "correct": 15,
+          "original_correct": 14
+        },
+        {
+          "class_id": 45,
+          "n": 40,
+          "correct": 20,
+          "original_correct": 21
+        },
+        {
+          "class_id": 46,
+          "n": 40,
+          "correct": 21,
+          "original_correct": 24
+        }
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "defense": "Unprotected",
+      "attack_scope": "None",
+      "dataset": "GTSRB",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 10.64828540198505,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "aa25eddc98d55fdb1e8c52f34e80616f6d766132bdfc1d25ea62bccf0cc5eb97",
+      "NumPy_weight_error": 0.0,
+      "n": 12630,
+      "correct": 8220,
+      "accuracy_percent": 65.08313539192399,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 8220,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 4410,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 60,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 1,
+          "n": 720,
+          "correct": 490,
+          "original_correct": 490
+        },
+        {
+          "class_id": 2,
+          "n": 750,
+          "correct": 710,
+          "original_correct": 710
+        },
+        {
+          "class_id": 3,
+          "n": 450,
+          "correct": 301,
+          "original_correct": 301
+        },
+        {
+          "class_id": 4,
+          "n": 660,
+          "correct": 621,
+          "original_correct": 621
+        },
+        {
+          "class_id": 5,
+          "n": 630,
+          "correct": 586,
+          "original_correct": 586
+        },
+        {
+          "class_id": 6,
+          "n": 150,
+          "correct": 13,
+          "original_correct": 13
+        },
+        {
+          "class_id": 7,
+          "n": 450,
+          "correct": 386,
+          "original_correct": 386
+        },
+        {
+          "class_id": 8,
+          "n": 450,
+          "correct": 323,
+          "original_correct": 323
+        },
+        {
+          "class_id": 9,
+          "n": 480,
+          "correct": 62,
+          "original_correct": 62
+        },
+        {
+          "class_id": 10,
+          "n": 660,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 11,
+          "n": 420,
+          "correct": 63,
+          "original_correct": 63
+        },
+        {
+          "class_id": 12,
+          "n": 690,
+          "correct": 623,
+          "original_correct": 623
+        },
+        {
+          "class_id": 13,
+          "n": 720,
+          "correct": 661,
+          "original_correct": 661
+        },
+        {
+          "class_id": 14,
+          "n": 270,
+          "correct": 253,
+          "original_correct": 253
+        },
+        {
+          "class_id": 15,
+          "n": 210,
+          "correct": 207,
+          "original_correct": 207
+        },
+        {
+          "class_id": 16,
+          "n": 150,
+          "correct": 108,
+          "original_correct": 108
+        },
+        {
+          "class_id": 17,
+          "n": 360,
+          "correct": 347,
+          "original_correct": 347
+        },
+        {
+          "class_id": 18,
+          "n": 390,
+          "correct": 101,
+          "original_correct": 101
+        },
+        {
+          "class_id": 19,
+          "n": 60,
+          "correct": 8,
+          "original_correct": 8
+        },
+        {
+          "class_id": 20,
+          "n": 90,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 21,
+          "n": 90,
+          "correct": 11,
+          "original_correct": 11
+        },
+        {
+          "class_id": 22,
+          "n": 120,
+          "correct": 11,
+          "original_correct": 11
+        },
+        {
+          "class_id": 23,
+          "n": 150,
+          "correct": 105,
+          "original_correct": 105
+        },
+        {
+          "class_id": 24,
+          "n": 90,
+          "correct": 12,
+          "original_correct": 12
+        },
+        {
+          "class_id": 25,
+          "n": 480,
+          "correct": 363,
+          "original_correct": 363
+        },
+        {
+          "class_id": 26,
+          "n": 180,
+          "correct": 176,
+          "original_correct": 176
+        },
+        {
+          "class_id": 27,
+          "n": 60,
+          "correct": 12,
+          "original_correct": 12
+        },
+        {
+          "class_id": 28,
+          "n": 150,
+          "correct": 143,
+          "original_correct": 143
+        },
+        {
+          "class_id": 29,
+          "n": 90,
+          "correct": 55,
+          "original_correct": 55
+        },
+        {
+          "class_id": 30,
+          "n": 150,
+          "correct": 102,
+          "original_correct": 102
+        },
+        {
+          "class_id": 31,
+          "n": 270,
+          "correct": 209,
+          "original_correct": 209
+        },
+        {
+          "class_id": 32,
+          "n": 60,
+          "correct": 51,
+          "original_correct": 51
+        },
+        {
+          "class_id": 33,
+          "n": 210,
+          "correct": 69,
+          "original_correct": 69
+        },
+        {
+          "class_id": 34,
+          "n": 120,
+          "correct": 73,
+          "original_correct": 73
+        },
+        {
+          "class_id": 35,
+          "n": 390,
+          "correct": 236,
+          "original_correct": 236
+        },
+        {
+          "class_id": 36,
+          "n": 120,
+          "correct": 34,
+          "original_correct": 34
+        },
+        {
+          "class_id": 37,
+          "n": 60,
+          "correct": 9,
+          "original_correct": 9
+        },
+        {
+          "class_id": 38,
+          "n": 690,
+          "correct": 421,
+          "original_correct": 421
+        },
+        {
+          "class_id": 39,
+          "n": 90,
+          "correct": 60,
+          "original_correct": 60
+        },
+        {
+          "class_id": 40,
+          "n": 90,
+          "correct": 85,
+          "original_correct": 85
+        },
+        {
+          "class_id": 41,
+          "n": 60,
+          "correct": 6,
+          "original_correct": 6
+        },
+        {
+          "class_id": 42,
+          "n": 90,
+          "correct": 22,
+          "original_correct": 22
+        }
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "defense": "CE_GTSRB",
+      "attack_scope": "None",
+      "dataset": "GTSRB",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 10.777468390762806,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "2ac10b5bef9d36a5c00dfc919c741493dfd98e501c39800672996d5635d45d7f",
+      "NumPy_weight_error": 0.0,
+      "n": 12630,
+      "correct": 9253,
+      "accuracy_percent": 73.26207442596991,
+      "changed_predictions": 1812,
+      "paired": {
+        "both_correct": 8154,
+        "lost": 66,
+        "gained": 1099,
+        "both_wrong": 3311,
+        "loss_pp": -8.178939034045923,
+        "exact_mcnemar_p": 2.8478702331318965e-242
+      },
+      "mcnemar_log10_p": -241.54547980377046,
+      "paired_accuracy_delta_95ci_pp": [
+        7.6688046189854715,
+        8.689073449106372
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 60,
+          "correct": 34,
+          "original_correct": 27
+        },
+        {
+          "class_id": 1,
+          "n": 720,
+          "correct": 585,
+          "original_correct": 490
+        },
+        {
+          "class_id": 2,
+          "n": 750,
+          "correct": 730,
+          "original_correct": 710
+        },
+        {
+          "class_id": 3,
+          "n": 450,
+          "correct": 337,
+          "original_correct": 301
+        },
+        {
+          "class_id": 4,
+          "n": 660,
+          "correct": 634,
+          "original_correct": 621
+        },
+        {
+          "class_id": 5,
+          "n": 630,
+          "correct": 601,
+          "original_correct": 586
+        },
+        {
+          "class_id": 6,
+          "n": 150,
+          "correct": 35,
+          "original_correct": 13
+        },
+        {
+          "class_id": 7,
+          "n": 450,
+          "correct": 407,
+          "original_correct": 386
+        },
+        {
+          "class_id": 8,
+          "n": 450,
+          "correct": 353,
+          "original_correct": 323
+        },
+        {
+          "class_id": 9,
+          "n": 480,
+          "correct": 169,
+          "original_correct": 62
+        },
+        {
+          "class_id": 10,
+          "n": 660,
+          "correct": 91,
+          "original_correct": 27
+        },
+        {
+          "class_id": 11,
+          "n": 420,
+          "correct": 152,
+          "original_correct": 63
+        },
+        {
+          "class_id": 12,
+          "n": 690,
+          "correct": 640,
+          "original_correct": 623
+        },
+        {
+          "class_id": 13,
+          "n": 720,
+          "correct": 704,
+          "original_correct": 661
+        },
+        {
+          "class_id": 14,
+          "n": 270,
+          "correct": 257,
+          "original_correct": 253
+        },
+        {
+          "class_id": 15,
+          "n": 210,
+          "correct": 209,
+          "original_correct": 207
+        },
+        {
+          "class_id": 16,
+          "n": 150,
+          "correct": 115,
+          "original_correct": 108
+        },
+        {
+          "class_id": 17,
+          "n": 360,
+          "correct": 349,
+          "original_correct": 347
+        },
+        {
+          "class_id": 18,
+          "n": 390,
+          "correct": 176,
+          "original_correct": 101
+        },
+        {
+          "class_id": 19,
+          "n": 60,
+          "correct": 21,
+          "original_correct": 8
+        },
+        {
+          "class_id": 20,
+          "n": 90,
+          "correct": 57,
+          "original_correct": 38
+        },
+        {
+          "class_id": 21,
+          "n": 90,
+          "correct": 30,
+          "original_correct": 11
+        },
+        {
+          "class_id": 22,
+          "n": 120,
+          "correct": 40,
+          "original_correct": 11
+        },
+        {
+          "class_id": 23,
+          "n": 150,
+          "correct": 110,
+          "original_correct": 105
+        },
+        {
+          "class_id": 24,
+          "n": 90,
+          "correct": 57,
+          "original_correct": 12
+        },
+        {
+          "class_id": 25,
+          "n": 480,
+          "correct": 376,
+          "original_correct": 363
+        },
+        {
+          "class_id": 26,
+          "n": 180,
+          "correct": 176,
+          "original_correct": 176
+        },
+        {
+          "class_id": 27,
+          "n": 60,
+          "correct": 15,
+          "original_correct": 12
+        },
+        {
+          "class_id": 28,
+          "n": 150,
+          "correct": 139,
+          "original_correct": 143
+        },
+        {
+          "class_id": 29,
+          "n": 90,
+          "correct": 58,
+          "original_correct": 55
+        },
+        {
+          "class_id": 30,
+          "n": 150,
+          "correct": 107,
+          "original_correct": 102
+        },
+        {
+          "class_id": 31,
+          "n": 270,
+          "correct": 223,
+          "original_correct": 209
+        },
+        {
+          "class_id": 32,
+          "n": 60,
+          "correct": 58,
+          "original_correct": 51
+        },
+        {
+          "class_id": 33,
+          "n": 210,
+          "correct": 105,
+          "original_correct": 69
+        },
+        {
+          "class_id": 34,
+          "n": 120,
+          "correct": 80,
+          "original_correct": 73
+        },
+        {
+          "class_id": 35,
+          "n": 390,
+          "correct": 292,
+          "original_correct": 236
+        },
+        {
+          "class_id": 36,
+          "n": 120,
+          "correct": 47,
+          "original_correct": 34
+        },
+        {
+          "class_id": 37,
+          "n": 60,
+          "correct": 8,
+          "original_correct": 9
+        },
+        {
+          "class_id": 38,
+          "n": 690,
+          "correct": 466,
+          "original_correct": 421
+        },
+        {
+          "class_id": 39,
+          "n": 90,
+          "correct": 70,
+          "original_correct": 60
+        },
+        {
+          "class_id": 40,
+          "n": 90,
+          "correct": 87,
+          "original_correct": 85
+        },
+        {
+          "class_id": 41,
+          "n": 60,
+          "correct": 23,
+          "original_correct": 6
+        },
+        {
+          "class_id": 42,
+          "n": 90,
+          "correct": 30,
+          "original_correct": 22
+        }
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "defense": "MergeGuard_GTSRB",
+      "attack_scope": "None",
+      "dataset": "GTSRB",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 10.438091926276684,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "7cce9da1fb0889aeb789e7f7fdc5a5233e08b8d5682a6885ace085835f833a10",
+      "NumPy_weight_error": 0.0,
+      "n": 12630,
+      "correct": 7683,
+      "accuracy_percent": 60.8313539192399,
+      "changed_predictions": 1787,
+      "paired": {
+        "both_correct": 7454,
+        "lost": 766,
+        "gained": 229,
+        "both_wrong": 4181,
+        "loss_pp": 4.251781472684086,
+        "exact_mcnemar_p": 3.3096222654167586e-68
+      },
+      "mcnemar_log10_p": -67.48022157039532,
+      "paired_accuracy_delta_95ci_pp": [
+        -4.7356646909492754,
+        -3.767898254418895
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 60,
+          "correct": 19,
+          "original_correct": 27
+        },
+        {
+          "class_id": 1,
+          "n": 720,
+          "correct": 263,
+          "original_correct": 490
+        },
+        {
+          "class_id": 2,
+          "n": 750,
+          "correct": 719,
+          "original_correct": 710
+        },
+        {
+          "class_id": 3,
+          "n": 450,
+          "correct": 297,
+          "original_correct": 301
+        },
+        {
+          "class_id": 4,
+          "n": 660,
+          "correct": 610,
+          "original_correct": 621
+        },
+        {
+          "class_id": 5,
+          "n": 630,
+          "correct": 582,
+          "original_correct": 586
+        },
+        {
+          "class_id": 6,
+          "n": 150,
+          "correct": 10,
+          "original_correct": 13
+        },
+        {
+          "class_id": 7,
+          "n": 450,
+          "correct": 400,
+          "original_correct": 386
+        },
+        {
+          "class_id": 8,
+          "n": 450,
+          "correct": 308,
+          "original_correct": 323
+        },
+        {
+          "class_id": 9,
+          "n": 480,
+          "correct": 72,
+          "original_correct": 62
+        },
+        {
+          "class_id": 10,
+          "n": 660,
+          "correct": 13,
+          "original_correct": 27
+        },
+        {
+          "class_id": 11,
+          "n": 420,
+          "correct": 43,
+          "original_correct": 63
+        },
+        {
+          "class_id": 12,
+          "n": 690,
+          "correct": 606,
+          "original_correct": 623
+        },
+        {
+          "class_id": 13,
+          "n": 720,
+          "correct": 658,
+          "original_correct": 661
+        },
+        {
+          "class_id": 14,
+          "n": 270,
+          "correct": 257,
+          "original_correct": 253
+        },
+        {
+          "class_id": 15,
+          "n": 210,
+          "correct": 208,
+          "original_correct": 207
+        },
+        {
+          "class_id": 16,
+          "n": 150,
+          "correct": 107,
+          "original_correct": 108
+        },
+        {
+          "class_id": 17,
+          "n": 360,
+          "correct": 346,
+          "original_correct": 347
+        },
+        {
+          "class_id": 18,
+          "n": 390,
+          "correct": 139,
+          "original_correct": 101
+        },
+        {
+          "class_id": 19,
+          "n": 60,
+          "correct": 3,
+          "original_correct": 8
+        },
+        {
+          "class_id": 20,
+          "n": 90,
+          "correct": 25,
+          "original_correct": 38
+        },
+        {
+          "class_id": 21,
+          "n": 90,
+          "correct": 7,
+          "original_correct": 11
+        },
+        {
+          "class_id": 22,
+          "n": 120,
+          "correct": 9,
+          "original_correct": 11
+        },
+        {
+          "class_id": 23,
+          "n": 150,
+          "correct": 99,
+          "original_correct": 105
+        },
+        {
+          "class_id": 24,
+          "n": 90,
+          "correct": 15,
+          "original_correct": 12
+        },
+        {
+          "class_id": 25,
+          "n": 480,
+          "correct": 277,
+          "original_correct": 363
+        },
+        {
+          "class_id": 26,
+          "n": 180,
+          "correct": 169,
+          "original_correct": 176
+        },
+        {
+          "class_id": 27,
+          "n": 60,
+          "correct": 10,
+          "original_correct": 12
+        },
+        {
+          "class_id": 28,
+          "n": 150,
+          "correct": 139,
+          "original_correct": 143
+        },
+        {
+          "class_id": 29,
+          "n": 90,
+          "correct": 52,
+          "original_correct": 55
+        },
+        {
+          "class_id": 30,
+          "n": 150,
+          "correct": 111,
+          "original_correct": 102
+        },
+        {
+          "class_id": 31,
+          "n": 270,
+          "correct": 217,
+          "original_correct": 209
+        },
+        {
+          "class_id": 32,
+          "n": 60,
+          "correct": 55,
+          "original_correct": 51
+        },
+        {
+          "class_id": 33,
+          "n": 210,
+          "correct": 33,
+          "original_correct": 69
+        },
+        {
+          "class_id": 34,
+          "n": 120,
+          "correct": 55,
+          "original_correct": 73
+        },
+        {
+          "class_id": 35,
+          "n": 390,
+          "correct": 173,
+          "original_correct": 236
+        },
+        {
+          "class_id": 36,
+          "n": 120,
+          "correct": 31,
+          "original_correct": 34
+        },
+        {
+          "class_id": 37,
+          "n": 60,
+          "correct": 2,
+          "original_correct": 9
+        },
+        {
+          "class_id": 38,
+          "n": 690,
+          "correct": 366,
+          "original_correct": 421
+        },
+        {
+          "class_id": 39,
+          "n": 90,
+          "correct": 66,
+          "original_correct": 60
+        },
+        {
+          "class_id": 40,
+          "n": 90,
+          "correct": 85,
+          "original_correct": 85
+        },
+        {
+          "class_id": 41,
+          "n": 60,
+          "correct": 8,
+          "original_correct": 6
+        },
+        {
+          "class_id": 42,
+          "n": 90,
+          "correct": 19,
+          "original_correct": 22
+        }
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "defense": "Unprotected",
+      "attack_scope": "Protected expert",
+      "dataset": "GTSRB",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 10.36848677881062,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "5660cd473a95f02136ff6ef219ed8ec87c11bcd4e59db6f546862e7f71dba307",
+      "NumPy_weight_error": 0.0,
+      "n": 12630,
+      "correct": 7993,
+      "accuracy_percent": 63.285827395091054,
+      "changed_predictions": 0,
+      "paired": {
+        "both_correct": 7993,
+        "lost": 0,
+        "gained": 0,
+        "both_wrong": 4637,
+        "loss_pp": 0.0,
+        "exact_mcnemar_p": 1.0
+      },
+      "mcnemar_log10_p": 0.0,
+      "paired_accuracy_delta_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 60,
+          "correct": 27,
+          "original_correct": 27
+        },
+        {
+          "class_id": 1,
+          "n": 720,
+          "correct": 446,
+          "original_correct": 446
+        },
+        {
+          "class_id": 2,
+          "n": 750,
+          "correct": 709,
+          "original_correct": 709
+        },
+        {
+          "class_id": 3,
+          "n": 450,
+          "correct": 296,
+          "original_correct": 296
+        },
+        {
+          "class_id": 4,
+          "n": 660,
+          "correct": 615,
+          "original_correct": 615
+        },
+        {
+          "class_id": 5,
+          "n": 630,
+          "correct": 587,
+          "original_correct": 587
+        },
+        {
+          "class_id": 6,
+          "n": 150,
+          "correct": 10,
+          "original_correct": 10
+        },
+        {
+          "class_id": 7,
+          "n": 450,
+          "correct": 383,
+          "original_correct": 383
+        },
+        {
+          "class_id": 8,
+          "n": 450,
+          "correct": 319,
+          "original_correct": 319
+        },
+        {
+          "class_id": 9,
+          "n": 480,
+          "correct": 49,
+          "original_correct": 49
+        },
+        {
+          "class_id": 10,
+          "n": 660,
+          "correct": 22,
+          "original_correct": 22
+        },
+        {
+          "class_id": 11,
+          "n": 420,
+          "correct": 50,
+          "original_correct": 50
+        },
+        {
+          "class_id": 12,
+          "n": 690,
+          "correct": 617,
+          "original_correct": 617
+        },
+        {
+          "class_id": 13,
+          "n": 720,
+          "correct": 656,
+          "original_correct": 656
+        },
+        {
+          "class_id": 14,
+          "n": 270,
+          "correct": 252,
+          "original_correct": 252
+        },
+        {
+          "class_id": 15,
+          "n": 210,
+          "correct": 206,
+          "original_correct": 206
+        },
+        {
+          "class_id": 16,
+          "n": 150,
+          "correct": 105,
+          "original_correct": 105
+        },
+        {
+          "class_id": 17,
+          "n": 360,
+          "correct": 347,
+          "original_correct": 347
+        },
+        {
+          "class_id": 18,
+          "n": 390,
+          "correct": 88,
+          "original_correct": 88
+        },
+        {
+          "class_id": 19,
+          "n": 60,
+          "correct": 7,
+          "original_correct": 7
+        },
+        {
+          "class_id": 20,
+          "n": 90,
+          "correct": 38,
+          "original_correct": 38
+        },
+        {
+          "class_id": 21,
+          "n": 90,
+          "correct": 8,
+          "original_correct": 8
+        },
+        {
+          "class_id": 22,
+          "n": 120,
+          "correct": 11,
+          "original_correct": 11
+        },
+        {
+          "class_id": 23,
+          "n": 150,
+          "correct": 100,
+          "original_correct": 100
+        },
+        {
+          "class_id": 24,
+          "n": 90,
+          "correct": 9,
+          "original_correct": 9
+        },
+        {
+          "class_id": 25,
+          "n": 480,
+          "correct": 349,
+          "original_correct": 349
+        },
+        {
+          "class_id": 26,
+          "n": 180,
+          "correct": 176,
+          "original_correct": 176
+        },
+        {
+          "class_id": 27,
+          "n": 60,
+          "correct": 9,
+          "original_correct": 9
+        },
+        {
+          "class_id": 28,
+          "n": 150,
+          "correct": 143,
+          "original_correct": 143
+        },
+        {
+          "class_id": 29,
+          "n": 90,
+          "correct": 55,
+          "original_correct": 55
+        },
+        {
+          "class_id": 30,
+          "n": 150,
+          "correct": 101,
+          "original_correct": 101
+        },
+        {
+          "class_id": 31,
+          "n": 270,
+          "correct": 206,
+          "original_correct": 206
+        },
+        {
+          "class_id": 32,
+          "n": 60,
+          "correct": 47,
+          "original_correct": 47
+        },
+        {
+          "class_id": 33,
+          "n": 210,
+          "correct": 57,
+          "original_correct": 57
+        },
+        {
+          "class_id": 34,
+          "n": 120,
+          "correct": 69,
+          "original_correct": 69
+        },
+        {
+          "class_id": 35,
+          "n": 390,
+          "correct": 222,
+          "original_correct": 222
+        },
+        {
+          "class_id": 36,
+          "n": 120,
+          "correct": 33,
+          "original_correct": 33
+        },
+        {
+          "class_id": 37,
+          "n": 60,
+          "correct": 8,
+          "original_correct": 8
+        },
+        {
+          "class_id": 38,
+          "n": 690,
+          "correct": 394,
+          "original_correct": 394
+        },
+        {
+          "class_id": 39,
+          "n": 90,
+          "correct": 57,
+          "original_correct": 57
+        },
+        {
+          "class_id": 40,
+          "n": 90,
+          "correct": 85,
+          "original_correct": 85
+        },
+        {
+          "class_id": 41,
+          "n": 60,
+          "correct": 5,
+          "original_correct": 5
+        },
+        {
+          "class_id": 42,
+          "n": 90,
+          "correct": 20,
+          "original_correct": 20
+        }
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "defense": "CE_GTSRB",
+      "attack_scope": "Protected expert",
+      "dataset": "GTSRB",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 10.81547168828547,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "bb9f153e8b5749e44a2e63a4e435b33ab1fec2e946d96f55bc263d089bb98175",
+      "NumPy_weight_error": 0.0,
+      "n": 12630,
+      "correct": 8971,
+      "accuracy_percent": 71.02929532858275,
+      "changed_predictions": 1772,
+      "paired": {
+        "both_correct": 7919,
+        "lost": 74,
+        "gained": 1052,
+        "both_wrong": 3585,
+        "loss_pp": -7.7434679334916865,
+        "exact_mcnemar_p": 3.998997835476285e-222
+      },
+      "mcnemar_log10_p": -221.39804883093538,
+      "paired_accuracy_delta_95ci_pp": [
+        7.240523316971278,
+        8.246412550012094
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 60,
+          "correct": 33,
+          "original_correct": 27
+        },
+        {
+          "class_id": 1,
+          "n": 720,
+          "correct": 557,
+          "original_correct": 446
+        },
+        {
+          "class_id": 2,
+          "n": 750,
+          "correct": 725,
+          "original_correct": 709
+        },
+        {
+          "class_id": 3,
+          "n": 450,
+          "correct": 325,
+          "original_correct": 296
+        },
+        {
+          "class_id": 4,
+          "n": 660,
+          "correct": 629,
+          "original_correct": 615
+        },
+        {
+          "class_id": 5,
+          "n": 630,
+          "correct": 601,
+          "original_correct": 587
+        },
+        {
+          "class_id": 6,
+          "n": 150,
+          "correct": 26,
+          "original_correct": 10
+        },
+        {
+          "class_id": 7,
+          "n": 450,
+          "correct": 402,
+          "original_correct": 383
+        },
+        {
+          "class_id": 8,
+          "n": 450,
+          "correct": 350,
+          "original_correct": 319
+        },
+        {
+          "class_id": 9,
+          "n": 480,
+          "correct": 150,
+          "original_correct": 49
+        },
+        {
+          "class_id": 10,
+          "n": 660,
+          "correct": 76,
+          "original_correct": 22
+        },
+        {
+          "class_id": 11,
+          "n": 420,
+          "correct": 132,
+          "original_correct": 50
+        },
+        {
+          "class_id": 12,
+          "n": 690,
+          "correct": 634,
+          "original_correct": 617
+        },
+        {
+          "class_id": 13,
+          "n": 720,
+          "correct": 699,
+          "original_correct": 656
+        },
+        {
+          "class_id": 14,
+          "n": 270,
+          "correct": 253,
+          "original_correct": 252
+        },
+        {
+          "class_id": 15,
+          "n": 210,
+          "correct": 209,
+          "original_correct": 206
+        },
+        {
+          "class_id": 16,
+          "n": 150,
+          "correct": 116,
+          "original_correct": 105
+        },
+        {
+          "class_id": 17,
+          "n": 360,
+          "correct": 349,
+          "original_correct": 347
+        },
+        {
+          "class_id": 18,
+          "n": 390,
+          "correct": 151,
+          "original_correct": 88
+        },
+        {
+          "class_id": 19,
+          "n": 60,
+          "correct": 19,
+          "original_correct": 7
+        },
+        {
+          "class_id": 20,
+          "n": 90,
+          "correct": 55,
+          "original_correct": 38
+        },
+        {
+          "class_id": 21,
+          "n": 90,
+          "correct": 25,
+          "original_correct": 8
+        },
+        {
+          "class_id": 22,
+          "n": 120,
+          "correct": 36,
+          "original_correct": 11
+        },
+        {
+          "class_id": 23,
+          "n": 150,
+          "correct": 108,
+          "original_correct": 100
+        },
+        {
+          "class_id": 24,
+          "n": 90,
+          "correct": 51,
+          "original_correct": 9
+        },
+        {
+          "class_id": 25,
+          "n": 480,
+          "correct": 363,
+          "original_correct": 349
+        },
+        {
+          "class_id": 26,
+          "n": 180,
+          "correct": 176,
+          "original_correct": 176
+        },
+        {
+          "class_id": 27,
+          "n": 60,
+          "correct": 14,
+          "original_correct": 9
+        },
+        {
+          "class_id": 28,
+          "n": 150,
+          "correct": 139,
+          "original_correct": 143
+        },
+        {
+          "class_id": 29,
+          "n": 90,
+          "correct": 55,
+          "original_correct": 55
+        },
+        {
+          "class_id": 30,
+          "n": 150,
+          "correct": 106,
+          "original_correct": 101
+        },
+        {
+          "class_id": 31,
+          "n": 270,
+          "correct": 218,
+          "original_correct": 206
+        },
+        {
+          "class_id": 32,
+          "n": 60,
+          "correct": 58,
+          "original_correct": 47
+        },
+        {
+          "class_id": 33,
+          "n": 210,
+          "correct": 94,
+          "original_correct": 57
+        },
+        {
+          "class_id": 34,
+          "n": 120,
+          "correct": 74,
+          "original_correct": 69
+        },
+        {
+          "class_id": 35,
+          "n": 390,
+          "correct": 271,
+          "original_correct": 222
+        },
+        {
+          "class_id": 36,
+          "n": 120,
+          "correct": 43,
+          "original_correct": 33
+        },
+        {
+          "class_id": 37,
+          "n": 60,
+          "correct": 8,
+          "original_correct": 8
+        },
+        {
+          "class_id": 38,
+          "n": 690,
+          "correct": 439,
+          "original_correct": 394
+        },
+        {
+          "class_id": 39,
+          "n": 90,
+          "correct": 66,
+          "original_correct": 57
+        },
+        {
+          "class_id": 40,
+          "n": 90,
+          "correct": 88,
+          "original_correct": 85
+        },
+        {
+          "class_id": 41,
+          "n": 60,
+          "correct": 18,
+          "original_correct": 5
+        },
+        {
+          "class_id": 42,
+          "n": 90,
+          "correct": 30,
+          "original_correct": 20
+        }
+      ]
+    },
+    {
+      "target": "GTSRB",
+      "defense": "MergeGuard_GTSRB",
+      "attack_scope": "Protected expert",
+      "dataset": "GTSRB",
+      "role": "target",
+      "participants": 8,
+      "coefficient": 0.2,
+      "evaluation_seconds": 10.776234181597829,
+      "reused_identical_model_scores": false,
+      "imported_score_source": null,
+      "model_parameter_sha256": "1587a7923d5eefdf8902f36f93c11c72de235eb987c77c2c5f52c5ba6562f56f",
+      "NumPy_weight_error": 0.0,
+      "n": 12630,
+      "correct": 7832,
+      "accuracy_percent": 62.0110847189232,
+      "changed_predictions": 1970,
+      "paired": {
+        "both_correct": 7406,
+        "lost": 587,
+        "gained": 426,
+        "both_wrong": 4211,
+        "loss_pp": 1.2747426761678544,
+        "exact_mcnemar_p": 4.723842488826257e-07
+      },
+      "mcnemar_log10_p": -6.325704591874192,
+      "paired_accuracy_delta_95ci_pp": [
+        -1.7681825614346587,
+        -0.78130279090105
+      ],
+      "per_class": [
+        {
+          "class_id": 0,
+          "n": 60,
+          "correct": 15,
+          "original_correct": 27
+        },
+        {
+          "class_id": 1,
+          "n": 720,
+          "correct": 296,
+          "original_correct": 446
+        },
+        {
+          "class_id": 2,
+          "n": 750,
+          "correct": 718,
+          "original_correct": 709
+        },
+        {
+          "class_id": 3,
+          "n": 450,
+          "correct": 287,
+          "original_correct": 296
+        },
+        {
+          "class_id": 4,
+          "n": 660,
+          "correct": 608,
+          "original_correct": 615
+        },
+        {
+          "class_id": 5,
+          "n": 630,
+          "correct": 580,
+          "original_correct": 587
+        },
+        {
+          "class_id": 6,
+          "n": 150,
+          "correct": 6,
+          "original_correct": 10
+        },
+        {
+          "class_id": 7,
+          "n": 450,
+          "correct": 401,
+          "original_correct": 383
+        },
+        {
+          "class_id": 8,
+          "n": 450,
+          "correct": 307,
+          "original_correct": 319
+        },
+        {
+          "class_id": 9,
+          "n": 480,
+          "correct": 58,
+          "original_correct": 49
+        },
+        {
+          "class_id": 10,
+          "n": 660,
+          "correct": 11,
+          "original_correct": 22
+        },
+        {
+          "class_id": 11,
+          "n": 420,
+          "correct": 61,
+          "original_correct": 50
+        },
+        {
+          "class_id": 12,
+          "n": 690,
+          "correct": 595,
+          "original_correct": 617
+        },
+        {
+          "class_id": 13,
+          "n": 720,
+          "correct": 614,
+          "original_correct": 656
+        },
+        {
+          "class_id": 14,
+          "n": 270,
+          "correct": 259,
+          "original_correct": 252
+        },
+        {
+          "class_id": 15,
+          "n": 210,
+          "correct": 205,
+          "original_correct": 206
+        },
+        {
+          "class_id": 16,
+          "n": 150,
+          "correct": 101,
+          "original_correct": 105
+        },
+        {
+          "class_id": 17,
+          "n": 360,
+          "correct": 348,
+          "original_correct": 347
+        },
+        {
+          "class_id": 18,
+          "n": 390,
+          "correct": 174,
+          "original_correct": 88
+        },
+        {
+          "class_id": 19,
+          "n": 60,
+          "correct": 8,
+          "original_correct": 7
+        },
+        {
+          "class_id": 20,
+          "n": 90,
+          "correct": 46,
+          "original_correct": 38
+        },
+        {
+          "class_id": 21,
+          "n": 90,
+          "correct": 5,
+          "original_correct": 8
+        },
+        {
+          "class_id": 22,
+          "n": 120,
+          "correct": 12,
+          "original_correct": 11
+        },
+        {
+          "class_id": 23,
+          "n": 150,
+          "correct": 99,
+          "original_correct": 100
+        },
+        {
+          "class_id": 24,
+          "n": 90,
+          "correct": 17,
+          "original_correct": 9
+        },
+        {
+          "class_id": 25,
+          "n": 480,
+          "correct": 310,
+          "original_correct": 349
+        },
+        {
+          "class_id": 26,
+          "n": 180,
+          "correct": 174,
+          "original_correct": 176
+        },
+        {
+          "class_id": 27,
+          "n": 60,
+          "correct": 9,
+          "original_correct": 9
+        },
+        {
+          "class_id": 28,
+          "n": 150,
+          "correct": 135,
+          "original_correct": 143
+        },
+        {
+          "class_id": 29,
+          "n": 90,
+          "correct": 53,
+          "original_correct": 55
+        },
+        {
+          "class_id": 30,
+          "n": 150,
+          "correct": 112,
+          "original_correct": 101
+        },
+        {
+          "class_id": 31,
+          "n": 270,
+          "correct": 216,
+          "original_correct": 206
+        },
+        {
+          "class_id": 32,
+          "n": 60,
+          "correct": 53,
+          "original_correct": 47
+        },
+        {
+          "class_id": 33,
+          "n": 210,
+          "correct": 34,
+          "original_correct": 57
+        },
+        {
+          "class_id": 34,
+          "n": 120,
+          "correct": 68,
+          "original_correct": 69
+        },
+        {
+          "class_id": 35,
+          "n": 390,
+          "correct": 202,
+          "original_correct": 222
+        },
+        {
+          "class_id": 36,
+          "n": 120,
+          "correct": 36,
+          "original_correct": 33
+        },
+        {
+          "class_id": 37,
+          "n": 60,
+          "correct": 2,
+          "original_correct": 8
+        },
+        {
+          "class_id": 38,
+          "n": 690,
+          "correct": 424,
+          "original_correct": 394
+        },
+        {
+          "class_id": 39,
+          "n": 90,
+          "correct": 79,
+          "original_correct": 57
+        },
+        {
+          "class_id": 40,
+          "n": 90,
+          "correct": 75,
+          "original_correct": 85
+        },
+        {
+          "class_id": 41,
+          "n": 60,
+          "correct": 5,
+          "original_correct": 5
+        },
+        {
+          "class_id": 42,
+          "n": 90,
+          "correct": 14,
+          "original_correct": 20
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "MNIST": {
+      "status": "passed",
+      "rows": 6,
+      "raw_sha256": "d5024eebed806ef0ee140686b200a3f91ffc5c3260ccbd374b492c43954e0436",
+      "score_replays": 96,
+      "maximum_context_score_error": 0.0,
+      "wall_seconds": 170.11051113530993,
+      "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+      "new_image_forwards": 71616,
+      "production_image_forwards": 60000,
+      "replay_context_image_forwards": 11616,
+      "reused_evaluation_records": 0,
+      "new_AGA_calls": 0,
+      "new_defense_weights": 0,
+      "expert_training_updates": 0,
+      "scope": "Existing paper-based MergeGuard and matched CE, eight-expert extension",
+      "evaluated_datasets": [
+        "MNIST"
+      ]
+    },
+    "SVHN": {
+      "status": "passed",
+      "rows": 6,
+      "raw_sha256": "29c6950ddfaeb2cd99b737852d286b7c1ecd01aeece3e625e2c241a53dc6c557",
+      "score_replays": 96,
+      "maximum_context_score_error": 0.0,
+      "wall_seconds": 256.19555772282183,
+      "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+      "new_image_forwards": 168000,
+      "production_image_forwards": 156192,
+      "replay_context_image_forwards": 11808,
+      "reused_evaluation_records": 0,
+      "new_AGA_calls": 0,
+      "new_defense_weights": 0,
+      "expert_training_updates": 0,
+      "scope": "Existing paper-based MergeGuard and matched CE, eight-expert extension",
+      "evaluated_datasets": [
+        "SVHN"
+      ]
+    },
+    "DTD": {
+      "status": "passed",
+      "rows": 6,
+      "raw_sha256": "4a8e2d7b2033d9a1355076657f9c5faea093fb614b54ba90f23bcb2ed00c6984",
+      "score_replays": 96,
+      "maximum_context_score_error": 0.0,
+      "wall_seconds": 215.38777943141758,
+      "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+      "new_image_forwards": 22560,
+      "production_image_forwards": 11280,
+      "replay_context_image_forwards": 11280,
+      "reused_evaluation_records": 0,
+      "new_AGA_calls": 0,
+      "new_defense_weights": 0,
+      "expert_training_updates": 0,
+      "scope": "Existing paper-based MergeGuard and matched CE, eight-expert extension",
+      "evaluated_datasets": [
+        "DTD"
+      ]
+    },
+    "GTSRB": {
+      "status": "passed",
+      "rows": 6,
+      "raw_sha256": "f23550b614fcac5cd85e7018491a3daabbc6fbe78e5de2bfae089eb85d432599",
+      "score_replays": 96,
+      "maximum_context_score_error": 0.0,
+      "wall_seconds": 214.01029432192445,
+      "source_sha256": "a36503238acf3a8e824fb5e25f6c7f4dd89a09b27ae2c5ae272e76af1c8b32c1",
+      "new_image_forwards": 87816,
+      "production_image_forwards": 75780,
+      "replay_context_image_forwards": 12036,
+      "reused_evaluation_records": 0,
+      "new_AGA_calls": 0,
+      "new_defense_weights": 0,
+      "expert_training_updates": 0,
+      "scope": "Existing paper-based MergeGuard and matched CE, eight-expert extension",
+      "evaluated_datasets": [
+        "GTSRB"
+      ]
+    }
+  },
+  "source_sha256": {
+    "outputs/mergeguard_eight/MNIST/full/results.json": "763a5165c7e39fd1ba7bf0f09901a3b7e3259a507d35191a20604315463c44fb",
+    "outputs/mergeguard_eight/MNIST/full/validation.json": "2bbecd0b2596351f92e423c9d3805dd6b1cdbd5f6f57d9a00e4240e44593e466",
+    "outputs/mergeguard_eight/MNIST/full/protocol.json": "414fd01c759523b4cdc8575a5506d1987bc942b8c85712b7d59e419b8abe8ca0",
+    "outputs/mergeguard_eight/MNIST/full/pre_evaluation.json": "feafd89e82d5d6e7f574b7c9fe3f8fd94e0c98b3fbf79f66ac46fbeaa2e45254",
+    "outputs/mergeguard_eight/SVHN/full/results.json": "ba35c741ec60ef626e472d27ae70e30cf269065397f899db2b6da28e408db401",
+    "outputs/mergeguard_eight/SVHN/full/validation.json": "d726a910fdf03f35739793ea68ca84def2544d841b882cb2287aa0d4988db360",
+    "outputs/mergeguard_eight/SVHN/full/protocol.json": "c5a0b430bee45eb8898d53dca47d5f8b6f77174feb47e4a099768657cd7631a3",
+    "outputs/mergeguard_eight/SVHN/full/pre_evaluation.json": "7f565f96134354dcbbd7e5f413066e763303365f1fd07f3b6284726f286fc862",
+    "outputs/mergeguard_eight/DTD/full/results.json": "f13faeccac8a513bd74a83c96492924122f2d50f465213e3a1207268ae009788",
+    "outputs/mergeguard_eight/DTD/full/validation.json": "1527b0f5190088829fa564908bb46c7a4fe3d09b00d9ec211bbb0dc6342c97b0",
+    "outputs/mergeguard_eight/DTD/full/protocol.json": "eaacbd17239a8a2c2538fa82e3bd289275db5bed36b891a58d5b8c15009a103b",
+    "outputs/mergeguard_eight/DTD/full/pre_evaluation.json": "ea9e14285ba4dc81423781b6159cb14f92126db2aaf9ef59ffdd0bc344f0b71d",
+    "outputs/mergeguard_eight/GTSRB/full/results.json": "dfaf627fe231eb4bdd9e1088072e9cfa219f79c23d495053f42797077d9f5ab8",
+    "outputs/mergeguard_eight/GTSRB/full/protocol.json": "3843e4fec9c5700472faa8086f1c03624fbf2abf36dd632b2651e5a0dce0fdc4",
+    "outputs/mergeguard_eight/GTSRB/full/pre_evaluation.json": "1e4a37a5c5570187b3f808bb1c356a57ddbf2f5c70f50048fa8578d090108009",
+    "outputs/mergeguard_eight/GTSRB/full/validation.json": "119e10e777d32f144b5dcabd47fba800b6da8acbeda4b5bb5bb4347e004c387a"
+  }
+}

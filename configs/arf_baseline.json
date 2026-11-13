@@ -1,0 +1,38 @@
+{
+  "method": "ARF",
+  "backbone": "ViT-B-32",
+  "output": "outputs/arf_baseline",
+  "seed": 420,
+  "batch_size": 128,
+  "validation_fraction": 0.2,
+  "lambda_reg": 1.0,
+  "epochs": {"MNIST": 5, "DTD": 76},
+  "training": {"lr": 1e-5, "warm_up": 500, "max_norm": 1.0},
+  "attack_scopes": ["None", "Protected expert", "All experts"],
+  "arf": {"formulation": "prose_hinge_max", "rho": 0.05, "attention_layers": 12},
+  "mergelock": {
+    "seed": 0,
+    "heads": 12,
+    "random_matrix": "standard_normal",
+    "diagonal_range": [0.05, 20.0]
+  },
+  "paper": "https://arxiv.org/html/2606.30360v1#S5",
+  "author_repository": "https://github.com/krumpguo/secure-merge-attack",
+  "audited_author_commit": "fb61429f5e6f3517102d506697a150ac26abbdea",
+  "implementation": "ARF adaptation of the paper prose, not author code or an exact reproduction of its tables. The published Eq.19 min/prose conflict is resolved by an explicit max-hinge implementation choice.",
+  "paper_defined": [
+    "Sec.5.1: CE plus an anchor-distance term on attention Q/K/V/O weights, followed by invertible attention protection.",
+    "Sec.5.2: lambda_dist=1.0 and rho=0.05 across datasets.",
+    "Sec.5.1 prose says repulsion acts below the margin and stops after reaching it; Eq.19 instead prints min(0, margin-distance), which is inactive below the margin and unbounded below beyond it."
+  ],
+  "implementation_choices": [
+    "Use CE + lambda_dist * sum(max(0, rho*norm(anchor)-norm(weight-anchor))) following the prose. Do not claim the authors used this correction. The shared driver field lambda_reg is lambda_dist here.",
+    "The sum contains 48 full matrices: Q, K, V, O in all 12 visual blocks. Split fused QKV; use flattened Euclidean/Frobenius norms, no squaring or averaging. No biases, MLP, LayerNorm or projection in the distance term. Norm grouping is not resolved by released author training code.",
+    "Both ARF and matched CE initialize from the public zeroshot checkpoint. This is our explicit interpretation of intervention during task fine-tuning; unpublished author initialization is unknown. Anchor tensors are frozen copies of that public checkpoint.",
+    "At exactly zero distance use PyTorch's zero norm subgradient: the first displacement comes from CE. No artificial perturbation, distance warm start, extra objective or optimizer search.",
+    "Reuse the existing native baseline training schedule: AdamW lr1e-5, batch128, five MNIST epochs and 76 DTD epochs, cosine warmup500, clip1, weight_decay0. Epoch counts follow Task Arithmetic; these are declared adaptation settings, not ARF author hyperparameters.",
+    "All visual parameters including projection train; classifier stays fixed. FP32 and deterministic validation preprocessing. MNIST uses a stratified20% training holdout with seed420; DTD uses official train/val partition1. Final fixed-epoch state, no early stopping or test-based selection. best.pt denotes this final released state.",
+    "Complete ARF applies the existing MergeLock paper implementation to the trained state: per-head A=RPD with standard-normal R, uniform permutation, diagonal uniform[.05,20], seed0, float64 construction and no resampling. This sampler is our choice; ARF does not publish it. Save stage1.pt and all initial/final matrix distances even if margins are not reached or utility deteriorates.",
+    "Matched CE has lambda_dist0 and no post-training transformation. It uses identical initialization, data split, optimizer schedule and seed. Report standalone and TA0.5 with target-only and both-expert author AGA separately. MNIST uses the original SVHN companion; DTD uses the original MNIST companion. Never transplant the paper's eight-task scores."
+  ]
+}

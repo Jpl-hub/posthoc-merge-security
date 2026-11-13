@@ -13,7 +13,7 @@ from cfg import AUTHOR, load_config, require_root
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--target", choices=["MNIST", "DTD", "SVHN"], required=True)
+    p.add_argument("--target", choices=["SUN397", "Cars", "RESISC45", "SVHN", "GTSRB", "MNIST", "DTD"], required=True)
     p.add_argument("--method", choices=["aga", "patch", "reset", "mlp-match"], default="aga")
     p.add_argument("--protocol", default="configs/evaluate.json")
     p.add_argument("--publication", required=True)

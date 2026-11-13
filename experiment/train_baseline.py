@@ -9,14 +9,14 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
 
-from _impl.baselines import trap2_training, mergeguard_training
+from _impl.baselines import trap2_training, mergeguard_training, mergeguard_negation
 from _impl.data import dataset, official_labels
 from _impl.io import digest, new_output, read_json, save_json
 from _impl.models import initialize, load_checkpoint
 from cfg import BACKBONE, CHECKPOINTS, DATA, require_root
 
 
-def run(config, task, defense):
+def run(config, task, defense, stage1=None):
     require_root()
     initialize()
     cfg = read_json(config)
@@ -25,13 +25,19 @@ def run(config, task, defense):
     settings = cfg["training"] | {"device": "cuda"}
     settings["lambda_reg"] = cfg["lambda_reg"] if defense != "CE" else 0.0
     method = cfg.get("method", "Trap2")
+    if method not in {"Trap2", "MergeGuard", "ARF"} or defense not in {method, "CE"}:
+        raise ValueError("Requested defense and configured training method differ")
+    if method == "ARF" and task not in cfg["epochs"]:
+        raise ValueError("Task is not included in the fixed ARF training protocol")
+    if stage1 is not None and (method != "MergeGuard" or defense != "MergeGuard"):
+        raise ValueError("Stage-one continuation is defined only for MergeGuard")
     seed = cfg["seed"]
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     author = trap2_training(cfg["author_sources"]) if method == "Trap2" else None
-    initial = "zeroshot.pt" if method == "Trap2" else f"{task}/finetuned.pt"
+    initial = "zeroshot.pt" if method in {"Trap2", "ARF"} else f"{task}/finetuned.pt"
     encoder = load_checkpoint(initial)
     head = load_checkpoint(f"head_{task}.pt")
     train_data = dataset(task, str(DATA), encoder.val_preprocess, training=True)
@@ -60,6 +66,8 @@ def run(config, task, defense):
         "base_sha256": digest(CHECKPOINTS / "zeroshot.pt"),
         "initial_checkpoint_sha256": digest(CHECKPOINTS / initial),
         "head_sha256": digest(CHECKPOINTS / f"head_{task}.pt"),
+        **({"stage1_path": str(stage1), "stage1_sha256": digest(stage1),
+            "training_reused": True} if stage1 is not None else {}),
         "driver_sha256": digest(__file__), "adapter_sha256": digest("_impl/baselines.py"),
     })
     train_loader = DataLoader(Subset(train_data, train_indices.tolist()),
@@ -75,7 +83,12 @@ def run(config, task, defense):
     assert torch.allclose(vectors.norm(dim=1), torch.ones(len(vectors)), atol=1e-5)
     del head, encoder
     started = time.monotonic()
-    if method == "Trap2":
+    if stage1 is not None:
+        visual.load_state_dict(torch.load(stage1, map_location="cpu", weights_only=True), strict=True)
+        base = load_checkpoint("zeroshot.pt").model.visual.state_dict()
+        mergeguard_negation(visual, base, val_loader, vectors, cfg, out)
+        torch.save({k: v.detach().cpu() for k, v in visual.state_dict().items()}, out / "best.pt")
+    elif method == "Trap2":
         # Author loop logs a "Test" column; feed validation twice, never test images.
         author["train_cliphead_full_trap2"](
             visual, train_loader, val_loader, val_loader, vectors, settings, str(out / "best.pt"))
@@ -85,10 +98,13 @@ def run(config, task, defense):
                             settings | {"epochs": cfg["epochs"][task]}, cfg, out, defense)
     assert (out / "best.pt").is_file()
     save_json(out / "completed.json", dict(
-        task=task, defense=defense, training_seconds=time.monotonic() - started,
+        task=task, defense=defense,
+        **({"stage2_seconds": time.monotonic() - started} if stage1 is not None else
+           {"training_seconds": time.monotonic() - started}),
         checkpoint_sha256=digest(out / "best.pt"),
         peak_gpu_bytes=torch.cuda.max_memory_allocated(),
-        training_examples=len(train_indices), validation_examples=len(val_indices),
+        training_examples=0 if stage1 is not None else len(train_indices),
+        validation_examples=len(val_indices), stage1_reused=stage1 is not None,
         test_examples_used=0,
         evaluation="Pending FP32 full-test evaluation; checkpoint selection is defined by the training protocol.",
     ))
@@ -158,10 +174,13 @@ def evaluate_pair(config, task):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/trap2_baseline.json")
-    parser.add_argument("--task", choices=["DTD", "MNIST", "SVHN"], required=True)
-    parser.add_argument("--defense", choices=["Trap2", "MergeGuard", "CE"])
+    parser.add_argument("--task", choices=["SUN397", "Cars", "RESISC45", "GTSRB", "DTD", "MNIST", "SVHN"], required=True)
+    parser.add_argument("--defense", choices=["Trap2", "MergeGuard", "ARF", "CE"])
     parser.add_argument("--evaluate", action="store_true")
+    parser.add_argument("--stage1", type=Path, help="Reuse a MergeGuard stage-one state; run only stage two")
     args = parser.parse_args()
     if not args.evaluate and args.defense is None:
         parser.error("Training requires --defense")
-    evaluate_pair(args.config, args.task) if args.evaluate else run(args.config, args.task, args.defense)
+    if args.evaluate and args.stage1 is not None:
+        parser.error("--stage1 is for stage-two construction, not evaluation")
+    evaluate_pair(args.config, args.task) if args.evaluate else run(args.config, args.task, args.defense, args.stage1)

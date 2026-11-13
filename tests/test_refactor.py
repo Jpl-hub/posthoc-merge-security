@@ -160,6 +160,22 @@ def forward(state, patches):
     return ln(x[:, 0], "model.visual.ln_post") @ state["model.visual.proj"]
 
 
+def test_mergelock_preserves_multihead_transformer_and_inputs():
+    from _impl.baselines import mergelock
+
+    state, patches = small_clip()
+    original = {k: v.clone() for k, v in state.items()}
+    edits, details = mergelock(state, dict(seed=0, heads=2,
+                                         random_matrix="standard_normal",
+                                         diagonal_range=[.05, 20.]))
+    # Two residual blocks, nonzero Q/K/V biases, and distinct head transforms.
+    torch.testing.assert_close(forward(state | edits, patches), forward(state, patches),
+                               rtol=1e-8, atol=1e-9)
+    assert len(edits) == 6 and details["matrices"] == 8
+    assert all(torch.equal(v, original[k]) for k, v in state.items())
+    assert all("attn." in k and "out_proj.bias" not in k for k in edits)
+
+
 def test_joint_permutation_preserves_complete_transformer_and_restores():
     state, x = small_clip()
     order = torch.tensor([3, 6, 0, 7, 2, 5, 1, 4])

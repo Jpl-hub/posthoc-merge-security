@@ -1,0 +1,175 @@
+{
+  "status": "completed_no_resolution_of_protection_gap",
+  "updated_utc": "2026-11-13T13:17:24.562347+00:00",
+  "protocol": "results/phase3/mergeguard_baseline/grouping_check_protocol.json",
+  "source_stage1_sha256": "8c7687f0a37189b14841f5f29fdd623224ed869d3cb3e0f6141cf0777a22983c",
+  "source_stage1_float64_squared_norm": 101842.2235085796,
+  "evaluation": {
+    "completed": true,
+    "rows": [
+      {
+        "setting": "Standalone",
+        "task": "MNIST",
+        "correct": 9961,
+        "n": 10000,
+        "top1": 0.9961,
+        "score_replays": 16,
+        "maximum_score_error": 0.0,
+        "evaluation_seconds": 6.673518154770136,
+        "peak_gpu_bytes": 858202624,
+        "predicted_class_counts": [
+          985,
+          1133,
+          1035,
+          1014,
+          982,
+          892,
+          954,
+          1026,
+          973,
+          1006
+        ]
+      },
+      {
+        "setting": "TA",
+        "task": "MNIST",
+        "correct": 9923,
+        "n": 10000,
+        "top1": 0.9923,
+        "score_replays": 16,
+        "maximum_score_error": 0.0,
+        "evaluation_seconds": 6.218304503709078,
+        "peak_gpu_bytes": 858857984,
+        "predicted_class_counts": [
+          982,
+          1135,
+          1032,
+          1011,
+          987,
+          892,
+          948,
+          1034,
+          974,
+          1005
+        ]
+      },
+      {
+        "setting": "TA",
+        "task": "SVHN",
+        "correct": 23824,
+        "n": 26032,
+        "top1": 0.915181315304241,
+        "score_replays": 16,
+        "maximum_score_error": 0.0,
+        "evaluation_seconds": 18.407310796901584,
+        "peak_gpu_bytes": 858857984,
+        "predicted_class_counts": [
+          2075,
+          5073,
+          4144,
+          2479,
+          2297,
+          2630,
+          1782,
+          1974,
+          1940,
+          1638
+        ]
+      },
+      {
+        "setting": "AGA_target",
+        "task": "MNIST",
+        "correct": 9923,
+        "n": 10000,
+        "top1": 0.9923,
+        "score_replays": 16,
+        "maximum_score_error": 0.0,
+        "evaluation_seconds": 6.288109978660941,
+        "peak_gpu_bytes": 858857984,
+        "predicted_class_counts": [
+          984,
+          1143,
+          1024,
+          1015,
+          983,
+          884,
+          948,
+          1033,
+          974,
+          1012
+        ]
+      },
+      {
+        "setting": "AGA_target",
+        "task": "SVHN",
+        "correct": 23004,
+        "n": 26032,
+        "top1": 0.883681622618316,
+        "score_replays": 16,
+        "maximum_score_error": 0.0,
+        "evaluation_seconds": 18.486404856666923,
+        "peak_gpu_bytes": 858857984,
+        "predicted_class_counts": [
+          2095,
+          5569,
+          4185,
+          2126,
+          2068,
+          2629,
+          1644,
+          1922,
+          2136,
+          1658
+        ]
+      }
+    ],
+    "TA_coefficient": 0.5,
+    "target": "MNIST",
+    "partner": "SVHN",
+    "stage2_sha256": "9ca83c8af242d2097ceab307a9fd0109a47a5031b98a907fed07a4c28ada0328",
+    "AGA_sha256": "1a96f4122d80a3077fa087b2bfb5891f54c4d2f6416d59657a1bc08ba8fbfbd7",
+    "raw_scores_sha256": "3756ca0f3f914fb1fe92d922f8f08e1b4218856c9fcc58683f80095ced6b9007",
+    "driver_sha256": "7a65d02973e923a4bf2d69e9a3f3ef267741098f5ef6b0df4bfa879b065835f4",
+    "score_replays": 80,
+    "maximum_score_error": 0.0,
+    "official_label_numpy_recount": true,
+    "training_examples_used": 0,
+    "construction_validation_indices_match": true
+  },
+  "critical_groups": [
+    "transformer.resblocks.0",
+    "transformer.resblocks.11"
+  ],
+  "validation_before": 0.9975825275091698,
+  "validation_after": 0.9972490830276759,
+  "accuracy_drops": {
+    "transformer.resblocks.0": 0.48466155385128384,
+    "transformer.resblocks.1": 0.42197399133044355,
+    "transformer.resblocks.2": 0.11628876292097368,
+    "transformer.resblocks.3": 0.17597532510836944,
+    "transformer.resblocks.4": 0.3283594531510504,
+    "transformer.resblocks.5": 0.21948982994331445,
+    "transformer.resblocks.6": 0.10970323441147056,
+    "transformer.resblocks.7": 0.006335445148382801,
+    "transformer.resblocks.8": 0.0027509169723241023,
+    "transformer.resblocks.9": 0.001250416805601895,
+    "transformer.resblocks.10": 0.0005001667222407358,
+    "transformer.resblocks.11": 0.4626542180726909
+  },
+  "selected_coordinates": 7367348,
+  "changed_coordinates": 7367348,
+  "old_grouping": {
+    "candidate_groups": 18,
+    "critical_groups": [
+      "ln_pre",
+      "conv1"
+    ],
+    "standalone_MNIST_percent": 99.6,
+    "TA_MNIST_percent": 99.22,
+    "AGA_target_MNIST_percent": 99.24,
+    "source": "results/phase3/mergeguard_baseline/summary.json"
+  },
+  "conclusion": "Restricting critical-layer candidates to12Transformer blocks does not explain the weak merging protection. The frozen model preserves standalone utility but remains99.23% accurate after TA and AGA+TA. No training, threshold or magnitude search was performed; original comparison data are unchanged.",
+  "reproduction_status": "Paper interpretation diagnosis only. Unknown author training and parameter-significance details remain unresolved.",
+  "artifacts": "outputs/mergeguard_grouping_check on41558; raw scores, protocol and evaluation also copied locally."
+}

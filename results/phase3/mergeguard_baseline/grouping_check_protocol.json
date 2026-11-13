@@ -1,0 +1,53 @@
+{
+  "method": "MergeGuard",
+  "output": "outputs/mergeguard_grouping_check",
+  "seed": 420,
+  "batch_size": 128,
+  "validation_fraction": 0.2,
+  "lambda_reg": 0.01,
+  "critical_fraction": 0.1,
+  "perturbed_fraction": 0.1,
+  "beta": 1.0,
+  "epochs": {
+    "MNIST": 5,
+    "SVHN": 4,
+    "DTD": 76,
+    "GTSRB": 11,
+    "Cars": 35,
+    "RESISC45": 15,
+    "SUN397": 14
+  },
+  "training": {
+    "lr": 1e-05,
+    "warm_up": 500,
+    "max_norm": 1.0
+  },
+  "paper": "https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf",
+  "implementation": "Paper-based reproduction on ViT-B/32, not author code or published ViT-L/14 numbers.",
+  "paper_defined": [
+    "Start from fine-tuned expert; CE + 0.01 * sum of squared trainable weights.",
+    "Mask layers, preserve most accuracy-critical 10%; subtract masked task vector with beta=1 on 10% of weights outside protected layers."
+  ],
+  "implementation_choices": [
+    "Optimizer/lr/epochs/batch/split not fully specified in MergeGuard. Use AdamW, lr1e-5, batch128, cosine warmup500, clip1 and task-wise epochs from the Task Arithmetic implementation. Weight decay0 avoids duplicating the explicit L2.",
+    "All visual parameters train, including projection. Fixed text classifier. Both MergeGuard and CE start from the same released fine-tuned expert; CE uses lambda0 and no negation.",
+    "Deterministic expert validation preprocessing, FP32. Final fixed-epoch checkpoint, no early stopping or test selection. best.pt is a legacy filename and denotes final state here.",
+    "DTD official train/val; other tasks use a stratified20% training holdout. Mask importance uses complete validation only, never test.",
+    "Critical-layer ranking candidates are the12 Transformer blocks. Full validation, all block weights and biases zeroed; preserve ceil(12*0.1)=2 blocks; ties by name. All other ViT parameters remain eligible for stage2 subtraction.",
+    "Magnitude ranking is global absolute stage1 parameter value over non-critical groups; exact ceil10% coordinates selected using torch.topk. These details are our specified interpretation, not an author-code claim.",
+    "No partner or test information in training or mask selection. No hyperparameter search; report standalone degradation even if severe."
+  ],
+  "critical_candidates": "transformer_blocks",
+  "diagnosis": {
+    "registered_utc": "2026-11-13T12:58:46.820020+00:00",
+    "question": "Does limiting critical-layer candidates to Transformer blocks explain the weak existing MergeGuard adaptation?",
+    "single_changed_setting": "Candidate groups for validation-accuracy importance ranking only; all other rules and Stage1 weights fixed.",
+    "source_stage1_sha256": "8c7687f0a37189b14841f5f29fdd623224ed869d3cb3e0f6141cf0777a22983c",
+    "old_stage2_sha256": "ee45706de6957f65d64a45b2392ab470637907cd3fc02d219a270663aedb50f6",
+    "source_stage1": "outputs/recovery_20261113/mergeguard_original/stage1.pt",
+    "paper_basis": "MergeGuard supplement section B calls a layer a Transformer block; main section5 includes all ViT parameters in the operation.",
+    "construction_data": "Same11996 held-out MNIST training indices. No retraining, no test or partner data in mask selection.",
+    "evaluation": "Freeze stage2; report full standalone and two-expert TA at0.5 with original SVHN; then AGA under the same protocol. Preserve original results; no search over hyperparameters or definitions.",
+    "scope": "Paper interpretation diagnosis, not a claim of author-code reproduction."
+  }
+}

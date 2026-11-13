@@ -27,6 +27,7 @@ def rank_cells(records, directions):
 
 def method_label(name):
     citations = {"PaRaMS": "wei2025params", "MergeGuard": "chen2026mergeguard",
+                 "MergeLock": "wang2025mergelock",
                  r"Trap$^2$": "jang2026trap2", r"CE (Trap$^2$)": "jang2026trap2",
                  "ProDistill": "xu2025prodistill"}
     if name == "NBP":
@@ -163,6 +164,26 @@ def tables(output):
     for _, records in groups:
         for record in records:
             record.append(f"{sum(float(v) for v in record[1:]) / len(tasks):.2f}")
+    # Add the complete matched baseline, including every task and outcome.
+    # Partial runs stay in their own progress summary, never in a seven-task mean.
+    extra_path = ROOT / "results/phase3/mergelock_baseline/summary.json"
+    if extra_path.exists():
+        extra = json.loads(extra_path.read_text())
+        if extra["status"] == "completed_independently_verified":
+            assert set(extra["completed_tasks"]) == set(tasks)
+            lookup = {(r["task"], r["setting"], r["method"]): r for r in extra["rows"]}
+            assert len(lookup) == len(extra["rows"]) == len(tasks) * 5 * 2
+            for setting, records in groups:
+                values = []
+                for j, task in enumerate(tasks):
+                    control = lookup[task, setting, "None"]
+                    assert f"{100*control['correct']/control['n']:.2f}" == records[0][j+1]
+                    row = lookup[task, setting, "MergeLock"]
+                    assert row["n"] == control["n"] and 0 <= row["correct"] <= row["n"]
+                    values.append(f"{100*row['correct']/row['n']:.2f}")
+                records.insert(-1, ["MergeLock"] + values +
+                               [f"{sum(map(float, values))/len(tasks):.2f}"])
+            source["input_sha256"][str(extra_path.relative_to(ROOT))] = hashlib.sha256(extra_path.read_bytes()).hexdigest()
     main_groups = groups
 
     # Complete directed partner pairs: 35 new pairs plus the seven fixed pairs.
@@ -733,15 +754,15 @@ def tables(output):
         exported_tables.append("class_stability")
 
     # Separate our matched experiments from published results on another backbone.
-    training_groups = [("", [[display[m]] + [main_values[t, m][i].split(" / ")[0]
-                        for t in small_tasks for i in range(3)] for m in methods])]
+    training_groups = []
     for method, folder in [("Trap2", "trap2_baseline")]:
         path = ROOT / "results/phase3" / folder / "summary.json"
         training = json.loads(path.read_text())
         assert training["status"] == "completed_independently_verified"
         records = []
         for defense in ["Unprotected", method]:
-            title = r"CE (Trap$^2$)" if defense == "Unprotected" else r"Trap$^2$"
+            label = r"Trap$^2$" if method == "Trap2" else "MergeGuard"
+            title = f"CE ({label})" if defense == "Unprotected" else label
             values = []
             for task in small_tasks:
                 for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
@@ -752,8 +773,47 @@ def tables(output):
             records.append([title] + values)
         training_groups.append(("", records))
         source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    guard_pair_path = ROOT / "results/phase3/mergeguard_baseline/summary.json"
+    guard_pair = json.loads(guard_pair_path.read_text())
+    assert guard_pair["status"] == "completed_independently_verified"
+    records = []
+    guard_tasks = [t for t in ["MNIST", "SVHN", "DTD", "GTSRB"] if t in guard_pair["tasks"]]
+    for task in guard_tasks:
+        for defense in ["Unprotected", "MergeGuard"]:
+            values = []
+            for merger, scope in [("Standalone", "None"), ("TA", "None"), ("TA", "Protected expert")]:
+                row, = [r for r in guard_pair["rows"] if r["target"] == task and r["defense"] == defense
+                        and r["role"] == "target" and r["merger"] == merger and r["attack_scope"] == scope]
+                values.append(f"{100 * row['correct'] / row['n']:.2f}")
+            records.append([task, "CE" if defense == "Unprotected" else "MergeGuard"] + values)
+    write_table("mergeguard_adaptation", "Paper-based MergeGuard adaptation on B/32 (\\%). CE uses the same training schedule; these runs do not reproduce the published protection. Two-expert TA coefficient: 0.5.",
+                "tab:mergeguard-adaptation", ["Task", "Method", "S $\\uparrow$", "TA $\\downarrow$", "AGA+TA $\\downarrow$"],
+                [("", records)], tabcolsep=3, column_spec="llrrr")
+    source["input_sha256"][str(guard_pair_path.relative_to(ROOT))] = hashlib.sha256(guard_pair_path.read_bytes()).hexdigest()
+    exported_tables.append("mergeguard_adaptation")
+    guard_path = ROOT / "results/phase3/mergeguard_baseline/eight_expert/summary.json"
+    if guard_path.exists():
+        guard = json.loads(guard_path.read_text())
+        assert guard["status"] == "completed_independently_verified"
+        groups = []
+        for setting, scope in [("TA", "None"), ("AGA + TA", "Protected expert")]:
+            records = []
+            for method in ["Unprotected", "CE", "MergeGuard"]:
+                values = []
+                for task in guard_tasks:
+                    name = "Unprotected" if method == "Unprotected" else f"{method}_{task}"
+                    row, = [r for r in guard["rows"] if r["target"] == task
+                            and r["defense"] == name and r["attack_scope"] == scope]
+                    assert row["participants"] == 8 and row["coefficient"] == 0.2
+                    values.append(f"{100 * row['correct'] / row['n']:.2f}")
+                records.append(["None" if method == "Unprotected" else method] + values)
+            groups.append((setting, records))
+        write_table("mergeguard_eight", "Eight-expert target accuracy (\\%; lower is better protection). MergeGuard is our paper-based B/32 implementation; CE uses the same continuation schedule. None uses the original expert. TA coefficient: 0.2.",
+                    "tab:mergeguard-eight", ["Setting", "Defense"] + guard_tasks, groups, tabcolsep=2.5)
+        exported_tables.append("mergeguard_eight")
+        source["input_sha256"][str(guard_path.relative_to(ROOT))] = hashlib.sha256(guard_path.read_bytes()).hexdigest()
     write_table("defense_comparison",
-        "Standalone (S $\\uparrow$) and merged target ($\\downarrow$) accuracies (\\%). Bold/underline: best/second distinct scores within each matched group; all-equal groups are unmarked. A--B: B/32 tests, with separately trained Trap$^2$/CE experts. TA coefficients: 0.5 (two experts), 0.2 (eight). C: published L/14 results~\\cite{chen2026mergeguard}, Table~3. Avg. weights tasks equally.",
+        "Standalone (S $\\uparrow$) and merged target ($\\downarrow$) accuracies (\\%). Bold/underline: best/second distinct displayed scores within matched groups; all-way ties are unmarked. A--B use B/32; B includes matched CE training controls. TA coefficients: 0.5 (two experts), 0.2 (eight). C reproduces published L/14 results~\\cite{chen2026mergeguard}, Table~3. Avg. weights tasks equally. MergeLock is a paper implementation.",
         "tab:defense-comparison", ["Setting", "Defense"] + tasks + ["Avg."],
         main_groups, wide=True, tabcolsep=3.8)
     path = OUT / "defense_comparison.tex"
@@ -763,14 +823,14 @@ def tables(output):
     tex = tex.replace(r"\toprule", r"\toprule" + "\n" +
         r"\multicolumn{10}{l}{\textbf{A. Seven-task evaluation of released experts (ViT-B/32)}} \\" + "\n" + r"\midrule", 1)
     panel = [r"\par\medskip", r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrrrrr@{}}", r"\toprule",
-        r"\multicolumn{10}{l}{\textbf{B. Released experts and separately trained Trap$^2$/CE controls (ViT-B/32)}} \\",
+        r"\multicolumn{10}{l}{\textbf{B. Matched training comparison (ViT-B/32)}} \\",
         r"\midrule", r"\multirow{2}{*}{Defense} & \multicolumn{3}{c}{MNIST} & \multicolumn{3}{c}{SVHN} & \multicolumn{3}{c}{DTD} \\",
         r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}",
         r" & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ \\",
         r"\midrule"]
     md_path = OUT / "defense_comparison.md"
     md = md_path.read_text().replace("\n\n|", "\n\n**A. Seven-task evaluation of released experts (ViT-B/32)**\n\n|", 1)
-    md += "\n**B. Released experts and separately trained Trap$^2$/CE controls (ViT-B/32)**\n\n"
+    md += "\n**B. Matched training comparison (ViT-B/32)**\n\n"
     md += "| Defense | " + " | ".join(t+" / "+m for t in small_tasks for m in ["S", "TA", "AGA+TA"]) + " |\n"
     md += "| --- | " + " | ".join(["---:"] * 9) + " |\n"
     for i, (_, records) in enumerate(training_groups):
@@ -812,7 +872,30 @@ def tables(output):
     md_path.write_text(md.replace(r"~\cite{chen2026mergeguard}", " (MergeGuard)")
                       .replace("Table~3", "Table 3").replace("Trap$^2$", "Trap²"))
     exported_tables.append("defense_comparison")
+    arf_rows = []
+    for filename in ["summary.json", "dtd.json"]:
+        path = ROOT / "results/phase3/arf_baseline" / filename
+        result = json.loads(path.read_text())
+        assert result["status"] == "completed_verified"
+        assert result["validation"]["status"] == "passed"
+        assert result["validation"]["raw_sha256"] == result["execution"]["predictions_sha256"]
+        for defense in ["Unprotected", "ARF"]:
+            values = []
+            for merger, scope in [("Standalone", "None"), ("TA", "None"),
+                                  ("TA", "Protected expert"), ("TA", "All experts")]:
+                row, = [r for r in result["rows"] if r["dataset"] == result["task"]
+                        and r["defense"] == defense and r["merger"] == merger
+                        and r["attack_scope"] == scope]
+                values.append(f"{100 * row['correct'] / row['n']:.2f}")
+            arf_rows.append([result["task"], "CE" if defense == "Unprotected" else defense] + values)
+        source["input_sha256"][str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    write_table("arf_adaptation", "ARF paper-prose adaptation and matched CE controls on B/32 (\\%). S: standalone. Target/Both: AGA applied to one/both experts before TA at 0.5. These are not author-code results.",
+                "tab:arf-adaptation", ["Task", "Method", "S", "TA", "Target", "Both"],
+                [("", arf_rows)], tabcolsep=3, column_spec="llrrrr")
+    exported_tables.append("arf_adaptation")
     (OUT / "sources.json").write_text(json.dumps({"input_sha256": source["input_sha256"],
-        "eight_expert_protected_task_cells": len(eight),
+        "eight_expert_protected_task_cells": sum(
+            len(records) * len(tasks) for setting, records in main_groups
+            if setting.startswith("8-expert")),
         "tables": exported_tables}, indent=2) + "\n")
     print(f"Generated {len(exported_tables)} manuscript table files from recorded results.")
