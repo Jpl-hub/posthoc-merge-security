@@ -27,3 +27,8 @@ With nullspace basis N, class-difference readouts q_j and unprotected lower-boun
 All seven problems pass the recorded feasibility and optimality tolerances. Maximum absolute scaled-constraint violation is4.00e-15, relative primal–dual gap magnitude4.28e-15, and relative native-kernel residual4.90e-16. These are weight-only results: no optimized checkpoint was saved, no images were evaluated, and no main release was replaced.
 
 The existing multi-class least-squares fit can require much larger parameters than its own margin condition needs. This supports simplifying the construction; it does not establish lower-precision inference quality, behavior with unknown partners, or resistance to public bias projection. Every solution remains in the same removable kernel.
+
+
+## Frozen projection conditions
+
+Run `python -m experiment.analyze_bias --projection-geometry --output results/phase3/bias_weight_only/ablation/direction_controls/weight_analysis` after restoring the pinned releases. `projection_geometry.json` records projection differences, singular values of the centered class map, and class gaps of the actual stored updates. It reuses the original checkpoint and release hashes. Independent NumPy calculations check the singular values and gaps. The existing seven directions have positive gaps; these measurements establish conditions for those checkpoints, not coverage of other fine-tuning recipes. No images or new protected weights are produced.

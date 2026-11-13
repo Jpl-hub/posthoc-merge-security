@@ -1,0 +1,39 @@
+{
+  "output": "outputs/nbp_precision_20261113",
+  "publications": {
+    "Cars": {
+      "path": "outputs/bias_eight_remaining_20261106/Cars/release.pt",
+      "sha256": "d0f4674618e63030163caf8ffe23cd1211c6848595ef68eb16c164717ce92562"
+    },
+    "SVHN": {
+      "path": "outputs/bias_weight_only_20261029/SVHN/construction/release.pt",
+      "sha256": "b69746723d049316865f30b8d9eca86825f9b58852170bb56e991c421afff8ee"
+    },
+    "MNIST": {
+      "path": "outputs/bias_weight_only_20261025/point.pt",
+      "sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0"
+    }
+  },
+  "test_sizes": {
+    "Cars": 8041,
+    "SVHN": 26032,
+    "MNIST": 10000
+  },
+  "modes": [
+    "fp32",
+    "amp_fp16",
+    "amp_bf16",
+    "amp_fp16_fp32_readout",
+    "amp_bf16_fp32_readout"
+  ],
+  "batch_size": 128,
+  "parameter_storage": "All parameters FP32; AMP changes eligible operation precision. Separate final-readout FP32 control; not full FP16/BF16 storage.",
+  "selection": "Fixed main releases, full official test sets, no tuning or release replacement; report all modes including nonfinite failures.",
+  "source_sha256": {
+    "experiment/native.py": "ce2e8d2d826243c5c695ffcbcca99838e7da947a5ace02b1717b84330b98c1aa",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/data.py": "bce433df4cf4c361ccd2af63e6eea76c091067a2caf561f6c2ae55b6b835f4a2",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072"
+  }
+}

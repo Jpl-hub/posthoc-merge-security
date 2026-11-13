@@ -2,7 +2,7 @@
 \centering
 \small
 \setlength{\tabcolsep}{3.8pt}
-\caption{Standalone (S) and protected-task accuracies (\%). A--B: our B/32 tests; Trap$^2$/CE use separately trained experts. TA coefficients are 0.5 (two experts) and 0.2 (eight). Avg. weights tasks equally. C: published L/14 results~\cite{chen2026mergeguard}, Table~3, with the original protocol.}
+\caption{Standalone (S $\uparrow$) and merged target ($\downarrow$) accuracies (\%). Bold/underline: best/second distinct scores within each matched group; all-equal groups are unmarked. A--B: B/32 tests, with separately trained Trap$^2$/CE experts. TA coefficients: 0.5 (two experts), 0.2 (eight). C: published L/14 results~\cite{chen2026mergeguard}, Table~3. Avg. weights tasks equally.}
 \label{tab:defense-comparison}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrrrrrr@{}}
 \toprule
@@ -10,42 +10,42 @@
 \midrule
 Setting & Defense & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD & Avg. \\
 \midrule
-\multirow{3}{*}{Standalone} & None & 75.28 & 77.66 & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 & 89.19 \\
- & PaRaMS & 75.28 & 77.66 & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 & 89.19 \\
- & \textbf{NBP} & 75.27 & 77.64 & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 & 89.19 \\
+\multirow{3}{*}{Standalone $\uparrow$} & None & \textbf{75.28} & \textbf{77.66} & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 & 89.19 \\
+ & PaRaMS~\cite{wei2025params} & \textbf{75.28} & \textbf{77.66} & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 & 89.19 \\
+ & \textbf{NBP} & \underline{75.27} & \underline{77.64} & 96.11 & 97.46 & 98.73 & 99.69 & 79.41 & 89.19 \\
 \midrule
-\multirow{3}{*}{2-expert TA} & None & 71.92 & 73.17 & 91.08 & 92.50 & 93.25 & 99.37 & 69.31 & 84.37 \\
- & PaRaMS & 0.30 & 0.72 & 2.57 & 9.09 & 2.79 & 8.92 & 2.07 & 3.78 \\
- & \textbf{NBP} & 0.25 & 0.55 & 2.44 & 6.70 & 1.19 & 9.80 & 2.13 & 3.29 \\
+\multirow{3}{*}{2-expert TA $\downarrow$} & None & 71.92 & 73.17 & 91.08 & 92.50 & 93.25 & 99.37 & 69.31 & 84.37 \\
+ & PaRaMS~\cite{wei2025params} & \underline{0.30} & \underline{0.72} & \underline{2.57} & \underline{9.09} & \underline{2.79} & \textbf{8.92} & \textbf{2.07} & \underline{3.78} \\
+ & \textbf{NBP} & \textbf{0.25} & \textbf{0.55} & \textbf{2.44} & \textbf{6.70} & \textbf{1.19} & \underline{9.80} & \underline{2.13} & \textbf{3.29} \\
 \midrule
-\multirow{3}{*}{2-expert AGA + TA} & None & 71.58 & 72.53 & 90.38 & 91.56 & 92.22 & 99.30 & 68.40 & 83.71 \\
- & PaRaMS & 71.58 & 72.53 & 90.37 & 91.56 & 92.22 & 99.30 & 68.35 & 83.70 \\
- & \textbf{NBP} & 0.25 & 0.55 & 2.44 & 6.70 & 1.19 & 9.80 & 2.13 & 3.29 \\
+\multirow{3}{*}{2-expert AGA + TA $\downarrow$} & None & \underline{71.58} & \underline{72.53} & 90.38 & \underline{91.56} & \underline{92.22} & \underline{99.30} & 68.40 & 83.71 \\
+ & PaRaMS~\cite{wei2025params} & \underline{71.58} & \underline{72.53} & \underline{90.37} & \underline{91.56} & \underline{92.22} & \underline{99.30} & \underline{68.35} & \underline{83.70} \\
+ & \textbf{NBP} & \textbf{0.25} & \textbf{0.55} & \textbf{2.44} & \textbf{6.70} & \textbf{1.19} & \textbf{9.80} & \textbf{2.13} & \textbf{3.29} \\
 \midrule
-\multirow{3}{*}{8-expert TA} & None & 63.76 & 62.06 & 72.00 & 74.42 & 65.08 & 94.00 & 52.18 & 69.07 \\
- & PaRaMS & 0.28 & 0.55 & 2.70 & 9.71 & 1.77 & 9.82 & 2.13 & 3.85 \\
- & \textbf{NBP} & 0.25 & 0.55 & 2.44 & 6.70 & 1.19 & 9.80 & 2.13 & 3.29 \\
+\multirow{3}{*}{8-expert TA $\downarrow$} & None & 63.76 & \underline{62.06} & 72.00 & 74.42 & 65.08 & 94.00 & \underline{52.18} & 69.07 \\
+ & PaRaMS~\cite{wei2025params} & \underline{0.28} & \textbf{0.55} & \underline{2.70} & \underline{9.71} & \underline{1.77} & \underline{9.82} & \textbf{2.13} & \underline{3.85} \\
+ & \textbf{NBP} & \textbf{0.25} & \textbf{0.55} & \textbf{2.44} & \textbf{6.70} & \textbf{1.19} & \textbf{9.80} & \textbf{2.13} & \textbf{3.29} \\
 \midrule
-\multirow{3}{*}{8-expert AGA + TA} & None & 63.56 & 61.61 & 71.46 & 72.53 & 63.29 & 93.23 & 51.38 & 68.15 \\
- & PaRaMS & 63.56 & 61.61 & 71.46 & 72.53 & 63.29 & 93.23 & 51.38 & 68.15 \\
- & \textbf{NBP} & 0.25 & 0.55 & 2.44 & 6.70 & 1.19 & 9.80 & 2.13 & 3.29 \\
+\multirow{3}{*}{8-expert AGA + TA $\downarrow$} & None & \underline{63.56} & \underline{61.61} & \underline{71.46} & \underline{72.53} & \underline{63.29} & \underline{93.23} & \underline{51.38} & \underline{68.15} \\
+ & PaRaMS~\cite{wei2025params} & \underline{63.56} & \underline{61.61} & \underline{71.46} & \underline{72.53} & \underline{63.29} & \underline{93.23} & \underline{51.38} & \underline{68.15} \\
+ & \textbf{NBP} & \textbf{0.25} & \textbf{0.55} & \textbf{2.44} & \textbf{6.70} & \textbf{1.19} & \textbf{9.80} & \textbf{2.13} & \textbf{3.29} \\
 \bottomrule
 \end{tabular*}
 \par\medskip
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrrrrr@{}}
 \toprule
-\multicolumn{10}{l}{\textbf{B. Three-task comparison with Trap$^2$ (ViT-B/32, two experts)}} \\
+\multicolumn{10}{l}{\textbf{B. Released experts and separately trained Trap$^2$/CE controls (ViT-B/32)}} \\
 \midrule
 \multirow{2}{*}{Defense} & \multicolumn{3}{c}{MNIST} & \multicolumn{3}{c}{SVHN} & \multicolumn{3}{c}{DTD} \\
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
  & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ \\
 \midrule
-None & 99.69 & 99.37 & 99.30 & 97.46 & 92.50 & 91.56 & 79.41 & 69.31 & 68.40 \\
-PaRaMS & 99.69 & 8.92 & 99.30 & 97.46 & 9.09 & 91.56 & 79.41 & 2.07 & 68.35 \\
-\textbf{NBP} & 99.69 & 9.80 & 9.80 & 97.46 & 6.70 & 6.70 & 79.41 & 2.13 & 2.13 \\
+None & 99.69 & 99.37 & \underline{99.30} & 97.46 & 92.50 & \underline{91.56} & 79.41 & 69.31 & 68.40 \\
+PaRaMS~\cite{wei2025params} & 99.69 & \textbf{8.92} & \underline{99.30} & 97.46 & \underline{9.09} & \underline{91.56} & 79.41 & \textbf{2.07} & \underline{68.35} \\
+\textbf{NBP} & 99.69 & \underline{9.80} & \textbf{9.80} & 97.46 & \textbf{6.70} & \textbf{6.70} & 79.41 & \underline{2.13} & \textbf{2.13} \\
 \midrule
-CE (Trap$^2$) & 99.35 & 99.55 & 99.50 & 96.42 & 96.33 & 95.80 & 71.60 & 72.02 & 70.90 \\
-Trap$^2$ & 99.33 & 9.74 & 9.74 & 96.60 & 6.70 & 6.70 & 65.37 & 2.13 & 2.13 \\
+CE (Trap$^2$)~\cite{jang2026trap2} & \textbf{99.35} & \underline{99.55} & \underline{99.50} & \underline{96.42} & \underline{96.33} & \underline{95.80} & \textbf{71.60} & \underline{72.02} & \underline{70.90} \\
+Trap$^2$~\cite{jang2026trap2} & \underline{99.33} & \textbf{9.74} & \textbf{9.74} & \textbf{96.60} & \textbf{6.70} & \textbf{6.70} & \underline{65.37} & \textbf{2.13} & \textbf{2.13} \\
 \bottomrule
 \end{tabular*}
 \par\medskip
@@ -55,11 +55,11 @@ Trap$^2$ & 99.33 & 9.74 & 9.74 & 96.60 & 6.70 & 6.70 & 65.37 & 2.13 & 2.13 \\
 \midrule
 Setting & Defense & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD \\
 \midrule
-\multirow{2}{*}{Standalone} & PaRaMS & 82.32 & 92.39 & 97.37 & 98.11 & 99.24 & 99.69 & 84.15 \\
- & MergeGuard & 81.52 & 88.29 & 97.25 & 96.82 & 98.25 & 99.27 & 82.16 \\
+\multirow{2}{*}{Standalone $\uparrow$} & PaRaMS~\cite{wei2025params} & \textbf{82.32} & \textbf{92.39} & \textbf{97.37} & \textbf{98.11} & \textbf{99.24} & \textbf{99.69} & \textbf{84.15} \\
+ & MergeGuard~\cite{chen2026mergeguard} & \underline{81.52} & \underline{88.29} & \underline{97.25} & \underline{96.82} & \underline{98.25} & \underline{99.27} & \underline{82.16} \\
 \midrule
-\multirow{2}{*}{TA} & PaRaMS & 56.77 & 38.61 & 67.86 & 71.95 & 52.25 & 96.02 & 48.72 \\
- & MergeGuard & 54.27 & 38.24 & 56.50 & 47.28 & 12.91 & 11.35 & 46.65 \\
+\multirow{2}{*}{TA $\downarrow$} & PaRaMS~\cite{wei2025params} & \underline{56.77} & \underline{38.61} & \underline{67.86} & \underline{71.95} & \underline{52.25} & \underline{96.02} & \underline{48.72} \\
+ & MergeGuard~\cite{chen2026mergeguard} & \textbf{54.27} & \textbf{38.24} & \textbf{56.50} & \textbf{47.28} & \textbf{12.91} & \textbf{11.35} & \textbf{46.65} \\
 \bottomrule
 \end{tabular*}
 \end{table*}

@@ -2,22 +2,22 @@
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\caption{Target accuracy after recovery (\%). Each method and its control receive the same operation; access is listed per group.}
+\caption{Target accuracy after recovery (\%; lower is better protection). Bold/underline: best/second distinct scores per group; all-equal groups are unmarked. Recovery uses public MLP reset~\cite{li2025mergebarrier}, ProDistill~\cite{xu2025prodistill}, or bias projection.}
 \label{tab:recovery}
 \begin{tabular}{lrrr}
 \toprule
 Defense & MNIST & SVHN & DTD \\
 \midrule
 \multicolumn{4}{l}{MLP reset: no images; final readout fixed} \\
-None & 99.29 & 91.47 & 67.18 \\
-\textbf{NBP} & 9.80 & 6.70 & 2.13 \\
+None & \underline{99.29} & \underline{91.47} & \underline{67.18} \\
+\textbf{NBP} & \textbf{9.80} & \textbf{6.70} & \textbf{2.13} \\
 \midrule
 \multicolumn{4}{l}{ProDistill: 64 images/task; final readout fixed} \\
 None & 99.45 & 96.73 & 73.14 \\
-PaRaMS & 89.27 & 66.22 & 7.29 \\
-\textbf{NBP} & 9.80 & 6.70 & 2.13 \\
+PaRaMS~\cite{wei2025params} & \underline{89.27} & \underline{66.22} & \underline{7.29} \\
+\textbf{NBP} & \textbf{9.80} & \textbf{6.70} & \textbf{2.13} \\
 \midrule
-\multicolumn{4}{l}{Bias projection: no images; final bias edited} \\
+\multicolumn{4}{l}{Bias projection + TA: no images; final bias edited} \\
 None & 99.37 & 92.50 & 69.26 \\
 \textbf{NBP} & 99.37 & 92.50 & 69.26 \\
 \bottomrule

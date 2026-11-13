@@ -351,6 +351,79 @@ def direction_analysis(output):
 
 
 @torch.no_grad()
+def projection_geometry(output):
+    """Measure the seven frozen releases; reuse the existing direction audit."""
+    source = Path("results/phase3/bias_weight_only/ablation/direction_controls/weight_analysis/results.json")
+    frozen = json.loads(source.read_text())["tasks"]
+    destination = Path(output) / "projection_geometry.json"
+    if destination.exists():
+        raise FileExistsError(destination)
+    anchor = readout(load_checkpoint("zeroshot.pt"))
+    base_hash = digest(CHECKPOINTS / "zeroshot.pt")
+    records = []
+    for previous in frozen:
+        task = previous["task"]
+        names = [f"{task}/finetuned.pt", f"head_{task}.pt"]
+        pins = {"zeroshot.pt": base_hash, **{n: digest(CHECKPOINTS / n) for n in names}}
+        assert pins == previous["checkpoint_sha256"]
+        original = readout(load_checkpoint(names[0]))
+        head = load_checkpoint(names[1])
+        assert head.bias is None or torch.count_nonzero(head.bias) == 0
+        weights = head.weight.double()
+        projection = original["projection"].double()
+        proxy = combine(anchor, [original, anchor], .5)["projection"].double()
+        left, singular, _ = torch.linalg.svd(projection, full_matrices=True)
+        rank = int((singular > singular[0] * 1e-10).sum())
+        null = left[:, rank:]
+        h = null.T @ proxy @ (weights - weights.mean(0)).T
+        values = torch.linalg.svdvals(h)
+        keep = values > values[0] * 1e-10
+        independent = np.linalg.svd(h.numpy(), compute_uv=False)
+        np.testing.assert_allclose(values.numpy(), independent, rtol=1e-9, atol=1e-12)
+        retained_rank = int(keep.sum())
+        condition = float(values[keep][0] / values[keep][-1])
+        assert rank == previous["projection_rank"]
+        assert retained_rank == previous["class_map_rank"]
+        np.testing.assert_allclose(condition, previous["class_map_condition"], rtol=1e-9)
+        ref = previous["publication"]
+        assert digest(ref["path"]) == ref["sha256"]
+        edits = torch.load(ref["path"], map_location="cpu", weights_only=False)
+        assert list(edits) == ["model.visual.ln_post.bias"]
+        delta = edits["model.visual.ln_post.bias"].double() - original["bias"].double()
+        norm = float(delta.norm())
+        np.testing.assert_allclose(norm, previous["frozen_update_norm"], rtol=1e-12)
+        unit = delta / norm
+        scores = unit @ proxy @ weights.T
+        winner = int(scores.argmax())
+        competitors = torch.arange(len(weights)) != winner
+        gaps = scores[winner] - scores[competitors]
+        independent_gaps = (weights[winner] - weights[competitors]).numpy() @ proxy.numpy().T @ unit.numpy()
+        np.testing.assert_allclose(gaps.numpy(), independent_gaps, rtol=1e-9, atol=1e-12)
+        records.append(dict(task=task, checkpoint_sha256=pins, publication=ref,
+            classes=len(weights), projection_mismatch_frobenius=float((projection-anchor["projection"].double()).norm()),
+            projection_rank=rank, class_map_rank=retained_rank,
+            class_map_sigma_max=float(values[0]), class_map_sigma_min_positive=float(values[keep][-1]),
+            class_map_rank_absolute_threshold=float(values[0]*1e-10), class_map_condition=condition,
+            released_offset_winner=winner, released_minimum_unit_direction_gap=float(gaps.min()),
+            released_positive_gaps=bool(torch.all(gaps > 1e-10)), frozen_update_norm=norm,
+            released_unit_native_embedding_residual=float((unit @ projection).norm())))
+        print("FROZEN_PROJECTION_GEOMETRY", task, retained_rank, float(gaps.min()), flush=True)
+    assert len(records) == 7
+    save_json(destination, dict(source_sha256=digest(__file__), input_results_sha256={str(source): digest(source)},
+        protocol=dict(device="cpu", dtype="float64", stored_weights="FP32",
+            proxy="P0 + 0.5*(Pe-P0), formed in FP32 as in the existing direction analysis, then lifted to FP64",
+            class_map="H = Ne.T @ proxy @ (W - W.mean(0)).T; Ne is the orthonormal left nullspace of Pe",
+            rank_rule="retain singular values strictly greater than sigma_max * 1e-10, for Pe and H",
+            condition="sigma_max / smallest retained singular value; excludes the centering zero singular value",
+            released_direction="unit = (stored_released_bias - original_bias) / ||stored_released_bias - original_bias||_2",
+            gap="min_j!=k unit.T @ proxy @ (w_k-w_j), k=argmax(unit.T @ proxy @ W.T); excludes merge coefficient and update norm",
+            positive_gap_absolute_tolerance=1e-10, numpy_check_rtol=1e-9, numpy_check_atol=1e-12),
+        records=records, completed=True,
+        scope="Only the seven existing frozen B/32 NBP releases. No parameter selection, new release, image inference or accuracy claim.",
+        real_images=0, synthetic_images=0, expert_updates=0, new_publications=0))
+
+
+@torch.no_grad()
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True)
@@ -360,10 +433,14 @@ def main():
     mode.add_argument("--projection-gain", action="store_true", help="Bound bias offsets retained by projection cleanup")
     mode.add_argument("--class-gain", action="store_true", help="Measure surviving class-score offset amplification")
     mode.add_argument("--minimum-norm", action="store_true", help="Bound the norm needed for the fixed-class proxy condition")
+    mode.add_argument("--projection-geometry", action="store_true", help="Audit the seven frozen projections and released directions")
     args = parser.parse_args()
     require_root()
     initialize()
     torch.set_num_threads(2)
+    if args.projection_geometry:
+        projection_geometry(args.output)
+        return
     if args.minimum_norm:
         minimum_bias_norm(args.output)
         return

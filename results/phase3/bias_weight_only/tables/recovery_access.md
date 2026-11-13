@@ -1,4 +1,4 @@
-Implemented recovery settings. All procedures can read the published weights. AGA and MLP replacement use the public base; coefficient fitting and selection use the public base and expert checkpoints. Bias projection needs only the published bias and projection. The changed parameters describe recovery itself; subsequent fusion also combines final normalization and projection parameters.
+Implemented recovery settings. All procedures can read the published weights. AGA and MLP replacement use the public base; coefficient fitting and selection use the public base and expert checkpoints. Bias projection needs only the published bias and projection. AGA and MLP replacement precede TA; ProDistill directly outputs a merged model.
 
 | Procedure | Images/task | Labels | Changed parameters | Budget |
 | --- | --- | --- | --- | --- |

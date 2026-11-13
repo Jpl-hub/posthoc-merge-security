@@ -1,0 +1,51 @@
+{
+  "bias": {
+    "noise_seed": 20261014,
+    "numerical_relative_tolerance": 1e-10,
+    "proxy_beta": 0.5,
+    "bias_safety": 2.0
+  },
+  "params": {
+    "path": "external/PaRaMS/src/PaRaMS/PaRaMS_algorithm.py",
+    "sha256": "40c114a121907d5633d29a49984efa9be2ac03e29e649e801fed2dccad89fb60"
+  },
+  "scope": "Current NBP and matched PaRaMS construction. Image-free; frozen expert, public base and fixed head. No task-directed permutation or stopped numerical method.",
+  "source_sha256": {
+    "experiment/construct.py": "49aa45e69c3ff256c5271a449e1787224090fc4b93d8dbef196d11f2965d5224",
+    "_impl/defenses.py": "5c4df92fa00a5be5a647fe3f888c3c811ba7a4b851c250202cba7f752319a148",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "_impl/baselines.py": "79ce2f109d29e795f1f611b00893e8ac8a196ddbbf73c90fdc560454b2769a8b",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "cfg.py": "fc1712e9a847f5cfced1d022bd1168c1eeaa2d7849f02dd9b7e129140ec45c1e",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "configs/checkpoints_vit_b16.json": "96fe576536f682f56ce9b7413a89dbdc2e6f9a7d378bce0a5e511ab9a7285734"
+  },
+  "benchmark": {
+    "targets": [
+      "MNIST",
+      "SVHN",
+      "DTD"
+    ],
+    "methods": [
+      "bias",
+      "params"
+    ],
+    "repetitions": 5,
+    "timing_modes": [
+      "cold",
+      "warm"
+    ],
+    "CPU_threads": 4,
+    "environment": {
+      "OMP_NUM_THREADS": "4",
+      "OPENBLAS_NUM_THREADS": "4",
+      "MKL_NUM_THREADS": "4",
+      "NUMEXPR_NUM_THREADS": "4",
+      "JAX_PLATFORMS": "cpu",
+      "CUDA_VISIBLE_DEVICES": "",
+      "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=true intra_op_parallelism_threads=4"
+    },
+    "timing_scope": "Fresh process first construction includes author import/JIT; warm construction reuses module. Model loading/verification/serialization excluded; same4CPUaffinity bothmethods. Noimages/newreleases."
+  }
+}

@@ -4,7 +4,20 @@ import hashlib
 import json
 from pathlib import Path
 
-from _impl.report import tables
+from _impl.report import rank_cells, tables
+
+
+def test_ranking_respects_metric_directions_and_ties():
+    rows = [["None", "99.50", "90.00"], ["A", "99.50", "2.00"],
+            ["B", "99.00", "2.00"]]
+    tex, md = rank_cells(rows, {1: True, 2: False})
+    assert tex == [["None", r"\textbf{99.50}", r"\underline{90.00}"],
+                   ["A", r"\textbf{99.50}", r"\textbf{2.00}"],
+                   ["B", r"\underline{99.00}", r"\textbf{2.00}"]]
+    assert md[2][1] == "<u>99.00</u>"
+    assert rows[0][1] == "99.50"
+    equal = [["A", "2.00"], ["B", "2.00"]]
+    assert rank_cells(equal, {1: False}) == (equal, equal)
 
 
 def test_nbp_tables_reproduce_recorded_exports_without_mutating_inputs(tmp_path):

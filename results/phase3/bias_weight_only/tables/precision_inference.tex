@@ -1,0 +1,30 @@
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{Full-test standalone accuracy (\%). Parameters remain FP32; FP16/BF16 denote AMP operations. R32 keeps final LayerNorm, projection and classifier in FP32. Invalid denotes nonfinite scores.}
+\label{tab:precision-inference}
+\begin{tabular}{llrr}
+\toprule
+Task & Precision & None & NBP \\
+\midrule
+\multirow{5}{*}{Cars} & FP32 & 77.66 & 77.63 \\
+ & FP16 & 77.71 & Invalid \\
+ & BF16 & 77.52 & 0.55 \\
+ & FP16 + R32 & 77.69 & 77.65 \\
+ & BF16 + R32 & 77.64 & 77.64 \\
+\midrule
+\multirow{5}{*}{SVHN} & FP32 & 97.46 & 97.46 \\
+ & FP16 & 97.46 & 97.46 \\
+ & BF16 & 97.47 & 97.33 \\
+ & FP16 + R32 & 97.46 & 97.46 \\
+ & BF16 + R32 & 97.47 & 97.47 \\
+\midrule
+\multirow{5}{*}{MNIST} & FP32 & 99.69 & 99.69 \\
+ & FP16 & 99.69 & 99.69 \\
+ & BF16 & 99.68 & 99.68 \\
+ & FP16 + R32 & 99.69 & 99.69 \\
+ & BF16 + R32 & 99.68 & 99.68 \\
+\bottomrule
+\end{tabular}
+\end{table}

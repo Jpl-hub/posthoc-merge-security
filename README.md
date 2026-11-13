@@ -39,4 +39,14 @@ python -m experiment.bias_ablation --protocol configs/nbp_stability.json --evalu
 
 These controls use the same NBP rule and do not replace the main releases. Report all five draws, including any repeated class indices; they are not independent expert-training runs. The protocol reuses archived unprotected scores after checking file and model hashes. For a fresh run without those archives, set `legacy` to `{}` to evaluate the identical unprotected models.
 
+Precision and construction cost use the existing evaluation and construction entries:
+
+```bash
+python -m experiment.native --precision-protocol configs/nbp_precision.json
+python -m experiment.native --precision-protocol configs/nbp_precision_merge.json
+python -m experiment.construct --benchmark --method bias --target MNIST --protocol configs/nbp_cost.json --output outputs/cost/MNIST_bias
+```
+
+Precision tests keep parameter storage in FP32 and vary actual AMP operations; the separate FP32-readout control covers final LayerNorm, projection and classifier. The merging test uses fixed author AGA references and reports both target and companion accuracy. Cost tests use five fresh processes, each with a cold and warm construction, under the same four-CPU affinity. Run both `bias` and `params` for each task listed in the cost protocol, without concurrent computation.
+
 `_impl/` contains shared implementations, `experiment/` contains command-line entries, `configs/` pins inputs, and `results/` stores scientific records. Models, images and raw scores stay outside Git. Historical explorations are available in Git history; they are not current method variants. Old record keys such as `Defense1` are preserved to keep their original hashes and are displayed as NBP by the exporter.

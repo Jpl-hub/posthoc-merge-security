@@ -1,0 +1,63 @@
+{
+  "output": "outputs/nbp_precision_merge_20261113",
+  "publications": {
+    "Cars": {
+      "path": "outputs/bias_eight_remaining_20261106/Cars/release.pt",
+      "sha256": "d0f4674618e63030163caf8ffe23cd1211c6848595ef68eb16c164717ce92562"
+    },
+    "SVHN": {
+      "path": "outputs/bias_weight_only_20261029/SVHN/construction/release.pt",
+      "sha256": "b69746723d049316865f30b8d9eca86825f9b58852170bb56e991c421afff8ee"
+    },
+    "MNIST": {
+      "path": "outputs/bias_weight_only_20261025/point.pt",
+      "sha256": "d75ee2d0924e98ccf50f1004fbd0504c6ca191cf1e6cdd3970a98c82031ba1d0"
+    }
+  },
+  "test_sizes": {
+    "Cars": 8041,
+    "SVHN": 26032,
+    "MNIST": 10000
+  },
+  "modes": [
+    "fp32",
+    "amp_fp16_fp32_readout",
+    "amp_bf16_fp32_readout"
+  ],
+  "batch_size": 128,
+  "parameter_storage": "All parameters FP32; AMP changes eligible operation precision. Separate final-readout FP32 control; not full FP16/BF16 storage.",
+  "selection": "Fixed main releases, full official test sets, no tuning or release replacement; report all modes including nonfinite failures.",
+  "source_sha256": {
+    "experiment/native.py": "f1a002f76e4950b55e0f39c31a67354da23431c492ecab3576bdced4857d7816",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/data.py": "bce433df4cf4c361ccd2af63e6eea76c091067a2caf561f6c2ae55b6b835f4a2",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "configs/checkpoints.json": "49a3eba353e7e07aff3c38208cc9b3983877d683dd9cea103448b4737f3c5072",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6"
+  },
+  "merge": {
+    "partners": {
+      "Cars": "MNIST",
+      "SVHN": "MNIST",
+      "MNIST": "SVHN"
+    },
+    "coefficient": 0.5,
+    "scope": "Protected expert only; cached author AGA, unchanged partner. FP32 parameter fusion. Evaluate both tasks.",
+    "AGA_references": {
+      "Cars": {
+        "path": "/root/posthoc_evaluation_cache/bias_remaining_pairs_20261106/Cars_clean_AGA.pt",
+        "sha256": "f0063974d149d378342acd65c8e350aa9821c6c43d0b6c8013a3042b7b68bfe6"
+      },
+      "SVHN": {
+        "path": "outputs/feature_noise/artifacts/partner_AGA.pt",
+        "sha256": "addfa50181a916226e94832c2e2ef51a1ece9af67cee26c0ab038c3920e496c3",
+        "validation": "outputs/feature_noise/independent_validation.json"
+      },
+      "MNIST": {
+        "path": "outputs/feature_noise/artifacts/original_AGA.pt",
+        "sha256": "07195e779ea2a8203aaf2ec7bccc651d00460c3a966810bc04342af5e5088607",
+        "validation": "outputs/feature_noise/independent_validation.json"
+      }
+    }
+  }
+}

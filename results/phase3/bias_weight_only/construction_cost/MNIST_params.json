@@ -1,0 +1,395 @@
+{
+  "method": "params",
+  "target": "MNIST",
+  "summary": {
+    "cold": {
+      "repetitions": 5,
+      "seconds": [
+        167.47166419774294,
+        162.01490849256516,
+        158.62994958646595,
+        158.6461041085422,
+        160.48586337268353
+      ],
+      "mean": 161.44969795159994,
+      "median": 160.48586337268353,
+      "sample_stddev": 3.6511517634962054,
+      "minimum": 158.62994958646595,
+      "maximum": 167.47166419774294
+    },
+    "warm": {
+      "repetitions": 5,
+      "seconds": [
+        164.15086146630347,
+        156.38774184323847,
+        160.29054797440767,
+        156.06848760321736,
+        159.8336987476796
+      ],
+      "mean": 159.3462675269693,
+      "median": 159.8336987476796,
+      "sample_stddev": 3.3056804568072806,
+      "minimum": 156.06848760321736,
+      "maximum": 164.15086146630347
+    }
+  },
+  "workers": [
+    {
+      "method": "params",
+      "target": "MNIST",
+      "repetition": 0,
+      "samples": [
+        {
+          "mode": "cold",
+          "repetition": 0,
+          "kernel_seconds": 167.47166419774294,
+          "process_cpu_seconds": 178.55695710999998,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 3098420,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        },
+        {
+          "mode": "warm",
+          "repetition": 0,
+          "kernel_seconds": 164.15086146630347,
+          "process_cpu_seconds": 173.41440770200003,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 3126516,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        }
+      ],
+      "complete": true,
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "frozen_input_tensors_unchanged": true,
+      "construction_device": "cpu",
+      "CPU_threads": 4,
+      "CPU_interop_threads": 1,
+      "CPU_affinity": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "host": "autodl-container-t4136knx3l-76fdca6b",
+      "platform": "Linux-5.15.0-174-generic-x86_64-with-glibc2.35",
+      "python": "3.12.3",
+      "packages": {
+        "torch": "2.3.0+cu121",
+        "numpy": "1.26.4",
+        "scipy": "1.13.1",
+        "jax": "0.4.35",
+        "jaxlib": "0.4.35"
+      },
+      "images": 0,
+      "expert_updates": 0,
+      "GPU_kernels": 0,
+      "new_publication_files": 0
+    },
+    {
+      "method": "params",
+      "target": "MNIST",
+      "repetition": 1,
+      "samples": [
+        {
+          "mode": "cold",
+          "repetition": 1,
+          "kernel_seconds": 162.01490849256516,
+          "process_cpu_seconds": 173.258064778,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 2999252,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        },
+        {
+          "mode": "warm",
+          "repetition": 1,
+          "kernel_seconds": 156.38774184323847,
+          "process_cpu_seconds": 165.94595512499998,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 3146232,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        }
+      ],
+      "complete": true,
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "frozen_input_tensors_unchanged": true,
+      "construction_device": "cpu",
+      "CPU_threads": 4,
+      "CPU_interop_threads": 1,
+      "CPU_affinity": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "host": "autodl-container-t4136knx3l-76fdca6b",
+      "platform": "Linux-5.15.0-174-generic-x86_64-with-glibc2.35",
+      "python": "3.12.3",
+      "packages": {
+        "torch": "2.3.0+cu121",
+        "numpy": "1.26.4",
+        "scipy": "1.13.1",
+        "jax": "0.4.35",
+        "jaxlib": "0.4.35"
+      },
+      "images": 0,
+      "expert_updates": 0,
+      "GPU_kernels": 0,
+      "new_publication_files": 0
+    },
+    {
+      "method": "params",
+      "target": "MNIST",
+      "repetition": 2,
+      "samples": [
+        {
+          "mode": "cold",
+          "repetition": 2,
+          "kernel_seconds": 158.62994958646595,
+          "process_cpu_seconds": 169.967936626,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 3147660,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        },
+        {
+          "mode": "warm",
+          "repetition": 2,
+          "kernel_seconds": 160.29054797440767,
+          "process_cpu_seconds": 169.977181735,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 3267416,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        }
+      ],
+      "complete": true,
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "frozen_input_tensors_unchanged": true,
+      "construction_device": "cpu",
+      "CPU_threads": 4,
+      "CPU_interop_threads": 1,
+      "CPU_affinity": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "host": "autodl-container-t4136knx3l-76fdca6b",
+      "platform": "Linux-5.15.0-174-generic-x86_64-with-glibc2.35",
+      "python": "3.12.3",
+      "packages": {
+        "torch": "2.3.0+cu121",
+        "numpy": "1.26.4",
+        "scipy": "1.13.1",
+        "jax": "0.4.35",
+        "jaxlib": "0.4.35"
+      },
+      "images": 0,
+      "expert_updates": 0,
+      "GPU_kernels": 0,
+      "new_publication_files": 0
+    },
+    {
+      "method": "params",
+      "target": "MNIST",
+      "repetition": 3,
+      "samples": [
+        {
+          "mode": "cold",
+          "repetition": 3,
+          "kernel_seconds": 158.6461041085422,
+          "process_cpu_seconds": 169.56462321,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 3175592,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        },
+        {
+          "mode": "warm",
+          "repetition": 3,
+          "kernel_seconds": 156.06848760321736,
+          "process_cpu_seconds": 165.123192829,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 3175592,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        }
+      ],
+      "complete": true,
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "frozen_input_tensors_unchanged": true,
+      "construction_device": "cpu",
+      "CPU_threads": 4,
+      "CPU_interop_threads": 1,
+      "CPU_affinity": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "host": "autodl-container-t4136knx3l-76fdca6b",
+      "platform": "Linux-5.15.0-174-generic-x86_64-with-glibc2.35",
+      "python": "3.12.3",
+      "packages": {
+        "torch": "2.3.0+cu121",
+        "numpy": "1.26.4",
+        "scipy": "1.13.1",
+        "jax": "0.4.35",
+        "jaxlib": "0.4.35"
+      },
+      "images": 0,
+      "expert_updates": 0,
+      "GPU_kernels": 0,
+      "new_publication_files": 0
+    },
+    {
+      "method": "params",
+      "target": "MNIST",
+      "repetition": 4,
+      "samples": [
+        {
+          "mode": "cold",
+          "repetition": 4,
+          "kernel_seconds": 160.48586337268353,
+          "process_cpu_seconds": 171.758676048,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 3138524,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        },
+        {
+          "mode": "warm",
+          "repetition": 4,
+          "kernel_seconds": 159.8336987476796,
+          "process_cpu_seconds": 169.73320367399998,
+          "edited_tensors": 72,
+          "edited_values": 84999168,
+          "update_bytes": 339996672,
+          "process_peak_RSS_KiB": 3138524,
+          "details": {
+            "exact_MLP_row_permutation_and_numpy_scaling": true,
+            "layers": 12,
+            "all_state_tensors_checked": 158
+          }
+        }
+      ],
+      "complete": true,
+      "checkpoint_sha256": {
+        "zeroshot.pt": "55a47b9d1b36051fc58a0da2a7c1d597c9194901d460ae8775c245bfeefa391f",
+        "MNIST/finetuned.pt": "813270945f02fe6401ff97d9cdd8bbc728da204c300401eeea552f40dba2f182",
+        "head_MNIST.pt": "e3de7cedb99e66db773330b647bac4d5a7e8c30634d81bbe6d695394b925e322"
+      },
+      "frozen_input_tensors_unchanged": true,
+      "construction_device": "cpu",
+      "CPU_threads": 4,
+      "CPU_interop_threads": 1,
+      "CPU_affinity": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "host": "autodl-container-t4136knx3l-76fdca6b",
+      "platform": "Linux-5.15.0-174-generic-x86_64-with-glibc2.35",
+      "python": "3.12.3",
+      "packages": {
+        "torch": "2.3.0+cu121",
+        "numpy": "1.26.4",
+        "scipy": "1.13.1",
+        "jax": "0.4.35",
+        "jaxlib": "0.4.35"
+      },
+      "images": 0,
+      "expert_updates": 0,
+      "GPU_kernels": 0,
+      "new_publication_files": 0
+    }
+  ],
+  "construction_device": "cpu",
+  "CPU_threads": 4,
+  "CPU_affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "environment": {
+    "OMP_NUM_THREADS": "4",
+    "OPENBLAS_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4",
+    "NUMEXPR_NUM_THREADS": "4",
+    "JAX_PLATFORMS": "cpu",
+    "CUDA_VISIBLE_DEVICES": "",
+    "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=true intra_op_parallelism_threads=4"
+  },
+  "timing_scope": "Fresh process first construction includes author import/JIT; warm construction reuses module. Model loading/verification/serialization excluded; same4CPUaffinity bothmethods. Noimages/newreleases.",
+  "images": 0,
+  "expert_updates": 0,
+  "GPU_kernels": 0,
+  "new_publication_files": 0
+}

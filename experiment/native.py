@@ -12,8 +12,118 @@ from _impl.data import dataset, make_loader, official_labels
 from _impl.evaluate import evaluate
 from _impl.io import check_files, digest, new_output, save_json
 from _impl.metrics import logical_parameter_distance, task_change
-from _impl.models import apply, checked_models, initialize
+from _impl.models import apply, checked_models, initialize, load_checkpoint
 from cfg import require_root
+
+
+@torch.no_grad()
+def precision_run(protocol):
+    """Evaluate fixed weights under AMP, with an explicit FP32-readout control."""
+    import copy
+    from modeling import ImageClassifier
+
+    cfg = json.loads(Path(protocol).read_text())
+    check_files(cfg["source_sha256"])
+    initialize()
+    out = new_output(cfg["output"], cfg)
+    rows = []
+    cases = [(t, t, ref) for t, ref in cfg["publications"].items()]
+    if cfg.get("merge"):
+        cases += [(t, cfg["merge"]["partners"][t], ref)
+                  for t, ref in cfg["publications"].items()]
+    for target, task, ref in cases:
+        anchor, expert, head, pins = checked_models(target)
+        if cfg.get("merge"):
+            from _impl.merge import merge
+            spec = cfg["merge"]
+            peer_name = spec["partners"][target]
+            peer = load_checkpoint(f"{peer_name}/finetuned.pt")
+            aligned = apply(expert, spec["AGA_references"][target], full=True)
+            protected = merge(anchor, apply(aligned, ref), peer, spec["coefficient"])
+            expert = merge(anchor, aligned, peer, spec["coefficient"])
+            head = load_checkpoint(f"head_{task}.pt")
+            del aligned, peer
+        else:
+            protected = apply(expert, ref)
+        del anchor
+        data = dataset(task, "data", expert.val_preprocess)
+        labels = official_labels(task)
+        assert len(data) == len(labels) == cfg["test_sizes"][task]
+        baseline = {}
+        for mode in cfg["modes"]:
+            for name, source in [("None", expert), ("NBP", protected)]:
+                classifier = ImageClassifier(copy.deepcopy(source), copy.deepcopy(head)).cuda().eval()
+                visual = classifier.image_encoder.model.visual
+                dtype = torch.bfloat16 if "bf16" in mode else torch.float16
+                tail_fp32 = mode.endswith("fp32_readout")
+                captured, handles = [], []
+                if tail_fp32:
+                    handles = [
+                        visual.ln_post.register_forward_pre_hook(lambda m, a: (a[0].float(),)),
+                        visual.ln_post.register_forward_hook(lambda m, a, y: captured.append(y)),
+                    ]
+                scores, observed_dtypes, offset = [], {}, 0
+                torch.cuda.reset_peak_memory_stats()
+                torch.cuda.synchronize()
+                start = time.perf_counter()
+                for images, batch_labels in make_loader(data, batch_size=cfg["batch_size"]):
+                    np.testing.assert_array_equal(batch_labels.numpy(), labels[offset:offset+len(batch_labels)])
+                    offset += len(batch_labels)
+                    captured.clear()
+                    with torch.autocast("cuda", dtype=dtype, enabled=mode != "fp32"):
+                        features = classifier.image_encoder(images.cuda(non_blocking=True))
+                        if not tail_fp32:
+                            logits = classifier.classification_head(features)
+                    if tail_fp32:
+                        # Recompute only the projection/head outside AMP; the encoder is unchanged.
+                        assert len(captured) == 1 and captured[0].dtype == torch.float32
+                        features = captured[0] @ visual.proj.float()
+                        logits = classifier.classification_head(features)
+                    observed_dtypes = dict(features=str(features.dtype), logits=str(logits.dtype),
+                        projection=str(visual.proj.dtype), final_bias=str(visual.ln_post.bias.dtype))
+                    scores.append(logits.float().cpu())
+                torch.cuda.synchronize()
+                elapsed = time.perf_counter() - start
+                for handle in handles:
+                    handle.remove()
+                values = torch.cat(scores).numpy()
+                finite = np.isfinite(values).all(1)
+                pred = values.argmax(1)
+                valid = bool(finite.all())
+                if mode == "fp32":
+                    baseline[name] = pred.copy()
+                row = dict(task=task, protected_task=target,
+                    scenario="AGA+TA" if cfg.get("merge") else "Standalone",
+                    method=name, mode=mode, n=len(labels),
+                    finite_rows=int(finite.sum()), nonfinite_rows=int((~finite).sum()),
+                    accuracy_percent=float(100*np.mean(pred == labels)) if valid else None,
+                    correct=int((pred == labels).sum()) if valid else None,
+                    changed_vs_own_fp32=int((pred != baseline[name]).sum()) if valid else None,
+                    observed_dtypes=observed_dtypes, seconds=elapsed,
+                    peak_gpu_bytes=torch.cuda.max_memory_allocated(), checkpoint_sha256=pins)
+                prefix = f"{target}_{task}" if cfg.get("merge") else task
+                path = out / f"{prefix}_{name}_{mode}.npz"
+                np.savez_compressed(path, scores=values, labels=labels)
+                row["raw_file"], row["raw_sha256"] = path.name, digest(path)
+                rows.append(row)
+                save_json(out / "results.json", dict(rows=rows, completed=False,
+                    torch_version=torch.__version__, device=torch.cuda.get_device_name(0),
+                    parameter_storage="FP32 for all modes", TF32=False))
+                print("PRECISION", json.dumps(row), flush=True)
+                del classifier, scores, values, features, logits
+                captured.clear()
+                torch.cuda.empty_cache()
+    # Recount saved scores independently with NumPy; invalid outputs are not accuracies.
+    for row in rows:
+        raw = np.load(out / row["raw_file"])
+        np.testing.assert_array_equal(raw["labels"], official_labels(row["task"]))
+        finite = np.isfinite(raw["scores"]).all(1)
+        assert int((~finite).sum()) == row["nonfinite_rows"]
+        if finite.all():
+            assert int((raw["scores"].argmax(1) == raw["labels"]).sum()) == row["correct"]
+    meta = json.loads((out / "results.json").read_text())
+    meta.update(completed=True, numpy_recount_passed=True)
+    save_json(out / "results.json", meta)
 
 
 @torch.no_grad()
@@ -140,6 +250,7 @@ def verify(folder):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--precision-protocol", help="Fixed full-test AMP/readout precision comparison")
     p.add_argument("--verify", metavar="RESULT_DIRECTORY")
     p.add_argument("--target", choices=["MNIST", "DTD", "SVHN"])
     p.add_argument("--publication")
@@ -160,7 +271,14 @@ def main():
     )
     a = p.parse_args()
     require_root()
-    if a.verify:
+    if a.precision_protocol:
+        initialize()
+        # Load the upstream model definitions before constructing a classifier.
+        from _impl.models import checkpoint_loader
+        from cfg import AUTHOR
+        checkpoint_loader(AUTHOR)
+        precision_run(a.precision_protocol)
+    elif a.verify:
         verify(a.verify)
     else:
         if not all([a.target, a.publication, a.sha256, a.output]):

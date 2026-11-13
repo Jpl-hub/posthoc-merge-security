@@ -99,6 +99,9 @@ def figures(output, table_sources):
                           cmap="Blues", vmin=0, vmax=100, shading="flat", rasterized=False)
     ax.set(xlim=(-.5, 5.5), ylim=(6.5, -.5))
     ax.set_xticks(np.arange(6), ["None", "NBP"]*3)
+    for label in ax.get_xticklabels():
+        if label.get_text() == "NBP":
+            label.set_fontweight("bold")
     ax.set_yticks(np.arange(7), tasks)
     ax.tick_params(top=True, labeltop=True, bottom=False, labelbottom=False, length=0, pad=4)
     for i, merger in enumerate(mergers):
