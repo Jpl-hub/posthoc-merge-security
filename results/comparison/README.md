@@ -16,7 +16,7 @@ Construction uses frozen weights and a fixed classifier, without images or exper
 | ViT-B/16 | [Three complete task evaluations](../backbone_b16/summary.json) |
 | Paper-based MergeLock comparison | [Standalone, two-expert and eight-expert counts](../phase3/mergelock_baseline/summary.md); sampling choices in [the fixed configuration](../../configs/mergelock_baseline.json) |
 | Matched MergeGuard training | [Two-expert counts](../phase3/mergeguard_baseline/summary.json), [eight-expert results](../phase3/mergeguard_baseline/eight_expert/summary.md); paper implementation with a matching CE control |
-| ARF adaptation | [Matched MNIST results and commands](../phase3/arf_baseline/); explicit interpretation of the paper prose, not official-code reproduction |
+| ARF adaptation | [MNIST results and commands](../phase3/arf_baseline/) and [DTD results](../phase3/arf_baseline/DTD_20261113_summary.md); adaptation of the paper’s training procedure |
 | TaylorMLP feasibility | [Fixed CLIP adaptation](../phase3/taylormlp_baseline/feasibility.json); standalone accuracy fell from 99.69% to 12.31%, so no protection result is claimed |
 | Matched PaRaMS reference | [Official defaults and results](../params_reference/) |
 | Reproducible MD/TeX exports | [Tables and input fingerprints](../phase3/bias_weight_only/tables/) |

@@ -55,7 +55,7 @@ def test_evaluator_loads_aga_only_when_requested(monkeypatch, tmp_path, scopes):
     monkeypatch.chdir(tmp_path)
     author = Path("external/secure-merge-attack/utils_attack_B32.py")
     author.parent.mkdir(parents=True)
-    author.write_text("# fixed author source\n")
+    author.write_bytes(b"# fixed author source\n")
     cfg = dict(AGA=dict(raw_sha256=digest(author), sha256=digest(author)),
                source_sha256={}, tasks=["MNIST"], mergers=["TA"])
     if scopes is not None:

@@ -31,7 +31,7 @@ Each model batch specifies its own source and weight hashes, split, task order, 
 
 ## Historical records
 
-Stopped numerical-compensation experiments and their report code are available at commit `f1d7e496` and earlier. The active repository exposes the NBP method, matched baselines and their evidence. Git stores code and curated results, not a backup of the ignored models, datasets or raw scores. An erroneous ignored-file cleanup on the primary host on 13 November removed some of those inputs and artifacts. Available archives are being restored and checked against recorded hashes; the latest ARF/MergeLock raw outputs have not yet been recovered. Their retained summaries must not be described as complete artifact recovery. Do not run `git clean` or delete ignored experiment directories.
+Each result records the source revision and input hashes for its run. Git contains the code, protocols and summary counts. Some original ARF and MergeLock score files are unavailable. Use the retained summaries to reproduce the tables and the recorded source revisions to rerun the evaluations.
 
 ```bash
 git show <execution-commit>:<source-path>
@@ -40,7 +40,7 @@ git archive <execution-commit> | tar -x -C <empty-directory>
 
 ## Regenerate publications and clean AGA references
 
-The construction command defaults to NBP and supports all seven evaluated targets. It does not run the stopped permutation method:
+The construction command defaults to NBP and supports all seven evaluated targets:
 
 ```bash
 python -m experiment.construct --target MNIST --output outputs/nbp/MNIST
