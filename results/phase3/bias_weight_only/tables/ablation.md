@@ -1,4 +1,4 @@
-Direction ablations at the NBP update norm (accuracy, %). Random null reports mean $\pm$ sample standard deviation over five seeds; all have the displayed standalone accuracy.
+Test accuracy (%) with different bias directions at the same update norm. For random nullspace directions, merged accuracy is the mean $\pm$ sample standard deviation over five draws.
 
 | Task | Update | Standalone | AGA+TA |
 | --- | --- | ---: | ---: |

@@ -1,0 +1,26 @@
+{
+  "target": "DTD",
+  "partner": "MNIST",
+  "coefficient": 0.5,
+  "seed": 20261114,
+  "images_per_task": 64,
+  "batch_size": 128,
+  "publication": {
+    "path": "outputs/bias_weight_only_20261029/DTD/construction/release.pt",
+    "sha256": "9e6b71ea676e71a033392c707c9228d434b4ef2541f82b258d99d0ab23f9010f"
+  },
+  "test_sizes": {
+    "DTD": 1880,
+    "MNIST": 10000
+  },
+  "output": "outputs/readout_recovery_20261114/DTD",
+  "source_sha256": {
+    "experiment/recover.py": "c47508fd7ba7fb9c6ff1d3aed2b8feac9e5d39a36e350e1f5fece639db7fbcc2",
+    "_impl/data.py": "bce433df4cf4c361ccd2af63e6eea76c091067a2caf561f6c2ae55b6b835f4a2",
+    "_impl/models.py": "a7daff46b3e6ecb15ba5405edf7f85fcd1311cb41709ad2976518568ac4decb0",
+    "_impl/io.py": "df92d411687106bc3be1ccdb1012458420efe96b1ac1c54aa43a4a9467924ab3",
+    "_impl/merge.py": "0ba26dfb57350e4588c865e573ae5ab3a2684108e33f2a41088046ce7615baf6",
+    "cfg.py": "fc1712e9a847f5cfced1d022bd1168c1eeaa2d7849f02dd9b7e129140ec45c1e"
+  },
+  "scope": "Frozen DTD NBP with fixed MNIST companion. Direct TA, no AGA. Both controls receive the same operation. Feature centering subtracts each model own pooled pre-L2 mean from 64 unlabeled official training images per task. Expert-projection control retains the target projection only; all other parameters use TA. Fixed before test evaluation; no parameter search or defense updates."
+}

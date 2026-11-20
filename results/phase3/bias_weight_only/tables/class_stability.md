@@ -1,4 +1,4 @@
-Five fixed class draws per task. Maximum standalone loss (percentage points), and target accuracy after AGA+TA (%; mean $\pm$ sample SD and range).
+Effect of the class chosen for protection across five draws per task. S loss is the largest drop in standalone accuracy (percentage points). Merged accuracy (%) is reported as the mean $\pm$ sample standard deviation and the range.
 
 | Task | S loss | AGA+TA | Range |
 | --- | ---: | ---: | ---: |

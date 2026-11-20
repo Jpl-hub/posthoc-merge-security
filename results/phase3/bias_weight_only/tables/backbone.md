@@ -1,4 +1,4 @@
-Transfer to ViT-B/16: standalone and target accuracy (%). TA uses 0.5; AGA aligns the protected expert.
+Target accuracy (%) before and after merging two ViT-B/16 experts.
 
 | Setting | Defense | MNIST | SVHN | DTD |
 | --- | --- | ---: | ---: | ---: |

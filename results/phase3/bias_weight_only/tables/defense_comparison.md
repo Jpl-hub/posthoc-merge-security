@@ -1,13 +1,11 @@
-Standalone (S ↑) and merged target (↓) accuracies (%). Bold/underline: best/second distinct displayed scores within matched groups; tied scores share the same emphasis. A--B use B/32 with TA coefficients 0.5 (two experts) and 0.2 (eight); B includes matched CE training controls. C reports published L/14 results under the original protocol, Table 3. Avg. weights tasks equally. MergeLock is a paper implementation.
-
-**A. Seven-task evaluation of released experts (ViT-B/32)**
+Target accuracy (%) on seven ViT-B/32 tasks. Bold and underlined values rank first and second within each merged setting.
 
 | Setting | Defense | SUN397 | Cars | RESISC45 | SVHN | GTSRB | MNIST | DTD | Avg. |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standalone | None | **75.28** | **77.66** | 96.11 | 97.46 | 98.73 | 99.69 | 79.41 | 89.19 |
-| Standalone | PaRaMS | **75.28** | **77.66** | 96.11 | 97.46 | 98.73 | 99.69 | 79.41 | 89.19 |
-| Standalone | MergeLock | **75.28** | **77.66** | 96.11 | 97.46 | 98.73 | 99.69 | 79.41 | 89.19 |
-| Standalone | NBP | <u>75.27</u> | <u>77.64</u> | 96.11 | 97.46 | 98.73 | 99.69 | 79.41 | 89.19 |
+| Standalone | None | 75.28 | 77.66 | 96.11 | 97.46 | 98.73 | 99.69 | 79.41 | 89.19 |
+| Standalone | PaRaMS | 75.28 | 77.66 | 96.11 | 97.46 | 98.73 | 99.69 | 79.41 | 89.19 |
+| Standalone | MergeLock | 75.28 | 77.66 | 96.11 | 97.46 | 98.73 | 99.69 | 79.41 | 89.19 |
+| Standalone | NBP | 75.27 | 77.64 | 96.11 | 97.46 | 98.73 | 99.69 | 79.41 | 89.19 |
 | 2-expert TA | None | 71.92 | 73.17 | 91.08 | 92.50 | 93.25 | 99.37 | 69.31 | 84.37 |
 | 2-expert TA | PaRaMS | 0.30 | 0.72 | <u>2.57</u> | <u>9.09</u> | <u>2.79</u> | <u>8.92</u> | **2.07** | <u>3.78</u> |
 | 2-expert TA | MergeLock | **0.22** | **0.49** | 3.10 | 9.51 | 3.03 | **8.70** | 2.66 | 3.96 |
@@ -24,21 +22,3 @@ Standalone (S ↑) and merged target (↓) accuracies (%). Bold/underline: best/
 | 8-expert AGA + TA | PaRaMS | <u>63.56</u> | <u>61.61</u> | <u>71.46</u> | 72.53 | <u>63.29</u> | <u>93.23</u> | <u>51.38</u> | <u>68.15</u> |
 | 8-expert AGA + TA | MergeLock | 63.57 | 61.62 | <u>71.46</u> | <u>72.52</u> | <u>63.29</u> | <u>93.23</u> | <u>51.38</u> | <u>68.15</u> |
 | 8-expert AGA + TA | NBP | **0.25** | **0.55** | **2.44** | **6.70** | **1.19** | **9.80** | **2.13** | **3.29** |
-
-**B. Matched training comparison (ViT-B/32)**
-
-| Defense | MNIST / S | MNIST / TA | MNIST / AGA+TA | SVHN / S | SVHN / TA | SVHN / AGA+TA | DTD / S | DTD / TA | DTD / AGA+TA |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| CE (Trap²) | **99.35** | <u>99.55</u> | <u>99.50</u> | <u>96.42</u> | <u>96.33</u> | <u>95.80</u> | **71.60** | <u>72.02</u> | <u>70.90</u> |
-| Trap² | <u>99.33</u> | **9.74** | **9.74** | **96.60** | **6.70** | **6.70** | <u>65.37</u> | **2.13** | **2.13** |
-
-**C. Published comparison from MergeGuard (ViT-L/14)**
-
-Source: [MergeGuard, Table 3](https://openaccess.thecvf.com/content/CVPR2026/papers/Chen_Defending_Unauthorized_Model_Merging_via_Dual-Stage_Weight_Protection_CVPR_2026_paper.pdf). Original protocol; seven common tasks shown.
-
-| Setting | Defense | SUN397 | Cars | RESISC45 | SVHN | GTSRB | MNIST | DTD |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standalone | PaRaMS | **82.32** | **92.39** | **97.37** | **98.11** | **99.24** | **99.69** | **84.15** |
-| Standalone | MergeGuard | <u>81.52</u> | <u>88.29</u> | <u>97.25</u> | <u>96.82</u> | <u>98.25</u> | <u>99.27</u> | <u>82.16</u> |
-| TA | PaRaMS | <u>56.77</u> | <u>38.61</u> | <u>67.86</u> | <u>71.95</u> | <u>52.25</u> | <u>96.02</u> | <u>48.72</u> |
-| TA | MergeGuard | **54.27** | **38.24** | **56.50** | **47.28** | **12.91** | **11.35** | **46.65** |

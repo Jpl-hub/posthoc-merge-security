@@ -46,7 +46,7 @@ The construction command defaults to NBP and supports all seven evaluated target
 python -m experiment.construct --target MNIST --output outputs/nbp/MNIST
 ```
 
-Repeat this command for the other tasks when reproducing the complete table. Historical protocols retain their original artifact paths and hashes. For newly regenerated files, make a new evaluation configuration with their actual hashes; do not edit the frozen result records.
+Repeat this command for the other tasks when reproducing the complete table. For historical batches, use the source revision recorded for that run. Historical protocols retain their original artifact paths and hashes. For newly regenerated files, make a new evaluation configuration with their actual hashes; do not edit the frozen result records.
 
 After preparing all public checkpoints, this uses the same author AGA kernel and shared loader to generate the clean references, and connects the newly constructed bias files to the current evaluation configuration:
 
@@ -103,8 +103,15 @@ python -m experiment.train_baseline --config configs/mergeguard_baseline.json --
 
 Use the same commands for SVHN, DTD and GTSRB. Do not treat these B/32 adaptations as the authors' published L/14 numbers. Completed counts are in `results/phase3/trap2_baseline/summary.json` and `results/phase3/mergeguard_baseline/summary.json`; both are included in the standard table exporter.
 
-The exported `defense_comparison` table has three panels: seven-task released-expert comparisons, matched Trap²/CE training, and the published MergeGuard L/14 results. The separate `mergeguard_adaptation` and `mergeguard_eight` tables contain all four completed tasks and their matched CE controls. `results/phase3/mergeguard_baseline/stage_diagnosis.json` records the fixed-setting MNIST stage check: identical final tensors, independent mask reconstruction, and full-test stage scores. It does not replace the main comparison.
+The exporter writes three separate comparisons: `defense_comparison` for the seven released-expert tasks, `training_comparison` for matched Trap² and CE training, and `mergeguard_context` for the published ViT-L/14 results. The separate `mergeguard_adaptation` and `mergeguard_eight` tables contain all four completed tasks and their matched CE controls. `results/phase3/mergeguard_baseline/stage_diagnosis.json` records the fixed-setting MNIST stage check: identical final tensors, independent mask reconstruction, and full-test stage scores. It does not replace the main comparison.
 
 The matched ARF adaptation, its equation/prose interpretation, results and commands are documented in `results/phase3/arf_baseline/README.md`. MNIST is complete; the DTD extension uses the same implementation and a matched CE control. This is not a seven-task comparison or an official-code reproduction. The configuration retains fixed task-wise epoch counts; each run stores its executed configuration and source hashes.
 
 The L/14 backbone check uses `configs/mergeguard_l14.json` and the original Task Arithmetic L/14 MNIST/SVHN checkpoints. Set `POSTHOC_BACKBONE=ViT-L-14` and use the same three commands above with this config. It trains MNIST only, with SVHN as the fixed evaluation companion. Microbatches of 8 accumulate to 128 examples per optimizer step; the final partial batch uses its actual sample count. This check evaluates standalone and direct TA, since the existing AGA adapter is for the 12-layer B models. It tests the backbone difference under the declared training settings, not a complete reproduction of unspecified author settings.
+
+
+## Readout recovery checks
+
+`python -m experiment.recover --readout-evaluation configs/readout_recovery.json` evaluates the frozen DTD NBP checkpoint with its fixed MNIST companion. The two controls either retain the target expert projection after TA or subtract a pre-normalization feature mean estimated from 64 unlabeled official training images per task. None and NBP receive identical operations and calibration indices. The classifier is unchanged. The procedure saves complete scores, means, indices, model hashes and matched prediction counts; it does not construct new protected weights.
+
+Recorded results are in `results/phase3/bias_weight_only/attacks/readout/`; the standard exporter generates `readout_recovery.tex` and `.md`. Historical source hashes identify the executed implementation. Both recovery operations remove the measured protection on this task pair. The untreated None/NBP rows in this batch are contemporaneous controls and do not replace historical main-table results.

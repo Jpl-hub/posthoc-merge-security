@@ -1,4 +1,4 @@
-Frozen expert projections and NBP updates. Singular values refer to the centered class map $H$. All seven stored directions have positive proxy class gaps.
+Frozen expert projections and NBP updates. Singular values refer to the centered class map $H$. All seven stored directions have positive class-offset gaps in the interpolated model.
 
 | Task | $\|P_e-P_0\|_F$ | Rank | $10^3\sigma_{\min}^{+}$ | $10^3g_{\min}$ | $\|\delta b\|/10^3$ |
 | --- | ---: | ---: | ---: | ---: | ---: |

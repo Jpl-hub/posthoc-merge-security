@@ -1,0 +1,17 @@
+\begin{table*}[!t]
+\centering
+\small
+\setlength{\tabcolsep}{3.8pt}
+\caption{Standalone (S) and merged target accuracy (\%) for Trap$^2$ and its cross-entropy (CE) control on ViT-B/32. Both use the same initialization, training split and schedule.}
+\label{tab:training-comparison}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrrrrr@{}}
+\toprule
+\multirow{2}{*}{Defense} & \multicolumn{3}{c}{MNIST} & \multicolumn{3}{c}{SVHN} & \multicolumn{3}{c}{DTD} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ & S $\uparrow$ & TA $\downarrow$ & AGA+TA $\downarrow$ \\
+\midrule
+CE (Trap$^2$)~\cite{jang2026trap2} & \textbf{99.35} & \underline{99.55} & \underline{99.50} & \underline{96.42} & \underline{96.33} & \underline{95.80} & \textbf{71.60} & \underline{72.02} & \underline{70.90} \\
+Trap$^2$~\cite{jang2026trap2} & \underline{99.33} & \textbf{9.74} & \textbf{9.74} & \textbf{96.60} & \textbf{6.70} & \textbf{6.70} & \underline{65.37} & \textbf{2.13} & \textbf{2.13} \\
+\bottomrule
+\end{tabular*}
+\end{table*}

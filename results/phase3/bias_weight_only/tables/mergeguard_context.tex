@@ -1,0 +1,18 @@
+\begin{table*}[!t]
+\centering
+\small
+\setlength{\tabcolsep}{3.8pt}
+\caption{Standalone and merged target accuracy (\%) under the ViT-L/14 protocol reported by MergeGuard~\cite{chen2026mergeguard}.}
+\label{tab:mergeguard-context}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrrrrr@{}}
+\toprule
+Setting & Defense & SUN397 & Cars & RESISC45 & SVHN & GTSRB & MNIST & DTD \\
+\midrule
+\multirow{2}{*}{Standalone $\uparrow$} & PaRaMS~\cite{wei2025params} & \textbf{82.32} & \textbf{92.39} & \textbf{97.37} & \textbf{98.11} & \textbf{99.24} & \textbf{99.69} & \textbf{84.15} \\
+ & MergeGuard~\cite{chen2026mergeguard} & \underline{81.52} & \underline{88.29} & \underline{97.25} & \underline{96.82} & \underline{98.25} & \underline{99.27} & \underline{82.16} \\
+\midrule
+\multirow{2}{*}{TA $\downarrow$} & PaRaMS~\cite{wei2025params} & \underline{56.77} & \underline{38.61} & \underline{67.86} & \underline{71.95} & \underline{52.25} & \underline{96.02} & \underline{48.72} \\
+ & MergeGuard~\cite{chen2026mergeguard} & \textbf{54.27} & \textbf{38.24} & \textbf{56.50} & \textbf{47.28} & \textbf{12.91} & \textbf{11.35} & \textbf{46.65} \\
+\bottomrule
+\end{tabular*}
+\end{table*}

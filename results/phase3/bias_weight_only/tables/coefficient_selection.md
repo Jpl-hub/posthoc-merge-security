@@ -1,4 +1,4 @@
-Test accuracy after coefficient selection (%). Selection maximizes the mean target/companion calibration accuracy; test scores do not guide selection.
+Target and companion test accuracy (%) after AGA+TA. The selected weight $\lambda$ maximizes the average accuracy of the two tasks on the calibration set.
 
 | Task | Defense | Coeff. | Target | Companion |
 | --- | --- | ---: | ---: | ---: |

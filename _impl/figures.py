@@ -54,7 +54,7 @@ def figures(output, table_sources):
                     / scores[n, merger, scope, "MNIST"]["n"] for n in names]
         ax.plot(amplitudes, accuracy, label=label, color=color, marker=marker,
                 linestyle=style, linewidth=1, markersize=size, markerfacecolor=face)
-    ax.axvline(.5, color="#777777", linewidth=.8, linestyle=":", label="Proxy threshold", zorder=0)
+    ax.axvline(.5, color="#777777", linewidth=.8, linestyle=":", label="Interpolation threshold", zorder=0)
     ax.set_xscale("log", base=2)
     ax.set(xticks=amplitudes, xticklabels=["0.125", "0.25", "0.5", "1", "2"],
            xlabel=r"NBP magnitude multiplier (log$_2$ scale)",

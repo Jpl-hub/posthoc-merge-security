@@ -1,4 +1,4 @@
-AGA+TA accuracy across 42 task pairs (%), averaged over six companions per target. Subscripts t/c denote target/companion; U is the unprotected control.
+Target (t) and companion (c) accuracy (%) after AGA+TA, averaged over six companions per target. U denotes the unprotected control.
 
 | Task | U (target) | NBP (target) | U (companion) | NBP (companion) |
 | --- | ---: | ---: | ---: | ---: |
